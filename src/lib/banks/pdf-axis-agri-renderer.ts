@@ -257,21 +257,77 @@ export interface AxisAgriReportFields {
 
 export class PDFAxisAgriRenderer extends PDFBankRenderer {
   /**
-   * Parse a text line with potential markdown bold tokens (**bold**) into segments.
+   * Preserve newlines and decode special characters for rich rendering.
    */
-  private parseLineSegments(line: string): { text: string; bold: boolean }[] {
-    if (!line.includes('**')) {
-      return [{ text: line, bold: false }];
+  protected override sanitizeText(text?: any): string {
+    if (text === null || text === undefined) return '';
+    let clean = typeof text === 'string' ? text : String(text);
+    
+    // Decode HTML entities
+    clean = clean
+      .replace(/&amp;/g, '&')
+      .replace(/&amp/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&lt/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&gt/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&quot/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&#39;/g, "'");
+
+    return clean
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/\t/g, ' ')
+      .replace(/[\u2018\u2019]/g, "'")     // smart single quotes
+      .replace(/[\u201C\u201D]/g, '"')     // smart double quotes
+      .replace(/\u2013/g, '-')             // en-dash
+      .replace(/\u2014/g, '--')            // em-dash
+      .replace(/\u2026/g, '...')           // ellipsis
+      .replace(/\u20B9/g, 'Rs.')           // rupee sign
+      .replace(/[^\x20-\x7E\u2022\n]/g, ''); // allow ASCII + bullet • + \n
+  }
+
+  /**
+   * Parse a text line with potential markdown bold tokens (**bold**) and underline tokens (<u>underline</u>) into segments.
+   */
+  private parseLineSegments(line: string): { text: string; bold: boolean; underline: boolean }[] {
+    if (!line.includes('**') && !line.includes('<u>') && !line.includes('</u>')) {
+      return [{ text: line, bold: false, underline: false }];
     }
-    const segments: { text: string; bold: boolean }[] = [];
-    const parts = line.split('**');
-    for (let i = 0; i < parts.length; i++) {
-      if (!parts[i]) continue;
-      // Odd indices are inside **...**, even indices are outside
-      const isBold = i % 2 === 1;
-      segments.push({ text: parts[i], bold: isBold });
+    const segments: { text: string; bold: boolean; underline: boolean }[] = [];
+    const regex = /(<u>|<\/u>|\*\*)/g;
+    let lastIndex = 0;
+    let isBold = false;
+    let isUnderline = false;
+    let match;
+
+    while ((match = regex.exec(line)) !== null) {
+      if (match.index > lastIndex) {
+        const text = line.substring(lastIndex, match.index);
+        if (text) {
+          segments.push({ text, bold: isBold, underline: isUnderline });
+        }
+      }
+      if (match[0] === '**') {
+        isBold = !isBold;
+      } else if (match[0] === '<u>') {
+        isUnderline = true;
+      } else if (match[0] === '</u>') {
+        isUnderline = false;
+      }
+      lastIndex = regex.lastIndex;
     }
-    return segments;
+
+    if (lastIndex < line.length) {
+      const text = line.substring(lastIndex);
+      if (text) {
+        segments.push({ text, bold: isBold, underline: isUnderline });
+      }
+    }
+
+    return segments.length > 0 ? segments : [{ text: '', bold: false, underline: false }];
   }
 
   /**
@@ -315,8 +371,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     for (const rawW of rawWords) {
       // Restore placeholder spaces
       const w = rawW.replace(/\uE000/g, ' ');
-      // If token contains a checkbox, do not break it at punctuation (keep intact)
-      if (w.includes('[') && w.includes(']')) {
+      // If token contains a checkbox or tag, keep intact
+      if ((w.includes('[') && w.includes(']')) || w.includes('<') || w.includes('>')) {
         tokens.push(w);
       } else if (w.length <= 12) {
         tokens.push(w);
@@ -332,7 +388,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Wrap rich text that may contain **bold** tokens without breaking words or bold styling.
+   * Wrap rich text that may contain **bold** and <u>underline</u> tokens without breaking words or styling.
    */
   private wrapRichText(text: string, maxWidth: number, fontSize: number, defaultBold = false): string[] {
     const clean = this.sanitizeText(text);
@@ -353,15 +409,21 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         if (testW <= maxWidth || !currentLine) {
           currentLine = testLine;
         } else {
-          // If bold is currently open on currentLine (odd count of **), close it at line end and reopen on next line
+          // Check open bold and underline tags
           const isBoldOpen = (currentLine.match(/\*\*/g) || []).length % 2 === 1;
-          if (isBoldOpen) {
-            allLines.push(`${currentLine}**`);
-            currentLine = `**${word}`;
-          } else {
-            allLines.push(currentLine);
-            currentLine = word;
-          }
+          const uOpenCount = (currentLine.match(/<u>/g) || []).length;
+          const uCloseCount = (currentLine.match(/<\/u>/g) || []).length;
+          const isUnderlineOpen = uOpenCount > uCloseCount;
+
+          let closedLine = currentLine;
+          if (isBoldOpen) closedLine += '**';
+          if (isUnderlineOpen) closedLine += '</u>';
+          allLines.push(closedLine);
+
+          let nextWord = word;
+          if (isUnderlineOpen) nextWord = '<u>' + nextWord;
+          if (isBoldOpen) nextWord = '**' + nextWord;
+          currentLine = nextWord;
         }
       }
       if (currentLine) {
@@ -460,15 +522,27 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
           ? this.fontBold
           : this.fontRegular;
 
+        const segW = segFont.widthOfTextAtSize(seg.text, fontSize);
+        const drawX = Math.max(x + 1, curSegX);
+
         this.page.drawText(seg.text, {
-          x: Math.max(x + 1, curSegX),
+          x: drawX,
           y: startY,
           size: fontSize,
           font: segFont,
           color: rgb(0, 0, 0),
         });
 
-        curSegX += segFont.widthOfTextAtSize(seg.text, fontSize);
+        if (seg.underline) {
+          this.page.drawLine({
+            start: { x: drawX, y: startY - 1.5 },
+            end: { x: drawX + segW, y: startY - 1.5 },
+            thickness: 0.8,
+            color: rgb(0, 0, 0),
+          });
+        }
+
+        curSegX += segW;
       }
 
       startY -= lineH;
@@ -572,6 +646,81 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
   }
 
   /**
+   * Draw multi-line plain rich text without cell borders or background boxes.
+   */
+  drawRichParagraph(
+    text: string,
+    width: number = CONTENT_W,
+    options: {
+      bold?: boolean;
+      fontSize?: number;
+      align?: 'left' | 'center' | 'right';
+      linePad?: number;
+      indent?: number;
+    } = {}
+  ): number {
+    const cleanText = this.sanitizeText(text);
+    if (!cleanText) return 0;
+
+    const fontSize = options.fontSize || FONT_SIZE;
+    const isBaseBold = !!options.bold;
+    const align = options.align || 'left';
+    const linePad = options.linePad !== undefined ? options.linePad : 3;
+    const indent = options.indent || 0;
+    const effW = width - indent;
+
+    const lines = this.wrapRichText(cleanText, effW, fontSize, isBaseBold);
+    const lineH = fontSize * LINE_HEIGHT;
+    const totalH = lines.length * lineH + linePad;
+
+    this.checkPageBreak(totalH);
+
+    let curY = this.pdfY(this.cursorY) - fontSize * 0.85;
+
+    for (const line of lines) {
+      const lineW = this.measureRichLineWidth(line, fontSize, isBaseBold);
+      let lineX = MARGIN_L + indent;
+      if (align === 'center') {
+        lineX = MARGIN_L + indent + (effW - lineW) / 2;
+      } else if (align === 'right') {
+        lineX = MARGIN_L + indent + effW - lineW;
+      }
+
+      const segments = this.parseLineSegments(line);
+      let curSegX = lineX;
+
+      for (const seg of segments) {
+        const segFont = (seg.bold || isBaseBold) ? this.fontBold : this.fontRegular;
+        const segW = segFont.widthOfTextAtSize(seg.text, fontSize);
+
+        this.page.drawText(seg.text, {
+          x: curSegX,
+          y: curY,
+          size: fontSize,
+          font: segFont,
+          color: rgb(0, 0, 0),
+        });
+
+        if (seg.underline) {
+          this.page.drawLine({
+            start: { x: curSegX, y: curY - 1.5 },
+            end: { x: curSegX + segW, y: curY - 1.5 },
+            thickness: 0.8,
+            color: rgb(0, 0, 0),
+          });
+        }
+
+        curSegX += segW;
+      }
+
+      curY -= lineH;
+    }
+
+    this.cursorY += totalH;
+    return totalH;
+  }
+
+  /**
    * Insert a visual section break/line break in the PDF if there is enough vertical space
    */
   addSectionBreak(gap: number = 8): void {
@@ -632,7 +781,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         width: W * 0.65,
         isHeader: true,
         bold: true,
-        fontSize: FONT_SIZE,
+        fontSize: FONT_SIZE_TITLE,
       },
       {
         text: visitDate ? `DATE OF VISIT: ${visitDate}` : 'DATE OF VISIT:',
@@ -642,7 +791,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         align: 'right',
         fontSize: FONT_SIZE,
       },
-    ], 20, 4);
+    ], 22, 4);
 
     // Section 1 — Technical Initiation Details (4 Columns)
     const col4_w1 = W * 0.25;
@@ -1399,26 +1548,26 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.cursorY += 16;
 
     const tW = [
-      88, // PARTICULARS OF ITEMS
-      48, // PLINTH AREA IN SQFT
-      48, // ROOF HEIGHT
-      48, // AGE OF BLDG. IN YEARS
-      62, // REPL. RATE OF CONST. (RS.)
-      66, // EST. REPL. COST OF CONST. (RS.)
-      62, // DEPR. AMOUNT (1% per Anm)
-      65.28, // NET VALUE AFTER DEPR.
+      76, // PARTICULARS OF ITEMS
+      50, // PLINTH AREA IN SQFT
+      44, // ROOF HEIGHT
+      50, // AGE OF BLDG. IN YEARS
+      60, // REPL. RATE OF CONST. (RS.)
+      74, // EST. REPL. COST OF CONST. (RS.)
+      63, // DEPR. AMOUNT (1% per Anm)
+      70.28, // NET VALUE AFTER DEPR.
     ];
 
     this.drawRow([
-      { text: 'PARTICULARS OF ITEMS', width: tW[0], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'PLINTH AREA IN SQFT', width: tW[1], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'ROOF HEIGHT', width: tW[2], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'AGE OF BLDG. IN YEARS', width: tW[3], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'REPL. RATE OF CONST. (RS.)', width: tW[4], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'EST. REPL. COST OF CONST. (RS.)', width: tW[5], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'DEPR. AMOUNT (1% per Anm)', width: tW[6], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'NET VALUE AFTER DEPR.', width: tW[7], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-    ], 28, 6);
+      { text: 'PARTICULARS\nOF ITEMS', width: tW[0], isHeader: true, bold: true, align: 'center', fontSize: 9.5 },
+      { text: 'PLINTH\nAREA IN\nSQFT', width: tW[1], isHeader: true, bold: true, align: 'center', fontSize: 9.5 },
+      { text: 'ROOF\nHEIGHT', width: tW[2], isHeader: true, bold: true, align: 'center', fontSize: 9.5 },
+      { text: 'AGE OF\nBLDG. IN\nYEARS', width: tW[3], isHeader: true, bold: true, align: 'center', fontSize: 9.5 },
+      { text: 'REPL. RATE\nOF CONST.\n(RS.)', width: tW[4], isHeader: true, bold: true, align: 'center', fontSize: 9.5 },
+      { text: 'EST. REPL. COST\nOF CONST.\n(RS.)', width: tW[5], isHeader: true, bold: true, align: 'center', fontSize: 9.5 },
+      { text: 'DEPR. AMOUNT\n(1% per Anm)', width: tW[6], isHeader: true, bold: true, align: 'center', fontSize: 9.5 },
+      { text: 'NET VALUE\nAFTER DEPR.', width: tW[7], isHeader: true, bold: true, align: 'center', fontSize: 9.5 },
+    ], 30, 4);
 
     const costFloors = fields.floors && fields.floors.length > 0 ? fields.floors : [];
 
@@ -1431,14 +1580,14 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         const cfName = String(cf.floorName || (cf as any).name || 'Floor').toUpperCase();
         const cfPlinth = String(cf.plinthArea ?? (cf as any).area ?? '0.00');
         this.drawRow([
-          { text: cfName, width: tW[0], isLabel: true, bold: true, fontSize: FONT_SIZE },
-          { text: cfPlinth, width: tW[1], align: 'right', fontSize: FONT_SIZE },
-          { text: String(cf.roofHeight || '-'), width: tW[2], align: 'center', fontSize: FONT_SIZE },
-          { text: String(cf.ageYears || '-'), width: tW[3], align: 'center', fontSize: FONT_SIZE },
-          { text: cf.replacementRate ? `Rs. ${cf.replacementRate}` : '-', width: tW[4], align: 'right', fontSize: FONT_SIZE },
-          { text: cf.estimatedCost ? `Rs. ${cf.estimatedCost}` : '-', width: tW[5], align: 'right', fontSize: FONT_SIZE },
-          { text: cf.depreciationAmount ? `Rs. ${cf.depreciationAmount}` : '-', width: tW[6], align: 'right', fontSize: FONT_SIZE },
-          { text: cf.netValue ? `Rs. ${cf.netValue}` : '-', width: tW[7], align: 'right', fontSize: FONT_SIZE },
+          { text: cfName, width: tW[0], isLabel: true, bold: true, fontSize: 10.5 },
+          { text: cfPlinth, width: tW[1], align: 'left', fontSize: 10.5 },
+          { text: String(cf.roofHeight || '-'), width: tW[2], align: 'left', fontSize: 10.5 },
+          { text: String(cf.ageYears || '-'), width: tW[3], align: 'left', fontSize: 10.5 },
+          { text: cf.replacementRate ? `Rs. ${cf.replacementRate}` : '-', width: tW[4], align: 'left', fontSize: 10.5 },
+          { text: cf.estimatedCost ? `Rs. ${cf.estimatedCost}` : '-', width: tW[5], align: 'left', fontSize: 10.5 },
+          { text: cf.depreciationAmount ? `Rs. ${cf.depreciationAmount}` : '-', width: tW[6], align: 'left', fontSize: 10.5 },
+          { text: cf.netValue ? `Rs. ${cf.netValue}` : '-', width: tW[7], align: 'left', fontSize: 10.5 },
         ], 20, 4);
       }
     }
@@ -1446,8 +1595,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Total Row
     const nonNetWidth = tW.slice(0, 7).reduce((a, b) => a + b, 0);
     this.drawRow([
-      { text: 'Total', width: nonNetWidth, align: 'right', bold: true, isLabel: true, fontSize: FONT_SIZE },
-      { text: fields.totalBasicValueBuilding ? `Rs. ${fields.totalBasicValueBuilding}` : 'Rs. 0.00', width: tW[7], align: 'right', bold: true, fontSize: FONT_SIZE },
+      { text: 'Total', width: nonNetWidth, align: 'right', bold: true, isLabel: true, fontSize: 10.5 },
+      { text: fields.totalBasicValueBuilding ? `Rs. ${fields.totalBasicValueBuilding}` : 'Rs. 0.00', width: tW[7], align: 'left', bold: true, fontSize: 10.5 },
     ], 20, 4);
 
     this.addSectionBreak(8);
@@ -1513,39 +1662,49 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: fields.insurableValueTotal ? `Rs. ${fields.insurableValueTotal}` : '-', width: mColW[4], align: 'right', bold: true, fontSize: FONT_SIZE },
     ], 18, 4);
 
-    this.addSectionBreak(8);
+    this.addSectionBreak(6);
 
-    // Narrative statements
+    // Narrative statements (rendered as text, removed from boxes)
     const text1 = fields.realizableEstimationText || 'REALIZABLE ESTIMATION OF THE PROPERTY IN CASE OF DISTRESS SALE, IN CASE, THE BANK WILL SELL THE PROPERTY THROUGH PROCEEDINGS.';
-    this.drawRow([{ text: text1, width: W }], 18, 4);
+    this.drawRichParagraph(text1, W, { bold: false, linePad: 4 });
 
     const mvLine = fields.marketValueTotal
       ? `MARKET VALUE OF THE PROPERTY: Rs.${fields.marketValueTotal}/- OR SAY Rs.${fields.marketValueSay || fields.marketValueTotal}/- (${fields.marketValueWords || ''}).`
       : 'MARKET VALUE OF THE PROPERTY: Not Available';
-    this.drawRow([{ text: mvLine, width: W, bold: true }], 18, 4);
+    this.drawRichParagraph(mvLine, W, { bold: true, linePad: 4 });
 
     const rvLine = fields.realisableValueTotal
       ? `REALIZABLE VALUE OF THE PROPERTY: Rs.${fields.realisableValueTotal}/- OR SAY Rs.${fields.realizableValueSay || fields.realisableValueTotal}/- (${fields.realizableValueWords || ''}).`
       : 'REALIZABLE VALUE OF THE PROPERTY: Not Available';
-    this.drawRow([{ text: rvLine, width: W, bold: true }], 18, 4);
+    this.drawRichParagraph(rvLine, W, { bold: true, linePad: 4 });
 
     const dvLine = fields.distressValueTotal
       ? `DISTRESS SALE VALUE OF THE PROPERTY WILL BE: Rs.${fields.distressValueTotal}/- OR SAY Rs.${fields.distressValueSay || fields.distressValueTotal}/- (${fields.distressValueWords || ''}).`
       : 'DISTRESS SALE VALUE OF THE PROPERTY: Not Available';
-    this.drawRow([{ text: dvLine, width: W, bold: true }], 18, 4);
+    this.drawRichParagraph(dvLine, W, { bold: true, linePad: 6 });
 
-    const basisLine = `BASIS OF VALUATION:- ${fields.basisOfValuation || 'As per local market feedback and property analysis.'}`;
-    this.drawRow([{ text: basisLine, width: W }], 28, 4);
+    this.addSectionBreak(4);
 
-    const opLine = fields.opinionOfMarketValue || (fields.marketValueSay ? `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS SAY : Rs.${fields.marketValueSay}/- (${fields.marketValueWords || ''}).` : 'Not Available');
-    this.drawRow([{ text: opLine, width: W, bold: true }], 26, 4);
+    // Combined Basis of Valuation & Opinion of Market Value Box (single cell, no fallback)
+    const basisVal = (fields.basisOfValuation || '').trim();
+    const opinionVal = (fields.opinionOfMarketValue || '').trim();
 
-    // Remarks Box
-    const remHeader = 'REMARKS:-';
-    const remBody = fields.remarksText || 'The property has been inspected and valued based on available documents, site measurements and current market conditions.';
+    let combinedValuationText = `<u>**BASIS OF VALUATION:-**</u>`;
+    if (basisVal) {
+      combinedValuationText += ` ${basisVal}`;
+    }
+    if (opinionVal) {
+      combinedValuationText += `\n${opinionVal}`;
+    }
+
+    this.drawRow([{ text: combinedValuationText, width: W, vAlign: 'top' }], 28, 6);
+
+    // Remarks Box (underlined header, no fallback)
+    const remBody = (fields.remarksText || '').trim();
+    const remarksCombined = remBody ? `<u>**REMARKS:-**</u>\n${remBody}` : '<u>**REMARKS:-**</u>';
 
     this.drawRow([
-      { text: `${remHeader}\n${remBody}`, width: W },
+      { text: remarksCombined, width: W, vAlign: 'top' },
     ], 38, 6);
 
     this.addSectionBreak(8);
@@ -1649,11 +1808,11 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.checkPageBreak(totalAnnexureH + 12);
 
     const annTitle = 'ANNEXURE - “A”';
-    const annTw = this.fontBold.widthOfTextAtSize(annTitle, FONT_SIZE);
+    const annTw = this.fontBold.widthOfTextAtSize(annTitle, FONT_SIZE_TITLE);
     this.page.drawText(annTitle, {
       x: MARGIN_L + (W - annTw) / 2,
       y: this.pdfY(this.cursorY) - 10,
-      size: FONT_SIZE,
+      size: FONT_SIZE_TITLE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
@@ -1772,7 +1931,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
       for (let pageIdx = 0; pageIdx < totalPhotoPages; pageIdx++) {
         this.addPage();
-        this.drawRow([{ text: 'PHOTOGRAPHS', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE }], 22, 4);
+        this.drawRow([{ text: 'PHOTOGRAPHS', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
         this.cursorY += 8;
 
         for (let row = 0; row < 3; row++) {
@@ -1831,7 +1990,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       const lmImg = await this.embedImgSafe(locMapBytes);
       if (lmImg) {
         this.addPage();
-        this.drawRow([{ text: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE }], 22, 4);
+        this.drawRow([{ text: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
         this.cursorY += 8;
         const locMapH = 520;
         const locMapY = this.pdfY(this.cursorY);
@@ -1853,7 +2012,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       const cmImg = await this.embedImgSafe(cadMapBytes);
       if (cmImg) {
         this.addPage();
-        this.drawRow([{ text: 'CADASTRAL MAP', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE }], 22, 4);
+        this.drawRow([{ text: 'CADASTRAL MAP', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
         this.cursorY += 10;
         const cadMapH = 520;
         const cadMapY = this.pdfY(this.cursorY);
@@ -1873,7 +2032,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       const smImg = await this.embedImgSafe(sketchBytes);
       if (smImg) {
         this.addPage();
-        this.drawRow([{ text: 'SKETCH MAP', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE }], 22, 4);
+        this.drawRow([{ text: 'SKETCH MAP', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
         this.cursorY += 10;
         const sketchH = 520;
         const sketchY = this.pdfY(this.cursorY);
@@ -1893,7 +2052,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       const bmImg = await this.embedImgSafe(benchBytes);
       if (bmImg) {
         this.addPage();
-        this.drawRow([{ text: 'BENCHMARK VALUATION', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE }], 22, 4);
+        this.drawRow([{ text: 'BENCHMARK VALUATION', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
         this.cursorY += 8;
         const benchH = 520;
         const benchY = this.pdfY(this.cursorY);
@@ -1912,13 +2071,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.addPage();
 
     const chkTitle = 'VALUATION REPORT CHECK LIST';
-    const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE);
+    const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE_TITLE);
     const chkX = MARGIN_L + (W - chkTw) / 2;
     const chkY = this.pdfY(this.cursorY) - 10;
     this.page.drawText(chkTitle, {
       x: chkX,
       y: chkY,
-      size: FONT_SIZE,
+      size: FONT_SIZE_TITLE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });

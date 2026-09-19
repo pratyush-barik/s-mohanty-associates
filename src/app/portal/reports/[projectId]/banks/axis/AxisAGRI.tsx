@@ -3040,7 +3040,7 @@ export default function AxisAGRI({
                           <input
                             type="text"
                             inputMode="decimal"
-                            className={`${inputCls} text-right font-medium text-xs`}
+                            className={`${inputCls} text-left font-medium text-xs`}
                             value={floor.plinthArea}
                             onChange={e => handleFloorChange(idx, 'plinthArea', e.target.value)}
                             disabled={isReadOnly}
@@ -3049,7 +3049,7 @@ export default function AxisAGRI({
                         <td className="p-2 border-r border-slate-100">
                           <input
                             type="text"
-                            className={`${inputCls} text-center text-xs`}
+                            className={`${inputCls} text-left text-xs`}
                             value={floor.roofHeight || ''}
                             onChange={e => handleFloorChange(idx, 'roofHeight', e.target.value)}
                             disabled={isReadOnly}
@@ -3061,7 +3061,7 @@ export default function AxisAGRI({
                             type="text"
                             inputMode="numeric"
                             pattern="[0-9]*"
-                            className={`${inputCls} text-center text-xs`}
+                            className={`${inputCls} text-left text-xs`}
                             value={floor.ageYears || ''}
                             onChange={e => handleFloorChange(idx, 'ageYears', e.target.value)}
                             disabled={isReadOnly}
@@ -3072,7 +3072,7 @@ export default function AxisAGRI({
                           <input
                             type="text"
                             inputMode="decimal"
-                            className={`${inputCls} text-right text-xs`}
+                            className={`${inputCls} text-left text-xs`}
                             value={floor.replacementRate || ''}
                             onChange={e => handleFloorChange(idx, 'replacementRate', e.target.value)}
                             disabled={isReadOnly}
@@ -3082,7 +3082,7 @@ export default function AxisAGRI({
                         <td className="p-2 border-r border-slate-100">
                           <input
                             type="text"
-                            className={`${inputCls} text-right font-medium text-xs bg-slate-50`}
+                            className={`${inputCls} text-left font-medium text-xs bg-slate-50`}
                             value={floor.estimatedCost || ''}
                             onChange={e => handleFloorChange(idx, 'estimatedCost', e.target.value)}
                             disabled={isReadOnly}
@@ -3091,7 +3091,7 @@ export default function AxisAGRI({
                         <td className="p-2 border-r border-slate-100">
                           <input
                             type="text"
-                            className={`${inputCls} text-right text-rose-600 font-medium text-xs bg-slate-50`}
+                            className={`${inputCls} text-left text-rose-600 font-medium text-xs bg-slate-50`}
                             value={floor.depreciationAmount || ''}
                             onChange={e => handleFloorChange(idx, 'depreciationAmount', e.target.value)}
                             disabled={isReadOnly}
@@ -3100,7 +3100,7 @@ export default function AxisAGRI({
                         <td className="p-2">
                           <input
                             type="text"
-                            className={`${inputCls} text-right text-emerald-700 font-bold text-xs bg-emerald-50/50`}
+                            className={`${inputCls} text-left text-emerald-700 font-bold text-xs bg-emerald-50/50`}
                             value={floor.netValue || ''}
                             onChange={e => handleFloorChange(idx, 'netValue', e.target.value)}
                             disabled={isReadOnly}
