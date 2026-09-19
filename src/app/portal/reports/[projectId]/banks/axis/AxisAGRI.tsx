@@ -1348,7 +1348,7 @@ export default function AxisAGRI({
                   value={fields.pincode || ''}
                   onChange={e => handleChange('pincode', sanitizePincode(e.target.value))}
                   disabled={isReadOnly}
-                  placeholder="e.g. 761018"
+                  placeholder=""
                 />
               </Field>
             </div>
@@ -1386,7 +1386,7 @@ export default function AxisAGRI({
                   value={fields.latitude || ''}
                   onChange={e => handlePositiveDecimalChange('latitude', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. 19.511361"
+                  placeholder=""
                 />
               </Field>
 
@@ -1398,7 +1398,7 @@ export default function AxisAGRI({
                   value={fields.longitude || ''}
                   onChange={e => handlePositiveDecimalChange('longitude', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="e.g. 84.907833"
+                  placeholder=""
                 />
               </Field>
             </div>
