@@ -652,7 +652,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       isLabel?: boolean;
     }[],
     minH: number = 20,
-    rowPad: number = 6
+    rowPad: number = 6,
+    startX: number = MARGIN_L
   ): number {
     let maxLines = 1;
     let maxFsInRow = FONT_SIZE;
@@ -676,7 +677,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.checkPageBreak(neededH);
 
     const y = this.pdfY(this.cursorY);
-    let curX = MARGIN_L;
+    let curX = startX;
 
     for (const col of cols) {
       const colFs = col.fontSize || FONT_SIZE;
@@ -1620,37 +1621,40 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.addSectionBreak(8);
 
-    // Details of Valuation Table (8 columns)
-    this.drawRow([{ text: 'DETAILS OF VALUATION', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE }], 20, 4);
+    // Details of Valuation Table (8 columns) — 20pt wider than standard content width
+    const TABLE_EXTRA = 20;
+    const TABLE_X = MARGIN_L - TABLE_EXTRA / 2; // shift left 10pt
+    const TABLE_W = W + TABLE_EXTRA;             // total table width = 507.28pt
 
-    const tW = [
-      76, // PARTICULARS OF ITEMS
-      48, // PLINTH AREA IN SQFT
-      44, // ROOF HEIGHT
-      50, // AGE OF BUILDING IN YEARS
-      64, // REPLACEMENT RATE OF CONSTRUCTION (RS.)
-      76, // ESTIMATED REPLACEMENT COST OF CONSTRUCTION (RS.)
-      61, // DEPRECIATION AMOUNT (1% per Annum)
-      68.28, // NET VALUE AFTER DEPRECIATION
-    ];
+    // Column widths scaled proportionally from original to TABLE_W
+    const tWBase = [76, 48, 44, 50, 64, 76, 61, 68.28];
+    const tWSum = tWBase.reduce((a, b) => a + b, 0);
+    const tWScale = TABLE_W / tWSum;
+    // Round all but last column; last absorbs rounding remainder
+    const tW = tWBase.map((w, i) =>
+      i < tWBase.length - 1 ? Math.round(w * tWScale) : 0
+    );
+    tW[tW.length - 1] = TABLE_W - tW.slice(0, -1).reduce((a, b) => a + b, 0);
+
+    this.drawRow([{ text: 'DETAILS OF VALUATION', width: TABLE_W, isHeader: true, bold: true, fontSize: FONT_SIZE }], 20, 4, TABLE_X);
 
     this.drawRow([
-      { text: 'PARTICULARS OF ITEMS', width: tW[0], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
-      { text: 'PLINTH AREA IN SQFT', width: tW[1], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
-      { text: 'ROOF HEIGHT', width: tW[2], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
-      { text: 'AGE OF BUILDING IN YEARS', width: tW[3], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
-      { text: 'REPLACEMENT RATE OF CONSTRUCTION (RS.)', width: tW[4], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
-      { text: 'ESTIMATED REPLACEMENT COST OF CONSTRUCTION (RS.)', width: tW[5], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
-      { text: 'DEPRECIATION AMOUNT (1% per Annum)', width: tW[6], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
-      { text: 'NET VALUE AFTER DEPRECIATION', width: tW[7], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
-    ], 30, 4);
+      { text: 'Particulars Of Items',                             width: tW[0], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'Plinth Area In Sqft',                             width: tW[1], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'Roof Height',                                     width: tW[2], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'Age Of Building In Years',                        width: tW[3], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'Replacement Rate Of Construction (Rs.)',          width: tW[4], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'Estimated Replacement Cost Of Construction (Rs.)',width: tW[5], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'Depreciation Amount (1% per Annum)',              width: tW[6], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'Net Value After Depreciation',                    width: tW[7], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+    ], 30, 4, TABLE_X);
 
     const costFloors = fields.floors && fields.floors.length > 0 ? fields.floors : [];
 
     if (costFloors.length === 0) {
       this.drawRow([
-        { text: 'No construction/floor data provided', width: W, align: 'center', fontSize: FONT_SIZE },
-      ], 20, 4);
+        { text: 'No construction/floor data provided', width: TABLE_W, align: 'center', fontSize: FONT_SIZE },
+      ], 20, 4, TABLE_X);
     } else {
       for (const cf of costFloors) {
         const cfName = String(cf.floorName || (cf as any).name || 'Floor').toUpperCase();
@@ -1664,7 +1668,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
           { text: cf.estimatedCost ? `Rs. ${cf.estimatedCost}` : '-', width: tW[5], align: 'left', fontSize: FONT_SIZE },
           { text: cf.depreciationAmount ? `Rs. ${cf.depreciationAmount}` : '-', width: tW[6], align: 'left', fontSize: FONT_SIZE },
           { text: cf.netValue ? `Rs. ${cf.netValue}` : '-', width: tW[7], align: 'left', fontSize: FONT_SIZE },
-        ], 20, 4);
+        ], 20, 4, TABLE_X);
       }
     }
 
@@ -1673,7 +1677,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.drawRow([
       { text: 'Total', width: nonNetWidth, align: 'right', bold: true, isLabel: true, fontSize: FONT_SIZE },
       { text: fields.totalBasicValueBuilding ? `Rs. ${fields.totalBasicValueBuilding}` : 'Rs. 0.00', width: tW[7], align: 'left', bold: true, fontSize: FONT_SIZE },
-    ], 20, 4);
+    ], 20, 4, TABLE_X);
 
     this.cursorY += 8;
 
@@ -2211,6 +2215,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // PAGE 10: VALUATION REPORT CHECKLIST & SIGNATURE BLOCK
     // =========================================================================
     this.addPage();
+    this.cursorY = -30; // reduce effective top margin for this page only
 
     const chkTitle = 'VALUATION REPORT CHECK LIST';
     const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE_HEADER);
