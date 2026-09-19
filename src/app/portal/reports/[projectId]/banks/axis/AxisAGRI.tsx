@@ -888,7 +888,9 @@ export default function AxisAGRI({
   // PDF Generation
   const generatePDFBytes = async (): Promise<Uint8Array> => {
     // Fetch property photos
-    const propImages = fields.propertyImages || [];
+    const propImages = (fields.propertyImages && fields.propertyImages.length > 0)
+      ? fields.propertyImages
+      : (fields.propertyPhotos || fields.property_images || []);
     const photoBytesList = await Promise.all(propImages.map(fetchBytes));
     const photos = propImages.map((url, idx) => ({
       bytes: photoBytesList[idx] as Uint8Array,
@@ -896,20 +898,28 @@ export default function AxisAGRI({
     })).filter(p => p.bytes && p.bytes.length > 0);
 
     // Fetch location maps
-    const locImages = fields.locationMapImages || [];
-    const locBytes = (await Promise.all(locImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+    const locImages = (fields.locationMapImages && fields.locationMapImages.length > 0)
+      ? fields.locationMapImages
+      : (fields.locationMapImage ? [fields.locationMapImage] : []);
+    const locBytes = (await Promise.all(locImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
 
     // Fetch cadastral maps
-    const cadImages = fields.cadastralMapImages || [];
-    const cadBytes = (await Promise.all(cadImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+    const cadImages = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0)
+      ? fields.cadastralMapImages
+      : (fields.cadastralMapImage ? [fields.cadastralMapImage] : (fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : [])));
+    const cadBytes = (await Promise.all(cadImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
 
     // Fetch sketch maps
-    const sketchImages = fields.sketchMapImages || [];
-    const sketchBytes = (await Promise.all(sketchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+    const sketchImages = (fields.sketchMapImages && fields.sketchMapImages.length > 0)
+      ? fields.sketchMapImages
+      : (fields.sketchMapImage ? [fields.sketchMapImage] : []);
+    const sketchBytes = (await Promise.all(sketchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
 
     // Fetch benchmark screenshots
-    const benchImages = fields.benchmarkImages || [];
-    const benchBytes = (await Promise.all(benchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+    const benchImages = (fields.benchmarkImages && fields.benchmarkImages.length > 0)
+      ? fields.benchmarkImages
+      : (fields.benchmarkImage ? [fields.benchmarkImage] : (fields.benchmarkValuationImage ? [fields.benchmarkValuationImage] : []));
+    const benchBytes = (await Promise.all(benchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
 
     const renderer = new PDFAxisAgriRenderer();
     await renderer.init();
@@ -3371,19 +3381,6 @@ export default function AxisAGRI({
         ═══════════════════════════════════════════════════════════════ */}
         <Section id="sec-13" title="Undertaking" number={13} defaultOpen>
           <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 shadow-xs space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-blue-200/80 pb-3 gap-2">
-              <div>
-                <h3 className="font-semibold text-blue-800 text-sm tracking-wide uppercase flex items-center gap-2">
-                  <span>✍️</span> Statutory Undertaking
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Static 7-point statutory undertaking as rendered on Page 6 of the Axis Bank valuation report.
-                </p>
-              </div>
-              <span className="text-[10px] font-bold text-blue-700 bg-blue-100 px-2.5 py-1 rounded-full uppercase tracking-wider self-start sm:self-auto">
-                Static / Locked
-              </span>
-            </div>
 
             {/* Static Undertaking Points */}
             <div className="bg-white rounded-xl p-4 border border-blue-200 shadow-xs space-y-2.5 text-xs text-slate-700">

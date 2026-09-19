@@ -39,12 +39,74 @@ export const DEFAULT_LETTERHEAD_PATH = PDFGeneralRenderer.DEFAULT_LETTERHEAD_PAT
 export const fetchDefaultLetterhead = PDFGeneralRenderer.fetchDefaultLetterhead;
 
 /**
- * Safely fetches an image or asset from a URL into Uint8Array in the browser.
+ * Converts any image format (WebP, AVIF, PNG, etc.) to JPEG Uint8Array via offscreen canvas in the browser.
+ */
+export async function convertToJpgBytes(bytes: Uint8Array): Promise<Uint8Array | null> {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return null;
+  try {
+    const blob = new Blob([bytes]);
+    const blobUrl = URL.createObjectURL(blob);
+    return await new Promise<Uint8Array | null>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || img.width || 800;
+          canvas.height = img.naturalHeight || img.height || 600;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { resolve(null); return; }
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob(async (jpgBlob) => {
+            if (!jpgBlob) { resolve(null); return; }
+            const arrayBuf = await jpgBlob.arrayBuffer();
+            resolve(new Uint8Array(arrayBuf));
+          }, 'image/jpeg', 0.92);
+        } catch {
+          resolve(null);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(blobUrl);
+        resolve(null);
+      };
+      img.src = blobUrl;
+    });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Safely fetches an image or asset from a URL or data-URI into Uint8Array in the browser.
  */
 export async function fetchBytes(url?: string | null): Promise<Uint8Array | null> {
   if (!url || !url.trim()) return null;
+  const trimmed = url.trim();
+
+  // Handle data URLs directly
+  if (trimmed.startsWith('data:')) {
+    try {
+      const base64Index = trimmed.indexOf(';base64,');
+      if (base64Index !== -1) {
+        const base64 = trimmed.substring(base64Index + 8);
+        const binaryString = atob(base64);
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes;
+      }
+    } catch {
+      // fallback to fetch
+    }
+  }
+
   try {
-    const res = await fetch(url);
+    const res = await fetch(trimmed);
     if (!res.ok) return null;
     const buf = await res.arrayBuffer();
     return new Uint8Array(buf);
@@ -561,6 +623,29 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   }
 
   /**
+   * Safe image embed helper (tries JPG -> PNG -> Canvas convert to JPG)
+   */
+  async embedImgSafe(bytes?: Uint8Array | null): Promise<any | null> {
+    if (!bytes || bytes.length === 0) return null;
+    try {
+      return await this.doc.embedJpg(bytes);
+    } catch { /* ignore */ }
+
+    try {
+      return await this.doc.embedPng(bytes);
+    } catch { /* ignore */ }
+
+    try {
+      const converted = await convertToJpgBytes(bytes);
+      if (converted && converted.length > 0) {
+        return await this.doc.embedJpg(converted);
+      }
+    } catch { /* ignore */ }
+
+    return null;
+  }
+
+  /**
    * Draw an Image on the page with an optional caption and bounding border
    */
   async drawImageSection(imageBytes: Uint8Array, caption = '', maxH = 260, drawBorder = true): Promise<void> {
@@ -569,11 +654,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     const hasCaption = !!(caption && caption.trim().length > 0);
     this.checkPageBreak(maxH + (hasCaption ? 20 : 0));
     try {
-      let img = null;
-      try { img = await this.doc.embedPng(imageBytes); } catch { /* ignore */ }
-      if (!img) {
-        try { img = await this.doc.embedJpg(imageBytes); } catch { /* ignore */ }
-      }
+      const img = await this.embedImgSafe(imageBytes);
       if (!img) return;
 
       const scale = Math.min(CONTENT_W / img.width, maxH / img.height, 1);
