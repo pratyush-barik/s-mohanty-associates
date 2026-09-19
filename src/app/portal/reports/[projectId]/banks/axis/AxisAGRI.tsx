@@ -3490,7 +3490,7 @@ export default function AxisAGRI({
               <Field label="Basis of Valuation">
                 <textarea
                   rows={3}
-                  className={inputCls}
+                  className={`${inputCls} text-justify`}
                   value={fields.basisOfValuation || ''}
                   onChange={e => handleChange('basisOfValuation', e.target.value)}
                   disabled={isReadOnly}
@@ -3501,7 +3501,7 @@ export default function AxisAGRI({
               <Field label="Opinion of Market Value">
                 <textarea
                   rows={3}
-                  className={inputCls}
+                  className={`${inputCls} text-justify`}
                   value={fields.opinionOfMarketValue || ''}
                   onChange={e => handleChange('opinionOfMarketValue', e.target.value)}
                   disabled={isReadOnly}
@@ -3512,7 +3512,7 @@ export default function AxisAGRI({
               <Field label="Remark">
                 <textarea
                   rows={6}
-                  className={inputCls}
+                  className={`${inputCls} text-justify`}
                   value={fields.remarksText || ''}
                   onChange={e => handleChange('remarksText', e.target.value)}
                   disabled={isReadOnly}
@@ -3545,7 +3545,7 @@ export default function AxisAGRI({
               ].map((point, idx) => (
                 <div key={idx} className="flex items-start gap-2">
                   <span className="text-blue-600 font-bold leading-relaxed">•</span>
-                  <span className="leading-relaxed">{point}</span>
+                  <span className="leading-relaxed text-justify">{point}</span>
                 </div>
               ))}
             </div>
@@ -3600,7 +3600,7 @@ export default function AxisAGRI({
               <Field label="Method of Valuation Adopted">
                 <input
                   type="text"
-                  className={inputCls}
+                  className={`${inputCls} text-justify`}
                   value={fields.annexureAMethodOfValuation || ''}
                   onChange={e => handleChange('annexureAMethodOfValuation', e.target.value)}
                   disabled={isReadOnly}
@@ -3611,7 +3611,7 @@ export default function AxisAGRI({
               <Field label="Basis of Building Value">
                 <input
                   type="text"
-                  className={inputCls}
+                  className={`${inputCls} text-justify`}
                   value={fields.annexureABasisBuildingValue || ''}
                   onChange={e => handleChange('annexureABasisBuildingValue', e.target.value)}
                   disabled={isReadOnly}
@@ -3622,7 +3622,7 @@ export default function AxisAGRI({
               <Field label="Regarding Land">
                 <textarea
                   rows={3}
-                  className={inputCls}
+                  className={`${inputCls} text-justify`}
                   value={fields.annexureARegardingLand || ''}
                   onChange={e => handleChange('annexureARegardingLand', e.target.value)}
                   disabled={isReadOnly}
@@ -3632,7 +3632,7 @@ export default function AxisAGRI({
               <Field label="Regarding Building">
                 <textarea
                   rows={3}
-                  className={inputCls}
+                  className={`${inputCls} text-justify`}
                   value={fields.annexureARegardingBuilding || ''}
                   onChange={e => handleChange('annexureARegardingBuilding', e.target.value)}
                   disabled={isReadOnly}
@@ -3642,7 +3642,7 @@ export default function AxisAGRI({
               <Field label="Basis of Arriving at the Land Rate">
                 <textarea
                   rows={3}
-                  className={inputCls}
+                  className={`${inputCls} text-justify`}
                   value={fields.annexureABasisLandRate || ''}
                   onChange={e => handleChange('annexureABasisLandRate', e.target.value)}
                   disabled={isReadOnly}
