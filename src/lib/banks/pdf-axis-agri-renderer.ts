@@ -1416,10 +1416,10 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     if (!hasBasementInFloors && fields.basementArea && fields.basementArea !== 'Not Applicable' && fields.basementArea !== 'NA' && !isNaN(bAreaNum) && bAreaNum > 0) {
       const bFormatted = fields.basementArea.includes('Sft') ? fields.basementArea : `${fields.basementArea} Sft`;
       this.drawRow([
-        { text: 'Basement (in Sq.Ft.) Measured (RCC)', width: W * 0.3, isLabel: true },
+        { text: 'Basement (in Sq.Ft.)', width: W * 0.3, isLabel: true },
         { text: bFormatted, width: W * 0.2 },
         { text: formatFloorUsageOptions((fields as any).basementUsage), width: W * 0.5 },
-      ], 22, 4);
+      ], 20, 4);
     }
 
     // Standalone Stilt if provided and not already included in floors
@@ -1428,22 +1428,25 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     if (!hasStiltInFloors && fields.stiltArea && fields.stiltArea !== 'Not Applicable' && fields.stiltArea !== 'NA' && !isNaN(sAreaNum) && sAreaNum > 0) {
       const sFormatted = fields.stiltArea.includes('Sft') ? fields.stiltArea : `${fields.stiltArea} Sft`;
       this.drawRow([
-        { text: 'Stilt (in Sq.Ft.) Measured (RCC)', width: W * 0.3, isLabel: true },
+        { text: 'Stilt (in Sq.Ft.)', width: W * 0.3, isLabel: true },
         { text: sFormatted, width: W * 0.2 },
         { text: formatFloorUsageOptions((fields as any).stiltUsage), width: W * 0.5 },
-      ], 22, 4);
+      ], 20, 4);
     }
 
     // Floor rows entered in Floor-Wise Break Up & Usage Details
     for (const fl of floors) {
       const pArea = String(fl.plinthArea ?? (fl as any).area ?? '0.00');
       const pAreaFormatted = pArea.includes('Sft') ? pArea : `${pArea} Sft`;
-      const flName = String(fl.floorName || (fl as any).name || 'Floor');
+      const flName = String(fl.floorName || (fl as any).name || 'Floor').trim();
+      const flLabel = (flName.toLowerCase().includes('sq.ft') || flName.toLowerCase().includes('sft'))
+        ? flName
+        : `${flName} (in Sq.Ft.)`;
       this.drawRow([
-        { text: `${flName} (in Sq.Ft.) Measured (RCC)`, width: W * 0.3, isLabel: true },
+        { text: flLabel, width: W * 0.3, isLabel: true },
         { text: pAreaFormatted, width: W * 0.2 },
         { text: formatFloorUsageOptions(fl.usage), width: W * 0.5 },
-      ], 22, 4);
+      ], 20, 4);
     }
 
     const formatBUA = (val?: string): string => {
@@ -1461,9 +1464,9 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const totalBUADisplay = formatBUA(fields.totalBUA);
     const totalCarpetDisplay = formatCarpet(fields.totalCarpetArea);
 
-    // Total Built Up Area & Total Carpet Area (side-by-side, wide labels so they don't wrap)
-    const buaLabelW = W * 0.35;
-    const buaValW   = W * 0.15;
+    // Total Built Up Area & Total Carpet Area (aligned 30%/20%/30%/20% to match floor rows seamlessly)
+    const buaLabelW = W * 0.3;
+    const buaValW   = W * 0.2;
     this.drawRow([
       { text: 'Total Built Up area (in Sq.Ft.)', width: buaLabelW, isLabel: true, bold: true },
       { text: totalBUADisplay, width: buaValW, bold: true },
