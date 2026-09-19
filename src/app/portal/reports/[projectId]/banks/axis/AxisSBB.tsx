@@ -3247,12 +3247,17 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <th className="p-3 w-48">ITEM DESCRIPTION</th>
                       <th className="p-3">AREA (SQ.FT)</th>
                       <th className="p-3">GUIDELINE RATE PER SQ.FT (RS.)</th>
-                      <th className="p-3">GOVT. GUIDELINE VALUE (RS.)</th>
+                      <th className="p-3">
+                        GOVT. GUIDELINE VALUE (RS.){' '}
+                        <span style={{ color: 'red', fontWeight: 'bold', display: 'block', fontSize: '10px', marginTop: '4px', textTransform: 'none' }}>
+                          [Formula: AREA (SQ.FT) * GUIDELINE RATE PER SQ.FT (RS.) = GOVT. GUIDELINE VALUE (RS.)]
+                        </span>
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-purple-100">
                     <tr>
-                      <td className="p-3 font-semibold text-gray-700">Land <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * GUIDELINE RATE PER SQ.FT (RS.) = GOVT. GUIDELINE VALUE (RS.)]</span></td>
+                      <td className="p-3 font-semibold text-gray-700 align-top">Land</td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">
@@ -3270,16 +3275,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
-                          <div className="flex items-center justify-between">
-                            {renderEditSwitch('axisSbbGovtLandAmount', !!fields.axisSbbGovtLandAmountIsNA)}
-                            {renderNaToggle('axisSbbGovtLandAmount')}
-                          </div>
-                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbGovtLandAmountIsNA ? '' : (fields.axisSbbGovtLandAmountEditOn ? (fields.axisSbbGovtLandAmount || '') : govtLandAmount.toFixed(2))} onChange={e => handleChange('axisSbbGovtLandAmount', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtLandAmountIsNA || !fields.axisSbbGovtLandAmountEditOn} />
+                          <div className="flex justify-end">{renderNaToggle('axisSbbGovtLandAmount')}</div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 cursor-not-allowed" value={fields.axisSbbGovtLandAmountIsNA ? '' : govtLandAmount.toFixed(2)} disabled={true} />
                         </div>
                       </td>
                     </tr>
                     <tr>
-                      <td className="p-3 font-semibold text-gray-700">Building <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * GUIDELINE RATE PER SQ.FT (RS.) = GOVT. GUIDELINE VALUE (RS.)]</span></td>
+                      <td className="p-3 font-semibold text-gray-700 align-top">Building</td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">
@@ -3297,11 +3299,8 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
-                          <div className="flex items-center justify-between">
-                            {renderEditSwitch('axisSbbGovtBuildingAmount', !!fields.axisSbbGovtBuildingAmountIsNA)}
-                            {renderNaToggle('axisSbbGovtBuildingAmount')}
-                          </div>
-                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbGovtBuildingAmountIsNA ? '' : (fields.axisSbbGovtBuildingAmountEditOn ? (fields.axisSbbGovtBuildingAmount || '') : govtBuildingAmount.toFixed(2))} onChange={e => handleChange('axisSbbGovtBuildingAmount', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtBuildingAmountIsNA || !fields.axisSbbGovtBuildingAmountEditOn} />
+                          <div className="flex justify-end">{renderNaToggle('axisSbbGovtBuildingAmount')}</div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 cursor-not-allowed" value={fields.axisSbbGovtBuildingAmountIsNA ? '' : govtBuildingAmount.toFixed(2)} disabled={true} />
                         </div>
                       </td>
                     </tr>
