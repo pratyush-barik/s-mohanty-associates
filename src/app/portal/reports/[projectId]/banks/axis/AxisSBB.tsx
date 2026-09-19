@@ -1644,9 +1644,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
             <td className="p-3 font-bold text-xs text-gray-700 w-1/4 align-top">
               <div className="flex items-center justify-between">
                 <span>{dir.toUpperCase()}:</span>
-                <div className="flex items-center space-x-2">
-                  {renderEditSwitch(editField, false)}
-                </div>
               </div>
             </td>
             <td className="p-2 border-l border-r w-3/8 align-top">
@@ -1654,12 +1651,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 {renderNaToggle(deedField)}
               </div>
               <textarea
-                className={`${inputCls} resize-y ${!fields[`${editField}EditOn`] && !fields[`${deedField}IsNA`] ? 'bg-slate-50 border-slate-300' : ''}`}
+                className={`${inputCls} resize-y`}
                 rows={1}
                 value={fields[`${deedField}IsNA`] ? 'NA' : (fields[deedField] || '')}
                 onChange={e => handleChange(deedField, e.target.value.toUpperCase())}
-                readOnly={!fields[`${editField}EditOn`] || !!fields[`${deedField}IsNA`]}
-                disabled={isReadOnly || (!fields[`${editField}EditOn`] && !fields[`${deedField}IsNA`])}
+                readOnly={!!fields[`${deedField}IsNA`]}
+                disabled={isReadOnly || !!fields[`${deedField}IsNA`]}
                 placeholder={`AS PER SALE DEED`}
               />
             </td>
@@ -1668,12 +1665,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 {renderNaToggle(actualField)}
               </div>
               <textarea
-                className={`${inputCls} resize-y ${!fields[`${editField}EditOn`] && !fields[`${actualField}IsNA`] ? 'bg-slate-50 border-slate-300' : ''}`}
+                className={`${inputCls} resize-y`}
                 rows={1}
                 value={fields[`${actualField}IsNA`] ? 'NA' : (fields[actualField] || '')}
                 onChange={e => handleChange(actualField, e.target.value.toUpperCase())}
-                readOnly={!fields[`${editField}EditOn`] || !!fields[`${actualField}IsNA`]}
-                disabled={isReadOnly || (!fields[`${editField}EditOn`] && !fields[`${actualField}IsNA`])}
+                readOnly={!!fields[`${actualField}IsNA`]}
+                disabled={isReadOnly || !!fields[`${actualField}IsNA`]}
                 placeholder={`AS PER ACTUAL SITE`}
               />
             </td>
