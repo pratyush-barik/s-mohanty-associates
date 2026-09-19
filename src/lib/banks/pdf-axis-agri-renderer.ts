@@ -2175,12 +2175,12 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // PAGE 10: VALUATION REPORT CHECKLIST & SIGNATURE BLOCK
     // =========================================================================
     this.addPage();
-    this.cursorY = -30; // reduce effective top margin for this page only
+    this.cursorY = 8;
 
     const chkTitle = 'VALUATION REPORT CHECK LIST';
     const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE_HEADER);
     const chkX = MARGIN_L + (W - chkTw) / 2;
-    const chkY = this.pdfY(this.cursorY) - 8;
+    const chkY = this.pdfY(this.cursorY) - 10;
     this.page.drawText(chkTitle, {
       x: chkX,
       y: chkY,
@@ -2194,7 +2194,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       thickness: 1,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 16;
+    this.cursorY += 18;
 
     // Subtitle (Dynamic from Plot No / S.No / G.No / Khasra No & Property Specifics)
     const rawSpecifics = (fields.plotKhataDetails || '').trim();
