@@ -257,6 +257,75 @@ export interface AxisAgriReportFields {
 
 export class PDFAxisAgriRenderer extends PDFBankRenderer {
   /**
+   * Parse a text line with potential markdown bold tokens (**bold**) into segments.
+   */
+  private parseLineSegments(line: string): { text: string; bold: boolean }[] {
+    if (!line.includes('**')) {
+      return [{ text: line, bold: false }];
+    }
+    const segments: { text: string; bold: boolean }[] = [];
+    const parts = line.split('**');
+    for (let i = 0; i < parts.length; i++) {
+      if (!parts[i]) continue;
+      // Odd indices are inside **...**, even indices are outside
+      const isBold = i % 2 === 1;
+      segments.push({ text: parts[i], bold: isBold });
+    }
+    return segments;
+  }
+
+  /**
+   * Measure text width taking into account **bold** segments.
+   */
+  private measureRichLineWidth(line: string, fontSize: number, defaultBold = false): number {
+    const segments = this.parseLineSegments(line);
+    let w = 0;
+    for (const seg of segments) {
+      const font = (seg.bold || defaultBold) ? this.fontBold : this.fontRegular;
+      w += font.widthOfTextAtSize(seg.text, fontSize);
+    }
+    return w;
+  }
+
+  /**
+   * Wrap rich text that may contain **bold** tokens without breaking words.
+   */
+  private wrapRichText(text: string, maxWidth: number, fontSize: number, defaultBold = false): string[] {
+    const clean = this.sanitizeText(text);
+    if (!clean) return [];
+
+    if (!clean.includes('**')) {
+      return this.wrapText(clean, maxWidth, fontSize, defaultBold);
+    }
+
+    const paragraphs = clean.split('\n');
+    const allLines: string[] = [];
+
+    for (const para of paragraphs) {
+      const words = para.split(' ');
+      let currentLine = '';
+
+      for (const word of words) {
+        if (!word) continue;
+        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testW = this.measureRichLineWidth(testLine, fontSize, defaultBold);
+
+        if (testW <= maxWidth || !currentLine) {
+          currentLine = testLine;
+        } else {
+          allLines.push(currentLine);
+          currentLine = word;
+        }
+      }
+      if (currentLine) {
+        allLines.push(currentLine);
+      }
+    }
+
+    return allLines;
+  }
+
+  /**
    * Draw a styled rectangular cell using the standard bank palette.
    */
   drawCell(
@@ -279,11 +348,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     } = {}
   ): void {
     const fontSize = options.fontSize || (options.isHeader && w >= CONTENT_W * 0.9 ? FONT_SIZE_HEADER : FONT_SIZE);
-    const font = options.italic
-      ? this.fontItalic
-      : options.bold || options.isHeader || options.isLabel || options.highlight
-      ? this.fontBold
-      : this.fontRegular;
+    const isBaseBold = !!(options.bold || options.isHeader || options.isLabel || options.highlight);
     const vAlign = options.vAlign || 'middle';
     const align = options.align || 'left';
 
@@ -316,12 +381,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const padX = 4;
     const padY = 3;
     const maxTextW = Math.max(10, w - padX * 2);
-    const lines = this.wrapText(
-      cleanText,
-      maxTextW,
-      fontSize,
-      !!(options.bold || options.isHeader || options.isLabel || options.highlight)
-    );
+    const lines = this.wrapRichText(cleanText, maxTextW, fontSize, isBaseBold);
     const lineH = fontSize * LINE_HEIGHT;
     const totalTextH = lines.length * lineH;
 
@@ -333,22 +393,34 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     }
 
     for (const line of lines) {
+      const lineW = this.measureRichLineWidth(line, fontSize, isBaseBold);
       let lineX = x + padX;
       if (align === 'center') {
-        const tw = font.widthOfTextAtSize(line, fontSize);
-        lineX = x + (w - tw) / 2;
+        lineX = x + (w - lineW) / 2;
       } else if (align === 'right') {
-        const tw = font.widthOfTextAtSize(line, fontSize);
-        lineX = x + w - padX - tw;
+        lineX = x + w - padX - lineW;
       }
 
-      this.page.drawText(line, {
-        x: Math.max(x + 1, lineX),
-        y: startY,
-        size: fontSize,
-        font,
-        color: rgb(0, 0, 0),
-      });
+      const segments = this.parseLineSegments(line);
+      let curSegX = lineX;
+
+      for (const seg of segments) {
+        const segFont = options.italic
+          ? this.fontItalic
+          : (seg.bold || isBaseBold)
+          ? this.fontBold
+          : this.fontRegular;
+
+        this.page.drawText(seg.text, {
+          x: Math.max(x + 1, curSegX),
+          y: startY,
+          size: fontSize,
+          font: segFont,
+          color: rgb(0, 0, 0),
+        });
+
+        curSegX += segFont.widthOfTextAtSize(seg.text, fontSize);
+      }
 
       startY -= lineH;
     }
@@ -378,7 +450,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     for (const col of cols) {
       const fs = col.fontSize || FONT_SIZE;
       const isBold = !!(col.bold || col.isHeader || col.isLabel || col.highlight);
-      const lines = this.wrapText(this.sanitizeText(col.text), Math.max(10, col.width - 8), fs, isBold);
+      const lines = this.wrapRichText(this.sanitizeText(col.text), Math.max(10, col.width - 8), fs, isBold);
       if (lines.length > maxLines) maxLines = lines.length;
     }
 
@@ -1008,6 +1080,26 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.addSectionBreak(8);
 
+    // Helper to format all merged usage options and bold ONLY the selected option with [X]
+    const formatFloorUsageOptions = (usage?: string): string => {
+      const u = String(usage || '').toLowerCase().trim();
+      const isStorage = u === 'storage' || (u.includes('storage') && !u.includes('parking') && !u.includes('office'));
+      const isOffice = u === 'office' || (u.includes('office') && !u.includes('residential'));
+      const isIndustrial = u === 'industrial' || u.includes('industrial');
+      const isParking = u === 'parking' || u.includes('parking');
+      const isCommercial = u === 'commercial' || (u.includes('commercial') && !u.includes('residential') && !u.includes('office'));
+      const isResidential = u === 'residential' || u.includes('residential');
+
+      const optStorage = isStorage ? '**[X] Storage**' : '[ ] Storage';
+      const optOffice = isOffice ? '**[X] Office**' : '[ ] Office';
+      const optIndustrial = isIndustrial ? '**[X] Industrial**' : '[ ] Industrial';
+      const optParking = isParking ? '**[X] Parking**' : '[ ] Parking';
+      const optCommercial = isCommercial ? '**[X] Commercial**' : '[ ] Commercial';
+      const optResidential = isResidential ? '**[X] Residential**' : '[ ] Residential';
+
+      return `${optStorage}   ${optOffice}   ${optIndustrial}   ${optParking}   ${optCommercial}   ${optResidential}`;
+    };
+
     // Floor Wise Break up Table
     this.drawRow([
       { text: 'Floor wise break up as follows', width: W * 0.5, isHeader: true, bold: true },
@@ -1018,29 +1110,27 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.drawRow([
       { text: 'Basement (in Sq.Ft.)', width: W * 0.3, isLabel: true },
       { text: fields.basementArea || 'Not Applicable', width: W * 0.2 },
-      { text: `${check(false)} Storage  ${check(false)} Parking  ${check(false)} Commercial  ${check(false)} Residential`, width: W * 0.5 },
-    ], 18, 4);
+      { text: formatFloorUsageOptions((fields as any).basementUsage), width: W * 0.5 },
+    ], 22, 4);
 
     this.drawRow([
       { text: 'Stilt (in Sq.Ft.)', width: W * 0.3, isLabel: true },
       { text: fields.stiltArea || 'Not Applicable', width: W * 0.2 },
-      { text: `${check(false)} Storage  ${check(false)} Parking  ${check(false)} Commercial  ${check(false)} Residential`, width: W * 0.5 },
-    ], 18, 4);
+      { text: formatFloorUsageOptions((fields as any).stiltUsage), width: W * 0.5 },
+    ], 22, 4);
 
     // Floor rows
     const floors = fields.floors && fields.floors.length > 0 ? fields.floors : [];
 
     for (const fl of floors) {
-      const u = String(fl.usage || '').toLowerCase();
-      const uText = `${check(u.includes('office') || u.includes('industrial'))} ${u.includes('industrial') ? 'Industrial' : 'Office'}   ${check(u.includes('parking'))} Parking   ${check(u.includes('commercial'))} Commercial   ${check(u.includes('residential'))} Residential`;
       const pArea = String(fl.plinthArea ?? (fl as any).area ?? '0.00');
       const pAreaFormatted = pArea.includes('Sft') ? pArea : `${pArea} Sft`;
       const flName = String(fl.floorName || (fl as any).name || 'Floor');
       this.drawRow([
         { text: `${flName} (in Sq.Ft.) Measured (RCC)`, width: W * 0.3, isLabel: true },
         { text: pAreaFormatted, width: W * 0.2 },
-        { text: uText, width: W * 0.5 },
-      ], 18, 4);
+        { text: formatFloorUsageOptions(fl.usage), width: W * 0.5 },
+      ], 22, 4);
     }
 
     const formatBUA = (val?: string): string => {
