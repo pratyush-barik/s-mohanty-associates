@@ -1561,7 +1561,7 @@ export default function AxisHLLAP({
                               type="text"
                               value={fl.floor || ''}
                               onChange={e => handleApprovedFloorChange(idx, 'floor', e.target.value)}
-                              className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
+                              className={inputCls + ' py-1.5! text-xs font-normal text-[#0f2038]'}
                               disabled={isReadOnly}
                               placeholder="e.g. Ground Floor"
                             />
@@ -1572,7 +1572,7 @@ export default function AxisHLLAP({
                               inputMode="decimal"
                               value={fl.area || ''}
                               onChange={e => handleApprovedFloorChange(idx, 'area', e.target.value)}
-                              className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                              className={inputCls + ' py-1.5! text-xs text-right font-medium'}
                               disabled={isReadOnly}
                               placeholder="0"
                             />
@@ -1611,7 +1611,7 @@ export default function AxisHLLAP({
                 <button
                   type="button"
                   onClick={handleAddApprovedFloor}
-                  className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1 cursor-pointer transition-colors"
+                  className="text-sm text-accent-500 hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1 cursor-pointer transition-colors"
                 >
                   <span className="text-lg leading-none font-bold">+</span> Add Floor Details
                 </button>
@@ -1657,7 +1657,7 @@ export default function AxisHLLAP({
                               type="text"
                               value={fl.floor || ''}
                               onChange={e => handleMeasuredFloorChange(idx, 'floor', e.target.value)}
-                              className={inputCls + ' !py-1.5 text-xs font-normal text-[#0f2038]'}
+                              className={inputCls + ' py-1.5! text-xs font-normal text-[#0f2038]'}
                               disabled={isReadOnly}
                               placeholder="e.g. Ground Floor"
                             />
@@ -1668,7 +1668,7 @@ export default function AxisHLLAP({
                               inputMode="decimal"
                               value={fl.area || ''}
                               onChange={e => handleMeasuredFloorChange(idx, 'area', e.target.value)}
-                              className={inputCls + ' !py-1.5 text-xs text-right font-medium'}
+                              className={inputCls + ' py-1.5! text-xs text-right font-medium'}
                               disabled={isReadOnly}
                               placeholder="0"
                             />
@@ -1707,7 +1707,7 @@ export default function AxisHLLAP({
                 <button
                   type="button"
                   onClick={handleAddMeasuredFloor}
-                  className="text-sm text-[#b8860b] hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1 cursor-pointer transition-colors"
+                  className="text-sm text-accent-500 hover:text-[#96700a] font-semibold flex items-center gap-1.5 pt-1 cursor-pointer transition-colors"
                 >
                   <span className="text-lg leading-none font-bold">+</span> Add Floor Details
                 </button>
