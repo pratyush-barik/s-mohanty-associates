@@ -2680,30 +2680,22 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     {/* Summary Row 1: Built Up Area & Carpet Area Totals */}
                     <tr className="bg-slate-100 border-t-2 border-slate-300">
                       <td className="p-2 font-bold text-xs text-slate-700 border-r border-slate-300">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            TOTAL BUILT UP AREA (IN SQFT){' '}
-                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: SUM(CONSTRUCTED ACTUAL AREA AS PER SITE of all floors) = TOTAL BUILT UP AREA]</span>
-                          </div>
-                          <div className="shrink-0 mt-1">
-                            {renderEditSwitch('axisSbbTotalBuiltUpArea', false)}
-                          </div>
+                        <div>
+                          TOTAL BUILT UP AREA (IN SQFT){' '}
+                          <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: SUM(CONSTRUCTED ACTUAL AREA AS PER SITE of all floors) = TOTAL BUILT UP AREA]</span>
                         </div>
                       </td>
                       <td className="p-2 font-bold text-slate-800 border-r border-slate-300">
                         <div className="relative">
                           <input 
                             type="text" 
-                            className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100`} 
-                            value={fields.axisSbbTotalBuiltUpAreaEditOn ? (fields.axisSbbTotalBuiltUpArea || '') : computedConstructed}
-                            onChange={e => handleChange('axisSbbTotalBuiltUpArea', e.target.value.toUpperCase())}
-                            disabled={isReadOnly || !fields.axisSbbTotalBuiltUpAreaEditOn}
+                            className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 cursor-not-allowed`} 
+                            value={computedConstructed}
+                            disabled
                           />
-                          {!fields.axisSbbTotalBuiltUpAreaEditOn && (
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="sum of all entries in the CONSTRUCTED ACTUAL AREA AS PER SITE (SQ.FT) column">
-                              <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
-                            </div>
-                          )}
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="sum of all entries in the CONSTRUCTED ACTUAL AREA AS PER SITE (SQ.FT) column">
+                            <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                          </div>
                         </div>
                       </td>
                       <td className="p-2 font-bold text-slate-800 border-r border-slate-300">
