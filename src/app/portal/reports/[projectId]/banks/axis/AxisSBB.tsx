@@ -1075,7 +1075,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <textarea
                     className={`${inputCls} resize-y min-h-10`}
                     rows={1}
-                    value={fields.axisSbbVillageCityIsNA ? 'NA' : (fields.axisSbbVillageCityEditOn ? (fields.axisSbbVillageCity || '') : mouzaComputed)}
+                    value={fields.axisSbbVillageCityIsNA ? 'NA' : (fields.axisSbbVillageCityEditOn ? (fields.axisSbbVillageCity || '') : (mouzaComputed || fields.axisSbbVillageCity || ''))}
                     onChange={e => handleChange('axisSbbVillageCity', e.target.value.toUpperCase())}
                     readOnly={!fields.axisSbbVillageCityEditOn || fields.axisSbbVillageCityIsNA}
                     disabled={isReadOnly || (!fields.axisSbbVillageCityEditOn && !fields.axisSbbVillageCityIsNA)}
@@ -1105,7 +1105,8 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       }}
                       disabled={isReadOnly || !fields.axisSbbDistrictEditOn || fields.axisSbbDistrictIsNA}
                     >
-                      {!fields.axisSbbDistrictEditOn && <option value="AUTO">{distComputed}</option>}
+                      {!fields.axisSbbDistrictEditOn && (distComputed || fields.axisSbbDistrict) && <option value="AUTO">{distComputed || fields.axisSbbDistrict}</option>}
+                      {!fields.axisSbbDistrictEditOn && !(distComputed || fields.axisSbbDistrict) && <option value="AUTO">Select District</option>}
                       <option value="">Select District</option>
                       <option value="SAMBALPUR">SAMBALPUR</option>
                       <option value="CUTTACK">CUTTACK</option>
@@ -1135,7 +1136,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     <select
                       className={inputCls}
                       required
-                      value={fields.axisSbbStateIsNA ? 'NA' : (fields.axisSbbStateEditOn ? stateDropdown : (stateComputed ? 'AUTO' : ''))}
+                      value={fields.axisSbbStateIsNA ? 'NA' : (fields.axisSbbStateEditOn ? stateDropdown : ((stateComputed || fields.axisSbbState) ? 'AUTO' : ''))}
                       onChange={e => {
                         const v = e.target.value;
                         handleChange('axisSbbStateDropdown', v);
@@ -1145,7 +1146,8 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       }}
                       disabled={isReadOnly || !fields.axisSbbStateEditOn || fields.axisSbbStateIsNA}
                     >
-                      {!fields.axisSbbStateEditOn && stateComputed && <option value="AUTO">{stateComputed}</option>}
+                      {!fields.axisSbbStateEditOn && (stateComputed || fields.axisSbbState) && <option value="AUTO">{stateComputed || fields.axisSbbState}</option>}
+                      {!fields.axisSbbStateEditOn && !(stateComputed || fields.axisSbbState) && <option value="AUTO">Select State</option>}
                       <option value="">Select State</option>
                       {STATES_OF_INDIA.map(s => <option key={s} value={s}>{s}</option>)}
                       <option value="CUSTOM">Custom...</option>
@@ -1176,7 +1178,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       required
                       pattern="[0-9]{6}"
                       maxLength={6}
-                      value={fields.axisSbbPinCodeIsNA ? 'NA' : (fields.axisSbbPinCodeEditOn ? (fields.axisSbbPinCode || '') : pinComputed)}
+                      value={fields.axisSbbPinCodeIsNA ? 'NA' : (fields.axisSbbPinCodeEditOn ? (fields.axisSbbPinCode || '') : (pinComputed || fields.axisSbbPinCode || ''))}
                       onChange={e => handleChange('axisSbbPinCode', e.target.value.replace(/\D/g, ''))}
                       readOnly={!fields.axisSbbPinCodeEditOn || fields.axisSbbPinCodeIsNA}
                       disabled={isReadOnly || (!fields.axisSbbPinCodeEditOn && !fields.axisSbbPinCodeIsNA)}
