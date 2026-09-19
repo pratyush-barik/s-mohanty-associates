@@ -288,26 +288,44 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
   }
 
   /**
+   * Split text into wrapping tokens.
+   * Splits on whitespace and, for long tokens, breaks at logical punctuation boundaries (, ; / - \ )
+   * so sentences/addresses without spaces wrap naturally without shrinking font size.
+   */
+  private splitWrapTokens(text: string): string[] {
+    const rawWords = String(text || '').split(/\s+/).filter(Boolean);
+    const tokens: string[] = [];
+    for (const w of rawWords) {
+      if (w.length <= 12) {
+        tokens.push(w);
+      } else {
+        // Split at punctuation boundaries like commas, slashes, hyphens, semicolons
+        const sub = w.split(/(?<=[,;\/\-–—)])/);
+        for (const s of sub) {
+          if (s) tokens.push(s);
+        }
+      }
+    }
+    return tokens;
+  }
+
+  /**
    * Wrap rich text that may contain **bold** tokens without breaking words.
    */
   private wrapRichText(text: string, maxWidth: number, fontSize: number, defaultBold = false): string[] {
     const clean = this.sanitizeText(text);
     if (!clean) return [];
 
-    if (!clean.includes('**')) {
-      return this.wrapText(clean, maxWidth, fontSize, defaultBold);
-    }
-
-    const paragraphs = clean.split('\n');
+    const paragraphs = clean.split(/\r?\n/);
     const allLines: string[] = [];
 
     for (const para of paragraphs) {
-      const words = para.split(' ');
+      const words = this.splitWrapTokens(para);
       let currentLine = '';
 
-      for (const word of words) {
+      for (let word of words) {
         if (!word) continue;
-        const testLine = currentLine ? `${currentLine} ${word}` : word;
+        const testLine = currentLine ? (currentLine.endsWith('-') || currentLine.endsWith('/') ? `${currentLine}${word}` : `${currentLine} ${word}`) : word;
         const testW = this.measureRichLineWidth(testLine, fontSize, defaultBold);
 
         if (testW <= maxWidth || !currentLine) {
@@ -322,7 +340,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       }
     }
 
-    return allLines;
+    return allLines.length > 0 ? allLines : [''];
   }
 
   /**
@@ -384,14 +402,14 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // Auto-fit font size for long words to completely prevent broken/chopped words across lines
     const testFont = options.italic ? this.fontItalic : isBaseBold ? this.fontBold : this.fontRegular;
-    const words = cleanText.replace(/[*_]/g, '').split(/\s+/).filter(Boolean);
+    const tokens = this.splitWrapTokens(cleanText.replace(/[*_]/g, ''));
     let fontSize = baseFontSize;
-    for (const wd of words) {
-      const wAtBase = testFont.widthOfTextAtSize(wd, baseFontSize);
+    for (const tok of tokens) {
+      const wAtBase = testFont.widthOfTextAtSize(tok, baseFontSize);
       if (wAtBase > maxTextW && maxTextW > 0) {
         const neededFs = Math.floor((maxTextW / (wAtBase / baseFontSize)) * 10) / 10;
         if (neededFs < fontSize) {
-          fontSize = Math.max(7.5, neededFs);
+          fontSize = Math.max(8, neededFs);
         }
       }
     }
@@ -470,14 +488,14 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       const testFont = col.italic ? this.fontItalic : isBold ? this.fontBold : this.fontRegular;
       const maxTextW = Math.max(10, col.width - 8);
 
-      const words = this.sanitizeText(col.text).replace(/[*_]/g, '').split(/\s+/).filter(Boolean);
+      const tokens = this.splitWrapTokens(this.sanitizeText(col.text).replace(/[*_]/g, ''));
       let colFs = baseFs;
-      for (const wd of words) {
-        const wAtBase = testFont.widthOfTextAtSize(wd, baseFs);
+      for (const tok of tokens) {
+        const wAtBase = testFont.widthOfTextAtSize(tok, baseFs);
         if (wAtBase > maxTextW && maxTextW > 0) {
           const neededFs = Math.floor((maxTextW / (wAtBase / baseFs)) * 10) / 10;
           if (neededFs < colFs) {
-            colFs = Math.max(7.5, neededFs);
+            colFs = Math.max(8, neededFs);
           }
         }
       }
@@ -637,9 +655,9 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.drawRow([
       { text: 'Name of Owner & Address:', width: col4_w1, isLabel: true },
-      { text: fields.ownerNameAndAddress || '', width: col4_w2 },
+      { text: fields.ownerNameAndAddress || '', width: col4_w2, bold: true },
       { text: 'Name of Borrower & Address', width: col4_w3, isLabel: true },
-      { text: fields.borrowerNameAndAddress || '', width: col4_w4 },
+      { text: fields.borrowerNameAndAddress || '', width: col4_w4, bold: true },
     ], 28, 4);
 
     this.drawRow([
@@ -679,9 +697,9 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Plot No / Khata & Road Facility
     this.drawRow([
       { text: 'Plot No / S.NO/ G. No/ Khasra No:', width: col4_w1, isLabel: true },
-      { text: fields.plotKhataDetails || '', width: col4_w2 },
+      { text: fields.plotKhataDetails || '', width: col4_w2, bold: true },
       { text: 'Road Facility at the site', width: col4_w3, isLabel: true },
-      { text: fields.roadFacilityAtSite || '', width: col4_w4 },
+      { text: fields.roadFacilityAtSite || '', width: col4_w4, bold: true },
     ], 36, 4);
 
     // Colony & Locality/Landmark

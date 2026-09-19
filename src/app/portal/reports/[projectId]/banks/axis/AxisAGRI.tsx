@@ -164,7 +164,7 @@ export default function AxisAGRI({
       reportInitiatedByArea: raw.reportInitiatedByArea || prefill?.serviceRequest?.branch || prefill?.branch || '',
       nameOfArea: raw.nameOfArea || '',
       ownerNameAndAddress: raw.ownerNameAndAddress || prefill?.contactName || '',
-      borrowerNameAndAddress: raw.borrowerNameAndAddress || prefill?.contactName || '',
+      borrowerNameAndAddress: raw.borrowerNameAndAddress || '',
       proposalNo: raw.proposalNo || '',
       representativeNameMobile: raw.representativeNameMobile || '',
 
