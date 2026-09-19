@@ -2043,7 +2043,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">TYPE OF STRUCTURE</label>
                         {renderNaToggle('axisSbbTypeOfStructure')}
                       </div>
-                      {renderEditSwitch('axisSbbTypeOfStructure', !!fields.axisSbbTypeOfStructureIsNA)}
                     </div>
                     <div className={`flex flex-wrap gap-3 ${fields.axisSbbTypeOfStructureIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                       {[
@@ -2057,7 +2056,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             type="checkbox"
                             checked={!!fields[item.id]}
                             onChange={e => handleChange(item.id, e.target.checked)}
-                            disabled={isReadOnly || !!fields.axisSbbTypeOfStructureIsNA || !fields.axisSbbTypeOfStructureEditOn}
+                            disabled={isReadOnly || !!fields.axisSbbTypeOfStructureIsNA}
                             className="text-amber-500 focus:ring-amber-400 border-gray-300 rounded"
                           />
                           <span className="text-xs font-semibold text-gray-700">{item.label}</span>
@@ -2072,15 +2071,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">NO. OF FLOORS</label>
                         {renderNaToggle('axisSbbNoOfFloors')}
                       </div>
-                      {renderEditSwitch('axisSbbNoOfFloors', !!fields.axisSbbNoOfFloorsIsNA)}
                     </div>
                     <input
                       type="text"
                       className={`${inputCls}`}
                       value={fields.axisSbbNoOfFloorsIsNA ? 'NA' : (fields.axisSbbNoOfFloors || '')}
                       onChange={e => handleChange('axisSbbNoOfFloors', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbNoOfFloorsEditOn || fields.axisSbbNoOfFloorsIsNA}
-                      disabled={isReadOnly || (!fields.axisSbbNoOfFloorsEditOn && !fields.axisSbbNoOfFloorsIsNA)}
+                      readOnly={fields.axisSbbNoOfFloorsIsNA}
+                      disabled={isReadOnly || fields.axisSbbNoOfFloorsIsNA}
                     />
                   </div>
                 </div>
@@ -2092,7 +2090,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">OCCUPANCY DETAILS</label>
                         {renderNaToggle('axisSbbOccupancyDetails')}
                       </div>
-                      {renderEditSwitch('axisSbbOccupancyDetails', !!fields.axisSbbOccupancyDetailsIsNA)}
                     </div>
                     {renderRadioGroup('axisSbbOccupancyDetails', ['SELF-OCCUPIED', 'RENTED', 'VACANT'])}
                   </div>
@@ -2103,7 +2100,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">IF THE PROPERTY IS ON RENT</label>
                         {renderNaToggle('axisSbbPropertyOnRent')}
                       </div>
-                      {renderEditSwitch('axisSbbPropertyOnRent', !!fields.axisSbbPropertyOnRentIsNA)}
                     </div>
                     {renderRadioGroup('axisSbbPropertyOnRent', ['YES', 'NO'])}
                   </div>
@@ -2116,15 +2112,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">NUMBER OF TENANT</label>
                         {renderNaToggle('axisSbbNumberOfTenantsDetails')}
                       </div>
-                      {renderEditSwitch('axisSbbNumberOfTenantsDetails', !!fields.axisSbbNumberOfTenantsDetailsIsNA || !isRentYes)}
                     </div>
                     <textarea
                       className={`${inputCls} resize-y`}
                       rows={1}
                       value={fields.axisSbbNumberOfTenantsDetailsIsNA || !isRentYes ? 'NA' : (fields.axisSbbNumberOfTenantsDetails || '')}
                       onChange={e => handleChange('axisSbbNumberOfTenantsDetails', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbNumberOfTenantsDetailsEditOn || fields.axisSbbNumberOfTenantsDetailsIsNA || !isRentYes}
-                      disabled={isReadOnly || (!fields.axisSbbNumberOfTenantsDetailsEditOn && !fields.axisSbbNumberOfTenantsDetailsIsNA) || !isRentYes}
+                      readOnly={fields.axisSbbNumberOfTenantsDetailsIsNA || !isRentYes}
+                      disabled={isReadOnly || fields.axisSbbNumberOfTenantsDetailsIsNA || !isRentYes}
                     />
                   </div>
                   
@@ -2134,15 +2129,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">NAME OF TENANT/LEASE</label>
                         {renderNaToggle('axisSbbNameOfTenantLease')}
                       </div>
-                      {renderEditSwitch('axisSbbNameOfTenantLease', !!fields.axisSbbNameOfTenantLeaseIsNA || !isRentYes)}
                     </div>
                     <input
                       type="text"
                       className={`${inputCls}`}
                       value={fields.axisSbbNameOfTenantLeaseIsNA || !isRentYes ? 'NA' : (fields.axisSbbNameOfTenantLease || '')}
                       onChange={e => handleChange('axisSbbNameOfTenantLease', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbNameOfTenantLeaseEditOn || fields.axisSbbNameOfTenantLeaseIsNA || !isRentYes}
-                      disabled={isReadOnly || (!fields.axisSbbNameOfTenantLeaseEditOn && !fields.axisSbbNameOfTenantLeaseIsNA) || !isRentYes}
+                      readOnly={fields.axisSbbNameOfTenantLeaseIsNA || !isRentYes}
+                      disabled={isReadOnly || fields.axisSbbNameOfTenantLeaseIsNA || !isRentYes}
                     />
                   </div>
                   
@@ -2152,15 +2146,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">YEARS IN TENANCY</label>
                         {renderNaToggle('axisSbbYearsInTenancy')}
                       </div>
-                      {renderEditSwitch('axisSbbYearsInTenancy', !!fields.axisSbbYearsInTenancyIsNA || !isRentYes)}
                     </div>
                     <input
                       type="text"
                       className={`${inputCls}`}
                       value={fields.axisSbbYearsInTenancyIsNA || !isRentYes ? 'NA' : (fields.axisSbbYearsInTenancy || '')}
                       onChange={e => handleChange('axisSbbYearsInTenancy', e.target.value.toUpperCase())}
-                      readOnly={!fields.axisSbbYearsInTenancyEditOn || fields.axisSbbYearsInTenancyIsNA || !isRentYes}
-                      disabled={isReadOnly || (!fields.axisSbbYearsInTenancyEditOn && !fields.axisSbbYearsInTenancyIsNA) || !isRentYes}
+                      readOnly={fields.axisSbbYearsInTenancyIsNA || !isRentYes}
+                      disabled={isReadOnly || fields.axisSbbYearsInTenancyIsNA || !isRentYes}
                     />
                   </div>
                 </div>
@@ -2172,7 +2165,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">ANY RESISTANCE FOR VALUATION?</label>
                         {renderNaToggle('axisSbbResistanceForValuation')}
                       </div>
-                      {renderEditSwitch('axisSbbResistanceForValuation', !!fields.axisSbbResistanceForValuationIsNA)}
                     </div>
                     {renderRadioGroup('axisSbbResistanceForValuation', ['YES', 'NO'])}
                   </div>
@@ -2183,7 +2175,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">RESISTANCE FROM OCCUPANTS?</label>
                         {renderNaToggle('axisSbbResistanceFromOccupants')}
                       </div>
-                      {renderEditSwitch('axisSbbResistanceFromOccupants', !!fields.axisSbbResistanceFromOccupantsIsNA || fields.axisSbbResistanceForValuation === 'NO')}
                     </div>
                     {/* If previous is NO, this is also implicitly disabled in UX usually, but we'll follow logic */}
                     <div className={`flex flex-wrap gap-3 ${(fields.axisSbbResistanceFromOccupantsIsNA || fields.axisSbbResistanceForValuation === 'NO') ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
@@ -2195,7 +2186,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             value={opt}
                             checked={fields.axisSbbResistanceFromOccupants === opt && !fields.axisSbbResistanceFromOccupantsIsNA}
                             onChange={e => handleChange('axisSbbResistanceFromOccupants', e.target.value)}
-                            disabled={isReadOnly || !!fields.axisSbbResistanceFromOccupantsIsNA || (!fields.axisSbbResistanceFromOccupantsEditOn && fields.axisSbbResistanceFromOccupantsEditOn !== undefined) || fields.axisSbbResistanceForValuation === 'NO'}
+                            disabled={isReadOnly || !!fields.axisSbbResistanceFromOccupantsIsNA || fields.axisSbbResistanceForValuation === 'NO'}
                             className="text-amber-500 focus:ring-amber-400 border-gray-300"
                           />
                           <span className="text-xs font-semibold text-gray-700">{opt}</span>
@@ -2212,7 +2203,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">BASIC AMENITIES</label>
                         {renderNaToggle('axisSbbBasicAmenities')}
                       </div>
-                      {renderEditSwitch('axisSbbBasicAmenities', !!fields.axisSbbBasicAmenitiesIsNA)}
                     </div>
                     <div className={`flex flex-wrap gap-3 ${fields.axisSbbBasicAmenitiesIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                       {[
@@ -2225,7 +2215,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             type="checkbox"
                             checked={!!fields[item.id]}
                             onChange={e => handleChange(item.id, e.target.checked)}
-                            disabled={isReadOnly || !!fields.axisSbbBasicAmenitiesIsNA || !fields.axisSbbBasicAmenitiesEditOn}
+                            disabled={isReadOnly || !!fields.axisSbbBasicAmenitiesIsNA}
                             className="text-amber-500 focus:ring-amber-400 border-gray-300 rounded"
                           />
                           <span className="text-xs font-semibold text-gray-700">{item.label}</span>
@@ -2240,7 +2230,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">SURROUNDING AREA DEVELOPMENT</label>
                         {renderNaToggle('axisSbbDevelopmentSurroundingArea')}
                       </div>
-                      {renderEditSwitch('axisSbbDevelopmentSurroundingArea', !!fields.axisSbbDevelopmentSurroundingAreaIsNA)}
                     </div>
                     <div className={`flex flex-wrap gap-3 ${fields.axisSbbDevelopmentSurroundingAreaIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                       {['UNDER DEVELOPED', 'DEVELOPING', 'DEVELOPED'].map(opt => (
@@ -2251,7 +2240,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             value={opt}
                             checked={fields.axisSbbDevelopmentSurroundingArea === opt && !fields.axisSbbDevelopmentSurroundingAreaIsNA}
                             onChange={e => handleChange('axisSbbDevelopmentSurroundingArea', e.target.value)}
-                            disabled={isReadOnly || !!fields.axisSbbDevelopmentSurroundingAreaIsNA || !fields.axisSbbDevelopmentSurroundingAreaEditOn}
+                            disabled={isReadOnly || !!fields.axisSbbDevelopmentSurroundingAreaIsNA}
                             className="text-amber-500 focus:ring-amber-400 border-gray-300"
                           />
                           <span className="text-xs font-semibold text-gray-700">{opt}</span>
