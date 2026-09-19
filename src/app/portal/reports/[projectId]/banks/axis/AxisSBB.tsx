@@ -1437,18 +1437,37 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 </div>
 
                 <div className="flex flex-col">
-                  <div className="flex items-center mb-2">
-                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CIVIC AMENITIES LIKE SCHOOL, HOSPITAL, MARKET, ETC. <span className="text-red-500">*</span></label>
-                    {renderNaToggle('axisSbbCivicAmenities')}
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CIVIC AMENITIES LIKE SCHOOL, HOSPITAL, MARKET, ETC. <span className="text-red-500">*</span></label>
+                      {renderNaToggle('axisSbbCivicAmenities')}
+                    </div>
+                    {renderEditSwitch('axisSbbCivicAmenities', !!fields.axisSbbCivicAmenitiesIsNA)}
                   </div>
-                  <div className={`mt-2 ${fields.axisSbbCivicAmenitiesIsNA ? 'opacity-50 pointer-events-none grayscale' : ''}`}>
-                    <textarea
-                      rows={3}
-                      value={fields.axisSbbCivicAmenities}
-                      onChange={e => handleChange('axisSbbCivicAmenities', e.target.value)}
-                      disabled={isReadOnly || fields.axisSbbCivicAmenitiesIsNA}
-                      className="w-full text-xs font-bold text-gray-800 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 transition-all shadow-sm p-3 resize-y"
-                    />
+                  <div className={`grid grid-cols-1 lg:grid-cols-2 gap-3 mt-1 ${fields.axisSbbCivicAmenitiesIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                    {['AVAILABLE, WITHIN THE RADIUS OF 1-2 KMS', 'NOT AVAILABLE'].map(opt => {
+                      const defaultVal = 'AVAILABLE, WITHIN THE RADIUS OF 1-2 KMS';
+                      const currentVal = fields.axisSbbCivicAmenitiesEditOn 
+                        ? (Array.isArray(fields.axisSbbCivicAmenities) ? fields.axisSbbCivicAmenities[0] : (fields.axisSbbCivicAmenities || ''))
+                        : (Array.isArray(fields.axisSbbCivicAmenities) && fields.axisSbbCivicAmenities.length > 0 ? fields.axisSbbCivicAmenities[0] : (fields.axisSbbCivicAmenities || defaultVal));
+                      
+                      const isChecked = currentVal === opt;
+
+                      return (
+                        <label key={opt} className={`flex items-center space-x-3 p-3 border rounded-lg cursor-pointer transition-colors ${isChecked ? 'bg-yellow-50/50 border-yellow-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => {
+                              if (!isChecked) handleChange('axisSbbCivicAmenities', opt);
+                            }}
+                            disabled={isReadOnly || fields.axisSbbCivicAmenitiesIsNA || !fields.axisSbbCivicAmenitiesEditOn}
+                            className="w-4 h-4 text-yellow-600 rounded focus:ring-yellow-500 border-gray-300"
+                          />
+                          <span className={`text-xs ${isChecked ? 'font-bold text-black' : 'font-semibold text-gray-700'}`}>{opt}</span>
+                        </label>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -3384,7 +3403,11 @@ export const AXIS_SBB_CONFIG: BankConfig = {
       }
     },
   ],
-  getPDFRenderer: (fields: any, projectCode?: string) => new PDFAxisSBBRenderer({ ...fields, axisSbbReportRefNo: fields.axisSbbReportRefNo || projectCode }),
+  getPDFRenderer: (fields: any, projectCode?: string) => new PDFAxisSBBRenderer({ 
+    ...fields, 
+    axisSbbReportRefNo: fields.axisSbbReportRefNo || projectCode,
+    axisSbbCivicAmenities: fields.axisSbbCivicAmenities || 'AVAILABLE, WITHIN THE RADIUS OF 1-2 KMS'
+  }),
 };
 
 export default function AxisSBB(props: BankReportBuilderProps) {
