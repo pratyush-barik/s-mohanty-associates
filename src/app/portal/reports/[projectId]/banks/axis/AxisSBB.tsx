@@ -3349,7 +3349,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
             <div className="border border-yellow-200 bg-[#FEF9C3] rounded-xl p-5 relative shadow-sm">
               <h3 className="font-bold text-yellow-800 mb-4 uppercase">Final Valuation Summary</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
+                <div className="flex flex-col gap-1 justify-between h-full bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-sm font-bold text-gray-700">Market Value <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from "Total Valuation in Say" of Container "Market Valuation Calculation" = Market Value]</span></label>
                     <div className="flex gap-4">
@@ -3360,7 +3360,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <input type="number" step="0.01" className="w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-gray-800 bg-gray-50 border-gray-300" value={fields.axisSbbFinalMarketValueIsNA ? '' : (fields.axisSbbFinalMarketValueEditOn ? (fields.axisSbbFinalMarketValue || '') : marketValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalMarketValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalMarketValueIsNA || !fields.axisSbbFinalMarketValueEditOn} />
                 </div>
                 
-                <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
+                <div className="flex flex-col gap-1 justify-between h-full bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-sm font-bold text-gray-700">Distressed / Forced Sale Value (90%) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Market Value * 0.90 = Distressed / Forced Sale Value]</span></label>
                     <div className="flex gap-4">
@@ -3371,7 +3371,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <input type="number" step="0.01" className="w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-red-700 bg-red-50 border-red-200" value={fields.axisSbbFinalDistressValueIsNA ? '' : (fields.axisSbbFinalDistressValueEditOn ? (fields.axisSbbFinalDistressValue || '') : distressValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalDistressValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalDistressValueIsNA || !fields.axisSbbFinalDistressValueEditOn} />
                 </div>
 
-                <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
+                <div className="flex flex-col gap-1 justify-between h-full bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-sm font-bold text-gray-700">Realizable Value (95%) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Market Value * 0.95 = Realizable Value]</span></label>
                     <div className="flex gap-4">
@@ -3382,7 +3382,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <input type="number" step="0.01" className="w-full rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg font-bold text-amber-700 bg-amber-50 border-amber-200" value={fields.axisSbbFinalRealizableValueIsNA ? '' : (fields.axisSbbFinalRealizableValueEditOn ? (fields.axisSbbFinalRealizableValue || '') : realizableValueComp.toFixed(2))} onChange={e => handleChange('axisSbbFinalRealizableValue', e.target.value)} disabled={isReadOnly || !!fields.axisSbbFinalRealizableValueIsNA || !fields.axisSbbFinalRealizableValueEditOn} />
                 </div>
 
-                <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
+                <div className="flex flex-col gap-1 justify-between h-full bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
                   <div className="flex justify-between items-center mb-2">
                     <label className="text-sm font-bold text-gray-700">Insurable Value (App.) (Construction Value) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Building_Valuation_Amount * 0.85 = Insurable Value]</span></label>
                     <div className="flex gap-4">
