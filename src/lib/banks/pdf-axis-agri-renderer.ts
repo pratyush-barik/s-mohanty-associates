@@ -2244,7 +2244,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // PAGE 10: VALUATION REPORT CHECKLIST & SIGNATURE BLOCK
     // =========================================================================
     this.addPage();
-    this.cursorY = 5;
+    this.cursorY = 0;
 
     const chkTitle = 'VALUATION REPORT CHECK LIST';
     const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE_HEADER);
