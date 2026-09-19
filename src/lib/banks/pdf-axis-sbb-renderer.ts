@@ -1118,7 +1118,7 @@ THE VALUATION HAS BEEN CARRIED OUT BY CONSIDERING THE LAND COMPONENT AND THE ACT
     this.checkPageBreak(FONT_SIZE + 4);
     let y = this.pdfY(this.cursorY);
     this.page.drawText(heading, { x: MARGIN_L, y: y - FONT_SIZE, size: FONT_SIZE, font: this.fontBold, color: rgb(0,0,0) });
-    this.page.drawLine({ start: { x: MARGIN_L, y: y - FONT_SIZE - 2 }, end: { x: MARGIN_L + hw, y: y - FONT_SIZE - 2 }, thickness: 1, color: rgb(0,0,0) });
+    this.page.drawLine({ start: { x: MARGIN_L, y: y - FONT_SIZE - 2 }, end: { x: MARGIN_L + hw + 2.5, y: y - FONT_SIZE - 2 }, thickness: 1, color: rgb(0,0,0) });
     this.cursorY += FONT_SIZE + 15;
     
     if (fields.axisSbbUndertakingIsNA) {

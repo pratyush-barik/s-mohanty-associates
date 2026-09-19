@@ -875,7 +875,7 @@ export async function generateIncomeTaxPDF(
   });
   page.drawLine({
     start: { x: titleX, y: pdfY(cy) - titleFs * 0.8 - 2 },
-    end: { x: titleX + titleW, y: pdfY(cy) - titleFs * 0.8 - 2 },
+    end: { x: titleX + titleW + 2.5, y: pdfY(cy) - titleFs * 0.8 - 2 },
     thickness: 1,
     color: rgb(0, 0, 0),
   });
@@ -921,7 +921,7 @@ export async function generateIncomeTaxPDF(
   });
   page.drawLine({
     start: { x: secX, y: pdfY(cy) - secFs * 0.8 - 2 },
-    end: { x: secX + secW, y: pdfY(cy) - secFs * 0.8 - 2 },
+    end: { x: secX + secW + 2.5, y: pdfY(cy) - secFs * 0.8 - 2 },
     thickness: 1,
     color: rgb(0, 0, 0),
   });
@@ -1138,7 +1138,7 @@ export async function generateIncomeTaxPDF(
   });
   page.drawLine({
     start: { x: p2Hx, y: pdfY(curInnerY) - headerFs * 0.8 - 2 },
-    end: { x: p2Hx + p2Hw, y: pdfY(curInnerY) - headerFs * 0.8 - 2 },
+    end: { x: p2Hx + p2Hw + 2.5, y: pdfY(curInnerY) - headerFs * 0.8 - 2 },
     thickness: 1,
     color: rgb(0, 0, 0),
   });
@@ -1297,7 +1297,7 @@ export async function generateIncomeTaxPDF(
     const annxW = fontB.widthOfTextAtSize(annxStr, annxFs);
     const annxX = ML + (CW - annxW) / 2;
     page.drawText(annxStr, { x: annxX, y: pdfY(cy) - annxFs * 0.8, size: annxFs, font: fontB, color: rgb(0,0,0) });
-    page.drawLine({ start: { x: annxX, y: pdfY(cy) - annxFs * 0.8 - 2 }, end: { x: annxX + annxW, y: pdfY(cy) - annxFs * 0.8 - 2 }, thickness: 1, color: rgb(0,0,0) });
+    page.drawLine({ start: { x: annxX, y: pdfY(cy) - annxFs * 0.8 - 2 }, end: { x: annxX + annxW + 2.5, y: pdfY(cy) - annxFs * 0.8 - 2 }, thickness: 1, color: rgb(0,0,0) });
     cy += annxFs * LINE_H + 12;
 
     // Technical Details Header Table — row 1 (labels, all same height, centered)
@@ -1728,7 +1728,7 @@ export async function generateIncomeTaxPDF(
     const annxHeaderW = fontB.widthOfTextAtSize(annxTitleStr, annxHeaderFs);
     const annxHeaderX = ML + (CW - annxHeaderW) / 2;
     page.drawText(annxTitleStr, { x: annxHeaderX, y: pdfY(cy) - annxHeaderFs * 0.8, size: annxHeaderFs, font: fontB, color: rgb(0, 0, 0) });
-    page.drawLine({ start: { x: annxHeaderX, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, end: { x: annxHeaderX + annxHeaderW, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, thickness: 1, color: rgb(0, 0, 0) });
+    page.drawLine({ start: { x: annxHeaderX, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, end: { x: annxHeaderX + annxHeaderW + 2.5, y: pdfY(cy) - annxHeaderFs * 0.8 - 2 }, thickness: 1, color: rgb(0, 0, 0) });
     cy += annxHeaderFs * LINE_H + 12;
 
     const { allRows, merges, colWidths } = trimEmptyGrid(

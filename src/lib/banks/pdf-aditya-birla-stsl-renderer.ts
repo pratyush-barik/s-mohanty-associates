@@ -1308,7 +1308,7 @@ export class PDFAdityaBirlaSTSLRenderer extends PDFBankRenderer {
     const decW = this.fontBold.widthOfTextAtSize('Declaration', fontSize);
     this.page.drawLine({
       start: { x: MARGIN_L, y: yDec - 14 },
-      end: { x: MARGIN_L + decW, y: yDec - 14 },
+      end: { x: MARGIN_L + decW + 2.5, y: yDec - 14 },
       color: rgb(0, 0, 0),
       thickness: 1,
     });

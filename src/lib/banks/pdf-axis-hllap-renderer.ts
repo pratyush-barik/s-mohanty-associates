@@ -778,7 +778,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     // Underline
     this.page.drawLine({
       start: { x: titleX, y: titleY - 12 },
-      end: { x: titleX + titleW, y: titleY - 12 },
+      end: { x: titleX + titleW + 2.5, y: titleY - 12 },
       thickness: 1,
       color: rgb(0, 0, 0),
     });

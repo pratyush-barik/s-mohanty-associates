@@ -707,7 +707,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
                 if (seg.underline) {
                   this.page.drawLine({
                     start: { x: drawX, y: startY - 1.5 },
-                    end: { x: drawX + wW, y: startY - 1.5 },
+                    end: { x: drawX + wW + 1.5, y: startY - 1.5 },
                     thickness: 0.8,
                     color: rgb(0, 0, 0),
                   });
@@ -743,7 +743,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         if (seg.underline) {
           this.page.drawLine({
             start: { x: drawX, y: startY - 1.5 },
-            end: { x: drawX + segW, y: startY - 1.5 },
+            end: { x: drawX + segW + 1.5, y: startY - 1.5 },
             thickness: 0.8,
             color: rgb(0, 0, 0),
           });
@@ -911,7 +911,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         if (seg.underline) {
           this.page.drawLine({
             start: { x: curSegX, y: curY - 1.5 },
-            end: { x: curSegX + segW, y: curY - 1.5 },
+            end: { x: curSegX + segW + 1.5, y: curY - 1.5 },
             thickness: 0.8,
             color: rgb(0, 0, 0),
           });
@@ -1693,7 +1693,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     });
     this.page.drawLine({
       start: { x: MARGIN_L, y: lhY - 2 },
-      end: { x: MARGIN_L + lhTw, y: lhY - 2 },
+      end: { x: MARGIN_L + lhTw + 2.5, y: lhY - 2 },
       thickness: 1,
       color: rgb(0, 0, 0),
     });
@@ -2244,7 +2244,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // PAGE 10: VALUATION REPORT CHECKLIST & SIGNATURE BLOCK
     // =========================================================================
     this.addPage();
-    this.cursorY = 8;
+    this.cursorY = 5;
 
     const chkTitle = 'VALUATION REPORT CHECK LIST';
     const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE_HEADER);
@@ -2313,7 +2313,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     });
     this.page.drawLine({
       start: { x: nX, y: nY - 2 },
-      end: { x: nX + nTw, y: nY - 2 },
+      end: { x: nX + nTw + 2, y: nY - 2 },
       thickness: 0.8,
       color: rgb(0, 0, 0),
     });
