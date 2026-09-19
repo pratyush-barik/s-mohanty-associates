@@ -2329,24 +2329,50 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 {/* SUB-CONTAINER 7.2C: CONSTRUCTION DETAILS */}
                 <div className="border-b border-teal-200 pb-4 mb-4">
                   <h4 className="font-bold text-xs text-teal-800 mb-3">CONSTRUCTION DETAILS</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     
-                    {/* AREA OF THE PLOT/FLAT */}
-                    <div className="flex flex-col">
-                      <div className="flex items-center mb-1 justify-between">
-                        <div className="flex items-center space-x-2">
-                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">AREA OF THE PLOT/FLAT (IN SQ.FT.)</label>
-                          {renderNaToggle('axisSbbAreaOfThePlot')}
+                    <div className="flex flex-col space-y-5">
+                      {/* AREA OF THE PLOT/FLAT */}
+                      <div className="flex flex-col">
+                        <div className="flex items-center mb-1 justify-between">
+                          <div className="flex items-center space-x-2">
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">AREA OF THE PLOT/FLAT (IN SQ.FT.)</label>
+                            {renderNaToggle('axisSbbAreaOfThePlot')}
+                          </div>
+                          {renderEditSwitch('axisSbbAreaOfThePlot', !!fields.axisSbbAreaOfThePlotIsNA)}
                         </div>
-                        {renderEditSwitch('axisSbbAreaOfThePlot', !!fields.axisSbbAreaOfThePlotIsNA)}
+                        <input
+                          type="text"
+                          className={`${inputCls} ${!fields.axisSbbAreaOfThePlotEditOn && !fields.axisSbbAreaOfThePlotIsNA ? 'bg-gray-100' : ''}`}
+                          value={fields.axisSbbAreaOfThePlotIsNA ? 'NA' : (fields.axisSbbAreaOfThePlotEditOn ? (fields.axisSbbAreaOfThePlot || '') : (fields.axisSbbPlotAreaAsPerDocument || ''))}
+                          onChange={e => handleChange('axisSbbAreaOfThePlot', e.target.value.toUpperCase())}
+                          disabled={isReadOnly || !!fields.axisSbbAreaOfThePlotIsNA || !fields.axisSbbAreaOfThePlotEditOn}
+                        />
                       </div>
-                      <input
-                        type="text"
-                        className={`${inputCls} ${!fields.axisSbbAreaOfThePlotEditOn && !fields.axisSbbAreaOfThePlotIsNA ? 'bg-gray-100' : ''}`}
-                        value={fields.axisSbbAreaOfThePlotIsNA ? 'NA' : (fields.axisSbbAreaOfThePlotEditOn ? (fields.axisSbbAreaOfThePlot || '') : (fields.axisSbbPlotAreaAsPerDocument || ''))}
-                        onChange={e => handleChange('axisSbbAreaOfThePlot', e.target.value.toUpperCase())}
-                        disabled={isReadOnly || !!fields.axisSbbAreaOfThePlotIsNA || !fields.axisSbbAreaOfThePlotEditOn}
-                      />
+                      
+                      {/* DEMARCATION AT SITE */}
+                      <div className="flex flex-col">
+                        <div className="flex items-center mb-1">
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DEMARCATION AT SITE</label>
+                          {renderNaToggle('axisSbbDemarcationAtSite')}
+                        </div>
+                        <div className="flex gap-4 mt-2">
+                          {['YES', 'NO'].map(opt => (
+                            <label key={opt} className="flex items-center text-xs font-medium text-gray-700 cursor-pointer">
+                              <input
+                                type="radio"
+                                name="axisSbbDemarcationAtSite"
+                                value={opt}
+                                checked={!fields.axisSbbDemarcationAtSiteIsNA && fields.axisSbbDemarcationAtSite === opt}
+                                onChange={() => handleChange('axisSbbDemarcationAtSite', opt)}
+                                disabled={isReadOnly || !!fields.axisSbbDemarcationAtSiteIsNA}
+                                className="mr-1.5 text-teal-600 focus:ring-teal-500"
+                              />
+                              {opt}
+                            </label>
+                          ))}
+                        </div>
+                      </div>
                     </div>
 
                     {/* APPROVED BUILT UP AREA */}
@@ -2366,31 +2392,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         disabled={isReadOnly || !!fields.axisSbbApprovedBuiltUpAreaIsNA || !fields.axisSbbApprovedBuiltUpAreaEditOn}
                       />
                     </div>
-
-                    {/* DEMARCATION AT SITE */}
-                    <div className="flex flex-col">
-                      <div className="flex items-center mb-1">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DEMARCATION AT SITE</label>
-                        {renderNaToggle('axisSbbDemarcationAtSite')}
-                      </div>
-                      <div className="flex gap-4 mt-2">
-                        {['YES', 'NO'].map(opt => (
-                          <label key={opt} className="flex items-center text-xs font-medium text-gray-700">
-                            <input
-                              type="radio"
-                              name="axisSbbDemarcationAtSite"
-                              value={opt}
-                              checked={!fields.axisSbbDemarcationAtSiteIsNA && fields.axisSbbDemarcationAtSite === opt}
-                              onChange={() => handleChange('axisSbbDemarcationAtSite', opt)}
-                              disabled={isReadOnly || !!fields.axisSbbDemarcationAtSiteIsNA}
-                              className="mr-1.5"
-                            />
-                            {opt}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                    
                   </div>
                 </div>
 
