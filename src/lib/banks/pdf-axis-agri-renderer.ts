@@ -1043,12 +1043,34 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       ], 18, 4);
     }
 
-    // Totals
+    const formatBUA = (val?: string): string => {
+      if (!val || !val.trim()) return '';
+      const clean = val.replace(/Sft/gi, '').trim();
+      return clean ? `${clean} Sft` : '';
+    };
+
+    const formatCarpet = (val?: string): string => {
+      if (!val || !val.trim()) return '';
+      const clean = val.replace(/Sft/gi, '').trim();
+      return clean ? `${clean} Sft` : '';
+    };
+
+    const totalBUADisplay = formatBUA(fields.totalBUA);
+    const totalCarpetDisplay = formatCarpet(fields.totalCarpetArea);
+
+    // Total Built Up Area (aligned perfectly with the 3-column floor table above)
     this.drawRow([
-      { text: 'Total Built Up area (in Sq.Ft.)', width: col4_w1, isLabel: true, bold: true },
-      { text: fields.totalBUA ? `${fields.totalBUA} Sft` : '', width: col4_w2, bold: true, highlight: true },
-      { text: 'Total Carpet area (in Sq.Ft.)', width: col4_w3, isLabel: true },
-      { text: fields.totalCarpetArea ? `${fields.totalCarpetArea}` : '', width: col4_w4 },
+      { text: 'Total Built Up area (in Sq.Ft.)', width: W * 0.3, isLabel: true, bold: true },
+      { text: totalBUADisplay, width: W * 0.2, bold: true, highlight: true },
+      { text: '', width: W * 0.5 },
+    ], 20, 4);
+
+    this.addSectionBreak(8);
+
+    // Total Carpet Area
+    this.drawRow([
+      { text: 'Total Carpet area (in Sq.Ft.)', width: W * 0.5, isLabel: true },
+      { text: totalCarpetDisplay, width: W * 0.5 },
     ], 20, 4);
 
     const formatSaleableArea = (land?: string, bldg?: string, raw?: string): string => {
@@ -1068,8 +1090,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const saleableDisplay = formatSaleableArea(fields.totalSaleableAreaLand, fields.totalSaleableAreaBuilding, fields.totalSaleableArea);
 
     this.drawRow([
-      { text: 'Total Saleable area (in Sq.Ft.)', width: col4_w1 * 2, isLabel: true },
-      { text: saleableDisplay, width: col4_w1 * 2 },
+      { text: 'Total Saleable area (in Sq.Ft.)', width: W * 0.5, isLabel: true },
+      { text: saleableDisplay, width: W * 0.5 },
     ], 20, 4);
 
     this.drawRow([
