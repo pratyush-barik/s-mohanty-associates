@@ -344,6 +344,87 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
   }
 
   /**
+   * Draw text with justified alignment across targetW.
+   * Multi-line paragraphs have all intermediate lines justified (words spaced evenly)
+   * while the final line of each paragraph is left-aligned.
+   */
+  private drawJustifiedText(
+    text: string,
+    startX: number,
+    targetW: number,
+    fontSize: number = FONT_SIZE_CAPTION,
+    font = this.fontRegular,
+    lineHeight: number = 12
+  ): void {
+    const sanitized = this.sanitizeText(text);
+    const paragraphs = sanitized.split(/\r?\n/);
+
+    for (const para of paragraphs) {
+      if (!para.trim()) {
+        this.cursorY += lineHeight;
+        continue;
+      }
+
+      const pLines = this.wrapText(para, targetW, fontSize, false);
+      for (let i = 0; i < pLines.length; i++) {
+        const line = pLines[i];
+        const isLastLine = i === pLines.length - 1;
+        const lineY = this.pdfY(this.cursorY) - 7;
+
+        if (isLastLine) {
+          this.page.drawText(line, {
+            x: startX,
+            y: lineY,
+            size: fontSize,
+            font,
+            color: rgb(0, 0, 0),
+          });
+        } else {
+          const words = line.trim().split(/\s+/);
+          if (words.length > 1) {
+            let wordsW = 0;
+            for (const w of words) {
+              wordsW += font.widthOfTextAtSize(w, fontSize);
+            }
+            const spaceW = (targetW - wordsW) / (words.length - 1);
+            if (spaceW >= 0 && spaceW <= 12) {
+              let curX = startX;
+              for (const w of words) {
+                this.page.drawText(w, {
+                  x: curX,
+                  y: lineY,
+                  size: fontSize,
+                  font,
+                  color: rgb(0, 0, 0),
+                });
+                curX += font.widthOfTextAtSize(w, fontSize) + spaceW;
+              }
+            } else {
+              this.page.drawText(line, {
+                x: startX,
+                y: lineY,
+                size: fontSize,
+                font,
+                color: rgb(0, 0, 0),
+              });
+            }
+          } else {
+            this.page.drawText(line, {
+              x: startX,
+              y: lineY,
+              size: fontSize,
+              font,
+              color: rgb(0, 0, 0),
+            });
+          }
+        }
+
+        this.cursorY += lineHeight;
+      }
+    }
+  }
+
+  /**
    * Split text into wrapping tokens while preserving checkbox-label cohesion.
    * Ensures checkboxes ([ ], [X], **[X]**, **[ ]**) never separate from their label,
    * empty brackets always have a space ([ ]), and long words split at logical punctuation boundaries.
@@ -1601,15 +1682,24 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: fields.totalBasicValueBuilding ? `Rs. ${fields.totalBasicValueBuilding}` : 'Rs. 0.00', width: tW[7], align: 'left', bold: true, fontSize: FONT_SIZE },
     ], 20, 4);
 
-    this.addSectionBreak(8);
+    this.cursorY += 8;
 
-    // Total Basic Value statement
+    // Total Basic Value statement (rendered as direct text without a box)
     const bldgValSummary = fields.totalBasicValueBuilding
       ? `TOTAL BASIC VALUE OF THE BUILDING- Rs.${fields.totalBasicValueBuilding}/- OR SAY Rs.${fields.totalBasicValueBuildingSay || fields.totalBasicValueBuilding}/- (${fields.totalBasicValueBuildingWords || ''}).`
       : 'TOTAL BASIC VALUE OF THE BUILDING: Not Available';
-    this.drawRow([{ text: bldgValSummary, width: W, bold: true, fontSize: FONT_SIZE }], 24, 6);
-
-    this.addSectionBreak(8);
+    const bldgValLines = this.wrapText(this.sanitizeText(bldgValSummary), W, FONT_SIZE, true);
+    for (const bl of bldgValLines) {
+      this.page.drawText(bl, {
+        x: MARGIN_L,
+        y: this.pdfY(this.cursorY) - 8,
+        size: FONT_SIZE,
+        font: this.fontBold,
+        color: rgb(0, 0, 0),
+      });
+      this.cursorY += FONT_SIZE * 1.25;
+    }
+    this.cursorY += 6;
 
     this.drawRow([{ text: 'VALUE OF THE PROPERTY', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE }], 20, 4);
 
@@ -1966,8 +2056,12 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
       for (let pageIdx = 0; pageIdx < totalPhotoPages; pageIdx++) {
         this.addPage();
-        this.drawRow([{ text: 'PHOTOGRAPHS', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
-        this.cursorY += 8;
+        if (pageIdx === 0) {
+          this.drawRow([{ text: 'PHOTOGRAPHS', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
+          this.cursorY += 8;
+        } else {
+          this.cursorY += 4;
+        }
 
         for (let row = 0; row < 3; row++) {
           const rowY = this.pdfY(this.cursorY);
@@ -2114,13 +2208,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.addPage();
 
     const chkTitle = 'VALUATION REPORT CHECK LIST';
-    const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE_TITLE);
+    const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE_HEADER);
     const chkX = MARGIN_L + (W - chkTw) / 2;
-    const chkY = this.pdfY(this.cursorY) - 10;
+    const chkY = this.pdfY(this.cursorY) - 8;
     this.page.drawText(chkTitle, {
       x: chkX,
       y: chkY,
-      size: FONT_SIZE_TITLE,
+      size: FONT_SIZE_HEADER,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
@@ -2130,7 +2224,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       thickness: 1,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 22;
+    this.cursorY += 16;
 
     // Subtitle (Dynamic from Plot No / S.No / G.No / Khasra No & Property Specifics)
     const rawSpecifics = (fields.plotKhataDetails || '').trim();
@@ -2162,7 +2256,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         });
         csOff += FONT_SIZE_CAPTION * LINE_HEIGHT;
       }
-      this.cursorY += chkSubLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 8;
+      this.cursorY += chkSubLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 6;
     }
 
     const noticeText = 'Please ensure that the following important points are in order in the submitted report.';
@@ -2182,7 +2276,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       thickness: 0.8,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 18;
+    this.cursorY += 16;
 
     // 12 Checklist Items
     const checklistItems = [
@@ -2252,20 +2346,8 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     for (const item of checklistItems) {
       const resp = responses[item.id] || responses[`q${item.id}`] || item.defaultResp;
-      const tLines = this.wrapText(this.sanitizeText(`${item.id}.  ${item.title}`), W - 15, FONT_SIZE_CAPTION, false);
-
-      let off = 0;
-      for (const tl of tLines) {
-        this.page.drawText(tl, {
-          x: MARGIN_L + 6,
-          y: this.pdfY(this.cursorY) - 7 - off,
-          size: FONT_SIZE_CAPTION,
-          font: this.fontRegular,
-          color: rgb(0, 0, 0),
-        });
-        off += FONT_SIZE_CAPTION * LINE_HEIGHT;
-      }
-      this.cursorY += tLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 1;
+      this.drawJustifiedText(`${item.id}.  ${item.title}`, MARGIN_L + 6, W - 15, FONT_SIZE_CAPTION, this.fontRegular, FONT_SIZE_CAPTION * LINE_HEIGHT);
+      this.cursorY += 1;
 
       // Bullet Response
       this.page.drawText('•', {
@@ -2282,12 +2364,11 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
-      this.cursorY += 12;
+      this.cursorY += 11;
     }
 
-    this.cursorY += 10;
+    this.cursorY += 8;
 
-    // Signature Block at Bottom
     const prepBy = 'Prepared By';
     const pbTw = this.fontBold.widthOfTextAtSize(prepBy, FONT_SIZE_SMALL);
     this.page.drawText(prepBy, {
@@ -2297,16 +2378,16 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 14;
+    this.cursorY += 13;
 
     const sigDetails = [
       { text: 'Er. Satyajit Mohanty', bold: true, size: FONT_SIZE_SMALL },
-      { text: 'Registered Valuer (Land & Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)', bold: true, size: FONT_SIZE_CAPTION },
-      { text: 'Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)', bold: true, size: FONT_SIZE_CAPTION },
-      { text: 'Corporate Member & Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)', bold: true, size: FONT_SIZE_CAPTION },
-      { text: 'Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) & IIV, Pune (F-4443)', bold: true, size: FONT_SIZE_CAPTION },
-      { text: 'B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)', bold: true, size: FONT_SIZE_CAPTION },
-      { text: 'Empanelled Valuer of Axis Bank', bold: true, size: FONT_SIZE_CAPTION },
+      { text: 'Registered Valuer (Land & Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)', bold: false, size: FONT_SIZE_CAPTION },
+      { text: 'Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)', bold: false, size: FONT_SIZE_CAPTION },
+      { text: 'Corporate Member & Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)', bold: false, size: FONT_SIZE_CAPTION },
+      { text: 'Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) & IIV, Pune (F-4443)', bold: false, size: FONT_SIZE_CAPTION },
+      { text: 'B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)', bold: false, size: FONT_SIZE_CAPTION },
+      { text: 'Empanelled Valuer of Axis Bank', bold: false, size: FONT_SIZE_CAPTION },
     ];
 
     for (const sd of sigDetails) {

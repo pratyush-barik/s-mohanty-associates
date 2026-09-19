@@ -3626,7 +3626,7 @@ export default function AxisAGRI({
                 const opts = item.options || ['YES', 'NO', 'NA'];
                 return (
                   <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white rounded-lg border border-slate-200 text-xs shadow-xs">
-                    <span className="font-medium text-slate-800 flex-1">{item.text}</span>
+                    <span className="font-medium text-slate-800 flex-1 text-justify">{item.text}</span>
                     <div className="flex items-center gap-4 shrink-0">
                       {opts.map(opt => (
                         <label key={opt} className="flex items-center gap-1.5 cursor-pointer font-bold">
@@ -3655,12 +3655,12 @@ export default function AxisAGRI({
             <div className="mt-5 p-4 bg-white rounded-xl border border-indigo-200 text-xs text-slate-700 space-y-1 shadow-xs text-center">
               <p className="font-bold text-sm text-slate-900 mb-1.5">Prepared By</p>
               <p className="font-bold text-slate-900 text-sm">Er. Satyajit Mohanty</p>
-              <p className="font-bold text-slate-800 text-[10px]">Registered Valuer (Land &amp; Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)</p>
-              <p className="font-bold text-slate-800 text-[10px]">Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)</p>
-              <p className="font-bold text-slate-800 text-[10px]">Corporate Member &amp; Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)</p>
-              <p className="font-bold text-slate-800 text-[10px]">Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) &amp; IIV, Pune (F-4443)</p>
-              <p className="font-bold text-slate-800 text-[10px]">B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)</p>
-              <p className="font-bold text-indigo-700 text-[10px]">Empanelled Valuer of Axis Bank</p>
+              <p className="text-slate-600 text-[10px]">Registered Valuer (Land &amp; Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)</p>
+              <p className="text-slate-600 text-[10px]">Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)</p>
+              <p className="text-slate-600 text-[10px]">Corporate Member &amp; Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)</p>
+              <p className="text-slate-600 text-[10px]">Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) &amp; IIV, Pune (F-4443)</p>
+              <p className="text-slate-600 text-[10px]">B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)</p>
+              <p className="text-indigo-700 text-[10px] font-medium">Empanelled Valuer of Axis Bank</p>
             </div>
           </div>
         </Section>
