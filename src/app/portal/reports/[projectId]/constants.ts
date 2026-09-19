@@ -255,7 +255,3 @@ export const BANK_SUB_TEMPLATES: Record<string, string[]> = {
   ],
   'TATA CAPITAL LTD': ['SME-BLG'],
 };
-
-export const COMPLETED_SUB_TEMPLATES = new Set<string>([
-  'AXIS BANK::AGRI',
-]);

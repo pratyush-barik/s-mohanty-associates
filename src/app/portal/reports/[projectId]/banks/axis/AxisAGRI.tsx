@@ -366,7 +366,23 @@ export default function AxisAGRI({
     };
   }, [initialFields, prefill, defaultRefNo, firstFieldAgentVisit]);
 
-  const [fields, setFields] = useState<AxisAgriReportFields>(() => decodeHtmlEntitiesDeep(initialData));
+  const [fields, setFields] = useState<AxisAgriReportFields>(() => {
+    const decoded = decodeHtmlEntitiesDeep(initialData);
+    if (typeof window !== 'undefined') {
+      try {
+        const localBackupStr = localStorage.getItem(`draft_backup_${projectId}`);
+        if (localBackupStr) {
+          const localBackup = JSON.parse(localBackupStr);
+          if (localBackup && typeof localBackup === 'object' && Object.keys(localBackup).length > 5) {
+            return { ...decoded, ...localBackup };
+          }
+        }
+      } catch (e) {
+        console.warn('Could not restore local draft backup:', e);
+      }
+    }
+    return decoded;
+  });
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState<string | boolean>(false);
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
@@ -875,6 +891,13 @@ export default function AxisAGRI({
     }
 
     autoSaveTimerRef.current = setTimeout(async () => {
+      // Save local backup snapshot immediately
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(`draft_backup_${projectId}`, JSON.stringify(fields));
+        } catch {}
+      }
+
       try {
         const res = await saveReportDraft(projectId, fields);
         if (res && 'error' in res && res.error) {

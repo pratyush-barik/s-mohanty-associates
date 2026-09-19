@@ -201,24 +201,11 @@ export default function BuilderSelector({
   const computedInitialFields = useMemo(() => {
     const decodedFields = decodeHtmlEntitiesDeep(initialFields);
     
-    // If builder query param is present, inspect for format changes
+    // If builder query param is present, preserve all saved fields and attach organisation template identifiers
     if (initialBuilder && !["INCOME_TAX", "IBBI_IVS", "BANK", "bank", "general", "wizard"].includes(initialBuilder)) {
       const decoded = decodeURIComponent(initialBuilder);
       const [qOrg, qSub] = decoded.includes("::") ? decoded.split("::") : [decoded, ""];
-      const currentOrg = decodedFields?.organisationTemplate || "";
-      const currentSub = decodedFields?.organisationSubTemplate || "";
 
-      // Format changed via query parameter to a completely different bank -> fresh start
-      if (currentOrg && (currentOrg !== qOrg || currentSub !== (qSub || ""))) {
-        return {
-          clientType: "organisation",
-          organisationTemplate: qOrg,
-          organisationSubTemplate: qSub || "",
-          bankName: qOrg,
-        };
-      }
-
-      // Preserve all saved fields from database and attach organisation template identifiers
       return {
         ...(typeof decodedFields === "object" && decodedFields !== null ? decodedFields : {}),
         clientType: "organisation",
@@ -270,8 +257,10 @@ export default function BuilderSelector({
     bankName?: string;
     to?: string;
   }) => {
-    // Format switch: Clean slate for the newly selected configuration
+    // Preserve existing draft fields when switching/completing format configuration
     const updatedFields = {
+      ...(typeof initialFields === 'object' && initialFields !== null ? decodeHtmlEntitiesDeep(initialFields) : {}),
+      ...(typeof activeFields === 'object' && activeFields !== null ? activeFields : {}),
       ...config,
     };
     setActiveFields(updatedFields);

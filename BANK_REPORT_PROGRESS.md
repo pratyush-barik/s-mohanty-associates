@@ -131,8 +131,16 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 #### 7.1 `AGRI` (Agricultural Land Valuation) — ✅ COMPLETE
 - **Vertical**: `AGRI`
 - **UI Builder**: `src/app/portal/reports/[projectId]/banks/axis/AxisAGRI.tsx`
-- **PDF Renderer**: `src/lib/banks/pdf-axis-agri-renderer.ts` (`PDFAxisAGRIRenderer`)
+- **PDF Renderer**: `src/lib/banks/pdf-axis-agri-renderer.ts` (`PDFAxisAgriRenderer`)
 - **Status**: Complete & Verified
+- **Key Features Implemented**:
+  - Full 14-Section Valuation architecture per Axis Bank AGRI (Non-Agri Format) specifications.
+  - Dedicated 10-Page PDF generator with exact statutory table structures and Times New Roman typography.
+  - Flow-based compact layout for Valuer Undertaking + Authorized Signatory block with height lookahead to eliminate orphan splits.
+  - Widened 8-column Building Valuation breakdown table (+20pt width with title-case headers) and side-by-side BUA/Carpet area columns.
+  - Flow-packed map rendering engine packing Location, Cadastral, Sketch, and Benchmark maps onto unified pages without unnecessary page breaks.
+  - Compact Checklist layout with reduced top margins and strict grid alignment.
+  - Comprehensive automatic calculations (Land values, Building depreciation, Realisable & Distress breakdowns, and Say conversions).
 
 #### 7.2 `HL-LAP` (Home Loan / Loan Against Property) — ✅ COMPLETE
 - **Vertical**: `HL-LAP`
