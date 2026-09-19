@@ -1188,7 +1188,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Total Built Up Area (aligned perfectly with the 3-column floor table above)
     this.drawRow([
       { text: 'Total Built Up area (in Sq.Ft.)', width: W * 0.3, isLabel: true, bold: true },
-      { text: totalBUADisplay, width: W * 0.2, bold: true, highlight: true },
+      { text: totalBUADisplay, width: W * 0.2, bold: true },
       { text: '', width: W * 0.5 },
     ], 20, 4);
 
@@ -1397,7 +1397,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const nonNetWidth = tW.slice(0, 7).reduce((a, b) => a + b, 0);
     this.drawRow([
       { text: 'Total', width: nonNetWidth, align: 'right', bold: true, isLabel: true },
-      { text: fields.totalBasicValueBuilding ? `Rs. ${fields.totalBasicValueBuilding}` : 'Rs. 0.00', width: tW[7], align: 'right', bold: true, highlight: true },
+      { text: fields.totalBasicValueBuilding ? `Rs. ${fields.totalBasicValueBuilding}` : 'Rs. 0.00', width: tW[7], align: 'right', bold: true },
     ], 20, 4);
 
     this.addSectionBreak(8);
@@ -1406,13 +1406,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const bldgValSummary = fields.totalBasicValueBuilding
       ? `TOTAL BASIC VALUE OF THE BUILDING- Rs.${fields.totalBasicValueBuilding}/- OR SAY Rs.${fields.totalBasicValueBuildingSay || fields.totalBasicValueBuilding}/- (${fields.totalBasicValueBuildingWords || ''}).`
       : 'TOTAL BASIC VALUE OF THE BUILDING: Not Available';
-    this.drawRow([{ text: bldgValSummary, width: W, bold: true, highlight: true }], 24, 6);
+    this.drawRow([{ text: bldgValSummary, width: W, bold: true }], 24, 6);
 
     this.addSectionBreak(8);
 
     this.drawRow([{ text: 'VALUE OF THE PROPERTY', width: W, isHeader: true, bold: true }], 20, 4);
 
-    const mColW = [W * 0.34, W * 0.17, W * 0.17, W * 0.15, W * 0.17];
+    const mColW = [W * 0.32, W * 0.17, W * 0.17, W * 0.17, W * 0.17];
     this.drawRow([
       { text: '', width: mColW[0], isHeader: true },
       { text: 'LAND', width: mColW[1], isHeader: true, bold: true, align: 'center' },
@@ -1434,7 +1434,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: fields.marketValueLand || fields.totalMarketValueLand ? `Rs. ${fields.marketValueLand || fields.totalMarketValueLand}` : '-', width: mColW[1], align: 'right' },
       { text: fields.marketValueBuilding || fields.totalBasicValueBuilding ? `Rs. ${fields.marketValueBuilding || fields.totalBasicValueBuilding}` : '-', width: mColW[2], align: 'right' },
       { text: fields.marketValueAmenities || '-', width: mColW[3], align: 'center' },
-      { text: fields.marketValueTotal ? `Rs. ${fields.marketValueTotal}` : '-', width: mColW[4], align: 'right', bold: true, highlight: true },
+      { text: fields.marketValueTotal ? `Rs. ${fields.marketValueTotal}` : '-', width: mColW[4], align: 'right', bold: true },
     ], 18, 4);
 
     const realPctDisplay = fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '95';
