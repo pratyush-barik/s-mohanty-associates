@@ -1842,8 +1842,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         </label>
                         {renderNaToggle('axisSbbPlotAreaAsPerSaleDeed')}
                       </div>
+                      {renderEditSwitch('axisSbbPlotAreaAsPerSaleDeed', !!fields.axisSbbPlotAreaAsPerSaleDeedIsNA)}
                     </div>
-                    {!fields.axisSbbPlotAreaAsPerSaleDeedIsNA && (
+                    {!fields.axisSbbPlotAreaAsPerSaleDeedEditOn && !fields.axisSbbPlotAreaAsPerSaleDeedIsNA && (
                       <div className="flex items-center space-x-2 mb-2 mt-1">
                         <input
                           type="number"
@@ -1867,11 +1868,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </div>
                     )}
                     <textarea
-                      className={`${inputCls} resize-y ${!fields.axisSbbPlotAreaAsPerSaleDeedIsNA ? 'bg-lime-50 text-lime-900 border-lime-300' : ''}`}
+                      className={`${inputCls} resize-y ${!fields.axisSbbPlotAreaAsPerSaleDeedEditOn && !fields.axisSbbPlotAreaAsPerSaleDeedIsNA ? 'bg-lime-50 text-lime-900 border-lime-300' : ''}`}
                       rows={1}
-                      value={fields.axisSbbPlotAreaAsPerSaleDeedIsNA ? 'NA' : areaComputed}
-                      readOnly
-                      disabled={isReadOnly || !!fields.axisSbbPlotAreaAsPerSaleDeedIsNA}
+                      value={fields.axisSbbPlotAreaAsPerSaleDeedIsNA ? 'NA' : (fields.axisSbbPlotAreaAsPerSaleDeedEditOn ? (fields.axisSbbPlotAreaAsPerSaleDeed || '') : areaComputed)}
+                      onChange={e => handleChange('axisSbbPlotAreaAsPerSaleDeed', e.target.value.toUpperCase())}
+                      readOnly={!fields.axisSbbPlotAreaAsPerSaleDeedEditOn || fields.axisSbbPlotAreaAsPerSaleDeedIsNA}
+                      disabled={isReadOnly || (!fields.axisSbbPlotAreaAsPerSaleDeedEditOn && !fields.axisSbbPlotAreaAsPerSaleDeedIsNA)}
                     />
                   </div>
                 </div>
