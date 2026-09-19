@@ -1866,22 +1866,38 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     });
     this.cursorY += 16;
 
-    // Subtitle
-    const chkSub = `(FOR THE PROPERTY VALUATION OF LAND & BUILDING BEARING KHATA NO: 405/107, PLOT NO: 191/1095, TOTAL AREA AC.0.013 DEC I.E. 566.00 SFT, KISSAM: GHARABARI, MOUZA: ACHHULI, PS- PURUSOTTAMPUR, NO-223, TS: PURUSOTTAMPUR NO-139, DIST- GANJAM, ODISHA.`;
-    const chkSubLines = this.wrapText(this.sanitizeText(chkSub), W, FONT_SIZE_CAPTION, false);
-    let csOff = 0;
-    for (const csl of chkSubLines) {
-      const cslTw = this.fontRegular.widthOfTextAtSize(csl, FONT_SIZE_CAPTION);
-      this.page.drawText(csl, {
-        x: MARGIN_L + (W - cslTw) / 2,
-        y: this.pdfY(this.cursorY) - 8 - csOff,
-        size: FONT_SIZE_CAPTION,
-        font: this.fontRegular,
-        color: rgb(0, 0, 0),
-      });
-      csOff += FONT_SIZE_CAPTION * LINE_HEIGHT;
+    // Subtitle (Dynamic from Plot No / S.No / G.No / Khasra No & Property Specifics)
+    const rawSpecifics = (fields.plotKhataDetails || '').trim();
+    let chkSub = '';
+    if (rawSpecifics) {
+      if (rawSpecifics.toUpperCase().startsWith('(FOR THE PROPERTY VALUATION OF') || rawSpecifics.toUpperCase().startsWith('FOR THE PROPERTY VALUATION OF')) {
+        chkSub = rawSpecifics.startsWith('(') ? rawSpecifics : `(${rawSpecifics})`;
+      } else {
+        chkSub = `(FOR THE PROPERTY VALUATION OF ${rawSpecifics})`;
+      }
+    } else {
+      const addrParts = [fields.colonyNagarSector, fields.localityLandmark, fields.villageTownCityMarket, fields.district, fields.state, fields.pincode].filter(Boolean);
+      if (addrParts.length > 0) {
+        chkSub = `(FOR THE PROPERTY VALUATION OF ${addrParts.join(', ')})`;
+      }
     }
-    this.cursorY += chkSubLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 4;
+
+    if (chkSub) {
+      const chkSubLines = this.wrapText(this.sanitizeText(chkSub), W, FONT_SIZE_CAPTION, false);
+      let csOff = 0;
+      for (const csl of chkSubLines) {
+        const cslTw = this.fontRegular.widthOfTextAtSize(csl, FONT_SIZE_CAPTION);
+        this.page.drawText(csl, {
+          x: MARGIN_L + (W - cslTw) / 2,
+          y: this.pdfY(this.cursorY) - 8 - csOff,
+          size: FONT_SIZE_CAPTION,
+          font: this.fontRegular,
+          color: rgb(0, 0, 0),
+        });
+        csOff += FONT_SIZE_CAPTION * LINE_HEIGHT;
+      }
+      this.cursorY += chkSubLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 4;
+    }
 
     const noticeText = 'Please ensure that the following important points are in order in the submitted report.';
     const nTw = this.fontItalic.widthOfTextAtSize(noticeText, FONT_SIZE_SMALL);

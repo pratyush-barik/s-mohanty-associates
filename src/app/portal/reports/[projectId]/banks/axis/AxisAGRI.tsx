@@ -3587,6 +3587,12 @@ export default function AxisAGRI({
         ═══════════════════════════════════════════════════════════════ */}
         <Section id="sec-15" title="Valuation Report Check List (12 Statutory Items)" number={15} defaultOpen>
           <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 shadow-xs">
+            {/* Checklist Property Header Reference */}
+            <div className="p-3 mb-4 rounded-lg bg-indigo-100/70 border border-indigo-200 text-xs text-indigo-950 font-medium">
+              <span className="font-bold text-indigo-900 uppercase">Valuation Property Reference: </span>
+              {fields.plotKhataDetails ? `(FOR THE PROPERTY VALUATION OF ${fields.plotKhataDetails})` : <span className="text-indigo-600 italic">Auto-referenced from Plot No / S.No / G.No / Khasra No &amp; Property Specifics (Section 1)</span>}
+            </div>
+
             <div className="space-y-2.5">
               {[
                 { id: 'q1', text: '1. Full names of all property owners are mentioned. Address of the property is mentioned and is same as latest title deed', options: ['YES', 'NO', 'NA'] },
