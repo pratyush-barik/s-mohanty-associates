@@ -3068,7 +3068,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
 
         // Pre-fills
         const landAreaPrefill = fields.axisSbbPlotAreaAsPerDocument || '';
-        const buildingAreaPrefill = fields.axisSbbTotalConstructedArea || '';
+        const floors9 = JSON.parse(fields.axisSbbFloorData || '[]');
+        let sumConstructed9 = 0;
+        floors9.forEach((f: any) => {
+          if (!f.constructedAreaIsNA && f.constructedArea) sumConstructed9 += Number(f.constructedArea) || 0;
+        });
+        const buildingAreaPrefillStr = fields.axisSbbTotalBuiltUpAreaEditOn ? (fields.axisSbbTotalBuiltUpArea || '') : `${sumConstructed9}`;
+        const buildingAreaPrefill = buildingAreaPrefillStr.replace(/[^0-9.]/g, '') || '';
 
         // Computations Market Valuation
         const landAmount = Number(fields.axisSbbValuationLandAreaIsNA ? 0 : (fields.axisSbbValuationLandAreaEditOn ? fields.axisSbbValuationLandArea : landAreaPrefill)) * Number(fields.axisSbbValuationLandRate || 0);
@@ -3110,7 +3116,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           <div className="text-[10px] leading-tight mb-1">
                             <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from Section 6 "PLOT AREA AS PER DOCUMENTS" = AREA (SQ.FT)]</span>
                           </div>
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-end gap-2">
                             {renderEditSwitch('axisSbbValuationLandArea', !!fields.axisSbbValuationLandAreaIsNA)}
                             {renderNaToggle('axisSbbValuationLandArea')}
                           </div>
@@ -3149,7 +3155,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           <div className="text-[10px] leading-tight mb-1">
                             <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from Section 8 "TOTAL BUILT UP AREA (IN SQFT)" = AREA (SQ.FT)]</span>
                           </div>
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-end gap-2">
                             {renderEditSwitch('axisSbbValuationBuildingArea', !!fields.axisSbbValuationBuildingAreaIsNA)}
                             {renderNaToggle('axisSbbValuationBuildingArea')}
                           </div>
@@ -3260,7 +3266,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <td className="p-3 font-semibold text-gray-700 align-top">Land</td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-end gap-2">
                             {renderEditSwitch('axisSbbGovtLandArea', !!fields.axisSbbGovtLandAreaIsNA)}
                             {renderNaToggle('axisSbbGovtLandArea')}
                           </div>
@@ -3284,7 +3290,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <td className="p-3 font-semibold text-gray-700 align-top">Building</td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
-                          <div className="flex items-center justify-between">
+                          <div className="flex items-center justify-end gap-2">
                             {renderEditSwitch('axisSbbGovtBuildingArea', !!fields.axisSbbGovtBuildingAreaIsNA)}
                             {renderNaToggle('axisSbbGovtBuildingArea')}
                           </div>
