@@ -2244,7 +2244,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // PAGE 10: VALUATION REPORT CHECKLIST & SIGNATURE BLOCK
     // =========================================================================
     this.addPage();
-    this.cursorY = 20;
+    this.cursorY = 8;
 
     const chkTitle = 'VALUATION REPORT CHECK LIST';
     const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE_HEADER);
@@ -2259,7 +2259,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     });
     this.page.drawLine({
       start: { x: chkX, y: chkY - 2 },
-      end: { x: chkX + chkTw, y: chkY - 2 },
+      end: { x: chkX + chkTw + 2.5, y: chkY - 2 },
       thickness: 1,
       color: rgb(0, 0, 0),
     });
@@ -2387,19 +2387,19 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     for (const item of checklistItems) {
       const resp = responses[item.id] || responses[`q${item.id}`] || item.defaultResp;
-      this.drawJustifiedText(`${item.id}.  ${item.title}`, MARGIN_L + 6, W - 15, FONT_SIZE_CAPTION, this.fontRegular, FONT_SIZE_CAPTION * LINE_HEIGHT);
+      this.drawJustifiedText(`${item.id}.  ${item.title}`, MARGIN_L + 4, W - 10, FONT_SIZE_CAPTION, this.fontRegular, FONT_SIZE_CAPTION * LINE_HEIGHT);
       this.cursorY += 1;
 
       // Bullet Response
       this.page.drawText('•', {
-        x: MARGIN_L + 20,
+        x: MARGIN_L + 18,
         y: this.pdfY(this.cursorY) - 7,
         size: FONT_SIZE_CAPTION,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
       this.page.drawText(this.sanitizeText(resp), {
-        x: MARGIN_L + 30,
+        x: MARGIN_L + 28,
         y: this.pdfY(this.cursorY) - 7,
         size: FONT_SIZE_CAPTION,
         font: this.fontBold,
