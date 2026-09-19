@@ -1442,14 +1442,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">CIVIC AMENITIES LIKE SCHOOL, HOSPITAL, MARKET, ETC. <span className="text-red-500">*</span></label>
                       {renderNaToggle('axisSbbCivicAmenities')}
                     </div>
-                    {renderEditSwitch('axisSbbCivicAmenities', !!fields.axisSbbCivicAmenitiesIsNA)}
                   </div>
                   <div className={`grid grid-cols-1 lg:grid-cols-2 gap-3 mt-1 ${fields.axisSbbCivicAmenitiesIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                     {['AVAILABLE, WITHIN THE RADIUS OF 1-2 KMS', 'NOT AVAILABLE'].map(opt => {
                       const defaultVal = 'AVAILABLE, WITHIN THE RADIUS OF 1-2 KMS';
-                      const currentVal = fields.axisSbbCivicAmenitiesEditOn 
-                        ? (Array.isArray(fields.axisSbbCivicAmenities) ? fields.axisSbbCivicAmenities[0] : (fields.axisSbbCivicAmenities || ''))
-                        : (Array.isArray(fields.axisSbbCivicAmenities) && fields.axisSbbCivicAmenities.length > 0 ? fields.axisSbbCivicAmenities[0] : (fields.axisSbbCivicAmenities || defaultVal));
+                      const currentVal = Array.isArray(fields.axisSbbCivicAmenities) && fields.axisSbbCivicAmenities.length > 0 
+                        ? fields.axisSbbCivicAmenities[0] 
+                        : (fields.axisSbbCivicAmenities || defaultVal);
                       
                       const isChecked = currentVal === opt;
 
@@ -1461,7 +1460,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             onChange={() => {
                               if (!isChecked) handleChange('axisSbbCivicAmenities', opt);
                             }}
-                            disabled={isReadOnly || fields.axisSbbCivicAmenitiesIsNA || !fields.axisSbbCivicAmenitiesEditOn}
+                            disabled={isReadOnly || fields.axisSbbCivicAmenitiesIsNA}
                             className="w-4 h-4 text-yellow-600 rounded focus:ring-yellow-500 border-gray-300"
                           />
                           <span className={`text-xs ${isChecked ? 'font-bold text-black' : 'font-semibold text-gray-700'}`}>{opt}</span>
