@@ -424,7 +424,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       });
 
       const font = isFilled ? this.fontBold : this.fontRegular;
-      const fs = 8.5;
+      const fs = FONT_SIZE_CAPTION;
       const tw = font.widthOfTextAtSize(char, fs);
       this.page.drawText(char, {
         x: cellX + (cellW - tw) / 2,
@@ -1100,7 +1100,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.page.drawText(landHeader, {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 10,
-      size: FONT_SIZE_SMALL + 1,
+      size: FONT_SIZE_HEADER,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
@@ -1152,7 +1152,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.page.drawText(valTitle, {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 10,
-      size: FONT_SIZE_SMALL + 1,
+      size: FONT_SIZE_HEADER,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
@@ -1170,35 +1170,35 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ];
 
     this.drawRow([
-      { text: 'PERTICULARS OF ITEMS', width: tW[0], isHeader: true, bold: true, fontSize: 8 },
-      { text: 'PLINTH AREA IN SQFT', width: tW[1], isHeader: true, bold: true, fontSize: 8 },
-      { text: 'ROOF HEIGHT', width: tW[2], isHeader: true, bold: true, fontSize: 8 },
-      { text: 'AGE OF THE BUILDING IN YEARS', width: tW[3], isHeader: true, bold: true, fontSize: 8 },
-      { text: 'REPLACEMENT RATE OF CONSTRUCTION', width: tW[4], isHeader: true, bold: true, fontSize: 8 },
-      { text: 'ESTIMATED REPLACEMENT COST OF CONSTRUCTION', width: tW[5], isHeader: true, bold: true, fontSize: 8 },
-      { text: 'DEPRECIATION AMOUNT IN RS. (1% per Anm)', width: tW[6], isHeader: true, bold: true, fontSize: 8 },
-      { text: 'NET VALUE AFTER DEPRECIATION', width: tW[7], isHeader: true, bold: true, fontSize: 8 },
+      { text: 'PERTICULARS OF ITEMS', width: tW[0], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
+      { text: 'PLINTH AREA IN SQFT', width: tW[1], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
+      { text: 'ROOF HEIGHT', width: tW[2], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
+      { text: 'AGE OF THE BUILDING IN YEARS', width: tW[3], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
+      { text: 'REPLACEMENT RATE OF CONSTRUCTION', width: tW[4], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
+      { text: 'ESTIMATED REPLACEMENT COST OF CONSTRUCTION', width: tW[5], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
+      { text: 'DEPRECIATION AMOUNT IN RS. (1% per Anm)', width: tW[6], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
+      { text: 'NET VALUE AFTER DEPRECIATION', width: tW[7], isHeader: true, bold: true, fontSize: FONT_SIZE_SMALL },
     ], 26, 4);
 
     const costFloors = fields.floors && fields.floors.length > 0 ? fields.floors : [];
 
     if (costFloors.length === 0) {
       this.drawRow([
-        { text: 'No construction/floor data provided', width: W, align: 'center', fontSize: 8.5 },
+        { text: 'No construction/floor data provided', width: W, align: 'center', fontSize: FONT_SIZE_SMALL },
       ], 18, 4);
     } else {
       for (const cf of costFloors) {
         const cfName = String(cf.floorName || (cf as any).name || 'Floor').toUpperCase();
         const cfPlinth = String(cf.plinthArea ?? (cf as any).area ?? '0.00');
         this.drawRow([
-          { text: cfName, width: tW[0], bold: true, fontSize: 8.5 },
-          { text: cfPlinth, width: tW[1], align: 'right', fontSize: 8.5 },
-          { text: String(cf.roofHeight || '-'), width: tW[2], align: 'center', fontSize: 8.5 },
-          { text: String(cf.ageYears || '-'), width: tW[3], align: 'center', fontSize: 8.5 },
-          { text: cf.replacementRate ? `Rs. ${cf.replacementRate}` : '-', width: tW[4], align: 'right', fontSize: 8.5 },
-          { text: cf.estimatedCost ? `Rs. ${cf.estimatedCost}` : '-', width: tW[5], align: 'right', fontSize: 8.5 },
-          { text: cf.depreciationAmount ? `Rs. ${cf.depreciationAmount}` : '-', width: tW[6], align: 'right', fontSize: 8.5 },
-          { text: cf.netValue ? `Rs. ${cf.netValue}` : '-', width: tW[7], align: 'right', bold: true, fontSize: 8.5 },
+          { text: cfName, width: tW[0], bold: true, fontSize: FONT_SIZE_SMALL },
+          { text: cfPlinth, width: tW[1], align: 'right', fontSize: FONT_SIZE_SMALL },
+          { text: String(cf.roofHeight || '-'), width: tW[2], align: 'center', fontSize: FONT_SIZE_SMALL },
+          { text: String(cf.ageYears || '-'), width: tW[3], align: 'center', fontSize: FONT_SIZE_SMALL },
+          { text: cf.replacementRate ? `Rs. ${cf.replacementRate}` : '-', width: tW[4], align: 'right', fontSize: FONT_SIZE_SMALL },
+          { text: cf.estimatedCost ? `Rs. ${cf.estimatedCost}` : '-', width: tW[5], align: 'right', fontSize: FONT_SIZE_SMALL },
+          { text: cf.depreciationAmount ? `Rs. ${cf.depreciationAmount}` : '-', width: tW[6], align: 'right', fontSize: FONT_SIZE_SMALL },
+          { text: cf.netValue ? `Rs. ${cf.netValue}` : '-', width: tW[7], align: 'right', bold: true, fontSize: FONT_SIZE_SMALL },
         ], 18, 4);
       }
     }
@@ -1280,28 +1280,28 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // Narrative statements
     const text1 = fields.realizableEstimationText || 'REALIZABLE ESTIMATION OF THE PROPERTY IN CASE OF DISTRESS SALE, IN CASE, THE BANK WILL SELL THE PROPERTY THROUGH PROCEEDINGS.';
-    this.drawRow([{ text: text1, width: W, fontSize: 8.5 }], 16, 2);
+    this.drawRow([{ text: text1, width: W, fontSize: FONT_SIZE_SMALL }], 16, 2);
 
     const mvLine = fields.marketValueTotal
       ? `MARKET VALUE OF THE PROPERTY: Rs.${fields.marketValueTotal}/- OR SAY Rs.${fields.marketValueSay || fields.marketValueTotal}/- (${fields.marketValueWords || ''}).`
       : 'MARKET VALUE OF THE PROPERTY: Not Available';
-    this.drawRow([{ text: mvLine, width: W, bold: true, fontSize: 8.5 }], 16, 2);
+    this.drawRow([{ text: mvLine, width: W, bold: true, fontSize: FONT_SIZE_SMALL }], 16, 2);
 
     const rvLine = fields.realisableValueTotal
       ? `REALIZABLE VALUE OF THE PROPERTY: Rs.${fields.realisableValueTotal}/- OR SAY Rs.${fields.realizableValueSay || fields.realisableValueTotal}/- (${fields.realizableValueWords || ''}).`
       : 'REALIZABLE VALUE OF THE PROPERTY: Not Available';
-    this.drawRow([{ text: rvLine, width: W, bold: true, fontSize: 8.5 }], 16, 2);
+    this.drawRow([{ text: rvLine, width: W, bold: true, fontSize: FONT_SIZE_SMALL }], 16, 2);
 
     const dvLine = fields.distressValueTotal
       ? `DISTRESS SALE VALUE OF THE PROPERTY WILL BE: Rs.${fields.distressValueTotal}/- OR SAY Rs.${fields.distressValueSay || fields.distressValueTotal}/- (${fields.distressValueWords || ''}).`
       : 'DISTRESS SALE VALUE OF THE PROPERTY: Not Available';
-    this.drawRow([{ text: dvLine, width: W, bold: true, fontSize: 8.5 }], 16, 2);
+    this.drawRow([{ text: dvLine, width: W, bold: true, fontSize: FONT_SIZE_SMALL }], 16, 2);
 
     const basisLine = `BASIS OF VALUATION:- ${fields.basisOfValuation || 'As per local market feedback and property analysis.'}`;
-    this.drawRow([{ text: basisLine, width: W, fontSize: 8.5 }], 28, 4);
+    this.drawRow([{ text: basisLine, width: W, fontSize: FONT_SIZE_SMALL }], 28, 4);
 
     const opLine = fields.opinionOfMarketValue || (fields.marketValueSay ? `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS SAY : Rs.${fields.marketValueSay}/- (${fields.marketValueWords || ''}).` : 'Not Available');
-    this.drawRow([{ text: opLine, width: W, bold: true, fontSize: 8.5 }], 24, 4);
+    this.drawRow([{ text: opLine, width: W, bold: true, fontSize: FONT_SIZE_SMALL }], 24, 4);
 
     // Remarks Box
     const remHeader = 'REMARKS:-';
@@ -1309,7 +1309,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const remNB = 'NB: WE HAVE NOT VERIFIED ANY SALE DEED, ROR, SKETCH MAP, AND APPROVAL PLAN. ALL THE DATA';
 
     this.drawRow([
-      { text: `${remHeader}\n${remBody}\n\n${remNB}`, width: W, fontSize: 8.5 },
+      { text: `${remHeader}\n${remBody}\n\n${remNB}`, width: W, fontSize: FONT_SIZE_SMALL },
     ], 90, 6);
 
     // =========================================================================
@@ -1319,7 +1319,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // Top Notice Box
     const topNotice = 'LIKE KHATA NO, PLOT NO, PLOT AREA, BUILT UP AREA, BOUNDARIES DETAILS ARE SHARED BY AXIS BANK LIMITED. REPORT IS RELEASED BASING UPON THE DATA SHARED BY AXIS BANK LIMITED.';
-    this.drawRow([{ text: topNotice, width: W, bold: true, fontSize: 8.5, isLabel: true }], 24, 4);
+    this.drawRow([{ text: topNotice, width: W, bold: true, fontSize: FONT_SIZE_SMALL, isLabel: true }], 24, 4);
 
     this.addSectionBreak(8);
 
@@ -1327,7 +1327,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.page.drawText('Undertaking:', {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 10,
-      size: FONT_SIZE_SMALL + 1,
+      size: FONT_SIZE_HEADER,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
@@ -1707,27 +1707,27 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // Subtitle
     const chkSub = `(FOR THE PROPERTY VALUATION OF LAND & BUILDING BEARING KHATA NO: 405/107, PLOT NO: 191/1095, TOTAL AREA AC.0.013 DEC I.E. 566.00 SFT, KISSAM: GHARABARI, MOUZA: ACHHULI, PS- PURUSOTTAMPUR, NO-223, TS: PURUSOTTAMPUR NO-139, DIST- GANJAM, ODISHA.`;
-    const chkSubLines = this.wrapText(this.sanitizeText(chkSub), W, 7.5, false);
+    const chkSubLines = this.wrapText(this.sanitizeText(chkSub), W, FONT_SIZE_CAPTION, false);
     let csOff = 0;
     for (const csl of chkSubLines) {
-      const cslTw = this.fontRegular.widthOfTextAtSize(csl, 7.5);
+      const cslTw = this.fontRegular.widthOfTextAtSize(csl, FONT_SIZE_CAPTION);
       this.page.drawText(csl, {
         x: MARGIN_L + (W - cslTw) / 2,
         y: this.pdfY(this.cursorY) - 8 - csOff,
-        size: 7.5,
+        size: FONT_SIZE_CAPTION,
         font: this.fontRegular,
         color: rgb(0, 0, 0),
       });
-      csOff += 7.5 * LINE_HEIGHT;
+      csOff += FONT_SIZE_CAPTION * LINE_HEIGHT;
     }
-    this.cursorY += chkSubLines.length * 7.5 * LINE_HEIGHT + 4;
+    this.cursorY += chkSubLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 4;
 
     const noticeText = 'Please ensure that the following important points are in order in the submitted report.';
-    const nTw = this.fontItalic.widthOfTextAtSize(noticeText, 8.5);
+    const nTw = this.fontItalic.widthOfTextAtSize(noticeText, FONT_SIZE_SMALL);
     this.page.drawText(noticeText, {
       x: MARGIN_L + (W - nTw) / 2,
       y: this.pdfY(this.cursorY) - 8,
-      size: 8.5,
+      size: FONT_SIZE_SMALL,
       font: this.fontItalic,
       color: rgb(0, 0, 0),
     });
@@ -1801,33 +1801,33 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     for (const item of checklistItems) {
       const resp = responses[item.id] || responses[`q${item.id}`] || item.defaultResp;
-      const tLines = this.wrapText(this.sanitizeText(`${item.id}.  ${item.title}`), W - 15, 7.5, false);
+      const tLines = this.wrapText(this.sanitizeText(`${item.id}.  ${item.title}`), W - 15, FONT_SIZE_CAPTION, false);
 
       let off = 0;
       for (const tl of tLines) {
         this.page.drawText(tl, {
           x: MARGIN_L + 6,
           y: this.pdfY(this.cursorY) - 7 - off,
-          size: 7.5,
+          size: FONT_SIZE_CAPTION,
           font: this.fontRegular,
           color: rgb(0, 0, 0),
         });
-        off += 7.5 * LINE_HEIGHT;
+        off += FONT_SIZE_CAPTION * LINE_HEIGHT;
       }
-      this.cursorY += tLines.length * 7.5 * LINE_HEIGHT + 1;
+      this.cursorY += tLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 1;
 
       // Bullet Response
       this.page.drawText('•', {
         x: MARGIN_L + 20,
         y: this.pdfY(this.cursorY) - 7,
-        size: 7.5,
+        size: FONT_SIZE_CAPTION,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
       this.page.drawText(this.sanitizeText(resp), {
         x: MARGIN_L + 30,
         y: this.pdfY(this.cursorY) - 7,
-        size: 7.5,
+        size: FONT_SIZE_CAPTION,
         font: this.fontBold,
         color: rgb(0, 0, 0),
       });
@@ -1838,25 +1838,25 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // Signature Block at Bottom
     const prepBy = 'Prepared By';
-    const pbTw = this.fontBold.widthOfTextAtSize(prepBy, 9);
+    const pbTw = this.fontBold.widthOfTextAtSize(prepBy, FONT_SIZE_SMALL);
     this.page.drawText(prepBy, {
       x: MARGIN_L + (W - pbTw) / 2,
       y: this.pdfY(this.cursorY) - 8,
-      size: 9,
+      size: FONT_SIZE_SMALL,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
     this.cursorY += 14;
 
     const sigDetails = [
-      { text: 'Er. Satyajit Mohanty', bold: true, size: 9.5 },
-      { text: 'Founder & Chief Executive | Registered Valuer | Chartered Engineer', bold: true, size: 8 },
-      { text: 'Registered Valuer (Land & Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)', bold: true, size: 8 },
-      { text: 'Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)', bold: true, size: 8 },
-      { text: 'Corporate Member & Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)', bold: false, size: 7.5 },
-      { text: 'Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) & IIV, Pune (F-4443)', bold: false, size: 7.5 },
-      { text: 'B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)', bold: false, size: 7.5 },
-      { text: 'Empanelled Valuer of Axis Bank', bold: true, size: 8.5 },
+      { text: 'Er. Satyajit Mohanty', bold: true, size: FONT_SIZE },
+      { text: 'Founder & Chief Executive | Registered Valuer | Chartered Engineer', bold: true, size: FONT_SIZE_SMALL },
+      { text: 'Registered Valuer (Land & Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)', bold: true, size: FONT_SIZE_SMALL },
+      { text: 'Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)', bold: true, size: FONT_SIZE_SMALL },
+      { text: 'Corporate Member & Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)', bold: false, size: FONT_SIZE_CAPTION },
+      { text: 'Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) & IIV, Pune (F-4443)', bold: false, size: FONT_SIZE_CAPTION },
+      { text: 'B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)', bold: false, size: FONT_SIZE_CAPTION },
+      { text: 'Empanelled Valuer of Axis Bank', bold: true, size: FONT_SIZE_SMALL },
     ];
 
     for (const sd of sigDetails) {
