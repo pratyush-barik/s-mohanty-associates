@@ -456,7 +456,11 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     const maxFs = Math.max(...cols.map(c => c.fontSize || FONT_SIZE));
     const rowH = Math.max(minH, maxLines * maxFs * LINE_HEIGHT + rowPad);
-    this.checkPageBreak(rowH);
+
+    // Lookahead orphan prevention: if this row is a header row, guarantee space for header + at least 2 content rows (~55pt)
+    const isHeaderRow = cols.some(c => c.isHeader);
+    const neededH = isHeaderRow ? (rowH + 55) : rowH;
+    this.checkPageBreak(neededH);
 
     const y = this.pdfY(this.cursorY);
     let curX = MARGIN_L;
@@ -1247,6 +1251,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // Land Rate Adopted narrative
     const landHeader = 'THE LAND RATE ADOPTED IN THIS VALUATION:';
+    this.checkPageBreak(16 + 45); // Heading + at least 2 bullet points
     this.page.drawText(landHeader, {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 10,
@@ -1283,6 +1288,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ];
 
     for (const b of landBullets) {
+      this.checkPageBreak(14);
       const bY = this.pdfY(this.cursorY) - 9;
       this.page.drawText('•', { x: MARGIN_L + 10, y: bY, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
       this.page.drawText(this.sanitizeText(b), {
@@ -1299,6 +1305,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     // Details of Valuation Table (8 columns)
     const valTitle = 'Details of Valuation:-';
+    this.checkPageBreak(16 + 26 + 45); // Title (16) + Table header (26) + at least 2 rows (45) = 87pt
     this.page.drawText(valTitle, {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 10,
@@ -1461,6 +1468,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.addSectionBreak(8);
 
     // Undertaking
+    this.checkPageBreak(16 + 55); // Heading + at least 2 bullet items
     this.page.drawText('Undertaking:', {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 10,
@@ -1490,9 +1498,11 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const undertakings = rawUndertakings.length > 0 ? rawUndertakings : defaultUndertakings;
 
     for (const u of undertakings) {
+      const uLines = this.wrapText(this.sanitizeText(u), W - 28, FONT_SIZE_SMALL, false);
+      const itemH = Math.max(14, uLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 2);
+      this.checkPageBreak(itemH);
       const uY = this.pdfY(this.cursorY) - 9;
       this.page.drawText('•', { x: MARGIN_L + 8, y: uY, size: FONT_SIZE_SMALL, font: this.fontBold, color: rgb(0, 0, 0) });
-      const uLines = this.wrapText(this.sanitizeText(u), W - 28, FONT_SIZE_SMALL, false);
       let lineOff = 0;
       for (const ul of uLines) {
         this.page.drawText(ul, {
@@ -1504,12 +1514,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         });
         lineOff += FONT_SIZE_SMALL * LINE_HEIGHT;
       }
-      this.cursorY += Math.max(14, uLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 2);
+      this.cursorY += itemH;
     }
 
     this.addSectionBreak(8);
 
     // Authorized Signatory block (right aligned)
+    this.checkPageBreak(55);
     const sigY = this.pdfY(this.cursorY);
     const signatoryTitle = fields.authorizedSignatory || 'Authorized Signatory';
     const sigLines = [
@@ -1534,6 +1545,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.addSectionBreak(8);
 
     // ANNEXURE - “A”
+    this.checkPageBreak(70);
     const annTitle = 'ANNEXURE - “A”';
     const annTw = this.fontBold.widthOfTextAtSize(annTitle, FONT_SIZE_TITLE);
     this.page.drawText(annTitle, {
@@ -1578,6 +1590,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.cursorY += Math.max(16, basisBldgLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 4);
 
     // Regarding Land
+    this.checkPageBreak(50);
     this.page.drawText('REGARDING LAND:', {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 9,
@@ -1604,6 +1617,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.cursorY += Math.max(16, landLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 6);
 
     // Regarding Building
+    this.checkPageBreak(50);
     this.page.drawText('REGARDING BUILDING:', {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 9,
@@ -1630,6 +1644,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.cursorY += Math.max(16, bldgLines.length * FONT_SIZE_SMALL * LINE_HEIGHT + 6);
 
     // Basis of arriving at the land rate
+    this.checkPageBreak(50);
     this.page.drawText('BASIS OF ARRIVING AT THE LAND RATE:', {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 9,

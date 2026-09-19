@@ -251,7 +251,7 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     };
 
     const drawRow = (texts: string[], isHeader = false) => {
-      this.checkPageBreak(rowHeight);
+      this.checkPageBreak(isHeader ? rowHeight + 45 : rowHeight);
       let curX = MARGIN_L;
       for (let i = 0; i < 5; i++) {
         drawCell(curX, this.cursorY, colW[i], rowHeight, texts[i], undefined, isHeader);

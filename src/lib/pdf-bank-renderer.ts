@@ -439,7 +439,8 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       });
   
       const headerH = Math.max(18, headerMaxLines * fontSize * LINE_HEIGHT + pad * 2);
-      this.checkPageBreak(headerH);
+      // Lookahead: ensure space for table header + at least 2 rows of content
+      this.checkPageBreak(headerH + (rows.length > 0 ? (rows.length >= 2 ? 45 : 22) : 0));
   
       y = this.pdfY(this.cursorY);
       curX = MARGIN_L;
