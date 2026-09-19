@@ -2941,14 +2941,14 @@ export default function AxisAGRI({
               <table className="min-w-full text-xs text-left border-collapse">
                 <thead className="bg-emerald-100/80 text-emerald-950 font-bold uppercase tracking-wider text-[11px]">
                   <tr>
-                    <th className="px-3 py-2.5 border-b border-r border-emerald-200 min-w-[150px] whitespace-nowrap">Particulars of Items</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[105px] whitespace-nowrap">Plinth Area (Sft)</th>
-                    <th className="px-3 py-2.5 text-center border-b border-r border-emerald-200 min-w-[90px] whitespace-nowrap">Roof Ht</th>
-                    <th className="px-3 py-2.5 text-center border-b border-r border-emerald-200 min-w-[80px] whitespace-nowrap">Age (Yrs)</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[120px] whitespace-nowrap">Rate (Rs./Sft)</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[145px] whitespace-nowrap">Est. Cost (Rs.)</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[145px] whitespace-nowrap">Depreciation (Rs.)</th>
-                    <th className="px-3 py-2.5 text-right border-b border-emerald-200 min-w-[150px] whitespace-nowrap">Net Value (Rs.)</th>
+                    <th className="px-3 py-2.5 border-b border-r border-emerald-200 min-w-[180px] whitespace-nowrap">Particulars of Items</th>
+                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[150px] whitespace-nowrap">Plinth Area in Sqft</th>
+                    <th className="px-3 py-2.5 text-center border-b border-r border-emerald-200 min-w-[120px] whitespace-nowrap">Roof Height</th>
+                    <th className="px-3 py-2.5 text-center border-b border-r border-emerald-200 min-w-[140px] whitespace-nowrap">Age of the Building in Years</th>
+                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[180px] whitespace-nowrap">Replacement Rate of Construction</th>
+                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[200px] whitespace-nowrap">Estimated Replacement Cost of Construction</th>
+                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[200px] whitespace-nowrap">Depreciation Amount in Rs. (1% per Anm)</th>
+                    <th className="px-3 py-2.5 text-right border-b border-emerald-200 min-w-[180px] whitespace-nowrap">Net Value After Depreciation</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
@@ -3132,9 +3132,14 @@ export default function AxisAGRI({
                     <td className="p-3 font-bold text-blue-800 border-r">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span>Realisable Value (</span>
-                        <span className="w-12 px-1 py-0.5 text-center font-bold text-blue-900 bg-blue-50 border border-blue-200 rounded text-xs cursor-not-allowed">
-                          {fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '95'}
-                        </span>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          className="w-14 px-1.5 py-0.5 text-center font-bold text-blue-900 bg-white border border-blue-300 rounded text-xs focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                          value={fields.realisableValuePct !== undefined ? fields.realisableValuePct : '95'}
+                          onChange={e => handlePercentageChange('realisableValuePct', e.target.value)}
+                          disabled={isReadOnly}
+                        />
                         <span>%)</span>
                       </div>
                     </td>
@@ -3147,9 +3152,14 @@ export default function AxisAGRI({
                     <td className="p-3 font-bold text-amber-800 border-r">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span>Distress/Forced Sale Value (</span>
-                        <span className="w-12 px-1 py-0.5 text-center font-bold text-amber-900 bg-amber-50 border border-amber-200 rounded text-xs cursor-not-allowed">
-                          {fields.distressValuePct !== undefined && fields.distressValuePct !== '' ? fields.distressValuePct : '85'}
-                        </span>
+                        <input
+                          type="text"
+                          inputMode="decimal"
+                          className="w-14 px-1.5 py-0.5 text-center font-bold text-amber-900 bg-white border border-amber-300 rounded text-xs focus:ring-1 focus:ring-amber-500 focus:outline-none"
+                          value={fields.distressValuePct !== undefined ? fields.distressValuePct : '85'}
+                          onChange={e => handlePercentageChange('distressValuePct', e.target.value)}
+                          disabled={isReadOnly}
+                        />
                         <span>%)</span>
                       </div>
                     </td>

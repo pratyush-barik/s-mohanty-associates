@@ -1292,17 +1292,10 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Remarks Box
     const remHeader = 'REMARKS:-';
     const remBody = fields.remarksText || 'The property has been inspected and valued based on available documents, site measurements and current market conditions.';
-    const remNB = 'NB: WE HAVE NOT VERIFIED ANY SALE DEED, ROR, SKETCH MAP, AND APPROVAL PLAN. ALL THE DATA';
 
     this.drawRow([
-      { text: `${remHeader}\n${remBody}\n\n${remNB}`, width: W, fontSize: FONT_SIZE_SMALL },
-    ], 90, 6);
-
-    this.addSectionBreak(8);
-
-    // Top Notice Box
-    const topNotice = 'LIKE KHATA NO, PLOT NO, PLOT AREA, BUILT UP AREA, BOUNDARIES DETAILS ARE SHARED BY AXIS BANK LIMITED. REPORT IS RELEASED BASING UPON THE DATA SHARED BY AXIS BANK LIMITED.';
-    this.drawRow([{ text: topNotice, width: W, bold: true, fontSize: FONT_SIZE_SMALL, isLabel: true }], 24, 4);
+      { text: `${remHeader}\n${remBody}`, width: W, fontSize: FONT_SIZE_SMALL },
+    ], 36, 6);
 
     this.addSectionBreak(8);
 
