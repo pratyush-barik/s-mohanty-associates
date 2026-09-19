@@ -2571,7 +2571,7 @@ export default function AxisAGRI({
                       value={fields.totalSaleableAreaLand || ''}
                       onChange={e => handleSaleableAreaChange('land', e.target.value)}
                       disabled={isReadOnly}
-                      placeholder="e.g. 566.00"
+                      placeholder=""
                     />
                   </Field>
 
@@ -2583,7 +2583,7 @@ export default function AxisAGRI({
                       value={fields.totalSaleableAreaBuilding || ''}
                       onChange={e => handleSaleableAreaChange('bldg', e.target.value)}
                       disabled={isReadOnly}
-                      placeholder="e.g. 1254.00"
+                      placeholder=""
                     />
                   </Field>
                 </div>
@@ -2668,12 +2668,12 @@ export default function AxisAGRI({
                             onChange={e => handleFloorChange(idx, 'usage', e.target.value)}
                             disabled={isReadOnly}
                           >
-                            <option value="Residential">Residential</option>
-                            <option value="Commercial">Commercial</option>
-                            <option value="Office">Office</option>
                             <option value="Storage">Storage</option>
+                            <option value="Office">Office</option>
                             <option value="Parking">Parking</option>
                             <option value="Industrial">Industrial</option>
+                            <option value="Commercial">Commercial</option>
+                            <option value="Residential">Residential</option>
                           </select>
                         </td>
                         {!isReadOnly && (
@@ -3172,32 +3172,32 @@ export default function AxisAGRI({
               <table className="w-full text-xs text-left border-collapse">
                 <thead className="bg-indigo-100/80 text-indigo-950 font-bold uppercase tracking-wider text-[11px]">
                   <tr>
-                    <th className="p-3 border-b border-r border-indigo-200 min-w-[200px]">Category</th>
-                    <th className="p-3 text-right w-1/5 min-w-[130px] border-b border-r border-indigo-200">Land (₹)</th>
-                    <th className="p-3 text-right w-1/5 min-w-[130px] border-b border-r border-indigo-200">Building (₹)</th>
-                    <th className="p-3 text-right w-1/6 min-w-[110px] border-b border-r border-indigo-200">Amenities (₹)</th>
-                    <th className="p-3 text-right w-1/5 min-w-[140px] border-b border-indigo-200">Total in Rs (₹)</th>
+                    <th className="p-3 border-b border-r border-indigo-200 min-w-[240px]">VALUE OF THE PROPERTY</th>
+                    <th className="p-3 text-center w-1/5 min-w-[130px] border-b border-r border-indigo-200">LAND</th>
+                    <th className="p-3 text-center w-1/5 min-w-[130px] border-b border-r border-indigo-200">BUILDING</th>
+                    <th className="p-3 text-center w-1/6 min-w-[110px] border-b border-r border-indigo-200">AMENITIES</th>
+                    <th className="p-3 text-center w-1/5 min-w-[140px] border-b border-indigo-200">TOTAL IN RS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
                   <tr>
-                    <td className="p-3 font-bold text-slate-700 border-r">Govt. Guide Line Value</td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.govtGuideLand || ''} onChange={e => handleMatrixCellChange('govtGuideLand', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.govtGuideBuilding || ''} onChange={e => handleMatrixCellChange('govtGuideBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.govtGuideAmenities || ''} onChange={e => handleMatrixCellChange('govtGuideAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-slate-800 text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.govtGuideTotal || ''} readOnly disabled /></td>
+                    <td className="p-3 font-bold text-slate-800 border-r">GOVT. GUIDE LINE VALUE</td>
+                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs font-mono`} value={fields.govtGuideLand || ''} onChange={e => handleMatrixCellChange('govtGuideLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs font-mono`} value={fields.govtGuideBuilding || ''} onChange={e => handleMatrixCellChange('govtGuideBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs font-mono`} value={fields.govtGuideAmenities || ''} onChange={e => handleMatrixCellChange('govtGuideAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-slate-900 text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.govtGuideTotal || ''} readOnly disabled /></td>
                   </tr>
                   <tr className="bg-emerald-50/50">
-                    <td className="p-3 font-bold text-emerald-800 border-r">Market Value in Rs</td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.marketValueLand || ''} onChange={e => handleMatrixCellChange('marketValueLand', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.marketValueBuilding || ''} onChange={e => handleMatrixCellChange('marketValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs`} value={fields.marketValueAmenities || ''} onChange={e => handleMatrixCellChange('marketValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-emerald-800 text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.marketValueTotal || ''} readOnly disabled /></td>
+                    <td className="p-3 font-bold text-emerald-900 border-r">MARKET VALUE IN RS</td>
+                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs font-mono`} value={fields.marketValueLand || ''} onChange={e => handleMatrixCellChange('marketValueLand', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs font-mono`} value={fields.marketValueBuilding || ''} onChange={e => handleMatrixCellChange('marketValueBuilding', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2 border-r"><input type="text" inputMode="decimal" className={`${inputCls} text-right text-xs font-mono`} value={fields.marketValueAmenities || ''} onChange={e => handleMatrixCellChange('marketValueAmenities', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-emerald-900 text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.marketValueTotal || ''} readOnly disabled /></td>
                   </tr>
                   <tr className="bg-blue-50/50">
-                    <td className="p-3 font-bold text-blue-800 border-r">
+                    <td className="p-3 font-bold text-blue-900 border-r">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span>Realisable Value (</span>
+                        <span>REALISABLE VALUE (</span>
                         <input
                           type="text"
                           inputMode="decimal"
@@ -3209,15 +3209,15 @@ export default function AxisAGRI({
                         <span>%)</span>
                       </div>
                     </td>
-                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueLand || ''} readOnly disabled /></td>
-                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueBuilding || ''} readOnly disabled /></td>
-                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueAmenities || ''} readOnly disabled /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-blue-800 text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueTotal || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueLand || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueBuilding || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueAmenities || ''} readOnly disabled /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-blue-900 text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.realisableValueTotal || ''} readOnly disabled /></td>
                   </tr>
                   <tr className="bg-amber-50/50">
-                    <td className="p-3 font-bold text-amber-800 border-r">
+                    <td className="p-3 font-bold text-amber-900 border-r">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span>Distress/Forced Sale Value (</span>
+                        <span>DISTRESS/FORCED SALE VALUE (</span>
                         <input
                           type="text"
                           inputMode="decimal"
@@ -3229,17 +3229,17 @@ export default function AxisAGRI({
                         <span>%)</span>
                       </div>
                     </td>
-                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueLand || ''} readOnly disabled /></td>
-                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueBuilding || ''} readOnly disabled /></td>
-                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueAmenities || ''} readOnly disabled /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-amber-800 text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueTotal || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueLand || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueBuilding || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueAmenities || ''} readOnly disabled /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-amber-900 text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.distressValueTotal || ''} readOnly disabled /></td>
                   </tr>
                   <tr className="bg-indigo-50/50">
-                    <td className="p-3 font-bold text-indigo-800 border-r">Insurable Value</td>
-                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed`} value="-" readOnly disabled /></td>
-                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.insurableValueBuilding || ''} readOnly disabled /></td>
-                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.insurableValueAmenities || ''} readOnly disabled /></td>
-                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-indigo-800 text-xs bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.insurableValueTotal || ''} readOnly disabled /></td>
+                    <td className="p-3 font-bold text-indigo-900 border-r">INSURABLE VALUE</td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 cursor-not-allowed`} value="-" readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.insurableValueBuilding || ''} readOnly disabled /></td>
+                    <td className="p-2 border-r"><input type="text" className={`${inputCls} text-right text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.insurableValueAmenities || ''} readOnly disabled /></td>
+                    <td className="p-2"><input type="text" className={`${inputCls} text-right font-bold text-indigo-900 text-xs font-mono bg-slate-100 dark:bg-slate-800 cursor-not-allowed`} value={fields.insurableValueTotal || ''} readOnly disabled /></td>
                   </tr>
                 </tbody>
               </table>

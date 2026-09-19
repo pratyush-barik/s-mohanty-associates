@@ -415,7 +415,9 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     labelCols: number[] = [],
     boldCols: number[] = [],
     highlightedCells: { r: number, c: number }[] = [],
-    boldCells: { r: number, c: number }[] = []
+    boldCells: { r: number, c: number }[] = [],
+    colAligns: ('left' | 'center' | 'right')[] = [],
+    headerAligns: ('left' | 'center' | 'right')[] = []
   ): void {
     const fontSize = FONT_SIZE;
     const pad = 3;
@@ -457,10 +459,18 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
           borderWidth: BORDER_W,
         });
   
+        const align = headerAligns[i] || colAligns[i] || 'left';
         let lineY = y - pad - fontSize * 0.85;
         for (const line of headerWrapped[i]) {
+          const lineW = this.fontBold.widthOfTextAtSize(line, fontSize);
+          let lineX = curX + pad;
+          if (align === 'center') {
+            lineX = curX + (normalizedColWidths[i] - lineW) / 2;
+          } else if (align === 'right') {
+            lineX = curX + normalizedColWidths[i] - pad - lineW;
+          }
           this.page.drawText(line, {
-            x: curX + pad,
+            x: lineX,
             y: lineY,
             size: fontSize,
             font: this.fontBold,
@@ -504,7 +514,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
             y: y - rowH,
             width: w,
             height: rowH,
-            color: hexToRgb(OPT_BG), // Uses default blue bg matching headers
+            color: hexToRgb(LBL_BG), // Uses default blue bg matching headers
             opacity: BG_OPACITY,
             borderColor: rgb(0, 0, 0),
             borderWidth: BORDER_W,
@@ -531,13 +541,22 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
           });
         }
 
+        const align = colAligns[i] || 'left';
+        const cellFont = (isCellBold || isCellHighlight || isHighlight || isLabel || boldCols.includes(i)) ? this.fontBold : this.fontRegular;
         let lineY = y - pad - fontSize * 0.85;
         for (const line of rowWrapped[i]) {
+          const lineW = cellFont.widthOfTextAtSize(line, fontSize);
+          let lineX = curX + pad;
+          if (align === 'center') {
+            lineX = curX + (w - lineW) / 2;
+          } else if (align === 'right') {
+            lineX = curX + w - pad - lineW;
+          }
           this.page.drawText(line, {
-            x: curX + pad,
+            x: lineX,
             y: lineY,
             size: fontSize,
-            font: (isCellBold || isCellHighlight || isHighlight || isLabel || boldCols.includes(i)) ? this.fontBold : this.fontRegular,
+            font: cellFont,
             color: rgb(0, 0, 0),
           });
           lineY -= fontSize * LINE_HEIGHT;
