@@ -538,7 +538,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     } = {}
   ): void {
     const baseFontSize = options.fontSize || FONT_SIZE;
-    const isBaseBold = !!(options.bold || options.isHeader || options.isLabel || options.highlight);
+    const isBaseBold = options.bold !== undefined ? options.bold : !!(options.isHeader || options.isLabel || options.highlight);
     const vAlign = options.vAlign || 'middle';
     const align = options.align || 'left';
 
@@ -655,7 +655,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     for (const col of cols) {
       const colFs = col.fontSize || FONT_SIZE;
-      const isBold = !!(col.bold || col.isHeader || col.isLabel || col.highlight);
+      const isBold = col.bold !== undefined ? col.bold : !!(col.isHeader || col.isLabel || col.highlight);
       const maxTextW = Math.max(10, col.width - 8);
 
       if (colFs > maxFsInRow) maxFsInRow = colFs;
@@ -1455,16 +1455,12 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const totalBUADisplay = formatBUA(fields.totalBUA);
     const totalCarpetDisplay = formatCarpet(fields.totalCarpetArea);
 
-    // Total Built Up Area (2-column layout matching summary rows)
+    // Total Built Up Area & Total Carpet Area (side-by-side in 4 columns)
     this.drawRow([
-      { text: 'Total Built Up area (in Sq.Ft.)', width: W * 0.5, isLabel: true, bold: true },
-      { text: totalBUADisplay, width: W * 0.5, bold: true },
-    ], 20, 4);
-
-    // Total Carpet Area
-    this.drawRow([
-      { text: 'Total Carpet area (in Sq.Ft.)', width: W * 0.5, isLabel: true },
-      { text: totalCarpetDisplay, width: W * 0.5 },
+      { text: 'Total Built Up area (in Sq.Ft.)', width: col4_w1, isLabel: true, bold: true },
+      { text: totalBUADisplay, width: col4_w2, bold: true },
+      { text: 'Total Carpet area (in Sq.Ft.)', width: col4_w3, isLabel: true },
+      { text: totalCarpetDisplay, width: col4_w4 },
     ], 20, 4);
 
     const formatSaleableArea = (land?: string, bldg?: string, raw?: string): string => {
@@ -1619,16 +1615,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.addSectionBreak(8);
 
     // Details of Valuation Table (8 columns)
-    const valTitle = 'Details of Valuation:-';
-    this.checkPageBreak(16 + 26 + 45); // Title (16) + Table header (26) + at least 2 rows (45) = 87pt
-    this.page.drawText(valTitle, {
-      x: MARGIN_L,
-      y: this.pdfY(this.cursorY) - 10,
-      size: FONT_SIZE,
-      font: this.fontBold,
-      color: rgb(0, 0, 0),
-    });
-    this.cursorY += 16;
+    this.drawRow([{ text: 'DETAILS OF VALUATION', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE }], 20, 4);
 
     const tW = [
       76, // PARTICULARS OF ITEMS
@@ -1642,14 +1629,14 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ];
 
     this.drawRow([
-      { text: 'PARTICULARS OF ITEMS', width: tW[0], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'PLINTH AREA IN SQFT', width: tW[1], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'ROOF HEIGHT', width: tW[2], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'AGE OF BUILDING IN YEARS', width: tW[3], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'REPLACEMENT RATE OF CONSTRUCTION (RS.)', width: tW[4], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'ESTIMATED REPLACEMENT COST OF CONSTRUCTION (RS.)', width: tW[5], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'DEPRECIATION AMOUNT (1% per Annum)', width: tW[6], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'NET VALUE AFTER DEPRECIATION', width: tW[7], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
+      { text: 'PARTICULARS OF ITEMS', width: tW[0], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'PLINTH AREA IN SQFT', width: tW[1], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'ROOF HEIGHT', width: tW[2], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'AGE OF BUILDING IN YEARS', width: tW[3], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'REPLACEMENT RATE OF CONSTRUCTION (RS.)', width: tW[4], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'ESTIMATED REPLACEMENT COST OF CONSTRUCTION (RS.)', width: tW[5], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'DEPRECIATION AMOUNT (1% per Annum)', width: tW[6], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'NET VALUE AFTER DEPRECIATION', width: tW[7], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
     ], 30, 4);
 
     const costFloors = fields.floors && fields.floors.length > 0 ? fields.floors : [];
@@ -1663,7 +1650,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         const cfName = String(cf.floorName || (cf as any).name || 'Floor').toUpperCase();
         const cfPlinth = String(cf.plinthArea ?? (cf as any).area ?? '0.00');
         this.drawRow([
-          { text: cfName, width: tW[0], isLabel: true, bold: true, fontSize: FONT_SIZE },
+          { text: cfName, width: tW[0], isLabel: true, bold: false, fontSize: FONT_SIZE },
           { text: cfPlinth, width: tW[1], align: 'left', fontSize: FONT_SIZE },
           { text: String(cf.roofHeight || '-'), width: tW[2], align: 'left', fontSize: FONT_SIZE },
           { text: String(cf.ageYears || '-'), width: tW[3], align: 'left', fontSize: FONT_SIZE },
@@ -1705,11 +1692,11 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     const mColW = [W * 0.32, W * 0.17, W * 0.17, W * 0.17, W * 0.17];
     this.drawRow([
-      { text: '', width: mColW[0], isHeader: true },
-      { text: 'LAND', width: mColW[1], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'BUILDING', width: mColW[2], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'AMENITIES', width: mColW[3], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
-      { text: 'TOTAL IN RS', width: mColW[4], isHeader: true, bold: true, align: 'center', fontSize: FONT_SIZE },
+      { text: '', width: mColW[0], isHeader: true, bold: false },
+      { text: 'LAND', width: mColW[1], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'BUILDING', width: mColW[2], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'AMENITIES', width: mColW[3], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
+      { text: 'TOTAL IN RS', width: mColW[4], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
     ], 18, 4);
 
     const formatMatrixVal = (val?: string | number): string => {
@@ -1724,45 +1711,45 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     };
 
     this.drawRow([
-      { text: 'GOVT. GUIDE LINE VALUE', width: mColW[0], isLabel: true, bold: true, fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.govtGuideLand || fields.totalGovtValueLand), width: mColW[1], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.govtGuideBuilding), width: mColW[2], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.govtGuideAmenities), width: mColW[3], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.govtGuideTotal || fields.totalGovtValueLand), width: mColW[4], align: 'right', bold: true, fontSize: FONT_SIZE },
+      { text: 'GOVT. GUIDE LINE VALUE', width: mColW[0], isLabel: true, bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.govtGuideLand || fields.totalGovtValueLand), width: mColW[1], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.govtGuideBuilding), width: mColW[2], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.govtGuideAmenities), width: mColW[3], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.govtGuideTotal || fields.totalGovtValueLand), width: mColW[4], align: 'right', bold: false, fontSize: FONT_SIZE },
     ], 18, 4);
 
     this.drawRow([
-      { text: 'MARKET VALUE IN RS', width: mColW[0], isLabel: true, bold: true, fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.marketValueLand || fields.totalMarketValueLand), width: mColW[1], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.marketValueBuilding || fields.totalBasicValueBuilding), width: mColW[2], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.marketValueAmenities), width: mColW[3], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.marketValueTotal), width: mColW[4], align: 'right', bold: true, fontSize: FONT_SIZE },
+      { text: 'MARKET VALUE IN RS', width: mColW[0], isLabel: true, bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.marketValueLand || fields.totalMarketValueLand), width: mColW[1], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.marketValueBuilding || fields.totalBasicValueBuilding), width: mColW[2], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.marketValueAmenities), width: mColW[3], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.marketValueTotal), width: mColW[4], align: 'right', bold: false, fontSize: FONT_SIZE },
     ], 18, 4);
 
     const realPctDisplay = fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '95';
     this.drawRow([
-      { text: `REALISABLE VALUE (${realPctDisplay}%)`, width: mColW[0], isLabel: true, bold: true, fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.realisableValueLand), width: mColW[1], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.realisableValueBuilding), width: mColW[2], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.realisableValueAmenities), width: mColW[3], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.realisableValueTotal), width: mColW[4], align: 'right', bold: true, fontSize: FONT_SIZE },
+      { text: `REALISABLE VALUE (${realPctDisplay}%)`, width: mColW[0], isLabel: true, bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.realisableValueLand), width: mColW[1], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.realisableValueBuilding), width: mColW[2], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.realisableValueAmenities), width: mColW[3], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.realisableValueTotal), width: mColW[4], align: 'right', bold: false, fontSize: FONT_SIZE },
     ], 18, 4);
 
     const distPctDisplay = fields.distressValuePct !== undefined && fields.distressValuePct !== '' ? fields.distressValuePct : '85';
     this.drawRow([
-      { text: `DISTRESS/FORCED SALE VALUE (${distPctDisplay}%)`, width: mColW[0], isLabel: true, bold: true, fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.distressValueLand), width: mColW[1], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.distressValueBuilding), width: mColW[2], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.distressValueAmenities), width: mColW[3], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.distressValueTotal), width: mColW[4], align: 'right', bold: true, fontSize: FONT_SIZE },
+      { text: `DISTRESS/FORCED SALE VALUE (${distPctDisplay}%)`, width: mColW[0], isLabel: true, bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.distressValueLand), width: mColW[1], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.distressValueBuilding), width: mColW[2], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.distressValueAmenities), width: mColW[3], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.distressValueTotal), width: mColW[4], align: 'right', bold: false, fontSize: FONT_SIZE },
     ], 18, 4);
 
     this.drawRow([
-      { text: 'INSURABLE VALUE', width: mColW[0], isLabel: true, bold: true, fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.insurableValueLand), width: mColW[1], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.insurableValueBuilding), width: mColW[2], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.insurableValueAmenities), width: mColW[3], align: 'right', fontSize: FONT_SIZE },
-      { text: formatMatrixVal(fields.insurableValueTotal), width: mColW[4], align: 'right', bold: true, fontSize: FONT_SIZE },
+      { text: 'INSURABLE VALUE', width: mColW[0], isLabel: true, bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.insurableValueLand), width: mColW[1], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.insurableValueBuilding), width: mColW[2], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.insurableValueAmenities), width: mColW[3], align: 'right', bold: false, fontSize: FONT_SIZE },
+      { text: formatMatrixVal(fields.insurableValueTotal), width: mColW[4], align: 'right', bold: false, fontSize: FONT_SIZE },
     ], 18, 4);
 
     this.addSectionBreak(6);
