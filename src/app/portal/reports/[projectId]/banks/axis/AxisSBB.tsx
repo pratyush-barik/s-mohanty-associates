@@ -4,6 +4,7 @@ import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuild
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFAxisSBBRenderer } from '@/lib/banks/pdf-axis-sbb-renderer';
 import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
+import { Lock } from 'lucide-react';
 
 export const AXIS_SBB_CONFIG: BankConfig = {
   bankId: 'AXIS BANK',
@@ -2341,13 +2342,20 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           </div>
                           {renderEditSwitch('axisSbbAreaOfThePlot', !!fields.axisSbbAreaOfThePlotIsNA)}
                         </div>
-                        <input
-                          type="text"
-                          className={`${inputCls} ${!fields.axisSbbAreaOfThePlotEditOn && !fields.axisSbbAreaOfThePlotIsNA ? 'bg-gray-100' : ''}`}
-                          value={fields.axisSbbAreaOfThePlotIsNA ? 'NA' : (fields.axisSbbAreaOfThePlotEditOn ? (fields.axisSbbAreaOfThePlot || '') : (fields.axisSbbPlotAreaAsPerDocument || ''))}
-                          onChange={e => handleChange('axisSbbAreaOfThePlot', e.target.value.toUpperCase())}
-                          disabled={isReadOnly || !!fields.axisSbbAreaOfThePlotIsNA || !fields.axisSbbAreaOfThePlotEditOn}
-                        />
+                        <div className="relative">
+                          <input
+                            type="text"
+                            className={`${inputCls} ${!fields.axisSbbAreaOfThePlotEditOn && !fields.axisSbbAreaOfThePlotIsNA ? 'bg-gray-100 pr-8' : ''}`}
+                            value={fields.axisSbbAreaOfThePlotIsNA ? 'NA' : (fields.axisSbbAreaOfThePlotEditOn ? (fields.axisSbbAreaOfThePlot || '') : (fields.axisSbbPlotAreaAsPerDocument || ''))}
+                            onChange={e => handleChange('axisSbbAreaOfThePlot', e.target.value.toUpperCase())}
+                            disabled={isReadOnly || !!fields.axisSbbAreaOfThePlotIsNA || !fields.axisSbbAreaOfThePlotEditOn}
+                          />
+                          {!fields.axisSbbAreaOfThePlotEditOn && !fields.axisSbbAreaOfThePlotIsNA && (
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 6 "PLOT AREA AS PER DOCUMENTS"'>
+                              <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                            </div>
+                          )}
+                        </div>
                       </div>
                       
                       {/* DEMARCATION AT SITE */}
@@ -2384,13 +2392,20 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         </div>
                         {renderEditSwitch('axisSbbApprovedBuiltUpArea', !!fields.axisSbbApprovedBuiltUpAreaIsNA)}
                       </div>
-                      <input
-                        type="text"
-                        className={`${inputCls} ${!fields.axisSbbApprovedBuiltUpAreaEditOn && !fields.axisSbbApprovedBuiltUpAreaIsNA ? 'bg-gray-100' : ''}`}
-                        value={fields.axisSbbApprovedBuiltUpAreaIsNA ? 'NA' : (fields.axisSbbApprovedBuiltUpAreaEditOn ? (fields.axisSbbApprovedBuiltUpArea || '') : (fields.axisSbbTotalConstructedArea || ''))}
-                        onChange={e => handleChange('axisSbbApprovedBuiltUpArea', e.target.value.toUpperCase())}
-                        disabled={isReadOnly || !!fields.axisSbbApprovedBuiltUpAreaIsNA || !fields.axisSbbApprovedBuiltUpAreaEditOn}
-                      />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          className={`${inputCls} ${!fields.axisSbbApprovedBuiltUpAreaEditOn && !fields.axisSbbApprovedBuiltUpAreaIsNA ? 'bg-gray-100 pr-8' : ''}`}
+                          value={fields.axisSbbApprovedBuiltUpAreaIsNA ? 'NA' : (fields.axisSbbApprovedBuiltUpAreaEditOn ? (fields.axisSbbApprovedBuiltUpArea || '') : (fields.axisSbbTotalConstructedArea || ''))}
+                          onChange={e => handleChange('axisSbbApprovedBuiltUpArea', e.target.value.toUpperCase())}
+                          disabled={isReadOnly || !!fields.axisSbbApprovedBuiltUpAreaIsNA || !fields.axisSbbApprovedBuiltUpAreaEditOn}
+                        />
+                        {!fields.axisSbbApprovedBuiltUpAreaEditOn && !fields.axisSbbApprovedBuiltUpAreaIsNA && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 8 "TOTAL BUILT UP AREA"'>
+                            <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
