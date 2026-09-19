@@ -977,11 +977,26 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: fields.approvedBUA || 'Not Available', width: col4_w4 },
     ], 28, 4);
 
+    const formatActualBUA = (floors: AxisAgriFloorItem[]): string => {
+      if (!floors || floors.length === 0) return '';
+      const parts = floors
+        .filter(f => f.floorName && f.plinthArea && (parseFloat(String(f.plinthArea).replace(/[^0-9.]/g, '')) || 0) > 0)
+        .map(f => {
+          const p = (parseFloat(String(f.plinthArea).replace(/[^0-9.]/g, '')) || 0).toFixed(2);
+          return `${f.floorName}: ${p} Sft`;
+        });
+      const total = floors.reduce((sum, f) => sum + (parseFloat(String(f.plinthArea).replace(/[^0-9.]/g, '')) || 0), 0);
+      if (parts.length === 0) return '';
+      return `${parts.join(' ')} Total BUA: ${total.toFixed(2)} Sft`;
+    };
+
+    const actualBUADisplay = (fields.floors && fields.floors.length > 0 ? formatActualBUA(fields.floors) : '') || fields.actualBUA || 'Not Available';
+
     this.drawRow([
       { text: 'Area of the Plot As per Document', width: col4_w1, isLabel: true },
       { text: fields.areaOfPlotDoc || 'Not Available', width: col4_w2 },
       { text: 'Actual Built Up Area (In Sq.Ft.)', width: col4_w3, isLabel: true },
-      { text: fields.actualBUA || 'Not Available', width: col4_w4 },
+      { text: actualBUADisplay, width: col4_w4 },
     ], 28, 4);
 
     this.drawRow([

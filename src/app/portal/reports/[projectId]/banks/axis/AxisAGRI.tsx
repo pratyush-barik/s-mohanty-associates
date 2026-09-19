@@ -587,24 +587,25 @@ export default function AxisAGRI({
     }));
   }, []);
 
-  // Format actual BUA summary string from floor table
-  const handleAutoFormatBUA = useCallback(() => {
-    if (!fields.floors || fields.floors.length === 0) return;
-    const parts = fields.floors
-      .filter(f => f.floorName && f.plinthArea)
-      .map(f => `${f.floorName}: ${f.plinthArea} Sft`);
-    const total = fields.floors.reduce((acc, f) => acc + parseNum(f.plinthArea), 0);
-    const summary = `${parts.join(' ')} Total BUA: ${total.toFixed(2)} Sft`;
-    handleChange('actualBUA', summary);
-    handleChange('totalBUA', `${total.toFixed(2)} Sft`);
-  }, [fields.floors, handleChange]);
-
-  // Auto-sum Plinth Area into Total BUA & Total Basic Value of Building
+  // Auto-sum Plinth Area into Total BUA & Total Basic Value of Building & Auto-format actualBUA
   useEffect(() => {
-    const sumPlinth = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.plinthArea), 0);
+    const currentFloors = fields.floors || [];
+    const sumPlinth = currentFloors.reduce((acc, f) => acc + parseNum(f.plinthArea), 0);
     handleChange('totalBUA', sumPlinth > 0 ? `${sumPlinth.toFixed(2)} Sft` : '0.00 Sft');
 
-    const sumNetValue = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.netValue), 0);
+    // Auto-derive Actual BUA summary string for PDF / backend
+    const parts = currentFloors
+      .filter(f => f.floorName && f.plinthArea && parseNum(f.plinthArea) > 0)
+      .map(f => {
+        const p = parseNum(f.plinthArea).toFixed(2);
+        return `${f.floorName}: ${p} Sft`;
+      });
+    const autoSummary = parts.length > 0
+      ? `${parts.join(' ')} Total BUA: ${sumPlinth.toFixed(2)} Sft`
+      : '';
+    handleChange('actualBUA', autoSummary);
+
+    const sumNetValue = currentFloors.reduce((acc, f) => acc + parseNum(f.netValue), 0);
     if (sumNetValue > 0) {
       const formattedSum = sumNetValue.toFixed(2);
       const roundedVal = Math.round(sumNetValue / 1000) * 1000;
@@ -2473,29 +2474,21 @@ export default function AxisAGRI({
                 />
               </Field>
 
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-slate-700">Actual Built-Up Area Summary (In Sq.Ft.)</span>
-                  {!isReadOnly && (fields.floors || []).length > 0 && (
-                    <button
-                      type="button"
-                      onClick={handleAutoFormatBUA}
-                      className="text-[10px] text-blue-700 hover:text-blue-900 font-bold underline cursor-pointer"
-                      title="Generate summary text from floor table"
-                    >
-                      Auto-Format from Floors
-                    </button>
-                  )}
+              <Field label="Actual Built-Up Area Summary (In Sq.Ft.)">
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    className={`${inputCls} bg-slate-50 text-slate-500 font-medium cursor-not-allowed`}
+                    value="[Auto-calculated from Floor-Wise Break Up & Usage Details]"
+                    disabled
+                    readOnly
+                    title="Auto-calculated from Floor-Wise Break Up & Usage Details below"
+                  />
+                  <span className="absolute right-2 text-[10px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 pointer-events-none">
+                    Auto-Derived
+                  </span>
                 </div>
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.actualBUA || ''}
-                  onChange={e => handleChange('actualBUA', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder=""
-                />
-              </div>
+              </Field>
 
               <Field label="Demarcation at Site">
                 <select
