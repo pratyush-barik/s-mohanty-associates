@@ -985,10 +985,10 @@ export default function AxisAGRI({
       ? fields.propertyImages
       : (fields.propertyPhotos || fields.property_images || []);
     const photoBytesList = await Promise.all(propImages.map(fetchBytes));
-    const photos = propImages.map((url, idx) => ({
+    const photos = propImages.map((url: string, idx: number) => ({
       bytes: photoBytesList[idx] as Uint8Array,
       label: fields.propertyImageNames?.[idx] || `Photograph ${idx + 1}`,
-    })).filter(p => p.bytes && p.bytes.length > 0);
+    })).filter((p: {bytes: Uint8Array; label: string}) => p.bytes && p.bytes.length > 0);
 
     // Fetch location maps
     const locImages = (fields.locationMapImages && fields.locationMapImages.length > 0)
@@ -1119,7 +1119,7 @@ export default function AxisAGRI({
       <div className="flex-1 min-w-0 space-y-6 w-full">
         {/* Top Header & Bank Banner */}
         <ActiveConfigBanner
-          clientType={fields.clientType || 'organisation'}
+          clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.bankName || fields.organisationTemplate || 'AXIS BANK'}
           subclass={fields.organisationSubTemplate || 'AGRI'}

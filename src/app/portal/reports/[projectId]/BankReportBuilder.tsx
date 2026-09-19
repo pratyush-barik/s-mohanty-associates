@@ -1912,7 +1912,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
       <div className="flex-1 min-w-0 space-y-4">
         {/* Template Info Banner */}
         <ActiveConfigBanner
-          clientType={fields.clientType || 'organisation'}
+          clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.organisationTemplate || fields.bankName || config?.bankId || config?.displayName || ''}
           subclass={fields.organisationSubTemplate || (config?.subTemplateId && config.subTemplateId !== (fields.organisationTemplate || fields.bankName) ? config.subTemplateId : undefined)}

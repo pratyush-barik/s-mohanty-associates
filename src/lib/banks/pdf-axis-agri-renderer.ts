@@ -602,7 +602,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       bold?: boolean;
       italic?: boolean;
       fontSize?: number;
-      align?: 'left' | 'center' | 'right';
+      align?: 'left' | 'center' | 'right' | 'justify';
       vAlign?: 'top' | 'middle';
       bg?: string;
       opacity?: number;

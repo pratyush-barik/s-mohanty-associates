@@ -44,7 +44,7 @@ export const fetchDefaultLetterhead = PDFGeneralRenderer.fetchDefaultLetterhead;
 export async function convertToJpgBytes(bytes: Uint8Array): Promise<Uint8Array | null> {
   if (typeof window === 'undefined' || typeof document === 'undefined') return null;
   try {
-    const blob = new Blob([bytes]);
+    const blob = new Blob([bytes as any]);
     const blobUrl = URL.createObjectURL(blob);
     return await new Promise<Uint8Array | null>((resolve) => {
       const img = new Image();
