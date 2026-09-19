@@ -342,7 +342,16 @@ export default function AxisAGRI({
       visitingEngineer: raw.visitingEngineer || prefill?.firstFieldAgentName || prefill?.fieldEmployees?.[0]?.name || '',
       dateOfReportSubmission: formatReportDate(raw.dateOfReportSubmission || raw.reportDate || new Date()),
 
-      // Page 10: Checklist (Sec 12)
+      // Page 10: Checklist (Sec 12 / Sec 15)
+      checklistPropertyReference: raw.checklistPropertyReference !== undefined ? raw.checklistPropertyReference : (
+        raw.plotKhataDetails
+          ? (raw.plotKhataDetails.toUpperCase().startsWith('(FOR THE PROPERTY VALUATION OF') || raw.plotKhataDetails.toUpperCase().startsWith('FOR THE PROPERTY VALUATION OF')
+              ? (raw.plotKhataDetails.startsWith('(') ? raw.plotKhataDetails : `(${raw.plotKhataDetails})`)
+              : `(FOR THE PROPERTY VALUATION OF ${raw.plotKhataDetails})`)
+          : (([raw.colonyNagarSector, raw.localityLandmark, raw.villageTownCityMarket, raw.district, raw.state, raw.pincode].filter(Boolean).length > 0)
+              ? `(FOR THE PROPERTY VALUATION OF ${[raw.colonyNagarSector, raw.localityLandmark, raw.villageTownCityMarket, raw.district, raw.state, raw.pincode].filter(Boolean).join(', ')})`
+              : (prefill?.propertyAddress ? `(FOR THE PROPERTY VALUATION OF ${prefill.propertyAddress})` : ''))
+      ),
       checklistResponses: raw.checklistResponses || {
         q1: 'YES',
         q2: 'YES',
@@ -468,6 +477,25 @@ export default function AxisAGRI({
       return { ...prev, [key]: updated };
     });
   }, []);
+
+  // Section 15 Checklist Address Reference default resolver
+  const getDefaultChecklistAddress = useCallback(() => {
+    const rawSpecifics = (fields.plotKhataDetails || '').trim();
+    if (rawSpecifics) {
+      if (rawSpecifics.toUpperCase().startsWith('(FOR THE PROPERTY VALUATION OF') || rawSpecifics.toUpperCase().startsWith('FOR THE PROPERTY VALUATION OF')) {
+        return rawSpecifics.startsWith('(') ? rawSpecifics : `(${rawSpecifics})`;
+      }
+      return `(FOR THE PROPERTY VALUATION OF ${rawSpecifics})`;
+    }
+    const addrParts = [fields.colonyNagarSector, fields.localityLandmark, fields.villageTownCityMarket, fields.district, fields.state, fields.pincode].filter(Boolean);
+    if (addrParts.length > 0) {
+      return `(FOR THE PROPERTY VALUATION OF ${addrParts.join(', ')})`;
+    }
+    if (prefill?.propertyAddress) {
+      return `(FOR THE PROPERTY VALUATION OF ${prefill.propertyAddress})`;
+    }
+    return '';
+  }, [fields.plotKhataDetails, fields.colonyNagarSector, fields.localityLandmark, fields.villageTownCityMarket, fields.district, fields.state, fields.pincode, prefill?.propertyAddress]);
 
   // Section 3 derived active states & toggle handler
   const plotClassificationList = (() => {
@@ -3637,10 +3665,37 @@ export default function AxisAGRI({
               </h3>
             </div>
 
-            {/* Checklist Property Header Reference (Address with line break after) */}
-            <div className="p-3 mb-3 rounded-lg bg-indigo-100/70 border border-indigo-200 text-xs text-indigo-950 font-medium text-center">
-              <span className="font-bold text-indigo-900 uppercase">Valuation Property Reference: </span>
-              {fields.plotKhataDetails ? `(FOR THE PROPERTY VALUATION OF ${fields.plotKhataDetails})` : <span className="text-indigo-600 italic">Auto-referenced from Plot No / S.No / G.No / Khasra No &amp; Property Specifics (Section 1)</span>}
+            {/* Checklist Property Header Reference (Address with line break after) - Referenced & Editable */}
+            <div className="mb-4 bg-indigo-100/70 border border-indigo-200 rounded-xl p-4 shadow-2xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                <label className="text-xs font-bold text-indigo-950 uppercase tracking-wide flex items-center gap-1.5">
+                  <span>Valuation Property Reference / Address:</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const def = getDefaultChecklistAddress();
+                    handleChange('checklistPropertyReference', def);
+                  }}
+                  disabled={isReadOnly}
+                  className="text-[11px] font-semibold text-indigo-700 hover:text-indigo-900 bg-white hover:bg-indigo-50 border border-indigo-300 px-2.5 py-1 rounded-md transition-colors shadow-2xs cursor-pointer self-start sm:self-auto"
+                  title="Reset to address auto-referenced from Property Specifics (Section 2)"
+                >
+                  🔄 Reset / Sync from Default Address
+                </button>
+              </div>
+
+              <textarea
+                rows={2}
+                className="w-full text-xs font-medium text-indigo-950 bg-white border border-indigo-300 rounded-lg p-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all placeholder:text-indigo-300 shadow-2xs resize-y"
+                value={fields.checklistPropertyReference ?? ''}
+                onChange={e => handleChange('checklistPropertyReference', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="(FOR THE PROPERTY VALUATION OF Plot Nos- ..., Mouza-..., Dist-...)"
+              />
+              <p className="mt-1.5 text-[11px] text-indigo-800/80 italic">
+                * Referenced from default property address (Section 2). You can edit this directly for the checklist subtitle in the PDF.
+              </p>
             </div>
 
             {/* Notice text with underline and line break */}

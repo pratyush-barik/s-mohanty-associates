@@ -247,6 +247,7 @@ export interface AxisAgriReportFields {
   dateOfReportSubmission?: string;
 
   // Page 10: Check List & Images
+  checklistPropertyReference?: string;
   checklistResponses?: Record<string, string>;
   propertyPhotos?: any[];
   propertyImages?: string[];
@@ -2184,12 +2185,12 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // PAGE 10: VALUATION REPORT CHECKLIST & SIGNATURE BLOCK
     // =========================================================================
     this.addPage();
-    this.cursorY = 8;
+    this.cursorY = 28;
 
     const chkTitle = 'VALUATION REPORT CHECK LIST';
     const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE_HEADER);
     const chkX = MARGIN_L + (W - chkTw) / 2;
-    const chkY = this.pdfY(this.cursorY) - 10;
+    const chkY = this.pdfY(this.cursorY);
     this.page.drawText(chkTitle, {
       x: chkX,
       y: chkY,
@@ -2203,21 +2204,23 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       thickness: 1,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 18;
+    this.cursorY += 16;
 
-    // Subtitle (Dynamic from Plot No / S.No / G.No / Khasra No & Property Specifics)
-    const rawSpecifics = (fields.plotKhataDetails || '').trim();
-    let chkSub = '';
-    if (rawSpecifics) {
-      if (rawSpecifics.toUpperCase().startsWith('(FOR THE PROPERTY VALUATION OF') || rawSpecifics.toUpperCase().startsWith('FOR THE PROPERTY VALUATION OF')) {
-        chkSub = rawSpecifics.startsWith('(') ? rawSpecifics : `(${rawSpecifics})`;
+    // Subtitle (Dynamic from checklistPropertyReference or Plot No / S.No / G.No / Khasra No & Property Specifics)
+    let chkSub = (fields.checklistPropertyReference || '').trim();
+    if (!chkSub) {
+      const rawSpecifics = (fields.plotKhataDetails || '').trim();
+      if (rawSpecifics) {
+        if (rawSpecifics.toUpperCase().startsWith('(FOR THE PROPERTY VALUATION OF') || rawSpecifics.toUpperCase().startsWith('FOR THE PROPERTY VALUATION OF')) {
+          chkSub = rawSpecifics.startsWith('(') ? rawSpecifics : `(${rawSpecifics})`;
+        } else {
+          chkSub = `(FOR THE PROPERTY VALUATION OF ${rawSpecifics})`;
+        }
       } else {
-        chkSub = `(FOR THE PROPERTY VALUATION OF ${rawSpecifics})`;
-      }
-    } else {
-      const addrParts = [fields.colonyNagarSector, fields.localityLandmark, fields.villageTownCityMarket, fields.district, fields.state, fields.pincode].filter(Boolean);
-      if (addrParts.length > 0) {
-        chkSub = `(FOR THE PROPERTY VALUATION OF ${addrParts.join(', ')})`;
+        const addrParts = [fields.colonyNagarSector, fields.localityLandmark, fields.villageTownCityMarket, fields.district, fields.state, fields.pincode].filter(Boolean);
+        if (addrParts.length > 0) {
+          chkSub = `(FOR THE PROPERTY VALUATION OF ${addrParts.join(', ')})`;
+        }
       }
     }
 
@@ -2228,20 +2231,20 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         const cslTw = this.fontRegular.widthOfTextAtSize(csl, FONT_SIZE_CAPTION);
         this.page.drawText(csl, {
           x: MARGIN_L + (W - cslTw) / 2,
-          y: this.pdfY(this.cursorY) - 8 - csOff,
+          y: this.pdfY(this.cursorY) - csOff,
           size: FONT_SIZE_CAPTION,
           font: this.fontRegular,
           color: rgb(0, 0, 0),
         });
         csOff += FONT_SIZE_CAPTION * LINE_HEIGHT;
       }
-      this.cursorY += chkSubLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 6;
+      this.cursorY += chkSubLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 8;
     }
 
     const noticeText = 'Please ensure that the following important points are in order in the submitted report.';
     const nTw = this.fontItalic.widthOfTextAtSize(noticeText, FONT_SIZE_SMALL);
     const nX = MARGIN_L + (W - nTw) / 2;
-    const nY = this.pdfY(this.cursorY) - 8;
+    const nY = this.pdfY(this.cursorY);
     this.page.drawText(noticeText, {
       x: nX,
       y: nY,

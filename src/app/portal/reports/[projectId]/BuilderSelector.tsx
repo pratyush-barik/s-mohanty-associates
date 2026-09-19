@@ -257,13 +257,10 @@ export default function BuilderSelector({
     bankName?: string;
     to?: string;
   }) => {
-    // Preserve existing draft fields when switching/completing format configuration
-    const updatedFields = {
-      ...(typeof initialFields === 'object' && initialFields !== null ? decodeHtmlEntitiesDeep(initialFields) : {}),
-      ...(typeof activeFields === 'object' && activeFields !== null ? activeFields : {}),
-      ...config,
-    };
+    // Start fresh — clear all previous draft fields on every template selection
+    const updatedFields = { ...config };
     setActiveFields(updatedFields);
+    setResetKey((prev) => prev + 1);
 
     let targetBuilder: BuilderType = 'general';
     if (config.organisationTemplate === 'INCOME_TAX') {
@@ -296,6 +293,7 @@ export default function BuilderSelector({
       console.error('Save draft on wizard complete failed:', e);
     }
   };
+
 
   const handleReset = async () => {
     // Reset report: Completely flush all previous data, photographs, and template variables
