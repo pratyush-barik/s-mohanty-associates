@@ -1459,12 +1459,14 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const totalBUADisplay = formatBUA(fields.totalBUA);
     const totalCarpetDisplay = formatCarpet(fields.totalCarpetArea);
 
-    // Total Built Up Area & Total Carpet Area (side-by-side in 4 columns)
+    // Total Built Up Area & Total Carpet Area (side-by-side, wide labels so they don't wrap)
+    const buaLabelW = W * 0.35;
+    const buaValW   = W * 0.15;
     this.drawRow([
-      { text: 'Total Built Up area (in Sq.Ft.)', width: col4_w1, isLabel: true, bold: true },
-      { text: totalBUADisplay, width: col4_w2, bold: true },
-      { text: 'Total Carpet area (in Sq.Ft.)', width: col4_w3, isLabel: true },
-      { text: totalCarpetDisplay, width: col4_w4 },
+      { text: 'Total Built Up area (in Sq.Ft.)', width: buaLabelW, isLabel: true, bold: true },
+      { text: totalBUADisplay, width: buaValW, bold: true },
+      { text: 'Total Carpet area (in Sq.Ft.)', width: buaLabelW, isLabel: true },
+      { text: totalCarpetDisplay, width: buaValW },
     ], 20, 4);
 
     const formatSaleableArea = (land?: string, bldg?: string, raw?: string): string => {
