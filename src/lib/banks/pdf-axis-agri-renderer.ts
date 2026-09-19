@@ -374,22 +374,21 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
   ): number {
     let maxLines = 1;
     for (const col of cols) {
-      const fs = col.fontSize || (col.isHeader && col.width >= CONTENT_W * 0.9 ? FONT_SIZE_HEADER : FONT_SIZE);
+      const fs = col.fontSize || FONT_SIZE;
       const isBold = !!(col.bold || col.isHeader || col.isLabel || col.highlight);
       const lines = this.wrapText(this.sanitizeText(col.text), Math.max(10, col.width - 8), fs, isBold);
       if (lines.length > maxLines) maxLines = lines.length;
     }
 
-    const maxFs = Math.max(...cols.map(c => c.fontSize || (c.isHeader && c.width >= CONTENT_W * 0.9 ? FONT_SIZE_HEADER : FONT_SIZE)));
-    const actualMinH = cols.some(c => c.isHeader && c.width >= CONTENT_W * 0.9) ? Math.max(minH, 22) : minH;
-    const rowH = Math.max(actualMinH, maxLines * maxFs * LINE_HEIGHT + rowPad);
+    const maxFs = Math.max(...cols.map(c => c.fontSize || FONT_SIZE));
+    const rowH = Math.max(minH, maxLines * maxFs * LINE_HEIGHT + rowPad);
     this.checkPageBreak(rowH);
 
     const y = this.pdfY(this.cursorY);
     let curX = MARGIN_L;
 
     for (const col of cols) {
-      const colFs = col.fontSize || (col.isHeader && col.width >= CONTENT_W * 0.9 ? FONT_SIZE_HEADER : FONT_SIZE);
+      const colFs = col.fontSize || FONT_SIZE;
       this.drawCell(curX, y, col.width, rowH, col.text, { ...col, fontSize: colFs });
       curX += col.width;
     }
@@ -500,6 +499,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         width: W * 0.65,
         isHeader: true,
         bold: true,
+        fontSize: FONT_SIZE_TITLE,
       },
       {
         text: visitDate ? `DATE OF VISIT: ${visitDate}` : 'DATE OF VISIT:',
@@ -507,8 +507,9 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         isHeader: true,
         bold: true,
         align: 'right',
+        fontSize: FONT_SIZE_TITLE,
       },
-    ], 20, 4);
+    ], 22, 4);
 
     // Section 1 — Technical Initiation Details (4 Columns)
     const col4_w1 = W * 0.25;
@@ -1089,7 +1090,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.page.drawText(landHeader, {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 10,
-      size: FONT_SIZE_HEADER,
+      size: FONT_SIZE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
@@ -1141,7 +1142,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.page.drawText(valTitle, {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 10,
-      size: FONT_SIZE_HEADER,
+      size: FONT_SIZE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
@@ -1303,7 +1304,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.page.drawText('Undertaking:', {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 10,
-      size: FONT_SIZE_HEADER,
+      size: FONT_SIZE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
@@ -1372,13 +1373,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.addSectionBreak(8);
 
-    // ANNEXURE - "A"
-    const annTitle = 'ANNEXURE - "A"';
-    const annTw = this.fontBold.widthOfTextAtSize(annTitle, FONT_SIZE_HEADER);
+    // ANNEXURE - “A”
+    const annTitle = 'ANNEXURE - “A”';
+    const annTw = this.fontBold.widthOfTextAtSize(annTitle, FONT_SIZE_TITLE);
     this.page.drawText(annTitle, {
       x: MARGIN_L + (W - annTw) / 2,
       y: this.pdfY(this.cursorY) - 10,
-      size: FONT_SIZE_HEADER,
+      size: FONT_SIZE_TITLE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
@@ -1507,7 +1508,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
       for (let pageIdx = 0; pageIdx < totalPhotoPages; pageIdx++) {
         this.addPage();
-        this.drawRow([{ text: 'PHOTOGRAPHS', width: W, isHeader: true, bold: true }], 20, 4);
+        this.drawRow([{ text: 'PHOTOGRAPHS', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
         this.cursorY += 8;
 
         for (let row = 0; row < 3; row++) {
@@ -1566,7 +1567,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       const lmImg = await this.embedImgSafe(locMapBytes);
       if (lmImg) {
         this.addPage();
-        this.drawRow([{ text: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', width: W, isHeader: true, bold: true }], 20, 4);
+        this.drawRow([{ text: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
         this.cursorY += 8;
         const locMapH = 520;
         const locMapY = this.pdfY(this.cursorY);
@@ -1588,7 +1589,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       const cmImg = await this.embedImgSafe(cadMapBytes);
       if (cmImg) {
         this.addPage();
-        this.drawRow([{ text: 'CADASTRAL MAP', width: W, isHeader: true, bold: true }], 20, 4);
+        this.drawRow([{ text: 'CADASTRAL MAP', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
         this.cursorY += 10;
         const cadMapH = 520;
         const cadMapY = this.pdfY(this.cursorY);
@@ -1608,7 +1609,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       const smImg = await this.embedImgSafe(sketchBytes);
       if (smImg) {
         this.addPage();
-        this.drawRow([{ text: 'SKETCH MAP', width: W, isHeader: true, bold: true }], 20, 4);
+        this.drawRow([{ text: 'SKETCH MAP', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
         this.cursorY += 10;
         const sketchH = 520;
         const sketchY = this.pdfY(this.cursorY);
@@ -1628,7 +1629,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       const bmImg = await this.embedImgSafe(benchBytes);
       if (bmImg) {
         this.addPage();
-        this.drawRow([{ text: 'BENCHMARK VALUATION', width: W, isHeader: true, bold: true }], 20, 4);
+        this.drawRow([{ text: 'BENCHMARK VALUATION', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
         this.cursorY += 8;
         const benchH = 520;
         const benchY = this.pdfY(this.cursorY);
