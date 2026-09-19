@@ -479,6 +479,10 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const allLines: string[] = [];
 
     for (const para of paragraphs) {
+      if (!para.trim()) {
+        allLines.push('');
+        continue;
+      }
       const words = this.splitWrapTokens(para);
       let currentLine = '';
 
@@ -1785,7 +1789,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       combinedValuationText += ` ${cleanBasis}`;
     }
     if (rawOpinion) {
-      combinedValuationText += `\n${rawOpinion}`;
+      combinedValuationText += `\n\n${rawOpinion}`;
     }
 
     this.drawRow([{ text: combinedValuationText, width: W, vAlign: 'top' }], 28, 6);
@@ -1807,17 +1811,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.addSectionBreak(8);
 
-    // Undertaking
-    this.checkPageBreak(16 + 55); // Heading + at least 2 bullet items
-    this.page.drawText('Undertaking:', {
-      x: MARGIN_L,
-      y: this.pdfY(this.cursorY) - 10,
-      size: FONT_SIZE,
-      font: this.fontBold,
-      color: rgb(0, 0, 0),
-    });
-    this.cursorY += 16;
-
+    // Undertaking & Authorized Signatory (guaranteed to render together on the same page)
     const rawUndertakings = fields.undertakingText
       ? fields.undertakingText
           .split('\n')
@@ -1838,10 +1832,29 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     const undertakings = rawUndertakings.length > 0 ? rawUndertakings : defaultUndertakings;
 
+    // Calculate total height for entire Undertaking section + handwritten space + Authorized Signatory
+    const handwrittenSpace = 45;
+    let totalUndertakingBlockH = 16 + handwrittenSpace + 55;
+    for (const u of undertakings) {
+      const uLines = this.wrapText(this.sanitizeText(u), W - 28, FONT_SIZE, false);
+      totalUndertakingBlockH += Math.max(16, uLines.length * FONT_SIZE * LINE_HEIGHT + 2);
+    }
+
+    // Guarantee that Undertaking and Authorized Signatory stay together on the same page
+    this.checkPageBreak(totalUndertakingBlockH);
+
+    this.page.drawText('Undertaking:', {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY) - 10,
+      size: FONT_SIZE,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 16;
+
     for (const u of undertakings) {
       const uLines = this.wrapText(this.sanitizeText(u), W - 28, FONT_SIZE, false);
       const itemH = Math.max(16, uLines.length * FONT_SIZE * LINE_HEIGHT + 2);
-      this.checkPageBreak(itemH);
       const uY = this.pdfY(this.cursorY) - 10;
       this.page.drawText('•', { x: MARGIN_L + 8, y: uY, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
       let lineOff = 0;
@@ -1859,8 +1872,6 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     }
 
     // 3-4 lines space for handwritten notes before authorized signatory
-    const handwrittenSpace = 45;
-    this.checkPageBreak(handwrittenSpace + 55);
     this.cursorY += handwrittenSpace;
 
     // Authorized Signatory block (right aligned)
