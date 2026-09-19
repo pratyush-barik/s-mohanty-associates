@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import {
   INSTITUTE_CATEGORIES,
   BANK_SUB_TEMPLATES,
+  COMPLETED_SUB_TEMPLATES,
   InstituteCategory,
 } from './constants';
 
@@ -264,16 +265,31 @@ export default function ReportSetupWizard({
                   Select the required subclass or format variation:
                 </p>
                 <div className="flex flex-wrap gap-3 max-h-[380px] overflow-y-auto p-3 border border-slate-200 rounded-xl bg-slate-50/50 justify-center">
-                  {BANK_SUB_TEMPLATES[selectedBank]?.map((subOpt) => (
-                    <button
-                      key={subOpt}
-                      type="button"
-                      onClick={() => handleSelectSubTemplate(subOpt)}
-                      className="flex-1 min-w-[200px] max-w-[280px] p-4 min-h-[84px] rounded-xl border border-slate-200 bg-white hover:border-[#b8860b] hover:bg-amber-50/30 hover:shadow-xs text-center transition-all duration-150 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-xs break-words leading-tight cursor-pointer"
-                    >
-                      <span className="w-full line-clamp-3">{subOpt}</span>
-                    </button>
-                  ))}
+                  {BANK_SUB_TEMPLATES[selectedBank]?.map((subOpt) => {
+                    const isCompleted = COMPLETED_SUB_TEMPLATES.has(`${selectedBank}::${subOpt}`);
+                    return (
+                      <button
+                        key={subOpt}
+                        type="button"
+                        onClick={() => handleSelectSubTemplate(subOpt)}
+                        className={`flex-1 min-w-[200px] max-w-[280px] p-4 min-h-[84px] rounded-xl border ${
+                          isCompleted
+                            ? 'border-emerald-300 bg-emerald-50/30 hover:border-emerald-500 hover:bg-emerald-50/60'
+                            : 'border-slate-200 bg-white hover:border-[#b8860b] hover:bg-amber-50/30'
+                        } hover:shadow-xs text-center transition-all duration-150 flex flex-col items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-xs break-words leading-tight cursor-pointer relative group`}
+                      >
+                        <span className="w-full line-clamp-2">{subOpt}</span>
+                        {isCompleted && (
+                          <span className="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-800 border border-emerald-200">
+                            <svg className="w-3 h-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                            </svg>
+                            Completed
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ) : showBankList && selectedCategory ? (
