@@ -2124,97 +2124,50 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       }
     }
 
-    // =========================================================================
-    // LOCATIONAL DIAGRAM — one per page (no bounding box, no stretching)
-    // =========================================================================
-    const allLocMaps = (images.locationMaps || []).filter(b => b && b.length > 0);
-    for (let mi = 0; mi < allLocMaps.length; mi++) {
-      const locMapBytes = allLocMaps[mi];
-      const lmImg = await this.embedImgSafe(locMapBytes);
-      if (lmImg) {
-        this.addPage();
-        this.drawRow([{ text: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
-        this.cursorY += 12;
 
-        const maxH = 680;
-        const scale = Math.min(1, W / lmImg.width, maxH / lmImg.height);
-        const iW = lmImg.width * scale;
-        const iH = lmImg.height * scale;
+    // =========================================================================
+    // MAPS SECTION — flow-based: pack Location Diagram / Cadastral / Sketch /
+    // Benchmark onto the same page whenever they fit; only break when needed.
+    // Images are capped at ~45% of content height so ≥2 can share a page.
+    // =========================================================================
+    const CONTENT_H = PAGE_H - MARGIN_T - MARGIN_B; // 653.89pt
+    const MAP_MAX_H = Math.floor(CONTENT_H * 0.45);  // ~294pt cap per image
+
+    const mapGroups: { label: string; bytes: Uint8Array }[] = [
+      ...(images.locationMaps  || []).filter(b => b && b.length > 0).map(b => ({ label: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', bytes: b })),
+      ...(images.cadastralMaps || []).filter(b => b && b.length > 0).map(b => ({ label: 'CADASTRAL MAP',         bytes: b })),
+      ...(images.sketchMaps    || []).filter(b => b && b.length > 0).map(b => ({ label: 'SKETCH MAP',            bytes: b })),
+      ...(images.benchmarkImages || []).filter(b => b && b.length > 0).map(b => ({ label: 'BENCHMARK VALUATION', bytes: b })),
+    ];
+
+    if (mapGroups.length > 0) {
+      this.addPage(); // always start maps on a fresh page
+
+      for (const mapItem of mapGroups) {
+        const mapImg = await this.embedImgSafe(mapItem.bytes);
+        if (!mapImg) continue;
+
+        // Scale image to fit within content width AND the per-image height cap
+        const scale = Math.min(1, W / mapImg.width, MAP_MAX_H / mapImg.height);
+        const iW = mapImg.width * scale;
+        const iH = mapImg.height * scale;
+
+        // Total vertical block: label header (~26pt) + 10pt gap + image + 14pt gap
+        const blockH = 26 + 10 + iH + 14;
+
+        // Only add a new page if this block won't fit; otherwise continue on current page
+        this.checkPageBreak(blockH);
+
+        this.drawRow([{ text: mapItem.label, width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
+        this.cursorY += 10;
+
         const imgX = MARGIN_L + (W - iW) / 2;
         const imgY = this.pdfY(this.cursorY) - iH;
-
-        this.page.drawImage(lmImg, { x: imgX, y: imgY, width: iW, height: iH });
-        this.cursorY += iH + 12;
+        this.page.drawImage(mapImg, { x: imgX, y: imgY, width: iW, height: iH });
+        this.cursorY += iH + 14;
       }
     }
 
-    // =========================================================================
-    // CADASTRAL MAP — one per page (no bounding box, no stretching)
-    // =========================================================================
-    const allCadMaps = (images.cadastralMaps || []).filter(b => b && b.length > 0);
-    for (let ci = 0; ci < allCadMaps.length; ci++) {
-      const cadMapBytes = allCadMaps[ci];
-      const cmImg = await this.embedImgSafe(cadMapBytes);
-      if (cmImg) {
-        this.addPage();
-        this.drawRow([{ text: 'CADASTRAL MAP', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
-        this.cursorY += 12;
-
-        const maxH = 680;
-        const scale = Math.min(1, W / cmImg.width, maxH / cmImg.height);
-        const iW = cmImg.width * scale;
-        const iH = cmImg.height * scale;
-        const imgX = MARGIN_L + (W - iW) / 2;
-        const imgY = this.pdfY(this.cursorY) - iH;
-
-        this.page.drawImage(cmImg, { x: imgX, y: imgY, width: iW, height: iH });
-        this.cursorY += iH + 12;
-      }
-    }
-
-    // --- Sketch Maps — one per page (no bounding box, no stretching) ---
-    const allSketchMaps = (images.sketchMaps || []).filter(b => b && b.length > 0);
-    for (let si = 0; si < allSketchMaps.length; si++) {
-      const sketchBytes = allSketchMaps[si];
-      const smImg = await this.embedImgSafe(sketchBytes);
-      if (smImg) {
-        this.addPage();
-        this.drawRow([{ text: 'SKETCH MAP', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
-        this.cursorY += 12;
-
-        const maxH = 680;
-        const scale = Math.min(1, W / smImg.width, maxH / smImg.height);
-        const iW = smImg.width * scale;
-        const iH = smImg.height * scale;
-        const imgX = MARGIN_L + (W - iW) / 2;
-        const imgY = this.pdfY(this.cursorY) - iH;
-
-        this.page.drawImage(smImg, { x: imgX, y: imgY, width: iW, height: iH });
-        this.cursorY += iH + 12;
-      }
-    }
-
-    // --- Benchmark Valuation — last, one per page, before Checklist (no bounding box, no stretching) ---
-    const allBenchImages = (images.benchmarkImages || []).filter(b => b && b.length > 0);
-    for (let bi = 0; bi < allBenchImages.length; bi++) {
-      const benchBytes = allBenchImages[bi];
-      const bmImg = await this.embedImgSafe(benchBytes);
-      if (bmImg) {
-        this.addPage();
-        this.drawRow([{ text: 'BENCHMARK VALUATION', width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
-        this.cursorY += 12;
-
-        const maxH = 680;
-        const scale = Math.min(1, W / bmImg.width, maxH / bmImg.height);
-        const iW = bmImg.width * scale;
-        const iH = bmImg.height * scale;
-        const imgX = MARGIN_L + (W - iW) / 2;
-        const imgY = this.pdfY(this.cursorY) - iH;
-
-        this.page.drawImage(bmImg, { x: imgX, y: imgY, width: iW, height: iH });
-        this.cursorY += iH + 12;
-      }
-    }
 
     // =========================================================================
     // PAGE 10: VALUATION REPORT CHECKLIST & SIGNATURE BLOCK
