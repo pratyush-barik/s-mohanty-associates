@@ -132,6 +132,8 @@ export interface AxisAgriReportFields {
   resistanceFromOccupants?: string; // 'No'
   basicAmenities?: string[]; // ['Electricity', 'Water', 'Drainage connection']
   developmentSurroundingArea?: string; // 'Underdeveloped' | 'Developing' | 'Developed'
+  rentBasicAmenities?: string[];
+  rentDevelopmentSurroundingArea?: string;
 
   // Page 2: Leasehold Details
   isLeasehold?: string; // 'The Property is Free Hold Land'
@@ -1249,23 +1251,23 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: `${opt(hasResOcc === 'yes', 'Yes')}   ${opt(hasResOcc === 'no', 'No')}`, width: col4_w4 },
     ], 20, 4);
 
-    // Basic Amenities & Development
-    const rawAm = fields.basicAmenities;
-    const am = Array.isArray(rawAm)
-      ? rawAm
-      : typeof rawAm === 'string' && rawAm
-      ? (rawAm as string).split(',').map(s => s.trim())
+    // Tenancy Basic Amenities & Development (independent from Section 5)
+    const rawRentAm = fields.rentBasicAmenities;
+    const rentAm = Array.isArray(rawRentAm)
+      ? rawRentAm
+      : typeof rawRentAm === 'string' && rawRentAm
+      ? (rawRentAm as string).split(',').map(s => s.trim())
       : [];
-    const hasAm = (a: string) => am.some(item => String(item || '').toLowerCase().includes(a.toLowerCase()));
-    const amText = `${opt(hasAm('electricity'), 'Electricity')}   ${opt(hasAm('water'), 'Water')}   ${opt(hasAm('drainage'), 'Drainage connection')}`;
-    const dev = String(fields.developmentSurroundingArea || (fields as any).surroundingDevelopment || '').toLowerCase();
-    const devText = `${opt(dev.includes('under'), 'Underdeveloped')}   ${opt(dev.includes('developing'), 'Developing')}   ${opt(dev.includes('developed') && !dev.includes('under'), 'Developed')}`;
+    const hasRentAm = (a: string) => rentAm.some(item => String(item || '').toLowerCase().includes(a.toLowerCase()));
+    const rentAmText = `${opt(hasRentAm('electricity'), 'Electricity')}   ${opt(hasRentAm('water'), 'Water')}   ${opt(hasRentAm('drainage'), 'Drainage connection')}`;
+    const rentDev = String(fields.rentDevelopmentSurroundingArea || '').toLowerCase();
+    const rentDevText = `${opt(rentDev.includes('under'), 'Underdeveloped')}   ${opt(rentDev.includes('developing'), 'Developing')}   ${opt(rentDev.includes('developed') && !rentDev.includes('under'), 'Developed')}`;
 
     this.drawRow([
       { text: 'Does property have basic amenities', width: col4_w1, isLabel: true },
-      { text: amText, width: col4_w2 },
+      { text: rentAmText, width: col4_w2 },
       { text: 'Development of surrounding area', width: col4_w3, isLabel: true },
-      { text: devText, width: col4_w4 },
+      { text: rentDevText, width: col4_w4 },
     ], 22, 4);
 
     // Leasehold Details
@@ -1288,16 +1290,16 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: `${opt(lRes === 'yes', 'Yes')}   ${opt(lRes === 'no', 'No')}`, width: col4_w4 },
     ], 20, 4);
 
-    // Leasehold basic amenities & development (matching UI screenshot)
-    const leaseAm = fields.leaseholdBasicAmenities || fields.basicAmenities;
-    const lAm = Array.isArray(leaseAm)
-      ? leaseAm
-      : typeof leaseAm === 'string' && leaseAm
-      ? (leaseAm as string).split(',').map(s => s.trim())
+    // Leasehold basic amenities & development (strictly independent)
+    const rawLeaseAm = fields.leaseholdBasicAmenities;
+    const lAm = Array.isArray(rawLeaseAm)
+      ? rawLeaseAm
+      : typeof rawLeaseAm === 'string' && rawLeaseAm
+      ? (rawLeaseAm as string).split(',').map(s => s.trim())
       : [];
     const hasLAm = (a: string) => lAm.some(item => String(item || '').toLowerCase().includes(a.toLowerCase()));
     const lAmText = `${opt(hasLAm('electricity'), 'Electricity')}   ${opt(hasLAm('water'), 'Water')}   ${opt(hasLAm('drainage'), 'Drainage connection')}`;
-    const lDev = String(fields.leaseholdDevelopment || fields.developmentSurroundingArea || '').toLowerCase();
+    const lDev = String(fields.leaseholdDevelopment || '').toLowerCase();
     const lDevText = `${opt(lDev.includes('under'), 'Under developed')}   ${opt(lDev.includes('developing'), 'Developing')}   ${opt(lDev.includes('developed') && !lDev.includes('under'), 'Developed')}`;
 
     this.drawRow([

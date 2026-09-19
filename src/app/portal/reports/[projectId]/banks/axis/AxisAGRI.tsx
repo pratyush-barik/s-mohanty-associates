@@ -230,6 +230,8 @@ export default function AxisAGRI({
       resistanceFromOccupants: raw.resistanceFromOccupants || '',
       basicAmenities: raw.basicAmenities || [],
       developmentSurroundingArea: raw.developmentSurroundingArea || '',
+      rentBasicAmenities: raw.rentBasicAmenities || [],
+      rentDevelopmentSurroundingArea: raw.rentDevelopmentSurroundingArea || '',
 
       // Page 2: Leasehold
       isLeasehold: raw.isLeasehold || '',
@@ -2274,8 +2276,8 @@ export default function AxisAGRI({
                     <label key={item} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={(fields.basicAmenities || []).includes(item)}
-                        onChange={() => handleToggleMulti('basicAmenities', item)}
+                        checked={(fields.rentBasicAmenities || []).includes(item)}
+                        onChange={() => handleToggleMulti('rentBasicAmenities', item)}
                         disabled={isReadOnly}
                         className="rounded text-indigo-600 focus:ring-indigo-500"
                       />
@@ -2288,8 +2290,8 @@ export default function AxisAGRI({
               <Field label="Development of surrounding area">
                 <select
                   className={selectCls}
-                  value={fields.developmentSurroundingArea || ''}
-                  onChange={e => handleChange('developmentSurroundingArea', e.target.value)}
+                  value={fields.rentDevelopmentSurroundingArea || ''}
+                  onChange={e => handleChange('rentDevelopmentSurroundingArea', e.target.value)}
                   disabled={isReadOnly}
                 >
                   <option value="">Select Development Status</option>
@@ -2368,7 +2370,7 @@ export default function AxisAGRI({
                     <label key={item} className="flex items-center gap-1.5 text-xs font-medium cursor-pointer">
                       <input
                         type="checkbox"
-                        checked={(fields.leaseholdBasicAmenities || fields.basicAmenities || []).includes(item)}
+                        checked={(fields.leaseholdBasicAmenities || []).includes(item)}
                         onChange={() => handleToggleMulti('leaseholdBasicAmenities', item)}
                         disabled={isReadOnly}
                         className="rounded text-teal-600 focus:ring-teal-500"
@@ -2382,7 +2384,7 @@ export default function AxisAGRI({
               <Field label="Development of surrounding area">
                 <select
                   className={selectCls}
-                  value={fields.leaseholdDevelopment || fields.developmentSurroundingArea || ''}
+                  value={fields.leaseholdDevelopment || ''}
                   onChange={e => handleChange('leaseholdDevelopment', e.target.value)}
                   disabled={isReadOnly}
                 >
