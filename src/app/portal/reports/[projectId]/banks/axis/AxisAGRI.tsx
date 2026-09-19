@@ -2646,9 +2646,9 @@ export default function AxisAGRI({
                 <thead>
                   <tr className="bg-[#0a1628] text-white">
                     <th className="px-3 py-2.5 text-center font-semibold text-xs uppercase tracking-wider w-12">#</th>
-                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider w-5/12 min-w-[140px]">Floor Name / Level</th>
-                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider w-3/12 min-w-[130px]">Plinth Area (Sq.Ft.)</th>
-                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider w-3/12 min-w-[130px]">Current Usage</th>
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider w-5/12 min-w-35">Floor Name / Level</th>
+                    <th className="px-3 py-2.5 text-right font-semibold text-xs uppercase tracking-wider w-3/12 min-w-32.5">Plinth Area (Sq.Ft.)</th>
+                    <th className="px-3 py-2.5 text-left font-semibold text-xs uppercase tracking-wider w-3/12 min-w-32.5">Current Usage</th>
                     {!isReadOnly && <th className="px-2 py-2.5 w-10 text-center"></th>}
                   </tr>
                 </thead>
@@ -3030,14 +3030,14 @@ export default function AxisAGRI({
               <table className="min-w-full text-xs text-left border-collapse">
                 <thead className="bg-emerald-100/80 text-emerald-950 font-bold uppercase tracking-wider text-[11px]">
                   <tr>
-                    <th className="px-3 py-2.5 border-b border-r border-emerald-200 min-w-[180px] whitespace-nowrap">Particulars of Items</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[150px] whitespace-nowrap">Plinth Area in Sqft</th>
-                    <th className="px-3 py-2.5 text-center border-b border-r border-emerald-200 min-w-[120px] whitespace-nowrap">Roof Height</th>
-                    <th className="px-3 py-2.5 text-center border-b border-r border-emerald-200 min-w-[140px] whitespace-nowrap">Age of the Building in Years</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[180px] whitespace-nowrap">Replacement Rate of Construction</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[200px] whitespace-nowrap">Estimated Replacement Cost of Construction</th>
-                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-[200px] whitespace-nowrap">Depreciation Amount in Rs. (1% per Anm)</th>
-                    <th className="px-3 py-2.5 text-right border-b border-emerald-200 min-w-[180px] whitespace-nowrap">Net Value After Depreciation</th>
+                    <th className="px-3 py-2.5 border-b border-r border-emerald-200 min-w-45 whitespace-nowrap">Particulars of Items</th>
+                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-37.5 whitespace-nowrap">Plinth Area in Sqft</th>
+                    <th className="px-3 py-2.5 text-center border-b border-r border-emerald-200 min-w-30 whitespace-nowrap">Roof Height</th>
+                    <th className="px-3 py-2.5 text-center border-b border-r border-emerald-200 min-w-35 whitespace-nowrap">Age of the Building in Years</th>
+                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-45 whitespace-nowrap">Replacement Rate of Construction</th>
+                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-50 whitespace-nowrap">Estimated Replacement Cost of Construction</th>
+                    <th className="px-3 py-2.5 text-right border-b border-r border-emerald-200 min-w-50 whitespace-nowrap">Depreciation Amount in Rs. (1% per Anm)</th>
+                    <th className="px-3 py-2.5 text-right border-b border-emerald-200 min-w-45 whitespace-nowrap">Net Value After Depreciation</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
@@ -3195,11 +3195,11 @@ export default function AxisAGRI({
               <table className="w-full text-xs text-left border-collapse">
                 <thead className="bg-indigo-100/80 text-indigo-950 font-bold uppercase tracking-wider text-[11px]">
                   <tr>
-                    <th className="p-3 border-b border-r border-indigo-200 min-w-[240px]">VALUE OF THE PROPERTY</th>
-                    <th className="p-3 text-center w-1/5 min-w-[130px] border-b border-r border-indigo-200">LAND</th>
-                    <th className="p-3 text-center w-1/5 min-w-[130px] border-b border-r border-indigo-200">BUILDING</th>
-                    <th className="p-3 text-center w-1/6 min-w-[110px] border-b border-r border-indigo-200">AMENITIES</th>
-                    <th className="p-3 text-center w-1/5 min-w-[140px] border-b border-indigo-200">TOTAL IN RS</th>
+                    <th className="p-3 border-b border-r border-indigo-200 min-w-60">VALUE OF THE PROPERTY</th>
+                    <th className="p-3 text-center w-1/5 min-w-32.5 border-b border-r border-indigo-200">LAND</th>
+                    <th className="p-3 text-center w-1/5 min-w-32.5 border-b border-r border-indigo-200">BUILDING</th>
+                    <th className="p-3 text-center w-1/6 min-w-27.5 border-b border-r border-indigo-200">AMENITIES</th>
+                    <th className="p-3 text-center w-1/5 min-w-35 border-b border-indigo-200">TOTAL IN RS</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white">
