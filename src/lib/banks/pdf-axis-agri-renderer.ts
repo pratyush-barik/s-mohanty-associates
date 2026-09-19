@@ -400,12 +400,18 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
   /**
    * Draw the 8-box date grid [ D | D | M | M | Y | Y | Y | Y ]
+   * Seamlessly spanning totalW width and cellH height
    */
-  draw8BoxDate(x: number, y: number, dateStr: string = '', cellW: number = 13, cellH: number = 16): void {
+  draw8BoxDate(x: number, y: number, totalW: number, cellH: number, dateStr: string = ''): void {
     // Sanitize string to get digits or characters
     const clean = String(dateStr || '').replace(/[^0-9A-Za-z]/g, '');
     const chars = clean.padEnd(8, ' ').split('').slice(0, 8);
     const headers = ['D', 'D', 'M', 'M', 'Y', 'Y', 'Y', 'Y'];
+    const cellW = totalW / 8;
+    const fs = FONT_SIZE;
+    const font = this.fontRegular;
+    const totalTextH = fs * LINE_HEIGHT;
+    const textY = y - cellH / 2 + totalTextH / 2 - fs * 0.82;
 
     for (let i = 0; i < 8; i++) {
       const cellX = x + i * cellW;
@@ -423,12 +429,10 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         opacity: isFilled ? BG_OPACITY : undefined,
       });
 
-      const font = isFilled ? this.fontBold : this.fontRegular;
-      const fs = FONT_SIZE_CAPTION;
       const tw = font.widthOfTextAtSize(char, fs);
       this.page.drawText(char, {
         x: cellX + (cellW - tw) / 2,
-        y: y - cellH + (cellH - fs) / 2,
+        y: textY,
         size: fs,
         font,
         color: isFilled ? rgb(0, 0, 0) : rgb(0.4, 0.4, 0.4),
@@ -931,12 +935,12 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ], 20, 4);
 
     // Layout Date Box Row
-    const boxRowH = 22;
+    const boxRowH = 20;
     const boxY = this.pdfY(this.cursorY);
     this.drawCell(MARGIN_L, boxY, W * 0.25, boxRowH, 'Date of Approval', { isLabel: true, align: 'center', vAlign: 'middle' });
-    this.draw8BoxDate(MARGIN_L + W * 0.25 + 4, boxY - 3, fields.layoutApprovalDate || '');
+    this.draw8BoxDate(MARGIN_L + W * 0.25, boxY, W * 0.25, boxRowH, fields.layoutApprovalDate || '');
     this.drawCell(MARGIN_L + W * 0.5, boxY, W * 0.25, boxRowH, 'Expiry Date', { isLabel: true, align: 'center', vAlign: 'middle' });
-    this.draw8BoxDate(MARGIN_L + W * 0.75 + 4, boxY - 3, fields.layoutExpiryDate || '');
+    this.draw8BoxDate(MARGIN_L + W * 0.75, boxY, W * 0.25, boxRowH, fields.layoutExpiryDate || '');
     this.cursorY += boxRowH;
 
     this.addSectionBreak(8);
@@ -950,9 +954,9 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // Building Plan Date Box Row
     const boxY2 = this.pdfY(this.cursorY);
     this.drawCell(MARGIN_L, boxY2, W * 0.25, boxRowH, 'Date of Approval', { isLabel: true, align: 'center', vAlign: 'middle' });
-    this.draw8BoxDate(MARGIN_L + W * 0.25 + 4, boxY2 - 3, fields.buildingPlanApprovalDate || '');
+    this.draw8BoxDate(MARGIN_L + W * 0.25, boxY2, W * 0.25, boxRowH, fields.buildingPlanApprovalDate || '');
     this.drawCell(MARGIN_L + W * 0.5, boxY2, W * 0.25, boxRowH, 'Expiry Date', { isLabel: true, align: 'center', vAlign: 'middle' });
-    this.draw8BoxDate(MARGIN_L + W * 0.75 + 4, boxY2 - 3, fields.buildingPlanExpiryDate || '');
+    this.draw8BoxDate(MARGIN_L + W * 0.75, boxY2, W * 0.25, boxRowH, fields.buildingPlanExpiryDate || '');
     this.cursorY += boxRowH;
 
     this.addSectionBreak(8);
