@@ -2534,20 +2534,20 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 <table className="w-full text-left text-xs">
                   <thead className="bg-slate-200/50 text-slate-700 font-bold border-b border-slate-300">
                     <tr>
-                      <th className="p-2 w-48">FLOOR</th>
-                      <th className="p-2 w-28">CONSTRUCTED ACTUAL AREA AS PER SITE (SQ.FT)</th>
-                      <th className="p-2 w-28">APPROVED AREA AS PER PLAN(SQ.FT)</th>
-                      <th className="p-2 w-28">PERMISSIBLE AREA AS PER BYELAWS (SQ.FT)</th>
-                      <th className="p-2 w-28">AREA CONSIDERED FOR VALUATION (SQ.FT) / FAR 2</th>
-                      <th className="p-2 w-48">ACCOMMODATETION</th>
-                      <th className="p-2 min-w-50">CURRENT USAGE</th>
+                      <th className="p-2 w-48 border-r border-slate-300">FLOOR</th>
+                      <th className="p-2 w-28 border-r border-slate-300">CONSTRUCTED ACTUAL AREA AS PER SITE (SQ.FT)</th>
+                      <th className="p-2 w-28 border-r border-slate-300">APPROVED AREA AS PER PLAN(SQ.FT)</th>
+                      <th className="p-2 w-28 border-r border-slate-300">PERMISSIBLE AREA AS PER BYELAWS (SQ.FT)</th>
+                      <th className="p-2 w-28 border-r border-slate-300">AREA CONSIDERED FOR VALUATION (SQ.FT) / FAR 2</th>
+                      <th className="p-2 w-48 border-r border-slate-300">ACCOMMODATETION</th>
+                      <th className="p-2 min-w-50 border-r border-slate-300">CURRENT USAGE</th>
                       <th className="p-2 w-10"></th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200">
                     {floors.map((f: any, i: number) => (
                       <tr key={f.id} className="hover:bg-slate-50/50">
-                        <td className="p-2 align-top">
+                        <td className="p-2 align-top border-r border-slate-300">
                           <input 
                             type="text" 
                             className={`${inputCls} font-bold text-[11px]`} 
@@ -2556,7 +2556,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             disabled={isReadOnly}
                           />
                         </td>
-                        <td className="p-2 align-top">
+                        <td className="p-2 align-top border-r border-slate-300">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-[9px] font-bold text-gray-400">NA?</span>
                             <input type="checkbox" checked={f.constructedAreaIsNA} onChange={e => updateFloor(i, 'constructedAreaIsNA', e.target.checked)} disabled={isReadOnly} className="w-3 h-3 text-red-500 rounded border-gray-300" />
@@ -2571,7 +2571,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             placeholder="Sq.Ft."
                           />
                         </td>
-                        <td className="p-2 align-top">
+                        <td className="p-2 align-top border-r border-slate-300">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-[9px] font-bold text-gray-400">NA?</span>
                             <input type="checkbox" checked={f.approvedAreaIsNA} onChange={e => updateFloor(i, 'approvedAreaIsNA', e.target.checked)} disabled={isReadOnly} className="w-3 h-3 text-red-500 rounded border-gray-300" />
@@ -2585,7 +2585,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             placeholder="NA"
                           />
                         </td>
-                        <td className="p-2 align-top">
+                        <td className="p-2 align-top border-r border-slate-300">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-[9px] font-bold text-gray-400">NA?</span>
                             <input type="checkbox" checked={f.permissibleAreaIsNA} onChange={e => updateFloor(i, 'permissibleAreaIsNA', e.target.checked)} disabled={isReadOnly} className="w-3 h-3 text-red-500 rounded border-gray-300" />
@@ -2599,7 +2599,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             placeholder="NA"
                           />
                         </td>
-                        <td className="p-2 align-top">
+                        <td className="p-2 align-top border-r border-slate-300">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-[9px] font-bold text-gray-400">NA?</span>
                             <input type="checkbox" checked={f.valuationAreaIsNA} onChange={e => updateFloor(i, 'valuationAreaIsNA', e.target.checked)} disabled={isReadOnly} className="w-3 h-3 text-red-500 rounded border-gray-300" />
@@ -2614,7 +2614,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             placeholder="Sq.Ft."
                           />
                         </td>
-                        <td className="p-2 align-top">
+                        <td className="p-2 align-top border-r border-slate-300">
                           <div className="flex items-center justify-between mb-1">
                             <span className="text-[9px] font-bold text-gray-400">NA?</span>
                             <input type="checkbox" checked={f.accommodationIsNA} onChange={e => updateFloor(i, 'accommodationIsNA', e.target.checked)} disabled={isReadOnly} className="w-3 h-3 text-red-500 rounded border-gray-300" />
@@ -2627,7 +2627,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             disabled={isReadOnly || f.accommodationIsNA}
                           />
                         </td>
-                        <td className="p-2 align-top">
+                        <td className="p-2 align-top border-r border-slate-300">
                           <div className="grid grid-cols-2 gap-1 text-[10px]">
                             {['Storage', 'Parking', 'Commercial', 'Residential', 'Industry'].map(u => (
                               <label key={u} className="flex items-center space-x-1 cursor-pointer">
@@ -2650,9 +2650,22 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         </td>
                       </tr>
                     ))}
+                    {/* Add Floor Button Row */}
+                    <tr style={{ backgroundColor: '#F2F5F8' }}>
+                      <td colSpan={8} className="p-2 border-b border-slate-300">
+                        <button 
+                          type="button" 
+                          onClick={addFloor} 
+                          disabled={isReadOnly}
+                          className="px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 rounded border border-slate-300 transition-colors flex items-center space-x-1"
+                        >
+                          <span>+ Add Floor Row</span>
+                        </button>
+                      </td>
+                    </tr>
                     {/* Summary Row 1: Built Up Area & Carpet Area Totals */}
                     <tr className="bg-slate-100 border-t-2 border-slate-300">
-                      <td className="p-2 font-bold text-xs text-slate-700">
+                      <td className="p-2 font-bold text-xs text-slate-700 border-r border-slate-300">
                         <div className="flex items-start justify-between gap-2">
                           <div>
                             TOTAL BUILT UP AREA (IN SQFT){' '}
@@ -2663,7 +2676,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           </div>
                         </div>
                       </td>
-                      <td className="p-2 font-bold text-slate-800">
+                      <td className="p-2 font-bold text-slate-800 border-r border-slate-300">
                         <div className="relative">
                           <input 
                             type="text" 
@@ -2679,7 +2692,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           )}
                         </div>
                       </td>
-                      <td className="p-2 font-bold text-gray-400 text-center">
+                      <td className="p-2 font-bold text-gray-400 text-center border-r border-slate-300">
                         <div className="relative">
                           <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 text-slate-800 bg-gray-50 cursor-not-allowed`} disabled value={computedApproved} />
                           <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="sum of all entries in the APPROVED AREA AS PER PLAN(SQ.FT) column">
@@ -2687,7 +2700,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           </div>
                         </div>
                       </td>
-                      <td className="p-2 font-bold text-gray-400 text-center">
+                      <td className="p-2 font-bold text-gray-400 text-center border-r border-slate-300">
                         <div className="relative">
                           <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 text-slate-800 bg-gray-50 cursor-not-allowed`} disabled value={computedPermissible} />
                           <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="sum of all entries in the PERMISSIBLE AREA AS PER BYELAWS (SQ.FT) column">
@@ -2695,7 +2708,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           </div>
                         </div>
                       </td>
-                      <td className="p-2 font-bold text-slate-800">
+                      <td className="p-2 font-bold text-slate-800 border-r border-slate-300">
                         <div className="relative">
                           <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 bg-gray-50 cursor-not-allowed`} disabled value={computedValuation} />
                           <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="sum of all entries in the AREA CONSIDERED FOR VALUATION (SQ.FT) / FAR 2 column">
@@ -2703,7 +2716,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           </div>
                         </div>
                       </td>
-                      <td className="p-2 font-bold text-gray-400 text-center">
+                      <td className="p-2 font-bold text-gray-400 text-center border-r border-slate-300">
                         <div className="relative">
                           <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 text-slate-800 bg-gray-50 cursor-not-allowed text-center`} disabled value={computedAccommodation} />
                           <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="sum of all entries in the ACCOMMODATETION column">
@@ -2771,15 +2784,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </tbody>
                 </table>
               </div>
-              
-              <button 
-                type="button" 
-                onClick={addFloor} 
-                disabled={isReadOnly}
-                className="mb-2 px-3 py-1.5 text-xs font-bold text-slate-700 bg-slate-200 hover:bg-slate-300 rounded border border-slate-300 transition-colors flex items-center space-x-1"
-              >
-                <span>+ Add Floor Row</span>
-              </button>
             </div>
 
             {/* CONTAINER 8.2 */}
