@@ -1636,7 +1636,12 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     );
     tW[tW.length - 1] = TABLE_W - tW.slice(0, -1).reduce((a, b) => a + b, 0);
 
+    // Ensure DETAILS OF VALUATION header always stays with the column headers + at least 2 data rows below
+    // 220pt ≈ header(24) + col-headers row(90, wraps multi-line) + 2 data rows(60) + buffer(46)
+    this.checkPageBreak(220);
+
     this.drawRow([{ text: 'DETAILS OF VALUATION', width: TABLE_W, isHeader: true, bold: true, fontSize: FONT_SIZE }], 20, 4, TABLE_X);
+
 
     this.drawRow([
       { text: 'Particulars Of Items',                             width: tW[0], isHeader: true, bold: false, align: 'center', fontSize: FONT_SIZE },
