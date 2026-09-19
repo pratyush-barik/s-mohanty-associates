@@ -461,7 +461,7 @@ export default function AdityaBirlaCapitalMLAP({
         console.error('Auto-save error:', err);
         setAutoSaveStatus('error');
       }
-    }, 1200);
+    }, 800);
 
     return () => {
       if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
@@ -471,7 +471,9 @@ export default function AdityaBirlaCapitalMLAP({
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (isReadOnly) return;
-      saveReportDraft(projectId, fields).catch(e => console.error(e));
+      try {
+        navigator.sendBeacon('/api/save-draft', JSON.stringify({ projectId, fields }));
+      } catch {}
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);

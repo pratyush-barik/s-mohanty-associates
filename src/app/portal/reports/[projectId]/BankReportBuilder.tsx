@@ -588,13 +588,18 @@ export default function BankReportBuilder({
   }, [fields, projectId, isReadOnly]);
 
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    const handleBeforeUnload = () => {
       if (bypassUnloadRef.current || isReadOnly) return;
-      saveReportDraft(projectId, fields).catch(e => console.error(e));
+      // sendBeacon is fire-and-forget and guaranteed to complete even on tab close,
+      // unlike async fetch/server actions which are killed by the browser immediately.
+      try {
+        navigator.sendBeacon('/api/save-draft', JSON.stringify({ projectId, fields }));
+      } catch {}
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [projectId, fields, isReadOnly]);
+
 
   const reportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();

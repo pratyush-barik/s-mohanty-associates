@@ -342,13 +342,16 @@ export default function ArthanFinance({
         const res = await saveReportDraft(projectId, fields);
         setAutoSaveStatus(res && 'error' in res && res.error ? 'error' : 'saved');
       } catch { setAutoSaveStatus('error'); }
-    }, 1200);
+    }, 800);
     return () => { if (debouncedTimer.current) clearTimeout(debouncedTimer.current); };
   }, [fields, projectId, isReadOnly]);
 
   useEffect(() => {
     const handleBeforeUnload = () => {
-      if (!isReadOnly) saveReportDraft(projectId, fields).catch(console.error);
+      if (isReadOnly) return;
+      try {
+        navigator.sendBeacon('/api/save-draft', JSON.stringify({ projectId, fields }));
+      } catch {}
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);

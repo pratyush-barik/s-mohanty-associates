@@ -871,7 +871,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         console.error('Auto-save error:', err);
         setAutoSaveStatus('error');
       }
-    }, 1200);
+    }, 800);
 
     return () => {
       if (debouncedSaveTimer.current) {
@@ -881,9 +881,11 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   }, [fields, projectId, isReadOnly]);
 
   useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    const handleBeforeUnload = () => {
       if (bypassUnloadRef.current || isReadOnly) return;
-      saveReportDraft(projectId, fields).catch(e => console.error(e));
+      try {
+        navigator.sendBeacon('/api/save-draft', JSON.stringify({ projectId, fields }));
+      } catch {}
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);

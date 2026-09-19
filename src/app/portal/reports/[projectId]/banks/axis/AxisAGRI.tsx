@@ -912,7 +912,7 @@ export default function AxisAGRI({
         console.error('Auto-save network error:', err);
         setAutoSaveStatus('error');
       }
-    }, 1200);
+    }, 800);
 
     return () => {
       if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
@@ -922,7 +922,9 @@ export default function AxisAGRI({
   useEffect(() => {
     const handleBeforeUnload = () => {
       if (isReadOnly) return;
-      saveReportDraft(projectId, fields).catch(e => console.error(e));
+      try {
+        navigator.sendBeacon('/api/save-draft', JSON.stringify({ projectId, fields }));
+      } catch {}
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
