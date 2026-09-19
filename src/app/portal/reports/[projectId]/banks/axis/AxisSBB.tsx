@@ -1716,23 +1716,17 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">REMARK</label>
                       {renderNaToggle('axisSbbApproachRoadRemark')}
                     </div>
-                    {renderEditSwitch('axisSbbApproachRoadRemark', !!fields.axisSbbApproachRoadRemarkIsNA)}
                   </div>
                   <input
                     type="text"
                     className={`${inputCls} ${
-                      !fields.axisSbbApproachRoadRemarkEditOn && !fields.axisSbbApproachRoadRemarkIsNA 
-                        ? 'bg-rose-50 text-rose-800 border-rose-300' 
-                        : ''
-                    } ${
                       fields.axisSbbApproachRoadSmall === 'YES' && !fields.axisSbbApproachRoadSmallIsNA
                         ? 'ring-2 ring-amber-400 border-amber-500 bg-amber-50/30'
                         : ''
                     }`}
-                    value={fields.axisSbbApproachRoadRemarkIsNA ? 'NA' : (fields.axisSbbApproachRoadRemarkEditOn ? (fields.axisSbbApproachRoadRemark || '') : remarkComputed)}
+                    value={fields.axisSbbApproachRoadRemarkIsNA ? 'NA' : (fields.axisSbbApproachRoadRemark || '20 FEET WIDE ROAD')}
                     onChange={e => handleChange('axisSbbApproachRoadRemark', e.target.value.toUpperCase())}
-                    readOnly={!fields.axisSbbApproachRoadRemarkEditOn || fields.axisSbbApproachRoadRemarkIsNA}
-                    disabled={isReadOnly || (!fields.axisSbbApproachRoadRemarkEditOn && !fields.axisSbbApproachRoadRemarkIsNA)}
+                    disabled={isReadOnly || fields.axisSbbApproachRoadRemarkIsNA}
                   />
                 </div>
 
@@ -1743,18 +1737,17 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide truncate">WILL IT BE ABLE TO ACCOMMODATE A FIRE EXTINGUISHER</label>
                         {renderNaToggle('axisSbbFireExtinguisher')}
                       </div>
-                      {renderEditSwitch('axisSbbFireExtinguisher', !!fields.axisSbbFireExtinguisherIsNA)}
                     </div>
                     <div className={`flex flex-wrap gap-3 ${fields.axisSbbFireExtinguisherIsNA ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
                       {['YES', 'NO'].map(opt => (
-                        <label key={opt} className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${((fields.axisSbbFireExtinguisherEditOn ? fields.axisSbbFireExtinguisher : fireExtComputed) === opt && !fields.axisSbbFireExtinguisherIsNA) ? 'bg-rose-50 border-rose-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
+                        <label key={opt} className={`flex items-center space-x-2 p-2 border rounded-lg cursor-pointer transition-colors ${(fields.axisSbbFireExtinguisher === opt && !fields.axisSbbFireExtinguisherIsNA) ? 'bg-rose-50 border-rose-300' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
                           <input
                             type="radio"
                             name="accommodate_fire_extinguisher"
                             value={opt}
-                            checked={(fields.axisSbbFireExtinguisherEditOn ? fields.axisSbbFireExtinguisher : fireExtComputed) === opt && !fields.axisSbbFireExtinguisherIsNA}
+                            checked={fields.axisSbbFireExtinguisher === opt && !fields.axisSbbFireExtinguisherIsNA}
                             onChange={e => handleChange('axisSbbFireExtinguisher', e.target.value)}
-                            disabled={isReadOnly || !!fields.axisSbbFireExtinguisherIsNA || !fields.axisSbbFireExtinguisherEditOn}
+                            disabled={isReadOnly || !!fields.axisSbbFireExtinguisherIsNA}
                             className="text-rose-500 focus:ring-rose-400 border-gray-300"
                           />
                           <span className="text-xs font-semibold text-gray-700">{opt}</span>
@@ -1769,7 +1762,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide truncate">DOES THE PROPERTY FALLS UNDER LAND LOCKED AREA</label>
                         {renderNaToggle('axisSbbLandLockedArea')}
                       </div>
-                      {renderEditSwitch('axisSbbLandLockedArea', !!fields.axisSbbLandLockedAreaIsNA)}
                     </div>
                     {renderRadioGroup('axisSbbLandLockedArea', ['YES', 'NO'])}
                     {fields.axisSbbLandLockedArea === 'YES' && !fields.axisSbbLandLockedAreaIsNA && (
@@ -1786,7 +1778,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide truncate">DOES THE PROPERTY FALLS IN A COMMUNITY DOMINATED AREA</label>
                         {renderNaToggle('axisSbbCommunityDominatedArea')}
                       </div>
-                      {renderEditSwitch('axisSbbCommunityDominatedArea', !!fields.axisSbbCommunityDominatedAreaIsNA)}
                     </div>
                     {renderRadioGroup('axisSbbCommunityDominatedArea', ['YES', 'NO'])}
                   </div>
@@ -1797,7 +1788,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide truncate">DOES THE BOUNDARIES AT SITE MATCH AS MENTIONED IN DOCUMENT</label>
                         {renderNaToggle('axisSbbBoundariesMatchDocument')}
                       </div>
-                      {renderEditSwitch('axisSbbBoundariesMatchDocument', !!fields.axisSbbBoundariesMatchDocumentIsNA)}
                     </div>
                     {renderRadioGroup('axisSbbBoundariesMatchDocument', ['YES', 'NO'])}
                   </div>
