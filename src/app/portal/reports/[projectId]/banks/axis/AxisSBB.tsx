@@ -2888,7 +2888,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <div className="flex justify-between items-center mb-3">
                         <div className="flex items-center">
                           <label className="block text-xs font-bold text-amber-800 uppercase tracking-wide">
-                            QUALITY OF CONSTRUCTION <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Selected_Roof_Option + " WITH MASONRY WALLS WITH " + Selected_Floor_Option + " FLOOR = QUALITY OF CONSTRUCTION"]</span>
+                            <span className="bg-amber-200/60 px-1.5 py-0.5 rounded">QUALITY OF CONSTRUCTION</span> <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Selected_Roof_Option + " WITH MASONRY WALLS WITH " + Selected_Floor_Option + " FLOOR " = QUALITY OF CONSTRUCTION]</span>
                           </label>
                           {renderNaToggle('axisSbbQualityOfConstruction')}
                         </div>
@@ -2897,21 +2897,21 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       
                       <div className={`grid gap-4 mb-3 p-3 rounded-lg border border-amber-100 bg-amber-50/50 ${fields.axisSbbQualityOfConstructionEditOn || fields.axisSbbQualityOfConstructionIsNA ? 'opacity-50 pointer-events-none' : ''}`}>
                         <div>
-                          <h4 className="text-[10px] font-bold text-slate-500 mb-2 uppercase">Roof Structure</h4>
-                          <div className="flex flex-wrap gap-2">
+                          <h4 className="text-xs font-bold text-slate-600 mb-2 uppercase">Roof Structure</h4>
+                          <div className="flex flex-wrap gap-3">
                             {[
                               { key: 'axisSbbQualityOfConstructionRoofRCC', label: 'RCC' },
                               { key: 'axisSbbQualityOfConstructionRoofPatti', label: 'PATTI' },
                               { key: 'axisSbbQualityOfConstructionRoofTinShed', label: 'TIN SHED' },
                               { key: 'axisSbbQualityOfConstructionRoofClayTiles', label: 'CLAY TILES' }
                             ].map(opt => (
-                              <label key={opt.key} className="flex items-center space-x-1 text-[10px] cursor-pointer">
+                              <label key={opt.key} className="flex items-center space-x-1.5 text-xs cursor-pointer">
                                 <input 
                                   type="checkbox" 
                                   checked={!!fields[opt.key]}
                                   onChange={e => handleChange(opt.key, e.target.checked)}
                                   disabled={isReadOnly || !!fields.axisSbbQualityOfConstructionEditOn || !!fields.axisSbbQualityOfConstructionIsNA}
-                                  className="w-3 h-3 text-amber-500 rounded border-gray-300"
+                                  className="w-4 h-4 text-amber-500 rounded border-gray-300"
                                 />
                                 <span>{opt.label}</span>
                               </label>
@@ -2919,13 +2919,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           </div>
                         </div>
                         
-                        <div className="flex items-center justify-center">
-                          <span className="text-[10px] font-bold text-slate-400 border border-dashed border-slate-300 px-2 py-0.5 rounded-full">WITH MASONRY WALLS WITH</span>
+                        <div className="flex items-center justify-center py-1">
+                          <span className="text-xs font-bold text-slate-500 border border-dashed border-slate-300 px-3 py-1 rounded-full">WITH MASONRY WALLS WITH</span>
                         </div>
                         
                         <div>
-                          <h4 className="text-[10px] font-bold text-slate-500 mb-2 uppercase">Flooring Type</h4>
-                          <div className="flex flex-wrap gap-2">
+                          <h4 className="text-xs font-bold text-slate-600 mb-2 uppercase">Flooring Type</h4>
+                          <div className="flex flex-wrap gap-3">
                             {[
                               { key: 'axisSbbQualityOfConstructionFloorTiles', label: 'TILES' },
                               { key: 'axisSbbQualityOfConstructionFloorMarble', label: 'MARBLE' },
@@ -2933,13 +2933,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                               { key: 'axisSbbQualityOfConstructionFloorLocalStone', label: 'LOCAL STONE' },
                               { key: 'axisSbbQualityOfConstructionFloorCC', label: 'C.C' }
                             ].map(opt => (
-                              <label key={opt.key} className="flex items-center space-x-1 text-[10px] cursor-pointer">
+                              <label key={opt.key} className="flex items-center space-x-1.5 text-xs cursor-pointer">
                                 <input 
                                   type="checkbox" 
                                   checked={!!fields[opt.key]}
                                   onChange={e => handleChange(opt.key, e.target.checked)}
                                   disabled={isReadOnly || !!fields.axisSbbQualityOfConstructionEditOn || !!fields.axisSbbQualityOfConstructionIsNA}
-                                  className="w-3 h-3 text-amber-500 rounded border-gray-300"
+                                  className="w-4 h-4 text-amber-500 rounded border-gray-300"
                                 />
                                 <span>{opt.label}</span>
                               </label>
