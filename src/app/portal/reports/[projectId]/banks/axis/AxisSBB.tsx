@@ -3041,7 +3041,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     },
     {
       id: 'axis-sbb-section-9',
-      title: '9. VALUATION OVERVIEW & REMARKS',
+      title: 'VALUATION CALCULATIONS & SUMMARY',
       number: 9,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
@@ -3070,14 +3070,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
         const landAreaPrefill = fields.axisSbbPlotAreaAsPerDocument || '';
         const buildingAreaPrefill = fields.axisSbbTotalConstructedArea || '';
 
-        // Computations Table 9.1
+        // Computations Market Valuation
         const landAmount = Number(fields.axisSbbValuationLandAreaIsNA ? 0 : (fields.axisSbbValuationLandAreaEditOn ? fields.axisSbbValuationLandArea : landAreaPrefill)) * Number(fields.axisSbbValuationLandRate || 0);
         const buildingAmount = Number(fields.axisSbbValuationBuildingAreaIsNA ? 0 : (fields.axisSbbValuationBuildingAreaEditOn ? fields.axisSbbValuationBuildingArea : buildingAreaPrefill)) * Number(fields.axisSbbValuationBuildingRate || 0);
         const amenitiesAmount = Number(fields.axisSbbValuationAmenitiesArea || 0) * Number(fields.axisSbbValuationAmenitiesRate || 0);
         const totalAmountComp = landAmount + buildingAmount + amenitiesAmount;
         const totalSayComp = Math.floor(totalAmountComp / 1000) * 1000;
 
-        // Computations Table 9.2
+        // Computations Government Guideline
         const govtLandAmount = Number(fields.axisSbbGovtLandAreaIsNA ? 0 : (fields.axisSbbGovtLandAreaEditOn ? fields.axisSbbGovtLandArea : landAreaPrefill)) * Number(fields.axisSbbGovtLandRate || 0);
         const govtBuildingAmount = Number(fields.axisSbbGovtBuildingAreaIsNA ? 0 : (fields.axisSbbGovtBuildingAreaEditOn ? fields.axisSbbGovtBuildingArea : buildingAreaPrefill)) * Number(fields.axisSbbGovtBuildingRate || 0);
 
@@ -3090,7 +3090,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
         return (
           <div className="animate-fade-in space-y-6">
             <div className="border border-emerald-200 bg-[#ECFDF5] rounded-xl p-4 relative shadow-sm">
-              <h3 className="font-bold text-emerald-800 mb-4 uppercase">Table 9.1: Market Valuation Calculation</h3>
+              <h3 className="font-bold text-emerald-800 mb-4 uppercase">Market Valuation Calculation</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse bg-white shadow-sm rounded-md overflow-hidden">
                   <thead className="bg-emerald-50 border-b border-emerald-200">
@@ -3229,7 +3229,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
             </div>
 
             <div className="border border-purple-200 bg-[#F5F3FF] rounded-xl p-4 relative shadow-sm">
-              <h3 className="font-bold text-purple-800 mb-4 uppercase">Table 9.2: Government Guideline / Benchmark Value</h3>
+              <h3 className="font-bold text-purple-800 mb-4 uppercase">Government Guideline / Benchmark Value</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse bg-white shadow-sm rounded-md overflow-hidden">
                   <thead className="bg-purple-50 border-b border-purple-200">
