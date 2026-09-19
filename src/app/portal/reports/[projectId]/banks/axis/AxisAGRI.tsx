@@ -328,7 +328,7 @@ export default function AxisAGRI({
       basisOfValuation: raw.basisOfValuation || '',
       opinionOfMarketValue: raw.opinionOfMarketValue || '',
       remarksText: raw.remarksText || '',
-      undertakingText: raw.undertakingText || '• I have personally visited the property & identified the same based on the documents provided.\n• I/We have no direct or indirect interest in the property being valued.\n• The information furnished above is true and correct to my/our knowledge.\n• I/ we have not been dismissed or removed from govt. Service or convicted of an offence connected with any proceedings of income tax act, wealth tax act or gift tax act or have been blacklisted by any bank/ financial institution/ govt. Department/ public sector enterprise/ body corporate etc.\n• This valuation is prepared without any prejudice or bias to any person or institution\n• The value of land is taken into account by making due enquires in the locality and ascertaining the sales value of the properties in the locality\n• Any additions/alterations made to the property after the date of valuations shall not fall under the scope of this report',
+      undertakingText: raw.undertakingText || '• I have personally visited the property & identified the same based on the documents provided.\n• I/We have no direct or indirect interest in the property being valued.\n• The information furnished above is true and correct to my/our knowledge.\n• I/ we have not been dismissed or removed from govt. Service or convicted of an offence connected with any proceedings of income tax act, wealth tax act or gift tax act or have been blacklisted by any bank/ financial institution/ govt. Department/ public sector enterprise/ body corporate etc.\n• This valuation is prepared without any prejudice or bias to any person or institution.\n• The value of land is taken into account by making due enquires in the locality and ascertaining the sales value of the properties in the locality.\n• Any additions/alterations made to the property after the date of valuations shall not fall under the scope of this report.',
       annexureAMethodOfValuation: raw.annexureAMethodOfValuation || '',
       annexureABasisBuildingValue: raw.annexureABasisBuildingValue || '',
       annexureARegardingLand: raw.annexureARegardingLand || '',
@@ -3468,9 +3468,9 @@ export default function AxisAGRI({
                 'I/We have no direct or indirect interest in the property being valued.',
                 'The information furnished above is true and correct to my/our knowledge.',
                 'I/ we have not been dismissed or removed from govt. Service or convicted of an offence connected with any proceedings of income tax act, wealth tax act or gift tax act or have been blacklisted by any bank/ financial institution/ govt. Department/ public sector enterprise/ body corporate etc.',
-                'This valuation is prepared without any prejudice or bias to any person or institution',
-                'The value of land is taken into account by making due enquires in the locality and ascertaining the sales value of the properties in the locality',
-                'Any additions/alterations made to the property after the date of valuations shall not fall under the scope of this report',
+                'This valuation is prepared without any prejudice or bias to any person or institution.',
+                'The value of land is taken into account by making due enquires in the locality and ascertaining the sales value of the properties in the locality.',
+                'Any additions/alterations made to the property after the date of valuations shall not fall under the scope of this report.',
               ].map((point, idx) => (
                 <div key={idx} className="flex items-start gap-2">
                   <span className="text-blue-600 font-bold leading-relaxed">•</span>
