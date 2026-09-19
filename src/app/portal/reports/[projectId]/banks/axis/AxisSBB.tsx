@@ -3316,7 +3316,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col gap-1 bg-white p-4 rounded-lg shadow-sm border border-yellow-100">
                   <div className="flex justify-between items-center mb-2">
-                    <label className="text-sm font-bold text-gray-700">Market Value</label>
+                    <label className="text-sm font-bold text-gray-700">Market Value <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from "Total Valuation in Say" of Container "Market Valuation Calculation" = Market Value]</span></label>
                     <div className="flex gap-4">
                       {renderEditSwitch('axisSbbFinalMarketValue', !!fields.axisSbbFinalMarketValueIsNA)}
                       {renderNaToggle('axisSbbFinalMarketValue')}
