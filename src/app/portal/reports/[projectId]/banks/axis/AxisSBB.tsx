@@ -3102,10 +3102,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-emerald-100">
+                    {/* Row 1: Land */}
                     <tr>
-                      <td className="p-3 font-semibold text-gray-700">Land <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span></td>
-                      <td className="p-3">
+                      <td className="p-3 font-semibold text-gray-700 align-top">Land</td>
+                      <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
+                          <div className="text-[10px] leading-tight mb-1">
+                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from Section 6 "PLOT AREA AS PER DOCUMENTS" = AREA (SQ.FT)]</span>
+                          </div>
                           <div className="flex items-center justify-between">
                             {renderEditSwitch('axisSbbValuationLandArea', !!fields.axisSbbValuationLandAreaIsNA)}
                             {renderNaToggle('axisSbbValuationLandArea')}
@@ -3113,14 +3117,17 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationLandAreaIsNA ? '' : (fields.axisSbbValuationLandAreaEditOn ? (fields.axisSbbValuationLandArea || '') : landAreaPrefill)} onChange={e => handleChange('axisSbbValuationLandArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationLandAreaIsNA || !fields.axisSbbValuationLandAreaEditOn} />
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
                           <div className="flex justify-end">{renderNaToggle('axisSbbValuationLandRate')}</div>
                           <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationLandRateIsNA ? '' : (fields.axisSbbValuationLandRate || '')} onChange={e => handleChange('axisSbbValuationLandRate', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationLandRateIsNA} />
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
+                          <div className="text-[10px] leading-tight mb-1">
+                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span>
+                          </div>
                           <div className="flex items-center justify-between">
                             {renderEditSwitch('axisSbbValuationLandAmount', !!fields.axisSbbValuationLandAmountIsNA)}
                             {renderNaToggle('axisSbbValuationLandAmount')}
@@ -3129,32 +3136,19 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         </div>
                       </td>
                     </tr>
+                    {/* Row 2: Building */}
                     <tr>
-                      <td className="p-3">
-                        <div className="flex flex-col gap-2">
-                          <input
-                            type="text"
-                            className="w-full text-sm font-semibold text-gray-700 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            value={fields.axisSbbValuationBuildingItemDescription || ''}
-                            onChange={e => handleChange('axisSbbValuationBuildingItemDescription', e.target.value)}
-                            disabled={isReadOnly}
-                            placeholder="Building G+1"
-                          />
-                          <input
-                            type="text"
-                            className="w-full text-sm text-gray-600 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            value={fields.axisSbbValuationBuildingFarLabel || ''}
-                            onChange={e => handleChange('axisSbbValuationBuildingFarLabel', e.target.value)}
-                            disabled={isReadOnly}
-                            placeholder="FAR 2"
-                          />
-                          <div className="text-xs mt-1">
-                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span>
-                          </div>
+                      <td className="p-3 align-top">
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-gray-700">Building G+1</span>
+                          <span className="text-xs text-gray-500">FAR 2</span>
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
+                          <div className="text-[10px] leading-tight mb-1">
+                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from Section 8 "TOTAL BUILT UP AREA (IN SQFT)" = AREA (SQ.FT)]</span>
+                          </div>
                           <div className="flex items-center justify-between">
                             {renderEditSwitch('axisSbbValuationBuildingArea', !!fields.axisSbbValuationBuildingAreaIsNA)}
                             {renderNaToggle('axisSbbValuationBuildingArea')}
@@ -3162,14 +3156,17 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationBuildingAreaIsNA ? '' : (fields.axisSbbValuationBuildingAreaEditOn ? (fields.axisSbbValuationBuildingArea || '') : buildingAreaPrefill)} onChange={e => handleChange('axisSbbValuationBuildingArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationBuildingAreaIsNA || !fields.axisSbbValuationBuildingAreaEditOn} />
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
                           <div className="flex justify-end">{renderNaToggle('axisSbbValuationBuildingRate')}</div>
                           <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationBuildingRateIsNA ? '' : (fields.axisSbbValuationBuildingRate || '')} onChange={e => handleChange('axisSbbValuationBuildingRate', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationBuildingRateIsNA} />
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
+                          <div className="text-[10px] leading-tight mb-1">
+                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span>
+                          </div>
                           <div className="flex items-center justify-between">
                             {renderEditSwitch('axisSbbValuationBuildingAmount', !!fields.axisSbbValuationBuildingAmountIsNA)}
                             {renderNaToggle('axisSbbValuationBuildingAmount')}
@@ -3178,30 +3175,40 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         </div>
                       </td>
                     </tr>
+                    {/* Row 3: Amenities */}
                     <tr>
-                      <td className="p-3 font-semibold text-gray-700">Amenities</td>
-                      <td className="p-3">
+                      <td className="p-3 font-semibold text-gray-700 align-top">Amenities</td>
+                      <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
                           <div className="flex justify-end">{renderNaToggle('axisSbbValuationAmenitiesArea')}</div>
-                          <input type="text" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationAmenitiesAreaIsNA ? 'NA' : (fields.axisSbbValuationAmenitiesArea || '')} onChange={e => handleChange('axisSbbValuationAmenitiesArea', e.target.value.toUpperCase())} disabled={isReadOnly || !!fields.axisSbbValuationAmenitiesAreaIsNA} />
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationAmenitiesAreaIsNA ? '' : (fields.axisSbbValuationAmenitiesArea || '')} onChange={e => handleChange('axisSbbValuationAmenitiesArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationAmenitiesAreaIsNA} />
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
                           <div className="flex justify-end">{renderNaToggle('axisSbbValuationAmenitiesRate')}</div>
-                          <input type="text" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationAmenitiesRateIsNA ? 'NA' : (fields.axisSbbValuationAmenitiesRate || '')} onChange={e => handleChange('axisSbbValuationAmenitiesRate', e.target.value.toUpperCase())} disabled={isReadOnly || !!fields.axisSbbValuationAmenitiesRateIsNA} />
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationAmenitiesRateIsNA ? '' : (fields.axisSbbValuationAmenitiesRate || '')} onChange={e => handleChange('axisSbbValuationAmenitiesRate', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationAmenitiesRateIsNA} />
                         </div>
                       </td>
-                      <td className="p-3">
+                      <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
-                          <div className="flex justify-end">{renderNaToggle('axisSbbValuationAmenitiesAmount')}</div>
-                          <input type="text" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationAmenitiesAmountIsNA ? 'NA' : (fields.axisSbbValuationAmenitiesAmount || '')} onChange={e => handleChange('axisSbbValuationAmenitiesAmount', e.target.value.toUpperCase())} disabled={isReadOnly || !!fields.axisSbbValuationAmenitiesAmountIsNA} />
+                          <div className="text-[10px] leading-tight mb-1">
+                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Amenities-AREA (SQ.FT) * Amenities-RATE PER SQ.FT (RS.) = AMOUNT (RS.)]</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            {renderEditSwitch('axisSbbValuationAmenitiesAmount', !!fields.axisSbbValuationAmenitiesAmountIsNA)}
+                            {renderNaToggle('axisSbbValuationAmenitiesAmount')}
+                          </div>
+                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationAmenitiesAmountIsNA ? '' : (fields.axisSbbValuationAmenitiesAmountEditOn ? (fields.axisSbbValuationAmenitiesAmount || '') : amenitiesAmount.toFixed(2))} onChange={e => handleChange('axisSbbValuationAmenitiesAmount', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationAmenitiesAmountIsNA || !fields.axisSbbValuationAmenitiesAmountEditOn} />
                         </div>
                       </td>
                     </tr>
                     <tr className="bg-emerald-50">
-                      <td className="p-3 font-bold text-emerald-900" colSpan={3}>Total Valuation 100% Completion (I+II) <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Land_Amount + Building_Amount + Amenities_Amount = Total Valuation 100% Completion]</span></td>
-                      <td className="p-3">
+                      <td className="p-3 font-bold text-emerald-900 align-top" colSpan={3}>
+                        Total Valuation 100% Completion (I+II){' '}
+                        <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: SUM(All values in AMOUNT (RS.) column) = Total Valuation 100% Completion]</span>
+                      </td>
+                      <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">
                             {renderEditSwitch('axisSbbValuationTotalAmount', !!fields.axisSbbValuationTotalAmountIsNA)}
@@ -3212,8 +3219,11 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                     </tr>
                     <tr className="bg-emerald-100">
-                      <td className="p-3 font-bold text-emerald-900" colSpan={3}>Total Valuation in Say <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: ROUND(Total Valuation 100% Completion, -3) = Total Valuation in Say]</span></td>
-                      <td className="p-3">
+                      <td className="p-3 font-bold text-emerald-900 align-top" colSpan={3}>
+                        Total Valuation in Say{' '}
+                        <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: ROUND(Total Valuation 100% Completion, -3) = Total Valuation in Say]</span>
+                      </td>
+                      <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-between">
                             {renderEditSwitch('axisSbbValuationTotalSayAmount', !!fields.axisSbbValuationTotalSayAmountIsNA)}
