@@ -718,8 +718,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         height: cellH,
         borderColor: rgb(0, 0, 0),
         borderWidth: BORDER_W,
-        color: isFilled ? hexToRgb(VAL_BG) : undefined,
-        opacity: isFilled ? BG_OPACITY : undefined,
+        color: rgb(1, 1, 1),
       });
 
       const tw = font.widthOfTextAtSize(char, fs);
