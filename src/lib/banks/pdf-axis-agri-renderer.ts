@@ -2081,7 +2081,10 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
           this.cursorY += 4;
         }
 
-        for (let row = 0; row < 3; row++) {
+        const photosOnThisPage = Math.min(photosPerPage, photoList.length - pageIdx * photosPerPage);
+        const rowsOnThisPage = Math.ceil(photosOnThisPage / 2);
+
+        for (let row = 0; row < rowsOnThisPage; row++) {
           const rowY = this.pdfY(this.cursorY);
           for (let col = 0; col < 2; col++) {
             const pIdx = pageIdx * photosPerPage + row * 2 + col;
@@ -2145,7 +2148,11 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     ];
 
     if (mapGroups.length > 0) {
-      this.addPage(); // always start maps on a fresh page
+      if (photoList.length === 0) {
+        this.addPage();
+      } else {
+        this.addSectionBreak(10);
+      }
 
       for (const mapItem of mapGroups) {
         const mapImg = await this.embedImgSafe(mapItem.bytes);
