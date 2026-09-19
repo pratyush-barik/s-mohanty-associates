@@ -3587,10 +3587,24 @@ export default function AxisAGRI({
         ═══════════════════════════════════════════════════════════════ */}
         <Section id="sec-15" title="Valuation Report Check List (12 Statutory Items)" number={15} defaultOpen>
           <div className="border border-indigo-200 bg-indigo-50/50 rounded-xl p-5 shadow-xs">
-            {/* Checklist Property Header Reference */}
-            <div className="p-3 mb-4 rounded-lg bg-indigo-100/70 border border-indigo-200 text-xs text-indigo-950 font-medium">
+            {/* Header Title with underline and line break */}
+            <div className="text-center mb-3">
+              <h3 className="font-bold text-sm text-indigo-950 uppercase inline-block border-b-2 border-indigo-950 pb-0.5 tracking-wider">
+                VALUATION REPORT CHECK LIST
+              </h3>
+            </div>
+
+            {/* Checklist Property Header Reference (Address with line break after) */}
+            <div className="p-3 mb-3 rounded-lg bg-indigo-100/70 border border-indigo-200 text-xs text-indigo-950 font-medium text-center">
               <span className="font-bold text-indigo-900 uppercase">Valuation Property Reference: </span>
               {fields.plotKhataDetails ? `(FOR THE PROPERTY VALUATION OF ${fields.plotKhataDetails})` : <span className="text-indigo-600 italic">Auto-referenced from Plot No / S.No / G.No / Khasra No &amp; Property Specifics (Section 1)</span>}
+            </div>
+
+            {/* Notice text with underline and line break */}
+            <div className="text-center mb-4">
+              <p className="italic text-xs text-slate-700 font-medium inline-block border-b border-slate-600 pb-0.5">
+                Please ensure that the following important points are in order in the submitted report.
+              </p>
             </div>
 
             <div className="space-y-2.5">
@@ -3638,16 +3652,15 @@ export default function AxisAGRI({
             </div>
 
             {/* Prepared By Block */}
-            <div className="mt-5 p-4 bg-white rounded-xl border border-indigo-200 text-xs text-slate-700 space-y-1.5 shadow-xs text-center">
-              <p className="font-bold text-sm text-slate-900 mb-2">Prepared By</p>
+            <div className="mt-5 p-4 bg-white rounded-xl border border-indigo-200 text-xs text-slate-700 space-y-1 shadow-xs text-center">
+              <p className="font-bold text-sm text-slate-900 mb-1.5">Prepared By</p>
               <p className="font-bold text-slate-900 text-sm">Er. Satyajit Mohanty</p>
-              <p className="font-semibold text-slate-800">Founder & Chief Executive | Registered Valuer | Chartered Engineer</p>
-              <p className="text-slate-700">Registered Valuer (Land & Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)</p>
-              <p className="text-slate-700">Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)</p>
-              <p className="text-slate-600">Corporate Member & Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)</p>
-              <p className="text-slate-600">Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) & IIV, Pune (F-4443)</p>
-              <p className="text-slate-600">B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)</p>
-              <p className="font-bold text-indigo-700">Empanelled Valuer of Axis Bank</p>
+              <p className="font-bold text-slate-800 text-[10px]">Registered Valuer (Land &amp; Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)</p>
+              <p className="font-bold text-slate-800 text-[10px]">Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)</p>
+              <p className="font-bold text-slate-800 text-[10px]">Corporate Member &amp; Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)</p>
+              <p className="font-bold text-slate-800 text-[10px]">Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) &amp; IIV, Pune (F-4443)</p>
+              <p className="font-bold text-slate-800 text-[10px]">B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)</p>
+              <p className="font-bold text-indigo-700 text-[10px]">Empanelled Valuer of Axis Bank</p>
             </div>
           </div>
         </Section>

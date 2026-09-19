@@ -993,8 +993,6 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       { text: devText, width: col4_w4 },
     ], 22, 4);
 
-    this.addSectionBreak(8);
-
     // Leasehold Details
     this.drawRow([
       { text: `If the property is Leasehold (${fields.isLeasehold || 'The Property is Free Hold Land'})`, width: W, isHeader: true, bold: true },
@@ -1036,19 +1034,19 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     this.addSectionBreak(8);
 
-    // RERA & Occupancy Certificate
+    // Approval Details
     this.drawRow([{ text: 'Approval Details:-', width: W, isHeader: true, bold: true }], 18, 4);
     this.drawRow([
       { text: 'RERA Registration Number', width: col4_w1, isLabel: true },
       { text: fields.reraRegNo || 'Not Applicable.', width: col4_w2 },
       { text: 'Occupancy Certificate', width: col4_w3, isLabel: true },
-      { text: fields.occupancyCertificate || 'Not Available', width: col4_w4 },
+      { text: fields.occupancyCertificate || 'Not Applicable.', width: col4_w4 },
     ], 20, 4);
 
     // Layout Approval Row
     this.drawRow([
-      { text: 'Layout Approval Number', width: col4_w1 * 2, isLabel: true },
-      { text: fields.layoutApprovalNo || 'Not Mentioned', width: col4_w1 * 2 },
+      { text: 'Layout Approval Number :', width: W * 0.5, isLabel: true },
+      { text: fields.layoutApprovalNo || 'Not Applicable.', width: W * 0.5 },
     ], 20, 4);
 
     // Layout Date Box Row
@@ -1060,12 +1058,10 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.draw8BoxDate(MARGIN_L + W * 0.75, boxY, W * 0.25, boxRowH, fields.layoutExpiryDate || '');
     this.cursorY += boxRowH;
 
-    this.addSectionBreak(8);
-
-    // Building Plan Approval Row
+    // Building Plan Approval Row (no line break before)
     this.drawRow([
-      { text: 'Building Plan Approval Number', width: col4_w1 * 2, isLabel: true },
-      { text: fields.buildingPlanApprovalNo || 'Not Available', width: col4_w1 * 2 },
+      { text: 'Building Plan Approval Number:', width: W * 0.5, isLabel: true },
+      { text: fields.buildingPlanApprovalNo || 'Not Applicable.', width: W * 0.5 },
     ], 20, 4);
 
     // Building Plan Date Box Row
@@ -1857,14 +1853,22 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
 
     const chkTitle = 'VALUATION REPORT CHECK LIST';
     const chkTw = this.fontBold.widthOfTextAtSize(chkTitle, FONT_SIZE_TITLE);
+    const chkX = MARGIN_L + (W - chkTw) / 2;
+    const chkY = this.pdfY(this.cursorY) - 10;
     this.page.drawText(chkTitle, {
-      x: MARGIN_L + (W - chkTw) / 2,
-      y: this.pdfY(this.cursorY) - 10,
+      x: chkX,
+      y: chkY,
       size: FONT_SIZE_TITLE,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 16;
+    this.page.drawLine({
+      start: { x: chkX, y: chkY - 2 },
+      end: { x: chkX + chkTw, y: chkY - 2 },
+      thickness: 1,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 22;
 
     // Subtitle (Dynamic from Plot No / S.No / G.No / Khasra No & Property Specifics)
     const rawSpecifics = (fields.plotKhataDetails || '').trim();
@@ -1896,19 +1900,27 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         });
         csOff += FONT_SIZE_CAPTION * LINE_HEIGHT;
       }
-      this.cursorY += chkSubLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 4;
+      this.cursorY += chkSubLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 8;
     }
 
     const noticeText = 'Please ensure that the following important points are in order in the submitted report.';
     const nTw = this.fontItalic.widthOfTextAtSize(noticeText, FONT_SIZE_SMALL);
+    const nX = MARGIN_L + (W - nTw) / 2;
+    const nY = this.pdfY(this.cursorY) - 8;
     this.page.drawText(noticeText, {
-      x: MARGIN_L + (W - nTw) / 2,
-      y: this.pdfY(this.cursorY) - 8,
+      x: nX,
+      y: nY,
       size: FONT_SIZE_SMALL,
       font: this.fontItalic,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 14;
+    this.page.drawLine({
+      start: { x: nX, y: nY - 2 },
+      end: { x: nX + nTw, y: nY - 2 },
+      thickness: 0.8,
+      color: rgb(0, 0, 0),
+    });
+    this.cursorY += 18;
 
     // 12 Checklist Items
     const checklistItems = [
@@ -2026,14 +2038,13 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     this.cursorY += 14;
 
     const sigDetails = [
-      { text: 'Er. Satyajit Mohanty', bold: true, size: FONT_SIZE },
-      { text: 'Founder & Chief Executive | Registered Valuer | Chartered Engineer', bold: true, size: FONT_SIZE_SMALL },
-      { text: 'Registered Valuer (Land & Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)', bold: true, size: FONT_SIZE_SMALL },
-      { text: 'Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)', bold: true, size: FONT_SIZE_SMALL },
-      { text: 'Corporate Member & Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)', bold: false, size: FONT_SIZE_CAPTION },
-      { text: 'Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) & IIV, Pune (F-4443)', bold: false, size: FONT_SIZE_CAPTION },
-      { text: 'B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)', bold: false, size: FONT_SIZE_CAPTION },
-      { text: 'Empanelled Valuer of Axis Bank', bold: true, size: FONT_SIZE_SMALL },
+      { text: 'Er. Satyajit Mohanty', bold: true, size: FONT_SIZE_SMALL },
+      { text: 'Registered Valuer (Land & Building) — IBBI (Regd. No: IBBI/RV/02/2019/10594)', bold: true, size: FONT_SIZE_CAPTION },
+      { text: 'Registered Valuer (Wealth Tax Act) — Income Tax Department (Regd. No: 107/2016-17)', bold: true, size: FONT_SIZE_CAPTION },
+      { text: 'Corporate Member & Chartered Engineer — Institution of Engineers (India), Civil Division (M-1560969)', bold: true, size: FONT_SIZE_CAPTION },
+      { text: 'Fellow Member — Institution of Valuers (IOV), Delhi (F-26377) & IIV, Pune (F-4443)', bold: true, size: FONT_SIZE_CAPTION },
+      { text: 'B.E. (Civil) Utkal University | M.Tech (Civil) | M.Sc. (Real Estate Valuation) | MBA (HR)', bold: true, size: FONT_SIZE_CAPTION },
+      { text: 'Empanelled Valuer of Axis Bank', bold: true, size: FONT_SIZE_CAPTION },
     ];
 
     for (const sd of sigDetails) {
@@ -2046,7 +2057,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
         font: sFont,
         color: rgb(0, 0, 0),
       });
-      this.cursorY += 11;
+      this.cursorY += 10.5;
     }
 
     return await this.save();
