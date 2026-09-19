@@ -8,9 +8,9 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 - **Total Banks / Organizations**: 60
 - **Total Subclasses / Templates**: 73
-- **Completed Subclasses**: 9 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 7.1 `AGRI` (Axis), 7.2 `HL-LAP` (Axis), 8 `Standard` (Axis Finance), 10 `HL-LAP` (Bajaj Housing))
-- **Current Active Bank**: 10. `BAJAJ HOUSING FINANCE LTD`
-- **Current Active Subclass**: 10 `HL-LAP` (Completed)
+- **Completed Subclasses**: 10 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 7.1 `AGRI` (Axis), 7.2 `HL-LAP` (Axis), 7.4 `SME` (Axis), 8 `Standard` (Axis Finance), 10 `HL-LAP` (Bajaj Housing))
+- **Current Active Bank**: 7. `AXIS BANK` / 10. `BAJAJ HOUSING FINANCE LTD`
+- **Current Active Subclass**: 7.4 `SME` (Completed)
 - **Bucket Standard**: Enforced strictly per [docs/BUCKET_ARCHITECTURE_STANDARD.md](docs/BUCKET_ARCHITECTURE_STANDARD.md) (Cloud bucket exclusively for Property Photographs; Maps/Documents are device-upload only).
 
 ---
@@ -32,7 +32,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | 7.1 | AXIS BANK | `AGRI` | ✅ Complete | ✅ 14-Section Custom UI | ✅ Dedicated 10-Page PDF | ✅ Validated |
 | 7.2 | AXIS BANK | `HL-LAP` | ✅ Complete | ✅ 12-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | 7.3 | AXIS BANK | `SBB` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| 7.4 | AXIS BANK | `SME` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| 7.4 | AXIS BANK | `SME` | ✅ Complete | ✅ 14-Section Custom UI | ✅ Dedicated 10-Page PDF | ✅ Validated |
 | **8** | **AXIS FINANCE LTD** | `Standard` | ✅ Complete | ✅ 10-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **9** | **AYE FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **10** | **BAJAJ HOUSING FINANCE LTD** | `HL-LAP` | ✅ Complete | ✅ 12-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
@@ -156,6 +156,18 @@ This document tracks the end-to-end implementation and customization of all 57+ 
   - Unified `Sl. No` cells for multi-row sub-blocks (Deed vs Actual boundaries, side margins, BUA floors) eliminating row slices in the serial number column.
   - Standard predefined `drawPhotoGrid` and `drawMapGallery` integration with dynamic captions (`DEFAULT_PHOTO_LABEL = 'Site Picture'`) and natural aspect ratio preservation.
   - Seamless space-efficient page layout preventing blank space waste following Undertaking.
+
+#### 7.4 `SME` (Small & Medium Enterprises) — ✅ COMPLETE
+- **Vertical**: `SME`
+- **UI Builder**: `src/app/portal/reports/[projectId]/banks/axis/AxisSME.tsx`
+- **PDF Renderer**: `src/lib/banks/pdf-axis-sme-renderer.ts` (`PDFAxisSmeRenderer`)
+- **Status**: Complete & Verified (Completely standalone entity, zero references/dependencies to Agri)
+- **Key Features Implemented**:
+  - Full 14-Section Valuation architecture per Axis Bank SME specifications.
+  - Dedicated 10-Page PDF generator with exact statutory table structures and Times New Roman typography.
+  - Independent `AxisSmeReportFields`, `AxisSmeFloorItem`, and `PDFAxisSmeRenderer` with `generateAxisSmeReport`.
+  - Full feature parity with Axis non-agri reporting standard: flow-based Valuer Undertaking, justified paragraphs, widened 8-column Building Valuation table, flow-packed maps, and compact Checklist layout.
+  - Completely isolated from AGRI to allow future SME-specific customizations without side effects.
 
 ### Bank 4 — ARKA FINANCE LTD
 
