@@ -2488,21 +2488,35 @@ export const AXIS_SBB_CONFIG: BankConfig = {
         let sumValuation = 0;
         let sumApproved = 0;
         let sumPermissible = 0;
-        let sumAccommodation = 0;
+        
+        let sumAccommodationNumeric = 0;
+        let accommodationList: string[] = [];
+        let isAccommodationNumeric = true;
+        let hasAccommodation = false;
 
         floors.forEach((f: any) => {
           if (!f.constructedAreaIsNA && f.constructedArea) sumConstructed += Number(f.constructedArea) || 0;
           if (!f.valuationAreaIsNA && f.valuationArea) sumValuation += Number(f.valuationArea) || 0;
           if (!f.approvedAreaIsNA && f.approvedArea) sumApproved += Number(f.approvedArea) || 0;
           if (!f.permissibleAreaIsNA && f.permissibleArea) sumPermissible += Number(f.permissibleArea) || 0;
-          if (!f.accommodationIsNA && f.accommodation) sumAccommodation += Number(f.accommodation) || 0;
+          
+          if (!f.accommodationIsNA && f.accommodation) {
+            hasAccommodation = true;
+            const val = String(f.accommodation).trim();
+            accommodationList.push(val);
+            if (isNaN(Number(val))) {
+              isAccommodationNumeric = false;
+            } else {
+              sumAccommodationNumeric += Number(val);
+            }
+          }
         });
 
         const computedConstructed = `${sumConstructed} SQFT`;
         const computedValuation = `${sumValuation} SQFT`;
         const computedApproved = `${sumApproved} SQFT`;
         const computedPermissible = `${sumPermissible} SQFT`;
-        const computedAccommodation = `${sumAccommodation}`;
+        const computedAccommodation = !hasAccommodation ? '0' : (isAccommodationNumeric ? `${sumAccommodationNumeric}` : accommodationList.join(' + '));
         const computedCarpet = `${Math.round(sumConstructed * 0.85)} SQFT`;
         const computedSaleable = computedCarpet;
 
@@ -2692,17 +2706,17 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           )}
                         </div>
                       </td>
-                      <td className="p-2 font-bold text-gray-400 text-center border-r border-slate-300">
+                      <td className="p-2 font-bold text-slate-800 border-r border-slate-300">
                         <div className="relative">
-                          <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 text-slate-800 bg-gray-50 cursor-not-allowed`} disabled value={computedApproved} />
+                          <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 cursor-not-allowed`} disabled value={computedApproved} />
                           <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="sum of all entries in the APPROVED AREA AS PER PLAN(SQ.FT) column">
                             <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                           </div>
                         </div>
                       </td>
-                      <td className="p-2 font-bold text-gray-400 text-center border-r border-slate-300">
+                      <td className="p-2 font-bold text-slate-800 border-r border-slate-300">
                         <div className="relative">
-                          <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 text-slate-800 bg-gray-50 cursor-not-allowed`} disabled value={computedPermissible} />
+                          <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 cursor-not-allowed`} disabled value={computedPermissible} />
                           <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="sum of all entries in the PERMISSIBLE AREA AS PER BYELAWS (SQ.FT) column">
                             <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                           </div>
@@ -2710,15 +2724,15 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                       <td className="p-2 font-bold text-slate-800 border-r border-slate-300">
                         <div className="relative">
-                          <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 bg-gray-50 cursor-not-allowed`} disabled value={computedValuation} />
+                          <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 cursor-not-allowed`} disabled value={computedValuation} />
                           <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="sum of all entries in the AREA CONSIDERED FOR VALUATION (SQ.FT) / FAR 2 column">
                             <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                           </div>
                         </div>
                       </td>
-                      <td className="p-2 font-bold text-gray-400 text-center border-r border-slate-300">
+                      <td className="p-2 font-bold text-slate-800 border-r border-slate-300">
                         <div className="relative">
-                          <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 text-slate-800 bg-gray-50 cursor-not-allowed text-center`} disabled value={computedAccommodation} />
+                          <input type="text" className={`${inputCls} font-bold pr-8 disabled:bg-gray-100 disabled:opacity-100 cursor-not-allowed text-center`} disabled value={computedAccommodation} />
                           <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="sum of all entries in the ACCOMMODATETION column">
                             <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                           </div>
