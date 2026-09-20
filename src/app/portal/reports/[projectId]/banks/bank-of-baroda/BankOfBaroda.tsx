@@ -880,13 +880,15 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   placeholder="Enter owner details, addresses, phone numbers..."
                 />
               </Field>
-              <DropdownWithTextarea
-                label="5. Brief description of the property (Including leasehold / freehold etc)"
-                fieldKey="bobBriefDescription"
-                options={['Freehold', 'Leasehold']}
-                fields={fields} handleChange={handleChange} isReadOnly={isReadOnly}
-                placeholder="Enter brief property description..."
-              />
+              <Field label="5. Brief description of the property (Including leasehold / freehold etc)">
+                <textarea
+                  className={inputCls} rows={3}
+                  value={fields.bobBriefDescription || ''}
+                  onChange={e => handleChange('bobBriefDescription', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Enter brief property description..."
+                />
+              </Field>
             </div>
 
             {/* ── Container 3: Location Details ── */}
