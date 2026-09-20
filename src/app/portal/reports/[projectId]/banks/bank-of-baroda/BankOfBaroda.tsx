@@ -56,7 +56,7 @@ function DropdownWithCustom({ label, fieldKey, options, fields, handleChange, is
   return (
     <Field label={label}>
       <div className="flex gap-2 items-start flex-wrap">
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-50">
           <select
             className={inputCls}
             value={dropdownVal}
@@ -193,7 +193,7 @@ function DropdownWithInput({ label, fieldKey, options, fields, handleChange, isR
   return (
     <Field label={label}>
       <div className="flex gap-2 items-start flex-wrap">
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-50">
           <select
             className={inputCls}
             value={dropdownVal}
@@ -279,7 +279,7 @@ function AutoCalcField({ label, fieldKey, fields, handleChange, isReadOnly, calc
             disabled={isReadOnly}
             className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${isEditOn ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 shadow ${isEditOn ? 'translate-x-[18px]' : 'translate-x-[3px]'}`} />
+            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 shadow ${isEditOn ? 'translate-x-4.5' : 'translate-x-0.75'}`} />
           </button>
         </div>
       </div>
@@ -1561,7 +1561,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                                 {!row.estCostEditOn && <Lock className="w-3 h-3 text-emerald-800" />}
                                 <button type="button" onClick={() => updateRow('estCostEditOn', !row.estCostEditOn)} disabled={isReadOnly}
                                   className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${row.estCostEditOn ? 'bg-emerald-500' : 'bg-gray-300'}`}>
-                                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${row.estCostEditOn ? 'translate-x-[14px]' : 'translate-x-[2px]'}`} />
+                                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${row.estCostEditOn ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
                                 </button>
                               </div>
                             </div>
@@ -1576,7 +1576,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                                 {!row.depreciationEditOn && <Lock className="w-3 h-3 text-emerald-800" />}
                                 <button type="button" onClick={() => updateRow('depreciationEditOn', !row.depreciationEditOn)} disabled={isReadOnly}
                                   className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${row.depreciationEditOn ? 'bg-emerald-500' : 'bg-gray-300'}`}>
-                                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${row.depreciationEditOn ? 'translate-x-[14px]' : 'translate-x-[2px]'}`} />
+                                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${row.depreciationEditOn ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
                                 </button>
                               </div>
                             </div>
@@ -1591,7 +1591,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                                 {!row.netValueEditOn && <Lock className="w-3 h-3 text-emerald-800" />}
                                 <button type="button" onClick={() => updateRow('netValueEditOn', !row.netValueEditOn)} disabled={isReadOnly}
                                   className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${row.netValueEditOn ? 'bg-emerald-500' : 'bg-gray-300'}`}>
-                                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${row.netValueEditOn ? 'translate-x-[14px]' : 'translate-x-[2px]'}`} />
+                                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${row.netValueEditOn ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
                                 </button>
                               </div>
                             </div>
@@ -1816,7 +1816,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 {!isEditing && <Lock className="w-3 h-3 text-emerald-800" />}
                 <button type="button" onClick={() => handleChange(editOnKey, !isEditing)} disabled={isReadOnly}
                   className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${isEditing ? 'bg-emerald-500' : 'bg-gray-300'}`}>
-                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${isEditing ? 'translate-x-[14px]' : 'translate-x-[2px]'}`} />
+                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${isEditing ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
                 </button>
               </div>
             </div>
@@ -2217,7 +2217,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               <p className="text-xs text-gray-500 italic">Adopted in line with Companies (Registered Valuers and Valuation Rules, 2017)</p>
               <p className="text-sm text-gray-600">All Valuers empanelled with bank shall strictly adhere to the following code of conduct:</p>
 
-              <div className="max-h-[600px] overflow-y-auto border border-gray-200 rounded-lg p-4 bg-white space-y-4">
+              <div className="max-h-150 overflow-y-auto border border-gray-200 rounded-lg p-4 bg-white space-y-4">
                 {codeOfConductSections.map((section, sIdx) => (
                   <div key={sIdx}>
                     <h4 className="font-bold text-gray-800 text-sm mb-2 bg-gray-50 px-3 py-2 rounded border-l-4 border-[#4A5D23]">{section.heading}</h4>
