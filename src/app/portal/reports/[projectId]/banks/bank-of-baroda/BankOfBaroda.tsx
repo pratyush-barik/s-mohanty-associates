@@ -1455,7 +1455,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           const estCost = row.estCostEditOn ? (parseFloat(row.estCost || '0') || 0) : plinth * rate;
           const depreciation = row.depreciationEditOn ? (parseFloat(row.depreciation || '0') || 0) : estCost * 0.01 * buildingAge;
           const netValue = row.netValueEditOn ? (parseFloat(row.netValue || '0') || 0) : estCost - depreciation;
-          return { estCost, depreciation, netValue };
+          return { estCost, depreciation, netValue, age: buildingAge };
         };
 
         const calcBuildingTotal = buildingRows.reduce((sum, row) => sum + getRowCalcs(row).netValue, 0);
@@ -1491,11 +1491,11 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       <th className="border border-gray-300 px-2 py-2 w-[16%]">PARTICULARS</th>
                       <th className="border border-gray-300 px-2 py-2 w-[10%]">PLINTH AREA (SQFT)</th>
                       <th className="border border-gray-300 px-2 py-2 w-[8%]">ROOF HEIGHT</th>
-                      <th className="border border-gray-300 px-2 py-2 w-[8%]">AGE (YRS) 🔒</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[8%]" title=">>Prefill from section 5, field 'Age of the Building'<<.">AGE (YRS) 🔒</th>
                       <th className="border border-gray-300 px-2 py-2 w-[10%]">REPLACEMENT RATE</th>
-                      <th className="border border-gray-300 px-2 py-2 w-[13%]">EST. COST 🔒🎚️</th>
-                      <th className="border border-gray-300 px-2 py-2 w-[13%]">DEPRECIATION 🔒🎚️</th>
-                      <th className="border border-gray-300 px-2 py-2 w-[13%]">NET VALUE 🔒🎚️</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<.">EST. COST 🔒🎚️</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<.">DEPRECIATION 🔒🎚️</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<.">NET VALUE 🔒🎚️</th>
                       <th className="border border-gray-300 px-2 py-2 w-[5%]"></th>
                     </tr>
                   </thead>
@@ -1510,18 +1510,26 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       return (
                         <tr key={idx}>
                           <td className="border border-gray-300 px-1 py-1">
-                            <select className={inputCls} value={row.particularsDropdown || ''}
-                              onChange={e => { updateRow('particularsDropdown', e.target.value); if (e.target.value !== 'custom') updateRow('particulars', e.target.value); }}
-                              disabled={isReadOnly}>
-                              <option value="">Select</option>
-                              <option value="RCC GROUND FLOOR">RCC GROUND FLOOR</option>
-                              <option value="RCC FIRST FLOOR">RCC FIRST FLOOR</option>
-                              <option value="custom">Custom</option>
-                            </select>
-                            {row.particularsDropdown === 'custom' && (
-                              <input className={`${inputCls} mt-1`} value={row.particularsCustom || ''}
-                                onChange={e => { updateRow('particularsCustom', e.target.value); updateRow('particulars', e.target.value); }}
-                                disabled={isReadOnly} placeholder="Custom..." />
+                            {row.particularsDropdown === 'Custom' ? (
+                              <div className="flex flex-col gap-1">
+                                <select className={inputCls} value="Custom" onChange={() => { }} disabled={isReadOnly}>
+                                  <option value="Custom">Custom</option>
+                                </select>
+                                <input className={inputCls} placeholder="Enter custom value" value={row.particulars || ''} onChange={e => updateRow('particulars', e.target.value)} disabled={isReadOnly} />
+                              </div>
+                            ) : (
+                              <select className={inputCls} value={row.particularsDropdown || ''}
+                                onChange={e => {
+                                  updateRow('particularsDropdown', e.target.value);
+                                  updateRow('particulars', e.target.value === 'Custom' ? '' : e.target.value);
+                                }} disabled={isReadOnly}>
+                                <option value="">Select</option>
+                                <option value="Ground Floor">Ground Floor</option>
+                                <option value="First Floor">First Floor</option>
+                                <option value="Second Floor">Second Floor</option>
+                                <option value="Third Floor">Third Floor</option>
+                                <option value="Custom">Custom</option>
+                              </select>
                             )}
                           </td>
                           <td className="border border-gray-300 px-1 py-1">
@@ -1529,13 +1537,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                               onChange={e => updateRow('plinthArea', e.target.value)} disabled={isReadOnly} />
                           </td>
                           <td className="border border-gray-300 px-1 py-1">
-                            <input className={inputCls} value={row.roofHeight || ''}
+                            <input className={inputCls} type="text" value={row.roofHeight || ''}
                               onChange={e => updateRow('roofHeight', e.target.value)} disabled={isReadOnly} />
                           </td>
                           <td className="border border-gray-300 px-1 py-1">
                             <div className="relative group">
                               <input className={`${inputCls} bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed pr-6`}
-                                value={buildingAge} disabled title={`>>Prefill from section 5, field "Age of the Building"<<.`} />
+                                value={calcs.age} disabled title=">>Prefill from section 5, field 'Age of the Building'<<." />
                               <Lock className="w-3 h-3 text-emerald-800 absolute right-2 top-1/2 -translate-y-1/2" />
                             </div>
                           </td>
@@ -1544,12 +1552,11 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                               onChange={e => updateRow('replacementRate', e.target.value)} disabled={isReadOnly} />
                           </td>
                           <td className="border border-gray-300 px-1 py-1">
-                            <div className="relative">
+                            <div className="relative" title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<.">
                               <input className={`${inputCls} pr-14 ${!row.estCostEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
                                 value={row.estCostEditOn ? (row.estCost || '') : calcs.estCost.toFixed(2)}
                                 onChange={e => updateRow('estCost', e.target.value)}
-                                disabled={isReadOnly || !row.estCostEditOn}
-                                title=">>Auto calculates from [PLINTH AREA] * [REPLACEMENT RATE]<<." />
+                                disabled={isReadOnly || !row.estCostEditOn} />
                               <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
                                 {!row.estCostEditOn && <Lock className="w-3 h-3 text-emerald-800" />}
                                 <button type="button" onClick={() => updateRow('estCostEditOn', !row.estCostEditOn)} disabled={isReadOnly}
@@ -1560,12 +1567,11 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                             </div>
                           </td>
                           <td className="border border-gray-300 px-1 py-1">
-                            <div className="relative">
+                            <div className="relative" title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<.">
                               <input className={`${inputCls} pr-14 ${!row.depreciationEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
                                 value={row.depreciationEditOn ? (row.depreciation || '') : calcs.depreciation.toFixed(2)}
                                 onChange={e => updateRow('depreciation', e.target.value)}
-                                disabled={isReadOnly || !row.depreciationEditOn}
-                                title=">>Auto calculates from [EST. COST] * 0.01 * [AGE]<<." />
+                                disabled={isReadOnly || !row.depreciationEditOn} />
                               <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
                                 {!row.depreciationEditOn && <Lock className="w-3 h-3 text-emerald-800" />}
                                 <button type="button" onClick={() => updateRow('depreciationEditOn', !row.depreciationEditOn)} disabled={isReadOnly}
@@ -1576,12 +1582,11 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                             </div>
                           </td>
                           <td className="border border-gray-300 px-1 py-1">
-                            <div className="relative">
+                            <div className="relative" title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<.">
                               <input className={`${inputCls} pr-14 ${!row.netValueEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
                                 value={row.netValueEditOn ? (row.netValue || '') : calcs.netValue.toFixed(2)}
                                 onChange={e => updateRow('netValue', e.target.value)}
-                                disabled={isReadOnly || !row.netValueEditOn}
-                                title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<." />
+                                disabled={isReadOnly || !row.netValueEditOn} />
                               <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
                                 {!row.netValueEditOn && <Lock className="w-3 h-3 text-emerald-800" />}
                                 <button type="button" onClick={() => updateRow('netValueEditOn', !row.netValueEditOn)} disabled={isReadOnly}
