@@ -1768,13 +1768,55 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         ];
 
         const getAbstractVal = (key: string, col: string) => parseFloat(fields[`bobAbstract_${key}_${col}`] || '0') || 0;
-        const totalGovt = abstractRows.reduce((sum, r) => sum + getAbstractVal(r.key, 'govt'), 0);
-        const totalMarket = abstractRows.reduce((sum, r) => {
-          if (r.prefillMarket !== null) return sum + r.prefillMarket;
-          return sum + getAbstractVal(r.key, 'market');
-        }, 0);
-        const totalRealizable = totalMarket * 0.95;
-        const totalDistress = totalMarket * 0.85;
+
+        // Per-row resolved values (needed for TOTAL row sums)
+        const resolvedRows = abstractRows.map(row => {
+          const govtVal = getAbstractVal(row.key, 'govt');
+          const marketVal = row.prefillMarket !== null ? row.prefillMarket : getAbstractVal(row.key, 'market');
+          const realizableVal = fields[`bobAbstract_${row.key}_realizableEditOn`]
+            ? (parseFloat(fields[`bobAbstract_${row.key}_realizable`] || '0') || 0)
+            : marketVal * 0.95;
+          const distressVal = fields[`bobAbstract_${row.key}_distressEditOn`]
+            ? (parseFloat(fields[`bobAbstract_${row.key}_distress`] || '0') || 0)
+            : marketVal * 0.85;
+          return { ...row, govtVal, marketVal, realizableVal, distressVal };
+        });
+
+        // TOTAL row: SUM of all 6 rows for each column, with edit switch override
+        const calcTotalGovt = resolvedRows.reduce((sum, r) => sum + r.govtVal, 0);
+        const calcTotalMarket = resolvedRows.reduce((sum, r) => sum + r.marketVal, 0);
+        const calcTotalRealizable = resolvedRows.reduce((sum, r) => sum + r.realizableVal, 0);
+        const calcTotalDistress = resolvedRows.reduce((sum, r) => sum + r.distressVal, 0);
+
+        const totalGovt = fields.bobAbstractTotalGovtEditOn ? (parseFloat(fields.bobAbstractTotalGovt || '0') || 0) : calcTotalGovt;
+        const totalMarket = fields.bobAbstractTotalMarketEditOn ? (parseFloat(fields.bobAbstractTotalMarket || '0') || 0) : calcTotalMarket;
+        const totalRealizable = fields.bobAbstractTotalRealizableEditOn ? (parseFloat(fields.bobAbstractTotalRealizable || '0') || 0) : calcTotalRealizable;
+        const totalDistress = fields.bobAbstractTotalDistressEditOn ? (parseFloat(fields.bobAbstractTotalDistress || '0') || 0) : calcTotalDistress;
+
+        // Reusable cell with Lock + Edit Switch
+        const EditSwitchCell = ({ fieldKey, autoValue, hoverText }: { fieldKey: string; autoValue: number; hoverText: string }) => {
+          const editOnKey = `${fieldKey}EditOn`;
+          const isEditing = !!fields[editOnKey];
+          return (
+            <div className="relative">
+              <input
+                className={`${inputCls} pr-14 ${!isEditing ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
+                type="number" step="0.01"
+                value={isEditing ? (fields[fieldKey] || '') : autoValue.toFixed(2)}
+                onChange={e => handleChange(fieldKey, e.target.value)}
+                disabled={isReadOnly || !isEditing}
+                title={hoverText}
+              />
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                {!isEditing && <Lock className="w-3 h-3 text-emerald-800" />}
+                <button type="button" onClick={() => handleChange(editOnKey, !isEditing)} disabled={isReadOnly}
+                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${isEditing ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${isEditing ? 'translate-x-[14px]' : 'translate-x-[2px]'}`} />
+                </button>
+              </div>
+            </div>
+          );
+        };
 
         return (
           <div className="animate-fade-in space-y-6">
@@ -1786,90 +1828,101 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="border border-gray-300 px-3 py-2 text-left">PARTICULARS</th>
-                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">GOVT. VALUE (RS.)</th>
-                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">MARKET VALUE (RS.)</th>
-                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">REALIZABLE (95%) 🔒🎚️</th>
-                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">DISTRESS (85%) 🔒🎚️</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left">PERTICULARS</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">GOVT. VALUE IN RS.</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">MARKET VALUE IN RS.</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">REALIZABLE VALUE (95%)</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">DISTRESS VALUE (85%)</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {abstractRows.map(row => {
-                      const marketVal = row.prefillMarket !== null ? row.prefillMarket : getAbstractVal(row.key, 'market');
-                      const realizableVal = fields[`bobAbstract_${row.key}_realizableEditOn`] ? parseFloat(fields[`bobAbstract_${row.key}_realizable`] || '0') : marketVal * 0.95;
-                      const distressVal = fields[`bobAbstract_${row.key}_distressEditOn`] ? parseFloat(fields[`bobAbstract_${row.key}_distress`] || '0') : marketVal * 0.85;
-                      return (
-                        <tr key={row.key}>
-                          <td className="border border-gray-300 px-3 py-2 font-medium bg-white">{row.label}</td>
-                          <td className="border border-gray-300 px-1 py-1">
-                            <input className={inputCls} type="number" step="0.01" value={fields[`bobAbstract_${row.key}_govt`] || ''} onChange={e => handleChange(`bobAbstract_${row.key}_govt`, e.target.value)} disabled={isReadOnly} />
-                          </td>
-                          <td className="border border-gray-300 px-1 py-1">
-                            {row.prefillMarket !== null ? (
-                              <div className="relative group">
-                                <input className={`${inputCls} bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed pr-6`}
-                                  value={row.prefillMarket.toFixed(2)} disabled title={row.prefillHover} />
-                                <Lock className="w-3 h-3 text-emerald-800 absolute right-2 top-1/2 -translate-y-1/2" />
-                              </div>
-                            ) : (
-                              <input className={inputCls} type="number" step="0.01" value={fields[`bobAbstract_${row.key}_market`] || ''} onChange={e => handleChange(`bobAbstract_${row.key}_market`, e.target.value)} disabled={isReadOnly} />
-                            )}
-                          </td>
-                          <td className="border border-gray-300 px-1 py-1">
-                            <div className="relative">
-                              <input className={`${inputCls} pr-14 ${!fields[`bobAbstract_${row.key}_realizableEditOn`] ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
-                                value={fields[`bobAbstract_${row.key}_realizableEditOn`] ? (fields[`bobAbstract_${row.key}_realizable`] || '') : realizableVal.toFixed(2)}
-                                onChange={e => handleChange(`bobAbstract_${row.key}_realizable`, e.target.value)}
-                                disabled={isReadOnly || !fields[`bobAbstract_${row.key}_realizableEditOn`]}
-                                title=">>Auto calculates from [MARKET VALUE] * 0.95<<." />
-                              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
-                                {!fields[`bobAbstract_${row.key}_realizableEditOn`] && <Lock className="w-3 h-3 text-emerald-800" />}
-                                <button type="button" onClick={() => handleChange(`bobAbstract_${row.key}_realizableEditOn`, !fields[`bobAbstract_${row.key}_realizableEditOn`])} disabled={isReadOnly}
-                                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${fields[`bobAbstract_${row.key}_realizableEditOn`] ? 'bg-emerald-500' : 'bg-gray-300'}`}>
-                                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${fields[`bobAbstract_${row.key}_realizableEditOn`] ? 'translate-x-[14px]' : 'translate-x-[2px]'}`} />
-                                </button>
-                              </div>
+                    {resolvedRows.map(row => (
+                      <tr key={row.key}>
+                        <td className="border border-gray-300 px-3 py-2 font-medium bg-white">{row.label}</td>
+                        {/* GOVT. VALUE */}
+                        <td className="border border-gray-300 px-1 py-1">
+                          <input className={inputCls} type="number" step="0.01" value={fields[`bobAbstract_${row.key}_govt`] || ''} onChange={e => handleChange(`bobAbstract_${row.key}_govt`, e.target.value)} disabled={isReadOnly} />
+                        </td>
+                        {/* MARKET VALUE */}
+                        <td className="border border-gray-300 px-1 py-1">
+                          {row.prefillMarket !== null ? (
+                            <div className="relative group">
+                              <input className={`${inputCls} bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed pr-6`}
+                                value={row.prefillMarket.toFixed(2)} disabled title={row.prefillHover} />
+                              <Lock className="w-3 h-3 text-emerald-800 absolute right-2 top-1/2 -translate-y-1/2" />
                             </div>
-                          </td>
-                          <td className="border border-gray-300 px-1 py-1">
-                            <div className="relative">
-                              <input className={`${inputCls} pr-14 ${!fields[`bobAbstract_${row.key}_distressEditOn`] ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
-                                value={fields[`bobAbstract_${row.key}_distressEditOn`] ? (fields[`bobAbstract_${row.key}_distress`] || '') : distressVal.toFixed(2)}
-                                onChange={e => handleChange(`bobAbstract_${row.key}_distress`, e.target.value)}
-                                disabled={isReadOnly || !fields[`bobAbstract_${row.key}_distressEditOn`]}
-                                title=">>Auto calculates from [MARKET VALUE] * 0.85<<." />
-                              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
-                                {!fields[`bobAbstract_${row.key}_distressEditOn`] && <Lock className="w-3 h-3 text-emerald-800" />}
-                                <button type="button" onClick={() => handleChange(`bobAbstract_${row.key}_distressEditOn`, !fields[`bobAbstract_${row.key}_distressEditOn`])} disabled={isReadOnly}
-                                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${fields[`bobAbstract_${row.key}_distressEditOn`] ? 'bg-emerald-500' : 'bg-gray-300'}`}>
-                                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${fields[`bobAbstract_${row.key}_distressEditOn`] ? 'translate-x-[14px]' : 'translate-x-[2px]'}`} />
-                                </button>
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                          ) : (
+                            <input className={inputCls} type="number" step="0.01" value={fields[`bobAbstract_${row.key}_market`] || ''} onChange={e => handleChange(`bobAbstract_${row.key}_market`, e.target.value)} disabled={isReadOnly} />
+                          )}
+                        </td>
+                        {/* REALIZABLE VALUE (95%) 🔒🎚️ */}
+                        <td className="border border-gray-300 px-1 py-1">
+                          <EditSwitchCell
+                            fieldKey={`bobAbstract_${row.key}_realizable`}
+                            autoValue={row.marketVal * 0.95}
+                            hoverText=">>Auto calculates from [MARKET VALUE IN RS.] * 0.95<<."
+                          />
+                        </td>
+                        {/* DISTRESS VALUE (85%) 🔒🎚️ */}
+                        <td className="border border-gray-300 px-1 py-1">
+                          <EditSwitchCell
+                            fieldKey={`bobAbstract_${row.key}_distress`}
+                            autoValue={row.marketVal * 0.85}
+                            hoverText=">>Auto calculates from [MARKET VALUE IN RS.] * 0.85<<."
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                    {/* ── TOTAL Row: auto-summed with edit switches ── */}
                     <tr className="bg-amber-50 font-bold">
                       <td className="border border-gray-300 px-3 py-2">TOTAL</td>
-                      <td className="border border-gray-300 px-3 py-2">{totalGovt.toFixed(2)}</td>
-                      <td className="border border-gray-300 px-3 py-2">{totalMarket.toFixed(2)}</td>
-                      <td className="border border-gray-300 px-3 py-2">{totalRealizable.toFixed(2)}</td>
-                      <td className="border border-gray-300 px-3 py-2">{totalDistress.toFixed(2)}</td>
+                      {/* TOTAL — Govt */}
+                      <td className="border border-gray-300 px-1 py-1">
+                        <EditSwitchCell
+                          fieldKey="bobAbstractTotalGovt"
+                          autoValue={calcTotalGovt}
+                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for Govt. Value<<."
+                        />
+                      </td>
+                      {/* TOTAL — Market */}
+                      <td className="border border-gray-300 px-1 py-1">
+                        <EditSwitchCell
+                          fieldKey="bobAbstractTotalMarket"
+                          autoValue={calcTotalMarket}
+                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for Market Value<<."
+                        />
+                      </td>
+                      {/* TOTAL — Realizable */}
+                      <td className="border border-gray-300 px-1 py-1">
+                        <EditSwitchCell
+                          fieldKey="bobAbstractTotalRealizable"
+                          autoValue={calcTotalRealizable}
+                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for Realizable Value<<."
+                        />
+                      </td>
+                      {/* TOTAL — Distress */}
+                      <td className="border border-gray-300 px-1 py-1">
+                        <EditSwitchCell
+                          fieldKey="bobAbstractTotalDistress"
+                          autoValue={calcTotalDistress}
+                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for Distress Value<<."
+                        />
+                      </td>
                     </tr>
+                    {/* ── OR SAY Row: Manual rounding input ── */}
                     <tr>
                       <td className="border border-gray-300 px-3 py-2 font-medium">OR SAY</td>
                       <td className="border border-gray-300 px-1 py-1">
-                        <input className={inputCls} type="number" value={fields.bobAbstractOrSayGovt || ''} onChange={e => handleChange('bobAbstractOrSayGovt', e.target.value)} disabled={isReadOnly} />
+                        <input className={inputCls} type="number" step="0.01" value={fields.bobAbstractOrSayGovt || ''} onChange={e => handleChange('bobAbstractOrSayGovt', e.target.value)} disabled={isReadOnly} placeholder="Manual" />
                       </td>
                       <td className="border border-gray-300 px-1 py-1">
-                        <input className={inputCls} type="number" value={fields.bobAbstractOrSayMarket || ''} onChange={e => handleChange('bobAbstractOrSayMarket', e.target.value)} disabled={isReadOnly} />
+                        <input className={inputCls} type="number" step="0.01" value={fields.bobAbstractOrSayMarket || ''} onChange={e => handleChange('bobAbstractOrSayMarket', e.target.value)} disabled={isReadOnly} placeholder="Manual" />
                       </td>
                       <td className="border border-gray-300 px-1 py-1">
-                        <input className={inputCls} type="number" value={fields.bobAbstractOrSayRealizable || ''} onChange={e => handleChange('bobAbstractOrSayRealizable', e.target.value)} disabled={isReadOnly} />
+                        <input className={inputCls} type="number" step="0.01" value={fields.bobAbstractOrSayRealizable || ''} onChange={e => handleChange('bobAbstractOrSayRealizable', e.target.value)} disabled={isReadOnly} placeholder="Manual" />
                       </td>
                       <td className="border border-gray-300 px-1 py-1">
-                        <input className={inputCls} type="number" value={fields.bobAbstractOrSayDistress || ''} onChange={e => handleChange('bobAbstractOrSayDistress', e.target.value)} disabled={isReadOnly} />
+                        <input className={inputCls} type="number" step="0.01" value={fields.bobAbstractOrSayDistress || ''} onChange={e => handleChange('bobAbstractOrSayDistress', e.target.value)} disabled={isReadOnly} placeholder="Manual" />
                       </td>
                     </tr>
                   </tbody>

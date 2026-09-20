@@ -576,8 +576,12 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       ]);
     }
 
-    // TOTAL row
-    tableRows.push(['TOTAL', totalGovt.toFixed(2), totalMarket.toFixed(2), totalRealizable.toFixed(2), totalDistress.toFixed(2)]);
+    // TOTAL row — use edit switch overrides if enabled
+    const finalTotalGovt = this.fields.bobAbstractTotalGovtEditOn ? (parseFloat(this.fv('bobAbstractTotalGovt', '0')) || 0) : totalGovt;
+    const finalTotalMarket = this.fields.bobAbstractTotalMarketEditOn ? (parseFloat(this.fv('bobAbstractTotalMarket', '0')) || 0) : totalMarket;
+    const finalTotalRealizable = this.fields.bobAbstractTotalRealizableEditOn ? (parseFloat(this.fv('bobAbstractTotalRealizable', '0')) || 0) : totalRealizable;
+    const finalTotalDistress = this.fields.bobAbstractTotalDistressEditOn ? (parseFloat(this.fv('bobAbstractTotalDistress', '0')) || 0) : totalDistress;
+    tableRows.push(['TOTAL', finalTotalGovt.toFixed(2), finalTotalMarket.toFixed(2), finalTotalRealizable.toFixed(2), finalTotalDistress.toFixed(2)]);
 
     // OR SAY row
     tableRows.push([
