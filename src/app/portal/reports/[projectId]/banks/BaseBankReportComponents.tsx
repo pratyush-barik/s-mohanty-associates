@@ -287,6 +287,14 @@ export interface NavItem {
   title: string;
 }
 
+export interface NavItem {
+  id: string;
+  title: string;
+  sub?: string;
+  indent?: boolean;
+  scrollId?: string;
+}
+
 export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
   const [activeId, setActiveId] = useState<string>('');
 
@@ -318,27 +326,41 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
   };
 
   return (
-    <div className="hidden xl:flex flex-col bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-43.75 sticky top-4 shrink-0 z-40 max-h-[calc(100vh-32px)] overflow-hidden">
-      <div className="text-[10px] font-black text-emerald-500 mb-2 px-2 uppercase tracking-widest shrink-0">Sections</div>
+    <div className="hidden xl:flex flex-col gap-0.5 bg-white/90 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2.5 rounded-2xl w-[210px] sticky top-24 shrink-0 z-40 max-h-[calc(100vh-32px)] overflow-hidden">
+      <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest shrink-0">Report Sections</div>
       <div className="flex flex-col gap-1 overflow-y-auto pr-1 custom-scrollbar">
         {sections.map((sec) => {
           const isActive = activeId === sec.id;
           const cleanTitle = (sec.title || '').replace(/^\d+[\.\s\-:]*\s*/, '');
+          
           return (
             <button
               key={sec.id}
               type="button"
               title={cleanTitle}
-              onClick={() => scrollTo(sec.id)}
-              className={`w-full py-1.5 px-2.5 rounded-xl text-center transition-all duration-200 text-xs font-bold my-0.5 shrink-0 ${
-                isActive
-                  ? 'bg-accent-500 text-white border border-[#96700a] shadow-md font-extrabold scale-[1.02]'
-                  : 'bg-indigo-50/90 text-indigo-900 border border-indigo-100/80 shadow-sm hover:bg-indigo-100 hover:border-indigo-200'
+              onClick={() => scrollTo(sec.scrollId || sec.id)}
+              className={`text-left py-1.5 px-2.5 rounded-lg transition-all flex flex-col justify-center shrink-0 w-full ${
+                !sec.indent 
+                  ? 'my-1 font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-100 shadow-sm' 
+                  : 'pl-3.5 text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
+              } ${
+                isActive && sec.indent
+                  ? '!bg-[#b8860b] !text-white !border-[#b8860b] shadow-md font-bold'
+                  : ''
+              } ${
+                isActive && !sec.indent
+                  ? 'bg-accent-500 text-white shadow-md font-extrabold'
+                  : ''
               }`}
             >
-              <span className="leading-snug block w-full whitespace-normal wrap-break-word">
+              <span className={`leading-tight block w-full whitespace-normal wrap-break-word ${sec.indent ? 'text-[11px] font-bold' : 'text-[11.5px]'}`}>
                 {cleanTitle}
               </span>
+              {sec.sub && (
+                <span className={`text-[9px] font-semibold tracking-wider mt-0.5 ${isActive && sec.indent ? 'text-amber-100' : 'text-slate-400'}`}>
+                  {sec.sub}
+                </span>
+              )}
             </button>
           );
         })}

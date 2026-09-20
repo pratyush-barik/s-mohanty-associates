@@ -324,19 +324,29 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   hideDefaultDeclarationAndCertificate: true,
   navSections: [
-    { id: 'section-cover', title: '1. Cover Page Details' },
-    { id: 'bob-section-general', title: '2. Part I — GENERAL' },
-    { id: 'bob-section-characteristics', title: '3. Part II — CHARACTERISTICS' },
-    { id: 'bob-section-land', title: '4. Part A — Land Valuation' },
-    { id: 'bob-section-building', title: '5. Part B — Building Valuation' },
-    { id: 'bob-section-valuation-details', title: '6. Valuation & Amenities' },
-    { id: 'bob-section-abstract', title: '7. Total Abstract & Remarks' },
-    { id: 'bob-section-questionnaire', title: '8. Declaration (Questionnaire)' },
-    { id: 'bob-section-affirmations', title: '9. Declaration (Affirmations)' },
-    { id: 'bob-section-code-of-conduct', title: '10. Code of Conduct' },
-    { id: 'section-11', title: '11. Property Photographs' },
-    { id: 'section-12', title: '12. Maps & Documents' },
-    { id: 'annexures', title: '13. Annexures' },
+    { id: 'section-cover', title: '1. Title & Cover', indent: false },
+    
+    { id: 'group-part1', scrollId: 'bob-section-general', title: '2. Part I — GENERAL', indent: false },
+    { id: 'bob-section-general', title: '↳ General Details', indent: true },
+    
+    { id: 'group-part2', scrollId: 'bob-section-characteristics', title: '3. Part II — CHARACTERISTICS', indent: false },
+    { id: 'bob-section-characteristics', title: '↳ Characteristics', indent: true },
+    
+    { id: 'group-valuation', scrollId: 'bob-section-land', title: '4. Valuation', indent: false },
+    { id: 'bob-section-land', title: '↳ Part A — Land', indent: true },
+    { id: 'bob-section-building', title: '↳ Part B — Building', indent: true },
+    { id: 'bob-section-valuation-details', title: '↳ Valuation & Amenities', indent: true },
+    
+    { id: 'group-declaration', scrollId: 'bob-section-abstract', title: '5. Declaration & Abstract', indent: false },
+    { id: 'bob-section-abstract', title: '↳ Total Abstract & Remarks', indent: true },
+    { id: 'bob-section-questionnaire', title: '↳ Questionnaire', indent: true },
+    { id: 'bob-section-affirmations', title: '↳ Affirmations', indent: true },
+    { id: 'bob-section-code-of-conduct', title: '↳ Code of Conduct', indent: true },
+    
+    { id: 'group-annexures', scrollId: 'section-11', title: '6. Annexures & Appendices', indent: false },
+    { id: 'section-11', title: '↳ Property Photographs', indent: true },
+    { id: 'section-12', title: '↳ Maps & Documents', indent: true },
+    { id: 'annexures', title: '↳ Annexures', indent: true },
   ],
   fieldLabels: {
     'section-11-title': '11. PROPERTY PHOTOGRAPHS',
