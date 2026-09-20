@@ -359,8 +359,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     bobEnablePurposeEdit: false,
     bobPurposeOfValuationDropdown: 'default',
     bobPurposeOfValuation: 'To assess the present market value of the property for loan purpose',
-    bobPreparedByCompany: 'M/s. S MOHANTY ASSOCIATES',
-    bobPreparedByDesignation: 'Registered Valuer, Govt. of India (Regd. No. 107/2016-17, Cat-I), Chartered Engineer',
+    bobPreparedByValuerName: 'Er. Satyajit Mohanty, (B.E, Civil) FIV',
+    bobPreparedByGovtReg: 'Registered Valuer, Govt. of India (Regd. No.-107/2016-17, Cat -I)',
+    bobPreparedByAcademicDegrees: 'B.E.(Civil) Utkal, M. Tech(Civil), MBA(HR), Approved Valuer',
+    bobPreparedByIoVMembership: 'Life, Fellow & Approved Valuer from Institution of Valuers (New Delhi), Membership No.F-26377',
+    bobPreparedByIoEMembership: 'Member in Institution of Engineer (India)',
+    bobPreparedByCharteredEng: 'Chartered Engineer (Regd. No.-M-156096-9)',
+    bobPreparedByBankEmpanelment: 'Empanelled Valuer of Bank of Baroda',
     bobPreparedByPlotNo: 'Plot no-859/2494/3232 & 858/2493/3295',
     bobPreparedByStreet: 'Shiv Nagar Tankapani Road',
     bobPreparedByCity: 'Bhubaneswar',
@@ -679,11 +684,16 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           {/* Container 7: Prepared By */}
           <div className="rounded-xl p-5 space-y-4 border border-orange-200" style={{ backgroundColor: '#fff0e6' }}>
             <h3 className="font-bold text-gray-700 border-b border-orange-200 pb-2">PREPARED BY (VALUER CREDENTIALS)</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="COMPANY/ENTITY NAME"><input className={inputCls} value={fields.bobPreparedByCompany || ''} onChange={e => handleChange('bobPreparedByCompany', e.target.value)} disabled={isReadOnly} placeholder="e.g. Er. Satyajit Mohanty, (B.E., Civil) FIV" /></Field>
-              <Field label="PROFESSIONAL DESIGNATION"><textarea className={inputCls} rows={2} value={fields.bobPreparedByDesignation || ''} onChange={e => handleChange('bobPreparedByDesignation', e.target.value)} disabled={isReadOnly} placeholder="e.g. Registered Valuer, Govt. of India..." /></Field>
+            <div className="grid grid-cols-1 gap-4">
+              <Field label="VALUER NAME & QUALIFICATION"><input className={inputCls} value={fields.bobPreparedByValuerName || ''} onChange={e => handleChange('bobPreparedByValuerName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Er. Satyajit Mohanty, (B.E, Civil) FIV" /></Field>
+              <Field label="GOVERNMENT REGISTRATION / CATEGORY"><textarea className={inputCls} rows={2} value={fields.bobPreparedByGovtReg || ''} onChange={e => handleChange('bobPreparedByGovtReg', e.target.value)} disabled={isReadOnly} placeholder="e.g. Registered Valuer, Govt. of India..." /></Field>
+              <Field label="ACADEMIC & PROFESSIONAL DEGREES"><textarea className={inputCls} rows={2} value={fields.bobPreparedByAcademicDegrees || ''} onChange={e => handleChange('bobPreparedByAcademicDegrees', e.target.value)} disabled={isReadOnly} placeholder="e.g. B.E.(Civil) Utkal, M. Tech(Civil)..." /></Field>
+              <Field label="INSTITUTION OF VALUERS MEMBERSHIP"><textarea className={inputCls} rows={2} value={fields.bobPreparedByIoVMembership || ''} onChange={e => handleChange('bobPreparedByIoVMembership', e.target.value)} disabled={isReadOnly} placeholder="e.g. Life, Fellow & Approved Valuer..." /></Field>
+              <Field label="INSTITUTION OF ENGINEERS MEMBERSHIP"><textarea className={inputCls} rows={2} value={fields.bobPreparedByIoEMembership || ''} onChange={e => handleChange('bobPreparedByIoEMembership', e.target.value)} disabled={isReadOnly} placeholder="e.g. Member in Institution of Engineer (India)" /></Field>
+              <Field label="CHARTERED ENGINEER REGISTRATION NO."><input className={inputCls} value={fields.bobPreparedByCharteredEng || ''} onChange={e => handleChange('bobPreparedByCharteredEng', e.target.value)} disabled={isReadOnly} placeholder="e.g. Chartered Engineer (Regd. No.-M-156096-9)" /></Field>
+              <Field label="BANK EMPANELMENT DETAILS"><input className={inputCls} value={fields.bobPreparedByBankEmpanelment || ''} onChange={e => handleChange('bobPreparedByBankEmpanelment', e.target.value)} disabled={isReadOnly} placeholder="e.g. Empanelled Valuer of Bank of Baroda" /></Field>
             </div>
-            <div className="bg-white rounded-md p-4 border border-gray-100 shadow-sm mt-4">
+            <div className="rounded-md p-4 shadow-sm mt-4" style={{ backgroundColor: '#e6f2ff' }}>
               <h4 className="font-bold text-gray-700 mb-3 text-sm">Address Breakdown</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="PLOT NUMBER"><input className={inputCls} value={fields.bobPreparedByPlotNo || ''} onChange={e => handleChange('bobPreparedByPlotNo', e.target.value)} disabled={isReadOnly} /></Field>

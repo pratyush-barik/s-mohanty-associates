@@ -203,8 +203,13 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     drawCenteredBold(this.fv('bobPurposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
 
     drawCenteredBold('PREPARED BY', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(this.fv('bobPreparedByCompany', 'M/s. S MOHANTY ASSOCIATES'), FONT_SIZE, 14);
-    drawCenteredBold(this.fv('bobPreparedByDesignation', 'EMPANELLED VALUER & CHARTERED ENGINEER'), FONT_SIZE, 14);
+    drawCenteredBold(this.fv('bobPreparedByValuerName', 'Er. Satyajit Mohanty, (B.E, Civil) FIV'), FONT_SIZE, 14);
+    drawCenteredBold(this.fv('bobPreparedByGovtReg', 'Registered Valuer, Govt. of India (Regd. No.-107/2016-17, Cat -I)'), FONT_SIZE, 14);
+    drawCenteredBold(this.fv('bobPreparedByAcademicDegrees', 'B.E.(Civil) Utkal, M. Tech(Civil), MBA(HR), Approved Valuer'), FONT_SIZE, 14);
+    drawCenteredBold(this.fv('bobPreparedByIoVMembership', 'Life, Fellow & Approved Valuer from Institution of Valuers (New Delhi), Membership No.F-26377'), FONT_SIZE, 14);
+    drawCenteredBold(this.fv('bobPreparedByIoEMembership', 'Member in Institution of Engineer (India)'), FONT_SIZE, 14);
+    drawCenteredBold(this.fv('bobPreparedByCharteredEng', 'Chartered Engineer (Regd. No.-M-156096-9)'), FONT_SIZE, 14);
+    drawCenteredBold(this.fv('bobPreparedByBankEmpanelment', 'Empanelled Valuer of Bank of Baroda'), FONT_SIZE, 14);
     const plotNo = this.fv('bobPreparedByPlotNo', 'Plot no-859/2494/3232 & 858/2493/3295');
     if (plotNo) drawCenteredBold(`${plotNo},`, FONT_SIZE, 14);
     const street = this.fv('bobPreparedByStreet', 'Shiv Nagar Tankapani Road');
