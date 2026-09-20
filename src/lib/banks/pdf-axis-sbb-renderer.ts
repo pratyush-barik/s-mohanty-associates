@@ -336,8 +336,8 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       return;
     }
     // Intercept standard section 9
-    if (title.toUpperCase() === '9. VALUATION OVERVIEW & REMARKS') {
-      super.drawSectionHeader('VALUE OF THE PROPERTY', addSpaceBefore, preserveCase);
+    if (title.toUpperCase().includes('9. VALUATION ENGINE')) {
+      super.drawSectionHeader('VALUATION CALCULATIONS & SUMMARY', addSpaceBefore, preserveCase);
       this.drawSbbSection9();
       return;
     }
@@ -1021,8 +1021,8 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const insurableValueComp = buildingAmount * 0.85;
 
     // --- Table 9.1 ---
-    this.drawSectionSubtitle('MARKET VALUE');
-    const table91Headers = ['', 'AREA IN SQ.FT.', 'RATE PER SQ.FT.', 'AMOUNT IN RS.'];
+    this.drawSectionSubtitle('MARKET VALUATION CALCULATION');
+    const table91Headers = ['ITEM DESCRIPTION', 'AREA (SQ.FT)', 'RATE PER SQ.FT (RS.)', 'AMOUNT (RS.)'];
     const bldgDisplay = 'Building G+1\nFAR 2';
     const table91Data = [
       ['Land', val('axisSbbValuationLandArea', landAreaPrefill), val('axisSbbValuationLandRate'), numVal('axisSbbValuationLandAmount', landAmount.toFixed(2))],
@@ -1037,8 +1037,8 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     this.cursorY += 10;
     
     // --- Table 9.2 ---
-    this.drawSectionSubtitle('GOVERNMENT GUIDELINE VALUE');
-    const table92Headers = ['', 'AREA IN SQ.FT.', 'RATE PER SQ.FT.', 'AMOUNT IN RS.'];
+    this.drawSectionSubtitle('GOVERNMENT GUIDELINE / BENCHMARK VALUE');
+    const table92Headers = ['ITEM DESCRIPTION', 'AREA (SQ.FT)', 'GUIDELINE RATE PER SQ.FT (RS.)', 'GOVT. GUIDELINE VALUE (RS.)'];
     const table92Data = [
       ['Land', val('axisSbbGovtLandArea', landAreaPrefill), val('axisSbbGovtLandRate'), numVal('axisSbbGovtLandAmount', govtLandAmount.toFixed(2))],
       ['Building', val('axisSbbGovtBuildingArea', buildingAreaPrefill), val('axisSbbGovtBuildingRate'), numVal('axisSbbGovtBuildingAmount', govtBuildingAmount.toFixed(2))],
@@ -1048,6 +1048,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     this.cursorY += 10;
 
     // --- Summary Cards ---
+    this.drawSectionSubtitle('FINAL VALUATION SUMMARY');
     this.drawKeyValueRow([
       { label: 'Market Value', value: numVal('axisSbbFinalMarketValue', marketValueComp.toFixed(2)) },
       { label: 'Distressed / Forced Sale Value (90%)', value: numVal('axisSbbFinalDistressValue', distressValueComp.toFixed(2)) }
