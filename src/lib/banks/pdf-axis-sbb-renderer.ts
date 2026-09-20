@@ -1020,43 +1020,96 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const realizableValueComp = marketValueComp * 0.95;
     const insurableValueComp = buildingAmount * 0.85;
 
+    const rsVal = (num: number, suffix = '') => {
+      if (isNaN(num) || num === 0) return 'NA';
+      const str = Math.round(num).toString();
+      let lastThree = str.substring(str.length - 3);
+      let otherNumbers = str.substring(0, str.length - 3);
+      if (otherNumbers != '') lastThree = ',' + lastThree;
+      return 'RS.' + otherNumbers.replace(/\B(?=(\d{2})+(?!\d))/g, ",") + lastThree + '/-' + suffix;
+    };
+
+    const rsFieldVal = (key: string, num: number, suffix = '') => {
+      const str = val(key, num.toString());
+      if (str === 'NA') return 'NA';
+      return rsVal(Number(str), suffix);
+    };
+
+    const formatArea = (str: string) => {
+      if (!str || str === 'NA') return '';
+      return str.toUpperCase().includes('SQ') ? str : str + ' SQFT';
+    };
+
+    const drawCustomSummaryRow = (label: string, value: string) => {
+      const rowH = 18;
+      this.checkPageBreak(rowH);
+      const drawY = this.pdfY(this.cursorY);
+      
+      this.page.drawRectangle({
+        x: MARGIN_L,
+        y: drawY - rowH,
+        width: CONTENT_W,
+        height: rowH,
+        borderColor: rgb(0, 0, 0),
+        borderWidth: 1,
+      });
+      
+      const splitX = MARGIN_L + 0.8 * CONTENT_W;
+      this.page.drawLine({
+        start: { x: splitX, y: drawY },
+        end: { x: splitX, y: drawY - rowH },
+        thickness: 1,
+        color: rgb(0, 0, 0)
+      });
+      
+      this.page.drawText(label, {
+        x: MARGIN_L + 3,
+        y: drawY - 4 - FONT_SIZE * 0.85,
+        size: FONT_SIZE,
+        font: this.fontBold,
+        color: rgb(0,0,0)
+      });
+      
+      this.page.drawText(value, {
+        x: splitX + 3,
+        y: drawY - 4 - FONT_SIZE * 0.85,
+        size: FONT_SIZE,
+        font: this.fontRegular,
+        color: rgb(0,0,0)
+      });
+      
+      this.cursorY += rowH;
+    };
+
     // --- Table 9.1 ---
-    this.drawSectionSubtitle('MARKET VALUATION CALCULATION');
-    const table91Headers = ['ITEM DESCRIPTION', 'AREA (SQ.FT)', 'RATE PER SQ.FT (RS.)', 'AMOUNT (RS.)'];
-    const bldgDisplay = 'Building G+1\nFAR 2';
+    this.drawSectionSubtitle('MARKET VALUE');
+    const table91Headers = ['', 'AREA IN SQ.FT.', 'RATE PER SQ.FT.', 'AMOUNT IN RS.'];
+    const bldgDisplay = 'BUILDING G+1\nFAR 2';
     const table91Data = [
-      ['Land', val('axisSbbValuationLandArea', landAreaPrefill), val('axisSbbValuationLandRate'), numVal('axisSbbValuationLandAmount', landAmount.toFixed(2))],
-      [bldgDisplay, val('axisSbbValuationBuildingArea', buildingAreaPrefill), val('axisSbbValuationBuildingRate'), numVal('axisSbbValuationBuildingAmount', buildingAmount.toFixed(2))],
-      ['Amenities', val('axisSbbValuationAmenitiesArea'), val('axisSbbValuationAmenitiesRate'), numVal('axisSbbValuationAmenitiesAmount', amenitiesAmount.toFixed(2))],
+      ['LAND', formatArea(val('axisSbbValuationLandArea', landAreaPrefill)), rsVal(Number(fields.axisSbbValuationLandRate || 0)), rsFieldVal('axisSbbValuationLandAmount', landAmount, ' ........(I)')],
+      [bldgDisplay, formatArea(val('axisSbbValuationBuildingArea', buildingAreaPrefill)), rsVal(Number(fields.axisSbbValuationBuildingRate || 0)), rsFieldVal('axisSbbValuationBuildingAmount', buildingAmount, ' ........(II)')],
+      ['AMENITIES', formatArea(val('axisSbbValuationAmenitiesArea')), rsVal(Number(fields.axisSbbValuationAmenitiesRate || 0)), rsFieldVal('axisSbbValuationAmenitiesAmount', amenitiesAmount)],
     ];
     this.drawTable(table91Headers, table91Data, [40, 20, 20, 20]);
-    this.cursorY += 2;
-    this.drawSimpleRow('Total Valuation 100% Completion (I+II)', numVal('axisSbbValuationTotalAmount', totalAmountComp.toFixed(2)), true, true);
-    this.drawSimpleRow('Total Valuation in Say', numVal('axisSbbValuationTotalSayAmount', totalSayComp.toFixed(2)), true, true);
+    drawCustomSummaryRow('TOTAL VALUATION 100% COMPLETION (I+II)', rsFieldVal('axisSbbValuationTotalAmount', totalAmountComp));
+    drawCustomSummaryRow('TOTAL VALUATION IN SAY', rsFieldVal('axisSbbValuationTotalSayAmount', totalSayComp));
 
     this.cursorY += 10;
     
     // --- Table 9.2 ---
-    this.drawSectionSubtitle('GOVERNMENT GUIDELINE / BENCHMARK VALUE');
-    const table92Headers = ['ITEM DESCRIPTION', 'AREA (SQ.FT)', 'GUIDELINE RATE PER SQ.FT (RS.)', 'GOVT. GUIDELINE VALUE (RS.)'];
+    this.drawSectionSubtitle('GOVERNMENT GUIDELINE VALUE');
+    const table92Headers = ['', 'AREA IN SQ.FT.', 'RATE PER SQ.FT.', 'AMOUNT IN RS.'];
     const table92Data = [
-      ['Land', val('axisSbbGovtLandArea', landAreaPrefill), val('axisSbbGovtLandRate'), numVal('axisSbbGovtLandAmount', govtLandAmount.toFixed(2))],
-      ['Building', val('axisSbbGovtBuildingArea', buildingAreaPrefill), val('axisSbbGovtBuildingRate'), numVal('axisSbbGovtBuildingAmount', govtBuildingAmount.toFixed(2))],
+      ['LAND', formatArea(val('axisSbbGovtLandArea', landAreaPrefill)), rsVal(Number(fields.axisSbbGovtLandRate || 0)), rsFieldVal('axisSbbGovtLandAmount', govtLandAmount)],
+      ['BUILDING', formatArea(val('axisSbbGovtBuildingArea', buildingAreaPrefill)), rsVal(Number(fields.axisSbbGovtBuildingRate || 0)), rsFieldVal('axisSbbGovtBuildingAmount', govtBuildingAmount)],
     ];
     this.drawTable(table92Headers, table92Data, [40, 20, 20, 20]);
-
-    this.cursorY += 10;
-
-    // --- Summary Cards ---
-    this.drawSectionSubtitle('FINAL VALUATION SUMMARY');
-    this.drawKeyValueRow([
-      { label: 'Market Value', value: numVal('axisSbbFinalMarketValue', marketValueComp.toFixed(2)) },
-      { label: 'Distressed / Forced Sale Value (90%)', value: numVal('axisSbbFinalDistressValue', distressValueComp.toFixed(2)) }
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Realizable Value (95%)', value: numVal('axisSbbFinalRealizableValue', realizableValueComp.toFixed(2)) },
-      { label: 'Insurable Value (App.) (Construction Value)', value: numVal('axisSbbFinalInsurableValue', insurableValueComp.toFixed(2)) }
-    ]);
+    
+    // --- Summary Appended to Table 9.2 ---
+    drawCustomSummaryRow('MARKET VALUE', rsFieldVal('axisSbbFinalMarketValue', marketValueComp));
+    drawCustomSummaryRow('DISTRESSED/FORCED SALE VALUE ( 90%)', rsFieldVal('axisSbbFinalDistressValue', distressValueComp));
+    drawCustomSummaryRow('REALIZABLE VALUE ( 95%)', rsFieldVal('axisSbbFinalRealizableValue', realizableValueComp));
+    drawCustomSummaryRow('INSURABLE VALUE (APP.) (CONSTRUCTION VALUE)', rsFieldVal('axisSbbFinalInsurableValue', insurableValueComp));
   }
 
   private drawSbbSection10() {
