@@ -1689,7 +1689,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 onChange={e => handleChange(deedField, e.target.value.toUpperCase())}
                 readOnly={!!fields[`${deedField}IsNA`]}
                 disabled={isReadOnly || !!fields[`${deedField}IsNA`]}
-                placeholder={`AS PER SALE DEED`}
               />
             </td>
             <td className="p-2 w-3/8 align-top">
@@ -1703,7 +1702,6 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 onChange={e => handleChange(actualField, e.target.value.toUpperCase())}
                 readOnly={!!fields[`${actualField}IsNA`]}
                 disabled={isReadOnly || !!fields[`${actualField}IsNA`]}
-                placeholder={`AS PER ACTUAL SITE`}
               />
             </td>
           </tr>
