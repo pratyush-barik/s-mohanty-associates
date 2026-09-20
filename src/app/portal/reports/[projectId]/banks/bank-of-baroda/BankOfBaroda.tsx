@@ -340,7 +340,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     // ── Section 1: Cover Page ──
     bobPropertyOwners: [{ name: '', relationship: 'S/O', relativeName: '' }],
     bobAddressOfTheProperty: '',
-    bobEnableCoverPageValueEdit: true,
+    bobEnableCoverPageValueEdit: false,
     bobPresentMarketValue: '',
     bobRealizableValue: '',
     bobForcedSaleValue: '',
