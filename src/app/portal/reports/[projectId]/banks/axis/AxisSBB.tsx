@@ -3163,10 +3163,10 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             {renderNaToggle('axisSbbValuationLandArea')}
                           </div>
                           <div className="relative mt-1">
-                            <input type="number" step="0.01" className={`w-full text-base p-2 border-gray-300 rounded-md shadow-sm pr-8 focus:border-blue-500 focus:ring-blue-500 ${!fields.axisSbbValuationLandAreaEditOn || isReadOnly ? 'bg-[#CEF2D9] cursor-not-allowed disabled:opacity-100' : 'bg-white'}`} value={fields.axisSbbValuationLandAreaIsNA ? '' : (fields.axisSbbValuationLandAreaEditOn ? (fields.axisSbbValuationLandArea || '') : landAreaPrefill)} onChange={e => handleChange('axisSbbValuationLandArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationLandAreaIsNA || !fields.axisSbbValuationLandAreaEditOn} />
+                            <input type="number" step="0.01" className={`w-full text-base p-2 border-gray-300 rounded-md shadow-sm pr-8 focus:border-blue-500 focus:ring-blue-500 ${!fields.axisSbbValuationLandAreaEditOn || isReadOnly ? 'bg-[#A7F3D0] cursor-not-allowed disabled:opacity-100' : 'bg-white'}`} value={fields.axisSbbValuationLandAreaIsNA ? '' : (fields.axisSbbValuationLandAreaEditOn ? (fields.axisSbbValuationLandArea || '') : landAreaPrefill)} onChange={e => handleChange('axisSbbValuationLandArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationLandAreaIsNA || !fields.axisSbbValuationLandAreaEditOn} />
                             {!fields.axisSbbValuationLandAreaEditOn && (
                               <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 6 "PLOT AREA AS PER DOCUMENTS"'>
-                                <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                                <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                               </div>
                             )}
                           </div>
@@ -3184,9 +3184,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             {renderNaToggle('axisSbbValuationLandAmount')}
                           </div>
                           <div className="relative mt-1">
-                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-[#CEF2D9] cursor-not-allowed font-bold disabled:text-gray-500 pr-8" value={fields.axisSbbValuationLandAmountIsNA ? '' : landAmount.toFixed(2)} disabled />
+                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-[#A7F3D0] cursor-not-allowed font-bold disabled:text-gray-500 pr-8" value={fields.axisSbbValuationLandAmountIsNA ? '' : landAmount.toFixed(2)} disabled />
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="AREA (SQ.FT) * RATE PER SQ.FT (RS.)">
-                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                              <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                             </div>
                           </div>
                         </div>
@@ -3207,10 +3207,10 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             {renderNaToggle('axisSbbValuationBuildingArea')}
                           </div>
                           <div className="relative mt-1">
-                            <input type="number" step="0.01" className={`w-full text-base p-2 border-gray-300 rounded-md shadow-sm pr-8 focus:border-blue-500 focus:ring-blue-500 ${!fields.axisSbbValuationBuildingAreaEditOn || isReadOnly ? 'bg-[#CEF2D9] cursor-not-allowed disabled:opacity-100' : 'bg-white'}`} value={fields.axisSbbValuationBuildingAreaIsNA ? '' : (fields.axisSbbValuationBuildingAreaEditOn ? (fields.axisSbbValuationBuildingArea || '') : buildingAreaPrefill)} onChange={e => handleChange('axisSbbValuationBuildingArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationBuildingAreaIsNA || !fields.axisSbbValuationBuildingAreaEditOn} />
+                            <input type="number" step="0.01" className={`w-full text-base p-2 border-gray-300 rounded-md shadow-sm pr-8 focus:border-blue-500 focus:ring-blue-500 ${!fields.axisSbbValuationBuildingAreaEditOn || isReadOnly ? 'bg-[#A7F3D0] cursor-not-allowed disabled:opacity-100' : 'bg-white'}`} value={fields.axisSbbValuationBuildingAreaIsNA ? '' : (fields.axisSbbValuationBuildingAreaEditOn ? (fields.axisSbbValuationBuildingArea || '') : buildingAreaPrefill)} onChange={e => handleChange('axisSbbValuationBuildingArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationBuildingAreaIsNA || !fields.axisSbbValuationBuildingAreaEditOn} />
                             {!fields.axisSbbValuationBuildingAreaEditOn && (
                               <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 8 "TOTAL BUILT UP AREA (IN SQFT)"'>
-                                <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                                <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                               </div>
                             )}
                           </div>
@@ -3228,9 +3228,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             {renderNaToggle('axisSbbValuationBuildingAmount')}
                           </div>
                           <div className="relative mt-1">
-                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-[#CEF2D9] cursor-not-allowed font-bold disabled:text-gray-500 pr-8" value={fields.axisSbbValuationBuildingAmountIsNA ? '' : buildingAmount.toFixed(2)} disabled />
+                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-[#A7F3D0] cursor-not-allowed font-bold disabled:text-gray-500 pr-8" value={fields.axisSbbValuationBuildingAmountIsNA ? '' : buildingAmount.toFixed(2)} disabled />
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="AREA (SQ.FT) * RATE PER SQ.FT (RS.)">
-                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                              <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                             </div>
                           </div>
                         </div>
@@ -3257,9 +3257,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             {renderNaToggle('axisSbbValuationAmenitiesAmount')}
                           </div>
                           <div className="relative mt-1">
-                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-[#CEF2D9] cursor-not-allowed font-bold disabled:text-gray-500 pr-8" value={fields.axisSbbValuationAmenitiesAmountIsNA ? '' : amenitiesAmount.toFixed(2)} disabled />
+                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-[#A7F3D0] cursor-not-allowed font-bold disabled:text-gray-500 pr-8" value={fields.axisSbbValuationAmenitiesAmountIsNA ? '' : amenitiesAmount.toFixed(2)} disabled />
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="AREA (SQ.FT) * RATE PER SQ.FT (RS.)">
-                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                              <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                             </div>
                           </div>
                         </div>
@@ -3275,9 +3275,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             {renderNaToggle('axisSbbValuationTotalAmount')}
                           </div>
                           <div className="relative mt-1">
-                            <input type="number" step="0.01" className="w-full text-base p-2 border-emerald-300 rounded-md shadow-sm bg-emerald-100 cursor-not-allowed font-bold disabled:text-emerald-700 pr-8" value={fields.axisSbbValuationTotalAmountIsNA ? '' : totalAmountComp.toFixed(2)} disabled />
+                            <input type="number" step="0.01" className="w-full text-base p-2 border-emerald-300 rounded-md shadow-sm bg-[#A7F3D0] cursor-not-allowed font-bold disabled:text-emerald-700 pr-8" value={fields.axisSbbValuationTotalAmountIsNA ? '' : totalAmountComp.toFixed(2)} disabled />
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="SUM(All values in AMOUNT (RS.) column)">
-                              <Lock className="w-5 h-5 text-emerald-600 group-hover:text-emerald-800" />
+                              <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                             </div>
                           </div>
                         </div>
@@ -3295,7 +3295,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           <div className="relative mt-1">
                             <input type="number" step="0.01" className="w-full text-base p-2 rounded-md shadow-sm bg-emerald-200 cursor-not-allowed font-bold disabled:text-emerald-800 border-emerald-300 pr-8" value={fields.axisSbbValuationTotalSayAmountIsNA ? '' : totalSayComp.toFixed(2)} disabled />
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="ROUND(Total Valuation 100% Completion, -3)">
-                              <Lock className="w-5 h-5 text-emerald-700 group-hover:text-emerald-900" />
+                              <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                             </div>
                           </div>
                         </div>
