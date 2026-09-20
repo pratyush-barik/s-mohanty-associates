@@ -2590,7 +2590,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <tbody className="divide-y divide-slate-200">
                     {floors.map((f: any, i: number) => (
                       <tr key={f.id} className="hover:bg-slate-50/50">
-                        <td className="p-2 align-top border-r border-slate-300">
+                        <td className="p-2 pt-6 align-top border-r border-slate-300">
                           <input 
                             type="text" 
                             className={`${inputCls} font-bold text-[11px]`} 
@@ -3184,7 +3184,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <tbody className="divide-y divide-[#A7F3D0]">
                     {/* Row 1: Land */}
                     <tr className="divide-x divide-[#A7F3D0]">
-                      <td className="p-3 font-semibold text-gray-700 align-top">Land</td>
+                      <td className="p-3 pt-8 font-semibold text-gray-700 align-top">Land</td>
                       <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-end gap-2">
@@ -3223,7 +3223,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     </tr>
                     {/* Row 2: Building */}
                     <tr className="divide-x divide-[#A7F3D0]">
-                      <td className="p-3 align-top">
+                      <td className="p-3 pt-8 align-top">
                         <div className="flex flex-col">
                           <span className="font-semibold text-gray-700">Building G+1</span>
                           <span className="text-xs text-gray-500">FAR 2</span>
@@ -3267,7 +3267,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     </tr>
                     {/* Row 3: Amenities */}
                     <tr className="divide-x divide-[#A7F3D0]">
-                      <td className="p-3 font-semibold text-gray-700 align-top">Amenities</td>
+                      <td className="p-3 pt-8 font-semibold text-gray-700 align-top">Amenities</td>
                       <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
                           <div className="flex justify-end">{renderNaToggle('axisSbbValuationAmenitiesArea')}</div>
@@ -3351,7 +3351,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   </thead>
                   <tbody className="divide-y divide-[#E9D5FF]">
                     <tr className="divide-x divide-[#E9D5FF]">
-                      <td className="p-3 font-semibold text-gray-700 align-top">Land</td>
+                      <td className="p-3 pt-8 font-semibold text-gray-700 align-top">Land</td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-end gap-2">
@@ -3387,7 +3387,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                     </tr>
                     <tr className="divide-x divide-[#E9D5FF]">
-                      <td className="p-3 font-semibold text-gray-700 align-top">Building</td>
+                      <td className="p-3 pt-8 font-semibold text-gray-700 align-top">Building</td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center justify-end gap-2">
