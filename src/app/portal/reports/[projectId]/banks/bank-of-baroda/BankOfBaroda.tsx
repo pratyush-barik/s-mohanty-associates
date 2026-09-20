@@ -444,6 +444,19 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             </Field>
           </div>
 
+          {/* Container 4: Valuation of Land & Property Summary */}
+          <div className="rounded-xl p-5 space-y-4 border border-red-200" style={{ backgroundColor: '#ffe6e6' }}>
+            <h3 className="font-bold text-gray-700 border-b border-red-200 pb-2">VALUATION OF LAND & PROPERTY SUMMARY</h3>
+            <Field label="FULL LEGAL PROPERTY DESCRIPTION">
+              <textarea
+                className={inputCls} rows={3}
+                value={fields.bobFullLegalPropertyDescription || ''}
+                onChange={e => handleChange('bobFullLegalPropertyDescription', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+
           {/* Container 2: Property Owner Details */}
           <div className="rounded-xl p-5 space-y-4 border border-green-200" style={{ backgroundColor: '#e6ffe6' }}>
             <div className="flex justify-between items-center mb-4 border-b border-green-200 pb-2">
@@ -531,17 +544,6 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             </Field>
           </div>
 
-          {/* Container 4: Valuation of Land & Property Summary */}
-          <div className="rounded-xl p-5 space-y-4 border border-red-200" style={{ backgroundColor: '#ffe6e6' }}>
-            <h3 className="font-bold text-gray-700 border-b border-red-200 pb-2">VALUATION OF LAND & PROPERTY SUMMARY</h3>
-            <Field label="FULL LEGAL PROPERTY DESCRIPTION">
-              <textarea
-                className={inputCls} rows={3}
-                value={fields.bobFullLegalPropertyDescription || ''}
-                onChange={e => handleChange('bobFullLegalPropertyDescription', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
           </div>
 
           {/* Container 5: Value of the Property (Abstract Summary) */}
