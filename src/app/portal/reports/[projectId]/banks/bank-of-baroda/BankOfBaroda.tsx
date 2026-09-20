@@ -1886,7 +1886,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                         <EditSwitchCell
                           fieldKey="bobAbstractTotalGovt"
                           autoValue={calcTotalGovt}
-                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for Govt. Value<<."
+                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for this column<<."
                         />
                       </td>
                       {/* TOTAL — Market */}
@@ -1894,7 +1894,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                         <EditSwitchCell
                           fieldKey="bobAbstractTotalMarket"
                           autoValue={calcTotalMarket}
-                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for Market Value<<."
+                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for this column<<."
                         />
                       </td>
                       {/* TOTAL — Realizable */}
@@ -1902,7 +1902,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                         <EditSwitchCell
                           fieldKey="bobAbstractTotalRealizable"
                           autoValue={calcTotalRealizable}
-                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for Realizable Value<<."
+                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for this column<<."
                         />
                       </td>
                       {/* TOTAL — Distress */}
@@ -1910,7 +1910,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                         <EditSwitchCell
                           fieldKey="bobAbstractTotalDistress"
                           autoValue={calcTotalDistress}
-                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for Distress Value<<."
+                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for this column<<."
                         />
                       </td>
                     </tr>
