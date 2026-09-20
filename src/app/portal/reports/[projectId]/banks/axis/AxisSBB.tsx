@@ -3340,7 +3340,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse bg-white shadow-sm rounded-md overflow-hidden">
                   <thead className="bg-[#F9F5FF] border-b border-[#E9D5FF]">
-                    <tr className="text-left text-xs font-bold text-[#581C87]">
+                    <tr className="text-left text-xs font-bold text-[#581C87] divide-x divide-[#E9D5FF]">
                       <th className="p-3 w-48">ITEM DESCRIPTION</th>
                       <th className="p-3">AREA (SQ.FT)</th>
                       <th className="p-3">GUIDELINE RATE PER SQ.FT (RS.)</th>
@@ -3350,7 +3350,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#E9D5FF]">
-                    <tr>
+                    <tr className="divide-x divide-[#E9D5FF]">
                       <td className="p-3 font-semibold text-gray-700 align-top">Land</td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
@@ -3386,7 +3386,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         </div>
                       </td>
                     </tr>
-                    <tr>
+                    <tr className="divide-x divide-[#E9D5FF]">
                       <td className="p-3 font-semibold text-gray-700 align-top">Building</td>
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
