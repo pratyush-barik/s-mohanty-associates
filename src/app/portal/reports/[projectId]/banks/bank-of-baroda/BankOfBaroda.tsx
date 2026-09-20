@@ -549,8 +549,6 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             </Field>
           </div>
 
-          </div>
-
           {/* Container 5: Value of the Property (Abstract Summary) */}
           <div className="rounded-xl p-5 space-y-4 border border-purple-200" style={{ backgroundColor: '#f2e6ff' }}>
             <div className="flex justify-between items-center mb-4 border-b border-purple-200 pb-2">
