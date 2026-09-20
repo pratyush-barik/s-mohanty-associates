@@ -895,11 +895,31 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     let rv = fv('axisSbbRealizableValue', '');
 
     if (!this.fields.axisSbbEnableCoverPageValueEdit) {
-      const baseV = Number(this.fields.axisSbbTotalValueOfPropertyAfterCompletion || 0);
-      const calcPmv = baseV > 0 ? Math.round(baseV / 1000) * 1000 : 0;
-      pmv = calcPmv > 0 ? calcPmv.toFixed(2) : '0.00';
-      dsv = calcPmv > 0 ? (Math.round((calcPmv * 0.90) / 1000) * 1000).toFixed(2) : '0.00';
-      rv = calcPmv > 0 ? (Math.round((calcPmv * 0.95) / 1000) * 1000).toFixed(2) : '0.00';
+      const landAreaPrefill = this.fields.axisSbbPlotAreaAsPerDocument || '';
+      const floors9 = JSON.parse(this.fields.axisSbbFloorData || '[]');
+      let sumConstructed9 = 0;
+      floors9.forEach((f: any) => {
+        if (!f.constructedAreaIsNA && f.constructedArea) sumConstructed9 += Number(f.constructedArea) || 0;
+      });
+      const buildingAreaPrefillStr = `${sumConstructed9}`;
+      const buildingAreaPrefill = buildingAreaPrefillStr.replace(/[^0-9.]/g, '') || '';
+      
+      const getLandArea = () => this.fields.axisSbbValuationLandAreaIsNA ? 0 : (this.fields.axisSbbValuationLandAreaEditOn ? this.fields.axisSbbValuationLandArea : landAreaPrefill);
+      const getBldgArea = () => this.fields.axisSbbValuationBuildingAreaIsNA ? 0 : (this.fields.axisSbbValuationBuildingAreaEditOn ? this.fields.axisSbbValuationBuildingArea : buildingAreaPrefill);
+      
+      const landAmount = Number(getLandArea()) * Number(this.fields.axisSbbValuationLandRate || 0);
+      const buildingAmount = Number(getBldgArea()) * Number(this.fields.axisSbbValuationBuildingRate || 0);
+      const amenitiesAmount = Number(this.fields.axisSbbValuationAmenitiesArea || 0) * Number(this.fields.axisSbbValuationAmenitiesRate || 0);
+      const totalAmountComp = landAmount + buildingAmount + amenitiesAmount;
+      const totalSayComp = Math.floor(totalAmountComp / 1000) * 1000;
+
+      const finalMarketValue = this.fields.axisSbbFinalMarketValueIsNA ? 0 : (this.fields.axisSbbFinalMarketValueEditOn ? Number(this.fields.axisSbbFinalMarketValue || 0) : totalSayComp);
+      const finalDistressValue = this.fields.axisSbbFinalDistressValueIsNA ? 0 : (this.fields.axisSbbFinalDistressValueEditOn ? Number(this.fields.axisSbbFinalDistressValue || 0) : (finalMarketValue * 0.90));
+      const finalRealizableValue = this.fields.axisSbbFinalRealizableValueIsNA ? 0 : (this.fields.axisSbbFinalRealizableValueEditOn ? Number(this.fields.axisSbbFinalRealizableValue || 0) : (finalMarketValue * 0.95));
+
+      pmv = finalMarketValue > 0 ? finalMarketValue.toFixed(2) : '0.00';
+      dsv = finalMarketValue > 0 ? (Math.round(finalDistressValue / 1000) * 1000).toFixed(2) : '0.00';
+      rv = finalMarketValue > 0 ? (Math.round(finalRealizableValue / 1000) * 1000).toFixed(2) : '0.00';
     }
 
     drawCenteredBold(`PRESENT MARKET VALUE: ${pmv}`, FONT_SIZE, 14);
