@@ -426,18 +426,13 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     this.drawSectionSubtitle('APPROVAL DETAILS & BYE-LAWS COMPLIANCE');
 
     this.drawKeyValueRow([
-      { label: 'Layout Approval No.', value: val('axisSbbLayoutApprovalNumber') },
-      { label: 'Approval Date', value: val('axisSbbLayoutApprovalDate') }
+      { label: 'Layout Approval Date', value: val('axisSbbLayoutApprovalDate') },
+      { label: 'Layout Expiry Date', value: val('axisSbbLayoutExpiryDate') }
     ]);
 
     this.drawKeyValueRow([
-      { label: 'Expiry Date', value: val('axisSbbLayoutExpiryDate') },
-      { label: 'Building Plan Approval No.', value: val('axisSbbBuildingPlanApprovalNumber') }
-    ]);
-
-    this.drawKeyValueRow([
-      { label: 'Approval Date', value: val('axisSbbBuildingPlanApprovalDate') },
-      { label: 'Expiry Date', value: val('axisSbbBuildingPlanExpiryDate') }
+      { label: 'Building Plan Approval Date', value: val('axisSbbBuildingPlanApprovalDate') },
+      { label: 'Building Plan Expiry Date', value: val('axisSbbBuildingPlanExpiryDate') }
     ]);
   }
 
@@ -620,7 +615,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     this.cursorY += maxH;
 
     this.drawKeyValueRow([
-      { label: 'Restrictive Covenants in regards to land use', value: val('axisSbbRestrictiveCovenants') }
+      { label: 'RESTRICTIVE COVENANTS IN REGARDS TO LAND USE (IF ANY)', value: val('axisSbbRestrictiveCovenants') }
     ]);
   }
 

@@ -1981,7 +1981,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <div className="flex flex-col">
                     <div className="flex justify-between items-center mb-1">
                       <div className="flex items-center">
-                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">RESTRICTIVE COVENANTS IN REGARDS TO LAND USE</label>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">RESTRICTIVE COVENANTS IN REGARDS TO LAND USE (IF ANY)</label>
                         {renderNaToggle('axisSbbRestrictiveCovenants')}
                       </div>
 
