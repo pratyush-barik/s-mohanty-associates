@@ -1477,6 +1477,9 @@ export default function BankReportBuilder({
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
+      link.download = `${fields.bankName || 'Bank'}_Valuation_Report_${projectId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } catch (err: any) {
