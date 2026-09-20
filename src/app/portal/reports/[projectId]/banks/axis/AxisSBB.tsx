@@ -2794,7 +2794,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <div className="flex items-center justify-end gap-4">
                           <span>
                             TOTAL SALEABLE AREA (IN SQFT.){' '}
-                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from TOTAL CARPET AREA = TOTAL SALEABLE AREA]</span>
+                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from TOTAL <br /> CARPET AREA = TOTAL SALEABLE AREA]</span>
                           </span>
                           {renderEditSwitch('axisSbbTotalSaleableArea', false)}
                         </div>
