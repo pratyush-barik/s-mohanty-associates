@@ -645,6 +645,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const stationComputed = `${stationDistKm}-KMS (${stationName} RAILWAY STATION)`.toUpperCase();
     const busStopComputed = `${busStopDistKm}-KMS. (${busStopName} BUS STOP)`.toUpperCase();
     
+    this.drawSectionSubtitle('TYPE OF PROPERTY');
     this.drawListCheck('[A] PLOT / UNDER CONSTRUCTION', fields.axisSbbPropertyType, fields.axisSbbPropertyTypeIsNA, ['RESIDENTIAL', 'COMMERCIAL', 'INDUSTRIAL', 'VACANT LAND/PLOT'], true);
     this.drawKeyValueRow([{ label: 'LEVEL OF LAND WITH TOPOGRAPHICAL CONDITIONS', value: val('axisSbbLevelOfLand', (fields as any).axisSbbLevelOfLandDropdown === 'CUSTOM' ? ((fields as any).axisSbbLevelOfLand || 'NA') : ((fields as any).axisSbbLevelOfLandDropdown || '')) }]);
     this.drawKeyValueRow([{ label: 'ANY CONSTRUCTION OBSERVED ON PLOT', value: val('axisSbbAnyConstructionObserved') }]);
