@@ -503,15 +503,18 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">PRESENT MARKET VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1">
+                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "MARKET VALUE IN RS." (Row: OR SAY, Container 17)<<.' : undefined}>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-emerald-800' : 'text-gray-500'}`}>RS.</span>
                     <input
-                      className={`${inputCls} pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
-                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobPresentMarketValue || '') : presentMarketValue.toFixed(2)}
-                      onChange={(e) => handleChange('bobPresentMarketValue', e.target.value)}
-                      disabled={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      type="text"
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
+                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobPresentMarketValue || '') : presentMarketValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      onChange={(e) => handleChange('bobPresentMarketValue', e.target.value.replace(/[^0-9.]/g, ''))}
+                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "MARKET VALUE IN RS." (Row: OR SAY, Container 17)<<.' : undefined}
                     />
                     {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Locked calculation (Currently 0)'>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 6, field "MARKET VALUE IN RS." (Row: OR SAY, Container 17)<<.'>
                         <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                       </div>
                     )}
@@ -523,15 +526,18 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">REALIZABLE VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1">
+                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "REALIZABLE VALUE (95%)" (Row: OR SAY, Container 17)<<.' : undefined}>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-emerald-800' : 'text-gray-500'}`}>RS.</span>
                     <input
-                      className={`${inputCls} pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
-                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobRealizableValue || '') : realizableValue.toFixed(2)}
-                      onChange={(e) => handleChange('bobRealizableValue', e.target.value)}
-                      disabled={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      type="text"
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
+                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobRealizableValue || '') : realizableValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      onChange={(e) => handleChange('bobRealizableValue', e.target.value.replace(/[^0-9.]/g, ''))}
+                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "REALIZABLE VALUE (95%)" (Row: OR SAY, Container 17)<<.' : undefined}
                     />
                     {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Locked calculation (Currently 0)'>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 6, field "REALIZABLE VALUE (95%)" (Row: OR SAY, Container 17)<<.'>
                         <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                       </div>
                     )}
@@ -543,15 +549,18 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">FORCED SALE VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1">
+                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "DISTRESS VALUE (85%)" (Row: OR SAY, Container 17)<<.' : undefined}>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-emerald-800' : 'text-gray-500'}`}>RS.</span>
                     <input
-                      className={`${inputCls} pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
-                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobForcedSaleValue || '') : forcedSaleValue.toFixed(2)}
-                      onChange={(e) => handleChange('bobForcedSaleValue', e.target.value)}
-                      disabled={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      type="text"
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
+                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobForcedSaleValue || '') : forcedSaleValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      onChange={(e) => handleChange('bobForcedSaleValue', e.target.value.replace(/[^0-9.]/g, ''))}
+                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "DISTRESS VALUE (85%)" (Row: OR SAY, Container 17)<<.' : undefined}
                     />
                     {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Locked calculation (Currently 0)'>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 6, field "DISTRESS VALUE (85%)" (Row: OR SAY, Container 17)<<.'>
                         <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                       </div>
                     )}
@@ -563,15 +572,18 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">GOVT. VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1">
+                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "GOVT. VALUE IN RS." (Row: OR SAY, Container 17)<<.' : undefined}>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-emerald-800' : 'text-gray-500'}`}>RS.</span>
                     <input
-                      className={`${inputCls} pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
-                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobGovtValue || '') : govtValue.toFixed(2)}
-                      onChange={(e) => handleChange('bobGovtValue', e.target.value)}
-                      disabled={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      type="text"
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
+                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobGovtValue || '') : govtValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      onChange={(e) => handleChange('bobGovtValue', e.target.value.replace(/[^0-9.]/g, ''))}
+                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "GOVT. VALUE IN RS." (Row: OR SAY, Container 17)<<.' : undefined}
                     />
                     {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Locked calculation (Currently 0)'>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 6, field "GOVT. VALUE IN RS." (Row: OR SAY, Container 17)<<.'>
                         <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                       </div>
                     )}
