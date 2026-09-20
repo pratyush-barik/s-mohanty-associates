@@ -152,6 +152,22 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     drawCenteredBold('REPORT ON VALUATION OF', FONT_SIZE_TITLE + 3, 25, true);
     drawCenteredBold('IMMOVABLE PROPERTIES', FONT_SIZE_TITLE + 3, 40, true);
 
+    drawCenteredBold('VALUATION OF LAND & PROPERTY SUMMARY', FONT_SIZE_HEADER, 16, true);
+    drawCenteredBold('FULL LEGAL PROPERTY DESCRIPTION', FONT_SIZE_HEADER - 1, 10, false);
+    let legalDesc = this.fv('bobFullLegalPropertyDescription');
+    if (!this.fields.bobEnableLegalDescEdit || !legalDesc) {
+      const brief = this.fv('bobBriefDescription');
+      const plot = this.fv('bobPlotNo');
+      const door = this.fv('bobDoorNo');
+      const postal = this.fv('bobPostalAddress');
+      legalDesc = `${brief} ${plot ? `Plot No. ${plot},` : ''} ${door && door !== 'NA' ? `Door No. ${door},` : ''} ${postal}`.trim();
+    }
+    if (legalDesc) {
+      drawCenteredBold(legalDesc, FONT_SIZE, 30);
+    } else {
+      drawCenteredBold('NA', FONT_SIZE, 30);
+    }
+
     drawCenteredBold('PROPERTY OWNER', FONT_SIZE_HEADER, 16, true);
     const owners = Array.isArray(fields.bobPropertyOwners) && fields.bobPropertyOwners.length > 0
       ? fields.bobPropertyOwners
