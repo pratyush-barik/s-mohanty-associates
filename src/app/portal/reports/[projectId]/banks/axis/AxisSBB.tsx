@@ -959,9 +959,9 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 type="button"
                 onClick={() => handleChange(`${fieldName}EditOn`, !isEditOn)}
                 disabled={disabled || isReadOnly}
-                className={`w-8 h-4 rounded-full relative transition-colors ${isEditOn ? 'bg-green-500' : 'bg-gray-300'}`}
+                className={`w-10 h-5 rounded-full relative transition-colors ${isEditOn ? 'bg-green-500' : 'bg-gray-300'}`}
               >
-                <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isEditOn ? 'translate-x-4' : ''}`} />
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${isEditOn ? 'translate-x-5' : ''}`} />
               </button>
             </div>
           );
@@ -2744,14 +2744,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           <div className="relative mt-1">
                             <input 
                               type="text" 
-                              className="bg-white border border-gray-300 p-1 w-full text-right font-bold focus:outline-none pr-8 rounded disabled:bg-gray-100 disabled:opacity-100" 
+                              className="bg-white border border-gray-300 p-2 px-3 text-base py-1 w-full text-right font-bold focus:outline-none pr-8 rounded disabled:bg-gray-100 disabled:opacity-100" 
                               value={fields.axisSbbTotalCarpetAreaEditOn ? (fields.axisSbbTotalCarpetArea || '') : computedCarpet}
                               onChange={e => handleChange('axisSbbTotalCarpetArea', e.target.value.toUpperCase())}
                               disabled={isReadOnly || !fields.axisSbbTotalCarpetAreaEditOn}
                             />
                             {!fields.axisSbbTotalCarpetAreaEditOn && (
                               <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="TOTAL BUILT UP AREA * 0.85">
-                                <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                                <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
                               </div>
                             )}
                           </div>
@@ -2771,17 +2771,17 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         </div>
                       </td>
                       <td className="p-2" colSpan={3}>
-                        <div className="flex items-center bg-blue-50 border border-blue-200 p-1 rounded px-2 relative">
+                        <div className="flex items-center bg-blue-50 border border-blue-200 p-2 px-3 rounded relative">
                           <input 
                             type="text" 
-                            className="bg-transparent font-bold w-full focus:outline-none pr-8 disabled:opacity-100" 
+                            className="bg-transparent font-bold w-full focus:outline-none pr-8 disabled:opacity-100 text-base py-1" 
                             value={fields.axisSbbTotalSaleableAreaEditOn ? (fields.axisSbbTotalSaleableArea || '') : computedSaleable}
                             onChange={e => handleChange('axisSbbTotalSaleableArea', e.target.value.toUpperCase())}
                             disabled={isReadOnly || !fields.axisSbbTotalSaleableAreaEditOn}
                           />
                           {!fields.axisSbbTotalSaleableAreaEditOn && (
                             <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="directly from the calculated TOTAL CARPET AREA">
-                              <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
                             </div>
                           )}
                         </div>
