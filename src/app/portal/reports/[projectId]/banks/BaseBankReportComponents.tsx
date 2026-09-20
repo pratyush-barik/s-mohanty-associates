@@ -327,7 +327,7 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
 
   return (
     <div className="hidden xl:flex flex-col gap-0.5 bg-white/90 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2.5 rounded-2xl w-[210px] sticky top-24 shrink-0 z-40 max-h-[calc(100vh-32px)] overflow-hidden">
-      <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest shrink-0">Report Sections</div>
+      <div className="text-[10px] font-black text-emerald-500 mb-1 px-2 uppercase tracking-widest shrink-0">REPORT SECTIONS</div>
       <div className="flex flex-col gap-1 overflow-y-auto pr-1 custom-scrollbar">
         {sections.map((sec) => {
           const isActive = activeId === sec.id;
