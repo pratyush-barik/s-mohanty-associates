@@ -535,23 +535,12 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           <div className="rounded-xl p-5 space-y-4 border border-red-200" style={{ backgroundColor: '#ffe6e6' }}>
             <h3 className="font-bold text-gray-700 border-b border-red-200 pb-2">VALUATION OF LAND & PROPERTY SUMMARY</h3>
             <Field label="FULL LEGAL PROPERTY DESCRIPTION">
-              <div className="flex gap-2 items-start">
-                <div className="flex-1 relative" title={!fields.bobEnableLegalDescEdit ? '>>Prefill from section 2, fields "Brief description of the property" & "Location of property"<<.' : undefined}>
-                  <textarea
-                    className={`${inputCls} ${!fields.bobEnableLegalDescEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
-                    rows={3}
-                    value={fields.bobEnableLegalDescEdit ? (fields.bobFullLegalPropertyDescription || '') : `${fields.bobBriefDescription || ''} ${fields.bobPlotNo ? `Plot No. ${fields.bobPlotNo},` : ''} ${fields.bobDoorNo && fields.bobDoorNo !== 'NA' ? `Door No. ${fields.bobDoorNo},` : ''} ${fields.bobPostalAddress || ''}`.trim()}
-                    onChange={e => handleChange('bobFullLegalPropertyDescription', e.target.value)}
-                    readOnly={isReadOnly || !fields.bobEnableLegalDescEdit}
-                  />
-                  {!fields.bobEnableLegalDescEdit && (
-                    <div className="absolute top-2 right-2 flex items-center pr-1 group cursor-help">
-                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                    </div>
-                  )}
-                </div>
-                <div className="pt-2"><EditSwitch checked={fields.bobEnableLegalDescEdit} onChange={v => handleChange('bobEnableLegalDescEdit', v)} disabled={isReadOnly} /></div>
-              </div>
+              <textarea
+                className={inputCls} rows={3}
+                value={fields.bobFullLegalPropertyDescription || ''}
+                onChange={e => handleChange('bobFullLegalPropertyDescription', e.target.value)}
+                disabled={isReadOnly}
+              />
             </Field>
           </div>
 
@@ -881,13 +870,24 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 />
               </Field>
               <Field label="5. Brief description of the property (Including leasehold / freehold etc)">
-                <textarea
-                  className={inputCls} rows={3}
-                  value={fields.bobBriefDescription || ''}
-                  onChange={e => handleChange('bobBriefDescription', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Enter brief property description..."
-                />
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1 relative" title={!fields.bobEnableLegalDescEdit ? '>>Prefill from section 1, field "FULL LEGAL PROPERTY DESCRIPTION"<<.' : undefined}>
+                    <textarea
+                      className={`${inputCls} ${!fields.bobEnableLegalDescEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
+                      rows={3}
+                      value={fields.bobEnableLegalDescEdit ? (fields.bobBriefDescription || '') : (fields.bobFullLegalPropertyDescription || '')}
+                      onChange={e => handleChange('bobBriefDescription', e.target.value)}
+                      readOnly={isReadOnly || !fields.bobEnableLegalDescEdit}
+                      placeholder="Enter brief property description..."
+                    />
+                    {!fields.bobEnableLegalDescEdit && (
+                      <div className="absolute top-2 right-2 flex items-center pr-1 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="pt-2"><EditSwitch checked={fields.bobEnableLegalDescEdit} onChange={v => handleChange('bobEnableLegalDescEdit', v)} disabled={isReadOnly} /></div>
+                </div>
               </Field>
             </div>
 
