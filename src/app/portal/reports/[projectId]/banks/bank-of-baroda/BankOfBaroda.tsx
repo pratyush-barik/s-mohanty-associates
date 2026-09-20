@@ -657,44 +657,30 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           <div className="rounded-xl p-5 space-y-4 border border-teal-200" style={{ backgroundColor: '#e6fffa' }}>
             <h3 className="font-bold text-gray-700 border-b border-teal-200 pb-2">PURPOSE OF VALUATION</h3>
             <Field label="PURPOSE OF VALUATION">
-              <div className="flex gap-2 items-start">
-                <div className="flex-1 relative" title={!fields.bobEnablePurposeEdit ? '>>Prefill from section 2, field "Purpose for which the valuation is made"<<.' : undefined}>
-                  {!fields.bobEnablePurposeEdit ? (
-                    <>
-                      <textarea className={`${inputCls} bg-gray-100 cursor-not-allowed text-gray-600`} rows={2} readOnly value={fields.bobPurposeForValuation || ''} />
-                      <div className="absolute top-2 right-2 flex items-center pr-1 group cursor-help">
-                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                      </div>
-                    </>
-                  ) : (
-                    <div className="space-y-3">
-                      <select
-                        className={inputCls}
-                        value={fields.bobPurposeOfValuationDropdown || 'default'}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          handleChange('bobPurposeOfValuationDropdown', val);
-                          if (val === 'default') {
-                            handleChange('bobPurposeOfValuation', 'To assess the present market value of the property for loan purpose');
-                          } else if (val === 'incometax') {
-                            handleChange('bobPurposeOfValuation', 'To assess capital gain for income tax');
-                          } else {
-                            handleChange('bobPurposeOfValuation', '');
-                          }
-                        }}
-                        disabled={isReadOnly}
-                      >
-                        <option value="default">To assess the present market value of the property for loan purpose</option>
-                        <option value="incometax">To assess capital gain for income tax</option>
-                        <option value="custom">Custom</option>
-                      </select>
-                      {fields.bobPurposeOfValuationDropdown === 'custom' && (
-                        <textarea className={inputCls} rows={2} placeholder="Enter custom purpose of valuation..." value={fields.bobPurposeOfValuation || ''} onChange={(e) => handleChange('bobPurposeOfValuation', e.target.value)} disabled={isReadOnly} />
-                      )}
-                    </div>
-                  )}
-                </div>
-                <div className="pt-2"><EditSwitch checked={fields.bobEnablePurposeEdit} onChange={v => handleChange('bobEnablePurposeEdit', v)} disabled={isReadOnly} /></div>
+              <div className="space-y-3">
+                <select
+                  className={inputCls}
+                  value={fields.bobPurposeOfValuationDropdown || 'default'}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    handleChange('bobPurposeOfValuationDropdown', val);
+                    if (val === 'default') {
+                      handleChange('bobPurposeOfValuation', 'To assess the present market value of the property for loan purpose');
+                    } else if (val === 'incometax') {
+                      handleChange('bobPurposeOfValuation', 'To assess capital gain for income tax');
+                    } else {
+                      handleChange('bobPurposeOfValuation', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                >
+                  <option value="default">To assess the present market value of the property for loan purpose</option>
+                  <option value="incometax">To assess capital gain for income tax</option>
+                  <option value="custom">Custom</option>
+                </select>
+                {fields.bobPurposeOfValuationDropdown === 'custom' && (
+                  <textarea className={inputCls} rows={2} placeholder="Enter custom purpose of valuation..." value={fields.bobPurposeOfValuation || ''} onChange={(e) => handleChange('bobPurposeOfValuation', e.target.value)} disabled={isReadOnly} />
+                )}
               </div>
             </Field>
           </div>
@@ -784,13 +770,24 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e6f2ff' }}>
               <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">Inspection Details</h3>
               <Field label="1. Purpose for which the valuation is made">
-                <textarea
-                  className={inputCls} rows={3}
-                  value={fields.bobPurposeForValuation || ''}
-                  onChange={e => handleChange('bobPurposeForValuation', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Enter purpose of valuation..."
-                />
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1 relative" title={!fields.bobEnablePurposeEdit ? '>>Prefill from section 1, field "PURPOSE OF VALUATION"<<.' : undefined}>
+                    <textarea
+                      className={`${inputCls} ${!fields.bobEnablePurposeEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
+                      rows={3}
+                      value={fields.bobEnablePurposeEdit ? (fields.bobPurposeForValuation || '') : (fields.bobPurposeOfValuation || '')}
+                      onChange={e => handleChange('bobPurposeForValuation', e.target.value)}
+                      readOnly={isReadOnly || !fields.bobEnablePurposeEdit}
+                      placeholder="Enter purpose of valuation..."
+                    />
+                    {!fields.bobEnablePurposeEdit && (
+                      <div className="absolute top-2 right-2 flex items-center pr-1 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="pt-2"><EditSwitch checked={fields.bobEnablePurposeEdit} onChange={v => handleChange('bobEnablePurposeEdit', v)} disabled={isReadOnly} /></div>
+                </div>
               </Field>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <BaseDateInput
