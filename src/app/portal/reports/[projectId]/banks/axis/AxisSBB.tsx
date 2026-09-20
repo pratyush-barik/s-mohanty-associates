@@ -3295,7 +3295,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                     </tr>
                     <tr className="bg-[#D1FAE5] divide-x divide-[#A7F3D0]">
-                      <td className="p-3 font-bold text-[#065F46] align-top" colSpan={3}>
+                      <td className="p-3 pt-8 font-bold text-[#065F46] align-top" colSpan={3}>
                         Total Valuation 100% Completion (I+II)
                       </td>
                       <td className="p-3 align-top">
@@ -3313,7 +3313,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                     </tr>
                     <tr className="bg-[#D1FAE5] divide-x divide-[#A7F3D0]">
-                      <td className="p-3 font-bold text-[#065F46] align-top" colSpan={3}>
+                      <td className="p-3 pt-8 font-bold text-[#065F46] align-top" colSpan={3}>
                         Total Valuation in Say
                       </td>
                       <td className="p-3 align-top">
