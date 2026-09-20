@@ -3149,12 +3149,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <th className="p-3 w-48">ITEM DESCRIPTION</th>
                       <th className="p-3">AREA (SQ.FT)</th>
                       <th className="p-3">RATE PER SQ.FT (RS.)</th>
-                      <th className="p-3">
-                        AMOUNT (RS.){' '}
-                        <span style={{ color: 'red', fontWeight: 'bold', display: 'block', fontSize: '10px', marginTop: '4px', textTransform: 'none' }}>
-                          [Formula: AREA (SQ.FT) * RATE PER SQ.FT (RS.) = AMOUNT (RS.)]
-                        </span>
-                      </th>
+                      <th className="p-3">AMOUNT (RS.)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-emerald-100">
@@ -3163,14 +3158,15 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <td className="p-3 font-semibold text-gray-700 align-top">Land</td>
                       <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
-                          <div className="text-[10px] leading-tight mb-1">
-                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from Section 6 "PLOT AREA AS PER DOCUMENTS" = AREA (SQ.FT)]</span>
-                          </div>
-                          <div className="flex items-center justify-end gap-2">
-                            {renderEditSwitch('axisSbbValuationLandArea', !!fields.axisSbbValuationLandAreaIsNA)}
+                          <div className="flex justify-end">
                             {renderNaToggle('axisSbbValuationLandArea')}
                           </div>
-                          <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationLandAreaIsNA ? '' : (fields.axisSbbValuationLandAreaEditOn ? (fields.axisSbbValuationLandArea || '') : landAreaPrefill)} onChange={e => handleChange('axisSbbValuationLandArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationLandAreaIsNA || !fields.axisSbbValuationLandAreaEditOn} />
+                          <div className="relative mt-1">
+                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-gray-50 cursor-not-allowed pr-8 disabled:opacity-100" value={fields.axisSbbValuationLandAreaIsNA ? '' : landAreaPrefill} disabled />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 6 "PLOT AREA AS PER DOCUMENTS"'>
+                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="p-3 align-top">
@@ -3184,7 +3180,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           <div className="flex justify-end">
                             {renderNaToggle('axisSbbValuationLandAmount')}
                           </div>
-                          <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed font-bold disabled:text-gray-500" value={fields.axisSbbValuationLandAmountIsNA ? '' : landAmount.toFixed(2)} disabled />
+                          <div className="relative mt-1">
+                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed font-bold disabled:text-gray-500 pr-8" value={fields.axisSbbValuationLandAmountIsNA ? '' : landAmount.toFixed(2)} disabled />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="AREA (SQ.FT) * RATE PER SQ.FT (RS.)">
+                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -3198,14 +3199,15 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                       <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
-                          <div className="text-[10px] leading-tight mb-1">
-                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from Section 8 "TOTAL BUILT UP AREA (IN SQFT)" = AREA (SQ.FT)]</span>
-                          </div>
-                          <div className="flex items-center justify-end gap-2">
-                            {renderEditSwitch('axisSbbValuationBuildingArea', !!fields.axisSbbValuationBuildingAreaIsNA)}
+                          <div className="flex justify-end">
                             {renderNaToggle('axisSbbValuationBuildingArea')}
                           </div>
-                          <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbValuationBuildingAreaIsNA ? '' : (fields.axisSbbValuationBuildingAreaEditOn ? (fields.axisSbbValuationBuildingArea || '') : buildingAreaPrefill)} onChange={e => handleChange('axisSbbValuationBuildingArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationBuildingAreaIsNA || !fields.axisSbbValuationBuildingAreaEditOn} />
+                          <div className="relative mt-1">
+                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-gray-50 cursor-not-allowed pr-8 disabled:opacity-100" value={fields.axisSbbValuationBuildingAreaIsNA ? '' : buildingAreaPrefill} disabled />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 8 "TOTAL BUILT UP AREA (IN SQFT)"'>
+                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                            </div>
+                          </div>
                         </div>
                       </td>
                       <td className="p-3 align-top">
@@ -3219,7 +3221,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           <div className="flex justify-end">
                             {renderNaToggle('axisSbbValuationBuildingAmount')}
                           </div>
-                          <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed font-bold disabled:text-gray-500" value={fields.axisSbbValuationBuildingAmountIsNA ? '' : buildingAmount.toFixed(2)} disabled />
+                          <div className="relative mt-1">
+                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed font-bold disabled:text-gray-500 pr-8" value={fields.axisSbbValuationBuildingAmountIsNA ? '' : buildingAmount.toFixed(2)} disabled />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="AREA (SQ.FT) * RATE PER SQ.FT (RS.)">
+                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -3243,35 +3250,48 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                           <div className="flex justify-end">
                             {renderNaToggle('axisSbbValuationAmenitiesAmount')}
                           </div>
-                          <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed font-bold disabled:text-gray-500" value={fields.axisSbbValuationAmenitiesAmountIsNA ? '' : amenitiesAmount.toFixed(2)} disabled />
+                          <div className="relative mt-1">
+                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-gray-100 cursor-not-allowed font-bold disabled:text-gray-500 pr-8" value={fields.axisSbbValuationAmenitiesAmountIsNA ? '' : amenitiesAmount.toFixed(2)} disabled />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="AREA (SQ.FT) * RATE PER SQ.FT (RS.)">
+                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </tr>
                     <tr className="bg-emerald-50">
                       <td className="p-3 font-bold text-emerald-900 align-top" colSpan={3}>
-                        Total Valuation 100% Completion (I+II){' '}
-                        <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: SUM(All values in AMOUNT (RS.) column) = Total Valuation 100% Completion]</span>
+                        Total Valuation 100% Completion (I+II)
                       </td>
                       <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
                           <div className="flex justify-end">
                             {renderNaToggle('axisSbbValuationTotalAmount')}
                           </div>
-                          <input type="number" step="0.01" className="w-full text-base p-2 border-emerald-300 rounded-md shadow-sm bg-emerald-100 cursor-not-allowed font-bold disabled:text-emerald-700" value={fields.axisSbbValuationTotalAmountIsNA ? '' : totalAmountComp.toFixed(2)} disabled />
+                          <div className="relative mt-1">
+                            <input type="number" step="0.01" className="w-full text-base p-2 border-emerald-300 rounded-md shadow-sm bg-emerald-100 cursor-not-allowed font-bold disabled:text-emerald-700 pr-8" value={fields.axisSbbValuationTotalAmountIsNA ? '' : totalAmountComp.toFixed(2)} disabled />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="SUM(All values in AMOUNT (RS.) column)">
+                              <Lock className="w-5 h-5 text-emerald-600 group-hover:text-emerald-800" />
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </tr>
                     <tr className="bg-emerald-100">
                       <td className="p-3 font-bold text-emerald-900 align-top" colSpan={3}>
-                        Total Valuation in Say{' '}
-                        <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: ROUND(Total Valuation 100% Completion, -3) = Total Valuation in Say]</span>
+                        Total Valuation in Say
                       </td>
                       <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
                           <div className="flex justify-end">
                             {renderNaToggle('axisSbbValuationTotalSayAmount')}
                           </div>
-                          <input type="number" step="0.01" className="w-full text-base p-2 rounded-md shadow-sm bg-emerald-200 cursor-not-allowed font-bold disabled:text-emerald-800 border-emerald-300" value={fields.axisSbbValuationTotalSayAmountIsNA ? '' : totalSayComp.toFixed(2)} disabled />
+                          <div className="relative mt-1">
+                            <input type="number" step="0.01" className="w-full text-base p-2 rounded-md shadow-sm bg-emerald-200 cursor-not-allowed font-bold disabled:text-emerald-800 border-emerald-300 pr-8" value={fields.axisSbbValuationTotalSayAmountIsNA ? '' : totalSayComp.toFixed(2)} disabled />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="ROUND(Total Valuation 100% Completion, -3)">
+                              <Lock className="w-5 h-5 text-emerald-700 group-hover:text-emerald-900" />
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </tr>
