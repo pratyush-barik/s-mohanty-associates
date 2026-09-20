@@ -342,8 +342,9 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     bobAddressOfTheProperty: '',
     bobEnableCoverPageValueEdit: true,
     bobPresentMarketValue: '',
-    bobDistressSaleValue: '',
     bobRealizableValue: '',
+    bobForcedSaleValue: '',
+    bobGovtValue: '',
     bobPurposeOfValuationDropdown: 'default',
     bobPurposeOfValuation: 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY',
     bobPreparedByCompany: 'M/s. S MOHANTY ASSOCIATES',
@@ -391,8 +392,9 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const presentMarketValue = 0;
-        const distressSaleValue = 0;
         const realizableValue = 0;
+        const forcedSaleValue = 0;
+        const govtValue = 0;
 
         return (
         <div className="animate-fade-in space-y-6">
@@ -518,14 +520,34 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               </div>
               <div className="flex border-b border-gray-200">
                 <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
-                  <span className="text-sm font-medium text-gray-700">DISTRESS SALE VALUE</span>
+                  <span className="text-sm font-medium text-gray-700">REALIZABLE VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
                   <div className="relative mt-1">
                     <input
                       className={`${inputCls} pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
-                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobDistressSaleValue || '') : distressSaleValue.toFixed(2)}
-                      onChange={(e) => handleChange('bobDistressSaleValue', e.target.value)}
+                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobRealizableValue || '') : realizableValue.toFixed(2)}
+                      onChange={(e) => handleChange('bobRealizableValue', e.target.value)}
+                      disabled={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                    />
+                    {!fields.bobEnableCoverPageValueEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Locked calculation (Currently 0)'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+              <div className="flex border-b border-gray-200">
+                <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
+                  <span className="text-sm font-medium text-gray-700">FORCED SALE VALUE</span>
+                </div>
+                <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
+                  <div className="relative mt-1">
+                    <input
+                      className={`${inputCls} pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
+                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobForcedSaleValue || '') : forcedSaleValue.toFixed(2)}
+                      onChange={(e) => handleChange('bobForcedSaleValue', e.target.value)}
                       disabled={isReadOnly || !fields.bobEnableCoverPageValueEdit}
                     />
                     {!fields.bobEnableCoverPageValueEdit && (
@@ -538,14 +560,14 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               </div>
               <div className="flex">
                 <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
-                  <span className="text-sm font-medium text-gray-700">REALIZABLE VALUE</span>
+                  <span className="text-sm font-medium text-gray-700">GOVT. VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
                   <div className="relative mt-1">
                     <input
                       className={`${inputCls} pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
-                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobRealizableValue || '') : realizableValue.toFixed(2)}
-                      onChange={(e) => handleChange('bobRealizableValue', e.target.value)}
+                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobGovtValue || '') : govtValue.toFixed(2)}
+                      onChange={(e) => handleChange('bobGovtValue', e.target.value)}
                       disabled={isReadOnly || !fields.bobEnableCoverPageValueEdit}
                     />
                     {!fields.bobEnableCoverPageValueEdit && (
