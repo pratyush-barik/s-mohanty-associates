@@ -3158,14 +3158,17 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <td className="p-3 font-semibold text-gray-700 align-top">Land</td>
                       <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
-                          <div className="flex justify-end">
+                          <div className="flex items-center justify-end gap-2">
+                            {renderEditSwitch('axisSbbValuationLandArea', !!fields.axisSbbValuationLandAreaIsNA)}
                             {renderNaToggle('axisSbbValuationLandArea')}
                           </div>
                           <div className="relative mt-1">
-                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-[#CEF2D9] cursor-not-allowed pr-8 disabled:opacity-100" value={fields.axisSbbValuationLandAreaIsNA ? '' : landAreaPrefill} disabled />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 6 "PLOT AREA AS PER DOCUMENTS"'>
-                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                            </div>
+                            <input type="number" step="0.01" className={`w-full text-base p-2 border-gray-300 rounded-md shadow-sm pr-8 focus:border-blue-500 focus:ring-blue-500 ${!fields.axisSbbValuationLandAreaEditOn || isReadOnly ? 'bg-[#CEF2D9] cursor-not-allowed disabled:opacity-100' : 'bg-white'}`} value={fields.axisSbbValuationLandAreaIsNA ? '' : (fields.axisSbbValuationLandAreaEditOn ? (fields.axisSbbValuationLandArea || '') : landAreaPrefill)} onChange={e => handleChange('axisSbbValuationLandArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationLandAreaIsNA || !fields.axisSbbValuationLandAreaEditOn} />
+                            {!fields.axisSbbValuationLandAreaEditOn && (
+                              <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 6 "PLOT AREA AS PER DOCUMENTS"'>
+                                <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -3199,14 +3202,17 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </td>
                       <td className="p-3 align-top">
                         <div className="flex flex-col gap-1">
-                          <div className="flex justify-end">
+                          <div className="flex items-center justify-end gap-2">
+                            {renderEditSwitch('axisSbbValuationBuildingArea', !!fields.axisSbbValuationBuildingAreaIsNA)}
                             {renderNaToggle('axisSbbValuationBuildingArea')}
                           </div>
                           <div className="relative mt-1">
-                            <input type="number" step="0.01" className="w-full text-base p-2 border-gray-300 rounded-md shadow-sm bg-[#CEF2D9] cursor-not-allowed pr-8 disabled:opacity-100" value={fields.axisSbbValuationBuildingAreaIsNA ? '' : buildingAreaPrefill} disabled />
-                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 8 "TOTAL BUILT UP AREA (IN SQFT)"'>
-                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                            </div>
+                            <input type="number" step="0.01" className={`w-full text-base p-2 border-gray-300 rounded-md shadow-sm pr-8 focus:border-blue-500 focus:ring-blue-500 ${!fields.axisSbbValuationBuildingAreaEditOn || isReadOnly ? 'bg-[#CEF2D9] cursor-not-allowed disabled:opacity-100' : 'bg-white'}`} value={fields.axisSbbValuationBuildingAreaIsNA ? '' : (fields.axisSbbValuationBuildingAreaEditOn ? (fields.axisSbbValuationBuildingArea || '') : buildingAreaPrefill)} onChange={e => handleChange('axisSbbValuationBuildingArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbValuationBuildingAreaIsNA || !fields.axisSbbValuationBuildingAreaEditOn} />
+                            {!fields.axisSbbValuationBuildingAreaEditOn && (
+                              <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 8 "TOTAL BUILT UP AREA (IN SQFT)"'>
+                                <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                              </div>
+                            )}
                           </div>
                         </div>
                       </td>
@@ -3310,10 +3316,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <th className="p-3">AREA (SQ.FT)</th>
                       <th className="p-3">GUIDELINE RATE PER SQ.FT (RS.)</th>
                       <th className="p-3">
-                        GOVT. GUIDELINE VALUE (RS.){' '}
-                        <span style={{ color: 'red', fontWeight: 'bold', display: 'block', fontSize: '10px', marginTop: '4px', textTransform: 'none' }}>
-                          [Formula: AREA (SQ.FT) * GUIDELINE RATE PER SQ.FT (RS.) = GOVT. GUIDELINE VALUE (RS.)]
-                        </span>
+                        GOVT. GUIDELINE VALUE (RS.)
                       </th>
                     </tr>
                   </thead>
@@ -3326,7 +3329,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             {renderEditSwitch('axisSbbGovtLandArea', !!fields.axisSbbGovtLandAreaIsNA)}
                             {renderNaToggle('axisSbbGovtLandArea')}
                           </div>
-                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbGovtLandAreaIsNA ? '' : (fields.axisSbbGovtLandAreaEditOn ? (fields.axisSbbGovtLandArea || '') : landAreaPrefill)} onChange={e => handleChange('axisSbbGovtLandArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtLandAreaIsNA || !fields.axisSbbGovtLandAreaEditOn} />
+                          <div className="relative mt-1">
+                            <input type="number" step="0.01" className={`w-full text-sm border-gray-300 rounded-md shadow-sm pr-8 focus:border-blue-500 focus:ring-blue-500 ${!fields.axisSbbGovtLandAreaEditOn || isReadOnly ? 'bg-[#CEF2D9] cursor-not-allowed disabled:opacity-100' : 'bg-white'}`} value={fields.axisSbbGovtLandAreaIsNA ? '' : (fields.axisSbbGovtLandAreaEditOn ? (fields.axisSbbGovtLandArea || '') : landAreaPrefill)} onChange={e => handleChange('axisSbbGovtLandArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtLandAreaIsNA || !fields.axisSbbGovtLandAreaEditOn} />
+                            {!fields.axisSbbGovtLandAreaEditOn && (
+                              <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 6 "PLOT AREA AS PER DOCUMENTS"'>
+                                <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="p-3">
@@ -3338,7 +3348,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex justify-end">{renderNaToggle('axisSbbGovtLandAmount')}</div>
-                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 cursor-not-allowed" value={fields.axisSbbGovtLandAmountIsNA ? '' : govtLandAmount.toFixed(2)} disabled={true} />
+                          <div className="relative mt-1">
+                            <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm bg-[#CEF2D9] cursor-not-allowed pr-8 disabled:opacity-100 font-bold text-gray-600" value={fields.axisSbbGovtLandAmountIsNA ? '' : govtLandAmount.toFixed(2)} disabled />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="AREA (SQ.FT) * GUIDELINE RATE PER SQ.FT (RS.)">
+                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </tr>
@@ -3350,7 +3365,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             {renderEditSwitch('axisSbbGovtBuildingArea', !!fields.axisSbbGovtBuildingAreaIsNA)}
                             {renderNaToggle('axisSbbGovtBuildingArea')}
                           </div>
-                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500" value={fields.axisSbbGovtBuildingAreaIsNA ? '' : (fields.axisSbbGovtBuildingAreaEditOn ? (fields.axisSbbGovtBuildingArea || '') : buildingAreaPrefill)} onChange={e => handleChange('axisSbbGovtBuildingArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtBuildingAreaIsNA || !fields.axisSbbGovtBuildingAreaEditOn} />
+                          <div className="relative mt-1">
+                            <input type="number" step="0.01" className={`w-full text-sm border-gray-300 rounded-md shadow-sm pr-8 focus:border-blue-500 focus:ring-blue-500 ${!fields.axisSbbGovtBuildingAreaEditOn || isReadOnly ? 'bg-[#CEF2D9] cursor-not-allowed disabled:opacity-100' : 'bg-white'}`} value={fields.axisSbbGovtBuildingAreaIsNA ? '' : (fields.axisSbbGovtBuildingAreaEditOn ? (fields.axisSbbGovtBuildingArea || '') : buildingAreaPrefill)} onChange={e => handleChange('axisSbbGovtBuildingArea', e.target.value)} disabled={isReadOnly || !!fields.axisSbbGovtBuildingAreaIsNA || !fields.axisSbbGovtBuildingAreaEditOn} />
+                            {!fields.axisSbbGovtBuildingAreaEditOn && (
+                              <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 8 "TOTAL BUILT UP AREA (IN SQFT)"'>
+                                <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="p-3">
@@ -3362,7 +3384,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <td className="p-3">
                         <div className="flex flex-col gap-1">
                           <div className="flex justify-end">{renderNaToggle('axisSbbGovtBuildingAmount')}</div>
-                          <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 cursor-not-allowed" value={fields.axisSbbGovtBuildingAmountIsNA ? '' : govtBuildingAmount.toFixed(2)} disabled={true} />
+                          <div className="relative mt-1">
+                            <input type="number" step="0.01" className="w-full text-sm border-gray-300 rounded-md shadow-sm bg-[#CEF2D9] cursor-not-allowed pr-8 disabled:opacity-100 font-bold text-gray-600" value={fields.axisSbbGovtBuildingAmountIsNA ? '' : govtBuildingAmount.toFixed(2)} disabled />
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="AREA (SQ.FT) * GUIDELINE RATE PER SQ.FT (RS.)">
+                              <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                            </div>
+                          </div>
                         </div>
                       </td>
                     </tr>

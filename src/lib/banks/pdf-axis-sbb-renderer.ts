@@ -953,8 +953,8 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const landAreaPrefill = fields.axisSbbPlotAreaAsPerDocument || '';
     const buildingAreaPrefill = fields.axisSbbTotalConstructedArea || '';
 
-    const getLandArea = () => fields.axisSbbValuationLandAreaIsNA ? 0 : landAreaPrefill;
-    const getBldgArea = () => fields.axisSbbValuationBuildingAreaIsNA ? 0 : buildingAreaPrefill;
+    const getLandArea = () => fields.axisSbbValuationLandAreaIsNA ? 0 : (fields.axisSbbValuationLandAreaEditOn ? fields.axisSbbValuationLandArea : landAreaPrefill);
+    const getBldgArea = () => fields.axisSbbValuationBuildingAreaIsNA ? 0 : (fields.axisSbbValuationBuildingAreaEditOn ? fields.axisSbbValuationBuildingArea : buildingAreaPrefill);
 
     const landAmount = Number(getLandArea()) * Number(fields.axisSbbValuationLandRate || 0);
     const buildingAmount = Number(getBldgArea()) * Number(fields.axisSbbValuationBuildingRate || 0);
