@@ -2293,31 +2293,61 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <h4 className="font-bold text-xs text-teal-800 mb-3">LAYOUT APPROVAL NUMBER</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
-                      <div className="flex items-center mb-1">
+                      <div className="flex items-center justify-between mb-1 gap-2">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DATE OF APPROVAL :-</label>
-                        {renderNaToggle('axisSbbLayoutApprovalDate')}
+                        <div className="flex items-center gap-2">
+                          <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                            <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.axisSbbLayoutApprovalDateNotProvided} onChange={e => handleChange('axisSbbLayoutApprovalDateNotProvided', e.target.checked)} disabled={isReadOnly} />
+                            <span className="text-[10px] font-bold text-gray-500 tracking-wider">NOT PROVIDED</span>
+                          </label>
+                          {renderNaToggle('axisSbbLayoutApprovalDate')}
+                        </div>
                       </div>
-                      <input
-                        type="text"
-                        className={`${inputCls}`}
-                        value={fields.axisSbbLayoutApprovalDateIsNA ? 'NOT PROVIDED' : (fields.axisSbbLayoutApprovalDate || '')}
-                        onChange={e => handleChange('axisSbbLayoutApprovalDate', e.target.value.toUpperCase())}
-                        disabled={isReadOnly || !!fields.axisSbbLayoutApprovalDateIsNA}
-                      />
+                      {fields.axisSbbLayoutApprovalDateIsNA || fields.axisSbbLayoutApprovalDateNotProvided ? (
+                        <input
+                          type="text"
+                          className={`${inputCls}`}
+                          value={fields.axisSbbLayoutApprovalDateIsNA ? 'NA' : 'NOT PROVIDED'}
+                          disabled
+                        />
+                      ) : (
+                        <input
+                          type="date"
+                          className={`${inputCls}`}
+                          value={fields.axisSbbLayoutApprovalDate || ''}
+                          onChange={e => handleChange('axisSbbLayoutApprovalDate', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      )}
                     </div>
                     
                     <div className="flex flex-col">
-                      <div className="flex items-center mb-1">
+                      <div className="flex items-center justify-between mb-1 gap-2">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">EXPIRY DATE :-</label>
-                        {renderNaToggle('axisSbbLayoutExpiryDate')}
+                        <div className="flex items-center gap-2">
+                          <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                            <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.axisSbbLayoutExpiryDateNotProvided} onChange={e => handleChange('axisSbbLayoutExpiryDateNotProvided', e.target.checked)} disabled={isReadOnly} />
+                            <span className="text-[10px] font-bold text-gray-500 tracking-wider">NOT PROVIDED</span>
+                          </label>
+                          {renderNaToggle('axisSbbLayoutExpiryDate')}
+                        </div>
                       </div>
-                      <input
-                        type="text"
-                        className={`${inputCls}`}
-                        value={fields.axisSbbLayoutExpiryDateIsNA ? 'NOT PROVIDED' : (fields.axisSbbLayoutExpiryDate || '')}
-                        onChange={e => handleChange('axisSbbLayoutExpiryDate', e.target.value.toUpperCase())}
-                        disabled={isReadOnly || !!fields.axisSbbLayoutExpiryDateIsNA}
-                      />
+                      {fields.axisSbbLayoutExpiryDateIsNA || fields.axisSbbLayoutExpiryDateNotProvided ? (
+                        <input
+                          type="text"
+                          className={`${inputCls}`}
+                          value={fields.axisSbbLayoutExpiryDateIsNA ? 'NA' : 'NOT PROVIDED'}
+                          disabled
+                        />
+                      ) : (
+                        <input
+                          type="date"
+                          className={`${inputCls}`}
+                          value={fields.axisSbbLayoutExpiryDate || ''}
+                          onChange={e => handleChange('axisSbbLayoutExpiryDate', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -2327,31 +2357,61 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                   <h4 className="font-bold text-xs text-teal-800 mb-3">BUILDING PLAN APPROVAL NUMBER</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex flex-col">
-                      <div className="flex items-center mb-1">
+                      <div className="flex items-center justify-between mb-1 gap-2">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">DATE OF APPROVAL :-</label>
-                        {renderNaToggle('axisSbbBuildingPlanApprovalDate')}
+                        <div className="flex items-center gap-2">
+                          <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                            <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.axisSbbBuildingPlanApprovalDateNotProvided} onChange={e => handleChange('axisSbbBuildingPlanApprovalDateNotProvided', e.target.checked)} disabled={isReadOnly} />
+                            <span className="text-[10px] font-bold text-gray-500 tracking-wider">NOT PROVIDED</span>
+                          </label>
+                          {renderNaToggle('axisSbbBuildingPlanApprovalDate')}
+                        </div>
                       </div>
-                      <input
-                        type="text"
-                        className={`${inputCls}`}
-                        value={fields.axisSbbBuildingPlanApprovalDateIsNA ? 'NOT PROVIDED' : (fields.axisSbbBuildingPlanApprovalDate || '')}
-                        onChange={e => handleChange('axisSbbBuildingPlanApprovalDate', e.target.value.toUpperCase())}
-                        disabled={isReadOnly || !!fields.axisSbbBuildingPlanApprovalDateIsNA}
-                      />
+                      {fields.axisSbbBuildingPlanApprovalDateIsNA || fields.axisSbbBuildingPlanApprovalDateNotProvided ? (
+                        <input
+                          type="text"
+                          className={`${inputCls}`}
+                          value={fields.axisSbbBuildingPlanApprovalDateIsNA ? 'NA' : 'NOT PROVIDED'}
+                          disabled
+                        />
+                      ) : (
+                        <input
+                          type="date"
+                          className={`${inputCls}`}
+                          value={fields.axisSbbBuildingPlanApprovalDate || ''}
+                          onChange={e => handleChange('axisSbbBuildingPlanApprovalDate', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      )}
                     </div>
                     
                     <div className="flex flex-col">
-                      <div className="flex items-center mb-1">
+                      <div className="flex items-center justify-between mb-1 gap-2">
                         <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">EXPIRY DATE :-</label>
-                        {renderNaToggle('axisSbbBuildingPlanExpiryDate')}
+                        <div className="flex items-center gap-2">
+                          <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                            <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.axisSbbBuildingPlanExpiryDateNotProvided} onChange={e => handleChange('axisSbbBuildingPlanExpiryDateNotProvided', e.target.checked)} disabled={isReadOnly} />
+                            <span className="text-[10px] font-bold text-gray-500 tracking-wider">NOT PROVIDED</span>
+                          </label>
+                          {renderNaToggle('axisSbbBuildingPlanExpiryDate')}
+                        </div>
                       </div>
-                      <input
-                        type="text"
-                        className={`${inputCls}`}
-                        value={fields.axisSbbBuildingPlanExpiryDateIsNA ? 'NOT PROVIDED' : (fields.axisSbbBuildingPlanExpiryDate || '')}
-                        onChange={e => handleChange('axisSbbBuildingPlanExpiryDate', e.target.value.toUpperCase())}
-                        disabled={isReadOnly || !!fields.axisSbbBuildingPlanExpiryDateIsNA}
-                      />
+                      {fields.axisSbbBuildingPlanExpiryDateIsNA || fields.axisSbbBuildingPlanExpiryDateNotProvided ? (
+                        <input
+                          type="text"
+                          className={`${inputCls}`}
+                          value={fields.axisSbbBuildingPlanExpiryDateIsNA ? 'NA' : 'NOT PROVIDED'}
+                          disabled
+                        />
+                      ) : (
+                        <input
+                          type="date"
+                          className={`${inputCls}`}
+                          value={fields.axisSbbBuildingPlanExpiryDate || ''}
+                          onChange={e => handleChange('axisSbbBuildingPlanExpiryDate', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
