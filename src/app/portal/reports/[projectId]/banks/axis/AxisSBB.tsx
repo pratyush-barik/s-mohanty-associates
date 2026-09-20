@@ -2962,7 +2962,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <div className="flex justify-between items-center mb-3">
                         <div className="flex items-center">
                           <label className="block text-xs font-bold text-amber-800 uppercase tracking-wide">
-                            <span className="bg-amber-200/60 px-1.5 py-0.5 rounded">QUALITY OF CONSTRUCTION</span> <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Selected_Roof_Option + " WITH MASONRY WALLS WITH " + Selected_Floor_Option + " FLOOR " = QUALITY OF CONSTRUCTION]</span>
+                            <span className="bg-amber-200/60 px-1.5 py-0.5 rounded">QUALITY OF CONSTRUCTION</span> <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Selected_Roof_Option + " WITH MASONRY WALLS WITH " <br /> + Selected_Floor_Option + " FLOOR " = QUALITY OF CONSTRUCTION]</span>
                           </label>
                           {renderNaToggle('axisSbbQualityOfConstruction')}
                         </div>
