@@ -319,7 +319,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
   hiddenSections: [
     'section-1', 'section-1a', 'section-2', 'section-3', 'section-4', 'section-5',
     'section-6', 'section-7', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10',
-    'layout-config', 'section-11', 'section-12', 'annexures'
+    'layout-config'
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   hideDefaultDeclarationAndCertificate: true,
@@ -334,8 +334,14 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     { id: 'bob-section-questionnaire', title: '8. Declaration (Questionnaire)' },
     { id: 'bob-section-affirmations', title: '9. Declaration (Affirmations)' },
     { id: 'bob-section-code-of-conduct', title: '10. Code of Conduct' },
+    { id: 'section-11', title: '11. Property Photographs' },
+    { id: 'section-12', title: '12. Maps & Documents' },
+    { id: 'annexures', title: '13. Annexures' },
   ],
-  fieldLabels: {},
+  fieldLabels: {
+    'section-11-title': '11. PROPERTY PHOTOGRAPHS',
+    'section-12-title': '12. MAPS & DOCUMENTS',
+  },
   defaultValues: {
     // ── Section 1: Cover Page ──
     bobPropertyOwners: [{ name: '', relationship: 'S/O', relativeName: '' }],
