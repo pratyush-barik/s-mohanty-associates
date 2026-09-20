@@ -337,7 +337,6 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     }
     // Intercept standard section 9
     if (title.toUpperCase().includes('9. VALUATION ENGINE') || title.toUpperCase().includes('VALUATION CALCULATIONS & SUMMARY')) {
-      super.drawSectionHeader('VALUATION CALCULATIONS & SUMMARY', addSpaceBefore, preserveCase);
       this.drawSbbSection9();
       return;
     }
@@ -508,12 +507,18 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       'APPROVED AREA AS PER PLAN(SQ.FT)', 
       'PERMISSIBLE AREA AS PER BYELAWS (SQ.FT)', 
       'AREA CONSIDERED FOR VALUATION (SQ.FT) / FAR 2', 
-      'ACCOMMO DATE TION', 
+      'ACCOMMODATETION', 
       'CURRENT USAGE'
     ];
     
     const rows = floors.map((f: any) => {
-      const usageStr = `[${f.usageStorage ? 'X' : ' '}] STORAGE\n[${f.usageParking ? 'X' : ' '}] PARKING\n[${f.usageCommercial ? 'X' : ' '}] COMMERCIAL\n[${f.usageResidential ? 'X' : ' '}] RESIDENTIAL\n[${f.usageIndustry ? 'X' : ' '}] INDUSTRY`;
+      const usageOptions = [];
+      usageOptions.push(`[${f.usageStorage ? 'X' : ' '}] STORAGE`);
+      usageOptions.push(`[${f.usageParking ? 'X' : ' '}] PARKING`);
+      usageOptions.push(`[${f.usageCommercial ? 'X' : ' '}] COMMERCIAL`);
+      usageOptions.push(`[${f.usageResidential ? 'X' : ' '}] RESIDENTIAL`);
+      usageOptions.push(`[${f.usageIndustry ? 'X' : ' '}] INDUSTRY`);
+      const usageStr = usageOptions.join('   ');
       
       return [
         f.floorName || 'NA',
@@ -533,13 +538,24 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       computedPermissible,
       val('axisSbbTotalValuationArea', computedValuation),
       computedAccommodation,
-      `TOTAL CARPET AREA(IN SQFT)\n${val('axisSbbTotalCarpetArea', computedCarpet)}`
+      `TOTAL CARPET AREA(IN SQFT)\n= ${val('axisSbbTotalCarpetArea', computedCarpet)}`
     ]);
 
-    this.drawTable(headers, rows, [70, 70, 70, 70, 70, 80, 78], [], [0, 1, 2, 3, 4, 5, 6], [], [], [{ r: rows.length - 1, c: 0 }, { r: rows.length - 1, c: 1 }, { r: rows.length - 1, c: 4 }, { r: rows.length - 1, c: 6 }]);
+    this.drawTable(
+      headers, 
+      rows, 
+      [16, 14, 12, 12, 14, 10, 22], // 100% distribution 
+      [0], // highlightedCols (preserve blue bg for FLOOR column)
+      [], // labelCols (no longer bolding entire columns)
+      [], // boldCols
+      [], // highlightedCells
+      [{ r: rows.length - 1, c: 0 }, { r: rows.length - 1, c: 1 }, { r: rows.length - 1, c: 4 }, { r: rows.length - 1, c: 6 }], // boldCells (for total row)
+      ['center', 'center', 'center', 'center', 'center', 'center', 'left'], // colAligns
+      ['center', 'center', 'center', 'center', 'center', 'center', 'center'] // headerAligns
+    );
     
     // Summary Row 2: Saleable Area
-    this.drawSimpleRow('TOTAL SALEABLE AREA (IN SQFT.)', val('axisSbbTotalSaleableArea', computedSaleable), true, true);
+    this.drawSimpleRow('TOTAL SALEABLE AREA (IN SQFT.)', val('axisSbbTotalSaleableArea', computedSaleable), true, false);
     
     this.advanceCursor(10);
     
@@ -1001,8 +1017,14 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
 
     // Computations from React Component
     const landAreaPrefill = fields.axisSbbPlotAreaAsPerDocument || '';
-    const buildingAreaPrefill = fields.axisSbbTotalConstructedArea || '';
-
+    let sumConstructed = 0;
+    try {
+      const floors = JSON.parse(fields.axisSbbFloorData || '[]');
+      floors.forEach((f: any) => {
+        sumConstructed += (Number(f.constructedArea) || 0);
+      });
+    } catch (e) {}
+    const buildingAreaPrefill = sumConstructed ? String(sumConstructed) : '';
     const getLandArea = () => fields.axisSbbValuationLandAreaIsNA ? 0 : (fields.axisSbbValuationLandAreaEditOn ? fields.axisSbbValuationLandArea : landAreaPrefill);
     const getBldgArea = () => fields.axisSbbValuationBuildingAreaIsNA ? 0 : (fields.axisSbbValuationBuildingAreaEditOn ? fields.axisSbbValuationBuildingArea : buildingAreaPrefill);
 
@@ -1015,10 +1037,14 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     const govtLandAmount = Number(fields.axisSbbGovtLandAreaIsNA ? 0 : (fields.axisSbbGovtLandAreaEditOn ? fields.axisSbbGovtLandArea : landAreaPrefill)) * Number(fields.axisSbbGovtLandRate || 0);
     const govtBuildingAmount = Number(fields.axisSbbGovtBuildingAreaIsNA ? 0 : (fields.axisSbbGovtBuildingAreaEditOn ? fields.axisSbbGovtBuildingArea : buildingAreaPrefill)) * Number(fields.axisSbbGovtBuildingRate || 0);
 
-    const marketValueComp = totalAmountComp;
-    const distressValueComp = marketValueComp * 0.90;
-    const realizableValueComp = marketValueComp * 0.95;
+    const baseMarketValueComp = totalSayComp;
+    const finalMarketValue = fields.axisSbbFinalMarketValueIsNA ? 0 : (fields.axisSbbFinalMarketValueEditOn ? Number(fields.axisSbbFinalMarketValue || 0) : baseMarketValueComp);
+    
+    const distressValueComp = finalMarketValue * 0.90;
+    const realizableValueComp = finalMarketValue * 0.95;
     const insurableValueComp = buildingAmount * 0.85;
+    
+    const marketValueComp = baseMarketValueComp; // For the rsFieldVal below
 
     const rsVal = (num: number, suffix = '') => {
       if (isNaN(num) || num === 0) return 'NA';
