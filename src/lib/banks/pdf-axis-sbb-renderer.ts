@@ -543,7 +543,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     
     this.advanceCursor(10);
     
-    this.drawSimpleRow('WHETHER THE CONSTRUCTION IS AS PER APPROVED BUILDING PLAN AND / OR LOCAL BUILDING BYE LAWS:', val('axisSbbConstructionAsPerApprovedPlan'));
+    this.drawListCheck('WHETHER THE CONSTRUCTION IS AS PER APPROVED BUILDING PLAN AND / OR LOCAL BUILDING BYE LAWS:', val('axisSbbConstructionAsPerApprovedPlan'), !!(fields as any).axisSbbConstructionAsPerApprovedPlanIsNA, ['YES', 'NO', 'NOT APPLICABLE BYE LAWS']);
     this.drawSimpleRow('FSI AS PER PLAN APPROVAL/FSI AS PER GOVT.GUIDELINE(IN CASES WHERE PLAN APPROVAL NOT AVAILABLE) & ACTUAL FSI (PLEASE PROVIDE BOTH)', val('axisSbbFSIAsPerPlan'));
 
     this.drawKeyValueRow([
