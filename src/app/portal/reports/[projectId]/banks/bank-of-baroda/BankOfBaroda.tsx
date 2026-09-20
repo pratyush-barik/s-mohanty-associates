@@ -353,7 +353,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     bobGovtValue: '',
     bobBankBranchDetails: '',
     bobAsOnDate: '',
-    bobEnableAsOnDateEdit: false,
+    bobEnableDateOfValuationEdit: false,
     bobFullLegalPropertyDescription: '',
     bobEnableLegalDescEdit: false,
     bobEnablePurposeEdit: false,
@@ -434,23 +434,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               <textarea className={inputCls} rows={2} value={fields.bobBankBranchDetails || ''} onChange={e => handleChange('bobBankBranchDetails', e.target.value)} disabled={isReadOnly} placeholder="e.g., BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA" />
             </Field>
             <Field label="AS ON DATE">
-              <div className="flex gap-2 items-center">
-                <div className="flex-1 relative" title={!fields.bobEnableAsOnDateEdit ? '>>Prefill from section 2, field "Date on which the valuation is made"<<.' : undefined}>
-                  <input
-                    type="date"
-                    className={`${inputCls} ${!fields.bobEnableAsOnDateEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
-                    value={fields.bobEnableAsOnDateEdit ? (fields.bobAsOnDate || '') : (fields.bobDateOfValuationMade || '')}
-                    onChange={e => handleChange('bobAsOnDate', e.target.value)}
-                    readOnly={isReadOnly || !fields.bobEnableAsOnDateEdit}
-                  />
-                  {!fields.bobEnableAsOnDateEdit && (
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
-                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                    </div>
-                  )}
-                </div>
-                <EditSwitch checked={fields.bobEnableAsOnDateEdit} onChange={v => handleChange('bobEnableAsOnDateEdit', v)} disabled={isReadOnly} />
-              </div>
+              <input
+                type="date"
+                className={inputCls}
+                value={fields.bobAsOnDate || ''}
+                onChange={e => handleChange('bobAsOnDate', e.target.value)}
+                disabled={isReadOnly}
+              />
             </Field>
           </div>
 
@@ -771,6 +761,22 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const actualArea = actualNS * actualEW;
         const calcExtent = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea).toFixed(2) : (deedArea || actualArea || 0).toFixed(2);
 
+        const EditSwitch = ({ checked, onChange, disabled }: { checked: boolean, onChange: (v: boolean) => void, disabled: boolean }) => (
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => onChange(!checked)}
+              disabled={disabled}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${checked ? 'bg-emerald-500' : 'bg-gray-300'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+            <span className={`text-xs font-medium ${checked ? 'text-emerald-700' : 'text-gray-500'}`}>
+              {checked ? 'Edit On' : 'Edit Off'}
+            </span>
+          </div>
+        );
+
         return (
           <div className="animate-fade-in space-y-6">
 
@@ -793,12 +799,25 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   onChange={val => handleChange('bobDateOfInspection', val)}
                   disabled={isReadOnly}
                 />
-                <BaseDateInput
-                  label="2. b) Date on which the valuation is made"
-                  value={fields.bobDateOfValuationMade || ''}
-                  onChange={val => handleChange('bobDateOfValuationMade', val)}
-                  disabled={isReadOnly}
-                />
+                <Field label="2. b) Date on which the valuation is made">
+                  <div className="flex gap-2 items-center">
+                    <div className="flex-1 relative" title={!fields.bobEnableDateOfValuationEdit ? '>>Prefill from section 1, field "AS ON DATE"<<.' : undefined}>
+                      <input
+                        type="date"
+                        className={`${inputCls} ${!fields.bobEnableDateOfValuationEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
+                        value={fields.bobEnableDateOfValuationEdit ? (fields.bobDateOfValuationMade || '') : (fields.bobAsOnDate || '')}
+                        onChange={e => handleChange('bobDateOfValuationMade', e.target.value)}
+                        readOnly={isReadOnly || !fields.bobEnableDateOfValuationEdit}
+                      />
+                      {!fields.bobEnableDateOfValuationEdit && (
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                          <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                        </div>
+                      )}
+                    </div>
+                    <EditSwitch checked={fields.bobEnableDateOfValuationEdit} onChange={v => handleChange('bobEnableDateOfValuationEdit', v)} disabled={isReadOnly} />
+                  </div>
+                </Field>
               </div>
               <div className="space-y-3">
                 <span className="text-sm font-medium text-gray-700">3. List of documents produced for perusal</span>
