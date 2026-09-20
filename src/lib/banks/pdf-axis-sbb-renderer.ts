@@ -544,7 +544,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     this.advanceCursor(10);
     
     this.drawSimpleRow('WHETHER THE CONSTRUCTION IS AS PER APPROVED BUILDING PLAN AND / OR LOCAL BUILDING BYE LAWS:', val('axisSbbConstructionAsPerApprovedPlan'));
-    this.drawSimpleRow('FSI As Per Plan Approval / Govt. Guideline & Actual FSI', val('axisSbbFSIAsPerPlan'));
+    this.drawSimpleRow('FSI AS PER PLAN APPROVAL/FSI AS PER GOVT.GUIDELINE(IN CASES WHERE PLAN APPROVAL NOT AVAILABLE) & ACTUAL FSI (PLEASE PROVIDE BOTH)', val('axisSbbFSIAsPerPlan'));
 
     this.drawKeyValueRow([
       { label: 'Details of Extra Construction', value: val('axisSbbExtraConstructionDetails') },

@@ -2927,7 +2927,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                 <div className="flex flex-col">
                   <div className="flex justify-between items-center mb-1">
                     <div className="flex items-center">
-                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">FSI AS PER PLAN APPROVAL/FSI AS PER GOVT.GUIDELINE & ACTUAL FSI</label>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">FSI AS PER PLAN APPROVAL/FSI AS PER GOVT.GUIDELINE(IN CASES WHERE PLAN APPROVAL NOT AVAILABLE) & ACTUAL FSI (PLEASE PROVIDE BOTH)</label>
                       {renderNaToggle('axisSbbFSIAsPerPlan')}
                     </div>
                   </div>
