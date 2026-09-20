@@ -360,7 +360,7 @@ export interface BankConfig {
   /** Entirely new sections added to the VERY END of the form (after Maps) */
   extraSectionsEnd?: SectionConfig[];
   /** Custom Nav Sections for FloatingNavigator */
-  navSections?: { id: string; title: string; sub?: string; indent?: boolean; scrollId?: string }[];
+  navSections?: { id: string; title: string }[];
   /** Hidden base fields for this bank */
   hiddenFields?: string[];
   /** Hidden base sections for this bank */
