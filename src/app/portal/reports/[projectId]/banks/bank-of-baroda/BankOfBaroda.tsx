@@ -1491,11 +1491,11 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       <th className="border border-gray-300 px-2 py-2 w-[16%]">PARTICULARS</th>
                       <th className="border border-gray-300 px-2 py-2 w-[10%]">PLINTH AREA (SQFT)</th>
                       <th className="border border-gray-300 px-2 py-2 w-[8%]">ROOF HEIGHT</th>
-                      <th className="border border-gray-300 px-2 py-2 w-[8%]" title=">>Prefill from section 5, field 'Age of the Building'<<.">AGE (YRS) 🔒</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[8%]" title=">>Prefill from section 5, field 'Age of the Building'<<.">AGE (YRS) <span title=">>Prefill from section 5, field 'Age of the Building'<<.">🔒</span></th>
                       <th className="border border-gray-300 px-2 py-2 w-[10%]">REPLACEMENT RATE</th>
-                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<.">EST. COST 🔒🎚️</th>
-                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<.">DEPRECIATION 🔒🎚️</th>
-                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<.">NET VALUE 🔒🎚️</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<.">EST. COST <span title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<.">🔒🎚️</span></th>
+                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<.">DEPRECIATION <span title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<.">🔒🎚️</span></th>
+                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<.">NET VALUE <span title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<.">🔒🎚️</span></th>
                       <th className="border border-gray-300 px-2 py-2 w-[5%]"></th>
                     </tr>
                   </thead>
@@ -1556,11 +1556,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                               <input className={`${inputCls} pr-14 ${!row.estCostEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
                                 value={row.estCostEditOn ? (row.estCost || '') : calcs.estCost.toFixed(2)}
                                 onChange={e => updateRow('estCost', e.target.value)}
-                                disabled={isReadOnly || !row.estCostEditOn} />
-                              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                                readOnly={isReadOnly || !row.estCostEditOn}
+                                title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<." />
+                              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5" title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<.">
                                 {!row.estCostEditOn && <Lock className="w-3 h-3 text-emerald-800" />}
                                 <button type="button" onClick={() => updateRow('estCostEditOn', !row.estCostEditOn)} disabled={isReadOnly}
-                                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${row.estCostEditOn ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${row.estCostEditOn ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                                  title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<.">
                                   <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${row.estCostEditOn ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
                                 </button>
                               </div>
@@ -1571,11 +1573,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                               <input className={`${inputCls} pr-14 ${!row.depreciationEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
                                 value={row.depreciationEditOn ? (row.depreciation || '') : calcs.depreciation.toFixed(2)}
                                 onChange={e => updateRow('depreciation', e.target.value)}
-                                disabled={isReadOnly || !row.depreciationEditOn} />
-                              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                                readOnly={isReadOnly || !row.depreciationEditOn}
+                                title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<." />
+                              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5" title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<.">
                                 {!row.depreciationEditOn && <Lock className="w-3 h-3 text-emerald-800" />}
                                 <button type="button" onClick={() => updateRow('depreciationEditOn', !row.depreciationEditOn)} disabled={isReadOnly}
-                                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${row.depreciationEditOn ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${row.depreciationEditOn ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                                  title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<.">
                                   <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${row.depreciationEditOn ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
                                 </button>
                               </div>
@@ -1586,11 +1590,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                               <input className={`${inputCls} pr-14 ${!row.netValueEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
                                 value={row.netValueEditOn ? (row.netValue || '') : calcs.netValue.toFixed(2)}
                                 onChange={e => updateRow('netValue', e.target.value)}
-                                disabled={isReadOnly || !row.netValueEditOn} />
-                              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+                                readOnly={isReadOnly || !row.netValueEditOn}
+                                title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<." />
+                              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5" title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<.">
                                 {!row.netValueEditOn && <Lock className="w-3 h-3 text-emerald-800" />}
                                 <button type="button" onClick={() => updateRow('netValueEditOn', !row.netValueEditOn)} disabled={isReadOnly}
-                                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${row.netValueEditOn ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${row.netValueEditOn ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                                  title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<.">
                                   <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${row.netValueEditOn ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
                                 </button>
                               </div>
@@ -1809,13 +1815,14 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 type="number" step="0.01"
                 value={isEditing ? (fields[fieldKey] || '') : autoValue.toFixed(2)}
                 onChange={e => handleChange(fieldKey, e.target.value)}
-                disabled={isReadOnly || !isEditing}
+                readOnly={isReadOnly || !isEditing}
                 title={hoverText}
               />
-              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5" title={hoverText}>
                 {!isEditing && <Lock className="w-3 h-3 text-emerald-800" />}
                 <button type="button" onClick={() => handleChange(editOnKey, !isEditing)} disabled={isReadOnly}
-                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${isEditing ? 'bg-emerald-500' : 'bg-gray-300'}`}>
+                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${isEditing ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                  title={hoverText}>
                   <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${isEditing ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
                 </button>
               </div>
