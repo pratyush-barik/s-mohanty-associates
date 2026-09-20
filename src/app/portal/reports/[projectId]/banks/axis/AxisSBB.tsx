@@ -534,8 +534,8 @@ export const AXIS_SBB_CONFIG: BankConfig = {
             </div>
           </div>
           <div className="mt-4 mb-4">
-            <Field label="ADDRESS OF THE PROPERTY">
-              <textarea className={inputCls} rows={3} value={fields.axisSbbAddressOfTheProperty || ''} onChange={e => handleChange('axisSbbAddressOfTheProperty', e.target.value)} disabled={isReadOnly} />
+            <Field label={<span>ADDRESS OF THE PROPERTY <span className="text-red-500">*</span></span>}>
+              <textarea className={inputCls} rows={3} value={fields.axisSbbAddressOfTheProperty || ''} onChange={e => handleChange('axisSbbAddressOfTheProperty', e.target.value)} disabled={isReadOnly} required />
             </Field>
           </div>
           <div className="border border-red-200 bg-[#fff5f5] rounded-xl p-4 mb-4 relative">
