@@ -2620,7 +2620,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
         const computedValuation = `${sumValuation} SQFT`;
         const computedApproved = `${sumApproved} SQFT`;
         const computedPermissible = `${sumPermissible} SQFT`;
-        const computedAccommodation = !hasAccommodation ? '0' : (isAccommodationNumeric ? `${sumAccommodationNumeric}` : accommodationList.join(' + '));
+        const computedAccommodation = !hasAccommodation ? '0 SQFT' : (isAccommodationNumeric ? `${sumAccommodationNumeric} SQFT` : accommodationList.join(' + '));
         const computedCarpet = `${Math.round(sumConstructed * 0.85)} SQFT`;
         const computedSaleable = computedCarpet;
 
