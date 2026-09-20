@@ -423,17 +423,33 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     this.drawListCheck('DEVELOPMENT OF SURROUNDING AREA', val('axisSbbDevelopmentSurroundingArea'), !!(fields as any).axisSbbDevelopmentSurroundingAreaIsNA, ['UNDER DEVELOPED', 'DEVELOPING', 'DEVELOPED'], false, MARGIN_L + splitW, splitW, true, false, maxH);
     this.cursorY += maxH;
     
-    this.drawSectionSubtitle('APPROVAL DETAILS & BYE-LAWS COMPLIANCE');
+    this.drawSectionSubtitle('APPROVAL DETAILS');
 
+    this.drawSectionSubtitle('LAYOUT APPROVAL NUMBER');
     this.drawKeyValueRow([
       { label: 'Layout Approval Date', value: val('axisSbbLayoutApprovalDate') },
       { label: 'Layout Expiry Date', value: val('axisSbbLayoutExpiryDate') }
     ]);
 
+    this.drawSectionSubtitle('BUILDING PLAN APPROVAL NUMBER');
     this.drawKeyValueRow([
       { label: 'Building Plan Approval Date', value: val('axisSbbBuildingPlanApprovalDate') },
       { label: 'Building Plan Expiry Date', value: val('axisSbbBuildingPlanExpiryDate') }
     ]);
+
+    this.drawSectionSubtitle('CONSTRUCTION DETAILS');
+    const floors = JSON.parse((fields as any).axisSbbFloorData || '[]');
+    let sumApproved = 0;
+    floors.forEach((f: any) => {
+      if (!f.approvedAreaIsNA && f.approvedArea) sumApproved += Number(f.approvedArea) || 0;
+    });
+    const computedApprovedPrefill = sumApproved > 0 ? `${sumApproved} SQFT` : '0 SQFT';
+    
+    this.drawKeyValueRow([
+      { label: 'AREA OF THE PLOT/FLAT (IN SQ.FT.)', value: val('axisSbbAreaOfThePlot', (fields as any).axisSbbPlotAreaAsPerDocument) },
+      { label: 'APPROVED BUILT UP AREA (IN SQ.FT.)', value: val('axisSbbApprovedBuiltUpArea', computedApprovedPrefill) }
+    ]);
+    this.drawListCheck('DEMARCATION AT SITE', fields.axisSbbDemarcationAtSite, !!(fields as any).axisSbbDemarcationAtSiteIsNA, ['YES', 'NO']);
   }
 
   private drawSbbSection8() {
