@@ -149,7 +149,8 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       }
     };
 
-    drawCenteredBold('VALUATION OF IMMOVABLE PROPERTY', FONT_SIZE_TITLE + 3, 40, true);
+    drawCenteredBold('REPORT ON VALUATION OF', FONT_SIZE_TITLE + 3, 25, true);
+    drawCenteredBold('IMMOVABLE PROPERTIES', FONT_SIZE_TITLE + 3, 40, true);
 
     drawCenteredBold('PROPERTY OWNER', FONT_SIZE_HEADER, 16, true);
     const owners = Array.isArray(fields.bobPropertyOwners) && fields.bobPropertyOwners.length > 0
