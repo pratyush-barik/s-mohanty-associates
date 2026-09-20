@@ -2770,8 +2770,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     <tr className="bg-slate-100 border-t-2 border-slate-300">
                       <td className="p-2 font-bold text-xs text-slate-700 border-r border-slate-300">
                         <div>
-                          TOTAL BUILT UP AREA (IN SQFT){' '}
-                          <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: SUM(CONSTRUCTED ACTUAL AREA AS PER SITE of all floors) = TOTAL BUILT UP AREA]</span>
+                          TOTAL BUILT UP AREA (IN SQFT)
                         </div>
                       </td>
                       <td className="p-2 font-bold text-slate-800 border-r border-slate-300">
@@ -2823,8 +2822,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                         <div className="flex flex-col gap-1 bg-amber-50 border border-amber-200 p-2 rounded">
                           <div className="flex items-start justify-between gap-2">
                             <span className="text-[10px] font-bold text-slate-800">
-                              TOTAL CARPET AREA(IN SQFT){' '}
-                              <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: TOTAL BUILT UP AREA * 0.85 = TOTAL CARPET AREA]</span>
+                              TOTAL CARPET AREA(IN SQFT)
                             </span>
                             <div className="shrink-0">
                               {renderEditSwitch('axisSbbTotalCarpetArea', false)}
@@ -2853,8 +2851,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       <td className="p-2 font-bold text-xs text-slate-800 text-right pr-4" colSpan={5}>
                         <div className="flex items-center justify-end gap-4">
                           <span>
-                            TOTAL SALEABLE AREA (IN SQFT.){' '}
-                            <span style={{ color: 'red', fontWeight: 'bold' }}>[Formula: Prefilled from TOTAL <br /> CARPET AREA = TOTAL SALEABLE AREA]</span>
+                            TOTAL SALEABLE AREA (IN SQFT.)
                           </span>
                           {renderEditSwitch('axisSbbTotalSaleableArea', false)}
                         </div>
