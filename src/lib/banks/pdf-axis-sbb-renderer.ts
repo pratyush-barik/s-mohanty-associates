@@ -336,7 +336,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       return;
     }
     // Intercept standard section 9
-    if (title.toUpperCase().includes('9. VALUATION ENGINE')) {
+    if (title.toUpperCase().includes('9. VALUATION ENGINE') || title.toUpperCase().includes('VALUATION CALCULATIONS & SUMMARY')) {
       super.drawSectionHeader('VALUATION CALCULATIONS & SUMMARY', addSpaceBefore, preserveCase);
       this.drawSbbSection9();
       return;
