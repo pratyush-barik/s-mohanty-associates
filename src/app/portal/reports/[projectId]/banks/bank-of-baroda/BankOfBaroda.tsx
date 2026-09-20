@@ -351,16 +351,23 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     bobRealizableValue: '',
     bobForcedSaleValue: '',
     bobGovtValue: '',
+    bobBankBranchDetails: '',
+    bobAsOnDate: '',
+    bobEnableAsOnDateEdit: false,
+    bobFullLegalPropertyDescription: '',
+    bobEnableLegalDescEdit: false,
+    bobEnablePurposeEdit: false,
     bobPurposeOfValuationDropdown: 'default',
-    bobPurposeOfValuation: 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY',
+    bobPurposeOfValuation: 'To assess the present market value of the property for loan purpose',
     bobPreparedByCompany: 'M/s. S MOHANTY ASSOCIATES',
-    bobPreparedByDesignation: 'EMPANELLED VALUER & CHARTERED ENGINEER',
+    bobPreparedByDesignation: 'Registered Valuer, Govt. of India (Regd. No. 107/2016-17, Cat-I), Chartered Engineer',
     bobPreparedByPlotNo: 'Plot no-859/2494/3232 & 858/2493/3295',
     bobPreparedByStreet: 'Shiv Nagar Tankapani Road',
     bobPreparedByCity: 'Bhubaneswar',
     bobPreparedByState: 'Odisha',
     bobPreparedByPinCode: '751018',
     bobPreparedByPhone: '06742381145',
+    bobPreparedByPhoneNA: false,
     bobPreparedByMobile: '9937023855/9437074855',
     // ── Section 2: Part I — GENERAL ──
     bobPurposeForValuation: '',
@@ -402,11 +409,55 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const forcedSaleValue = 0;
         const govtValue = 0;
 
+        const EditSwitch = ({ checked, onChange, disabled }: { checked: boolean, onChange: (v: boolean) => void, disabled: boolean }) => (
+          <div className="flex items-center gap-3 shrink-0">
+            <button
+              type="button"
+              onClick={() => onChange(!checked)}
+              disabled={disabled}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${checked ? 'bg-emerald-500' : 'bg-gray-300'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+            <span className={`text-xs font-medium ${checked ? 'text-emerald-700' : 'text-gray-500'}`}>
+              {checked ? 'Edit On' : 'Edit Off'}
+            </span>
+          </div>
+        );
+
         return (
         <div className="animate-fade-in space-y-6">
-          <div className="border border-blue-200 bg-[#f8fafc] rounded-md p-4 mb-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-gray-700">PROPERTY OWNER</h3>
+          {/* Container 1: Bank & Report Header */}
+          <div className="rounded-xl p-5 space-y-4 border border-blue-200" style={{ backgroundColor: '#e6f2ff' }}>
+            <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">BANK & REPORT HEADER</h3>
+            <Field label="BANK & BRANCH DETAILS">
+              <textarea className={inputCls} rows={2} value={fields.bobBankBranchDetails || ''} onChange={e => handleChange('bobBankBranchDetails', e.target.value)} disabled={isReadOnly} placeholder="e.g., BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA" />
+            </Field>
+            <Field label="AS ON DATE">
+              <div className="flex gap-2 items-center">
+                <div className="flex-1 relative" title={!fields.bobEnableAsOnDateEdit ? '>>Prefill from section 2, field "Date on which the valuation is made"<<.' : undefined}>
+                  <input
+                    type="date"
+                    className={`${inputCls} ${!fields.bobEnableAsOnDateEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
+                    value={fields.bobEnableAsOnDateEdit ? (fields.bobAsOnDate || '') : (fields.bobDateOfValuationMade || '')}
+                    onChange={e => handleChange('bobAsOnDate', e.target.value)}
+                    readOnly={isReadOnly || !fields.bobEnableAsOnDateEdit}
+                  />
+                  {!fields.bobEnableAsOnDateEdit && (
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                    </div>
+                  )}
+                </div>
+                <EditSwitch checked={fields.bobEnableAsOnDateEdit} onChange={v => handleChange('bobEnableAsOnDateEdit', v)} disabled={isReadOnly} />
+              </div>
+            </Field>
+          </div>
+
+          {/* Container 2: Property Owner Details */}
+          <div className="rounded-xl p-5 space-y-4 border border-green-200" style={{ backgroundColor: '#e6ffe6' }}>
+            <div className="flex justify-between items-center mb-4 border-b border-green-200 pb-2">
+              <h3 className="font-bold text-gray-700">PROPERTY OWNER DETAILS</h3>
               <button
                 type="button"
                 className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 text-sm rounded-md shadow-sm transition-colors"
@@ -429,7 +480,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                         handleChange('bobPropertyOwners', arr);
                       }}
                       disabled={isReadOnly}
-                      placeholder="e.g. PRASANNA NAYAK"
+                      placeholder="e.g. MR. BISWOJIT BAHIRA"
                     />
                   </Field>
                   <Field label="RELATIONSHIP" className="w-40">
@@ -448,6 +499,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       <option value="D/O">D/O</option>
                       <option value="W/O">W/O</option>
                       <option value="C/O">C/O</option>
+                      <option value="Custom">Custom</option>
                     </select>
                   </Field>
                   <Field label="OWNER'S RELATIVE'S NAME" className="flex-1">
@@ -460,7 +512,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                         handleChange('bobPropertyOwners', arr);
                       }}
                       disabled={isReadOnly}
-                      placeholder="e.g. PRAHALLAD NAYAK"
+                      placeholder="e.g. MR. ARTA BAHIRA"
                     />
                   </Field>
                   {(fields.bobPropertyOwners?.length > 1 || idx > 0) && (
@@ -481,27 +533,43 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               ))}
             </div>
           </div>
-          <div className="mt-4 mb-4">
+
+          {/* Container 3: Address of the Property */}
+          <div className="rounded-xl p-5 space-y-4 border border-yellow-200" style={{ backgroundColor: '#ffffe6' }}>
             <Field label={<span>ADDRESS OF THE PROPERTY <span className="text-red-500">*</span></span>}>
-              <textarea className={inputCls} rows={3} value={fields.bobAddressOfTheProperty || ''} onChange={e => handleChange('bobAddressOfTheProperty', e.target.value)} disabled={isReadOnly} required />
+              <textarea className={inputCls} rows={3} value={fields.bobAddressOfTheProperty || ''} onChange={e => handleChange('bobAddressOfTheProperty', e.target.value)} disabled={isReadOnly} required placeholder="e.g., Plot No: 2306/8048 & 2305/8047, Pratap Sasan..." />
             </Field>
           </div>
-          <div className="border border-red-200 bg-[#fff5f5] rounded-xl p-4 mb-4 relative">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-gray-700">VALUE OF THE PROPERTY</h3>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleChange('bobEnableCoverPageValueEdit', !fields.bobEnableCoverPageValueEdit)}
-                  disabled={isReadOnly}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.bobEnableCoverPageValueEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.bobEnableCoverPageValueEdit ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-                <span className={`text-xs font-medium ${fields.bobEnableCoverPageValueEdit ? 'text-emerald-700' : 'text-gray-500'}`}>
-                  {fields.bobEnableCoverPageValueEdit ? 'Edit On' : 'Edit Off'}
-                </span>
+
+          {/* Container 4: Valuation of Land & Property Summary */}
+          <div className="rounded-xl p-5 space-y-4 border border-red-200" style={{ backgroundColor: '#ffe6e6' }}>
+            <h3 className="font-bold text-gray-700 border-b border-red-200 pb-2">VALUATION OF LAND & PROPERTY SUMMARY</h3>
+            <Field label="FULL LEGAL PROPERTY DESCRIPTION">
+              <div className="flex gap-2 items-start">
+                <div className="flex-1 relative" title={!fields.bobEnableLegalDescEdit ? '>>Prefill from section 2, fields "Brief description of the property" & "Location of property"<<.' : undefined}>
+                  <textarea
+                    className={`${inputCls} ${!fields.bobEnableLegalDescEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
+                    rows={3}
+                    value={fields.bobEnableLegalDescEdit ? (fields.bobFullLegalPropertyDescription || '') : `${fields.bobBriefDescription || ''} ${fields.bobPlotNo ? `Plot No. ${fields.bobPlotNo},` : ''} ${fields.bobDoorNo && fields.bobDoorNo !== 'NA' ? `Door No. ${fields.bobDoorNo},` : ''} ${fields.bobPostalAddress || ''}`.trim()}
+                    onChange={e => handleChange('bobFullLegalPropertyDescription', e.target.value)}
+                    readOnly={isReadOnly || !fields.bobEnableLegalDescEdit}
+                  />
+                  {!fields.bobEnableLegalDescEdit && (
+                    <div className="absolute top-2 right-2 flex items-center pr-1 group cursor-help">
+                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                    </div>
+                  )}
+                </div>
+                <div className="pt-2"><EditSwitch checked={fields.bobEnableLegalDescEdit} onChange={v => handleChange('bobEnableLegalDescEdit', v)} disabled={isReadOnly} /></div>
               </div>
+            </Field>
+          </div>
+
+          {/* Container 5: Value of the Property (Abstract Summary) */}
+          <div className="rounded-xl p-5 space-y-4 border border-purple-200" style={{ backgroundColor: '#f2e6ff' }}>
+            <div className="flex justify-between items-center mb-4 border-b border-purple-200 pb-2">
+              <h3 className="font-bold text-gray-700">VALUE OF THE PROPERTY (ABSTRACT SUMMARY)</h3>
+              <EditSwitch checked={fields.bobEnableCoverPageValueEdit} onChange={v => handleChange('bobEnableCoverPageValueEdit', v)} disabled={isReadOnly} />
             </div>
             <div className="bg-white border border-gray-200 rounded-md shadow-sm">
               <div className="flex border-b border-gray-200">
@@ -510,18 +578,17 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
                   <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "MARKET VALUE IN RS." (Row: OR SAY, Container 17)<<.' : undefined}>
-                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-emerald-800' : 'text-gray-500'}`}>RS.</span>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
                     <input
                       type="text"
-                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
                       value={fields.bobEnableCoverPageValueEdit ? (fields.bobPresentMarketValue || '') : presentMarketValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       onChange={(e) => handleChange('bobPresentMarketValue', e.target.value.replace(/[^0-9.]/g, ''))}
                       readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
-                      title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "MARKET VALUE IN RS." (Row: OR SAY, Container 17)<<.' : undefined}
                     />
                     {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 6, field "MARKET VALUE IN RS." (Row: OR SAY, Container 17)<<.'>
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
                       </div>
                     )}
                   </div>
@@ -533,18 +600,17 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
                   <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "REALIZABLE VALUE (95%)" (Row: OR SAY, Container 17)<<.' : undefined}>
-                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-emerald-800' : 'text-gray-500'}`}>RS.</span>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
                     <input
                       type="text"
-                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
                       value={fields.bobEnableCoverPageValueEdit ? (fields.bobRealizableValue || '') : realizableValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       onChange={(e) => handleChange('bobRealizableValue', e.target.value.replace(/[^0-9.]/g, ''))}
                       readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
-                      title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "REALIZABLE VALUE (95%)" (Row: OR SAY, Container 17)<<.' : undefined}
                     />
                     {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 6, field "REALIZABLE VALUE (95%)" (Row: OR SAY, Container 17)<<.'>
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
                       </div>
                     )}
                   </div>
@@ -556,18 +622,17 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
                   <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "DISTRESS VALUE (85%)" (Row: OR SAY, Container 17)<<.' : undefined}>
-                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-emerald-800' : 'text-gray-500'}`}>RS.</span>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
                     <input
                       type="text"
-                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
                       value={fields.bobEnableCoverPageValueEdit ? (fields.bobForcedSaleValue || '') : forcedSaleValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       onChange={(e) => handleChange('bobForcedSaleValue', e.target.value.replace(/[^0-9.]/g, ''))}
                       readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
-                      title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "DISTRESS VALUE (85%)" (Row: OR SAY, Container 17)<<.' : undefined}
                     />
                     {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 6, field "DISTRESS VALUE (85%)" (Row: OR SAY, Container 17)<<.'>
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
                       </div>
                     )}
                   </div>
@@ -579,18 +644,17 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
                   <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "GOVT. VALUE IN RS." (Row: OR SAY, Container 17)<<.' : undefined}>
-                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-emerald-800' : 'text-gray-500'}`}>RS.</span>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
                     <input
                       type="text"
-                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`}
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
                       value={fields.bobEnableCoverPageValueEdit ? (fields.bobGovtValue || '') : govtValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       onChange={(e) => handleChange('bobGovtValue', e.target.value.replace(/[^0-9.]/g, ''))}
                       readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
-                      title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "GOVT. VALUE IN RS." (Row: OR SAY, Container 17)<<.' : undefined}
                     />
                     {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 6, field "GOVT. VALUE IN RS." (Row: OR SAY, Container 17)<<.'>
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
                       </div>
                     )}
                   </div>
@@ -598,58 +662,86 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               </div>
             </div>
           </div>
-          <div className="mt-4 mb-4">
+
+          {/* Container 6: Purpose of Valuation */}
+          <div className="rounded-xl p-5 space-y-4 border border-teal-200" style={{ backgroundColor: '#e6fffa' }}>
+            <h3 className="font-bold text-gray-700 border-b border-teal-200 pb-2">PURPOSE OF VALUATION</h3>
             <Field label="PURPOSE OF VALUATION">
-              <select
-                className={inputCls}
-                value={fields.bobPurposeOfValuationDropdown || 'default'}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  handleChange('bobPurposeOfValuationDropdown', val);
-                  if (val === 'default') {
-                    handleChange('bobPurposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY');
-                  } else if (val === 'present_market_value') {
-                    handleChange('bobPurposeOfValuation', 'TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY');
-                  } else {
-                    handleChange('bobPurposeOfValuation', '');
-                  }
-                }}
-                disabled={isReadOnly}
-              >
-                <option value="default">TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY</option>
-                <option value="present_market_value">TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY</option>
-                <option value="other">Other</option>
-              </select>
+              <div className="flex gap-2 items-start">
+                <div className="flex-1 relative" title={!fields.bobEnablePurposeEdit ? '>>Prefill from section 2, field "Purpose for which the valuation is made"<<.' : undefined}>
+                  {!fields.bobEnablePurposeEdit ? (
+                    <>
+                      <textarea className={`${inputCls} bg-gray-100 cursor-not-allowed text-gray-600`} rows={2} readOnly value={fields.bobPurposeForValuation || ''} />
+                      <div className="absolute top-2 right-2 flex items-center pr-1 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    </>
+                  ) : (
+                    <div className="space-y-3">
+                      <select
+                        className={inputCls}
+                        value={fields.bobPurposeOfValuationDropdown || 'default'}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          handleChange('bobPurposeOfValuationDropdown', val);
+                          if (val === 'default') {
+                            handleChange('bobPurposeOfValuation', 'To assess the present market value of the property for loan purpose');
+                          } else if (val === 'incometax') {
+                            handleChange('bobPurposeOfValuation', 'To assess capital gain for income tax');
+                          } else {
+                            handleChange('bobPurposeOfValuation', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      >
+                        <option value="default">To assess the present market value of the property for loan purpose</option>
+                        <option value="incometax">To assess capital gain for income tax</option>
+                        <option value="custom">Custom</option>
+                      </select>
+                      {fields.bobPurposeOfValuationDropdown === 'custom' && (
+                        <textarea className={inputCls} rows={2} placeholder="Enter custom purpose of valuation..." value={fields.bobPurposeOfValuation || ''} onChange={(e) => handleChange('bobPurposeOfValuation', e.target.value)} disabled={isReadOnly} />
+                      )}
+                    </div>
+                  )}
+                </div>
+                <div className="pt-2"><EditSwitch checked={fields.bobEnablePurposeEdit} onChange={v => handleChange('bobEnablePurposeEdit', v)} disabled={isReadOnly} /></div>
+              </div>
             </Field>
-            {fields.bobPurposeOfValuationDropdown === 'other' && (
-              <div className="mt-3">
-                <textarea className={inputCls} rows={3} placeholder="Enter custom purpose of valuation..." value={fields.bobPurposeOfValuation || ''} onChange={(e) => handleChange('bobPurposeOfValuation', e.target.value)} disabled={isReadOnly} />
-              </div>
-            )}
           </div>
-          <div className="border border-green-200 bg-green-50 rounded-xl p-4 mb-4">
-            <h3 className="font-bold text-gray-700 mb-4">PREPARED BY</h3>
+
+          {/* Container 7: Prepared By */}
+          <div className="rounded-xl p-5 space-y-4 border border-orange-200" style={{ backgroundColor: '#fff0e6' }}>
+            <h3 className="font-bold text-gray-700 border-b border-orange-200 pb-2">PREPARED BY (VALUER CREDENTIALS)</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Company/Entity Name"><input className={inputCls} value={fields.bobPreparedByCompany || ''} onChange={e => handleChange('bobPreparedByCompany', e.target.value)} disabled={isReadOnly} /></Field>
-              <Field label="Professional Designation"><input className={inputCls} value={fields.bobPreparedByDesignation || ''} onChange={e => handleChange('bobPreparedByDesignation', e.target.value)} disabled={isReadOnly} /></Field>
+              <Field label="COMPANY/ENTITY NAME"><input className={inputCls} value={fields.bobPreparedByCompany || ''} onChange={e => handleChange('bobPreparedByCompany', e.target.value)} disabled={isReadOnly} placeholder="e.g. Er. Satyajit Mohanty, (B.E., Civil) FIV" /></Field>
+              <Field label="PROFESSIONAL DESIGNATION"><textarea className={inputCls} rows={2} value={fields.bobPreparedByDesignation || ''} onChange={e => handleChange('bobPreparedByDesignation', e.target.value)} disabled={isReadOnly} placeholder="e.g. Registered Valuer, Govt. of India..." /></Field>
             </div>
-            <div className="border border-blue-200 bg-blue-50 rounded-md p-4 mt-4 mb-4">
-              <h4 className="font-bold text-gray-700 mb-3">Address</h4>
+            <div className="bg-white rounded-md p-4 border border-gray-100 shadow-sm mt-4">
+              <h4 className="font-bold text-gray-700 mb-3 text-sm">Address Breakdown</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Plot Number"><input className={inputCls} value={fields.bobPreparedByPlotNo || ''} onChange={e => handleChange('bobPreparedByPlotNo', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="Street/Locality"><input className={inputCls} value={fields.bobPreparedByStreet || ''} onChange={e => handleChange('bobPreparedByStreet', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="City"><input className={inputCls} value={fields.bobPreparedByCity || ''} onChange={e => handleChange('bobPreparedByCity', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="State"><input className={inputCls} value={fields.bobPreparedByState || ''} onChange={e => handleChange('bobPreparedByState', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="PIN Code"><input className={inputCls} value={fields.bobPreparedByPinCode || ''} onChange={e => handleChange('bobPreparedByPinCode', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="PLOT NUMBER"><input className={inputCls} value={fields.bobPreparedByPlotNo || ''} onChange={e => handleChange('bobPreparedByPlotNo', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="STREET/LOCALITY"><input className={inputCls} value={fields.bobPreparedByStreet || ''} onChange={e => handleChange('bobPreparedByStreet', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="CITY"><input className={inputCls} value={fields.bobPreparedByCity || ''} onChange={e => handleChange('bobPreparedByCity', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="STATE"><input className={inputCls} value={fields.bobPreparedByState || ''} onChange={e => handleChange('bobPreparedByState', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="PIN CODE"><input className={inputCls} type="number" value={fields.bobPreparedByPinCode || ''} onChange={e => handleChange('bobPreparedByPinCode', e.target.value)} disabled={isReadOnly} /></Field>
               </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Phone (Landline)">
-                <input className={inputCls} value={fields.bobPreparedByPhone || ''} onChange={e => { handleChange('bobPreparedByPhone', e.target.value.replace(/[^0-9]/g, '')); }} disabled={isReadOnly} />
-              </Field>
-              <Field label="Mobile Number">
-                <input className={inputCls} value={fields.bobPreparedByMobile || ''} onChange={e => { handleChange('bobPreparedByMobile', e.target.value.replace(/[a-zA-Z]/g, '')); }} disabled={isReadOnly} />
-              </Field>
+            <div className="bg-white rounded-md p-4 border border-gray-100 shadow-sm mt-4">
+              <h4 className="font-bold text-gray-700 mb-3 text-sm">Contact Details</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="PHONE (LANDLINE)">
+                  <div className="flex gap-2 items-center">
+                    <input className={`${inputCls} flex-1`} value={fields.bobPreparedByPhone || ''} onChange={e => { handleChange('bobPreparedByPhone', e.target.value.replace(/[^0-9]/g, '')); }} disabled={isReadOnly || fields.bobPreparedByPhoneNA} />
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
+                      <input type="checkbox" checked={fields.bobPreparedByPhoneNA || false} onChange={e => { handleChange('bobPreparedByPhoneNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByPhone', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+                      <span className="text-xs text-gray-500 font-medium">N/A</span>
+                    </label>
+                  </div>
+                </Field>
+                <Field label="MOBILE NUMBER">
+                  <input className={inputCls} value={fields.bobPreparedByMobile || ''} onChange={e => { handleChange('bobPreparedByMobile', e.target.value); }} disabled={isReadOnly} />
+                </Field>
+              </div>
             </div>
           </div>
         </div>
