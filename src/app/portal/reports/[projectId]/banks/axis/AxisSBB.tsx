@@ -3340,12 +3340,12 @@ export const AXIS_SBB_CONFIG: BankConfig = {
               </div>
             </div>
 
-            <div className="border border-purple-200 bg-[#F5F3FF] rounded-xl p-4 relative shadow-sm">
-              <h3 className="font-bold text-purple-800 mb-4 uppercase">Government Guideline / Benchmark Value</h3>
+            <div className="border border-[#E9D5FF] bg-[#F9F5FF] rounded-xl p-4 relative shadow-sm">
+              <h3 className="font-bold text-[#581C87] mb-4 uppercase">Government Guideline / Benchmark Value</h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse bg-white shadow-sm rounded-md overflow-hidden">
-                  <thead className="bg-purple-50 border-b border-purple-200">
-                    <tr className="text-left text-xs font-bold text-purple-800">
+                  <thead className="bg-[#F9F5FF] border-b border-[#E9D5FF]">
+                    <tr className="text-left text-xs font-bold text-[#581C87]">
                       <th className="p-3 w-48">ITEM DESCRIPTION</th>
                       <th className="p-3">AREA (SQ.FT)</th>
                       <th className="p-3">GUIDELINE RATE PER SQ.FT (RS.)</th>
@@ -3354,7 +3354,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-purple-100">
+                  <tbody className="divide-y divide-[#E9D5FF]">
                     <tr>
                       <td className="p-3 font-semibold text-gray-700 align-top">Land</td>
                       <td className="p-3">
