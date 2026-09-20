@@ -427,14 +427,14 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
 
     this.drawSectionSubtitle('LAYOUT APPROVAL NUMBER');
     this.drawKeyValueRow([
-      { label: 'Layout Approval Date', value: val('axisSbbLayoutApprovalDate') },
-      { label: 'Layout Expiry Date', value: val('axisSbbLayoutExpiryDate') }
+      { label: 'DATE OF APPROVAL', value: val('axisSbbLayoutApprovalDate') },
+      { label: 'EXPIRY DATE', value: val('axisSbbLayoutExpiryDate') }
     ]);
 
     this.drawSectionSubtitle('BUILDING PLAN APPROVAL NUMBER');
     this.drawKeyValueRow([
-      { label: 'Building Plan Approval Date', value: val('axisSbbBuildingPlanApprovalDate') },
-      { label: 'Building Plan Expiry Date', value: val('axisSbbBuildingPlanExpiryDate') }
+      { label: 'DATE OF APPROVAL', value: val('axisSbbBuildingPlanApprovalDate') },
+      { label: 'EXPIRY DATE', value: val('axisSbbBuildingPlanExpiryDate') }
     ]);
 
     this.drawSectionSubtitle('CONSTRUCTION DETAILS');
