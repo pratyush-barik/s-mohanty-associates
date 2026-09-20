@@ -569,12 +569,11 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.axisSbbEnableCoverPageValueEdit} 
                     />
                     {!fields.axisSbbEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="ROUND(Total Valuation 100% Completion (I+II), -3)">
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 9 "Market Value"'>
                         <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                       </div>
                     )}
                   </div>
-                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Current Value of Property from Section 9</span>
                 </div>
               </div>
               <div className="flex border-b border-gray-200">
@@ -590,12 +589,11 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.axisSbbEnableCoverPageValueEdit} 
                     />
                     {!fields.axisSbbEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="ROUND(PRESENT MARKET VALUE * 0.90, -3)">
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 9 "Distressed / Forced Sale Value (90%)"'>
                         <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                       </div>
                     )}
                   </div>
-                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Calculated instantly based on PRESENT MARKET VALUE</span>
                 </div>
               </div>
               <div className="flex">
@@ -611,12 +609,11 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.axisSbbEnableCoverPageValueEdit} 
                     />
                     {!fields.axisSbbEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="ROUND(PRESENT MARKET VALUE * 0.95, -3)">
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefilled from Section 9 "Realizable Value (95%)"'>
                         <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                       </div>
                     )}
                   </div>
-                  <span className="text-[10px] text-gray-500 mt-1 pl-1">Calculated instantly based on PRESENT MARKET VALUE</span>
                 </div>
               </div>
             </div>
