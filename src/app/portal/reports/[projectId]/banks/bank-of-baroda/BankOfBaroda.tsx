@@ -360,20 +360,33 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     bobPurposeOfValuationDropdown: 'default',
     bobPurposeOfValuation: 'To assess the present market value of the property for loan purpose',
     bobPreparedByValuerName: 'Er. Satyajit Mohanty, (B.E, Civil) FIV',
+    bobPreparedByValuerNameNA: false,
     bobPreparedByGovtReg: 'Registered Valuer, Govt. of India (Regd. No.-107/2016-17, Cat -I)',
+    bobPreparedByGovtRegNA: false,
     bobPreparedByAcademicDegrees: 'B.E.(Civil) Utkal, M. Tech(Civil), MBA(HR), Approved Valuer',
+    bobPreparedByAcademicDegreesNA: false,
     bobPreparedByIoVMembership: 'Life, Fellow & Approved Valuer from Institution of Valuers (New Delhi), Membership No.F-26377',
+    bobPreparedByIoVMembershipNA: false,
     bobPreparedByIoEMembership: 'Member in Institution of Engineer (India)',
+    bobPreparedByIoEMembershipNA: false,
     bobPreparedByCharteredEng: 'Chartered Engineer (Regd. No.-M-156096-9)',
+    bobPreparedByCharteredEngNA: false,
     bobPreparedByBankEmpanelment: 'Empanelled Valuer of Bank of Baroda',
+    bobPreparedByBankEmpanelmentNA: false,
     bobPreparedByPlotNo: 'Plot no-859/2494/3232 & 858/2493/3295',
+    bobPreparedByPlotNoNA: false,
     bobPreparedByStreet: 'Shiv Nagar Tankapani Road',
+    bobPreparedByStreetNA: false,
     bobPreparedByCity: 'Bhubaneswar',
+    bobPreparedByCityNA: false,
     bobPreparedByState: 'Odisha',
+    bobPreparedByStateNA: false,
     bobPreparedByPinCode: '751018',
+    bobPreparedByPinCodeNA: false,
     bobPreparedByPhone: '06742381145',
     bobPreparedByPhoneNA: false,
     bobPreparedByMobile: '9937023855/9437074855',
+    bobPreparedByMobileNA: false,
     // ── Section 2: Part I — GENERAL ──
     bobPurposeForValuation: '',
     bobDateOfInspection: '',
@@ -683,22 +696,82 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           <div className="rounded-xl p-5 space-y-4 border border-orange-200" style={{ backgroundColor: '#fff0e6' }}>
             <h3 className="font-bold text-gray-700 border-b border-orange-200 pb-2">PREPARED BY (VALUER CREDENTIALS)</h3>
             <div className="grid grid-cols-1 gap-4">
-              <Field label="VALUER NAME & QUALIFICATION"><input className={inputCls} value={fields.bobPreparedByValuerName || ''} onChange={e => handleChange('bobPreparedByValuerName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Er. Satyajit Mohanty, (B.E, Civil) FIV" /></Field>
-              <Field label="GOVERNMENT REGISTRATION / CATEGORY"><textarea className={inputCls} rows={2} value={fields.bobPreparedByGovtReg || ''} onChange={e => handleChange('bobPreparedByGovtReg', e.target.value)} disabled={isReadOnly} placeholder="e.g. Registered Valuer, Govt. of India..." /></Field>
-              <Field label="ACADEMIC & PROFESSIONAL DEGREES"><textarea className={inputCls} rows={2} value={fields.bobPreparedByAcademicDegrees || ''} onChange={e => handleChange('bobPreparedByAcademicDegrees', e.target.value)} disabled={isReadOnly} placeholder="e.g. B.E.(Civil) Utkal, M. Tech(Civil)..." /></Field>
-              <Field label="INSTITUTION OF VALUERS MEMBERSHIP"><textarea className={inputCls} rows={2} value={fields.bobPreparedByIoVMembership || ''} onChange={e => handleChange('bobPreparedByIoVMembership', e.target.value)} disabled={isReadOnly} placeholder="e.g. Life, Fellow & Approved Valuer..." /></Field>
-              <Field label="INSTITUTION OF ENGINEERS MEMBERSHIP"><textarea className={inputCls} rows={2} value={fields.bobPreparedByIoEMembership || ''} onChange={e => handleChange('bobPreparedByIoEMembership', e.target.value)} disabled={isReadOnly} placeholder="e.g. Member in Institution of Engineer (India)" /></Field>
-              <Field label="CHARTERED ENGINEER REGISTRATION NO."><input className={inputCls} value={fields.bobPreparedByCharteredEng || ''} onChange={e => handleChange('bobPreparedByCharteredEng', e.target.value)} disabled={isReadOnly} placeholder="e.g. Chartered Engineer (Regd. No.-M-156096-9)" /></Field>
-              <Field label="BANK EMPANELMENT DETAILS"><input className={inputCls} value={fields.bobPreparedByBankEmpanelment || ''} onChange={e => handleChange('bobPreparedByBankEmpanelment', e.target.value)} disabled={isReadOnly} placeholder="e.g. Empanelled Valuer of Bank of Baroda" /></Field>
+              <Field label="VALUER NAME & QUALIFICATION">
+                <div className="flex gap-2 items-center">
+                  <input className={`${inputCls} flex-1`} value={fields.bobPreparedByValuerName || ''} onChange={e => handleChange('bobPreparedByValuerName', e.target.value)} disabled={isReadOnly || fields.bobPreparedByValuerNameNA} placeholder="e.g. Er. Satyajit Mohanty, (B.E, Civil) FIV" />
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0"><input type="checkbox" checked={fields.bobPreparedByValuerNameNA || false} onChange={e => { handleChange('bobPreparedByValuerNameNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByValuerName', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                </div>
+              </Field>
+              <Field label="GOVERNMENT REGISTRATION / CATEGORY">
+                <div className="flex gap-2 items-start">
+                  <textarea className={`${inputCls} flex-1`} rows={2} value={fields.bobPreparedByGovtReg || ''} onChange={e => handleChange('bobPreparedByGovtReg', e.target.value)} disabled={isReadOnly || fields.bobPreparedByGovtRegNA} placeholder="e.g. Registered Valuer, Govt. of India..." />
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0 pt-2"><input type="checkbox" checked={fields.bobPreparedByGovtRegNA || false} onChange={e => { handleChange('bobPreparedByGovtRegNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByGovtReg', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                </div>
+              </Field>
+              <Field label="ACADEMIC & PROFESSIONAL DEGREES">
+                <div className="flex gap-2 items-start">
+                  <textarea className={`${inputCls} flex-1`} rows={2} value={fields.bobPreparedByAcademicDegrees || ''} onChange={e => handleChange('bobPreparedByAcademicDegrees', e.target.value)} disabled={isReadOnly || fields.bobPreparedByAcademicDegreesNA} placeholder="e.g. B.E.(Civil) Utkal, M. Tech(Civil)..." />
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0 pt-2"><input type="checkbox" checked={fields.bobPreparedByAcademicDegreesNA || false} onChange={e => { handleChange('bobPreparedByAcademicDegreesNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByAcademicDegrees', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                </div>
+              </Field>
+              <Field label="INSTITUTION OF VALUERS MEMBERSHIP">
+                <div className="flex gap-2 items-start">
+                  <textarea className={`${inputCls} flex-1`} rows={2} value={fields.bobPreparedByIoVMembership || ''} onChange={e => handleChange('bobPreparedByIoVMembership', e.target.value)} disabled={isReadOnly || fields.bobPreparedByIoVMembershipNA} placeholder="e.g. Life, Fellow & Approved Valuer..." />
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0 pt-2"><input type="checkbox" checked={fields.bobPreparedByIoVMembershipNA || false} onChange={e => { handleChange('bobPreparedByIoVMembershipNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByIoVMembership', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                </div>
+              </Field>
+              <Field label="INSTITUTION OF ENGINEERS MEMBERSHIP">
+                <div className="flex gap-2 items-start">
+                  <textarea className={`${inputCls} flex-1`} rows={2} value={fields.bobPreparedByIoEMembership || ''} onChange={e => handleChange('bobPreparedByIoEMembership', e.target.value)} disabled={isReadOnly || fields.bobPreparedByIoEMembershipNA} placeholder="e.g. Member in Institution of Engineer (India)" />
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0 pt-2"><input type="checkbox" checked={fields.bobPreparedByIoEMembershipNA || false} onChange={e => { handleChange('bobPreparedByIoEMembershipNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByIoEMembership', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                </div>
+              </Field>
+              <Field label="CHARTERED ENGINEER REGISTRATION NO.">
+                <div className="flex gap-2 items-center">
+                  <input className={`${inputCls} flex-1`} value={fields.bobPreparedByCharteredEng || ''} onChange={e => handleChange('bobPreparedByCharteredEng', e.target.value)} disabled={isReadOnly || fields.bobPreparedByCharteredEngNA} placeholder="e.g. Chartered Engineer (Regd. No.-M-156096-9)" />
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0"><input type="checkbox" checked={fields.bobPreparedByCharteredEngNA || false} onChange={e => { handleChange('bobPreparedByCharteredEngNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByCharteredEng', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                </div>
+              </Field>
+              <Field label="BANK EMPANELMENT DETAILS">
+                <div className="flex gap-2 items-center">
+                  <input className={`${inputCls} flex-1`} value={fields.bobPreparedByBankEmpanelment || ''} onChange={e => handleChange('bobPreparedByBankEmpanelment', e.target.value)} disabled={isReadOnly || fields.bobPreparedByBankEmpanelmentNA} placeholder="e.g. Empanelled Valuer of Bank of Baroda" />
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0"><input type="checkbox" checked={fields.bobPreparedByBankEmpanelmentNA || false} onChange={e => { handleChange('bobPreparedByBankEmpanelmentNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByBankEmpanelment', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                </div>
+              </Field>
             </div>
             <div className="rounded-md p-4 shadow-sm mt-4" style={{ backgroundColor: '#e6f2ff' }}>
               <h4 className="font-bold text-gray-700 mb-3 text-sm">Address Breakdown</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="PLOT NUMBER"><input className={inputCls} value={fields.bobPreparedByPlotNo || ''} onChange={e => handleChange('bobPreparedByPlotNo', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="STREET/LOCALITY"><input className={inputCls} value={fields.bobPreparedByStreet || ''} onChange={e => handleChange('bobPreparedByStreet', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="CITY"><input className={inputCls} value={fields.bobPreparedByCity || ''} onChange={e => handleChange('bobPreparedByCity', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="STATE"><input className={inputCls} value={fields.bobPreparedByState || ''} onChange={e => handleChange('bobPreparedByState', e.target.value)} disabled={isReadOnly} /></Field>
-                <Field label="PIN CODE"><input className={inputCls} type="number" value={fields.bobPreparedByPinCode || ''} onChange={e => handleChange('bobPreparedByPinCode', e.target.value)} disabled={isReadOnly} /></Field>
+                <Field label="PLOT NUMBER">
+                  <div className="flex gap-2 items-center">
+                    <input className={`${inputCls} flex-1`} value={fields.bobPreparedByPlotNo || ''} onChange={e => handleChange('bobPreparedByPlotNo', e.target.value)} disabled={isReadOnly || fields.bobPreparedByPlotNoNA} />
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0"><input type="checkbox" checked={fields.bobPreparedByPlotNoNA || false} onChange={e => { handleChange('bobPreparedByPlotNoNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByPlotNo', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                  </div>
+                </Field>
+                <Field label="STREET/LOCALITY">
+                  <div className="flex gap-2 items-center">
+                    <input className={`${inputCls} flex-1`} value={fields.bobPreparedByStreet || ''} onChange={e => handleChange('bobPreparedByStreet', e.target.value)} disabled={isReadOnly || fields.bobPreparedByStreetNA} />
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0"><input type="checkbox" checked={fields.bobPreparedByStreetNA || false} onChange={e => { handleChange('bobPreparedByStreetNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByStreet', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                  </div>
+                </Field>
+                <Field label="CITY">
+                  <div className="flex gap-2 items-center">
+                    <input className={`${inputCls} flex-1`} value={fields.bobPreparedByCity || ''} onChange={e => handleChange('bobPreparedByCity', e.target.value)} disabled={isReadOnly || fields.bobPreparedByCityNA} />
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0"><input type="checkbox" checked={fields.bobPreparedByCityNA || false} onChange={e => { handleChange('bobPreparedByCityNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByCity', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                  </div>
+                </Field>
+                <Field label="STATE">
+                  <div className="flex gap-2 items-center">
+                    <input className={`${inputCls} flex-1`} value={fields.bobPreparedByState || ''} onChange={e => handleChange('bobPreparedByState', e.target.value)} disabled={isReadOnly || fields.bobPreparedByStateNA} />
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0"><input type="checkbox" checked={fields.bobPreparedByStateNA || false} onChange={e => { handleChange('bobPreparedByStateNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByState', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                  </div>
+                </Field>
+                <Field label="PIN CODE">
+                  <div className="flex gap-2 items-center">
+                    <input className={`${inputCls} flex-1`} type="number" value={fields.bobPreparedByPinCode || ''} onChange={e => handleChange('bobPreparedByPinCode', e.target.value)} disabled={isReadOnly || fields.bobPreparedByPinCodeNA} />
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0"><input type="checkbox" checked={fields.bobPreparedByPinCodeNA || false} onChange={e => { handleChange('bobPreparedByPinCodeNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByPinCode', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                  </div>
+                </Field>
               </div>
             </div>
             <div className="bg-white rounded-md p-4 border border-gray-100 shadow-sm mt-4">
@@ -714,7 +787,10 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   </div>
                 </Field>
                 <Field label="MOBILE NUMBER">
-                  <input className={inputCls} value={fields.bobPreparedByMobile || ''} onChange={e => { handleChange('bobPreparedByMobile', e.target.value); }} disabled={isReadOnly} />
+                  <div className="flex gap-2 items-center">
+                    <input className={`${inputCls} flex-1`} value={fields.bobPreparedByMobile || ''} onChange={e => { handleChange('bobPreparedByMobile', e.target.value); }} disabled={isReadOnly || fields.bobPreparedByMobileNA} />
+                    <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0"><input type="checkbox" checked={fields.bobPreparedByMobileNA || false} onChange={e => { handleChange('bobPreparedByMobileNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByMobile', 'NA'); }} disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-xs text-gray-500 font-medium">N/A</span></label>
+                  </div>
                 </Field>
               </div>
             </div>
