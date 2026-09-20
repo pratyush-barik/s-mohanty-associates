@@ -1,11 +1,17 @@
 /**
  * pdf-bank-of-baroda-renderer.ts — Dedicated PDF renderer for Bank of Baroda.
  *
- * Mirrors Axis SBB's architecture: overrides drawCenteredTitle() to inject
- * a custom cover page into the standard BankReportBuilder pipeline.
- *
  * Section 1 (Cover Page): Double-border cover page with Property Owners, Address,
  * Value of Property, Purpose of Valuation, and Prepared By details.
+ * Section 2 (Part I — GENERAL): Inspection details, ownership, location, classification, boundaries.
+ * Section 3 (Part II — CHARACTERISTICS): Site environment, infrastructure, remarks.
+ * Section 4 (Part A — Land Valuation): Land metrics and estimated value.
+ * Section 5 (Part B — Building Valuation): Technical details, structural descriptions, specifications.
+ * Section 6 (Valuation & Amenities): Building valuation table, amenities, miscellaneous, services.
+ * Section 7 (Abstract & Remarks): Final values abstract table, sign-off.
+ * Section 8 (Questionnaire): Declaration questionnaire table.
+ * Section 9 (Affirmations): Declaration affirmation statements.
+ * Section 10 (Code of Conduct): Model Code of Conduct for Valuers (30 items).
  */
 
 import { rgb } from 'pdf-lib';
@@ -18,8 +24,10 @@ import {
   FONT_SIZE,
   FONT_SIZE_HEADER,
   FONT_SIZE_TITLE,
+  FONT_SIZE_SMALL,
   hexToRgb,
-  LINE_HEIGHT
+  LINE_HEIGHT,
+  formatReportDate
 } from '../pdf-bank-renderer';
 
 export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
@@ -31,71 +39,88 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.fields = fields || {};
   }
 
+  // ── Helper: field value ──
+  private fv(key: string, defaultVal = ''): string {
+    return String((this.fields as any)[key] ?? defaultVal).replace(/[\t\n\r]+/g, ' ').trim();
+  }
+
+  // ── Helper: drawSimpleRow override for BOB 40/60 layout ──
+  override drawSimpleRow(label: string, value: string, highlight?: boolean, bold?: boolean): void {
+    const labelW = Math.round(CONTENT_W * 0.40);
+    const valueW = CONTENT_W - labelW;
+    super.drawKeyValueRow([{
+      label,
+      value: value || 'NA',
+      labelWidth: labelW,
+      valueWidth: valueW,
+      highlight,
+      labelBold: true,
+      valueBold: !!bold,
+    }]);
+  }
+
   /**
    * Override drawCenteredTitle to intercept the first call from BankReportBuilder
-   * and draw the BOB cover page before the standard pipeline continues.
+   * and draw the BOB cover page + all custom sections.
    */
   override drawCenteredTitle(title: string, fontSize?: number, underline?: boolean) {
     if (!this.drawnCover) {
       this.drawnCover = true;
       this.drawBobCoverPage();
+      this.newPage();
+      this.drawBobSection2();
+      this.drawBobSection3();
+      this.drawBobSection4();
+      this.drawBobSection5();
+      this.drawBobSection6();
+      this.drawBobSection7();
+      this.drawBobSection8();
+      this.drawBobSection9();
+      this.drawBobSection10();
       return;
     }
 
-    // Override the generic "Valuation Report" title
     const isValuationReport = title.trim().toLowerCase() === 'valuation report';
     const finalTitle = isValuationReport
       ? 'VALUATION REPORT FOR BANK OF BARODA'
       : title;
-
     super.drawCenteredTitle(finalTitle, fontSize, isValuationReport ? true : underline);
   }
 
   override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
-    // Intercept standard section 2
     if (title.toUpperCase() === 'CASE DETAILS & REPORT METADATA') {
       if (this.doc.getPages().length === 1) {
         this.newPage();
       }
-
       super.drawCenteredTitle('VALUATION REPORT', FONT_SIZE_TITLE, false);
       super.drawCenteredTitle('FOR BANK OF BARODA', FONT_SIZE_TITLE, true);
       this.cursorY += 15;
     }
-
     super.drawSectionHeader(title, addSpaceBefore, preserveCase);
   }
 
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 1: COVER PAGE
+  // ═══════════════════════════════════════════════════════════════════════
   private drawBobCoverPage() {
     const fields = this.fields;
-    const fv = (key: string, defaultVal = '') => String((fields as any)[key] ?? defaultVal).replace(/[\t\n\r]+/g, ' ');
 
-    // Reset cursor for the cover page
     this.cursorY = 60;
 
-    // Page 1 Border (double border)
     const bmx = 30;
     const bmyTop = 105;
     const bmyBot = 85;
     const borderColorHex = hexToRgb('#4a6078');
 
-    // Outer thick border
     this.page.drawRectangle({
-      x: bmx,
-      y: bmyBot,
-      width: PAGE_W - 2 * bmx,
-      height: PAGE_H - bmyBot - bmyTop,
-      borderColor: borderColorHex,
-      borderWidth: 2.5,
+      x: bmx, y: bmyBot,
+      width: PAGE_W - 2 * bmx, height: PAGE_H - bmyBot - bmyTop,
+      borderColor: borderColorHex, borderWidth: 2.5,
     });
-    // Inner thin border
     this.page.drawRectangle({
-      x: bmx + 3,
-      y: bmyBot + 3,
-      width: PAGE_W - 2 * bmx - 6,
-      height: PAGE_H - bmyBot - bmyTop - 6,
-      borderColor: borderColorHex,
-      borderWidth: 0.75,
+      x: bmx + 3, y: bmyBot + 3,
+      width: PAGE_W - 2 * bmx - 6, height: PAGE_H - bmyBot - bmyTop - 6,
+      borderColor: borderColorHex, borderWidth: 0.75,
     });
 
     const drawCenteredBold = (text: string, size: number, ySpaceAfter: number, underline: boolean = false) => {
@@ -113,8 +138,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
           this.page.drawLine({
             start: { x: startX, y: startY - 2 },
             end: { x: startX + tw, y: startY - 2 },
-            thickness: 1,
-            color: rgb(0, 0, 0)
+            thickness: 1, color: rgb(0, 0, 0)
           });
         }
         if (i < lines.length - 1) {
@@ -127,7 +151,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     drawCenteredBold('VALUATION OF IMMOVABLE PROPERTY', FONT_SIZE_TITLE + 3, 40, true);
 
-    // Property Owners from dynamic array
     drawCenteredBold('PROPERTY OWNER', FONT_SIZE_HEADER, 16, true);
     const owners = Array.isArray(fields.bobPropertyOwners) && fields.bobPropertyOwners.length > 0
       ? fields.bobPropertyOwners
@@ -137,73 +160,663 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       const ownerStrings = validOwners.map((owner: any) => {
         const rel = owner.relationship || 'S/O';
         const relName = owner.relativeName || owner.fatherName;
-        if (relName) {
-          return `${owner.name} ${rel} ${relName}`;
-        }
-        return owner.name;
+        return relName ? `${owner.name} ${rel} ${relName}` : owner.name;
       });
-
       let ownersText = '';
-      if (ownerStrings.length === 1) {
-        ownersText = ownerStrings[0];
-      } else if (ownerStrings.length === 2) {
-        ownersText = ownerStrings.join(' & ');
-      } else {
-        const last = ownerStrings.pop();
-        ownersText = ownerStrings.join(', ') + ' & ' + last;
-      }
-
+      if (ownerStrings.length === 1) ownersText = ownerStrings[0];
+      else if (ownerStrings.length === 2) ownersText = ownerStrings.join(' & ');
+      else { const last = ownerStrings.pop(); ownersText = ownerStrings.join(', ') + ' & ' + last; }
       drawCenteredBold(ownersText, FONT_SIZE, 14);
     }
     this.cursorY += 16;
 
     drawCenteredBold('ADDRESS OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(fv('bobAddressOfTheProperty'), FONT_SIZE, 40);
+    drawCenteredBold(this.fv('bobAddressOfTheProperty'), FONT_SIZE, 40);
 
     drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
-    let pmv = fv('bobPresentMarketValue', '');
-    let dsv = fv('bobDistressSaleValue', '');
-    let rv = fv('bobRealizableValue', '');
-
-    // Format values with Rs prefix and Indian locale
     const formatVal = (valStr: string) => {
       if (!valStr || isNaN(Number(valStr))) return '0.00';
       return Number(valStr).toFixed(2);
     };
-
-    pmv = formatVal(pmv);
-    dsv = formatVal(dsv);
-    rv = formatVal(rv);
-
-    drawCenteredBold(`PRESENT MARKET VALUE:- ${pmv}`, FONT_SIZE, 14);
-    drawCenteredBold(`DISTRESS SALE VALUE:- ${dsv}`, FONT_SIZE, 14);
-    drawCenteredBold(`REALIZABLE VALUE:- ${rv}`, FONT_SIZE, 40);
+    drawCenteredBold(`PRESENT MARKET VALUE:- ${formatVal(this.fv('bobPresentMarketValue'))}`, FONT_SIZE, 14);
+    drawCenteredBold(`DISTRESS SALE VALUE:- ${formatVal(this.fv('bobDistressSaleValue'))}`, FONT_SIZE, 14);
+    drawCenteredBold(`REALIZABLE VALUE:- ${formatVal(this.fv('bobRealizableValue'))}`, FONT_SIZE, 40);
 
     drawCenteredBold('PURPOSE OF VALUATION', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(fv('bobPurposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
+    drawCenteredBold(this.fv('bobPurposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
 
     drawCenteredBold('PREPARED BY', FONT_SIZE_HEADER, 16, true);
-
-    drawCenteredBold(fv('bobPreparedByCompany', 'M/s. S MOHANTY ASSOCIATES'), FONT_SIZE, 14);
-    drawCenteredBold(fv('bobPreparedByDesignation', 'EMPANELLED VALUER & CHARTERED ENGINEER'), FONT_SIZE, 14);
-
-    const plotNo = fv('bobPreparedByPlotNo', 'Plot no-859/2494/3232 & 858/2493/3295');
+    drawCenteredBold(this.fv('bobPreparedByCompany', 'M/s. S MOHANTY ASSOCIATES'), FONT_SIZE, 14);
+    drawCenteredBold(this.fv('bobPreparedByDesignation', 'EMPANELLED VALUER & CHARTERED ENGINEER'), FONT_SIZE, 14);
+    const plotNo = this.fv('bobPreparedByPlotNo', 'Plot no-859/2494/3232 & 858/2493/3295');
     if (plotNo) drawCenteredBold(`${plotNo},`, FONT_SIZE, 14);
-
-    const street = fv('bobPreparedByStreet', 'Shiv Nagar Tankapani Road');
+    const street = this.fv('bobPreparedByStreet', 'Shiv Nagar Tankapani Road');
     if (street) drawCenteredBold(`${street},`, FONT_SIZE, 14);
-
     const cityStatePin = [
-      fv('bobPreparedByCity', 'Bhubaneswar'),
-      fv('bobPreparedByState', 'Odisha'),
-      fv('bobPreparedByPinCode', '751018') ? `Pin-${fv('bobPreparedByPinCode', '751018')}` : ''
+      this.fv('bobPreparedByCity', 'Bhubaneswar'),
+      this.fv('bobPreparedByState', 'Odisha'),
+      this.fv('bobPreparedByPinCode', '751018') ? `Pin-${this.fv('bobPreparedByPinCode', '751018')}` : ''
     ].filter(Boolean).join(', ');
     if (cityStatePin) drawCenteredBold(cityStatePin, FONT_SIZE, 14);
-
-    drawCenteredBold(`PHONE- ${fv('bobPreparedByPhone', '06742381145')}`, FONT_SIZE, 14);
-
-    let rawMobile = fv('bobPreparedByMobile', '9937023855/9437074855');
-    let processedMobile = rawMobile.replace(/[^0-9]+/g, '/').replace(/(^\/|\/$)/g, '');
+    drawCenteredBold(`PHONE- ${this.fv('bobPreparedByPhone', '06742381145')}`, FONT_SIZE, 14);
+    let rawMobile = this.fv('bobPreparedByMobile', '9937023855/9437074855');
+    let processedMobile = rawMobile.replace(/[^0-9]+/g, '/').replace(/(^\/|\/\s*$)/g, '');
     drawCenteredBold(`MOBILE-${processedMobile}`, FONT_SIZE, 0);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 2: PART I — GENERAL
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBobSection2() {
+    this.drawSectionHeader('PART I — GENERAL');
+
+    this.drawSimpleRow('1. Purpose for which the valuation is made', this.fv('bobPurposeForValuation'));
+    this.drawKeyValueRow([
+      { label: '2a. Date of inspection', value: formatReportDate(this.fv('bobDateOfInspection')), labelWidth: 120, valueWidth: CONTENT_W / 2 - 120 },
+      { label: '2b. Date of valuation', value: formatReportDate(this.fv('bobDateOfValuationMade')), labelWidth: 120, valueWidth: CONTENT_W / 2 - 120 },
+    ]);
+    this.drawSimpleRow('3. Documents produced', [
+      this.fv('bobDocumentI') ? `i) ${this.fv('bobDocumentI')}` : '',
+      this.fv('bobDocumentII') ? `ii) ${this.fv('bobDocumentII')}` : '',
+      this.fv('bobDocumentIII') ? `iii) ${this.fv('bobDocumentIII')}` : '',
+    ].filter(Boolean).join(', ') || 'NA');
+    this.drawSimpleRow('4. Name & address of owner(s)', this.fv('bobOwnerNamesAddresses'));
+    this.drawSimpleRow('5. Brief description of property', this.fv('bobBriefDescription'));
+
+    // Location
+    this.drawSimpleRow('6a. Plot No. / Survey No.', this.fv('bobPlotNo'));
+    this.drawSimpleRow('6b. Door No.', this.fv('bobDoorNo') || 'NA');
+    this.drawSimpleRow('6c. T.S. No. / Village', this.fv('bobTSNoVillage'));
+    this.drawSimpleRow('6d. Ward / Taluka', this.fv('bobWardTaluka'));
+    this.drawSimpleRow('6e. Mandal / District', this.fv('bobMandalDistrict'));
+    this.drawSimpleRow('7. Postal address', this.fv('bobPostalAddress'));
+    this.drawSimpleRow('8. City / Town', this.fv('bobCityTown') || 'NA');
+    this.drawSimpleRow('9i. Classification (High/Middle/Poor)', this.fv('bobClassHighMiddlePoor') || 'NA');
+    this.drawSimpleRow('9ii. Classification (Urban/Rural)', this.fv('bobClassUrbanRural') || 'NA');
+    this.drawSimpleRow('10. Corporation / Municipality', this.fv('bobCorporationLimit') || 'NA');
+    this.drawSimpleRow('11. Covered under enactments', this.fv('bobCoveredUnderEnactments') || 'NA');
+    this.drawSimpleRow('12. Agricultural conversion', this.fv('bobAgriculturalConversion') || 'NA');
+
+    // Boundaries table
+    const boundaries = this.fields.bobBoundaries || {};
+    this.drawTable(
+      ['Direction', 'As per Sketch Map', 'As per Verification'],
+      [
+        ['East', boundaries.sketchEast || '', boundaries.verifyEast || ''],
+        ['West', boundaries.sketchWest || '', boundaries.verifyWest || ''],
+        ['North', boundaries.sketchNorth || '', boundaries.verifyNorth || ''],
+        ['South', boundaries.sketchSouth || '', boundaries.verifySouth || ''],
+      ],
+      [CONTENT_W * 0.2, CONTENT_W * 0.4, CONTENT_W * 0.4],
+      [], [0]
+    );
+
+    // Dimensions table
+    const dimensions = this.fields.bobDimensions || {};
+    this.drawTable(
+      ['Direction', 'As per the Deed', 'Actual'],
+      [
+        ['East', dimensions.deedEast || '', dimensions.actualEast || ''],
+        ['West', dimensions.deedWest || '', dimensions.actualWest || ''],
+        ['North', dimensions.deedNorth || '', dimensions.actualNorth || ''],
+        ['South', dimensions.deedSouth || '', dimensions.actualSouth || ''],
+      ],
+      [CONTENT_W * 0.2, CONTENT_W * 0.4, CONTENT_W * 0.4],
+      [], [0]
+    );
+
+    this.drawSimpleRow('14.2 Lat/Long & Coordinates', this.fv('bobLatLong'));
+    this.drawSimpleRow('15. Extent of the site', this.fv('bobExtentOfSite'));
+
+    // Calc extent for valuation
+    const dNS = parseFloat(dimensions.deedNorth || '0') || parseFloat(dimensions.deedSouth || '0') || 0;
+    const dEW = parseFloat(dimensions.deedEast || '0') || parseFloat(dimensions.deedWest || '0') || 0;
+    const aNS = parseFloat(dimensions.actualNorth || '0') || parseFloat(dimensions.actualSouth || '0') || 0;
+    const aEW = parseFloat(dimensions.actualEast || '0') || parseFloat(dimensions.actualWest || '0') || 0;
+    const deedArea = dNS * dEW; const actualArea = aNS * aEW;
+    const calcExtent = this.fields.bobExtentForValuationEditOn
+      ? this.fv('bobExtentForValuation')
+      : ((deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea).toFixed(2) : (deedArea || actualArea || 0).toFixed(2));
+    this.drawSimpleRow('16. Extent considered for valuation', calcExtent);
+    this.drawSimpleRow('17. Occupancy', this.fv('bobOccupancy') || 'NA');
+    if (this.fv('bobOccupancyDetails')) {
+      this.drawSimpleRow('    Tenant details', this.fv('bobOccupancyDetails'));
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 3: PART II — CHARACTERISTICS OF THE SITE
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBobSection3() {
+    this.drawSectionHeader('PART II — CHARACTERISTICS OF THE SITE');
+
+    this.drawSimpleRow('1. Classification of locality', this.fv('bobClassificationOfLocality') || 'NA');
+    this.drawSimpleRow('2. Development of surrounding areas', this.fv('bobDevelopmentOfSurrounding'));
+    this.drawSimpleRow('3. Flooding / sub-merging possibility', this.fv('bobFloodingPossibility') || 'NA');
+    this.drawSimpleRow('4. Civic amenities (school, hospital etc.)', this.fv('bobCivicAmenities'));
+    this.drawSimpleRow('5. Level of land', this.fv('bobLevelOfLand'));
+    this.drawSimpleRow('6. Shape of land', this.fv('bobShapeOfLand'));
+    this.drawSimpleRow('7. Type of use', this.fv('bobTypeOfUse'));
+    this.drawSimpleRow('8. Usage restriction', this.fv('bobUsageRestriction') || 'NA');
+    this.drawSimpleRow('9. Town planning approved layout', this.fv('bobTownPlanningApproved'));
+    this.drawSimpleRow('10. Corner / Intermittent plot', this.fv('bobCornerOrIntermittent'));
+    this.drawSimpleRow('11. Road facilities', this.fv('bobRoadFacilities'));
+    this.drawSimpleRow('12. Type of road', this.fv('bobTypeOfRoad'));
+    this.drawSimpleRow('13. Width of road', this.fv('bobWidthOfRoad'));
+    this.drawSimpleRow('14. Land-locked land', this.fv('bobLandLocked'));
+    this.drawSimpleRow('15. Water potentiality', this.fv('bobWaterPotentiality'));
+    this.drawSimpleRow('16. Underground sewerage', this.fv('bobSewerage'));
+    this.drawSimpleRow('17. Power supply', this.fv('bobPowerSupply'));
+    this.drawSimpleRow('18. Advantage of the site', this.fv('bobAdvantageOfSite'));
+    this.drawSimpleRow('19. Special remarks', this.fv('bobSpecialRemarks') || 'NA');
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 4: PART A — VALUATION OF LAND
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBobSection4() {
+    this.drawSectionHeader('PART A — VALUATION OF LAND');
+
+    const sizeNS = parseFloat(this.fv('bobLandSizeNS', '0')) || 0;
+    const sizeEW = parseFloat(this.fv('bobLandSizeEW', '0')) || 0;
+    const calcTotalExtent = (sizeNS > 0 && sizeEW > 0) ? (sizeNS * sizeEW).toFixed(2) : '0.00';
+    const totalExtent = this.fields.bobLandTotalExtentEditOn ? parseFloat(this.fv('bobLandTotalExtent', '0')) : parseFloat(calcTotalExtent);
+    const adoptedRate = parseFloat(this.fv('bobAdoptedRate', '0')) || 0;
+    const calcEstimatedValue = (totalExtent * adoptedRate).toFixed(2);
+
+    this.drawSimpleRow('1. Size of plot (N&S)', this.fv('bobLandSizeNS'));
+    this.drawSimpleRow('   Size of plot (E&W)', this.fv('bobLandSizeEW'));
+    this.drawSimpleRow('2. Total extent of the plot', this.fields.bobLandTotalExtentEditOn ? this.fv('bobLandTotalExtent') : calcTotalExtent, true, true);
+    this.drawSimpleRow('3. Prevailing market rate', this.fv('bobPrevailingMarketRate'));
+    this.drawSimpleRow('4. Guideline rate', this.fv('bobGuidelineRate'));
+    this.drawSimpleRow('5. Adopted rate of valuation', this.fv('bobAdoptedRate'));
+    this.drawSimpleRow('6. Estimated value of land', this.fields.bobEstimatedLandValueEditOn ? this.fv('bobEstimatedLandValue') : calcEstimatedValue, true, true);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 5: PART B — VALUATION OF BUILDING
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBobSection5() {
+    this.drawSectionHeader('PART B — VALUATION OF BUILDING');
+
+    const currentYear = new Date().getFullYear();
+    const yearOfConstruction = parseInt(this.fv('bobYearOfConstruction', '0')) || 0;
+    const calcAge = yearOfConstruction > 0 ? (currentYear - yearOfConstruction) : 0;
+
+    this.drawSimpleRow('1a. Type of Building', this.fv('bobBuildingType'));
+    this.drawSimpleRow('1b. Type of construction', this.fv('bobConstructionType'));
+    this.drawSimpleRow('1c. Year of construction', this.fv('bobYearOfConstruction'));
+    this.drawSimpleRow('1d. Floors & height', this.fv('bobFloorsDescription'));
+    this.drawSimpleRow('1e. Plinth area floor-wise', this.fv('bobPlinthArea'));
+    this.drawSimpleRow('1f(i). Condition: Exterior', this.fv('bobConditionExterior'));
+    this.drawSimpleRow('1f(ii). Condition: Interior', this.fv('bobConditionInterior'));
+    this.drawSimpleRow('1g. Approved map/plan date', this.fv('bobApprovedMapDate') || 'NA');
+    this.drawSimpleRow('1h. Approving authority', this.fv('bobApprovedMapAuthority') || 'NA');
+    this.drawSimpleRow('1i. Map authenticity verified', this.fv('bobApprovedMapVerified') || 'NA');
+    this.drawSimpleRow('1j. Valuer comments on plan', this.fv('bobApprovedMapComments') || 'NA');
+    this.drawSimpleRow('1k. Age of the Building', this.fields.bobBuildingAgeEditOn ? this.fv('bobBuildingAge') : (calcAge > 0 ? `${calcAge} years` : '0'), true, true);
+    this.drawSimpleRow('1l. Residual life', this.fv('bobResidualLife'));
+
+    // Structural Descriptions Table
+    const structural = this.fields.bobStructuralDetails || {};
+    const structKeys = ['foundation', 'basement', 'superstructure', 'joinery', 'rccWorks', 'plastering', 'flooring', 'specialFinish', 'roofing', 'drainage'];
+    const structLabels = ['1. Foundation', '2. Basement', '3. Superstructure', '4. Joinery', '5. RCC works', '6. Plastering', '7. Flooring/Skirting', '8. Special finish', '9. Roofing', '10. Drainage'];
+
+    this.drawTable(
+      ['Description', 'Ground Floor', 'Other Floors'],
+      structKeys.map((key, idx) => [
+        structLabels[idx],
+        structural[`${key}_ground`] || structural[`${key}_groundCustom`] || '',
+        this.fields.bobOtherFloorsNA ? 'NA' : (structural[`${key}_other`] || structural[`${key}_otherCustom`] || ''),
+      ]),
+      [CONTENT_W * 0.35, CONTENT_W * 0.325, CONTENT_W * 0.325],
+      [], [0]
+    );
+
+    // Compound wall
+    this.drawSimpleRow('Compound wall', this.fv('bobCompoundWall'));
+    if (this.fv('bobCompoundWall') === 'Yes') {
+      this.drawKeyValueRow([
+        { label: 'Height', value: this.fv('bobCompoundWallHeight') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
+        { label: 'Length', value: this.fv('bobCompoundWallLength') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
+        { label: 'Type', value: this.fv('bobCompoundWallType') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
+      ]);
+    }
+
+    // Electrical installation
+    this.drawSimpleRow('Electrical: Wiring type', this.fv('bobElectricalWiring') || 'NA');
+    this.drawSimpleRow('Electrical: Class of fittings', this.fv('bobElectricalFittings') || 'NA');
+    this.drawKeyValueRow([
+      { label: 'Light points', value: this.fv('bobElectricalLightPoints') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
+      { label: 'Fan points', value: this.fv('bobElectricalFanPoints') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
+      { label: 'Plug points', value: this.fv('bobElectricalPlugPoints') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
+    ]);
+
+    // Plumbing
+    this.drawSimpleRow('Plumbing installation', this.fv('bobPlumbing'));
+    if (this.fv('bobPlumbing') === 'Yes') {
+      this.drawSimpleRow('  Water closets', this.fv('bobWaterClosets') || 'NA');
+      this.drawSimpleRow('  Wash basins', this.fv('bobWashBasins') || 'NA');
+      this.drawSimpleRow('  Urinals', this.fv('bobUrinals') || 'NA');
+      this.drawSimpleRow('  Bath tubs', this.fv('bobBathTubs') || 'NA');
+      this.drawSimpleRow('  Water meter/taps', this.fv('bobWaterMeterTaps') || 'NA');
+      this.drawSimpleRow('  Other fixtures', this.fv('bobOtherFixtures') || 'NA');
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 6: DETAILS OF VALUATION & AMENITIES
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBobSection6() {
+    this.drawSectionHeader('DETAILS OF VALUATION & AMENITIES');
+
+    const currentYear = new Date().getFullYear();
+    const yearOfConstruction = parseInt(this.fv('bobYearOfConstruction', '0')) || 0;
+    const buildingAge = this.fields.bobBuildingAgeEditOn ? (parseFloat(this.fv('bobBuildingAge', '0')) || 0) : (yearOfConstruction > 0 ? currentYear - yearOfConstruction : 0);
+
+    // Building Valuation Table
+    const buildingRows: any[] = this.fields.bobBuildingValuationRows || [];
+    if (buildingRows.length > 0) {
+      const tableRows: string[][] = [];
+      let totalNet = 0;
+      for (const row of buildingRows) {
+        const plinth = parseFloat(row.plinthArea || '0') || 0;
+        const rate = parseFloat(row.replacementRate || '0') || 0;
+        const estCost = row.estCostEditOn ? (parseFloat(row.estCost || '0') || 0) : plinth * rate;
+        const depreciation = row.depreciationEditOn ? (parseFloat(row.depreciation || '0') || 0) : estCost * 0.01 * buildingAge;
+        const netValue = row.netValueEditOn ? (parseFloat(row.netValue || '0') || 0) : estCost - depreciation;
+        totalNet += netValue;
+        tableRows.push([
+          row.particulars || row.particularsCustom || '',
+          plinth.toFixed(2),
+          row.roofHeight || '',
+          String(buildingAge),
+          rate.toFixed(2),
+          estCost.toFixed(2),
+          depreciation.toFixed(2),
+          netValue.toFixed(2),
+        ]);
+      }
+      tableRows.push(['TOTAL', '', '', '', '', '', '', totalNet.toFixed(2)]);
+
+      this.drawTable(
+        ['PARTICULARS', 'PLINTH AREA', 'ROOF HT', 'AGE', 'RATE', 'EST. COST', 'DEPRECIATION', 'NET VALUE'],
+        tableRows,
+        [CONTENT_W * 0.18, CONTENT_W * 0.10, CONTENT_W * 0.08, CONTENT_W * 0.07, CONTENT_W * 0.10, CONTENT_W * 0.16, CONTENT_W * 0.16, CONTENT_W * 0.15],
+        [7], [0], [],
+        [{ r: tableRows.length - 1, c: 0 }, { r: tableRows.length - 1, c: 7 }],
+        [{ r: tableRows.length - 1, c: 0 }, { r: tableRows.length - 1, c: 7 }]
+      );
+    }
+
+    // Part D: Amenities
+    const amenityItems = ['Wardrobes & Cupboard', 'Modular Kitchen', 'Extra sinks and bath tub', 'Marble / Ceramic tiles flooring', 'Interior decorations', 'Architectural elevation works', 'Paneling works', 'Aluminium works', 'Aluminium hand rails', 'False ceiling'];
+    const amenityRows: string[][] = [];
+    let amenitiesTotal = 0;
+    for (let i = 0; i < amenityItems.length; i++) {
+      const val = parseFloat(this.fv(`bobAmenity_${i}`, '0')) || 0;
+      amenitiesTotal += val;
+      amenityRows.push([String(i + 1), amenityItems[i], val > 0 ? val.toFixed(2) : '']);
+    }
+    amenityRows.push(['', 'TOTAL', amenitiesTotal.toFixed(2)]);
+    this.drawSectionHeader('PART D — AMENITIES', true, true);
+    this.drawTable(
+      ['SL NO.', 'ITEM', 'AMOUNT'],
+      amenityRows,
+      [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
+      [2], [0], [],
+      [{ r: amenityRows.length - 1, c: 1 }, { r: amenityRows.length - 1, c: 2 }],
+      [{ r: amenityRows.length - 1, c: 1 }, { r: amenityRows.length - 1, c: 2 }]
+    );
+
+    // Part E: Miscellaneous
+    const miscItems = ['Separate toilet room', 'Separate lumber room', 'Separate water tank/ sump', 'Trees, gardening'];
+    const miscRows: string[][] = [];
+    let miscTotal = 0;
+    for (let i = 0; i < miscItems.length; i++) {
+      const val = parseFloat(this.fv(`bobMisc_${i}`, '0')) || 0;
+      miscTotal += val;
+      miscRows.push([String(i + 1), miscItems[i], val > 0 ? val.toFixed(2) : '']);
+    }
+    miscRows.push(['', 'TOTAL', miscTotal.toFixed(2)]);
+    this.drawSectionHeader('PART E — MISCELLANEOUS', true, true);
+    this.drawTable(
+      ['SL NO.', 'ITEM', 'AMOUNT'],
+      miscRows,
+      [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
+      [2], [0], [],
+      [{ r: miscRows.length - 1, c: 1 }, { r: miscRows.length - 1, c: 2 }],
+      [{ r: miscRows.length - 1, c: 1 }, { r: miscRows.length - 1, c: 2 }]
+    );
+
+    // Part F: Services
+    const serviceItems = ['Bore Well with Motor', 'Head Room, Parapet Wall, Grinding', 'Compound Wall', 'Marble Flooring in staircase & Steel Handrail', 'Extra cost for Lifts with installation'];
+    const serviceRows: string[][] = [];
+    let servicesTotal = 0;
+    for (let i = 0; i < serviceItems.length; i++) {
+      const val = parseFloat(this.fv(`bobService_${i}`, '0')) || 0;
+      servicesTotal += val;
+      serviceRows.push([String(i + 1), serviceItems[i], val > 0 ? val.toFixed(2) : '']);
+    }
+    serviceRows.push(['', 'TOTAL', servicesTotal.toFixed(2)]);
+    this.drawSectionHeader('PART F — SERVICES', true, true);
+    this.drawTable(
+      ['SL NO.', 'ITEM', 'AMOUNT'],
+      serviceRows,
+      [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
+      [2], [0], [],
+      [{ r: serviceRows.length - 1, c: 1 }, { r: serviceRows.length - 1, c: 2 }],
+      [{ r: serviceRows.length - 1, c: 1 }, { r: serviceRows.length - 1, c: 2 }]
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 7: TOTAL ABSTRACT & REMARKS
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBobSection7() {
+    this.drawSectionHeader('TOTAL ABSTRACT');
+
+    // Compute prefill values
+    const sizeNS = parseFloat(this.fv('bobLandSizeNS', '0')) || 0;
+    const sizeEW = parseFloat(this.fv('bobLandSizeEW', '0')) || 0;
+    const totalExtent = this.fields.bobLandTotalExtentEditOn ? parseFloat(this.fv('bobLandTotalExtent', '0')) : sizeNS * sizeEW;
+    const adoptedRate = parseFloat(this.fv('bobAdoptedRate', '0')) || 0;
+    const landMarketValue = this.fields.bobEstimatedLandValueEditOn ? parseFloat(this.fv('bobEstimatedLandValue', '0')) : totalExtent * adoptedRate;
+
+    const currentYear = new Date().getFullYear();
+    const yearOfConst = parseInt(this.fv('bobYearOfConstruction', '0')) || 0;
+    const bAge = this.fields.bobBuildingAgeEditOn ? (parseFloat(this.fv('bobBuildingAge', '0')) || 0) : (yearOfConst > 0 ? currentYear - yearOfConst : 0);
+    const buildingRows: any[] = this.fields.bobBuildingValuationRows || [];
+    const buildingMarketValue = buildingRows.reduce((sum: number, row: any) => {
+      const p = parseFloat(row.plinthArea || '0') || 0;
+      const r = parseFloat(row.replacementRate || '0') || 0;
+      const est = row.estCostEditOn ? (parseFloat(row.estCost || '0') || 0) : p * r;
+      const dep = row.depreciationEditOn ? (parseFloat(row.depreciation || '0') || 0) : est * 0.01 * bAge;
+      const net = row.netValueEditOn ? (parseFloat(row.netValue || '0') || 0) : est - dep;
+      return sum + net;
+    }, 0);
+
+    const amenitiesMarketValue = Array.from({ length: 10 }, (_, i) => parseFloat(this.fv(`bobAmenity_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+    const miscMarketValue = Array.from({ length: 4 }, (_, i) => parseFloat(this.fv(`bobMisc_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+    const servicesMarketValue = Array.from({ length: 5 }, (_, i) => parseFloat(this.fv(`bobService_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+
+    const abstractRows: { label: string; key: string; prefillMarket: number | null }[] = [
+      { label: 'LAND', key: 'land', prefillMarket: landMarketValue },
+      { label: 'BUILDING', key: 'building', prefillMarket: buildingMarketValue },
+      { label: 'EXTRA ITEMS', key: 'extraItems', prefillMarket: null },
+      { label: 'AMENITIES', key: 'amenities', prefillMarket: amenitiesMarketValue },
+      { label: 'MISCELLANEOUS', key: 'miscellaneous', prefillMarket: miscMarketValue },
+      { label: 'SERVICES', key: 'services', prefillMarket: servicesMarketValue },
+    ];
+
+    const tableRows: string[][] = [];
+    let totalGovt = 0, totalMarket = 0, totalRealizable = 0, totalDistress = 0;
+
+    for (const row of abstractRows) {
+      const govtVal = parseFloat(this.fv(`bobAbstract_${row.key}_govt`, '0')) || 0;
+      const marketVal = row.prefillMarket !== null ? row.prefillMarket : (parseFloat(this.fv(`bobAbstract_${row.key}_market`, '0')) || 0);
+      const realizableVal = this.fields[`bobAbstract_${row.key}_realizableEditOn`]
+        ? (parseFloat(this.fv(`bobAbstract_${row.key}_realizable`, '0')) || 0)
+        : marketVal * 0.95;
+      const distressVal = this.fields[`bobAbstract_${row.key}_distressEditOn`]
+        ? (parseFloat(this.fv(`bobAbstract_${row.key}_distress`, '0')) || 0)
+        : marketVal * 0.85;
+
+      totalGovt += govtVal;
+      totalMarket += marketVal;
+      totalRealizable += realizableVal;
+      totalDistress += distressVal;
+
+      tableRows.push([
+        row.label,
+        govtVal > 0 ? govtVal.toFixed(2) : '',
+        marketVal.toFixed(2),
+        realizableVal.toFixed(2),
+        distressVal.toFixed(2),
+      ]);
+    }
+
+    // TOTAL row
+    tableRows.push(['TOTAL', totalGovt.toFixed(2), totalMarket.toFixed(2), totalRealizable.toFixed(2), totalDistress.toFixed(2)]);
+
+    // OR SAY row
+    tableRows.push([
+      'OR SAY',
+      this.fv('bobAbstractOrSayGovt') || '',
+      this.fv('bobAbstractOrSayMarket') || '',
+      this.fv('bobAbstractOrSayRealizable') || '',
+      this.fv('bobAbstractOrSayDistress') || '',
+    ]);
+
+    this.drawTable(
+      ['PARTICULARS', 'GOVT. VALUE (RS.)', 'MARKET VALUE (RS.)', 'REALIZABLE (95%)', 'DISTRESS (85%)'],
+      tableRows,
+      [CONTENT_W * 0.22, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195],
+      [1, 2, 3, 4], [0], [],
+      // Bold the TOTAL and OR SAY rows
+      [
+        { r: tableRows.length - 2, c: 0 }, { r: tableRows.length - 2, c: 1 }, { r: tableRows.length - 2, c: 2 }, { r: tableRows.length - 2, c: 3 }, { r: tableRows.length - 2, c: 4 },
+        { r: tableRows.length - 1, c: 0 },
+      ],
+      [
+        { r: tableRows.length - 2, c: 0 }, { r: tableRows.length - 2, c: 1 }, { r: tableRows.length - 2, c: 2 }, { r: tableRows.length - 2, c: 3 }, { r: tableRows.length - 2, c: 4 },
+      ]
+    );
+
+    // Remarks
+    this.drawRemarksBox('REMARKS', this.fv('bobRemarks'));
+
+    // Sign-off
+    this.cursorY += 10;
+    this.drawKeyValueRow([
+      { label: 'Place:', value: this.fv('bobSignOffPlace'), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
+      { label: 'Date:', value: formatReportDate(this.fv('bobDateOfValuationMade')), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
+    ]);
+    this.cursorY += 5;
+    this.drawSimpleRow('Signature of Approved Valuer', '(Signature & Official seal)');
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 8: DECLARATION FROM VALUERS (Questionnaire)
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBobSection8() {
+    this.drawSectionHeader('DECLARATION FROM VALUERS (QUESTIONNAIRE)');
+
+    const questionnaireItems = [
+      'Background information of the asset being valued;',
+      'Purpose of valuation and appointing authority',
+      'Identity of the Valuers and any other experts involved in the valuation;',
+      'Disclosure of Valuers interest or conflict, if any;',
+      'Date of appointment, valuation date and date of report;',
+      'Inspections and/or investigations undertaken;',
+      'Nature and sources of the information used or relied upon;',
+      'Procedures adopted in carrying out the valuation and valuation standards followed;',
+      'Restrictions on use of the report, if any;',
+      'Major factors that were taken into account during the valuation;',
+      'Caveats, limitations and disclaimers to the extent they explain or elucidate the limitations faced by valuers.',
+    ];
+
+    const qAnswers: string[] = this.fields.bobDeclarationQuestionnaire || [];
+    const tableRows: string[][] = questionnaireItems.map((item, idx) => [
+      String(idx + 1),
+      item,
+      qAnswers[idx] || '',
+    ]);
+
+    this.drawTable(
+      ['Sl No.', 'Particulars', "Valuer's Comment"],
+      tableRows,
+      [CONTENT_W * 0.08, CONTENT_W * 0.47, CONTENT_W * 0.45],
+      [], [0], [], [], []
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 9: DECLARATION FROM VALUERS (Affirmations)
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBobSection9() {
+    this.drawSectionHeader('DECLARATION FROM VALUERS (AFFIRMATIONS)');
+
+    const name = this.fv('bobAffirmationName');
+    const father = this.fv('bobAffirmationFatherName');
+    this.drawSimpleRow('I, Mr.', name);
+    this.drawSimpleRow('S/o: Mr.', father);
+    this.cursorY += 5;
+
+    const affirmChecks = this.fields.bobAffirmationChecks || {};
+    const affirmationItems: { key: string; text: string }[] = [
+      { key: 'a', text: 'I am citizen of India.' },
+      { key: 'b', text: 'I will not undertake valuation of any assets in which I have a direct or indirect interest.' },
+      { key: 'c', text: 'The information furnished in my valuation report is true & correct.' },
+      { key: 'd', text: 'I have personally inspected the property. The work is not sub-contracted.' },
+      { key: 'e', text: 'Valuation report is submitted in the format prescribed by the bank.' },
+      { key: 'f', text: 'I have not been depanelled by any other bank.' },
+      { key: 'g', text: 'I have not been removed from service earlier.' },
+      { key: 'h', text: 'I have not been convicted of any offence.' },
+      { key: 'i', text: 'I have not been declared to be of unsound mind.' },
+      { key: 'j', text: 'I have not been found guilty of misconduct.' },
+      { key: 'k', text: 'I am not an undischarged bankrupt.' },
+      { key: 'l', text: 'I have not undischarged insolvent.' },
+      { key: 'm', text: 'I have not been levied a penalty under section 271J of Income-Tax Act, 1961.' },
+      { key: 'n', text: 'I have not been convicted of an offence under Income-Tax/Wealth Tax/Gift Tax Act.' },
+      { key: 'o', text: `My PAN Card number is: ${this.fv('bobAffirmationPAN')}` },
+      { key: 'p', text: 'I undertake to keep you informed of any events affecting eligibility.' },
+      { key: 'q', text: 'I have not concealed or suppressed any material information.' },
+      { key: 'r', text: 'I have read the IBA handbook on policy & this report is in conformity.' },
+      { key: 's', text: 'I have read the IVS & the report is in conformity.' },
+      { key: 't', text: 'I abide by the Model Code of Conduct.' },
+      { key: 'u', text: 'I am registered under Section 34 AB of the Wealth Tax Act, 1957.' },
+      { key: 'v', text: 'I am valuer registered with IBBI.' },
+      { key: 'w', text: "My CIBIL Score is as per Bank's guidelines." },
+      { key: 'x', text: 'I am the authorized official competent to sign this valuation report.' },
+      { key: 'y', text: 'I will undertake valuation work on receipt of letter of Engagement only.' },
+      { key: 'z', text: 'Further, I hereby provide the following information.' },
+    ];
+
+    const tableRows: string[][] = affirmationItems.map(item => [
+      `${item.key})`,
+      item.text,
+      affirmChecks[item.key] ? '[X]' : '[ ]',
+    ]);
+
+    this.drawTable(
+      ['', 'Statement', 'Affirm'],
+      tableRows,
+      [CONTENT_W * 0.06, CONTENT_W * 0.82, CONTENT_W * 0.12],
+      [], [], [2], [], [],
+      ['left', 'left', 'center'],
+      ['left', 'left', 'center']
+    );
+
+    // Sign-off
+    this.cursorY += 10;
+    this.drawKeyValueRow([
+      { label: 'Date:', value: formatReportDate(this.fv('bobDateOfValuationMade')), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
+      { label: 'Place:', value: this.fv('bobAffirmationPlace'), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
+    ]);
+    this.cursorY += 5;
+    this.drawSimpleRow('Signature of Approved Valuer', '(Signature & Official seal)');
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 10: MODEL CODE OF CONDUCT FOR VALUERS
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBobSection10() {
+    this.drawSectionHeader('MODEL CODE OF CONDUCT FOR VALUERS');
+
+    // Render as text paragraphs with headings
+    const fontSize = FONT_SIZE_SMALL;
+    const pad = 4;
+
+    const renderParagraph = (text: string, isBold: boolean = false, isHeading: boolean = false) => {
+      const font = isBold || isHeading ? this.fontBold : this.fontRegular;
+      const size = isHeading ? FONT_SIZE_HEADER : fontSize;
+      const lines = this.wrapText(this.sanitizeText(text), CONTENT_W - pad * 2, size, isBold || isHeading);
+      const needed = lines.length * size * LINE_HEIGHT + (isHeading ? 10 : 4);
+      this.checkPageBreak(needed);
+
+      if (isHeading) this.cursorY += 6;
+
+      for (const line of lines) {
+        const y = this.pdfY(this.cursorY);
+        this.page.drawText(line, { x: MARGIN_L + pad, y, size, font, color: rgb(0, 0, 0) });
+        this.cursorY += size * LINE_HEIGHT;
+      }
+
+      if (isHeading) this.cursorY += 4;
+      else this.cursorY += 2;
+    };
+
+    renderParagraph('Adopted in line with Companies (Registered Valuers and Valuation Rules, 2017)', true);
+    renderParagraph('All Valuers empanelled with bank shall strictly adhere to the following code of conduct:');
+
+    const sections: { heading: string; items: { num: number; text: string }[] }[] = [
+      { heading: 'Integrity and Fairness', items: [
+        { num: 1, text: 'A Valuer shall, in the conduct of his/its business, follow high standards of integrity and fairness in all his/its dealings with his/its clients and other Valuers.' },
+        { num: 2, text: 'A Valuer shall maintain integrity by being honest, straightforward, and forthright in all professional relationships.' },
+        { num: 3, text: 'A Valuer shall endeavor to ensure that he/it provides true and adequate information and shall not misrepresent any facts or situations.' },
+        { num: 4, text: 'A Valuer shall refrain from being involved in any action that would bring disrepute to the profession.' },
+        { num: 5, text: 'A Valuer shall keep public interest foremost while delivering his services.' },
+      ]},
+      { heading: 'Professional Competence and Due Care', items: [
+        { num: 6, text: 'A Valuer shall render at all times high standards of service, exercise due diligence, ensure proper care and exercise independent professional judgment.' },
+        { num: 7, text: 'A Valuer shall carry out professional services in accordance with the relevant technical and professional standards.' },
+        { num: 8, text: 'A Valuer shall continuously maintain professional knowledge and skill to provide competent professional service.' },
+        { num: 9, text: 'In the preparation of a valuation report, the Valuer shall not disclaim liability for his/its expertise or deny his/its duty of care.' },
+        { num: 10, text: 'A Valuer shall not carry out any instruction of the client insofar as they are incompatible with integrity, objectivity and independence.' },
+        { num: 11, text: 'A Valuer shall clearly state to his client the services that he would be competent to provide.' },
+      ]},
+      { heading: 'Independence and Disclosure of Interest', items: [
+        { num: 12, text: 'A Valuer shall act with objectivity in his/its professional dealings.' },
+        { num: 13, text: 'A Valuer shall not take up an assignment if he/it or any of his/its relatives or associates is not independent.' },
+        { num: 14, text: 'A Valuer shall maintain complete independence in his/its professional relationships.' },
+        { num: 15, text: 'A Valuer shall wherever necessary disclose to the clients, possible sources of conflicts.' },
+        { num: 16, text: 'A Valuer shall not deal in securities of any subject company during valuation period.' },
+        { num: 17, text: 'A Valuer shall not indulge in "mandate snatching" or offering "convenience valuations".' },
+        { num: 18, text: 'As an independent Valuer, the Valuer shall not charge success fee.' },
+        { num: 19, text: 'In any fairness opinion, prior engagement shall be declared.' },
+      ]},
+      { heading: 'Confidentiality', items: [
+        { num: 20, text: 'A Valuer shall not use or divulge any confidential information about the subject company.' },
+        { num: 21, text: 'A Valuer shall ensure maintenance of written contemporaneous records for decisions taken.' },
+        { num: 22, text: 'A Valuer shall appear, co-operate and be available for inspections and investigations.' },
+        { num: 23, text: 'A Valuer shall provide all information and records as may be required by the authority.' },
+        { num: 24, text: 'A Valuer shall maintain proper working papers for a period of three years.' },
+      ]},
+      { heading: 'Gifts and Hospitality', items: [
+        { num: 25, text: 'A Valuer or his/its relative shall not accept gifts or hospitality which undermines independence.' },
+        { num: 26, text: 'A Valuer shall not offer gifts or hospitality to a public servant to obtain or retain work.' },
+      ]},
+      { heading: 'Remuneration and Costs', items: [
+        { num: 27, text: 'A Valuer shall provide services for remuneration which is charged in a transparent manner.' },
+        { num: 28, text: 'A Valuer shall not accept any fees other than those disclosed in a written contract.' },
+      ]},
+      { heading: 'Occupation, Employability and Restrictions', items: [
+        { num: 29, text: 'A Valuer shall refrain from accepting too many assignments if unable to devote adequate time.' },
+        { num: 30, text: 'A Valuer shall not conduct business which discredits the profession.' },
+      ]},
+    ];
+
+    for (const section of sections) {
+      renderParagraph(section.heading, false, true);
+      for (const item of section.items) {
+        // Use the user's prefilled value if it exists in fields, otherwise use the default text
+        const cocValues = this.fields.bobCodeOfConductValues || {};
+        const displayText = cocValues[`item_${item.num}`] || item.text;
+        renderParagraph(`${item.num}. ${displayText}`);
+      }
+    }
+
+    // Acknowledgment
+    this.cursorY += 10;
+    const acknowledged = this.fields.bobCodeOfConductAcknowledged ? 'Yes' : 'No';
+    this.drawSimpleRow('Acknowledged (Items 1-30)', acknowledged);
+
+    this.drawKeyValueRow([
+      { label: 'Date:', value: formatReportDate(this.fv('bobDateOfValuationMade')), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
+      { label: 'Place:', value: this.fv('bobCodeOfConductPlace'), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
+    ]);
+    this.cursorY += 5;
+    this.drawSimpleRow('Signature of Approved Valuer', '(Signature & Official seal)');
   }
 }
