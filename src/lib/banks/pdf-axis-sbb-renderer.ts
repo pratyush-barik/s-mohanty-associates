@@ -489,13 +489,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
     ];
     
     const rows = floors.map((f: any) => {
-      let usages = [];
-      if (f.usageStorage) usages.push('STORAGE');
-      if (f.usageParking) usages.push('PARKING');
-      if (f.usageCommercial) usages.push('COMMERCIAL');
-      if (f.usageResidential) usages.push('RESIDENTIAL');
-      if (f.usageIndustry) usages.push('INDUSTRY');
-      const usageStr = usages.join(', ') || 'NA';
+      const usageStr = `[${f.usageStorage ? 'X' : ' '}] STORAGE\n[${f.usageParking ? 'X' : ' '}] PARKING\n[${f.usageCommercial ? 'X' : ' '}] COMMERCIAL\n[${f.usageResidential ? 'X' : ' '}] RESIDENTIAL\n[${f.usageIndustry ? 'X' : ' '}] INDUSTRY`;
       
       return [
         f.floorName || 'NA',

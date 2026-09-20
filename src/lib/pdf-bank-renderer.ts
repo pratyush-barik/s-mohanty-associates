@@ -542,10 +542,18 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
         }
 
         const align = colAligns[i] || 'left';
-        const cellFont = (isCellBold || isCellHighlight || isHighlight || isLabel || boldCols.includes(i)) ? this.fontBold : this.fontRegular;
+        const baseCellFont = (isCellBold || isCellHighlight || isHighlight || isLabel || boldCols.includes(i)) ? this.fontBold : this.fontRegular;
         let lineY = y - pad - fontSize * 0.85;
         for (const line of rowWrapped[i]) {
-          const lineW = cellFont.widthOfTextAtSize(line, fontSize);
+          let currentCellFont = baseCellFont;
+          // Check for checkbox markers to dynamically bold/unbold
+          if (line.includes('[X] ')) {
+            currentCellFont = this.fontBold;
+          } else if (line.includes('[ ] ')) {
+            currentCellFont = this.fontRegular;
+          }
+
+          const lineW = currentCellFont.widthOfTextAtSize(line, fontSize);
           let lineX = curX + pad;
           if (align === 'center') {
             lineX = curX + (w - lineW) / 2;
@@ -556,7 +564,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
             x: lineX,
             y: lineY,
             size: fontSize,
-            font: cellFont,
+            font: currentCellFont,
             color: rgb(0, 0, 0),
           });
           lineY -= fontSize * LINE_HEIGHT;
