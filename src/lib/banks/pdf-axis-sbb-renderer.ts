@@ -494,10 +494,10 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       return [
         f.floorName || 'NA',
         f.constructedAreaIsNA ? 'NA' : (f.constructedArea ? `${f.constructedArea} SQFT` : '0 SQFT'),
-        f.approvedAreaIsNA ? 'NA' : String(f.approvedArea || 'NA'),
-        f.permissibleAreaIsNA ? 'NA' : String(f.permissibleArea || 'NA'),
+        f.approvedAreaIsNA ? 'NA' : (f.approvedArea ? `${f.approvedArea} SQFT` : '0 SQFT'),
+        f.permissibleAreaIsNA ? 'NA' : (f.permissibleArea ? `${f.permissibleArea} SQFT` : '0 SQFT'),
         f.valuationAreaIsNA ? 'NA' : (f.valuationArea ? `${f.valuationArea} SQFT` : '0 SQFT'),
-        f.accommodationIsNA ? 'NA' : String(f.accommodation || 'NA'),
+        f.accommodationIsNA ? 'NA' : (f.accommodation ? `${f.accommodation} SQFT` : '0 SQFT'),
         usageStr
       ];
     });
@@ -509,7 +509,7 @@ export class PDFAxisSBBRenderer extends PDFBankRenderer {
       'NA',
       val('axisSbbTotalValuationArea', computedValuation),
       'NA',
-      `TOTAL CARPET AREA:\n${val('axisSbbTotalCarpetArea', computedCarpet)}`
+      `TOTAL CARPET AREA(IN SQFT)\n${val('axisSbbTotalCarpetArea', computedCarpet)}`
     ]);
 
     this.drawTable(headers, rows, [70, 70, 70, 70, 70, 80, 78], [], [0, 1, 2, 3, 4, 5, 6], [], [], [{ r: rows.length - 1, c: 0 }, { r: rows.length - 1, c: 1 }, { r: rows.length - 1, c: 4 }, { r: rows.length - 1, c: 6 }]);

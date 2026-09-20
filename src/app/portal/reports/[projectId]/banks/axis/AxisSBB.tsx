@@ -2700,7 +2700,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             value={f.approvedAreaIsNA ? 'NA' : (f.approvedArea || '')} 
                             onChange={e => updateFloor(i, 'approvedArea', e.target.value.toUpperCase())}
                             disabled={isReadOnly || f.approvedAreaIsNA}
-                            placeholder="NA"
+                            placeholder="Sq.Ft."
                           />
                         </td>
                         <td className="p-2 align-top border-r border-slate-300">
@@ -2714,7 +2714,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             value={f.permissibleAreaIsNA ? 'NA' : (f.permissibleArea || '')} 
                             onChange={e => updateFloor(i, 'permissibleArea', e.target.value.toUpperCase())}
                             disabled={isReadOnly || f.permissibleAreaIsNA}
-                            placeholder="NA"
+                            placeholder="Sq.Ft."
                           />
                         </td>
                         <td className="p-2 align-top border-r border-slate-300">
@@ -2743,6 +2743,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                             value={f.accommodationIsNA ? 'NA' : (f.accommodation || '')} 
                             onChange={e => updateFloor(i, 'accommodation', e.target.value.toUpperCase())}
                             disabled={isReadOnly || f.accommodationIsNA}
+                            placeholder="Sq.Ft."
                           />
                         </td>
                         <td className="p-2 align-top border-r border-slate-300">
