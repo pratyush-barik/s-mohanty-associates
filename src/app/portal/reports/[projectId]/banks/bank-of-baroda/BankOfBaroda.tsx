@@ -275,9 +275,9 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       }
     }
   ],
-  getPDFRenderer: (fields: any, projectCode?: string) => {
-    return new PDFBankOfBarodaRenderer(fields, 'Bank_of_Baroda', projectCode || '');
-  }
+  getPDFRenderer: (fields: any, projectCode?: string) => new PDFBankOfBarodaRenderer({
+    ...fields,
+  })
 };
 
 export default function BankOfBaroda(props: BankReportBuilderProps) {
