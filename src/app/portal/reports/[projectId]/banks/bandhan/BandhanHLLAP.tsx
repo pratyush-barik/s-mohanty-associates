@@ -116,6 +116,33 @@ export default function BandhanHLLAP({
           { particulars: 'FF', area: '', yearOfConst: '', lifeInYrs: '10', costOfConst: '', gcrc: 'No', depreciation: '50', value: '' },
         ];
 
+    // Parse branch details from raw data if branchDetails not explicitly stored
+    let branchDetails = raw.branchDetails || '';
+    let branchName = raw.branchName || '';
+    if (!branchDetails && branchName) {
+      branchDetails = branchName.replace(/^The\s+Bandhan\s+Bank,?\s*|^Bandhan\s+Bank,?\s*/i, '').trim();
+    }
+    if (!branchName) {
+      branchName = branchDetails ? `Bandhan Bank, ${branchDetails}` : 'Bandhan Bank';
+    }
+
+    // Parse letter no and date from raw data if not explicitly set
+    let bankLetterNo = raw.bankLetterNo || '';
+    let bankLetterDate = raw.bankLetterDate ? formatReportDate(raw.bankLetterDate) : '';
+    let letterNoAndDate = raw.letterNoAndDate || '';
+    if (!bankLetterNo && !bankLetterDate && letterNoAndDate) {
+      const dtMatch = letterNoAndDate.match(/^(.*?)(?:\s*(?:Dt\.?|Date:?|\/|,|-)\s*)(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{4}-\d{2}-\d{2})$/i);
+      if (dtMatch) {
+        bankLetterNo = dtMatch[1].trim();
+        bankLetterDate = formatReportDate(dtMatch[2].trim());
+      } else {
+        bankLetterNo = letterNoAndDate;
+      }
+    }
+    if (!letterNoAndDate) {
+      letterNoAndDate = [bankLetterNo, bankLetterDate ? `Dt. ${bankLetterDate}` : ''].filter(Boolean).join(' ');
+    }
+
     return {
       ...raw,
       clientType: raw.clientType || 'organisation',
@@ -132,8 +159,11 @@ export default function BandhanHLLAP({
       reportDate: formatReportDate(raw.reportDate || new Date()),
 
       // 1. Basic & Loan Details (1 - 5)
-      branchName: raw.branchName || '',
-      letterNoAndDate: raw.letterNoAndDate || '',
+      branchDetails,
+      branchName,
+      bankLetterNo,
+      bankLetterDate,
+      letterNoAndDate,
       customerName: raw.customerName || prefill?.contactName || prefill?.serviceRequest?.guestName || '',
       mortgagorName: raw.mortgagorName || prefill?.contactName || prefill?.serviceRequest?.guestName || '',
       ownerName: raw.ownerName || '',
@@ -171,9 +201,9 @@ export default function BandhanHLLAP({
 
       // 5. Approval Details (24 - 25)
       approvalAuthority: raw.approvalAuthority || '',
-      layoutApprovalNo: raw.layoutApprovalNo || 'NA',
-      layoutApprovalDate: raw.layoutApprovalDate ? formatReportDate(raw.layoutApprovalDate) : 'NA',
-      layoutExpiryDate: raw.layoutExpiryDate ? formatReportDate(raw.layoutExpiryDate) : 'NA',
+      layoutApprovalNo: raw.layoutApprovalNo || '',
+      layoutApprovalDate: raw.layoutApprovalDate ? formatReportDate(raw.layoutApprovalDate) : '',
+      layoutExpiryDate: raw.layoutExpiryDate ? formatReportDate(raw.layoutExpiryDate) : '',
       buildingPlanApprovalNo: raw.buildingPlanApprovalNo || '',
       buildingPlanApprovalDate: raw.buildingPlanApprovalDate ? formatReportDate(raw.buildingPlanApprovalDate) : '',
       buildingPlanExpiryDate: raw.buildingPlanExpiryDate ? formatReportDate(raw.buildingPlanExpiryDate) : '',
@@ -359,7 +389,13 @@ export default function BandhanHLLAP({
 
   // Handler for standard input changes
   const handleChange = (name: keyof BandhanHLLAPReportFields, val: any) => {
-    setFields(prev => ({ ...prev, [name]: val }));
+    setFields(prev => {
+      const next = { ...prev, [name]: val };
+      if (name === 'reportDate' && (!prev.declarationDate || prev.declarationDate === prev.reportDate)) {
+        next.declarationDate = val;
+      }
+      return next;
+    });
   };
 
   // Handler for dynamic floor rows (Section 6)
@@ -562,26 +598,92 @@ export default function BandhanHLLAP({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <Field label="1. Name of the Bank Branch / Asset Centre / COD:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.branchName || ''}
-                      onChange={(e) => handleChange('branchName', e.target.value)}
-                      placeholder="e.g. Bandhan Bank, Asset Centre / Branch Name"
-                      disabled={isReadOnly}
-                    />
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      <div className="sm:col-span-1">
+                        <div className="relative">
+                          <input
+                            type="text"
+                            className={`${inputCls} bg-slate-100/90 text-slate-700 font-semibold cursor-not-allowed`}
+                            value="Bandhan Bank"
+                            readOnly
+                            disabled
+                          />
+                          <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+                            <span className="text-[10px] font-semibold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">Fixed</span>
+                          </div>
+                        </div>
+                        <p className="text-[11px] text-slate-400 mt-1">Bank Name</p>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.branchDetails || ''}
+                          onChange={(e) => {
+                            const bDetails = e.target.value;
+                            const combined = bDetails ? `Bandhan Bank, ${bDetails}` : 'Bandhan Bank';
+                            setFields((prev) => ({
+                              ...prev,
+                              branchDetails: bDetails,
+                              branchName: combined,
+                            }));
+                          }}
+                          placeholder="e.g. Borivali Branch, Mumbai"
+                          disabled={isReadOnly}
+                        />
+                        <p className="text-[11px] text-slate-500 mt-1">
+                          Branch / Asset Centre / COD details (Outputs as:{' '}
+                          <span className="font-semibold text-slate-700">
+                            {fields.branchDetails ? `Bandhan Bank, ${fields.branchDetails}` : 'Bandhan Bank, Borivali Branch, Mumbai'}
+                          </span>
+                          )
+                        </p>
+                      </div>
+                    </div>
                   </Field>
                 </div>
-                <Field label="2. Bank Letter No and Date for undertaking valuation:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.letterNoAndDate || ''}
-                    onChange={(e) => handleChange('letterNoAndDate', e.target.value)}
-                    placeholder="e.g. Bank Ref No. / Date (DD/MM/YYYY)"
-                    disabled={isReadOnly}
-                  />
-                </Field>
+                <div className="sm:col-span-2">
+                  <Field label="2. Bank Letter No and Date for undertaking valuation:">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.bankLetterNo || ''}
+                          onChange={(e) => {
+                            const noVal = e.target.value;
+                            const dtVal = fields.bankLetterDate || '';
+                            const combined = [noVal, dtVal ? `Dt. ${dtVal}` : ''].filter(Boolean).join(' ');
+                            setFields((prev) => ({
+                              ...prev,
+                              bankLetterNo: noVal,
+                              letterNoAndDate: combined,
+                            }));
+                          }}
+                          placeholder="e.g. BB/VAL/2026/101"
+                          disabled={isReadOnly}
+                        />
+                        <p className="text-[11px] text-slate-400 mt-1">Letter / Request Number</p>
+                      </div>
+                      <div>
+                        <BaseDateInput
+                          value={fields.bankLetterDate || ''}
+                          onChange={(dtVal) => {
+                            const noVal = fields.bankLetterNo || '';
+                            const combined = [noVal, dtVal ? `Dt. ${dtVal}` : ''].filter(Boolean).join(' ');
+                            setFields((prev) => ({
+                              ...prev,
+                              bankLetterDate: dtVal,
+                              letterNoAndDate: combined,
+                            }));
+                          }}
+                          disabled={isReadOnly}
+                        />
+                        <p className="text-[11px] text-slate-400 mt-1">Letter Date</p>
+                      </div>
+                    </div>
+                  </Field>
+                </div>
                 <Field label="3. Customer's Name [Loan Applicant]:">
                   <input
                     type="text"
@@ -625,7 +727,17 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.propertyAddress || ''}
                       onChange={(e) => handleChange('propertyAddress', e.target.value)}
-                      placeholder="Khata No: ..., Plot No: ..., Mouza: ..., Dist: ..."
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+                </div>
+                <div className="sm:col-span-2">
+                  <Field label="8. Legal Address:">
+                    <textarea
+                      rows={2}
+                      className={inputCls}
+                      value={fields.legalAddress || ''}
+                      onChange={(e) => handleChange('legalAddress', e.target.value)}
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -636,17 +748,6 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.pinCode || ''}
                     onChange={(e) => handleChange('pinCode', e.target.value)}
-                    placeholder="e.g. 756060"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="8. Legal Address:">
-                  <textarea
-                    rows={2}
-                    className={inputCls}
-                    value={fields.legalAddress || ''}
-                    onChange={(e) => handleChange('legalAddress', e.target.value)}
-                    placeholder="As recorded in legal title deeds"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -656,7 +757,6 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.landmark || ''}
                     onChange={(e) => handleChange('landmark', e.target.value)}
-                    placeholder="e.g. Near Hotel Golden Plaza"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -666,7 +766,6 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.distanceStation || ''}
                     onChange={(e) => handleChange('distanceStation', e.target.value)}
-                    placeholder="e.g. 7 Kms from Railway Station"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -948,43 +1047,45 @@ export default function BandhanHLLAP({
                   />
                 </Field>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border border-slate-200 p-4 rounded-lg bg-slate-50/50">
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-slate-800 text-sm">Layout Approval</h4>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                  {/* Container 1: Layout Approval */}
+                  <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5">
+                    <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                      <h4 className="font-semibold text-slate-800 text-sm tracking-wide">Layout Approval</h4>
+                    </div>
                     <Field label="Layout Approval No:">
                       <input
                         type="text"
                         className={inputCls}
                         value={fields.layoutApprovalNo || ''}
                         onChange={(e) => handleChange('layoutApprovalNo', e.target.value)}
-                        placeholder="NA or Approval No"
+                        placeholder="e.g. Approval Case / Letter No."
                         disabled={isReadOnly}
                       />
                     </Field>
                     <Field label="Layout Approval Date:">
-                      <input
-                        type="text"
-                        className={inputCls}
+                      <BaseDateInput
                         value={fields.layoutApprovalDate || ''}
-                        onChange={(e) => handleChange('layoutApprovalDate', e.target.value)}
-                        placeholder="DD/MM/YYYY or NA"
+                        onChange={(val) => handleChange('layoutApprovalDate', val)}
                         disabled={isReadOnly}
                       />
                     </Field>
                     <Field label="Layout Expiry Date:">
-                      <input
-                        type="text"
-                        className={inputCls}
+                      <BaseDateInput
                         value={fields.layoutExpiryDate || ''}
-                        onChange={(e) => handleChange('layoutExpiryDate', e.target.value)}
-                        placeholder="DD/MM/YYYY or NA"
+                        onChange={(val) => handleChange('layoutExpiryDate', val)}
                         disabled={isReadOnly}
                       />
                     </Field>
                   </div>
 
-                  <div className="space-y-3">
-                    <h4 className="font-semibold text-slate-800 text-sm">Building Plan Approval</h4>
+                  {/* Container 2: Building Plan Approval */}
+                  <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5">
+                    <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <h4 className="font-semibold text-slate-800 text-sm tracking-wide">Building Plan Approval</h4>
+                    </div>
                     <Field label="Building Plan Approval No:">
                       <input
                         type="text"

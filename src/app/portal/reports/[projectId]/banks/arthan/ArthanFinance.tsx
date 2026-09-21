@@ -452,6 +452,12 @@ export default function ArthanFinance({
           ? calculatePercentageValue(next.marketValueLandBuilding, pct)
           : '';
       }
+      if (key === 'distressPct3') {
+        const pct = (value !== '' && value !== undefined && value !== null) ? value : '0';
+        next.distressValuation3 = next.totalNetValuation3
+          ? calculatePercentageValue(next.totalNetValuation3, pct)
+          : '';
+      }
       if (key === 'distressPctPresent') {
         const pct = (value !== '' && value !== undefined && value !== null) ? value : '0';
         next.distressValuePresent = next.marketValueLandBuildingRight
@@ -857,9 +863,9 @@ export default function ArthanFinance({
   ];
 
   return (
-    <div className="flex gap-6 items-start w-full">
+    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* ── Main Form Column ── */}
-      <div className="flex-1 min-w-0 space-y-6">
+      <div className="flex-1 min-w-0 space-y-6 w-full">
         <ActiveConfigBanner
           clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
@@ -877,23 +883,35 @@ export default function ArthanFinance({
           </div>
         )}
 
+        {/* Header Block */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">
+            Arthan Finance — Valuation Report
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Proposal No. (Ref No):">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.proposalNo || ''}
+                onChange={e => handleChange('proposalNo', e.target.value)}
+                placeholder="e.g. AFPL/SMA-001"
+                disabled={isReadOnly}
+              />
+            </Field>
+            <Field label="Date of Valuation:">
+              <BaseDateInput
+                value={fields.dateOfValuation || ''}
+                onChange={val => handleChange('dateOfValuation', val)}
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+        </div>
+
         {/* ════ SECTION 1: TECHNICAL INITIATION REQUEST FORM DATA ════ */}
         <Section title="TECHNICAL INITIATION REQUEST FORM DATA" number={1} id="sec-1" defaultOpen={true}>
-          {/* Date of Valuation (header field) */}
-          <div className="mb-4 flex justify-end items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-black">
-            <span className="text-sm font-semibold text-black">Date of Valuation:</span>
-            <BaseDateInput
-              className="w-40 font-semibold text-black"
-              value={fields.dateOfValuation || ''}
-              onChange={val => handleChange('dateOfValuation', val)}
-              disabled={isReadOnly}
-            />
-          </div>
-
           <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Proposal No.">
-              <input className={inputCls} value={fields.proposalNo || ''} onChange={e => handleChange('proposalNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. AFPL/SMA-001" />
-            </Field>
             <Field label="Case Type">
               <input className={inputCls} value={fields.caseType || ''} onChange={e => handleChange('caseType', e.target.value)} disabled={isReadOnly} placeholder="e.g. SBL" />
             </Field>
@@ -903,7 +921,7 @@ export default function ArthanFinance({
               onChange={val => handleChange('dateOfInspection', val)}
               disabled={isReadOnly}
             />
-            <Field label="Nearest Landmark">
+            <Field label="Nearest Landmark" span={2}>
               <input className={inputCls} value={fields.nearestLandmark || ''} onChange={e => handleChange('nearestLandmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near Ishkon Temple, Antara" />
             </Field>
 

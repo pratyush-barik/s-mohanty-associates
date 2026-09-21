@@ -84,7 +84,10 @@ export interface BandhanHLLAPReportFields {
 
   // Basic & Loan Details (1 - 5)
   branchName?: string;
+  branchDetails?: string;
   letterNoAndDate?: string;
+  bankLetterNo?: string;
+  bankLetterDate?: string;
   customerName?: string;
   mortgagorName?: string;
   ownerName?: string;
@@ -408,8 +411,22 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.cursorY += rowH;
 
     // 1 to 5
-    this.drawBandhanRow('1.', 'Name of the Bank Branch/Asset Centre/COD', fields.branchName || '');
-    this.drawBandhanRow('2.', 'Bank Letter No and date for undertaking valuation', fields.letterNoAndDate || '');
+    const fullBranch = fields.branchDetails
+      ? `Bandhan Bank, ${fields.branchDetails}`
+      : (fields.branchName || '');
+    this.drawBandhanRow('1.', 'Name of the Bank Branch/Asset Centre/COD', fullBranch);
+
+    let formattedLetterNoAndDate = fields.letterNoAndDate || '';
+    if (fields.bankLetterNo || fields.bankLetterDate) {
+      if (fields.bankLetterNo && fields.bankLetterDate) {
+        formattedLetterNoAndDate = `${fields.bankLetterNo} Dt. ${formatReportDate(fields.bankLetterDate)}`;
+      } else if (fields.bankLetterNo) {
+        formattedLetterNoAndDate = fields.bankLetterNo;
+      } else if (fields.bankLetterDate) {
+        formattedLetterNoAndDate = `Dt. ${formatReportDate(fields.bankLetterDate)}`;
+      }
+    }
+    this.drawBandhanRow('2.', 'Bank Letter No and date for undertaking valuation', formattedLetterNoAndDate);
     this.drawBandhanRow('3.', "Customer's name [ loan applicant]", fields.customerName || '');
     this.drawBandhanRow('4.', "Mortgagor`s name", fields.mortgagorName || '');
     this.drawBandhanRow('5.', 'Name of the present owner / seller', fields.ownerName || '');
@@ -793,8 +810,9 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     // Introduction
     this.drawHeadingText('INTRODUCTION: -', TABLE_FONT_SIZE, 'left');
 
+    const branchDisplay = fields.branchDetails || (fields.branchName ? fields.branchName.replace(/^The\s+Bandhan\s+Bank,?\s*|^Bandhan\s+Bank,?\s*/i, '').trim() : 'Bhubaneswar Branch');
     const introText = fields.annexureIntro ||
-      `Pursuant to the instructions received from The Bandhan Bank, ${fields.branchName || 'Bhubaneswar Branch'}, to ascertain 'MARKET VALUE' (MV) of the above property, in favour of ${fields.customerName || 'Loan Applicant'} (Applicant Name), the site and its neighbourhood area had been inspected on ${fields.dateOfVisit || ''} in presence of the owner and the property had been identified by us with the help of available documents.`;
+      `Pursuant to the instructions received from Bandhan Bank, ${branchDisplay || 'Bhubaneswar Branch'}, to ascertain 'MARKET VALUE' (MV) of the above property, in favour of ${fields.customerName || 'Loan Applicant'} (Applicant Name), the site and its neighbourhood area had been inspected on ${fields.dateOfVisit || ''} in presence of the owner and the property had been identified by us with the help of available documents.`;
     this.drawParagraph(introText);
     this.cursorY += 6;
 

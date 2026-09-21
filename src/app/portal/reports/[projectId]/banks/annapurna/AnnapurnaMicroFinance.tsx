@@ -825,9 +825,9 @@ export default function AnnapurnaMicroFinance({
   ];
 
   return (
-    <div className="flex gap-6 items-start w-full">
+    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* ── Main Form Column ── */}
-      <div className="flex-1 min-w-0 space-y-4">
+      <div className="flex-1 min-w-0 space-y-6 w-full">
         <ActiveConfigBanner
           clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
@@ -845,6 +845,32 @@ export default function AnnapurnaMicroFinance({
             {message.text}
           </div>
         )}
+
+        {/* Header Block */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">
+            Annapurna Finance — Valuation Report
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Ref. No:">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.refNo || ''}
+                onChange={e => handleChange('refNo', e.target.value)}
+                placeholder="e.g. Annapurna/SMA-2026-001"
+                disabled={isReadOnly}
+              />
+            </Field>
+            <Field label="Date of Valuation Report:">
+              <BaseDateInput
+                value={fields.reportDate || ''}
+                onChange={val => handleChange('reportDate', val)}
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+        </div>
 
         {/* ════ SECTION 1: APPLICATION DETAILS ════ */}
         <Section title="Application Details" number={1} id="sec-1" defaultOpen={true}>

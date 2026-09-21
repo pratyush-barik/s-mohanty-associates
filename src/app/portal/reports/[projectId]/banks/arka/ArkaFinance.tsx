@@ -599,7 +599,7 @@ export default function ArkaFinance({
   };
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full">
+    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       <div className="flex-1 min-w-0 space-y-6 w-full">
         <ActiveConfigBanner
           clientType={fields.clientType || 'organisation'}
@@ -616,6 +616,32 @@ export default function ArkaFinance({
             {message.text}
           </div>
         )}
+
+        {/* Header Block */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">
+            Arka Finance — Valuation Report
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Ref. No:">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.refNo || ''}
+                onChange={e => handleChange('refNo', e.target.value)}
+                placeholder="e.g. Arka/SMA-2026-001"
+                disabled={isReadOnly}
+              />
+            </Field>
+            <Field label="Date of Valuation Report:">
+              <BaseDateInput
+                value={fields.dateOfReport || ''}
+                onChange={val => handleChange('dateOfReport', val)}
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+        </div>
 
         {/* SECTION 1: COVER PAGE DETAILS (unchanged) */}
         <Section id="arka-cover" title="Cover Page Details" number={1} defaultOpen>
@@ -795,21 +821,6 @@ export default function ArkaFinance({
         </Section>
         {/* SECTION 2: CLIENT & APPLICATION DETAILS */}
         <Section id="arka-sec2" title="Client & Application Details" number={2}>
-          {/* Container: Report Reference & Date - light orange */}
-          <div className="border border-orange-200 bg-orange-50 rounded-xl p-5 mb-5">
-            <h3 className="font-semibold text-orange-800 mb-4 text-sm tracking-wide uppercase">Report Reference & Date</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="Reference No">
-                <input className={inputCls} value={fields.refNo || ''} onChange={e => handleChange('refNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. SMA-2026-001" />
-              </Field>
-              <BaseDateInput
-                label="Date of Valuation Report"
-                value={fields.dateOfReport || ''}
-                onChange={val => handleChange('dateOfReport', val)}
-                disabled={isReadOnly}
-              />
-            </div>
-          </div>
           {/* Container: Customer Information - light blue */}
           <div className="border border-sky-200 bg-sky-50 rounded-xl p-5 mb-5">
             <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">Customer Information</h3>

@@ -543,7 +543,18 @@ export default function BandhanSME({
 
   // Field change handler
   const handleChange = useCallback((field: keyof BandhanSMEReportFields, value: any) => {
-    setFields((prev) => ({ ...prev, [field]: value }));
+    setFields((prev) => {
+      const next = { ...prev, [field]: value };
+      if (field === 'reportDate') {
+        if (!prev.dateOfValuation || prev.dateOfValuation === prev.reportDate) {
+          next.dateOfValuation = value;
+        }
+        if (!prev.declarationDate || prev.declarationDate === prev.reportDate) {
+          next.declarationDate = value;
+        }
+      }
+      return next;
+    });
   }, []);
 
   // Multi-Plot Boundary Handlers

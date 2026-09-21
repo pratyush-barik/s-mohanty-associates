@@ -746,6 +746,32 @@ export default function AxisHLLAP({
           </div>
         )}
 
+        {/* Header Block */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">
+            Axis Bank — HL-LAP Valuation Report
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Ref. No:">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.refNo || ''}
+                onChange={e => handleChange('refNo', e.target.value)}
+                placeholder="e.g. Axis/SMA-2026-001"
+                disabled={isReadOnly}
+              />
+            </Field>
+            <Field label="Report Date:">
+              <BaseDateInput
+                value={fields.reportDate || ''}
+                onChange={val => handleChange('reportDate', val)}
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+        </div>
+
         {/* ════ SECTION 1: APPLICANT & APPLICATION DETAILS (POINTS 1–3) ════ */}
         <Section
           title="1. Applicant & Application Details (Points 1–3)"
@@ -753,30 +779,6 @@ export default function AxisHLLAP({
           id="axis-sec1"
           defaultOpen={true}
         >
-          {/* Header Metadata Container (Soft Amber) */}
-          <div className="pt-2 pb-4 border-b border-slate-200">
-            <div className="border border-amber-200 bg-[#FFFBEB] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Reference Number (Auto-assigned)">
-                  <input
-                    type="text"
-                    value={fields.refNo}
-                    onChange={e => handleChange('refNo', e.target.value)}
-                    className={inputCls}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-
-                <BaseDateInput
-                  label="Date of Report"
-                  value={fields.reportDate || ''}
-                  onChange={val => handleChange('reportDate', val)}
-                  disabled={isReadOnly}
-                />
-              </div>
-            </div>
-          </div>
-
           {/* Point 1: Customer Details (Soft Container - Soft Indigo) */}
           <div className="pt-2 pb-4 border-b border-slate-200">
             <div className="border border-indigo-200 bg-[#EEF2FF] rounded-xl p-4 sm:p-5 shadow-2xs">
