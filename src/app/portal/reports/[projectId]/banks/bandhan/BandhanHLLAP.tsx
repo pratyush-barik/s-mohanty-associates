@@ -15,6 +15,7 @@ import {
   formatReportDate,
   BaseDateInput,
   BasePhotoBucketModal,
+  BasePhotographsSection,
   DEFAULT_PHOTO_LABEL,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency } from '@/lib/numberToWords';
@@ -53,6 +54,28 @@ const parseNum = (v: any): number => {
   if (!v) return 0;
   const n = parseFloat(String(v).replace(/[^0-9.-]/g, ''));
   return isNaN(n) ? 0 : n;
+};
+
+const sanitizePositiveInt = (val: string, maxLen?: number): string => {
+  const digits = val.replace(/[^0-9]/g, '');
+  return maxLen ? digits.slice(0, maxLen) : digits;
+};
+
+const sanitizePositiveFloat = (val: string): string => {
+  let clean = val.replace(/[^0-9.]/g, '');
+  const parts = clean.split('.');
+  if (parts.length > 2) {
+    clean = parts[0] + '.' + parts.slice(1).join('');
+  }
+  return clean;
+};
+
+const sanitizePercentage = (val: string): string => {
+  const clean = sanitizePositiveFloat(val.replace(/%/g, ''));
+  if (!clean) return '';
+  const num = parseFloat(clean);
+  if (num > 100) return '100';
+  return clean;
 };
 
 const getNextFloorName = (existingFloors: BandhanHLLAPFloor[]): string => {
@@ -94,12 +117,13 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-class', title: '4. Property Classification' },
   { id: 'sec-approvals', title: '5. Approval & Plan Details' },
   { id: 'sec-floors', title: '6. Floor Areas & Setbacks' },
-  { id: 'sec-valuation', title: '7. Valuation & Computations' },
-  { id: 'sec-progress', title: '8. Progress of Work' },
-  { id: 'sec-ndma', title: '9. NDMA Parameters' },
-  { id: 'sec-annexure-a', title: '10. Annexure-A & Declaration' },
-  { id: 'sec-docs', title: '11. Document Enclosures' },
-  { id: 'sec-photos', title: '12. Property Photographs' },
+  { id: 'sec-valuation', title: '7. Valuation Computations (30–33)' },
+  { id: 'sec-progress', title: '8. Progress of Work (34)' },
+  { id: 'sec-final-valuation', title: '9. Final Valuation & Project (35–40)' },
+  { id: 'sec-ndma', title: '10. NDMA Parameters (41)' },
+  { id: 'sec-annexure-a', title: '11. Detailed DRC & Annexure' },
+  { id: 'sec-docs', title: '12. Document Enclosures' },
+  { id: 'sec-photos', title: '13. Property Photographs' },
 ];
 
 export default function BandhanHLLAP({
@@ -415,7 +439,7 @@ export default function BandhanHLLAP({
         next.realisableValue = `Rs.${formatCurrencyINR(realisable)}/-`;
         changed = true;
       }
-      if (calculatedBUAStr && !prev.builtUpAreaTotal) {
+      if (prev.builtUpAreaTotal !== calculatedBUAStr) {
         next.builtUpAreaTotal = calculatedBUAStr;
         changed = true;
       }
@@ -487,20 +511,114 @@ export default function BandhanHLLAP({
     }));
   };
 
-  // Handle Photo updates
-  const handlePhotoUpload = (index: number, file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const url = e.target?.result as string;
-      const currentPhotos = [...(fields.propertyPhotos || [])];
-      currentPhotos[index] = {
-        ...(currentPhotos[index] || {}),
-        url,
-        caption: currentPhotos[index]?.caption || DEFAULT_PHOTO_LABEL,
+  // Photos state derivation
+  const propertyImages: string[] = useMemo(() => {
+    if (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0) {
+      return fields.propertyImages;
+    }
+    if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
+      return fields.propertyPhotos.map((p: any) => (typeof p === 'string' ? p : p.url)).filter(Boolean);
+    }
+    return [];
+  }, [fields.propertyImages, fields.propertyPhotos]);
+
+  const propertyImageNames: string[] = useMemo(() => {
+    if (Array.isArray(fields.propertyImageNames) && fields.propertyImageNames.length > 0) {
+      return fields.propertyImageNames;
+    }
+    if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
+      return fields.propertyPhotos.map((p: any, i: number) => (typeof p === 'string' ? `Photograph ${i + 1}` : (p.caption || `Photograph ${i + 1}`)));
+    }
+    return [];
+  }, [fields.propertyImageNames, fields.propertyPhotos]);
+
+  // Handle Multiple Photo Upload
+  const handleUploadMultiplePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const newImgs: string[] = [];
+    const newNames: string[] = [];
+    let processed = 0;
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        newImgs.push(dataUrl);
+        newNames.push(file.name.replace(/\.[^/.]+$/, '') || `Photograph ${propertyImages.length + newImgs.length}`);
+        processed++;
+        if (processed === files.length) {
+          const mergedImgs = [...propertyImages, ...newImgs];
+          const mergedNames = [...propertyImageNames, ...newNames];
+          const mergedPhotos = mergedImgs.map((url, idx) => ({
+            url,
+            caption: mergedNames[idx] || `Photograph ${idx + 1}`,
+          }));
+          setFields((prev) => ({
+            ...prev,
+            propertyImages: mergedImgs,
+            propertyImageNames: mergedNames,
+            propertyPhotos: mergedPhotos,
+          }));
+        }
       };
-      setFields(prev => ({ ...prev, propertyPhotos: currentPhotos }));
-    };
-    reader.readAsDataURL(file);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handlePhotoRemove = (idx: number) => {
+    const updatedImgs = propertyImages.filter((_, i) => i !== idx);
+    const updatedNames = propertyImageNames.filter((_, i) => i !== idx);
+    const updatedPhotos = (fields.propertyPhotos || []).filter((_, i) => i !== idx);
+    setFields((prev) => ({
+      ...prev,
+      propertyImages: updatedImgs,
+      propertyImageNames: updatedNames,
+      propertyPhotos: updatedPhotos.length > 0 ? updatedPhotos : updatedImgs.map((url, i) => ({ url, caption: updatedNames[i] || `Photograph ${i + 1}` })),
+    }));
+  };
+
+  const handlePhotoRename = (idx: number, name: string) => {
+    const updatedNames = [...propertyImageNames];
+    while (updatedNames.length <= idx) {
+      updatedNames.push(`Photograph ${updatedNames.length + 1}`);
+    }
+    updatedNames[idx] = name;
+    const updatedPhotos = [...(fields.propertyPhotos || [])];
+    if (updatedPhotos[idx]) {
+      updatedPhotos[idx] = { ...updatedPhotos[idx], caption: name };
+    } else if (propertyImages[idx]) {
+      updatedPhotos[idx] = { url: propertyImages[idx], caption: name };
+    }
+    setFields((prev) => ({
+      ...prev,
+      propertyImageNames: updatedNames,
+      propertyPhotos: updatedPhotos,
+    }));
+  };
+
+  const handlePhotoReorder = (newImages: string[], newNames: string[]) => {
+    const newPhotos = newImages.map((url, idx) => ({
+      url,
+      caption: newNames[idx] || `Photograph ${idx + 1}`,
+    }));
+    setFields((prev) => ({
+      ...prev,
+      propertyImages: newImages,
+      propertyImageNames: newNames,
+      propertyPhotos: newPhotos,
+    }));
+  };
+
+  // Enclosure Document Upload Helper
+  const handleEnclosureUpload = (fieldKey: 'rorImageUrl' | 'locationMapImageUrl' | 'bhuNakshaImageUrl' | 'guidelineValueImageUrl', e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        handleChange(fieldKey, ev.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Save Draft
@@ -620,7 +738,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.refNo || ''}
                     onChange={(e) => handleChange('refNo', e.target.value)}
-                    placeholder="e.g. Bandhan/2026/07/01"
+                    placeholder="e.g. BANDHAN/HL/2026/01"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -635,7 +753,7 @@ export default function BandhanHLLAP({
             </div>
 
             {/* 1. Basic & Loan Details */}
-            <Section id="sec-basic" title="1. Basic & Loan Details (Points 1–5)">
+            <Section number={1} id="sec-basic" title="Basic & Loan Details (Points 1–5)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <Field label="1. Name of the Bank Branch / Asset Centre / COD:">
@@ -653,7 +771,6 @@ export default function BandhanHLLAP({
                             <span className="text-[10px] font-semibold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">Fixed</span>
                           </div>
                         </div>
-                        <p className="text-[11px] text-slate-400 mt-1">Bank Name</p>
                       </div>
                       <div className="sm:col-span-2">
                         <input
@@ -672,13 +789,6 @@ export default function BandhanHLLAP({
                           placeholder="e.g. Borivali Branch, Mumbai"
                           disabled={isReadOnly}
                         />
-                        <p className="text-[11px] text-slate-500 mt-1">
-                          Branch / Asset Centre / COD details (Outputs as:{' '}
-                          <span className="font-semibold text-slate-700">
-                            {fields.branchDetails ? `Bandhan Bank, ${fields.branchDetails}` : 'Bandhan Bank, Borivali Branch, Mumbai'}
-                          </span>
-                          )
-                        </p>
                       </div>
                     </div>
                   </Field>
@@ -701,10 +811,9 @@ export default function BandhanHLLAP({
                               letterNoAndDate: combined,
                             }));
                           }}
-                          placeholder="e.g. BB/VAL/2026/101"
+                          placeholder="e.g. BANDHAN/VAL/2026/102"
                           disabled={isReadOnly}
                         />
-                        <p className="text-[11px] text-slate-400 mt-1">Letter / Request Number</p>
                       </div>
                       <div>
                         <BaseDateInput
@@ -720,7 +829,6 @@ export default function BandhanHLLAP({
                           }}
                           disabled={isReadOnly}
                         />
-                        <p className="text-[11px] text-slate-400 mt-1">Letter Date</p>
                       </div>
                     </div>
                   </Field>
@@ -751,7 +859,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ownerName || ''}
                     onChange={(e) => handleChange('ownerName', e.target.value)}
-                    placeholder="e.g. Owner Full Name, S/o / W/o ..."
+                    placeholder="e.g. Owner Full Name"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -759,7 +867,7 @@ export default function BandhanHLLAP({
             </Section>
 
             {/* 2. Location & Address */}
-            <Section id="sec-address" title="2. Location & Address Details (Points 6–14)">
+            <Section number={2} id="sec-address" title="Location & Address Details (Points 6–14)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <Field label="6. Complete Property Address:">
@@ -768,6 +876,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.propertyAddress || ''}
                       onChange={(e) => handleChange('propertyAddress', e.target.value)}
+                      placeholder="e.g. Plot No. 123, Street Name, City, State"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -779,6 +888,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.legalAddress || ''}
                       onChange={(e) => handleChange('legalAddress', e.target.value)}
+                      placeholder="e.g. Legal address as per Sale Deed / Khata record"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -788,7 +898,8 @@ export default function BandhanHLLAP({
                     type="text"
                     className={inputCls}
                     value={fields.pinCode || ''}
-                    onChange={(e) => handleChange('pinCode', e.target.value)}
+                    onChange={(e) => handleChange('pinCode', sanitizePositiveInt(e.target.value, 6))}
+                    placeholder="e.g. 751024"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -798,6 +909,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.landmark || ''}
                     onChange={(e) => handleChange('landmark', e.target.value)}
+                    placeholder="e.g. Near City Hospital"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -807,6 +919,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.distanceStation || ''}
                     onChange={(e) => handleChange('distanceStation', e.target.value)}
+                    placeholder="e.g. 2.5 km from Railway Station"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -860,7 +973,7 @@ export default function BandhanHLLAP({
             </Section>
 
             {/* 3. Boundaries */}
-            <Section id="sec-boundaries" title="3. Boundaries & Physical Verification (Points 15–16)">
+            <Section number={3} id="sec-boundaries" title="Boundaries & Physical Verification (Points 15–16)">
               <div className="space-y-4">
                 <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider">
                   15. Boundaries of the Property (Actual vs Sale Deed)
@@ -883,7 +996,7 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryNorthActual || ''}
                             onChange={(e) => handleChange('boundaryNorthActual', e.target.value)}
-                            placeholder="Actual north boundary"
+                            placeholder="e.g. Plot No. 122 / Road"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -893,7 +1006,7 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryNorthDeed || ''}
                             onChange={(e) => handleChange('boundaryNorthDeed', e.target.value)}
-                            placeholder="Deed north boundary"
+                            placeholder="e.g. Plot No. 122"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -906,7 +1019,7 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundarySouthActual || ''}
                             onChange={(e) => handleChange('boundarySouthActual', e.target.value)}
-                            placeholder="Actual south boundary"
+                            placeholder="e.g. 20ft Wide Road"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -916,7 +1029,7 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundarySouthDeed || ''}
                             onChange={(e) => handleChange('boundarySouthDeed', e.target.value)}
-                            placeholder="Deed south boundary"
+                            placeholder="e.g. Road"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -929,7 +1042,7 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryEastActual || ''}
                             onChange={(e) => handleChange('boundaryEastActual', e.target.value)}
-                            placeholder="Actual east boundary"
+                            placeholder="e.g. Plot No. 124"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -939,7 +1052,7 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryEastDeed || ''}
                             onChange={(e) => handleChange('boundaryEastDeed', e.target.value)}
-                            placeholder="Deed east boundary"
+                            placeholder="e.g. Plot No. 124"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -952,7 +1065,7 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryWestActual || ''}
                             onChange={(e) => handleChange('boundaryWestActual', e.target.value)}
-                            placeholder="Actual west boundary"
+                            placeholder="e.g. Others Land"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -962,7 +1075,7 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryWestDeed || ''}
                             onChange={(e) => handleChange('boundaryWestDeed', e.target.value)}
-                            placeholder="Deed west boundary"
+                            placeholder="e.g. Others Land"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -987,7 +1100,7 @@ export default function BandhanHLLAP({
             </Section>
 
             {/* 4. Classification & Structure */}
-            <Section id="sec-class" title="4. Property Classification & Structural Usage (Points 17–23)">
+            <Section number={4} id="sec-class" title="Property Classification & Structural Usage (Points 17–23)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="17. Status of Land/Flat:">
                   <select
@@ -1015,26 +1128,33 @@ export default function BandhanHLLAP({
                     <option value="Commercial">Commercial</option>
                   </select>
                 </Field>
-                <Field label="19. Approved Usage:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.approvedUsage || 'Residential'}
-                    onChange={(e) => handleChange('approvedUsage', e.target.value)}
-                    placeholder="e.g. Residential"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="20. Actual Usage:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.actualUsage || 'Residential'}
-                    onChange={(e) => handleChange('actualUsage', e.target.value)}
-                    placeholder="e.g. Residential"
-                    disabled={isReadOnly}
-                  />
-                </Field>
+
+                {/* 19 & 20. Usage Details (Soft Container - Multiple questions, no header) */}
+                <div className="rounded-xl border border-sky-200/80 bg-sky-50/50 p-4 sm:p-5 shadow-xs sm:col-span-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="19. Approved Usage:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.approvedUsage || 'Residential'}
+                        onChange={(e) => handleChange('approvedUsage', e.target.value)}
+                        placeholder="e.g. Residential"
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="20. Actual Usage:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.actualUsage || 'Residential'}
+                        onChange={(e) => handleChange('actualUsage', e.target.value)}
+                        placeholder="e.g. Residential"
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                  </div>
+                </div>
+
                 <Field label="21. Type of Structure:">
                   <select
                     className={selectCls}
@@ -1066,7 +1186,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.unitDetails || ''}
                       onChange={(e) => handleChange('unitDetails', e.target.value)}
-                      placeholder="GF - 2 Garage, 1 Toilet, 1 Hall, 1 Kitchen&#10;FF - 2 Office room, 1 Toilet, 1 Hall, 1 Stair room..."
+                      placeholder="e.g. 2 BHK: 2 Bedrooms, 1 Living Hall, 1 Kitchen, 2 Toilets, 1 Balcony"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1075,7 +1195,7 @@ export default function BandhanHLLAP({
             </Section>
 
             {/* 5. Approval & Plan Details */}
-            <Section id="sec-approvals" title="5. Approval & Plan Details (Points 24–25)">
+            <Section number={5} id="sec-approvals" title="Approval & Plan Details (Points 24–25)">
               <div className="space-y-4">
                 <Field label="24. Approval Authority Name:">
                   <input
@@ -1083,17 +1203,17 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.approvalAuthority || ''}
                     onChange={(e) => handleChange('approvalAuthority', e.target.value)}
-                    placeholder="e.g. BDA / Competent Authority"
+                    placeholder="e.g. BMC / BDA / Gram Panchayat"
                     disabled={isReadOnly}
                   />
                 </Field>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  {/* Container 1: Layout Approval */}
-                  <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5">
-                    <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                      <h4 className="font-semibold text-slate-800 text-sm tracking-wide">Layout Approval</h4>
+                  {/* Container 1: Layout Approval (Emerald Theme) */}
+                  <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
+                    <div className="flex items-center gap-2 pb-2 border-b border-emerald-200/70">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                      <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">Layout Approval</span>
                     </div>
                     <Field label="Layout Approval No:">
                       <input
@@ -1101,7 +1221,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.layoutApprovalNo || ''}
                         onChange={(e) => handleChange('layoutApprovalNo', e.target.value)}
-                        placeholder="e.g. Approval Case / Letter No."
+                        placeholder="e.g. LP/1024/2019"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1121,11 +1241,11 @@ export default function BandhanHLLAP({
                     </Field>
                   </div>
 
-                  {/* Container 2: Building Plan Approval */}
-                  <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5">
-                    <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                      <h4 className="font-semibold text-slate-800 text-sm tracking-wide">Building Plan Approval</h4>
+                  {/* Container 2: Building Plan Approval (Amber Theme) */}
+                  <div className="rounded-xl border border-amber-200/80 bg-amber-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
+                    <div className="flex items-center gap-2 pb-2 border-b border-amber-200/70">
+                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                      <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">Building Plan Approval</span>
                     </div>
                     <Field label="Building Plan Approval No:">
                       <input
@@ -1133,7 +1253,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.buildingPlanApprovalNo || ''}
                         onChange={(e) => handleChange('buildingPlanApprovalNo', e.target.value)}
-                        placeholder="e.g. Approval Case / Letter No."
+                        placeholder="e.g. BP/554/2020"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1154,13 +1274,13 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* Container 3: Point 25 - Sanctioned Plan & Documentation Particulars */}
-                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5">
-                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                {/* Container 3: Point 25 - Sanctioned Plan & Documentation Particulars (Indigo Theme) */}
+                <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-indigo-200/70">
                     <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
-                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
-                      25. Sanctioned Plan & Documentation Particulars
-                    </h4>
+                    <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
+                      25. Sanctioned Plan &amp; Documentation Particulars
+                    </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                     <Field label="Sanctioned Plan Provided / Plan No:">
@@ -1169,7 +1289,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.sanctionedPlanProvided || ''}
                         onChange={(e) => handleChange('sanctionedPlanProvided', e.target.value)}
-                        placeholder="e.g. Plan Approval No. / Letter No."
+                        placeholder="e.g. Yes / Plan No: 1234/2020"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1179,7 +1299,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.planApprovedBy || ''}
                         onChange={(e) => handleChange('planApprovedBy', e.target.value)}
-                        placeholder="e.g. BDA / Local Planning Authority"
+                        placeholder="e.g. Bhubaneswar Municipal Corporation"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1189,7 +1309,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.deedProvided || ''}
                         onChange={(e) => handleChange('deedProvided', e.target.value)}
-                        placeholder="e.g. Sale Deed / Title Deed No."
+                        placeholder="e.g. Sale Deed No. 1081609995"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1210,7 +1330,7 @@ export default function BandhanHLLAP({
                           className={inputCls}
                           value={fields.comments || ''}
                           onChange={(e) => handleChange('comments', e.target.value)}
-                          placeholder="e.g. Verified ROR, Sale Deed, Approved Plan"
+                          placeholder="e.g. Construction completed within validity period"
                           disabled={isReadOnly}
                         />
                       </Field>
@@ -1221,7 +1341,7 @@ export default function BandhanHLLAP({
             </Section>
 
             {/* 6. Floor Areas & Setbacks */}
-            <Section id="sec-floors" title="6. Area, Floor Breakdown & Setbacks (Points 26–29)">
+            <Section number={6} id="sec-floors" title="Area, Floor Breakdown & Setbacks (Points 26–29)">
               <div className="space-y-4">
                 <Field label="26. Total Land / Property Area:">
                   <input
@@ -1229,6 +1349,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.propertyArea || ''}
                     onChange={(e) => handleChange('propertyArea', e.target.value)}
+                    placeholder="e.g. 1500.00 sq.ft"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1255,6 +1376,7 @@ export default function BandhanHLLAP({
                               className={inputCls}
                               value={fl.floor || ''}
                               onChange={(e) => handleFloorChange(idx, 'floor', e.target.value)}
+                              placeholder="e.g. Ground Floor"
                               disabled={isReadOnly}
                             />
                           </td>
@@ -1263,7 +1385,8 @@ export default function BandhanHLLAP({
                               type="text"
                               className={inputCls}
                               value={fl.measuredArea || ''}
-                              onChange={(e) => handleFloorChange(idx, 'measuredArea', e.target.value)}
+                              onChange={(e) => handleFloorChange(idx, 'measuredArea', sanitizePositiveFloat(e.target.value))}
+                              placeholder="e.g. 850"
                               disabled={isReadOnly}
                             />
                           </td>
@@ -1272,7 +1395,8 @@ export default function BandhanHLLAP({
                               type="text"
                               className={inputCls}
                               value={fl.sanctionedArea || ''}
-                              onChange={(e) => handleFloorChange(idx, 'sanctionedArea', e.target.value)}
+                              onChange={(e) => handleFloorChange(idx, 'sanctionedArea', sanitizePositiveFloat(e.target.value))}
+                              placeholder="e.g. 850"
                               disabled={isReadOnly}
                             />
                           </td>
@@ -1281,7 +1405,8 @@ export default function BandhanHLLAP({
                               type="text"
                               className={inputCls}
                               value={fl.deedArea || ''}
-                              onChange={(e) => handleFloorChange(idx, 'deedArea', e.target.value)}
+                              onChange={(e) => handleFloorChange(idx, 'deedArea', sanitizePositiveFloat(e.target.value))}
+                              placeholder="e.g. 850"
                               disabled={isReadOnly}
                             />
                           </td>
@@ -1346,33 +1471,15 @@ export default function BandhanHLLAP({
                   </button>
                 )}
 
-                {/* Soft Container: Supplementary Floor & Construction Details */}
-                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                {/* Soft Container: Supplementary Floor & Construction Details (Purple Theme) */}
+                <div className="rounded-xl border border-purple-200/80 bg-purple-50/50 p-4 sm:p-5 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-purple-200/70">
                     <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
-                      <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
-                        Floor Area Summary & Construction Compliances
-                      </h4>
+                      <span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
+                      <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
+                        Floor Area Summary &amp; Construction Compliances
+                      </span>
                     </div>
-                    {(() => {
-                      const totalFloorSanctioned = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.sanctionedArea), 0);
-                      const totalFloorMeasured = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.measuredArea), 0);
-                      const totalBUA = totalFloorSanctioned > 0 ? totalFloorSanctioned : totalFloorMeasured;
-                      const validFloors = (fields.floors || []).filter(f => parseNum(f.sanctionedArea) > 0 || parseNum(f.measuredArea) > 0);
-                      const floorPrefix = validFloors.length > 1 ? `G+${validFloors.length - 1} ` : (validFloors.length === 1 ? 'GF ' : '');
-                      const calcBUA = totalBUA > 0 ? `${floorPrefix}Total BUA = ${totalBUA}sqft.` : '';
-                      return calcBUA ? (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('builtUpAreaTotal', calcBUA)}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded border border-blue-200 hover:bg-blue-100 transition-colors"
-                          title="Recalculate BUA from floor table"
-                        >
-                          ↻ Auto-fill BUA ({calcBUA})
-                        </button>
-                      ) : null;
-                    })()}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1382,22 +1489,27 @@ export default function BandhanHLLAP({
                         type="text"
                         className={inputCls}
                         value={fields.carpetAreaTotal || ''}
-                        onChange={(e) => handleChange('carpetAreaTotal', e.target.value)}
-                        placeholder="e.g. As Per Plan (Total)- 3124sqft."
+                        onChange={(e) => handleChange('carpetAreaTotal', sanitizePositiveFloat(e.target.value))}
+                        placeholder="e.g. 720.00 sq.ft"
                         disabled={isReadOnly}
                       />
                     </Field>
 
                     {/* Built Up Area: */}
                     <Field label="Built Up Area:">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.builtUpAreaTotal || ''}
-                        onChange={(e) => handleChange('builtUpAreaTotal', e.target.value)}
-                        placeholder="e.g. G+1 Total BUA = 3675sqft."
-                        disabled={isReadOnly}
-                      />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          className={`${inputCls} bg-slate-100/90 text-slate-700 font-semibold cursor-not-allowed`}
+                          value={fields.builtUpAreaTotal || ''}
+                          readOnly
+                          disabled
+                          placeholder="Auto-calculated from floor details"
+                        />
+                        <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+                          <span className="text-[10px] font-semibold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">Auto</span>
+                        </div>
+                      </div>
                     </Field>
 
                     {/* Remarks on construction:(Good / Bad) */}
@@ -1463,7 +1575,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.complianceWithPlan || ''}
                         onChange={(e) => handleChange('complianceWithPlan', e.target.value)}
-                        placeholder="e.g. Not Applicable or Yes"
+                        placeholder="e.g. Yes"
                         disabled={isReadOnly}
                       />
                     </div>
@@ -1531,20 +1643,20 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.constructionAsPerPlan || ''}
                         onChange={(e) => handleChange('constructionAsPerPlan', e.target.value)}
-                        placeholder="e.g. NA or Yes"
+                        placeholder="e.g. Yes"
                         disabled={isReadOnly}
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* 27. Setback Around the Property (Soft Container) */}
-                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5">
-                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                {/* 27. Setback Around the Property (Teal Theme) */}
+                <div className="rounded-xl border border-teal-200/80 bg-teal-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-teal-200/70">
+                    <span className="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
+                    <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                       27. Setback Around the Property
-                    </h4>
+                    </span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
                     <Field label="Front:">
@@ -1553,7 +1665,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.setbackFront || ''}
                         onChange={(e) => handleChange('setbackFront', e.target.value)}
-                        placeholder="Road"
+                        placeholder={'e.g. 5\'-0"'}
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1563,7 +1675,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.setbackBack || ''}
                         onChange={(e) => handleChange('setbackBack', e.target.value)}
-                        placeholder="Vacant Land"
+                        placeholder={'e.g. 3\'-0"'}
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1573,7 +1685,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.setbackSide1 || ''}
                         onChange={(e) => handleChange('setbackSide1', e.target.value)}
-                        placeholder="Vacant Land"
+                        placeholder={'e.g. 3\'-0"'}
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1583,7 +1695,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.setbackSide2 || ''}
                         onChange={(e) => handleChange('setbackSide2', e.target.value)}
-                        placeholder="Vacant Land"
+                        placeholder={'e.g. 3\'-0"'}
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1593,63 +1705,61 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.noOfFlatsPerFloor || 'NA'}
                         onChange={(e) => handleChange('noOfFlatsPerFloor', e.target.value)}
-                        placeholder="NA"
+                        placeholder="e.g. 1 Unit / NA"
                         disabled={isReadOnly}
                       />
                     </Field>
                   </div>
                 </div>
 
-                {/* 28 & 29. Property Maintenance & Life (Soft Container) */}
-                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5">
-                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
-                      28 &amp; 29. Maintenance &amp; Life of Property
-                    </h4>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
-                    <Field label="28. Maintenance of Property:">
-                      <select
-                        className={selectCls}
-                        value={fields.maintenanceOfProperty || ''}
-                        onChange={(e) => handleChange('maintenanceOfProperty', e.target.value)}
-                        disabled={isReadOnly}
-                      >
-                        <option value="">-- Select --</option>
-                        <option value="Good">Good</option>
-                        <option value="Average">Average</option>
-                        <option value="Poor">Poor</option>
-                        <option value="Satisfactory">Satisfactory</option>
-                      </select>
-                    </Field>
-                    <Field label="29. Present Life (Years):">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.presentLife || ''}
-                        onChange={(e) => handleChange('presentLife', e.target.value)}
-                        placeholder=""
-                        disabled={isReadOnly}
-                      />
-                    </Field>
-                    <Field label="Residual Life (Years):">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.residualLife || ''}
-                        onChange={(e) => handleChange('residualLife', e.target.value)}
-                        placeholder=""
-                        disabled={isReadOnly}
-                      />
-                    </Field>
+                {/* 28 & 29. Property Maintenance & Life (Rose Theme - No container heading) */}
+                <div className="rounded-xl border border-rose-200/80 bg-rose-50/50 p-4 sm:p-5 shadow-xs space-y-4">
+                  <Field label="28. Maintenance of Property:">
+                    <select
+                      className={selectCls}
+                      value={fields.maintenanceOfProperty || ''}
+                      onChange={(e) => handleChange('maintenanceOfProperty', e.target.value)}
+                      disabled={isReadOnly}
+                    >
+                      <option value="">-- Select --</option>
+                      <option value="Good">Good</option>
+                      <option value="Average">Average</option>
+                      <option value="Poor">Poor</option>
+                      <option value="Satisfactory">Satisfactory</option>
+                    </select>
+                  </Field>
+
+                  {/* 29. Life of Property (Nested Soft Container on dedicated line) */}
+                  <div className="rounded-lg border border-rose-200/70 bg-white/75 p-3.5 sm:p-4 shadow-2xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <Field label="29. Present Life (Years):">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.presentLife || ''}
+                          onChange={(e) => handleChange('presentLife', sanitizePositiveInt(e.target.value, 3))}
+                          placeholder="e.g. 5 Yrs"
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                      <Field label="Residual Life (Years):">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.residualLife || ''}
+                          onChange={(e) => handleChange('residualLife', sanitizePositiveInt(e.target.value, 3))}
+                          placeholder="e.g. 55 Yrs"
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                    </div>
                   </div>
                 </div>
               </div>
             </Section>
 
             {/* 7. Valuation & Computations */}
-            <Section id="sec-valuation" title="7. Valuation & Computations (Points 30–33, 35–40)">
+            <Section number={7} id="sec-valuation" title="Valuation Computations (Points 30–33)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <Field label="30. Recommended Valuation of the Property (Land Component Formula):">
@@ -1658,18 +1768,20 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.recommendedValuationFormula || ''}
                       onChange={(e) => handleChange('recommendedValuationFormula', e.target.value)}
+                      placeholder="e.g. (Total Land Area * Rate) + (BUA * Cost of Const. - Dep.)"
                       disabled={isReadOnly}
                     />
                   </Field>
                 </div>
-                {/* 31. Recommended Rate & Value of Plot (Soft Container) */}
-                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+
+                {/* 31. Recommended Rate & Value of Plot (Sky Theme) */}
+                <div className="rounded-xl border border-sky-200/80 bg-sky-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-sky-200/70">
                     <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                      <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                      <span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
+                      <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                         31. Recommended Rate &amp; Value of the Plot
-                      </h4>
+                      </span>
                     </div>
                     {(() => {
                       const landArea = parseNum(fields.propertyArea || fields.areaOfLand);
@@ -1696,7 +1808,8 @@ export default function BandhanHLLAP({
                         type="text"
                         className={inputCls}
                         value={fields.plotRate || ''}
-                        onChange={(e) => handleChange('plotRate', e.target.value)}
+                        onChange={(e) => handleChange('plotRate', sanitizePositiveFloat(e.target.value))}
+                        placeholder="e.g. 3500"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1707,6 +1820,7 @@ export default function BandhanHLLAP({
                           className={inputCls}
                           value={fields.plotValueBreakdown || ''}
                           onChange={(e) => handleChange('plotValueBreakdown', e.target.value)}
+                          placeholder="e.g. Total Land Area: 1500 sq.ft * Rs.3,500/- = Rs.52,50,000/-"
                           disabled={isReadOnly}
                         />
                       </Field>
@@ -1714,13 +1828,13 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* 32. Cost of Construction & Depreciation (Soft Container) */}
-                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                {/* 32. Cost of Construction & Depreciation (Amber Theme) */}
+                <div className="rounded-xl border border-amber-200/80 bg-amber-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center gap-2 pb-2 border-b border-amber-200/70">
                     <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                    <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                       32. Recommended Rate of Cost of Construction &amp; Depreciation
-                    </h4>
+                    </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                     <Field label="32. Rate of Cost of Construction (Rs./sqft):">
@@ -1728,7 +1842,8 @@ export default function BandhanHLLAP({
                         type="text"
                         className={inputCls}
                         value={fields.rateOfCostOfConstruction || ''}
-                        onChange={(e) => handleChange('rateOfCostOfConstruction', e.target.value)}
+                        onChange={(e) => handleChange('rateOfCostOfConstruction', sanitizePositiveFloat(e.target.value))}
+                        placeholder="e.g. 1800"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1737,20 +1852,21 @@ export default function BandhanHLLAP({
                         type="text"
                         className={inputCls}
                         value={fields.depreciationOfConstruction || ''}
-                        onChange={(e) => handleChange('depreciationOfConstruction', e.target.value)}
+                        onChange={(e) => handleChange('depreciationOfConstruction', sanitizePercentage(e.target.value))}
+                        placeholder="e.g. 5% (Rs. 76,500/-)"
                         disabled={isReadOnly}
                       />
                     </Field>
                   </div>
                 </div>
 
-                {/* 33. Net Value of Property & Flat Valuation (Soft Container) */}
-                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                    <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
-                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                {/* 33. Net Value of Property & Flat Valuation (Emerald Theme) */}
+                <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center gap-2 pb-2 border-b border-emerald-200/70">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                       33. Net Value of Property &amp; Valuation Breakdown
-                    </h4>
+                    </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                     <div className="sm:col-span-2">
@@ -1760,6 +1876,7 @@ export default function BandhanHLLAP({
                           className={inputCls}
                           value={fields.netValueOfProperty || ''}
                           onChange={(e) => handleChange('netValueOfProperty', e.target.value)}
+                          placeholder="e.g. Rs. 67,00,000/-"
                           disabled={isReadOnly}
                         />
                       </Field>
@@ -1769,7 +1886,8 @@ export default function BandhanHLLAP({
                         type="text"
                         className={inputCls}
                         value={fields.rateOfFlat || ''}
-                        onChange={(e) => handleChange('rateOfFlat', e.target.value)}
+                        onChange={(e) => handleChange('rateOfFlat', sanitizePositiveFloat(e.target.value))}
+                        placeholder="e.g. 4500"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1778,7 +1896,8 @@ export default function BandhanHLLAP({
                         type="text"
                         className={inputCls}
                         value={fields.areaOfFlat || ''}
-                        onChange={(e) => handleChange('areaOfFlat', e.target.value)}
+                        onChange={(e) => handleChange('areaOfFlat', sanitizePositiveFloat(e.target.value))}
+                        placeholder="e.g. 1200"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1788,6 +1907,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.recommendedValueOfProperty || ''}
                         onChange={(e) => handleChange('recommendedValueOfProperty', e.target.value)}
+                        placeholder="e.g. Rs. 54,00,000/-"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1797,87 +1917,25 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.totalMarketValue || ''}
                         onChange={(e) => handleChange('totalMarketValue', e.target.value)}
+                        placeholder="e.g. Rs. 67,00,000/-"
                         disabled={isReadOnly}
                       />
                     </Field>
                   </div>
                 </div>
-                <Field label="35. Valuation of Property as on date:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.valuationAsOnDate || ''}
-                    onChange={(e) => handleChange('valuationAsOnDate', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="36. Valuation as per Govt Rates (Land):">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.valuationGovtRate || ''}
-                    onChange={(e) => handleChange('valuationGovtRate', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="37. Distress Sale Value:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.distressSaleValue || ''}
-                    onChange={(e) => handleChange('distressSaleValue', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Realisable Value:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.realisableValue || ''}
-                    onChange={(e) => handleChange('realisableValue', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="38. Project Commencement & Completion:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.dateCommencementCompletion || ''}
-                    onChange={(e) => handleChange('dateCommencementCompletion', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="39. Area of Land:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.areaOfLand || ''}
-                    onChange={(e) => handleChange('areaOfLand', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="40. Expected Cost of the Project:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.expectedCostOfProject || ''}
-                    onChange={(e) => handleChange('expectedCostOfProject', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
               </div>
             </Section>
 
             {/* 8. Progress of Work */}
-            <Section id="sec-progress" title="8. Progress of Work (Point 34)">
-              {/* 34. Progress of Work (Soft Container) */}
-              <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+            <Section number={8} id="sec-progress" title="Progress of Work (Point 34)">
+              {/* 34. Progress of Work (Indigo Theme) */}
+              <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/50 p-4 sm:p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-indigo-200/70">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
-                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                    <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                    <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                       34. Progress of Work Stages &amp; Percentage
-                    </h4>
+                    </span>
                   </div>
                 </div>
 
@@ -1889,6 +1947,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.progressStructureHeader || ''}
                         onChange={(e) => handleChange('progressStructureHeader', e.target.value)}
+                        placeholder="e.g. G+1 Storied Building"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1899,7 +1958,8 @@ export default function BandhanHLLAP({
                       type="text"
                       className={inputCls}
                       value={fields.progressFoundation || ''}
-                      onChange={(e) => handleChange('progressFoundation', e.target.value)}
+                      onChange={(e) => handleChange('progressFoundation', sanitizePercentage(e.target.value))}
+                      placeholder="e.g. 100%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1908,7 +1968,8 @@ export default function BandhanHLLAP({
                       type="text"
                       className={inputCls}
                       value={fields.progressRCC || ''}
-                      onChange={(e) => handleChange('progressRCC', e.target.value)}
+                      onChange={(e) => handleChange('progressRCC', sanitizePercentage(e.target.value))}
+                      placeholder="e.g. 100%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1917,7 +1978,8 @@ export default function BandhanHLLAP({
                       type="text"
                       className={inputCls}
                       value={fields.progressBR || ''}
-                      onChange={(e) => handleChange('progressBR', e.target.value)}
+                      onChange={(e) => handleChange('progressBR', sanitizePercentage(e.target.value))}
+                      placeholder="e.g. 100%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1926,7 +1988,8 @@ export default function BandhanHLLAP({
                       type="text"
                       className={inputCls}
                       value={fields.progressPlastering || ''}
-                      onChange={(e) => handleChange('progressPlastering', e.target.value)}
+                      onChange={(e) => handleChange('progressPlastering', sanitizePercentage(e.target.value))}
+                      placeholder="e.g. 90%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1935,7 +1998,8 @@ export default function BandhanHLLAP({
                       type="text"
                       className={inputCls}
                       value={fields.progressFlooring || ''}
-                      onChange={(e) => handleChange('progressFlooring', e.target.value)}
+                      onChange={(e) => handleChange('progressFlooring', sanitizePercentage(e.target.value))}
+                      placeholder="e.g. 80%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1944,7 +2008,8 @@ export default function BandhanHLLAP({
                       type="text"
                       className={inputCls}
                       value={fields.progressDoorsWindows || ''}
-                      onChange={(e) => handleChange('progressDoorsWindows', e.target.value)}
+                      onChange={(e) => handleChange('progressDoorsWindows', sanitizePercentage(e.target.value))}
+                      placeholder="e.g. 80%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1953,7 +2018,8 @@ export default function BandhanHLLAP({
                       type="text"
                       className={inputCls}
                       value={fields.progressElectricalSanitary || ''}
-                      onChange={(e) => handleChange('progressElectricalSanitary', e.target.value)}
+                      onChange={(e) => handleChange('progressElectricalSanitary', sanitizePercentage(e.target.value))}
+                      placeholder="e.g. 75%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1962,7 +2028,8 @@ export default function BandhanHLLAP({
                       type="text"
                       className={inputCls}
                       value={fields.progressPainting || ''}
-                      onChange={(e) => handleChange('progressPainting', e.target.value)}
+                      onChange={(e) => handleChange('progressPainting', sanitizePercentage(e.target.value))}
+                      placeholder="e.g. 60%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1971,7 +2038,8 @@ export default function BandhanHLLAP({
                       type="text"
                       className={inputCls}
                       value={fields.progressTotalPct || ''}
-                      onChange={(e) => handleChange('progressTotalPct', e.target.value)}
+                      onChange={(e) => handleChange('progressTotalPct', sanitizePercentage(e.target.value))}
+                      placeholder="e.g. 85%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1980,7 +2048,8 @@ export default function BandhanHLLAP({
                       type="text"
                       className={inputCls}
                       value={fields.progressRecommendationPct || ''}
-                      onChange={(e) => handleChange('progressRecommendationPct', e.target.value)}
+                      onChange={(e) => handleChange('progressRecommendationPct', sanitizePercentage(e.target.value))}
+                      placeholder="e.g. 85%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1988,8 +2057,86 @@ export default function BandhanHLLAP({
               </div>
             </Section>
 
-            {/* 9. NDMA Parameters */}
-            <Section id="sec-ndma" title="9. NDMA Disaster Management Parameters (Point 41)">
+            {/* 9. Final Valuation Summary & Project Details */}
+            <Section number={9} id="sec-final-valuation" title="Final Valuation Summary & Project Details (Points 35–40)">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Field label="35. Valuation of the property as on date:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.valuationAsOnDate || ''}
+                    onChange={(e) => handleChange('valuationAsOnDate', e.target.value)}
+                    placeholder="e.g. Rs.2,59,72,000/-"
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="36. Valuation as per govt. rates (Land):">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.valuationGovtRate || ''}
+                    onChange={(e) => handleChange('valuationGovtRate', e.target.value)}
+                    placeholder="e.g. Rs.286/- Per sqft * 10,890sqft. = Rs.31,14,540/-"
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="37. Distress sale value:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.distressSaleValue || ''}
+                    onChange={(e) => handleChange('distressSaleValue', e.target.value)}
+                    placeholder="e.g. Rs.2,33,74,800/-"
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Realizable Value:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.realisableValue || ''}
+                    onChange={(e) => handleChange('realisableValue', e.target.value)}
+                    placeholder="e.g. Rs.2,46,73,400/-"
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="38. Date of project commencement & date of expected project completion:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.dateCommencementCompletion || ''}
+                    onChange={(e) => handleChange('dateCommencementCompletion', e.target.value)}
+                    placeholder="e.g. NA or Started: 2020, Completed: 2022"
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="39. Area of land:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.areaOfLand || fields.propertyArea || ''}
+                    onChange={(e) => handleChange('areaOfLand', e.target.value)}
+                    placeholder="e.g. (AC.0.250Decs) i.e. 10,890sqft."
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <div className="sm:col-span-2">
+                  <Field label="40. Expected cost of the project:">
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.expectedCostOfProject || ''}
+                      onChange={(e) => handleChange('expectedCostOfProject', e.target.value)}
+                      placeholder="e.g. NA or Rs. 25,00,000/-"
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+                </div>
+              </div>
+            </Section>
+
+            {/* 10. NDMA Parameters */}
+            <Section number={10} id="sec-ndma" title="NDMA Disaster Management Parameters (Point 41)">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                 <Field label="Concrete Grade:">
                   <input
@@ -1997,6 +2144,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaConcreteGrade || 'M25'}
                     onChange={(e) => handleChange('ndmaConcreteGrade', e.target.value)}
+                    placeholder="e.g. M25"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2006,6 +2154,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaHorizontalFloorType || 'Beams and Slabs'}
                     onChange={(e) => handleChange('ndmaHorizontalFloorType', e.target.value)}
+                    placeholder="e.g. Beams and Slabs"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2015,6 +2164,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaSeismicZone || 'Zone-III'}
                     onChange={(e) => handleChange('ndmaSeismicZone', e.target.value)}
+                    placeholder="e.g. Zone-III"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2024,6 +2174,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaSteelGrade || 'FE - 450'}
                     onChange={(e) => handleChange('ndmaSteelGrade', e.target.value)}
+                    placeholder="e.g. FE - 450"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2033,6 +2184,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaFloodProne || 'NO'}
                     onChange={(e) => handleChange('ndmaFloodProne', e.target.value)}
+                    placeholder="NO / YES"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2042,6 +2194,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaUrbanFloods || 'NO'}
                     onChange={(e) => handleChange('ndmaUrbanFloods', e.target.value)}
+                    placeholder="NO / YES"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2051,6 +2204,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaEnvironmentExposure || 'Mild'}
                     onChange={(e) => handleChange('ndmaEnvironmentExposure', e.target.value)}
+                    placeholder="e.g. Mild"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2060,6 +2214,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaSoilSlopeLandslide || 'Low Hazard Zone'}
                     onChange={(e) => handleChange('ndmaSoilSlopeLandslide', e.target.value)}
+                    placeholder="e.g. Low Hazard Zone"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2069,6 +2224,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaWindCyclones || 'Low Damage Risk Zone'}
                     onChange={(e) => handleChange('ndmaWindCyclones', e.target.value)}
+                    placeholder="e.g. Low Damage Risk Zone"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2078,6 +2234,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaTsunami || 'NO'}
                     onChange={(e) => handleChange('ndmaTsunami', e.target.value)}
+                    placeholder="NO / YES"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2087,6 +2244,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaHeightAboveGround || 'Less Than 15m Tall'}
                     onChange={(e) => handleChange('ndmaHeightAboveGround', e.target.value)}
+                    placeholder="e.g. Less Than 15m Tall"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2096,6 +2254,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaCRZ || 'NA'}
                     onChange={(e) => handleChange('ndmaCRZ', e.target.value)}
+                    placeholder="NA / In CRZ"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2105,6 +2264,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaNatureOfBuilding || 'Standalone Structure'}
                     onChange={(e) => handleChange('ndmaNatureOfBuilding', e.target.value)}
+                    placeholder="e.g. Standalone Structure"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2114,6 +2274,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaFunctionOfUse || 'Residential'}
                     onChange={(e) => handleChange('ndmaFunctionOfUse', e.target.value)}
+                    placeholder="e.g. Residential"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2123,6 +2284,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaFoundationType || 'Open Footing column'}
                     onChange={(e) => handleChange('ndmaFoundationType', e.target.value)}
+                    placeholder="e.g. Open Footing column"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2132,14 +2294,15 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.ndmaStructureType || 'RCC Framed Structure'}
                     onChange={(e) => handleChange('ndmaStructureType', e.target.value)}
+                    placeholder="e.g. RCC Framed Structure"
                     disabled={isReadOnly}
                   />
                 </Field>
               </div>
             </Section>
 
-            {/* 10. Annexure-A */}
-            <Section id="sec-annexure-a" title="10. Annexure-A: Valuation Computation & Declaration">
+            {/* 11. Annexure-A */}
+            <Section number={11} id="sec-annexure-a" title="Annexure-A: Valuation Computation & Declaration">
               <div className="space-y-4">
                 <Field label="Introduction Paragraph:">
                   <textarea
@@ -2147,7 +2310,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.annexureIntro || ''}
                     onChange={(e) => handleChange('annexureIntro', e.target.value)}
-                    placeholder="Pursuant to instructions received from The Bandhan Bank..."
+                    placeholder="e.g. Based on inspection and documents submitted..."
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2157,7 +2320,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.annexurePropertyDesc || ''}
                     onChange={(e) => handleChange('annexurePropertyDesc', e.target.value)}
-                    placeholder="Khata No: ..., Plot No: ..., Mouza: ..."
+                    placeholder="e.g. Residential Building over Plot No..."
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2167,7 +2330,7 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.annexureDocsVerified || ''}
                     onChange={(e) => handleChange('annexureDocsVerified', e.target.value)}
-                    placeholder="e.g. ROR, Copy of Sale Deed & Approved Plan"
+                    placeholder="e.g. Sale Deed, Approved Plan, ROR"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2201,7 +2364,7 @@ export default function BandhanHLLAP({
                                 className={inputCls}
                                 value={df.particulars || ''}
                                 onChange={(e) => handleDRCFloorChange(idx, 'particulars', e.target.value)}
-                                placeholder="e.g. GF"
+                                placeholder="e.g. Ground Floor"
                                 disabled={isReadOnly}
                               />
                             </td>
@@ -2210,8 +2373,8 @@ export default function BandhanHLLAP({
                                 type="text"
                                 className={inputCls}
                                 value={df.area || ''}
-                                onChange={(e) => handleDRCFloorChange(idx, 'area', e.target.value)}
-                                placeholder="Area"
+                                onChange={(e) => handleDRCFloorChange(idx, 'area', sanitizePositiveFloat(e.target.value))}
+                                placeholder="e.g. 850"
                                 disabled={isReadOnly}
                               />
                             </td>
@@ -2220,8 +2383,8 @@ export default function BandhanHLLAP({
                                 type="text"
                                 className={inputCls}
                                 value={df.yearOfConst || ''}
-                                onChange={(e) => handleDRCFloorChange(idx, 'yearOfConst', e.target.value)}
-                                placeholder="YYYY"
+                                onChange={(e) => handleDRCFloorChange(idx, 'yearOfConst', sanitizePositiveInt(e.target.value, 4))}
+                                placeholder="e.g. 2020"
                                 disabled={isReadOnly}
                               />
                             </td>
@@ -2230,8 +2393,8 @@ export default function BandhanHLLAP({
                                 type="text"
                                 className={inputCls}
                                 value={df.lifeInYrs || '10'}
-                                onChange={(e) => handleDRCFloorChange(idx, 'lifeInYrs', e.target.value)}
-                                placeholder="10"
+                                onChange={(e) => handleDRCFloorChange(idx, 'lifeInYrs', sanitizePositiveInt(e.target.value, 3))}
+                                placeholder="e.g. 10"
                                 disabled={isReadOnly}
                               />
                             </td>
@@ -2240,8 +2403,8 @@ export default function BandhanHLLAP({
                                 type="text"
                                 className={inputCls}
                                 value={df.costOfConst || ''}
-                                onChange={(e) => handleDRCFloorChange(idx, 'costOfConst', e.target.value)}
-                                placeholder="Rate"
+                                onChange={(e) => handleDRCFloorChange(idx, 'costOfConst', sanitizePositiveFloat(e.target.value))}
+                                placeholder="e.g. 1800"
                                 disabled={isReadOnly}
                               />
                             </td>
@@ -2251,7 +2414,7 @@ export default function BandhanHLLAP({
                                 className={inputCls}
                                 value={df.gcrc || 'No'}
                                 onChange={(e) => handleDRCFloorChange(idx, 'gcrc', e.target.value)}
-                                placeholder="No"
+                                placeholder="e.g. No"
                                 disabled={isReadOnly}
                               />
                             </td>
@@ -2260,8 +2423,8 @@ export default function BandhanHLLAP({
                                 type="text"
                                 className={inputCls}
                                 value={df.depreciation || '50'}
-                                onChange={(e) => handleDRCFloorChange(idx, 'depreciation', e.target.value)}
-                                placeholder="50"
+                                onChange={(e) => handleDRCFloorChange(idx, 'depreciation', sanitizePercentage(e.target.value))}
+                                placeholder="e.g. 50"
                                 disabled={isReadOnly}
                               />
                             </td>
@@ -2270,8 +2433,8 @@ export default function BandhanHLLAP({
                                 type="text"
                                 className={inputCls}
                                 value={df.value || ''}
-                                onChange={(e) => handleDRCFloorChange(idx, 'value', e.target.value)}
-                                placeholder="19,60,000"
+                                onChange={(e) => handleDRCFloorChange(idx, 'value', sanitizePositiveFloat(e.target.value))}
+                                placeholder="Net Value"
                                 disabled={isReadOnly}
                               />
                             </td>
@@ -2311,6 +2474,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.valuerSignatureName || 'S. MOHANTY & ASSOCIATES'}
                       onChange={(e) => handleChange('valuerSignatureName', e.target.value)}
+                      placeholder="e.g. S. MOHANTY & ASSOCIATES"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2320,6 +2484,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.valuerQualification || 'B.Tech (Civil), M.Val (RE)'}
                       onChange={(e) => handleChange('valuerQualification', e.target.value)}
+                      placeholder="e.g. B.Tech (Civil), M.Val (RE)"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2329,6 +2494,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.valuerIovRegNo || '107/2016-17, CAT-1'}
                       onChange={(e) => handleChange('valuerIovRegNo', e.target.value)}
+                      placeholder="e.g. 107/2016-17, CAT-1"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2338,6 +2504,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.valuerWealthTaxRegNo || 'CCIT/BBSR/Tech-10/2017-18'}
                       onChange={(e) => handleChange('valuerWealthTaxRegNo', e.target.value)}
+                      placeholder="e.g. CCIT/BBSR/Tech-10/2017-18"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2345,237 +2512,356 @@ export default function BandhanHLLAP({
               </div>
             </Section>
 
-            {/* 11. Documents & Maps */}
-            <Section id="sec-docs" title="11. Maps & Document Enclosures (Device Upload Only)">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* ROR Document */}
-                <div className="border border-slate-200 rounded-lg p-4 bg-white">
-                  <h4 className="font-semibold text-slate-800 text-sm mb-2">ROR (Record of Rights)</h4>
-                  {fields.rorImageUrl ? (
-                    <div className="space-y-2">
-                      <img src={fields.rorImageUrl} alt="ROR" className="max-h-44 object-contain rounded border border-slate-200" />
-                      {!isReadOnly && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('rorImageUrl', '')}
-                          className="text-xs text-red-600 hover:underline"
-                        >
-                          Remove ROR
-                        </button>
-                      )}
+            {/* 12. Documents & Maps */}
+            <Section number={12} id="sec-docs" title="Maps & Document Enclosures">
+              <div className="space-y-6">
+                {/* Enclosure 1: ROR Document */}
+                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">📜</span>
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
+                        Enclosure 1: ROR (Record of Rights) {fields.rorImageUrl ? '(Uploaded)' : ''}
+                      </h4>
                     </div>
-                  ) : (
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (ev) => handleChange('rorImageUrl', ev.target?.result as string);
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      disabled={isReadOnly}
-                      className="text-xs text-slate-500"
-                    />
-                  )}
-                </div>
-
-                {/* GPS Location Map */}
-                <div className="border border-slate-200 rounded-lg p-4 bg-white">
-                  <h4 className="font-semibold text-slate-800 text-sm mb-2">GPS Location Map</h4>
-                  {fields.locationMapImageUrl ? (
-                    <div className="space-y-2">
-                      <img src={fields.locationMapImageUrl} alt="GPS Location" className="max-h-44 object-contain rounded border border-slate-200" />
-                      {!isReadOnly && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('locationMapImageUrl', '')}
-                          className="text-xs text-red-600 hover:underline"
-                        >
-                          Remove Location Map
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (ev) => handleChange('locationMapImageUrl', ev.target?.result as string);
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      disabled={isReadOnly}
-                      className="text-xs text-slate-500"
-                    />
-                  )}
-                </div>
-
-                {/* Bhu Naksha / Cadastral Map */}
-                <div className="border border-slate-200 rounded-lg p-4 bg-white">
-                  <h4 className="font-semibold text-slate-800 text-sm mb-2">Bhu Naksha / Cadastral Map</h4>
-                  {fields.bhuNakshaImageUrl ? (
-                    <div className="space-y-2">
-                      <img src={fields.bhuNakshaImageUrl} alt="Bhu Naksha" className="max-h-44 object-contain rounded border border-slate-200" />
-                      {!isReadOnly && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('bhuNakshaImageUrl', '')}
-                          className="text-xs text-red-600 hover:underline"
-                        >
-                          Remove Bhu Naksha
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (ev) => handleChange('bhuNakshaImageUrl', ev.target?.result as string);
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      disabled={isReadOnly}
-                      className="text-xs text-slate-500"
-                    />
-                  )}
-                </div>
-
-                {/* Guideline Value Proof (Annexure-C) */}
-                <div className="border border-slate-200 rounded-lg p-4 bg-white">
-                  <h4 className="font-semibold text-slate-800 text-sm mb-2">Annexure-C: Guideline Value Proof</h4>
-                  {fields.guidelineValueImageUrl ? (
-                    <div className="space-y-2">
-                      <img src={fields.guidelineValueImageUrl} alt="Guideline Value" className="max-h-44 object-contain rounded border border-slate-200" />
-                      {!isReadOnly && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('guidelineValueImageUrl', '')}
-                          className="text-xs text-red-600 hover:underline"
-                        >
-                          Remove Guideline Proof
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const reader = new FileReader();
-                          reader.onload = (ev) => handleChange('guidelineValueImageUrl', ev.target?.result as string);
-                          reader.readAsDataURL(file);
-                        }
-                      }}
-                      disabled={isReadOnly}
-                      className="text-xs text-slate-500"
-                    />
-                  )}
-                </div>
-              </div>
-            </Section>
-
-            {/* 12. Property Photographs */}
-            <Section id="sec-photos" title="12. Property Photographs (Cloud Bucket & Local Upload)">
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <p className="text-xs text-slate-600">
-                    Upload photos of the property. Photos support GPS stamp overlays in the generated report.
-                  </p>
-                  <div className="flex gap-2">
-                    {bucketImages && bucketImages.length > 0 && !isReadOnly && (
-                      <button
-                        type="button"
-                        onClick={() => setShowBucketModal(true)}
-                        className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1.5 rounded shadow-sm"
-                      >
-                        Browse Cloud Bucket
-                      </button>
-                    )}
                     {!isReadOnly && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const current = [...(fields.propertyPhotos || [])];
-                          current.push({ url: '', caption: DEFAULT_PHOTO_LABEL });
-                          setFields(prev => ({ ...prev, propertyPhotos: current }));
-                        }}
-                        className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-3 py-1.5 rounded"
-                      >
-                        + Add Photo Slot
-                      </button>
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
+                        {fields.rorImageUrl ? '🔄 Replace ROR Document' : '+ Add ROR Document'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleEnclosureUpload('rorImageUrl', e)}
+                          disabled={isReadOnly}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {fields.rorImageUrl ? (
+                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
+                      <img
+                        src={fields.rorImageUrl}
+                        alt="ROR Document"
+                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
+                      />
+                      {!isReadOnly && (
+                        <div className="flex justify-end w-full pt-2">
+                          <button
+                            type="button"
+                            onClick={() => handleChange('rorImageUrl', '')}
+                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
+                          >
+                            ✕ Remove ROR Document
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
+                      <span className="text-2xl mb-1">📄</span>
+                      <span className="text-xs font-semibold text-slate-700">No ROR document uploaded</span>
+                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleEnclosureUpload('rorImageUrl', e)}
+                        disabled={isReadOnly}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Enclosure 2: GPS Location Map */}
+                <div className="space-y-4 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🛰️</span>
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
+                        Enclosure 2: GPS Location Map &amp; Satellite Preview
+                      </h4>
+                    </div>
+                    {!isReadOnly && (
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
+                        {fields.locationMapImageUrl ? '🔄 Replace Map Screenshot' : '+ Add Map Screenshot'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleEnclosureUpload('locationMapImageUrl', e)}
+                          disabled={isReadOnly}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {/* Live Satellite Preview */}
+                  <div className="space-y-2">
+                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Live Satellite &amp; Coordinate Preview
+                    </div>
+
+                    {(() => {
+                      const cleanLat = (fields.latitude || '').trim();
+                      const cleanLng = (fields.longitude || '').trim();
+                      const hasCoordinates = Boolean(cleanLat && cleanLng && !isNaN(Number(cleanLat)) && !isNaN(Number(cleanLng)));
+                      const cleanTechnicalAddress = (fields.legalAddress || '').trim();
+                      const cleanPropertyAddress = (fields.propertyAddress || '').trim();
+                      const effectiveAddress = cleanTechnicalAddress || cleanPropertyAddress;
+                      const queryParam = hasCoordinates ? `${cleanLat},${cleanLng}` : effectiveAddress;
+                      const encodedQuery = encodeURIComponent(queryParam);
+                      const hasQuery = hasCoordinates || effectiveAddress.length > 0;
+                      const googleMapsUrl = hasCoordinates
+                        ? `https://www.google.com/maps?q=${cleanLat},${cleanLng}&z=17&t=k`
+                        : `https://www.google.com/maps/search/${encodeURIComponent(effectiveAddress)}`;
+
+                      return hasQuery ? (
+                        <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-xs">
+                          <div className="bg-[#d5e8f5] px-3.5 py-1.5 flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
+                                📍 Live Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : `— ${cleanTechnicalAddress ? 'Legal Address' : 'Property Address'}`}
+                              </span>
+                            </div>
+                            <a
+                              href={googleMapsUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-semibold text-accent-500 hover:underline"
+                            >
+                              Open in Google Maps ↗
+                            </a>
+                          </div>
+                          <iframe
+                            src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
+                            width="100%"
+                            height="260"
+                            style={{ border: 0 }}
+                            allowFullScreen
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            title="Property Location Map"
+                          />
+                        </div>
+                      ) : (
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
+                          Enter property address in section 2 or input GPS coordinates below to view live satellite map preview.
+                        </div>
+                      );
+                    })()}
+
+                    {/* Coordinates input block */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 space-y-2 mt-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#0f2038] flex items-center gap-1.5">
+                          🧭 GPS Coordinates Entry
+                        </span>
+                        <span className="text-[11px] text-slate-500 font-medium">
+                          Input latitude &amp; longitude to set precise map pin
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <Field label="Latitude (DD):">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            placeholder="e.g. 20.2961"
+                            value={fields.latitude || ''}
+                            onChange={(e) => handleChange('latitude', sanitizePositiveFloat(e.target.value))}
+                            disabled={isReadOnly}
+                          />
+                        </Field>
+                        <Field label="Longitude (DD):">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            placeholder="e.g. 85.8245"
+                            value={fields.longitude || ''}
+                            onChange={(e) => handleChange('longitude', sanitizePositiveFloat(e.target.value))}
+                            disabled={isReadOnly}
+                          />
+                        </Field>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Uploaded Satellite Screenshot for PDF */}
+                  <div className="pt-2 border-t border-slate-100">
+                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                      Screenshot for PDF Report
+                    </div>
+                    {fields.locationMapImageUrl ? (
+                      <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
+                        <img
+                          src={fields.locationMapImageUrl}
+                          alt="GPS Location Map Screenshot"
+                          className="max-h-72 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
+                        />
+                        {!isReadOnly && (
+                          <div className="flex justify-end w-full pt-2">
+                            <button
+                              type="button"
+                              onClick={() => handleChange('locationMapImageUrl', '')}
+                              className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
+                            >
+                              ✕ Remove Screenshot
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
+                        <span className="text-xl mb-1">🛰️</span>
+                        <span className="text-xs font-semibold text-slate-700">No static location map screenshot uploaded</span>
+                        <span className="text-[11px] text-slate-400 mt-0.5">Capture or upload screenshot of Google Satellite Map for PDF</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleEnclosureUpload('locationMapImageUrl', e)}
+                          disabled={isReadOnly}
+                        />
+                      </label>
                     )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                  {(fields.propertyPhotos || []).map((photo, idx) => (
-                    <div key={idx} className="border border-slate-200 rounded-lg p-3 bg-white space-y-2">
-                      <div className="flex justify-between items-center text-xs font-semibold text-slate-700">
-                        <span>Photo #{idx + 1}</span>
-                        {!isReadOnly && (
+                {/* Enclosure 4: Bhu Naksha / Cadastral Map */}
+                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🗺️</span>
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
+                        Enclosure 4: Bhu Naksha / Cadastral Map {fields.bhuNakshaImageUrl ? '(Uploaded)' : ''}
+                      </h4>
+                    </div>
+                    {!isReadOnly && (
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
+                        {fields.bhuNakshaImageUrl ? '🔄 Replace Bhu Naksha' : '+ Add Bhu Naksha Map'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleEnclosureUpload('bhuNakshaImageUrl', e)}
+                          disabled={isReadOnly}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {fields.bhuNakshaImageUrl ? (
+                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
+                      <img
+                        src={fields.bhuNakshaImageUrl}
+                        alt="Bhu Naksha Map"
+                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
+                      />
+                      {!isReadOnly && (
+                        <div className="flex justify-end w-full pt-2">
                           <button
                             type="button"
-                            onClick={() => {
-                              const filtered = (fields.propertyPhotos || []).filter((_, i) => i !== idx);
-                              setFields(prev => ({ ...prev, propertyPhotos: filtered }));
-                            }}
-                            className="text-red-500 hover:text-red-700 font-bold"
+                            onClick={() => handleChange('bhuNakshaImageUrl', '')}
+                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
                           >
-                            ×
+                            ✕ Remove Bhu Naksha
                           </button>
-                        )}
-                      </div>
-
-                      {photo.url ? (
-                        <div className="space-y-2">
-                          <img src={photo.url} alt={`Photo ${idx + 1}`} className="h-36 w-full object-cover rounded border" />
-                          <input
-                            type="text"
-                            className={inputCls}
-                            value={photo.caption || ''}
-                            onChange={(e) => {
-                              const updated = [...(fields.propertyPhotos || [])];
-                              updated[idx].caption = e.target.value;
-                              setFields(prev => ({ ...prev, propertyPhotos: updated }));
-                            }}
-                            placeholder="Caption (e.g. Front View, Bedroom...)"
-                            disabled={isReadOnly}
-                          />
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <div className="h-32 border-2 border-dashed border-slate-300 rounded flex flex-col items-center justify-center p-2 text-center text-xs text-slate-500">
-                            <span>No image selected</span>
-                          </div>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handlePhotoUpload(idx, file);
-                            }}
-                            disabled={isReadOnly}
-                            className="w-full text-xs text-slate-500"
-                          />
                         </div>
                       )}
                     </div>
-                  ))}
+                  ) : (
+                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
+                      <span className="text-2xl mb-1">🗺️</span>
+                      <span className="text-xs font-semibold text-slate-700">No Bhu Naksha cadastral map uploaded</span>
+                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleEnclosureUpload('bhuNakshaImageUrl', e)}
+                        disabled={isReadOnly}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Enclosure 5: Guideline Value Proof (Annexure-C) */}
+                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">📑</span>
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
+                        Enclosure 5 / Annexure-C: Guideline Value Proof {fields.guidelineValueImageUrl ? '(Uploaded)' : ''}
+                      </h4>
+                    </div>
+                    {!isReadOnly && (
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
+                        {fields.guidelineValueImageUrl ? '🔄 Replace Guideline Proof' : '+ Add Guideline Proof'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleEnclosureUpload('guidelineValueImageUrl', e)}
+                          disabled={isReadOnly}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {fields.guidelineValueImageUrl ? (
+                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
+                      <img
+                        src={fields.guidelineValueImageUrl}
+                        alt="Guideline Value Proof"
+                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
+                      />
+                      {!isReadOnly && (
+                        <div className="flex justify-end w-full pt-2">
+                          <button
+                            type="button"
+                            onClick={() => handleChange('guidelineValueImageUrl', '')}
+                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
+                          >
+                            ✕ Remove Guideline Proof
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
+                      <span className="text-2xl mb-1">📑</span>
+                      <span className="text-xs font-semibold text-slate-700">No guideline value proof uploaded</span>
+                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleEnclosureUpload('guidelineValueImageUrl', e)}
+                        disabled={isReadOnly}
+                      />
+                    </label>
+                  )}
                 </div>
               </div>
             </Section>
+
+            {/* 13. Property Photographs */}
+            <BasePhotographsSection
+              title="Property Photographs"
+              sectionNumber={13}
+              sectionId="sec-photos"
+              propertyImages={propertyImages}
+              propertyImageNames={propertyImageNames}
+              isReadOnly={isReadOnly}
+              uploading={saving}
+              bucketCount={bucketImages?.length || 0}
+              onOpenBucketPicker={() => setShowBucketModal(true)}
+              onUploadImages={handleUploadMultiplePhotos}
+              onRemoveImage={handlePhotoRemove}
+              onImageNameChange={handlePhotoRename}
+              onReorderImages={handlePhotoReorder}
+              defaultOpen={true}
+            />
 
         {/* STANDARDIZED ACTION BAR (DOCKED AT BOTTOM OF MAIN CONTENT) */}
         <ReportActionBar
@@ -2602,13 +2888,18 @@ export default function BandhanHLLAP({
           mode="propertyImages"
           onClose={() => setShowBucketModal(false)}
           onConfirm={(selectedUrls: string[]) => {
-            const newPhotos: BandhanHLLAPPhoto[] = selectedUrls.map((url, i) => ({
+            const addedNames = selectedUrls.map((_, i) => `Photograph ${propertyImages.length + i + 1}`);
+            const mergedImgs = [...propertyImages, ...selectedUrls];
+            const mergedNames = [...propertyImageNames, ...addedNames];
+            const mergedPhotos = mergedImgs.map((url, idx) => ({
               url,
-              caption: `Property Photograph ${(fields.propertyPhotos?.length || 0) + i + 1}`,
+              caption: mergedNames[idx] || `Photograph ${idx + 1}`,
             }));
-            setFields(prev => ({
+            setFields((prev) => ({
               ...prev,
-              propertyPhotos: [...(prev.propertyPhotos || []), ...newPhotos],
+              propertyImages: mergedImgs,
+              propertyImageNames: mergedNames,
+              propertyPhotos: mergedPhotos,
             }));
             setShowBucketModal(false);
           }}

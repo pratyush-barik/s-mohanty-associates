@@ -10,6 +10,7 @@ import {
   Field,
   BaseDateInput,
   BasePhotoBucketModal,
+  BasePhotographsSection,
   ReportActionBar,
   inputCls,
   selectCls,
@@ -46,19 +47,21 @@ export interface BandhanSMEProps {
 }
 
 const NAV_SECTIONS = [
-  { id: 'sec-basic', title: 'Basic Information' },
-  { id: 'sec-prop-details', title: 'Land Details' },
-  { id: 'sec-title-rent', title: 'Title & Rent' },
-  { id: 'sec-desc-boundaries', title: 'Description & Boundaries' },
-  { id: 'sec-site-char', title: 'Site Characteristics' },
-  { id: 'sec-other-issues', title: 'Other Issues & Sales' },
-  { id: 'sec-land-valuation', title: 'Land Valuation' },
-  { id: 'sec-bldg-basic', title: 'Building Basic Info' },
-  { id: 'sec-bldg-checklist', title: 'Building Checklist' },
-  { id: 'sec-bldg-tech-spec', title: 'Tech & Specifications' },
-  { id: 'sec-bldg-valuation-schedules', title: 'Building Valuation & Schedules' },
-  { id: 'sec-abstract-opinion', title: 'Abstract & Opinion' },
-  { id: 'sec-declaration-enclosures', title: 'Declaration & Enclosures' },
+  { id: 'sec-basic', title: '1. Basic Information' },
+  { id: 'sec-prop-details', title: '2. Land Details' },
+  { id: 'sec-title-rent', title: '3. Title & Rent' },
+  { id: 'sec-desc-boundaries', title: '4. Description & Boundaries' },
+  { id: 'sec-site-char', title: '5. Site Characteristics' },
+  { id: 'sec-other-issues', title: '6. Other Issues & Sales' },
+  { id: 'sec-land-valuation', title: '7. Land Valuation' },
+  { id: 'sec-bldg-basic', title: '8. Building Basic Info' },
+  { id: 'sec-bldg-checklist', title: '9. Building Checklist' },
+  { id: 'sec-bldg-tech-spec', title: '10. Tech & Specifications' },
+  { id: 'sec-bldg-valuation-schedules', title: '11. Building Valuation & Schedules' },
+  { id: 'sec-abstract-opinion', title: '12. Abstract & Opinion' },
+  { id: 'sec-declaration', title: '13. Declaration & Checklist' },
+  { id: 'sec-docs', title: '14. Document Enclosures' },
+  { id: 'sec-photos', title: '15. Property Photographs' },
 ];
 
 function parseNum(val: string | number | undefined | null): number {
@@ -68,6 +71,28 @@ function parseNum(val: string | number | undefined | null): number {
   const n = parseFloat(clean);
   return isNaN(n) ? 0 : n;
 }
+
+const sanitizePositiveInt = (val: string, maxLen?: number): string => {
+  const digits = val.replace(/[^0-9]/g, '');
+  return maxLen ? digits.slice(0, maxLen) : digits;
+};
+
+const sanitizePositiveFloat = (val: string): string => {
+  let clean = val.replace(/[^0-9.]/g, '');
+  const parts = clean.split('.');
+  if (parts.length > 2) {
+    clean = parts[0] + '.' + parts.slice(1).join('');
+  }
+  return clean;
+};
+
+const sanitizePercentage = (val: string): string => {
+  const clean = sanitizePositiveFloat(val.replace(/%/g, ''));
+  if (!clean) return '';
+  const num = parseFloat(clean);
+  if (num > 100) return '100';
+  return clean;
+};
 
 export default function BandhanSME({
   projectId,
@@ -827,6 +852,77 @@ export default function BandhanSME({
     }
   };
 
+  // Photos state derivation
+  const propertyImages: string[] = useMemo(() => {
+    if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
+      return fields.propertyPhotos.map((p: any) => (typeof p === 'string' ? p : p.url)).filter(Boolean);
+    }
+    return [];
+  }, [fields.propertyPhotos]);
+
+  const propertyImageNames: string[] = useMemo(() => {
+    if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
+      return fields.propertyPhotos.map((p: any, i: number) => (typeof p === 'string' ? `Photograph ${i + 1}` : (p.caption || `Photograph ${i + 1}`)));
+    }
+    return [];
+  }, [fields.propertyPhotos]);
+
+  // Handle Multiple Photo Upload
+  const handleUploadMultiplePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const newPhotos: BandhanSMEPhoto[] = [];
+    let processed = 0;
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        newPhotos.push({
+          url: dataUrl,
+          caption: file.name.replace(/\.[^/.]+$/, '') || `Photograph ${(fields.propertyPhotos?.length || 0) + newPhotos.length + 1}`,
+        });
+        processed++;
+        if (processed === files.length) {
+          setFields((prev) => ({
+            ...prev,
+            propertyPhotos: [...(prev.propertyPhotos || []), ...newPhotos],
+          }));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handlePhotoRemove = (idx: number) => {
+    const updatedPhotos = (fields.propertyPhotos || []).filter((_, i) => i !== idx);
+    setFields((prev) => ({
+      ...prev,
+      propertyPhotos: updatedPhotos,
+    }));
+  };
+
+  const handlePhotoRename = (idx: number, name: string) => {
+    const updatedPhotos = [...(fields.propertyPhotos || [])];
+    if (updatedPhotos[idx]) {
+      updatedPhotos[idx] = { ...updatedPhotos[idx], caption: name };
+    }
+    setFields((prev) => ({
+      ...prev,
+      propertyPhotos: updatedPhotos,
+    }));
+  };
+
+  const handlePhotoReorder = (newImages: string[], newNames: string[]) => {
+    const newPhotos: BandhanSMEPhoto[] = newImages.map((url, idx) => ({
+      url,
+      caption: newNames[idx] || `Photograph ${idx + 1}`,
+    }));
+    setFields((prev) => ({
+      ...prev,
+      propertyPhotos: newPhotos,
+    }));
+  };
+
   // Local image uploader helper
   const handleLocalImageUpload = (fieldKey: keyof BandhanSMEReportFields, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -908,7 +1004,7 @@ export default function BandhanSME({
             </div>
 
             {/* 1. BASIC INFORMATION */}
-            <Section id="sec-basic" title="1. Basic Information (Section I: Points A–M)">
+            <Section number={1} id="sec-basic" title="Basic Information (Section I: Points A–M)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <Field label="A. Name of the Bank Branch / CBO / Asset Centre:">
@@ -1164,7 +1260,7 @@ export default function BandhanSME({
                         type="text"
                         className={inputCls}
                         value={fields.ownerPin || ''}
-                        onChange={(e) => handleChange('ownerPin', e.target.value)}
+                        onChange={(e) => handleChange('ownerPin', sanitizePositiveInt(e.target.value, 6))}
                         placeholder="e.g. 751010"
                         disabled={isReadOnly}
                       />
@@ -1195,7 +1291,7 @@ export default function BandhanSME({
             </Section>
 
             {/* 2. LAND DETAILS */}
-            <Section id="sec-prop-details" title="2. Land Details (Section II: Details of Property)">
+            <Section number={2} id="sec-prop-details" title="Land Details (Section II: Details of Property)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="A. Details of Property Offered as Secured:">
                   <input
@@ -1326,7 +1422,7 @@ export default function BandhanSME({
                         type="text"
                         className={inputCls}
                         value={fields.propPin || ''}
-                        onChange={(e) => handleChange('propPin', e.target.value)}
+                        onChange={(e) => handleChange('propPin', sanitizePositiveInt(e.target.value, 6))}
                         placeholder="PIN"
                         disabled={isReadOnly}
                       />
@@ -1396,7 +1492,7 @@ export default function BandhanSME({
             </Section>
 
             {/* 3. TITLE, OWNERSHIP & RENT */}
-            <Section id="sec-title-rent" title="3. Title, Ownership & Rent (Points 2.1, 2.2 & 2)">
+            <Section number={3} id="sec-title-rent" title="Title, Ownership & Rent (Points 2.1, 2.2 & 2)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="2.1 Title of Property:">
                   <select
@@ -1511,7 +1607,7 @@ export default function BandhanSME({
             </Section>
 
             {/* 4. DESCRIPTION & BOUNDARIES */}
-            <Section id="sec-desc-boundaries" title="4. Property Description & Multi-Plot Boundaries (Point 3)">
+            <Section number={4} id="sec-desc-boundaries" title="Property Description & Multi-Plot Boundaries (Point 3)">
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="sm:col-span-2">
@@ -1757,7 +1853,7 @@ export default function BandhanSME({
             </Section>
 
             {/* 5. SITE CHARACTERISTICS & PROXIMITIES */}
-            <Section id="sec-site-char" title="5. Site Characteristics & Proximities (Point 4)">
+            <Section number={5} id="sec-site-char" title="Site Characteristics & Proximities (Point 4)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="A. Level of Land / Topography:">
                   <input
@@ -1902,7 +1998,7 @@ export default function BandhanSME({
             </Section>
 
             {/* 6. OTHER ISSUES & SALES */}
-            <Section id="sec-other-issues" title="6. Other Issues & Sales Instances (Point 5)">
+            <Section number={6} id="sec-other-issues" title="Other Issues & Sales Instances (Point 5)">
               <div className="space-y-4">
                 <Field label="D. c. Land Rate Adopted in this Valuation (Rationale):">
                   <textarea
@@ -1918,7 +2014,7 @@ export default function BandhanSME({
             </Section>
 
             {/* 7. VALUATION OF LAND */}
-            <Section id="sec-land-valuation" title="7. Valuation of Land (Section II.6)">
+            <Section number={7} id="sec-land-valuation" title="Valuation of Land (Section II.6)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
                   <Field label="Method of Valuation Statement:">
@@ -1937,7 +2033,7 @@ export default function BandhanSME({
                     type="text"
                     className={inputCls}
                     value={fields.landAreaTotal || fields.extentOfSite || ''}
-                    onChange={(e) => handleChange('landAreaTotal', e.target.value)}
+                    onChange={(e) => handleChange('landAreaTotal', sanitizePositiveFloat(e.target.value))}
                     placeholder="e.g. 3006.00"
                     disabled={isReadOnly}
                   />
@@ -1947,7 +2043,7 @@ export default function BandhanSME({
                     type="text"
                     className={inputCls}
                     value={fields.landMarketRate || ''}
-                    onChange={(e) => handleChange('landMarketRate', e.target.value)}
+                    onChange={(e) => handleChange('landMarketRate', sanitizePositiveFloat(e.target.value))}
                     placeholder="e.g. 6000"
                     disabled={isReadOnly}
                   />
@@ -1967,7 +2063,7 @@ export default function BandhanSME({
                     type="text"
                     className={inputCls}
                     value={fields.landGovtBenchmarkRate || ''}
-                    onChange={(e) => handleChange('landGovtBenchmarkRate', e.target.value)}
+                    onChange={(e) => handleChange('landGovtBenchmarkRate', sanitizePositiveFloat(e.target.value))}
                     placeholder="e.g. 3970"
                     disabled={isReadOnly}
                   />
@@ -1996,7 +2092,7 @@ export default function BandhanSME({
             </Section>
 
             {/* 8. BUILDING BASIC INFO & PLINTH */}
-            <Section id="sec-bldg-basic" title="8. Valuation of Building: Basic Info & Plinth (Part 1)">
+            <Section number={8} id="sec-bldg-basic" title="Valuation of Building: Basic Info & Plinth (Part 1)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="A. Type of Building:">
                   <input
@@ -2063,7 +2159,7 @@ export default function BandhanSME({
             </Section>
 
             {/* 9. BUILDING CHECKLIST */}
-            <Section id="sec-bldg-checklist" title="9. Building Statutory Checklist (Points I to AB)">
+            <Section number={9} id="sec-bldg-checklist" title="Building Statutory Checklist (Points I to AB)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <Field label="I. Occupancy:">
                   <select
@@ -2110,7 +2206,7 @@ export default function BandhanSME({
             </Section>
 
             {/* 10. TECHNICAL DETAILS & SPECIFICATIONS */}
-            <Section id="sec-bldg-tech-spec" title="10. Technical Details & Specifications (Parts 2 & 3)">
+            <Section number={10} id="sec-bldg-tech-spec" title="Technical Details & Specifications (Parts 2 & 3)">
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
                 <Field label="Floor Heights:">
                   <input
@@ -2170,7 +2266,7 @@ export default function BandhanSME({
             </Section>
 
             {/* 11. BUILDING VALUATION & 4 SUB-SCHEDULES */}
-            <Section id="sec-bldg-valuation-schedules" title="11. Building Valuation & Sub-Schedules (Part 4 & 5)">
+            <Section number={11} id="sec-bldg-valuation-schedules" title="Building Valuation & Sub-Schedules (Part 4 & 5)">
               <div className="space-y-4">
                 {/* 8-Col Valuation Table */}
                 <div className="flex items-center justify-between">
@@ -2219,7 +2315,7 @@ export default function BandhanSME({
                               type="text"
                               className={inputCls}
                               value={br.plinthArea}
-                              onChange={(e) => handleBuildingRowChange(idx, 'plinthArea', e.target.value)}
+                              onChange={(e) => handleBuildingRowChange(idx, 'plinthArea', sanitizePositiveFloat(e.target.value))}
                               placeholder="Plinth"
                               disabled={isReadOnly}
                             />
@@ -2238,7 +2334,7 @@ export default function BandhanSME({
                               type="text"
                               className={inputCls}
                               value={br.age}
-                              onChange={(e) => handleBuildingRowChange(idx, 'age', e.target.value)}
+                              onChange={(e) => handleBuildingRowChange(idx, 'age', sanitizePositiveInt(e.target.value, 3))}
                               placeholder="Yrs"
                               disabled={isReadOnly}
                             />
@@ -2248,7 +2344,7 @@ export default function BandhanSME({
                               type="text"
                               className={inputCls}
                               value={br.replacementRate}
-                              onChange={(e) => handleBuildingRowChange(idx, 'replacementRate', e.target.value)}
+                              onChange={(e) => handleBuildingRowChange(idx, 'replacementRate', sanitizePositiveFloat(e.target.value))}
                               placeholder="Rate"
                               disabled={isReadOnly}
                             />
@@ -2258,7 +2354,7 @@ export default function BandhanSME({
                               type="text"
                               className={inputCls}
                               value={br.replacementCost}
-                              onChange={(e) => handleBuildingRowChange(idx, 'replacementCost', e.target.value)}
+                              onChange={(e) => handleBuildingRowChange(idx, 'replacementCost', sanitizePositiveFloat(e.target.value))}
                               placeholder="Cost"
                               disabled={isReadOnly}
                             />
@@ -2268,7 +2364,7 @@ export default function BandhanSME({
                               type="text"
                               className={inputCls}
                               value={br.depreciation}
-                              onChange={(e) => handleBuildingRowChange(idx, 'depreciation', e.target.value)}
+                              onChange={(e) => handleBuildingRowChange(idx, 'depreciation', sanitizePositiveFloat(e.target.value))}
                               placeholder="Dep"
                               disabled={isReadOnly}
                             />
@@ -2276,10 +2372,10 @@ export default function BandhanSME({
                           <td className="p-1 w-28">
                             <input
                               type="text"
-                              className={`${inputCls} font-semibold`}
+                              className={inputCls}
                               value={br.valueAfterDepreciation}
-                              onChange={(e) => handleBuildingRowChange(idx, 'valueAfterDepreciation', e.target.value)}
-                              placeholder="Net Value"
+                              onChange={(e) => handleBuildingRowChange(idx, 'valueAfterDepreciation', sanitizePositiveFloat(e.target.value))}
+                              placeholder="Net Val"
                               disabled={isReadOnly}
                             />
                           </td>
@@ -2325,7 +2421,7 @@ export default function BandhanSME({
                               type="text"
                               className={`${inputCls} text-xs py-0.5`}
                               value={it.cost}
-                              onChange={(e) => handleSubScheduleChange('extraItems', idx, e.target.value)}
+                              onChange={(e) => handleSubScheduleChange('extraItems', idx, sanitizePositiveFloat(e.target.value))}
                               placeholder="Cost"
                               disabled={isReadOnly}
                             />
@@ -2358,7 +2454,7 @@ export default function BandhanSME({
                               type="text"
                               className={`${inputCls} text-xs py-0.5`}
                               value={it.cost}
-                              onChange={(e) => handleSubScheduleChange('amenities', idx, e.target.value)}
+                              onChange={(e) => handleSubScheduleChange('amenities', idx, sanitizePositiveFloat(e.target.value))}
                               placeholder="Cost"
                               disabled={isReadOnly}
                             />
@@ -2372,7 +2468,7 @@ export default function BandhanSME({
             </Section>
 
             {/* 12. TOTAL ABSTRACT & OPINION */}
-            <Section id="sec-abstract-opinion" title="12. Total Abstract (Section 6.0), Remarks & Opinion">
+            <Section number={12} id="sec-abstract-opinion" title="Total Abstract (Section 6.0), Remarks & Opinion">
               <div className="space-y-4">
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
                   <h4 className="font-semibold text-slate-800 text-sm">6.0. Total Abstract Summary</h4>
@@ -2448,8 +2544,8 @@ export default function BandhanSME({
               </div>
             </Section>
 
-            {/* 13. DECLARATION, CHECKLIST & ENCLOSURES */}
-            <Section id="sec-declaration-enclosures" title="13. Declaration, 10-Pt Checklist & Enclosures">
+            {/* 13. DECLARATION, 10-PT CHECKLIST & VALUER CREDENTIALS */}
+            <Section number={13} id="sec-declaration" title="Declaration, 10-Pt Checklist & Valuer Credentials">
               <div className="space-y-6">
                 {/* 10-Point Checklist */}
                 <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
@@ -2473,133 +2569,406 @@ export default function BandhanSME({
                   </div>
                 </div>
 
-                {/* Valuer Credentials */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <Field label="Empanelled Valuer Name:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.empanelledValuerName || 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)'}
-                      onChange={(e) => handleChange('empanelledValuerName', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="Site Engineer Name:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.siteEngineerName || 'MR. SIBA BEHERA'}
-                      onChange={(e) => handleChange('siteEngineerName', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                </div>
-
-                {/* Enclosures (Maps & Legal Docs - Local Upload Only) */}
-                <div className="border border-slate-200 rounded-lg p-4 space-y-4">
-                  <h4 className="font-semibold text-slate-800 text-sm">
-                    Supporting Documents & Maps (Local Device Upload)
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <label className="font-medium text-slate-700 block mb-1">Enclosure 1: ROR Document</label>
+                {/* Valuer Credentials & Sign-Off */}
+                <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
+                  <h4 className="font-semibold text-slate-800 text-sm">Valuer Credentials & Sign-Off</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <Field label="Empanelled Valuer Name:">
                       <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleLocalImageUpload('rorImageUrl', e)}
+                        type="text"
+                        className={inputCls}
+                        value={fields.empanelledValuerName || 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)'}
+                        onChange={(e) => handleChange('empanelledValuerName', e.target.value)}
                         disabled={isReadOnly}
                       />
-                      {fields.rorImageUrl && <p className="text-emerald-600 text-xs mt-1">✓ ROR uploaded</p>}
-                    </div>
-                    <div>
-                      <label className="font-medium text-slate-700 block mb-1">Enclosure 2: GPS Location Map</label>
+                    </Field>
+                    <Field label="Site Engineer Name:">
                       <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleLocalImageUpload('locationMapImageUrl', e)}
+                        type="text"
+                        className={inputCls}
+                        value={fields.siteEngineerName || 'MR. SIBA BEHERA'}
+                        onChange={(e) => handleChange('siteEngineerName', e.target.value)}
                         disabled={isReadOnly}
                       />
-                      {fields.locationMapImageUrl && <p className="text-emerald-600 text-xs mt-1">✓ Location Map uploaded</p>}
-                    </div>
-                    <div>
-                      <label className="font-medium text-slate-700 block mb-1">Enclosure 4: Bhu Naksha Map</label>
+                    </Field>
+                    <Field label="Valuer Qualifications:">
                       <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleLocalImageUpload('bhuNakshaImageUrl', e)}
+                        type="text"
+                        className={inputCls}
+                        value={fields.valuerQualifications || 'B.Tech (Civil), M.Val (RE)'}
+                        onChange={(e) => handleChange('valuerQualifications', e.target.value)}
                         disabled={isReadOnly}
                       />
-                      {fields.bhuNakshaImageUrl && <p className="text-emerald-600 text-xs mt-1">✓ Bhu Naksha uploaded</p>}
-                    </div>
-                    <div>
-                      <label className="font-medium text-slate-700 block mb-1">Enclosure 5: Guideline Value Proof</label>
+                    </Field>
+                    <Field label="IOV Reg No:">
                       <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleLocalImageUpload('guidelineValueImageUrl', e)}
+                        type="text"
+                        className={inputCls}
+                        value={fields.valuerIovRegNo || 'No. F-26377'}
+                        onChange={(e) => handleChange('valuerIovRegNo', e.target.value)}
                         disabled={isReadOnly}
                       />
-                      {fields.guidelineValueImageUrl && <p className="text-emerald-600 text-xs mt-1">✓ Guideline Value proof uploaded</p>}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Property Site Photographs (Cloud Bucket & Device Upload) */}
-                <div className="border border-slate-200 rounded-lg p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="font-semibold text-slate-800 text-sm">
-                        Enclosure 3: Property Site Photographs
-                      </h4>
-                      <p className="text-xs text-slate-500">
-                        Select from Cloud Bucket or upload property photos.
-                      </p>
-                    </div>
-                    {!isReadOnly && (
-                      <button
-                        type="button"
-                        onClick={() => setShowBucketModal(true)}
-                        className="px-3 py-1.5 text-xs font-semibold text-white bg-slate-800 hover:bg-slate-900 rounded-lg shadow-sm"
-                      >
-                        Select from Cloud Bucket
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
-                    {(fields.propertyPhotos || []).map((photo, idx) => (
-                      <div key={idx} className="relative border border-slate-200 rounded-lg p-1 bg-white">
-                        <img src={photo.url} alt={photo.caption} className="w-full h-24 object-cover rounded" />
-                        <input
-                          type="text"
-                          className="mt-1 w-full text-[10px] border border-slate-200 rounded px-1 py-0.5"
-                          value={photo.caption || ''}
-                          onChange={(e) => {
-                            const newPhotos = [...(fields.propertyPhotos || [])];
-                            newPhotos[idx].caption = e.target.value;
-                            handleChange('propertyPhotos', newPhotos);
-                          }}
-                          placeholder="Caption"
-                          disabled={isReadOnly}
-                        />
-                        {!isReadOnly && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const newPhotos = (fields.propertyPhotos || []).filter((_, i) => i !== idx);
-                              handleChange('propertyPhotos', newPhotos);
-                            }}
-                            className="absolute top-1.5 right-1.5 bg-red-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                          >
-                            ×
-                          </button>
-                        )}
-                      </div>
-                    ))}
+                    </Field>
+                    <Field label="Wealth Tax Reg No:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.valuerWealthTaxRegNo || 'Regd. No.-107/2016-17, Cat -I'}
+                        onChange={(e) => handleChange('valuerWealthTaxRegNo', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="Declaration Date:">
+                      <BaseDateInput
+                        value={fields.declarationDate || ''}
+                        onChange={(val) => handleChange('declarationDate', val)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
                   </div>
                 </div>
               </div>
             </Section>
+
+            {/* 14. MAPS & DOCUMENT ENCLOSURES */}
+            <Section number={14} id="sec-docs" title="Maps & Document Enclosures">
+              <div className="space-y-6">
+                {/* Enclosure 1: ROR Document */}
+                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">📄</span>
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
+                        Enclosure 1: ROR Document (Record of Rights) {fields.rorImageUrl ? '(Uploaded)' : ''}
+                      </h4>
+                    </div>
+                    {!isReadOnly && (
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
+                        {fields.rorImageUrl ? '🔄 Replace ROR' : '+ Add ROR Document'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleLocalImageUpload('rorImageUrl', e)}
+                          disabled={isReadOnly}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {fields.rorImageUrl ? (
+                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
+                      <img
+                        src={fields.rorImageUrl}
+                        alt="ROR Document"
+                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
+                      />
+                      {!isReadOnly && (
+                        <div className="flex justify-end w-full pt-2">
+                          <button
+                            type="button"
+                            onClick={() => handleChange('rorImageUrl', '')}
+                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
+                          >
+                            ✕ Remove ROR
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
+                      <span className="text-2xl mb-1">📄</span>
+                      <span className="text-xs font-semibold text-slate-700">No ROR document uploaded</span>
+                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleLocalImageUpload('rorImageUrl', e)}
+                        disabled={isReadOnly}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Enclosure 2: GPS Location Map */}
+                <div className="space-y-4 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🛰️</span>
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
+                        Enclosure 2: GPS Location Map &amp; Satellite View
+                      </h4>
+                    </div>
+                    {!isReadOnly && (
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
+                        {fields.locationMapImageUrl ? '🔄 Replace Map Screenshot' : '+ Upload Map Screenshot'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleLocalImageUpload('locationMapImageUrl', e)}
+                          disabled={isReadOnly}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {/* Live Interactive Google Map Preview */}
+                  <div className="space-y-2">
+                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      Live Satellite Map View (Google Maps Embed)
+                    </div>
+                    {(() => {
+                      let query = '';
+                      if (fields.latitudeLongitude) {
+                        const cleanCoords = fields.latitudeLongitude.replace(/Latitude:?/i, '').replace(/Longitude:?/i, '').trim();
+                        query = cleanCoords;
+                      } else {
+                        query = [fields.propAt, fields.propDist, fields.state].filter(Boolean).join(', ');
+                      }
+
+                      const encodedQuery = encodeURIComponent(query);
+                      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
+
+                      return query ? (
+                        <div className="rounded-xl overflow-hidden border border-slate-200 bg-white shadow-xs">
+                          <div className="px-3.5 py-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                              <span className="text-xs font-bold text-[#0f2038]">
+                                Interactive Live Satellite Map Preview
+                              </span>
+                              <span className="text-[11px] text-slate-500">
+                                ({query})
+                              </span>
+                            </div>
+                            <a
+                              href={googleMapsUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs font-semibold text-accent-500 hover:underline"
+                            >
+                              Open in Google Maps ↗
+                            </a>
+                          </div>
+                          <iframe
+                            src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
+                            width="100%"
+                            height="260"
+                            style={{ border: 0 }}
+                            allowFullScreen
+                            loading="lazy"
+                            referrerPolicy="no-referrer-when-downgrade"
+                            title="Property Location Map"
+                          />
+                        </div>
+                      ) : (
+                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
+                          Enter property address or input GPS coordinates to view live satellite map preview.
+                        </div>
+                      );
+                    })()}
+
+                    {/* Coordinates input block */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 space-y-2 mt-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#0f2038] flex items-center gap-1.5">
+                          🧭 GPS Coordinates Entry
+                        </span>
+                        <span className="text-[11px] text-slate-500 font-medium">
+                          Input coordinates to set precise map pin
+                        </span>
+                      </div>
+                      <Field label="Latitude / Longitude Coordinates:">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          placeholder="e.g. Latitude: 20.3128, Longitude: 85.8569"
+                          value={fields.latitudeLongitude || ''}
+                          onChange={(e) => handleChange('latitudeLongitude', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                    </div>
+                  </div>
+
+                  {/* Uploaded Satellite Screenshot for PDF */}
+                  <div className="pt-2 border-t border-slate-100">
+                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
+                      Screenshot for PDF Report
+                    </div>
+                    {fields.locationMapImageUrl ? (
+                      <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
+                        <img
+                          src={fields.locationMapImageUrl}
+                          alt="GPS Location Map Screenshot"
+                          className="max-h-72 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
+                        />
+                        {!isReadOnly && (
+                          <div className="flex justify-end w-full pt-2">
+                            <button
+                              type="button"
+                              onClick={() => handleChange('locationMapImageUrl', '')}
+                              className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
+                            >
+                              ✕ Remove Screenshot
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
+                        <span className="text-xl mb-1">🛰️</span>
+                        <span className="text-xs font-semibold text-slate-700">No static location map screenshot uploaded</span>
+                        <span className="text-[11px] text-slate-400 mt-0.5">Capture or upload screenshot of Google Satellite Map for PDF</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleLocalImageUpload('locationMapImageUrl', e)}
+                          disabled={isReadOnly}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                {/* Enclosure 4: Bhu Naksha / Cadastral Map */}
+                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">🗺️</span>
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
+                        Enclosure 4: Bhu Naksha / Cadastral Map {fields.bhuNakshaImageUrl ? '(Uploaded)' : ''}
+                      </h4>
+                    </div>
+                    {!isReadOnly && (
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
+                        {fields.bhuNakshaImageUrl ? '🔄 Replace Bhu Naksha' : '+ Add Bhu Naksha Map'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleLocalImageUpload('bhuNakshaImageUrl', e)}
+                          disabled={isReadOnly}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {fields.bhuNakshaImageUrl ? (
+                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
+                      <img
+                        src={fields.bhuNakshaImageUrl}
+                        alt="Bhu Naksha Map"
+                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
+                      />
+                      {!isReadOnly && (
+                        <div className="flex justify-end w-full pt-2">
+                          <button
+                            type="button"
+                            onClick={() => handleChange('bhuNakshaImageUrl', '')}
+                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
+                          >
+                            ✕ Remove Bhu Naksha
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
+                      <span className="text-2xl mb-1">🗺️</span>
+                      <span className="text-xs font-semibold text-slate-700">No Bhu Naksha cadastral map uploaded</span>
+                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleLocalImageUpload('bhuNakshaImageUrl', e)}
+                        disabled={isReadOnly}
+                      />
+                    </label>
+                  )}
+                </div>
+
+                {/* Enclosure 5: Guideline Value Proof (Annexure-C) */}
+                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">📑</span>
+                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
+                        Enclosure 5 / Annexure-C: Guideline Value Proof {fields.guidelineValueImageUrl ? '(Uploaded)' : ''}
+                      </h4>
+                    </div>
+                    {!isReadOnly && (
+                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
+                        {fields.guidelineValueImageUrl ? '🔄 Replace Guideline Proof' : '+ Add Guideline Proof'}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => handleLocalImageUpload('guidelineValueImageUrl', e)}
+                          disabled={isReadOnly}
+                        />
+                      </label>
+                    )}
+                  </div>
+
+                  {fields.guidelineValueImageUrl ? (
+                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
+                      <img
+                        src={fields.guidelineValueImageUrl}
+                        alt="Guideline Value Proof"
+                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
+                      />
+                      {!isReadOnly && (
+                        <div className="flex justify-end w-full pt-2">
+                          <button
+                            type="button"
+                            onClick={() => handleChange('guidelineValueImageUrl', '')}
+                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
+                          >
+                            ✕ Remove Guideline Proof
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
+                      <span className="text-2xl mb-1">📑</span>
+                      <span className="text-xs font-semibold text-slate-700">No guideline value proof uploaded</span>
+                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleLocalImageUpload('guidelineValueImageUrl', e)}
+                        disabled={isReadOnly}
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+            </Section>
+
+            {/* 15. Property Photographs */}
+            <BasePhotographsSection
+              title="Property Photographs"
+              sectionNumber={15}
+              sectionId="sec-photos"
+              propertyImages={propertyImages}
+              propertyImageNames={propertyImageNames}
+              isReadOnly={isReadOnly}
+              uploading={saving}
+              bucketCount={bucketImages?.length || 0}
+              onOpenBucketPicker={() => setShowBucketModal(true)}
+              onUploadImages={handleUploadMultiplePhotos}
+              onRemoveImage={handlePhotoRemove}
+              onImageNameChange={handlePhotoRename}
+              onReorderImages={handlePhotoReorder}
+              defaultOpen={true}
+            />
 
         {/* STANDARDIZED ACTION BAR (DOCKED AT BOTTOM OF MAIN CONTENT) */}
         <ReportActionBar
@@ -2626,13 +2995,16 @@ export default function BandhanSME({
           mode="propertyImages"
           onClose={() => setShowBucketModal(false)}
           onConfirm={(selectedUrls: string[]) => {
-            const newPhotos: BandhanSMEPhoto[] = selectedUrls.map((url, i) => ({
+            const addedNames = selectedUrls.map((_, i) => `Photograph ${propertyImages.length + i + 1}`);
+            const mergedImgs = [...propertyImages, ...selectedUrls];
+            const mergedNames = [...propertyImageNames, ...addedNames];
+            const mergedPhotos = mergedImgs.map((url, idx) => ({
               url,
-              caption: `Property Photograph ${(fields.propertyPhotos?.length || 0) + i + 1}`,
+              caption: mergedNames[idx] || `Photograph ${idx + 1}`,
             }));
             setFields((prev) => ({
               ...prev,
-              propertyPhotos: [...(prev.propertyPhotos || []), ...newPhotos],
+              propertyPhotos: mergedPhotos,
             }));
             setShowBucketModal(false);
           }}
