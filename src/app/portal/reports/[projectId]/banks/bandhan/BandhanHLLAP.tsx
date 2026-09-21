@@ -55,6 +55,32 @@ const parseNum = (v: any): number => {
   return isNaN(n) ? 0 : n;
 };
 
+const getNextFloorName = (existingFloors: BandhanHLLAPFloor[]): string => {
+  const count = existingFloors.length;
+  if (count === 0) return 'Ground Floor';
+  const hasFloorNumberPattern = existingFloors.some(f => /^Floor\s*\d+/i.test(f.floor || ''));
+  if (hasFloorNumberPattern) {
+    return `Floor ${count}`;
+  }
+  const standardNames = [
+    'Ground Floor',
+    'First Floor',
+    'Second Floor',
+    'Third Floor',
+    'Fourth Floor',
+    'Fifth Floor',
+    'Sixth Floor',
+    'Seventh Floor',
+    'Eighth Floor',
+    'Ninth Floor',
+    'Tenth Floor',
+  ];
+  if (count < standardNames.length) {
+    return standardNames[count];
+  }
+  return `Floor ${count}`;
+};
+
 const formatCurrencyINR = (val: number): string => {
   return new Intl.NumberFormat('en-IN', {
     maximumFractionDigits: 0,
@@ -104,9 +130,8 @@ export default function BandhanHLLAP({
     const defaultFloors: BandhanHLLAPFloor[] = Array.isArray(raw.floors) && raw.floors.length > 0
       ? raw.floors
       : [
-          { floor: 'Basement Floor', measuredArea: 'NA', sanctionedArea: 'NA', deedArea: 'NA', currentUsage: 'NA', approvedUsage: 'NA' },
-          { floor: 'Ground Floor', measuredArea: '', sanctionedArea: '', deedArea: 'NA', currentUsage: 'Residential', approvedUsage: 'Residential' },
-          { floor: 'First Floor', measuredArea: '', sanctionedArea: '', deedArea: 'NA', currentUsage: 'Residential', approvedUsage: 'Residential' },
+          { floor: 'Ground Floor', measuredArea: '', sanctionedArea: '', deedArea: '', currentUsage: 'Residential', approvedUsage: 'Residential' },
+          { floor: 'First Floor', measuredArea: '', sanctionedArea: '', deedArea: '', currentUsage: 'Residential', approvedUsage: 'Residential' },
         ];
 
     const defaultDRCFloors: BandhanHLLAPDRCFloor[] = Array.isArray(raw.drcFloors) && raw.drcFloors.length > 0
@@ -227,41 +252,41 @@ export default function BandhanHLLAP({
       setbackSide1: raw.setbackSide1 || '',
       setbackSide2: raw.setbackSide2 || '',
       noOfFlatsPerFloor: raw.noOfFlatsPerFloor || 'NA',
-      maintenanceOfProperty: raw.maintenanceOfProperty || 'Good',
-      presentLife: raw.presentLife || '10',
-      residualLife: raw.residualLife || '50',
+      maintenanceOfProperty: raw.maintenanceOfProperty || '',
+      presentLife: raw.presentLife || '',
+      residualLife: raw.residualLife || '',
 
       // 7. Valuation Details (30 - 33, 35 - 40)
       recommendedValuationFormula: raw.recommendedValuationFormula || '',
       plotRate: raw.plotRate || '',
       plotValueBreakdown: raw.plotValueBreakdown || '',
       rateOfCostOfConstruction: raw.rateOfCostOfConstruction || '',
-      depreciationOfConstruction: raw.depreciationOfConstruction || 'Nil',
+      depreciationOfConstruction: raw.depreciationOfConstruction || '',
       netValueOfProperty: raw.netValueOfProperty || '',
-      rateOfFlat: raw.rateOfFlat || 'Not Applicable',
-      areaOfFlat: raw.areaOfFlat || 'Not Applicable',
+      rateOfFlat: raw.rateOfFlat || '',
+      areaOfFlat: raw.areaOfFlat || '',
       recommendedValueOfProperty: raw.recommendedValueOfProperty || '',
       totalMarketValue: raw.totalMarketValue || '',
       valuationAsOnDate: raw.valuationAsOnDate || '',
       valuationGovtRate: raw.valuationGovtRate || '',
       distressSaleValue: raw.distressSaleValue || '',
       realisableValue: raw.realisableValue || '',
-      dateCommencementCompletion: raw.dateCommencementCompletion || 'NA',
+      dateCommencementCompletion: raw.dateCommencementCompletion || '',
       areaOfLand: raw.areaOfLand || '',
-      expectedCostOfProject: raw.expectedCostOfProject || 'NA',
+      expectedCostOfProject: raw.expectedCostOfProject || '',
 
       // 8. Progress of Work (34)
-      progressStructureHeader: raw.progressStructureHeader || 'G+2',
-      progressFoundation: raw.progressFoundation || 'Completed',
-      progressRCC: raw.progressRCC || 'Completed',
-      progressBR: raw.progressBR || 'Completed',
-      progressPlastering: raw.progressPlastering || 'Completed',
-      progressFlooring: raw.progressFlooring || 'Completed',
-      progressDoorsWindows: raw.progressDoorsWindows || 'Completed',
-      progressElectricalSanitary: raw.progressElectricalSanitary || 'Completed',
-      progressPainting: raw.progressPainting || 'Completed',
-      progressTotalPct: raw.progressTotalPct || '100%',
-      progressRecommendationPct: raw.progressRecommendationPct || '100%',
+      progressStructureHeader: raw.progressStructureHeader || '',
+      progressFoundation: raw.progressFoundation || '',
+      progressRCC: raw.progressRCC || '',
+      progressBR: raw.progressBR || '',
+      progressPlastering: raw.progressPlastering || '',
+      progressFlooring: raw.progressFlooring || '',
+      progressDoorsWindows: raw.progressDoorsWindows || '',
+      progressElectricalSanitary: raw.progressElectricalSanitary || '',
+      progressPainting: raw.progressPainting || '',
+      progressTotalPct: raw.progressTotalPct || '',
+      progressRecommendationPct: raw.progressRecommendationPct || '',
 
       // 9. NDMA Parameters (41)
       ndmaConcreteGrade: raw.ndmaConcreteGrade || 'M25',
@@ -356,6 +381,14 @@ export default function BandhanHLLAP({
     const realisable = Math.round(netVal * 0.95);
     const distress = Math.round(netVal * 0.90);
 
+    // 3. Calculate Floor BUA
+    const totalFloorSanctioned = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.sanctionedArea), 0);
+    const totalFloorMeasured = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.measuredArea), 0);
+    const totalBUA = totalFloorSanctioned > 0 ? totalFloorSanctioned : totalFloorMeasured;
+    const validFloors = (fields.floors || []).filter(f => parseNum(f.sanctionedArea) > 0 || parseNum(f.measuredArea) > 0);
+    const floorPrefix = validFloors.length > 1 ? `G+${validFloors.length - 1} ` : (validFloors.length === 1 ? 'GF ' : '');
+    const calculatedBUAStr = totalBUA > 0 ? `${floorPrefix}Total BUA = ${totalBUA}sqft.` : '';
+
     // Sync values
     setFields(prev => {
       let changed = false;
@@ -382,10 +415,14 @@ export default function BandhanHLLAP({
         next.realisableValue = `Rs.${formatCurrencyINR(realisable)}/-`;
         changed = true;
       }
+      if (calculatedBUAStr && !prev.builtUpAreaTotal) {
+        next.builtUpAreaTotal = calculatedBUAStr;
+        changed = true;
+      }
 
       return changed ? next : prev;
     });
-  }, [fields.propertyArea, fields.areaOfLand, fields.plotRate, fields.annexureAdoptedLandRate]);
+  }, [fields.propertyArea, fields.areaOfLand, fields.plotRate, fields.annexureAdoptedLandRate, fields.floors]);
 
   // Handler for standard input changes
   const handleChange = (name: keyof BandhanHLLAPReportFields, val: any) => {
@@ -406,13 +443,17 @@ export default function BandhanHLLAP({
   };
 
   const addFloorRow = () => {
-    setFields(prev => ({
-      ...prev,
-      floors: [
-        ...(prev.floors || []),
-        { floor: `Floor ${(prev.floors || []).length}`, measuredArea: '', sanctionedArea: '', deedArea: 'NA', currentUsage: 'Residential', approvedUsage: 'Residential' },
-      ],
-    }));
+    setFields(prev => {
+      const nextFloors = prev.floors || [];
+      const nextName = getNextFloorName(nextFloors);
+      return {
+        ...prev,
+        floors: [
+          ...nextFloors,
+          { floor: nextName, measuredArea: '', sanctionedArea: '', deedArea: '', currentUsage: 'Residential', approvedUsage: 'Residential' },
+        ],
+      };
+    });
   };
 
   const removeFloorRow = (index: number) => {
@@ -1188,7 +1229,6 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.propertyArea || ''}
                     onChange={(e) => handleChange('propertyArea', e.target.value)}
-                    placeholder="e.g. Ac. 0.050 Decs (2,178 Sq.ft)"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1215,7 +1255,6 @@ export default function BandhanHLLAP({
                               className={inputCls}
                               value={fl.floor || ''}
                               onChange={(e) => handleFloorChange(idx, 'floor', e.target.value)}
-                              placeholder="Ground Floor"
                               disabled={isReadOnly}
                             />
                           </td>
@@ -1225,7 +1264,6 @@ export default function BandhanHLLAP({
                               className={inputCls}
                               value={fl.measuredArea || ''}
                               onChange={(e) => handleFloorChange(idx, 'measuredArea', e.target.value)}
-                              placeholder="1272 sqft"
                               disabled={isReadOnly}
                             />
                           </td>
@@ -1235,7 +1273,6 @@ export default function BandhanHLLAP({
                               className={inputCls}
                               value={fl.sanctionedArea || ''}
                               onChange={(e) => handleFloorChange(idx, 'sanctionedArea', e.target.value)}
-                              placeholder="1225 sqft"
                               disabled={isReadOnly}
                             />
                           </td>
@@ -1245,29 +1282,42 @@ export default function BandhanHLLAP({
                               className={inputCls}
                               value={fl.deedArea || ''}
                               onChange={(e) => handleFloorChange(idx, 'deedArea', e.target.value)}
-                              placeholder="NA"
                               disabled={isReadOnly}
                             />
                           </td>
                           <td className="p-1.5">
-                            <input
-                              type="text"
-                              className={inputCls}
-                              value={fl.currentUsage || ''}
+                            <select
+                              className={selectCls}
+                              value={fl.currentUsage || 'Residential'}
                               onChange={(e) => handleFloorChange(idx, 'currentUsage', e.target.value)}
-                              placeholder="Residential"
                               disabled={isReadOnly}
-                            />
+                            >
+                              <option value="Residential">Residential</option>
+                              <option value="Commercial">Commercial</option>
+                              <option value="Industrial">Industrial</option>
+                              <option value="Agricultural">Agricultural</option>
+                              <option value="Institutional">Institutional</option>
+                              <option value="Mixed">Mixed</option>
+                              <option value="Vacant">Vacant</option>
+                              <option value="NA">NA</option>
+                            </select>
                           </td>
                           <td className="p-1.5">
-                            <input
-                              type="text"
-                              className={inputCls}
-                              value={fl.approvedUsage || ''}
+                            <select
+                              className={selectCls}
+                              value={fl.approvedUsage || 'Residential'}
                               onChange={(e) => handleFloorChange(idx, 'approvedUsage', e.target.value)}
-                              placeholder="Residential"
                               disabled={isReadOnly}
-                            />
+                            >
+                              <option value="Residential">Residential</option>
+                              <option value="Commercial">Commercial</option>
+                              <option value="Industrial">Industrial</option>
+                              <option value="Agricultural">Agricultural</option>
+                              <option value="Institutional">Institutional</option>
+                              <option value="Mixed">Mixed</option>
+                              <option value="Vacant">Vacant</option>
+                              <option value="NA">NA</option>
+                            </select>
                           </td>
                           {!isReadOnly && (
                             <td className="p-1.5 text-center">
@@ -1296,59 +1346,207 @@ export default function BandhanHLLAP({
                   </button>
                 )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                  <Field label="Total Carpet Area:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.carpetAreaTotal || ''}
-                      onChange={(e) => handleChange('carpetAreaTotal', e.target.value)}
-                      placeholder="e.g. Total Carpet Area in Sq.ft"
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="Built-Up Area Total:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.builtUpAreaTotal || ''}
-                      onChange={(e) => handleChange('builtUpAreaTotal', e.target.value)}
-                      placeholder="e.g. Total BUA in Sq.ft"
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="Remarks on Construction:">
-                    <select
-                      className={selectCls}
-                      value={fields.remarksOnConstruction || 'Good'}
-                      onChange={(e) => handleChange('remarksOnConstruction', e.target.value)}
-                      disabled={isReadOnly}
-                    >
-                      <option value="Good">Good</option>
-                      <option value="Bad">Bad</option>
-                      <option value="Average">Average</option>
-                    </select>
-                  </Field>
-                  <Field label="Compliance with Sanction Plan:">
-                    <select
-                      className={selectCls}
-                      value={fields.complianceWithPlan || 'Not Applicable'}
-                      onChange={(e) => handleChange('complianceWithPlan', e.target.value)}
-                      disabled={isReadOnly}
-                    >
-                      <option value="Yes">Yes</option>
-                      <option value="No">No</option>
-                      <option value="Not Applicable">Not Applicable</option>
-                    </select>
-                  </Field>
+                {/* Soft Container: Supplementary Floor & Construction Details */}
+                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                      <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                        Floor Area Summary & Construction Compliances
+                      </h4>
+                    </div>
+                    {(() => {
+                      const totalFloorSanctioned = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.sanctionedArea), 0);
+                      const totalFloorMeasured = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.measuredArea), 0);
+                      const totalBUA = totalFloorSanctioned > 0 ? totalFloorSanctioned : totalFloorMeasured;
+                      const validFloors = (fields.floors || []).filter(f => parseNum(f.sanctionedArea) > 0 || parseNum(f.measuredArea) > 0);
+                      const floorPrefix = validFloors.length > 1 ? `G+${validFloors.length - 1} ` : (validFloors.length === 1 ? 'GF ' : '');
+                      const calcBUA = totalBUA > 0 ? `${floorPrefix}Total BUA = ${totalBUA}sqft.` : '';
+                      return calcBUA ? (
+                        <button
+                          type="button"
+                          onClick={() => handleChange('builtUpAreaTotal', calcBUA)}
+                          className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded border border-blue-200 hover:bg-blue-100 transition-colors"
+                          title="Recalculate BUA from floor table"
+                        >
+                          ↻ Auto-fill BUA ({calcBUA})
+                        </button>
+                      ) : null;
+                    })()}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Carpet Area: (Approx.) */}
+                    <Field label="Carpet Area: (Approx.)">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.carpetAreaTotal || ''}
+                        onChange={(e) => handleChange('carpetAreaTotal', e.target.value)}
+                        placeholder="e.g. As Per Plan (Total)- 3124sqft."
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+
+                    {/* Built Up Area: */}
+                    <Field label="Built Up Area:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.builtUpAreaTotal || ''}
+                        onChange={(e) => handleChange('builtUpAreaTotal', e.target.value)}
+                        placeholder="e.g. G+1 Total BUA = 3675sqft."
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+
+                    {/* Remarks on construction:(Good / Bad) */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Remarks on construction:(Good / Bad)
+                        </label>
+                        <div className="flex gap-1">
+                          {['Good', 'Bad', 'Average', 'Satisfactory'].map((opt) => (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => handleChange('remarksOnConstruction', opt)}
+                              disabled={isReadOnly}
+                              className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
+                                (fields.remarksOnConstruction || '').toLowerCase() === opt.toLowerCase()
+                                  ? 'bg-blue-600 text-white font-bold'
+                                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.remarksOnConstruction || ''}
+                        onChange={(e) => handleChange('remarksOnConstruction', e.target.value)}
+                        placeholder="e.g. Good"
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Compliances with sanction plan:(Yes / No) */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Compliances with sanction plan:(Yes / No)
+                        </label>
+                        <div className="flex gap-1">
+                          {['Yes', 'No', 'Not Applicable', 'NA'].map((opt) => (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => handleChange('complianceWithPlan', opt)}
+                              disabled={isReadOnly}
+                              className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
+                                (fields.complianceWithPlan || '').toLowerCase() === opt.toLowerCase()
+                                  ? 'bg-blue-600 text-white font-bold'
+                                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.complianceWithPlan || ''}
+                        onChange={(e) => handleChange('complianceWithPlan', e.target.value)}
+                        placeholder="e.g. Not Applicable or Yes"
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Quality of construction:(Good/ Bad) */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Quality of construction:(Good/ Bad)
+                        </label>
+                        <div className="flex gap-1">
+                          {['Good', 'Bad', 'Average', 'Excellent'].map((opt) => (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => handleChange('qualityOfConstruction', opt)}
+                              disabled={isReadOnly}
+                              className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
+                                (fields.qualityOfConstruction || '').toLowerCase() === opt.toLowerCase()
+                                  ? 'bg-blue-600 text-white font-bold'
+                                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.qualityOfConstruction || ''}
+                        onChange={(e) => handleChange('qualityOfConstruction', e.target.value)}
+                        placeholder="e.g. Good"
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Construction has been made as per Plan */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Construction has been made as per Plan
+                        </label>
+                        <div className="flex gap-1">
+                          {['Yes', 'No', 'NA', 'Not Applicable'].map((opt) => (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => handleChange('constructionAsPerPlan', opt)}
+                              disabled={isReadOnly}
+                              className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
+                                (fields.constructionAsPerPlan || '').toLowerCase() === opt.toLowerCase()
+                                  ? 'bg-blue-600 text-white font-bold'
+                                  : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.constructionAsPerPlan || ''}
+                        onChange={(e) => handleChange('constructionAsPerPlan', e.target.value)}
+                        placeholder="e.g. NA or Yes"
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                  </div>
                 </div>
 
-                {/* 27. Setbacks */}
-                <div className="pt-4 border-t border-slate-200">
-                  <p className="text-xs font-semibold text-slate-600 uppercase tracking-wider mb-2">
-                    27. Setback Around the Property
-                  </p>
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                {/* 27. Setback Around the Property (Soft Container) */}
+                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                      27. Setback Around the Property
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-1">
                     <Field label="Front:">
                       <input
                         type="text"
@@ -1402,40 +1600,50 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* 28 - 29 */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                  <Field label="28. Maintenance of Property:">
-                    <select
-                      className={selectCls}
-                      value={fields.maintenanceOfProperty || 'Good'}
-                      onChange={(e) => handleChange('maintenanceOfProperty', e.target.value)}
-                      disabled={isReadOnly}
-                    >
-                      <option value="Good">Good</option>
-                      <option value="Average">Average</option>
-                      <option value="Poor">Poor</option>
-                    </select>
-                  </Field>
-                  <Field label="29. Present Life (Years):">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.presentLife || '10'}
-                      onChange={(e) => handleChange('presentLife', e.target.value)}
-                      placeholder="10"
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="Residual Life (Years):">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.residualLife || '50'}
-                      onChange={(e) => handleChange('residualLife', e.target.value)}
-                      placeholder="50"
-                      disabled={isReadOnly}
-                    />
-                  </Field>
+                {/* 28 & 29. Property Maintenance & Life (Soft Container) */}
+                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                      28 &amp; 29. Maintenance &amp; Life of Property
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+                    <Field label="28. Maintenance of Property:">
+                      <select
+                        className={selectCls}
+                        value={fields.maintenanceOfProperty || ''}
+                        onChange={(e) => handleChange('maintenanceOfProperty', e.target.value)}
+                        disabled={isReadOnly}
+                      >
+                        <option value="">-- Select --</option>
+                        <option value="Good">Good</option>
+                        <option value="Average">Average</option>
+                        <option value="Poor">Poor</option>
+                        <option value="Satisfactory">Satisfactory</option>
+                      </select>
+                    </Field>
+                    <Field label="29. Present Life (Years):">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.presentLife || ''}
+                        onChange={(e) => handleChange('presentLife', e.target.value)}
+                        placeholder=""
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="Residual Life (Years):">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.residualLife || ''}
+                        onChange={(e) => handleChange('residualLife', e.target.value)}
+                        placeholder=""
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                  </div>
                 </div>
               </div>
             </Section>
@@ -1450,70 +1658,156 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.recommendedValuationFormula || ''}
                       onChange={(e) => handleChange('recommendedValuationFormula', e.target.value)}
-                      placeholder="e.g. Total Land Area in Sq.ft * Land Rate per Sq.ft = Total Land Value"
                       disabled={isReadOnly}
                     />
                   </Field>
                 </div>
-                <Field label="31. Recommended Rate of the Plot (Rs./sqft):">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.plotRate || ''}
-                    onChange={(e) => handleChange('plotRate', e.target.value)}
-                    placeholder="e.g. 1500"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="32. Rate of Cost of Construction (Rs./sqft):">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.rateOfCostOfConstruction || ''}
-                    onChange={(e) => handleChange('rateOfCostOfConstruction', e.target.value)}
-                    placeholder="e.g. GF: 1600, FF: 1800"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <div className="sm:col-span-2">
-                  <Field label="Recommended Value of the Plot (Floor-wise summary):">
-                    <textarea
-                      rows={2}
-                      className={inputCls}
-                      value={fields.plotValueBreakdown || ''}
-                      onChange={(e) => handleChange('plotValueBreakdown', e.target.value)}
-                      placeholder="e.g. GF: 1200 sq.ft * Rs.1600 = Rs.19,20,000/-&#10;FF: 1200 sq.ft * Rs.1800 = Rs.21,60,000/-"
-                      disabled={isReadOnly}
-                    />
-                  </Field>
+                {/* 31. Recommended Rate & Value of Plot (Soft Container) */}
+                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                      <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                        31. Recommended Rate &amp; Value of the Plot
+                      </h4>
+                    </div>
+                    {(() => {
+                      const landArea = parseNum(fields.propertyArea || fields.areaOfLand);
+                      const rate = parseNum(fields.plotRate);
+                      const calcVal = (landArea > 0 && rate > 0) ? landArea * rate : 0;
+                      const calcText = calcVal > 0 
+                        ? `Total Land Area: ${fields.propertyArea || fields.areaOfLand} sq.ft * Rs.${fields.plotRate}/- = Rs.${calcVal.toLocaleString('en-IN')}/-`
+                        : '';
+                      return calcText ? (
+                        <button
+                          type="button"
+                          onClick={() => handleChange('plotValueBreakdown', calcText)}
+                          className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded border border-blue-200 hover:bg-blue-100 transition-colors"
+                          title="Auto-calculate plot value"
+                        >
+                          ↻ Auto-calc Plot Value
+                        </button>
+                      ) : null;
+                    })()}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <Field label="31. Recommended Rate of the Plot (Rs./sqft):">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.plotRate || ''}
+                        onChange={(e) => handleChange('plotRate', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <div className="sm:col-span-2">
+                      <Field label="Recommended Value of the Plot:">
+                        <textarea
+                          rows={2}
+                          className={inputCls}
+                          value={fields.plotValueBreakdown || ''}
+                          onChange={(e) => handleChange('plotValueBreakdown', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                    </div>
+                  </div>
                 </div>
-                <Field label="33. Depreciation of Construction:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.depreciationOfConstruction || 'Nil'}
-                    onChange={(e) => handleChange('depreciationOfConstruction', e.target.value)}
-                    placeholder="Nil"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="33b. Net Value of Property (Land + Building):">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.netValueOfProperty || ''}
-                    onChange={(e) => handleChange('netValueOfProperty', e.target.value)}
-                    placeholder="Rs.1,96,02,000/- + Rs.63,70,000/- = Rs.2,59,72,000/-"
-                    disabled={isReadOnly}
-                  />
-                </Field>
+
+                {/* 32. Cost of Construction & Depreciation (Soft Container) */}
+                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                      32. Recommended Rate of Cost of Construction &amp; Depreciation
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <Field label="32. Rate of Cost of Construction (Rs./sqft):">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.rateOfCostOfConstruction || ''}
+                        onChange={(e) => handleChange('rateOfCostOfConstruction', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="Depreciation of Construction:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.depreciationOfConstruction || ''}
+                        onChange={(e) => handleChange('depreciationOfConstruction', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                  </div>
+                </div>
+
+                {/* 33. Net Value of Property & Flat Valuation (Soft Container) */}
+                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                    <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                      33. Net Value of Property &amp; Valuation Breakdown
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <div className="sm:col-span-2">
+                      <Field label="33. Net Value of Property (Land + Building):">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.netValueOfProperty || ''}
+                          onChange={(e) => handleChange('netValueOfProperty', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                    </div>
+                    <Field label="Recommended Rate of the Flat:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.rateOfFlat || ''}
+                        onChange={(e) => handleChange('rateOfFlat', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="Area of the Flat:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.areaOfFlat || ''}
+                        onChange={(e) => handleChange('areaOfFlat', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="Recommended Value of the Property:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.recommendedValueOfProperty || ''}
+                        onChange={(e) => handleChange('recommendedValueOfProperty', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="Total Market Value of Existing Property:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.totalMarketValue || ''}
+                        onChange={(e) => handleChange('totalMarketValue', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                  </div>
+                </div>
                 <Field label="35. Valuation of Property as on date:">
                   <input
                     type="text"
                     className={inputCls}
                     value={fields.valuationAsOnDate || ''}
                     onChange={(e) => handleChange('valuationAsOnDate', e.target.value)}
-                    placeholder="Rs.2,59,72,000/-"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1523,7 +1817,6 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.valuationGovtRate || ''}
                     onChange={(e) => handleChange('valuationGovtRate', e.target.value)}
-                    placeholder="Rs.286/- Per sqft * 10,890sqft. = Rs.31,14,540/-"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1533,7 +1826,6 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.distressSaleValue || ''}
                     onChange={(e) => handleChange('distressSaleValue', e.target.value)}
-                    placeholder="Rs.2,33,74,800/-"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1543,7 +1835,6 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.realisableValue || ''}
                     onChange={(e) => handleChange('realisableValue', e.target.value)}
-                    placeholder="Rs.2,46,73,400/-"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1551,9 +1842,8 @@ export default function BandhanHLLAP({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.dateCommencementCompletion || 'NA'}
+                    value={fields.dateCommencementCompletion || ''}
                     onChange={(e) => handleChange('dateCommencementCompletion', e.target.value)}
-                    placeholder="NA"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1563,7 +1853,15 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.areaOfLand || ''}
                     onChange={(e) => handleChange('areaOfLand', e.target.value)}
-                    placeholder="(AC.0.250Decs) i.e. 10,890sqft."
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="40. Expected Cost of the Project:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.expectedCostOfProject || ''}
+                    onChange={(e) => handleChange('expectedCostOfProject', e.target.value)}
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1572,24 +1870,35 @@ export default function BandhanHLLAP({
 
             {/* 8. Progress of Work */}
             <Section id="sec-progress" title="8. Progress of Work (Point 34)">
-              <div className="space-y-4">
-                <Field label="34. Floor Structure Level:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.progressStructureHeader || 'G+2'}
-                    onChange={(e) => handleChange('progressStructureHeader', e.target.value)}
-                    placeholder="e.g. G+2 or G+1"
-                    disabled={isReadOnly}
-                  />
-                </Field>
+              {/* 34. Progress of Work (Soft Container) */}
+              <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                      34. Progress of Work Stages &amp; Percentage
+                    </h4>
+                  </div>
+                </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <Field label="34. Floor Structure Level:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.progressStructureHeader || ''}
+                        onChange={(e) => handleChange('progressStructureHeader', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                  </div>
+
                   <Field label="Foundation:">
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.progressFoundation || 'Completed'}
+                      value={fields.progressFoundation || ''}
                       onChange={(e) => handleChange('progressFoundation', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -1598,7 +1907,7 @@ export default function BandhanHLLAP({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.progressRCC || 'Completed'}
+                      value={fields.progressRCC || ''}
                       onChange={(e) => handleChange('progressRCC', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -1607,7 +1916,7 @@ export default function BandhanHLLAP({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.progressBR || 'Completed'}
+                      value={fields.progressBR || ''}
                       onChange={(e) => handleChange('progressBR', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -1616,7 +1925,7 @@ export default function BandhanHLLAP({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.progressPlastering || 'Completed'}
+                      value={fields.progressPlastering || ''}
                       onChange={(e) => handleChange('progressPlastering', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -1625,7 +1934,7 @@ export default function BandhanHLLAP({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.progressFlooring || 'Completed'}
+                      value={fields.progressFlooring || ''}
                       onChange={(e) => handleChange('progressFlooring', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -1634,7 +1943,7 @@ export default function BandhanHLLAP({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.progressDoorsWindows || 'Completed'}
+                      value={fields.progressDoorsWindows || ''}
                       onChange={(e) => handleChange('progressDoorsWindows', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -1643,7 +1952,7 @@ export default function BandhanHLLAP({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.progressElectricalSanitary || 'Completed'}
+                      value={fields.progressElectricalSanitary || ''}
                       onChange={(e) => handleChange('progressElectricalSanitary', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -1652,7 +1961,7 @@ export default function BandhanHLLAP({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.progressPainting || 'Completed'}
+                      value={fields.progressPainting || ''}
                       onChange={(e) => handleChange('progressPainting', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -1661,7 +1970,7 @@ export default function BandhanHLLAP({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.progressTotalPct || '100%'}
+                      value={fields.progressTotalPct || ''}
                       onChange={(e) => handleChange('progressTotalPct', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -1670,7 +1979,7 @@ export default function BandhanHLLAP({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.progressRecommendationPct || '100%'}
+                      value={fields.progressRecommendationPct || ''}
                       onChange={(e) => handleChange('progressRecommendationPct', e.target.value)}
                       disabled={isReadOnly}
                     />

@@ -468,16 +468,21 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawSetbackSection(fields);
 
     // 28 to 33
-    this.drawBandhanRow('28.', 'Maintenance of the property', fields.maintenanceOfProperty || 'Good');
-    this.drawBandhanRow('29.', 'Present life &residual life', `${fields.presentLife || '10'} - Years, ${fields.residualLife || '50'} – Years`);
+    this.drawBandhanRow('28.', 'Maintenance of the property', fields.maintenanceOfProperty || '');
+    const presentStr = fields.presentLife ? `${fields.presentLife} - Years` : '';
+    const residualStr = fields.residualLife ? `${fields.residualLife} – Years` : '';
+    const lifeStr = (presentStr && residualStr)
+      ? `${presentStr}, ${residualStr}`
+      : (presentStr || residualStr || '');
+    this.drawBandhanRow('29.', 'Present life &residual life', lifeStr);
     this.drawBandhanRow('30.', 'Recommended valuation of the property', fields.recommendedValuationFormula || '');
     this.drawBandhanRow('31.', 'Recommended rate of the plot', fields.plotRate ? `Rs.${fields.plotRate}/-` : '');
     this.drawBandhanRow('', 'Recommended value of the plot', fields.plotValueBreakdown || '');
     this.drawBandhanRow('32.', 'Recommended rate of cost of construction', fields.rateOfCostOfConstruction || '');
-    this.drawBandhanRow('33.', 'Depreciation of the construction', fields.depreciationOfConstruction || 'Nil');
+    this.drawBandhanRow('', 'Depreciation of the construction', fields.depreciationOfConstruction || '');
     this.drawBandhanRow('33.', 'Net value of the property (Land + Building)', fields.netValueOfProperty || '');
-    this.drawBandhanRow('', 'Recommended rate of the flat', fields.rateOfFlat || 'Not Applicable');
-    this.drawBandhanRow('', 'Area of the flat', fields.areaOfFlat || 'Not Applicable');
+    this.drawBandhanRow('', 'Recommended rate of the flat', fields.rateOfFlat || '');
+    this.drawBandhanRow('', 'Area of the flat', fields.areaOfFlat || '');
     this.drawBandhanRow('', 'Recommended value of the property', fields.recommendedValueOfProperty || '');
     this.drawBandhanRow('', 'Total Market Value of existing property', fields.totalMarketValue || '');
 
@@ -489,9 +494,9 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawBandhanRow('36.', 'Valuation as per govt. rates (Land)', fields.valuationGovtRate || '');
     this.drawBandhanRow('37.', 'Distress sale value', fields.distressSaleValue || '');
     this.drawBandhanRow('', 'Realisable Value', fields.realisableValue || '');
-    this.drawBandhanRow('38.', 'Date of project commencement & date of expected project completion', fields.dateCommencementCompletion || 'NA');
+    this.drawBandhanRow('38.', 'Date of project commencement & date of expected project completion', fields.dateCommencementCompletion || '');
     this.drawBandhanRow('39.', 'Area of land', fields.areaOfLand || fields.propertyArea || '');
-    this.drawBandhanRow('40.', 'Expected cost of the project', fields.expectedCostOfProject || 'NA');
+    this.drawBandhanRow('40.', 'Expected cost of the project', fields.expectedCostOfProject || '');
   }
 
   /**
@@ -603,53 +608,90 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
    * Row 26: Floor-wise Area Details (6 Columns)
    */
   private drawFloorwiseAreaSection(fields: BandhanHLLAPReportFields): void {
+    const colSl = this.colSl;
+    const remW = CONTENT_W - colSl;
+
     // Row 26 main title
     this.drawBandhanRow('26.', 'Area of the property:', fields.propertyArea || '');
 
     // 6-column floor breakdown table
-    const colW1 = 76;  // Floor level
+    const colW1 = 74;  // Floor level
     const colW2 = 78;  // As measured
     const colW3 = 96;  // As per sanctioned plan
     const colW4 = 88;  // As per sale deed
-    const colW5 = 74;  // Current usage
-    const colW6 = CONTENT_W - colW1 - colW2 - colW3 - colW4 - colW5; // 75.28 pt Approved usage
+    const colW5 = 75;  // Current usage
+    const colW6 = remW - colW1 - colW2 - colW3 - colW4 - colW5; // Approved usage
 
-    const headerH = 26;
-    this.checkPageBreak(headerH + TABLE_MIN_ROW_H * 3);
+    // Calculate dynamic header height to prevent text overflow
+    const h1 = this.cellHeight('Floor level', colW1, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const h2 = this.cellHeight('As measured\n(In sqft.)', colW2, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const h3 = this.cellHeight('Built-up area\nAs per sanctioned\nplan (in sqft)', colW3, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const h4 = this.cellHeight('Built-up area\nAs per sale deed\n(In sqft.)', colW4, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const h5 = this.cellHeight('Current\nusage', colW5, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const h6 = this.cellHeight('Approved\nusage', colW6, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const headerH = Math.max(34, h1, h2, h3, h4, h5, h6);
 
-    this.drawCell(MARGIN_L, this.cursorY, colW1, headerH, 'Floor level', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colW1, this.cursorY, colW2, headerH, 'As measured\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colW1 + colW2, this.cursorY, colW3, headerH, 'Built-up area\nAs per sanctioned\nplan (in sqft)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colW1 + colW2 + colW3, this.cursorY, colW4, headerH, 'Built-up area\nAs per sale deed\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, headerH, 'Current\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, headerH, 'Approved\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.checkPageBreak(headerH + TABLE_MIN_ROW_H * 2);
+
+    this.drawCell(MARGIN_L, this.cursorY, colSl, headerH, '', { align: 'center' });
+    this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, headerH, 'Floor level', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, headerH, 'As measured\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, headerH, 'Built-up area\nAs per sanctioned\nplan (in sqft)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, headerH, 'Built-up area\nAs per sale deed\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, headerH, 'Current\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, headerH, 'Approved\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
     this.cursorY += headerH;
 
-    const floors = (fields.floors && fields.floors.length > 0)
-      ? fields.floors
+    const rawFloors = fields.floors || [];
+    const floors = rawFloors.length > 0
+      ? rawFloors.filter(f => {
+          if (/^Basement/i.test(f.floor || '') && !f.measuredArea && !f.sanctionedArea && (!f.deedArea || f.deedArea === 'NA')) {
+            return false;
+          }
+          return true;
+        })
       : [
-          { floor: 'Basement Floor', measuredArea: 'NA', sanctionedArea: 'NA', deedArea: 'NA', currentUsage: 'NA', approvedUsage: 'NA' },
-          { floor: 'Ground Floor', measuredArea: '', sanctionedArea: '', deedArea: 'NA', currentUsage: 'Residential', approvedUsage: 'Residential' },
+          { floor: 'Ground Floor', measuredArea: '', sanctionedArea: '', deedArea: '', currentUsage: 'Residential', approvedUsage: 'Residential' },
         ];
 
     for (const f of floors) {
-      const h = TABLE_MIN_ROW_H;
-      this.checkPageBreak(h);
+      const rh1 = this.cellHeight(f.floor || '', colW1, { fontSize: FONT_SIZE_SMALL });
+      const rh2 = this.cellHeight(f.measuredArea || '', colW2, { fontSize: FONT_SIZE_SMALL });
+      const rh3 = this.cellHeight(f.sanctionedArea || '', colW3, { fontSize: FONT_SIZE_SMALL });
+      const rh4 = this.cellHeight(f.deedArea || '', colW4, { fontSize: FONT_SIZE_SMALL });
+      const rh5 = this.cellHeight(f.currentUsage || '', colW5, { fontSize: FONT_SIZE_SMALL });
+      const rh6 = this.cellHeight(f.approvedUsage || '', colW6, { fontSize: FONT_SIZE_SMALL });
+      const rowH = Math.max(TABLE_MIN_ROW_H, rh1, rh2, rh3, rh4, rh5, rh6);
 
-      this.drawCell(MARGIN_L, this.cursorY, colW1, h, f.floor || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'left', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colW1, this.cursorY, colW2, h, f.measuredArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colW1 + colW2, this.cursorY, colW3, h, f.sanctionedArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colW1 + colW2 + colW3, this.cursorY, colW4, h, f.deedArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, h, f.currentUsage || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, h, f.approvedUsage || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.cursorY += h;
+      this.checkPageBreak(rowH);
+
+      this.drawCell(MARGIN_L, this.cursorY, colSl, rowH, '', { align: 'center' });
+      this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, rowH, f.floor || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'left', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, rowH, f.measuredArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, rowH, f.sanctionedArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, rowH, f.deedArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, rowH, f.currentUsage || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, rowH, f.approvedUsage || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.cursorY += rowH;
     }
 
     // Supplementary summary rows under floor table
-    const colHalf = CONTENT_W / 2;
+    const colHalf = remW / 2;
+    let buaDisplay = fields.builtUpAreaTotal || '';
+    if (!buaDisplay && fields.floors && fields.floors.length > 0) {
+      const totalSanctioned = fields.floors.reduce((acc, f) => acc + (parseFloat(String(f.sanctionedArea).replace(/[^0-9.-]/g, '')) || 0), 0);
+      const totalMeasured = fields.floors.reduce((acc, f) => acc + (parseFloat(String(f.measuredArea).replace(/[^0-9.-]/g, '')) || 0), 0);
+      const bVal = totalSanctioned > 0 ? totalSanctioned : totalMeasured;
+      const validFloors = fields.floors.filter(f => (parseFloat(String(f.sanctionedArea).replace(/[^0-9.-]/g, '')) || 0) > 0 || (parseFloat(String(f.measuredArea).replace(/[^0-9.-]/g, '')) || 0) > 0);
+      const prefix = validFloors.length > 1 ? `G+${validFloors.length - 1} ` : (validFloors.length === 1 ? 'GF ' : '');
+      if (bVal > 0) {
+        buaDisplay = `${prefix}Total BUA = ${bVal}sqft.`;
+      }
+    }
+
     const suppRows = [
       { l: 'Carpet Area: (Approx.)', v: fields.carpetAreaTotal || '' },
-      { l: 'Built Up Area:', v: fields.builtUpAreaTotal || '' },
+      { l: 'Built Up Area:', v: buaDisplay },
       { l: 'Remarks on construction:(Good / Bad)', v: fields.remarksOnConstruction || 'Good' },
       { l: 'Compliances with sanction plan:(Yes / No)', v: fields.complianceWithPlan || 'Not Applicable' },
       { l: 'Quality of construction:(Good/ Bad)', v: fields.qualityOfConstruction || 'Good' },
@@ -657,11 +699,15 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     ];
 
     for (const r of suppRows) {
-      const h = TABLE_MIN_ROW_H;
-      this.checkPageBreak(h);
-      this.drawCell(MARGIN_L, this.cursorY, colHalf, h, r.l, { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colHalf, this.cursorY, colHalf, h, r.v, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'left', vAlign: 'middle' });
-      this.cursorY += h;
+      const sh1 = this.cellHeight(r.l, colHalf, { bold: true, fontSize: TABLE_FONT_SIZE });
+      const sh2 = this.cellHeight(r.v, colHalf, { fontSize: TABLE_FONT_SIZE });
+      const rowH = Math.max(TABLE_MIN_ROW_H, sh1, sh2);
+
+      this.checkPageBreak(rowH);
+      this.drawCell(MARGIN_L, this.cursorY, colSl, rowH, '', { align: 'center' });
+      this.drawCell(MARGIN_L + colSl, this.cursorY, colHalf, rowH, r.l, { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colHalf, this.cursorY, colHalf, rowH, r.v, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'left', vAlign: 'middle' });
+      this.cursorY += rowH;
     }
   }
 
@@ -670,35 +716,50 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
    */
   private drawSetbackSection(fields: BandhanHLLAPReportFields): void {
     const colSl = this.colSl;
+    const remW = CONTENT_W - colSl;
 
     // Header row
     const h = TABLE_MIN_ROW_H;
     this.checkPageBreak(h * 3);
 
     this.drawCell(MARGIN_L, this.cursorY, colSl, h, '27.', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colSl, this.cursorY, CONTENT_W - colSl, h, 'Setback around the property', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left' });
+    this.drawCell(MARGIN_L + colSl, this.cursorY, remW, h, 'Setback around the property', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left' });
     this.cursorY += h;
 
-    // 5 column sub-table
-    const colW1 = 90;
-    const colW2 = 90;
-    const colW3 = 90;
-    const colW4 = 90;
-    const colW5 = CONTENT_W - colW1 * 4; // 127.28 pt
+    // 5 column sub-table aligned with colSl
+    const colW1 = 78;
+    const colW2 = 78;
+    const colW3 = 78;
+    const colW4 = 78;
+    const colW5 = remW - colW1 * 4; // ~217.28 pt
 
-    this.drawCell(MARGIN_L, this.cursorY, colW1, h, 'Front', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colW1, this.cursorY, colW2, h, 'Back-Side', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colW1 * 2, this.cursorY, colW3, h, 'Side1', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colW1 * 3, this.cursorY, colW4, h, 'Side2', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colW1 * 4, this.cursorY, colW5, h, 'No. of Flat at each floor', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.cursorY += h;
+    const h5 = this.cellHeight('No. of Flat at each floor', colW5, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const subHeaderH = Math.max(TABLE_MIN_ROW_H, h5);
 
-    this.drawCell(MARGIN_L, this.cursorY, colW1, h, fields.setbackFront || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colW1, this.cursorY, colW2, h, fields.setbackBack || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colW1 * 2, this.cursorY, colW3, h, fields.setbackSide1 || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colW1 * 3, this.cursorY, colW4, h, fields.setbackSide2 || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colW1 * 4, this.cursorY, colW5, h, fields.noOfFlatsPerFloor || 'NA', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.cursorY += h;
+    this.checkPageBreak(subHeaderH + TABLE_MIN_ROW_H);
+    this.drawCell(MARGIN_L, this.cursorY, colSl, subHeaderH, '', { align: 'center' });
+    this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, subHeaderH, 'Front', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, subHeaderH, 'Back-Side', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 * 2, this.cursorY, colW3, subHeaderH, 'Side1', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 * 3, this.cursorY, colW4, subHeaderH, 'Side2', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 * 4, this.cursorY, colW5, subHeaderH, 'No. of Flat at each floor', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.cursorY += subHeaderH;
+
+    const valH1 = this.cellHeight(fields.setbackFront || '', colW1, { fontSize: TABLE_FONT_SIZE });
+    const valH2 = this.cellHeight(fields.setbackBack || '', colW2, { fontSize: TABLE_FONT_SIZE });
+    const valH3 = this.cellHeight(fields.setbackSide1 || '', colW3, { fontSize: TABLE_FONT_SIZE });
+    const valH4 = this.cellHeight(fields.setbackSide2 || '', colW4, { fontSize: TABLE_FONT_SIZE });
+    const valH5 = this.cellHeight(fields.noOfFlatsPerFloor || 'NA', colW5, { fontSize: TABLE_FONT_SIZE });
+    const dataRowH = Math.max(TABLE_MIN_ROW_H, valH1, valH2, valH3, valH4, valH5);
+
+    this.checkPageBreak(dataRowH);
+    this.drawCell(MARGIN_L, this.cursorY, colSl, dataRowH, '', { align: 'center' });
+    this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, dataRowH, fields.setbackFront || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, dataRowH, fields.setbackBack || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 * 2, this.cursorY, colW3, dataRowH, fields.setbackSide1 || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 * 3, this.cursorY, colW4, dataRowH, fields.setbackSide2 || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 * 4, this.cursorY, colW5, dataRowH, fields.noOfFlatsPerFloor || 'NA', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.cursorY += dataRowH;
   }
 
   /**
@@ -715,20 +776,20 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     // Main header row
     this.drawCell(MARGIN_L, this.cursorY, colSl, headerH, '34.', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
     this.drawCell(MARGIN_L + colSl, this.cursorY, colPts, headerH, 'Progress of work:', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left' });
-    this.drawCell(MARGIN_L + colSl + colPts, this.cursorY, colRem, headerH, fields.progressStructureHeader || 'G+2', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
+    this.drawCell(MARGIN_L + colSl + colPts, this.cursorY, colRem, headerH, fields.progressStructureHeader || '', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
     this.cursorY += headerH;
 
     const items = [
-      { label: 'Foundation', val: fields.progressFoundation || 'Completed' },
-      { label: 'RCC work', val: fields.progressRCC || 'Completed' },
-      { label: 'BR work', val: fields.progressBR || 'Completed' },
-      { label: 'Plastering -', val: fields.progressPlastering || 'Completed' },
-      { label: 'Flooring', val: fields.progressFlooring || 'Completed' },
-      { label: 'Doors & windows -', val: fields.progressDoorsWindows || 'Completed' },
-      { label: 'Electrical, sanitary &\nplumbing', val: fields.progressElectricalSanitary || 'Completed' },
-      { label: 'Painting', val: fields.progressPainting || 'Completed' },
-      { label: 'Progress of work:', val: fields.progressTotalPct || '100%' },
-      { label: 'Recommendation -', val: fields.progressRecommendationPct || '100%' },
+      { label: 'Foundation', val: fields.progressFoundation || '' },
+      { label: 'RCC work', val: fields.progressRCC || '' },
+      { label: 'BR work', val: fields.progressBR || '' },
+      { label: 'Plastering -', val: fields.progressPlastering || '' },
+      { label: 'Flooring', val: fields.progressFlooring || '' },
+      { label: 'Doors & windows -', val: fields.progressDoorsWindows || '' },
+      { label: 'Electrical, sanitary &\nplumbing', val: fields.progressElectricalSanitary || '' },
+      { label: 'Painting', val: fields.progressPainting || '' },
+      { label: 'Progress of work:', val: fields.progressTotalPct || '' },
+      { label: 'Recommendation -', val: fields.progressRecommendationPct || '' },
     ];
 
     const colColon = 30;
