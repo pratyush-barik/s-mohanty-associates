@@ -1113,58 +1113,67 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Field label="25. Sanctioned Plan Provided / Plan No:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.sanctionedPlanProvided || ''}
-                      onChange={(e) => handleChange('sanctionedPlanProvided', e.target.value)}
-                      placeholder="e.g. Plan Approval No. / Letter No."
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="Plan Approved By:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.planApprovedBy || ''}
-                      onChange={(e) => handleChange('planApprovedBy', e.target.value)}
-                      placeholder="e.g. BDA / Local Planning Authority"
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="Deed Provided / Deed No:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.deedProvided || ''}
-                      onChange={(e) => handleChange('deedProvided', e.target.value)}
-                      placeholder="e.g. Sale Deed / Title Deed No."
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="Construction Details:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.constructionDetails || 'RCC Framed structure'}
-                      onChange={(e) => handleChange('constructionDetails', e.target.value)}
-                      placeholder="e.g. RCC Framed structure"
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <div className="sm:col-span-2">
-                    <Field label="Comments, if any:">
+                {/* Container 3: Point 25 - Sanctioned Plan & Documentation Particulars */}
+                <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-4 sm:p-5 shadow-xs space-y-3.5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
+                    <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                    <h4 className="font-semibold text-slate-800 text-sm tracking-wide">
+                      25. Sanctioned Plan & Documentation Particulars
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <Field label="Sanctioned Plan Provided / Plan No:">
                       <input
                         type="text"
                         className={inputCls}
-                        value={fields.comments || ''}
-                        onChange={(e) => handleChange('comments', e.target.value)}
-                        placeholder="e.g. Verified ROR, Sale Deed, Approved Plan"
+                        value={fields.sanctionedPlanProvided || ''}
+                        onChange={(e) => handleChange('sanctionedPlanProvided', e.target.value)}
+                        placeholder="e.g. Plan Approval No. / Letter No."
                         disabled={isReadOnly}
                       />
                     </Field>
+                    <Field label="Plan Approved By:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.planApprovedBy || ''}
+                        onChange={(e) => handleChange('planApprovedBy', e.target.value)}
+                        placeholder="e.g. BDA / Local Planning Authority"
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="Deed Provided / Deed No:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.deedProvided || ''}
+                        onChange={(e) => handleChange('deedProvided', e.target.value)}
+                        placeholder="e.g. Sale Deed / Title Deed No."
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="Construction Details:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.constructionDetails || 'RCC Framed structure'}
+                        onChange={(e) => handleChange('constructionDetails', e.target.value)}
+                        placeholder="e.g. RCC Framed structure"
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <div className="sm:col-span-2">
+                      <Field label="Comments, if any:">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.comments || ''}
+                          onChange={(e) => handleChange('comments', e.target.value)}
+                          placeholder="e.g. Verified ROR, Sale Deed, Approved Plan"
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                    </div>
                   </div>
                 </div>
               </div>
