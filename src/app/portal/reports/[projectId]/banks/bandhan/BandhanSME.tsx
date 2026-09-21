@@ -32,10 +32,12 @@ const formatCurrencyINR = (val: number): string => {
   }).format(val);
 };
 
-interface Props {
+export interface BandhanSMEProps {
   projectId: string;
-  projectCode: string;
+  projectCode?: string;
+  initialFields?: any;
   initialData?: any;
+  status?: string;
   userRole?: string;
   isReadOnly?: boolean;
   onResetWizard?: () => void;
@@ -70,19 +72,27 @@ function parseNum(val: string | number | undefined | null): number {
 export default function BandhanSME({
   projectId,
   projectCode,
+  initialFields,
   initialData,
+  status,
   userRole = 'field_engineer',
-  isReadOnly = false,
+  isReadOnly: isReadOnlyProp = false,
   onResetWizard,
   prefill,
   bucketImages = [],
-}: Props) {
+}: BandhanSMEProps) {
   const router = useRouter();
+  const isReadOnly = isReadOnlyProp || status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
+
+  // Helper to generate default ref no
+  const defaultRefNo = useMemo(() => {
+    const id = projectCode || projectId || '';
+    return id ? (id.toLowerCase().startsWith('bandhan/') ? id : `Bandhan/${id}`) : '';
+  }, [projectCode, projectId]);
 
   // State initialization with clean defaults and project prefill
   const [fields, setFields] = useState<BandhanSMEReportFields>(() => {
-    const raw = initialData?.reportFields || initialData || {};
-    const defaultRefNo = raw.refNo || projectCode || `BANDHAN/SME/${projectId.slice(0, 8).toUpperCase()}`;
+    const raw = typeof initialFields === 'object' && initialFields !== null ? initialFields : (initialData?.reportFields || initialData || {});
 
     const defaultPlots: BandhanSMEPlotBoundary[] = Array.isArray(raw.documentPlotBoundaries) && raw.documentPlotBoundaries.length > 0
       ? raw.documentPlotBoundaries
@@ -123,9 +133,13 @@ export default function BandhanSME({
     return {
       ...raw,
       clientType: raw.clientType || 'organisation',
+      institutionCategory: raw.institutionCategory || 'Bank & FIS',
       organisationTemplate: raw.organisationTemplate || 'BANDHAN BANK',
       organisationSubTemplate: raw.organisationSubTemplate || 'SME',
       bankName: raw.bankName || 'BANDHAN BANK',
+      serviceType: raw.serviceType || prefill?.purpose || undefined,
+      subjectType: raw.subjectType || prefill?.propertyType || undefined,
+      reworkNotes: raw.reworkNotes || '',
 
       // Header
       refNo: raw.refNo || defaultRefNo,
@@ -817,25 +831,50 @@ export default function BandhanSME({
   };
 
   return (
-    <div className="relative flex flex-col min-h-screen bg-slate-50 text-slate-800 pb-28">
-      {/* Top Banner */}
-      <ActiveConfigBanner
-        bankName="BANDHAN BANK"
-        subclass="SME"
-        clientType="organisation"
-        onResetWizard={onResetWizard}
-      />
+    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
+      {/* Main Content Area */}
+      <div className="flex-1 min-w-0 space-y-6 w-full">
+        {/* Top Active Configuration Banner */}
+        <ActiveConfigBanner
+          clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
+          category={fields.institutionCategory || 'Bank & FIS'}
+          bankName={fields.bankName || fields.organisationTemplate || 'BANDHAN BANK'}
+          subclass={fields.organisationSubTemplate || 'SME'}
+          serviceType={fields.serviceType}
+          subjectType={fields.subjectType}
+          onResetWizard={onResetWizard}
+        />
 
-      <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pt-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Main Form Fields (9 Cols) */}
-          <div className="lg:col-span-9 space-y-6">
+        {/* Rework Banner */}
+        {fields.reworkNotes && status === 'REPORT_DRAFTING' && (
+          <div className="card p-5 border-2 border-red-200 bg-red-50 shadow-md">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-xl">⚠️</span>
+              <h2 className="text-sm font-bold text-red-800 uppercase tracking-wider">Manager Rework Requested</h2>
+            </div>
+            <p className="text-sm text-red-700 bg-white/60 p-4 rounded-lg border border-red-100 whitespace-pre-wrap">
+              {fields.reworkNotes}
+            </p>
+          </div>
+        )}
 
-            {/* Header Block */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-              <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">
-                Bandhan Bank — SME Valuation Report
-              </h2>
+        {message && (
+          <div
+            className={`p-4 rounded-xl text-sm font-semibold border shadow-xs ${
+              message.type === 'success'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                : 'bg-rose-50 text-rose-800 border-rose-200'
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
+
+        {/* Header Block */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
+          <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">
+            Bandhan Bank — SME Valuation Report
+          </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Field label="Ref. No:">
                   <input
@@ -2551,27 +2590,22 @@ export default function BandhanSME({
               </div>
             </Section>
 
-            {/* ACTION BAR AT BOTTOM */}
-            <ReportActionBar
-              isReadOnly={isReadOnly}
-              userRole={userRole}
-              autoSaveStatus={autoSaveStatus}
-              message={message}
-              loading={saving || submitting}
-              onSaveDraft={handleSaveDraft}
-              onSubmit={handleSubmit}
-              onPreviewPDF={handlePreviewPDF}
-              onDownloadPDF={handleDownloadPDF}
-            />
-
-          </div>
-
-          {/* Right Floating Navigator (3 Cols) */}
-          <div className="hidden lg:block lg:col-span-3">
-            <FloatingNavigator sections={NAV_SECTIONS} />
-          </div>
-        </div>
+        {/* STANDARDIZED ACTION BAR (DOCKED AT BOTTOM OF MAIN CONTENT) */}
+        <ReportActionBar
+          isReadOnly={isReadOnly}
+          userRole={userRole}
+          autoSaveStatus={autoSaveStatus}
+          message={message}
+          loading={saving || submitting}
+          onSaveDraft={handleSaveDraft}
+          onSubmit={handleSubmit}
+          onPreviewPDF={handlePreviewPDF}
+          onDownloadPDF={handleDownloadPDF}
+        />
       </div>
+
+      {/* Floating Section Navigator on the Right Side */}
+      <FloatingNavigator sections={NAV_SECTIONS} />
 
       {/* Cloud Bucket Selection Modal */}
       {showBucketModal && (

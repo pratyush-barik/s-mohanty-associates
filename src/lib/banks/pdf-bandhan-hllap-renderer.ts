@@ -70,9 +70,13 @@ export interface BandhanHLLAPPhoto {
 export interface BandhanHLLAPReportFields {
   // Identity
   clientType?: string;
+  institutionCategory?: string;
   organisationTemplate?: string;
   organisationSubTemplate?: string;
   bankName?: string;
+  serviceType?: string;
+  subjectType?: string;
+  reworkNotes?: string;
 
   // Header
   refNo?: string;

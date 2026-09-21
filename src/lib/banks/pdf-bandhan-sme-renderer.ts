@@ -80,9 +80,13 @@ export interface BandhanSMEPhoto {
 
 export interface BandhanSMEReportFields {
   clientType?: string;
+  institutionCategory?: string;
   organisationTemplate?: string;
   organisationSubTemplate?: string;
   bankName?: string;
+  serviceType?: string;
+  subjectType?: string;
+  reworkNotes?: string;
 
   // Header
   refNo?: string;
