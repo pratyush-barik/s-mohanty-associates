@@ -1446,7 +1446,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                           }}
                           disabled={isReadOnly}
                           className="w-4 h-4 text-emerald-600 focus:ring-emerald-500" />
-                        <span className="text-xs text-gray-700">{opt}</span>
+                        <span className="text-sm font-medium text-gray-700">{opt}</span>
                       </label>
                     ))}
                   </div>
