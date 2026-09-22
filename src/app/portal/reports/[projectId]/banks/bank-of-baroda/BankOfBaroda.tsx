@@ -748,7 +748,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       title: 'Part I — GENERAL',
       number: 2,
       defaultOpen: false,
-      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+      render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => {
         const boundaries = fields.bobBoundaries || {};
         const dimensions = fields.bobDimensions || {};
 
@@ -817,20 +817,17 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   </div>
               </Field>
 
-              <Field label={<div className="flex items-center justify-between w-full"><span>REF. NO.</span><EditSwitch checked={fields.bobRefNoEditOn} onChange={v => { handleChange('bobRefNoEditOn', v); if (v) handleChange('bobRefNo', ''); }} disabled={isReadOnly} /></div>}>
-                <div className="relative">
+              <Field label="REF. NO.">
+                <div className="relative" title='>>Prefills from Project Case ID<<.'>
                     <input
                       type="text"
-                      className={`${inputCls} ${!fields.bobRefNoEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
-                      value={fields.bobRefNoEditOn ? (fields.bobRefNo || '') : 'BOB/02/2026/02'}
-                      onChange={e => handleChange('bobRefNo', e.target.value)}
-                      readOnly={isReadOnly || !fields.bobRefNoEditOn}
+                      className={`${inputCls} bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold`}
+                      value={projectCode || ''}
+                      readOnly
                     />
-                    {!fields.bobRefNoEditOn && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group">
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
-                      </div>
-                    )}
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group">
+                      <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                    </div>
                   </div>
               </Field>
 
