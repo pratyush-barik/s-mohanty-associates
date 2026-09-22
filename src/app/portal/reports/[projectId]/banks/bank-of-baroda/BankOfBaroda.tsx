@@ -1475,7 +1475,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#fff0e6' }}>
               <h3 className="font-bold text-gray-700 border-b border-orange-200 pb-2">Infrastructure & Utilities</h3>
               <DropdownWithCustom label="11. Road facilities" fieldKey="bobRoadFacilities"
-                options={['Yes Available at the site', 'No']}
+                options={['Yes, Available at the site', 'No, Not Available at the site']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
               <DropdownWithInput label="12. Type of road available at present" fieldKey="bobTypeOfRoad"
                 options={['Morrum Road', 'Concrete Road', 'Tar Road', 'Earthen Road']}
@@ -1484,16 +1484,16 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 options={['Below 20 ft', '20 ft wide Road', 'More than 20 ft']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
               <DropdownWithCustom label="14. Is it a land – locked land?" fieldKey="bobLandLocked"
-                options={['Yes', 'No It is free land']}
+                options={['Yes, It is a locked land', 'No, It is free land']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
               <DropdownWithCustom label="15. Water potentiality" fieldKey="bobWaterPotentiality"
                 options={['Good', 'Average', 'Poor']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
               <DropdownWithCustom label="16. Underground sewerage system" fieldKey="bobSewerage"
-                options={['Yes Available at the site', 'No']}
+                options={['Yes, Available at the site', 'No, Not Available at the site']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
               <DropdownWithCustom label="17. Is power supply available at the site?" fieldKey="bobPowerSupply"
-                options={['Yes Available at the site', 'No']}
+                options={['Yes, Available at the site', 'No, Not Available at the site']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
             </div>
 
