@@ -832,6 +832,12 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const actualArea = actualNS * actualEW;
         const calcExtent = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea).toFixed(2) : (deedArea || actualArea || 0).toFixed(2);
 
+        const ownersStr = (fields.bobPropertyOwners || []).map((o: any) => 
+          [o.name, o.relationship, o.relativeName || o.fatherName].filter(Boolean).join(', ')
+        ).filter(Boolean).join('; ');
+        const propertyAddress = fields.bobPropertyAddress || '';
+        const defaultOwnerAddress = [ownersStr, propertyAddress].filter(Boolean).join(', ');
+
         return (
           <div className="animate-fade-in space-y-6">
 
@@ -994,14 +1000,22 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             {/* ── Container 2: Ownership & Property Summary ── */}
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e6ffe6' }}>
               <h3 className="font-bold text-gray-700 border-b border-green-200 pb-2">Ownership & Property Summary</h3>
-              <Field label="4. Name of the owner(s) and his / their address(es) with Phone no. (details of share of each owner in case of joint ownership)">
-                <textarea
-                  className={inputCls} rows={3}
-                  value={fields.bobOwnerNamesAddresses || ''}
-                  onChange={e => handleChange('bobOwnerNamesAddresses', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Enter owner details, addresses, phone numbers..."
-                />
+              <Field label={<div className="flex items-center justify-between w-full"><span>4. Name of the owner(s) and his / their address(es) with Phone no. (details of share of each owner in case of joint ownership)</span><EditSwitch checked={fields.bobEnableOwnerAddressEdit} onChange={v => handleChange('bobEnableOwnerAddressEdit', v)} disabled={isReadOnly} /></div>}>
+                <div className="relative" title={!fields.bobEnableOwnerAddressEdit ? '>>prefill from section 1 (Cover Page)<<' : undefined}>
+                    <textarea
+                      className={`${inputCls} ${!fields.bobEnableOwnerAddressEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
+                      rows={3}
+                      value={fields.bobEnableOwnerAddressEdit ? (fields.bobOwnerNamesAddresses || '') : defaultOwnerAddress}
+                      onChange={e => handleChange('bobOwnerNamesAddresses', e.target.value)}
+                      readOnly={isReadOnly || !fields.bobEnableOwnerAddressEdit}
+                      placeholder="Enter owner details, addresses, phone numbers..."
+                    />
+                    {!fields.bobEnableOwnerAddressEdit && (
+                      <div className="absolute top-2 right-2 flex items-center pr-1 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    )}
+                  </div>
               </Field>
               <Field label={<div className="flex items-center justify-between w-full"><span>5. Brief description of the property (Including leasehold / freehold etc)</span><EditSwitch checked={fields.bobEnableLegalDescEdit} onChange={v => handleChange('bobEnableLegalDescEdit', v)} disabled={isReadOnly} /></div>}>
                 <div className="relative" title={!fields.bobEnableLegalDescEdit ? '>>Prefill from section 1, field "FULL LEGAL PROPERTY DESCRIPTION"<<.' : undefined}>
