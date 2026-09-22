@@ -858,9 +858,10 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const deedArea = deedNS * deedEW;
         const actualArea = actualNS * actualEW;
         const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+        const sftValue = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(minArea * 43560);
         const calcExtent = minArea > 0 
-          ? `Total Area: Ac.${(minArea / 43560).toFixed(4)} Dec i.e. ${minArea.toFixed(2)} Sft` 
-          : 'Total Area: Ac.0.0364 Dec i.e. 1586.00 Sft';
+          ? `Total Area: Ac. ${minArea} Dec i.e. ${sftValue} Sft` 
+          : 'Total Area: Ac. 0.00 Dec i.e. 0.00 Sft';
 
         return (
           <div className="animate-fade-in space-y-6">
@@ -1369,13 +1370,19 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <input className={inputCls} value={fields.bobExtentOfSite || ''} onChange={e => handleChange('bobExtentOfSite', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2000 Sq.ft." />
               </Field>
 
-              <AutoCalcField
-                label="16. Extent of the site considered for valuation (least of 14 A & 14 B)"
-                fieldKey="bobExtentForValuation"
-                fields={fields} handleChange={handleChange} isReadOnly={isReadOnly}
-                calcValue={calcExtent}
-                hoverText=">>Auto calculates from MIN([14.1 Actual Area], [14.1 As per the Deed Area])<<."
-              />
+              <Field label="16. Extent of the site considered for valuation (least of 14 A & 14 B)">
+                <div className="relative" title=">>Auto-calculated minimum area from Field 14.1 (As per Deed vs Actual)<<">
+                  <textarea
+                    className={`${inputCls} pr-10 bg-gray-100 cursor-not-allowed text-gray-600`}
+                    rows={2}
+                    value={calcExtent}
+                    readOnly
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                    <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                  </div>
+                </div>
+              </Field>
 
               <div>
                 <DropdownWithCustom
