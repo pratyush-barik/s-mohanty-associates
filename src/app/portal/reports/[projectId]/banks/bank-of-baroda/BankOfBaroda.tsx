@@ -1084,20 +1084,29 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       </div>
                     )}
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-gray-600 w-24">PINCODE:</span>
-                    <input 
-                      type="text" 
-                      className={`${inputCls} flex-1`}
-                      value={fields.bobPinCode || ''} 
-                      onChange={e => {
-                        const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-                        handleChange('bobPinCode', val);
-                      }} 
-                      disabled={isReadOnly} 
-                      placeholder="Enter 6-digit PIN..." 
-                    />
-                  </div>
+                  <Field label="PINCODE">
+                    <div className="flex gap-2 items-center">
+                      <input 
+                        type="text" 
+                        className={`${inputCls} flex-1`}
+                        value={fields.bobPinCode || ''} 
+                        onChange={e => {
+                          if (!fields.bobPinCodeNA) {
+                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                            handleChange('bobPinCode', val);
+                          }
+                        }} 
+                        disabled={isReadOnly || fields.bobPinCodeNA} 
+                        placeholder="Enter 6-digit PIN..." 
+                      />
+                      <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
+                        <input type="checkbox" checked={fields.bobPinCodeNA || false}
+                          onChange={e => { handleChange('bobPinCodeNA', e.target.checked); if (e.target.checked) handleChange('bobPinCode', 'NA'); else handleChange('bobPinCode', ''); }}
+                          disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
+                        <span className="text-xs text-gray-500 font-medium">N/A</span>
+                      </label>
+                    </div>
+                  </Field>
                 </div>
               </Field>
             </div>
