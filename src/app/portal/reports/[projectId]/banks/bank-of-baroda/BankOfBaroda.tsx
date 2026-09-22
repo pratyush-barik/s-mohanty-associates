@@ -414,6 +414,22 @@ function PrefillField({ label, value, hoverText, isReadOnly }: {
   );
 }
 
+/**
+ * Extracts the Year of Construction from field c) text.
+ * Priority:
+ *   1. Look for "Year of Construction-YYYY" pattern specifically.
+ *   2. If not found, fall back to the smallest (earliest) 4-digit year.
+ * This prevents incorrect extraction when "Year of Completion" appears first.
+ */
+function extractYearOfConstruction(raw: string): number {
+  if (!raw) return 0;
+  // 1. Look for the labeled pattern first
+  const labeledMatch = raw.match(/year\s*of\s*construction\s*[-–—:]\s*(\d{4})/i);
+  if (labeledMatch) return parseInt(labeledMatch[1]);
+  // 2. Fall back: collect ALL 4-digit years, pick the smallest (earliest)
+  const allYears = Array.from(raw.matchAll(/(\d{4})/g)).map(m => parseInt(m[1])).filter(y => y >= 1900 && y <= 2100);
+  return allYears.length > 0 ? Math.min(...allYears) : 0;
+}
 
 /* ═══════════════════════════════════════════════════════════════════════
    BANK OF BARODA CONFIGURATION
@@ -1769,8 +1785,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const currentYear = new Date().getFullYear();
-        const yocMatch = (fields.bobYearOfConstruction || '').match(/\d{4}/);
-        const yearOfConstruction = yocMatch ? parseInt(yocMatch[0]) : 0;
+        const yearOfConstruction = extractYearOfConstruction(fields.bobYearOfConstruction || '');
         const calcAge = yearOfConstruction > 0 ? (currentYear - yearOfConstruction) : 0;
 
         const structuralRows = [
@@ -2118,8 +2133,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         // ── Container 13: Building Valuation (Dynamic rows) ──
         const buildingRows: any[] = fields.bobBuildingValuationRows || [{ particulars: '', particularsDropdown: '', plinthArea: '', roofHeight: '', replacementRate: '' }];
         const currentYear = new Date().getFullYear();
-        const yocMatch = (fields.bobYearOfConstruction || '').match(/\d{4}/);
-        const yearOfConstruction = yocMatch ? parseInt(yocMatch[0]) : 0;
+        const yearOfConstruction = extractYearOfConstruction(fields.bobYearOfConstruction || '');
         const buildingAge = fields.bobBuildingAgeEditOn ? (parseFloat(fields.bobBuildingAge || '0') || 0) : (yearOfConstruction > 0 ? currentYear - yearOfConstruction : 0);
 
         const getRowCalcs = (row: any) => {
@@ -2429,8 +2443,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
 
         const buildingRows: any[] = fields.bobBuildingValuationRows || [];
         const currentYear = new Date().getFullYear();
-        const yocMatch = (fields.bobYearOfConstruction || '').match(/\d{4}/);
-        const yearOfConst = yocMatch ? parseInt(yocMatch[0]) : 0;
+        const yearOfConst = extractYearOfConstruction(fields.bobYearOfConstruction || '');
         const bAge = fields.bobBuildingAgeEditOn ? (parseFloat(fields.bobBuildingAge || '0') || 0) : (yearOfConst > 0 ? currentYear - yearOfConst : 0);
         const buildingMarketValue = buildingRows.reduce((sum: number, row: any) => {
           const p = parseFloat(row.plinthArea || '0') || 0;

@@ -47,6 +47,16 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     return String((this.fields as any)[key] ?? defaultVal).replace(/[\t\n\r]+/g, ' ').trim();
   }
 
+  /** Extract Year of Construction: labeled pattern first, then smallest year */
+  private extractYearOfConstruction(): number {
+    const raw = this.fv('bobYearOfConstruction');
+    if (!raw) return 0;
+    const labeledMatch = raw.match(/year\s*of\s*construction\s*[-\u2013\u2014:]\s*(\d{4})/i);
+    if (labeledMatch) return parseInt(labeledMatch[1]);
+    const allYears = Array.from(raw.matchAll(/(\d{4})/g)).map(m => parseInt(m[1])).filter(y => y >= 1900 && y <= 2100);
+    return allYears.length > 0 ? Math.min(...allYears) : 0;
+  }
+
   // ── Helper: drawSimpleRow override for BOB 40/60 layout ──
   override drawSimpleRow(label: string, value: string, highlight?: boolean, bold?: boolean): void {
     const labelW = Math.round(CONTENT_W * 0.40);
@@ -484,8 +494,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawSectionHeader('PART B — VALUATION OF BUILDING');
 
     const currentYear = new Date().getFullYear();
-    const yocMatch = this.fv('bobYearOfConstruction', '').match(/\d{4}/);
-    const yearOfConstruction = yocMatch ? parseInt(yocMatch[0]) : 0;
+    const yearOfConstruction = this.extractYearOfConstruction();
     const calcAge = yearOfConstruction > 0 ? (currentYear - yearOfConstruction) : 0;
 
     const rawYoc = this.fv('bobYearOfConstruction');
