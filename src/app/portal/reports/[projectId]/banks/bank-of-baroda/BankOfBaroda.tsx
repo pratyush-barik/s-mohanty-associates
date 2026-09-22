@@ -1865,23 +1865,14 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     </label>
   </div>
 }>
-  <input className={`${inputCls} flex-1`} value={fields.bobApprovedMapAuthority || ''} onChange={e => handleChange('bobApprovedMapAuthority', e.target.value)} disabled={isReadOnly || fields.bobApprovedMapAuthorityNA} />
+  <textarea className={`${inputCls} flex-1`} rows={2} value={fields.bobApprovedMapAuthority || ''} onChange={e => handleChange('bobApprovedMapAuthority', e.target.value)} disabled={isReadOnly || fields.bobApprovedMapAuthorityNA} />
 </Field>
                 <DropdownWithCustom label="i) Whether genuineness or authenticity of approved map / plan is verified" fieldKey="bobApprovedMapVerified"
-                  options={['Yes Verified', 'No']}
+                  options={['Yes, Verified', 'No, Not Verified']}
                   fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} naKey="bobApprovedMapVerifiedNA" />
-                <Field label="j) Any other comments by our empanelled valuers on authentic of approved plan">
-                  <div className="flex gap-2 items-start">
-                    <textarea className={`${inputCls} flex-1`} rows={2} value={fields.bobApprovedMapComments || ''} onChange={e => handleChange('bobApprovedMapComments', e.target.value)}
-                      disabled={isReadOnly || fields.bobApprovedMapCommentsNA} placeholder="Enter comments..." />
-                    <label className="flex items-center gap-1.5 mt-2 cursor-pointer select-none shrink-0">
-                      <input type="checkbox" checked={fields.bobApprovedMapCommentsNA || false}
-                        onChange={e => { handleChange('bobApprovedMapCommentsNA', e.target.checked); if (e.target.checked) handleChange('bobApprovedMapComments', 'NA'); }}
-                        disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                      <span className="text-xs text-gray-500 font-medium">N/A</span>
-                    </label>
-                  </div>
-                </Field>
+                <DropdownWithCustom label="j) Any other comments by our empanelled valuers on authentic of approved plan" fieldKey="bobApprovedMapComments"
+                  options={['The approval plan is authenticated', 'The approval plan is not authenticated']}
+                  fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} naKey="bobApprovedMapCommentsNA" />
                 <AutoCalcField
                   label="k) Age of the Building"
                   fieldKey="bobBuildingAge"
