@@ -154,14 +154,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     drawCenteredBold('VALUATION OF LAND & PROPERTY SUMMARY', FONT_SIZE_HEADER, 16, true);
     drawCenteredBold('FULL LEGAL PROPERTY DESCRIPTION', FONT_SIZE_HEADER - 1, 10, false);
-    let legalDesc = this.fv('bobFullLegalPropertyDescription');
-    if (!this.fields.bobEnableLegalDescEdit || !legalDesc) {
-      const brief = this.fv('bobBriefDescription');
-      const plot = this.fv('bobPlotNo');
-      const door = this.fv('bobDoorNo');
-      const postal = this.fv('bobPostalAddress');
-      legalDesc = `${brief} ${plot ? `Plot No. ${plot},` : ''} ${door && door !== 'NA' ? `Door No. ${door},` : ''} ${postal}`.trim();
-    }
+    const legalDesc = this.fv('bobFullLegalPropertyDescription');
     if (legalDesc) {
       drawCenteredBold(legalDesc, FONT_SIZE, 30);
     } else {
@@ -184,11 +177,13 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       else if (ownerStrings.length === 2) ownersText = ownerStrings.join(' & ');
       else { const last = ownerStrings.pop(); ownersText = ownerStrings.join(', ') + ' & ' + last; }
       drawCenteredBold(ownersText, FONT_SIZE, 14);
+    } else {
+      drawCenteredBold('NA', FONT_SIZE, 14);
     }
     this.cursorY += 16;
 
     drawCenteredBold('ADDRESS OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(this.fv('bobAddressOfTheProperty'), FONT_SIZE, 40);
+    drawCenteredBold(this.fv('bobAddressOfTheProperty') || 'NA', FONT_SIZE, 40);
 
     drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
     const formatVal = (valStr: string) => {
@@ -200,30 +195,17 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     drawCenteredBold(`REALIZABLE VALUE:- ${formatVal(this.fv('bobRealizableValue'))}`, FONT_SIZE, 40);
 
     drawCenteredBold('PURPOSE OF VALUATION', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(this.fv('bobPurposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
+    drawCenteredBold(this.fv('bobPurposeOfValuation') || 'NA', FONT_SIZE, 40);
 
     drawCenteredBold('PREPARED BY', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(this.fv('bobPreparedByValuerName', 'Er. Satyajit Mohanty, (B.E, Civil) FIV'), FONT_SIZE, 14);
-    drawCenteredBold(this.fv('bobPreparedByGovtReg', 'Registered Valuer, Govt. of India (Regd. No.-107/2016-17, Cat -I)'), FONT_SIZE, 14);
-    drawCenteredBold(this.fv('bobPreparedByAcademicDegrees', 'B.E.(Civil) Utkal, M. Tech(Civil), MBA(HR), Approved Valuer'), FONT_SIZE, 14);
-    drawCenteredBold(this.fv('bobPreparedByIoVMembership', 'Life, Fellow & Approved Valuer from Institution of Valuers (New Delhi), Membership No.F-26377'), FONT_SIZE, 14);
-    drawCenteredBold(this.fv('bobPreparedByIoEMembership', 'Member in Institution of Engineer (India)'), FONT_SIZE, 14);
-    drawCenteredBold(this.fv('bobPreparedByCharteredEng', 'Chartered Engineer (Regd. No.-M-156096-9)'), FONT_SIZE, 14);
-    drawCenteredBold(this.fv('bobPreparedByBankEmpanelment', 'Empanelled Valuer of Bank of Baroda'), FONT_SIZE, 14);
-    const plotNo = this.fv('bobPreparedByPlotNo', 'Plot no-859/2494/3232 & 858/2493/3295');
-    if (plotNo) drawCenteredBold(`${plotNo},`, FONT_SIZE, 14);
-    const street = this.fv('bobPreparedByStreet', 'Shiv Nagar Tankapani Road');
-    if (street) drawCenteredBold(`${street},`, FONT_SIZE, 14);
-    const cityStatePin = [
-      this.fv('bobPreparedByCity', 'Bhubaneswar'),
-      this.fv('bobPreparedByState', 'Odisha'),
-      this.fv('bobPreparedByPinCode', '751018') ? `Pin-${this.fv('bobPreparedByPinCode', '751018')}` : ''
-    ].filter(Boolean).join(', ');
-    if (cityStatePin) drawCenteredBold(cityStatePin, FONT_SIZE, 14);
-    drawCenteredBold(`PHONE- ${this.fv('bobPreparedByPhone', '06742381145')}`, FONT_SIZE, 14);
-    let rawMobile = this.fv('bobPreparedByMobile', '9937023855/9437074855');
-    let processedMobile = rawMobile.replace(/[^0-9]+/g, '/').replace(/(^\/|\/\s*$)/g, '');
-    drawCenteredBold(`MOBILE-${processedMobile}`, FONT_SIZE, 0);
+    
+    if (this.fv('bobPreparedByValuerName')) drawCenteredBold(this.fv('bobPreparedByValuerName'), FONT_SIZE, 14);
+    if (this.fv('bobPreparedByGovtReg')) drawCenteredBold(this.fv('bobPreparedByGovtReg'), FONT_SIZE, 14);
+    if (this.fv('bobPreparedByAcademicDegrees')) drawCenteredBold(this.fv('bobPreparedByAcademicDegrees'), FONT_SIZE, 14);
+    if (this.fv('bobPreparedByIoVMembership')) drawCenteredBold(this.fv('bobPreparedByIoVMembership'), FONT_SIZE, 14);
+    if (this.fv('bobPreparedByIoEMembership')) drawCenteredBold(this.fv('bobPreparedByIoEMembership'), FONT_SIZE, 14);
+    if (this.fv('bobPreparedByCharteredEng')) drawCenteredBold(this.fv('bobPreparedByCharteredEng'), FONT_SIZE, 14);
+    if (this.fv('bobPreparedByBankEmpanelment')) drawCenteredBold(this.fv('bobPreparedByBankEmpanelment'), FONT_SIZE, 14);
   }
 
   // ═══════════════════════════════════════════════════════════════════════
