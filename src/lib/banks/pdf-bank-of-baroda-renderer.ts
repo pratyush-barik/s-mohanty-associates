@@ -158,10 +158,10 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
-        const tw = this.font.widthOfTextAtSize(line, size);
+        const tw = this.fontRegular.widthOfTextAtSize(line, size);
         const startX = MARGIN_L + (CONTENT_W - tw) / 2;
         const startY = this.pdfY(this.cursorY);
-        this.page.drawText(line, { x: startX, y: startY, size, font: this.font, color: rgb(0, 0, 0) });
+        this.page.drawText(line, { x: startX, y: startY, size, font: this.fontRegular, color: rgb(0, 0, 0) });
         if (i < lines.length - 1) {
           this.cursorY += size + 4;
         } else {
