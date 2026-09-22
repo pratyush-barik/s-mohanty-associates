@@ -496,11 +496,23 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
         : `Year of Construction-${rawYoc}`;
     }
 
+    const plinthApproval = this.fv('bobPlinthAreaApproval');
+    const plinthActual = this.fv('bobPlinthAreaActual');
+    let plinthVal = '';
+    if (plinthApproval || plinthActual) {
+      const parts = [];
+      if (plinthApproval) parts.push(`As Per Approval\n${plinthApproval}`);
+      if (plinthActual) parts.push(`As Per Actual\n${plinthActual}`);
+      plinthVal = parts.join('\n');
+    } else {
+      plinthVal = 'NA';
+    }
+
     this.drawSimpleRow('1a. Type of Building', this.fv('bobBuildingType'));
     this.drawSimpleRow('1b. Type of construction', this.fv('bobConstructionType'));
     this.drawSimpleRow('1c. Year of construction', displayYoc);
     this.drawSimpleRow('1d. Floors & height', this.fv('bobFloorsDescription'));
-    this.drawSimpleRow('1e. Plinth area floor-wise', this.fv('bobPlinthArea'));
+    this.drawSimpleRow('1e. Plinth area floor-wise', plinthVal);
     this.drawSimpleRow('1f(i). Condition: Exterior', this.fv('bobConditionExterior'));
     this.drawSimpleRow('1f(ii). Condition: Interior', this.fv('bobConditionInterior'));
     this.drawSimpleRow('1g. Approved map/plan date', this.fv('bobApprovedMapDate') || 'NA');

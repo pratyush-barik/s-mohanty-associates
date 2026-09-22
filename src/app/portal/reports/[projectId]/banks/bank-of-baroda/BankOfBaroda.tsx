@@ -1806,14 +1806,22 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   options={['Load bearing', 'RCC Frame', 'Steel Framed']}
                   fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
                 <Field label="c) Year of construction">
-                  <textarea className={inputCls} rows={2} value={fields.bobYearOfConstruction || ''} onChange={e => handleChange('bobYearOfConstruction', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2025&#10;Year of Completion-2026" />
+                  <textarea className={inputCls} rows={2} value={fields.bobYearOfConstruction || ''} onChange={e => handleChange('bobYearOfConstruction', e.target.value)} disabled={isReadOnly} placeholder="" />
                 </Field>
                 <Field label="d) Number of floors and height of each floor including basement, if any">
-                  <textarea className={inputCls} rows={2} value={fields.bobFloorsDescription || ''} onChange={e => handleChange('bobFloorsDescription', e.target.value)} disabled={isReadOnly} placeholder="e.g. G+1, Ground floor height 10ft, First floor height 10ft" />
+                  <textarea className={inputCls} rows={2} value={fields.bobFloorsDescription || ''} onChange={e => handleChange('bobFloorsDescription', e.target.value)} disabled={isReadOnly} placeholder="" />
                 </Field>
-                <Field label="e) Plinth area floor-wise">
-                  <textarea className={inputCls} rows={2} value={fields.bobPlinthArea || ''} onChange={e => handleChange('bobPlinthArea', e.target.value)} disabled={isReadOnly} placeholder="e.g. Ground floor: 800 sqft, First floor: 750 sqft" />
-                </Field>
+                <div>
+                  <span className="text-sm font-medium text-gray-700">e) Plinth area floor-wise</span>
+                  <div className="pl-4 mt-2 space-y-3">
+                    <Field label="As Per Approval">
+                      <textarea className={inputCls} rows={2} value={fields.bobPlinthAreaApproval || ''} onChange={e => handleChange('bobPlinthAreaApproval', e.target.value)} disabled={isReadOnly} placeholder="" />
+                    </Field>
+                    <Field label="As Per Actual">
+                      <textarea className={inputCls} rows={2} value={fields.bobPlinthAreaActual || ''} onChange={e => handleChange('bobPlinthAreaActual', e.target.value)} disabled={isReadOnly} placeholder="" />
+                    </Field>
+                  </div>
+                </div>
                 <div>
                   <span className="text-sm font-medium text-gray-700">f) Condition of the building</span>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 pl-4">
