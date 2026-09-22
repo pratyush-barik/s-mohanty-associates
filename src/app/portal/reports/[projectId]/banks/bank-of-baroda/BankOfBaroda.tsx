@@ -1120,36 +1120,73 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <Field label="City / Town">
                     <input className={inputCls} value={fields.bobCityTown || ''} onChange={e => handleChange('bobCityTown', e.target.value)} disabled={isReadOnly} placeholder="e.g. Village" />
                   </Field>
-                  <Field label="Residential Area">
-                    <div className="flex gap-2 items-center">
-                      <input className={`${inputCls} flex-1`} value={fields.bobResidentialArea || ''} onChange={e => handleChange('bobResidentialArea', e.target.value)} disabled={isReadOnly || fields.bobResidentialAreaNA} placeholder="e.g. Residential Area" />
-                      <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
-                        <input type="checkbox" checked={fields.bobResidentialAreaNA || false}
-                          onChange={e => { handleChange('bobResidentialAreaNA', e.target.checked); if (e.target.checked) handleChange('bobResidentialArea', 'Not Applicable'); else handleChange('bobResidentialArea', ''); }}
-                          disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                        <span className="text-xs text-gray-500 font-medium">N/A</span>
+                  <Field label="Area Classification (Select One)">
+                    <div className="flex flex-wrap items-center gap-6 mt-2">
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                          checked={fields.bobResidentialArea === 'Residential Area'}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              handleChange('bobResidentialArea', 'Residential Area');
+                              handleChange('bobCommercialArea', 'NA');
+                              handleChange('bobIndustrialArea', 'NA');
+                            } else {
+                              handleChange('bobResidentialArea', '');
+                            }
+                          }}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-sm text-gray-700">Residential Area</span>
                       </label>
-                    </div>
-                  </Field>
-                  <Field label="Commercial Area">
-                    <div className="flex gap-2 items-center">
-                      <input className={`${inputCls} flex-1`} value={fields.bobCommercialArea || ''} onChange={e => handleChange('bobCommercialArea', e.target.value)} disabled={isReadOnly || fields.bobCommercialAreaNA} placeholder="e.g. Not Applicable" />
-                      <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
-                        <input type="checkbox" checked={fields.bobCommercialAreaNA || false}
-                          onChange={e => { handleChange('bobCommercialAreaNA', e.target.checked); if (e.target.checked) handleChange('bobCommercialArea', 'Not Applicable'); else handleChange('bobCommercialArea', ''); }}
-                          disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                        <span className="text-xs text-gray-500 font-medium">N/A</span>
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                          checked={fields.bobCommercialArea === 'Commercial Area'}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              handleChange('bobCommercialArea', 'Commercial Area');
+                              handleChange('bobResidentialArea', 'NA');
+                              handleChange('bobIndustrialArea', 'NA');
+                            } else {
+                              handleChange('bobCommercialArea', '');
+                            }
+                          }}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-sm text-gray-700">Commercial Area</span>
                       </label>
-                    </div>
-                  </Field>
-                  <Field label="Industrial Area">
-                    <div className="flex gap-2 items-center">
-                      <input className={`${inputCls} flex-1`} value={fields.bobIndustrialArea || ''} onChange={e => handleChange('bobIndustrialArea', e.target.value)} disabled={isReadOnly || fields.bobIndustrialAreaNA} placeholder="e.g. Not Applicable" />
-                      <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
-                        <input type="checkbox" checked={fields.bobIndustrialAreaNA || false}
-                          onChange={e => { handleChange('bobIndustrialAreaNA', e.target.checked); if (e.target.checked) handleChange('bobIndustrialArea', 'Not Applicable'); else handleChange('bobIndustrialArea', ''); }}
-                          disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                        <span className="text-xs text-gray-500 font-medium">N/A</span>
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                          checked={fields.bobIndustrialArea === 'Industrial Area'}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              handleChange('bobIndustrialArea', 'Industrial Area');
+                              handleChange('bobResidentialArea', 'NA');
+                              handleChange('bobCommercialArea', 'NA');
+                            } else {
+                              handleChange('bobIndustrialArea', '');
+                            }
+                          }}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-sm text-gray-700">Industrial Area</span>
+                      </label>
+                      <label className="flex items-center gap-2 cursor-pointer select-none">
+                        <input type="checkbox" className="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                          checked={fields.bobResidentialArea === 'NA' && fields.bobCommercialArea === 'NA' && fields.bobIndustrialArea === 'NA'}
+                          onChange={e => {
+                            if (e.target.checked) {
+                              handleChange('bobResidentialArea', 'NA');
+                              handleChange('bobCommercialArea', 'NA');
+                              handleChange('bobIndustrialArea', 'NA');
+                            } else {
+                              handleChange('bobResidentialArea', '');
+                              handleChange('bobCommercialArea', '');
+                              handleChange('bobIndustrialArea', '');
+                            }
+                          }}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-sm text-gray-700 font-medium">N/A</span>
                       </label>
                     </div>
                   </Field>
