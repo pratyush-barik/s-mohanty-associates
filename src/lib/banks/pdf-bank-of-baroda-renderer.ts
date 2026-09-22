@@ -285,24 +285,20 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const asOnDate = formatReportDate(this.fv('bobAsOnDate') || '');
 
     // Address block (left-aligned, bold)
-    this.doc.setFont(FONT_BOLD);
-    this.doc.setFontSize(9);
-    
-    // Split the address block into lines to fit page width
     const addressBlock = `${addressee}\n${bankDetails}`.replace(/\\n/g, '\n');
-    const addressLines = this.doc.splitTextToSize(addressBlock, CONTENT_W);
-    this.doc.text(addressLines, MARGIN_L, this.cursorY);
-    this.cursorY += (addressLines.length * (9 * 1.15)) + 15; // approximate line height + padding
+    const addressH = this.drawWrappedTextAt(addressBlock, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: 9, bold: true });
+    this.cursorY += addressH + 15;
 
     // Title Block (centered, bold)
     super.drawCenteredTitle(reportTitle, 10, false);
     this.cursorY += 10;
 
     // Ref No & Date (bold)
-    this.doc.setFont(FONT_BOLD);
-    this.doc.setFontSize(9);
-    this.doc.text(`REF. NO: ${refNo}`, MARGIN_L, this.cursorY);
-    this.doc.text(`DATE: ${asOnDate}`, PAGE_W - MARGIN_R - this.doc.getTextWidth(`DATE: ${asOnDate}`), this.cursorY);
+    this.drawTextAt(`REF. NO: ${refNo}`, MARGIN_L, this.cursorY, { fontSize: 9, bold: true });
+    const dateStr = `DATE: ${asOnDate}`;
+    const dateFont = this.getFont(true);
+    const dateW = dateFont.widthOfTextAtSize(dateStr, 9);
+    this.drawTextAt(dateStr, PAGE_W - MARGIN_R - dateW, this.cursorY, { fontSize: 9, bold: true });
     this.cursorY += 20;
 
     this.drawSectionHeader('PART I — GENERAL');
