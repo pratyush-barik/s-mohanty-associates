@@ -123,8 +123,33 @@ function DropdownWithCustom({ label, fieldKey, options, fields, handleChange, is
   const dropdownKey = `${fieldKey}Dropdown`;
   const dropdownVal = fields[dropdownKey] || '';
   const customKey = `${fieldKey}Custom`;
+  
+  const complexLabel = (
+    <div className="flex items-center gap-3">
+      <span>{label}</span>
+      {naKey && (
+        <label className="flex items-center gap-1.5 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={isNA}
+            onChange={e => {
+              handleChange(naKey, e.target.checked);
+              if (e.target.checked) {
+                handleChange(fieldKey, 'NA');
+                handleChange(dropdownKey, '');
+              }
+            }}
+            disabled={isReadOnly}
+            className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+          />
+          <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">NA</span>
+        </label>
+      )}
+    </div>
+  );
+
   return (
-    <Field label={label}>
+    <Field label={complexLabel}>
       <div className="flex gap-2 items-start flex-wrap">
         <div className="flex-1 min-w-50">
           <select
@@ -159,24 +184,6 @@ function DropdownWithCustom({ label, fieldKey, options, fields, handleChange, is
             />
           )}
         </div>
-        {naKey && (
-          <label className="flex items-center gap-1.5 mt-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={isNA}
-              onChange={e => {
-                handleChange(naKey, e.target.checked);
-                if (e.target.checked) {
-                  handleChange(fieldKey, 'NA');
-                  handleChange(dropdownKey, '');
-                }
-              }}
-              disabled={isReadOnly}
-              className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-            />
-            <span className="text-xs text-gray-500 font-medium">N/A</span>
-          </label>
-        )}
       </div>
     </Field>
   );
@@ -191,8 +198,33 @@ function DropdownWithTextarea({ label, fieldKey, options, fields, handleChange, 
   const dropdownKey = `${fieldKey}Dropdown`;
   const dropdownVal = fields[dropdownKey] || '';
   const customKey = `${fieldKey}Custom`;
+
+  const complexLabel = (
+    <div className="flex items-center gap-3">
+      <span>{label}</span>
+      {naKey && (
+        <label className="flex items-center gap-1.5 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={isNA}
+            onChange={e => {
+              handleChange(naKey, e.target.checked);
+              if (e.target.checked) {
+                handleChange(fieldKey, 'NA');
+                handleChange(dropdownKey, '');
+              }
+            }}
+            disabled={isReadOnly}
+            className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+          />
+          <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">NA</span>
+        </label>
+      )}
+    </div>
+  );
+
   return (
-    <Field label={label}>
+    <Field label={complexLabel}>
       <div className="space-y-2">
         <div className="flex gap-2 items-center">
           <select
@@ -213,21 +245,6 @@ function DropdownWithTextarea({ label, fieldKey, options, fields, handleChange, 
             {options.map(o => <option key={o} value={o}>{o}</option>)}
             <option value="custom">Custom</option>
           </select>
-          {naKey && (
-            <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
-              <input
-                type="checkbox"
-                checked={isNA}
-                onChange={e => {
-                  handleChange(naKey, e.target.checked);
-                  if (e.target.checked) { handleChange(fieldKey, 'NA'); handleChange(dropdownKey, ''); }
-                }}
-                disabled={isReadOnly}
-                className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-              />
-              <span className="text-xs text-gray-500 font-medium">N/A</span>
-            </label>
-          )}
         </div>
         {(dropdownVal === 'custom' || (!dropdownVal && !isNA)) && (
           <textarea
@@ -260,8 +277,33 @@ function DropdownWithInput({ label, fieldKey, options, fields, handleChange, isR
   const dropdownKey = `${fieldKey}Dropdown`;
   const dropdownVal = fields[dropdownKey] || '';
   const customKey = `${fieldKey}Custom`;
+
+  const complexLabel = (
+    <div className="flex items-center gap-3">
+      <span>{label}</span>
+      {naKey && (
+        <label className="flex items-center gap-1.5 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={isNA}
+            onChange={e => {
+              handleChange(naKey, e.target.checked);
+              if (e.target.checked) {
+                handleChange(fieldKey, 'NA');
+                handleChange(dropdownKey, '');
+              }
+            }}
+            disabled={isReadOnly}
+            className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+          />
+          <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">NA</span>
+        </label>
+      )}
+    </div>
+  );
+
   return (
-    <Field label={label}>
+    <Field label={complexLabel}>
       <div className="flex gap-2 items-start flex-wrap">
         <div className="flex-1 min-w-50">
           <select
@@ -296,21 +338,6 @@ function DropdownWithInput({ label, fieldKey, options, fields, handleChange, isR
             />
           )}
         </div>
-        {naKey && (
-          <label className="flex items-center gap-1.5 mt-2 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={isNA}
-              onChange={e => {
-                handleChange(naKey, e.target.checked);
-                if (e.target.checked) { handleChange(fieldKey, 'NA'); handleChange(dropdownKey, ''); }
-              }}
-              disabled={isReadOnly}
-              className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-            />
-            <span className="text-xs text-gray-500 font-medium">N/A</span>
-          </label>
-        )}
       </div>
     </Field>
   );
@@ -1046,17 +1073,23 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <Field label="a) Plot No. / Survey No.">
                   <input className={inputCls} value={fields.bobPlotNo || ''} onChange={e => handleChange('bobPlotNo', e.target.value)} disabled={isReadOnly} />
                 </Field>
-                <Field label="b) Door No.">
-                  <div className="flex gap-2 items-center">
-                    <input className={`${inputCls} flex-1`} value={fields.bobDoorNo || ''} onChange={e => handleChange('bobDoorNo', e.target.value)} disabled={isReadOnly || fields.bobDoorNoNA} />
-                    <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
-                      <input type="checkbox" checked={fields.bobDoorNoNA || false}
-                        onChange={e => { handleChange('bobDoorNoNA', e.target.checked); if (e.target.checked) handleChange('bobDoorNo', 'NA'); }}
-                        disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                      <span className="text-xs text-gray-500 font-medium">N/A</span>
-                    </label>
-                  </div>
-                </Field>
+                <Field label={
+  <div className="flex items-center gap-3">
+    <span>b) Door No.</span>
+    <label className="flex items-center gap-1.5 cursor-pointer select-none">
+      <input
+        type="checkbox"
+        checked={fields.bobDoorNoNA || false}
+        onChange={e => { handleChange('bobDoorNoNA', e.target.checked); if (e.target.checked) handleChange('bobDoorNo', 'NA'); else handleChange('bobDoorNo', ''); }}
+        disabled={isReadOnly}
+        className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+      />
+      <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">NA</span>
+    </label>
+  </div>
+}>
+  <input className={`${inputCls} flex-1`} value={fields.bobDoorNo || ''} onChange={e => handleChange('bobDoorNo', e.target.value)} disabled={isReadOnly || fields.bobDoorNoNA} />
+</Field>
                 <Field label="c) T. S. No. / Village">
                   <input className={inputCls} value={fields.bobTSNoVillage || ''} onChange={e => handleChange('bobTSNoVillage', e.target.value)} disabled={isReadOnly} />
                 </Field>
@@ -1084,29 +1117,35 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       </div>
                     )}
                   </div>
-                  <Field label="PINCODE">
-                    <div className="flex gap-2 items-center">
-                      <input 
-                        type="text" 
-                        className={`${inputCls} flex-1`}
-                        value={fields.bobPinCode || ''} 
-                        onChange={e => {
-                          if (!fields.bobPinCodeNA) {
-                            const val = e.target.value.replace(/\D/g, '').slice(0, 6);
-                            handleChange('bobPinCode', val);
-                          }
-                        }} 
-                        disabled={isReadOnly || fields.bobPinCodeNA} 
-                        placeholder="Enter 6-digit PIN..." 
-                      />
-                      <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
-                        <input type="checkbox" checked={fields.bobPinCodeNA || false}
-                          onChange={e => { handleChange('bobPinCodeNA', e.target.checked); if (e.target.checked) handleChange('bobPinCode', 'NA'); else handleChange('bobPinCode', ''); }}
-                          disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                        <span className="text-xs text-gray-500 font-medium">N/A</span>
-                      </label>
-                    </div>
-                  </Field>
+                  <Field label={
+  <div className="flex items-center gap-3">
+    <span>PINCODE</span>
+    <label className="flex items-center gap-1.5 cursor-pointer select-none">
+      <input
+        type="checkbox"
+        checked={fields.bobPinCodeNA || false}
+        onChange={e => { handleChange('bobPinCodeNA', e.target.checked); if (e.target.checked) handleChange('bobPinCode', 'NA'); else handleChange('bobPinCode', ''); }}
+        disabled={isReadOnly}
+        className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+      />
+      <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">NA</span>
+    </label>
+  </div>
+}>
+  <input 
+    type="text" 
+    className={`${inputCls} flex-1`}
+    value={fields.bobPinCode || ''} 
+    onChange={e => {
+      if (!fields.bobPinCodeNA) {
+        const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+        handleChange('bobPinCode', val);
+      }
+    }} 
+    disabled={isReadOnly || fields.bobPinCodeNA} 
+    placeholder="Enter 6-digit PIN..." 
+  />
+</Field>
                 </div>
               </Field>
             </div>
@@ -1582,28 +1621,40 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
                   </div>
                 </div>
-                <Field label="g) Date of issue and validity of layout of approved map / plan">
-                  <div className="flex gap-2 items-center">
-                    <input className={`${inputCls} flex-1`} value={fields.bobApprovedMapDate || ''} onChange={e => handleChange('bobApprovedMapDate', e.target.value)} disabled={isReadOnly || fields.bobApprovedMapDateNA} />
-                    <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
-                      <input type="checkbox" checked={fields.bobApprovedMapDateNA || false}
-                        onChange={e => { handleChange('bobApprovedMapDateNA', e.target.checked); if (e.target.checked) handleChange('bobApprovedMapDate', 'NA'); }}
-                        disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                      <span className="text-xs text-gray-500 font-medium">N/A</span>
-                    </label>
-                  </div>
-                </Field>
-                <Field label="h) Approved map / plan issuing authority">
-                  <div className="flex gap-2 items-center">
-                    <input className={`${inputCls} flex-1`} value={fields.bobApprovedMapAuthority || ''} onChange={e => handleChange('bobApprovedMapAuthority', e.target.value)} disabled={isReadOnly || fields.bobApprovedMapAuthorityNA} />
-                    <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
-                      <input type="checkbox" checked={fields.bobApprovedMapAuthorityNA || false}
-                        onChange={e => { handleChange('bobApprovedMapAuthorityNA', e.target.checked); if (e.target.checked) handleChange('bobApprovedMapAuthority', 'NA'); }}
-                        disabled={isReadOnly} className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                      <span className="text-xs text-gray-500 font-medium">N/A</span>
-                    </label>
-                  </div>
-                </Field>
+                <Field label={
+  <div className="flex items-center gap-3">
+    <span>g) Date of issue and validity of layout of approved map / plan</span>
+    <label className="flex items-center gap-1.5 cursor-pointer select-none">
+      <input
+        type="checkbox"
+        checked={fields.bobApprovedMapDateNA || false}
+        onChange={e => { handleChange('bobApprovedMapDateNA', e.target.checked); if (e.target.checked) handleChange('bobApprovedMapDate', 'NA'); else handleChange('bobApprovedMapDate', ''); }}
+        disabled={isReadOnly}
+        className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+      />
+      <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">NA</span>
+    </label>
+  </div>
+}>
+  <input className={`${inputCls} flex-1`} value={fields.bobApprovedMapDate || ''} onChange={e => handleChange('bobApprovedMapDate', e.target.value)} disabled={isReadOnly || fields.bobApprovedMapDateNA} />
+</Field>
+                <Field label={
+  <div className="flex items-center gap-3">
+    <span>h) Approved map / plan issuing authority</span>
+    <label className="flex items-center gap-1.5 cursor-pointer select-none">
+      <input
+        type="checkbox"
+        checked={fields.bobApprovedMapAuthorityNA || false}
+        onChange={e => { handleChange('bobApprovedMapAuthorityNA', e.target.checked); if (e.target.checked) handleChange('bobApprovedMapAuthority', 'NA'); else handleChange('bobApprovedMapAuthority', ''); }}
+        disabled={isReadOnly}
+        className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+      />
+      <span className="text-[10px] font-bold uppercase text-gray-500 tracking-wider">NA</span>
+    </label>
+  </div>
+}>
+  <input className={`${inputCls} flex-1`} value={fields.bobApprovedMapAuthority || ''} onChange={e => handleChange('bobApprovedMapAuthority', e.target.value)} disabled={isReadOnly || fields.bobApprovedMapAuthorityNA} />
+</Field>
                 <DropdownWithCustom label="i) Whether genuineness or authenticity of approved map / plan is verified" fieldKey="bobApprovedMapVerified"
                   options={['Yes Verified', 'No']}
                   fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} naKey="bobApprovedMapVerifiedNA" />
