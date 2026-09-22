@@ -460,8 +460,18 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           {/* Container 1: Bank & Report Header */}
           <div className="rounded-xl p-5 space-y-4 border border-blue-200" style={{ backgroundColor: '#e6f2ff' }}>
             <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">BANK & REPORT HEADER</h3>
-            <PrefillField label="BANK & BRANCH DETAILS" value={fields.bobBankBranchDetailsEditOn ? (fields.bobBankBranchDetails || '') : 'BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA'} hoverText='>>Prefills from Section 2<<.' />
-            <PrefillField label="AS ON DATE" value={fields.bobAsOnDateEditOn ? (fields.bobAsOnDate || '') : '2026-02-20'} hoverText='>>Prefills from Section 2<<.' />
+            <Field label="BANK & BRANCH DETAILS">
+              <textarea className={inputCls} rows={2} value={fields.bobBankBranchDetails || ''} onChange={e => handleChange('bobBankBranchDetails', e.target.value)} disabled={isReadOnly} placeholder="e.g., BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA" />
+            </Field>
+            <Field label="AS ON DATE">
+              <input
+                type="date"
+                className={inputCls}
+                value={fields.bobAsOnDate || ''}
+                onChange={e => handleChange('bobAsOnDate', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
           </div>
 
           {/* Container 4: Valuation of Land & Property Summary */}
@@ -776,21 +786,18 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   </div>
               </Field>
 
-              <Field label={<div className="flex items-center justify-between w-full"><span>BANK & BRANCH DETAILS</span><EditSwitch checked={fields.bobBankBranchDetailsEditOn} onChange={v => { handleChange('bobBankBranchDetailsEditOn', v); if (v) handleChange('bobBankBranchDetails', ''); }} disabled={isReadOnly} /></div>}>
-                <div className="relative" title='>>Prefills "BANK & BRANCH DETAILS" in Section 1 (Cover Page)<<.'>
-                    <textarea
-                      className={`${inputCls} ${!fields.bobBankBranchDetailsEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
-                      rows={2}
-                      value={fields.bobBankBranchDetailsEditOn ? (fields.bobBankBranchDetails || '') : 'BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA'}
-                      onChange={e => handleChange('bobBankBranchDetails', e.target.value)}
-                      readOnly={isReadOnly || !fields.bobBankBranchDetailsEditOn}
-                    />
-                    {!fields.bobBankBranchDetailsEditOn && (
-                      <div className="absolute top-2 right-2 flex items-center pr-1 group">
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
-                      </div>
-                    )}
+              <Field label="BANK & BRANCH DETAILS">
+                <div className="relative" title='>>Prefills from Section 1 (Cover Page)<<.'>
+                  <textarea
+                    className={`${inputCls} bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold`}
+                    rows={2}
+                    value={fields.bobBankBranchDetails || ''}
+                    readOnly
+                  />
+                  <div className="absolute top-2 right-2 flex items-center pr-1 group">
+                    <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                   </div>
+                </div>
               </Field>
 
               <Field label={<div className="flex items-center justify-between w-full"><span>REPORT TITLE</span><EditSwitch checked={fields.bobReportTitleEditOn} onChange={v => { handleChange('bobReportTitleEditOn', v); if (v) handleChange('bobReportTitle', ''); }} disabled={isReadOnly} /></div>}>
@@ -827,21 +834,18 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   </div>
               </Field>
 
-              <Field label={<div className="flex items-center justify-between w-full"><span>REPORT DATE</span><EditSwitch checked={fields.bobAsOnDateEditOn} onChange={v => { handleChange('bobAsOnDateEditOn', v); if (v) handleChange('bobAsOnDate', ''); }} disabled={isReadOnly} /></div>}>
-                <div className="relative" title='>>Prefills "AS ON DATE" in Section 1 (Cover Page)<<.'>
-                    <input
-                      type="date"
-                      className={`${inputCls} ${!fields.bobAsOnDateEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
-                      value={fields.bobAsOnDateEditOn ? (fields.bobAsOnDate || '') : '2026-02-20'}
-                      onChange={e => handleChange('bobAsOnDate', e.target.value)}
-                      readOnly={isReadOnly || !fields.bobAsOnDateEditOn}
-                    />
-                    {!fields.bobAsOnDateEditOn && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group">
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
-                      </div>
-                    )}
+              <Field label="REPORT DATE">
+                <div className="relative" title='>>Prefills from Section 1 (Cover Page)<<.'>
+                  <input
+                    type="date"
+                    className={`${inputCls} bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold`}
+                    value={fields.bobAsOnDate || ''}
+                    readOnly
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 group">
+                    <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                   </div>
+                </div>
               </Field>
             </div>
 
