@@ -2310,8 +2310,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                     <tr className="bg-amber-50 font-bold">
                       <td colSpan={7} className="border border-gray-300 px-3 py-2 text-right">TOTAL:</td>
                       <td className="border border-gray-300 px-1 py-1">
-                        <AutoCalcField label="" fieldKey="bobBuildingValuationTotal" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly}
-                          calcValue={calcBuildingTotal.toFixed(2)}
+                        <PrefillField label="" value={calcBuildingTotal.toFixed(2)} isReadOnly={isReadOnly}
                           hoverText=">>Auto calculates from SUM([NET VALUE AFTER DEPRECIATION] of all rows)<<." />
                       </td>
                       <td className="border border-gray-300"></td>
