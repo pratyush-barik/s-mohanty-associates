@@ -673,6 +673,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                     handleChange('bobPurposeOfValuationDropdown', val);
                     if (val === 'default') {
                       handleChange('bobPurposeOfValuation', 'To assess the present market value of the property for loan purpose');
+                    } else if (val === 'presentmarket') {
+                      handleChange('bobPurposeOfValuation', 'To assess the present market value of the property');
                     } else if (val === 'incometax') {
                       handleChange('bobPurposeOfValuation', 'To assess capital gain for income tax');
                     } else {
@@ -682,6 +684,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   disabled={isReadOnly}
                 >
                   <option value="default">To assess the present market value of the property for loan purpose</option>
+                  <option value="presentmarket">To assess the present market value of the property</option>
                   <option value="incometax">To assess capital gain for income tax</option>
                   <option value="custom">Custom</option>
                 </select>

@@ -20,6 +20,8 @@ import {
   PAGE_W,
   PAGE_H,
   MARGIN_L,
+  MARGIN_T,
+  MARGIN_B,
   CONTENT_W,
   FONT_SIZE,
   FONT_SIZE_HEADER,
@@ -107,20 +109,22 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     this.cursorY = 60;
 
-    const bmx = 30;
-    const bmyTop = 105;
-    const bmyBot = 85;
-    const borderColorHex = hexToRgb('#4a6078');
+    const bmx = 36;
+    const bmyTop = MARGIN_T + 4;   // just below the letterhead header
+    const bmyBot = MARGIN_B + 4;   // just above the letterhead footer
+    const borderColor = hexToRgb('#8B6914'); // dark goldenrod — matches reference doc border
 
+    // Outer border (thick)
     this.page.drawRectangle({
       x: bmx, y: bmyBot,
       width: PAGE_W - 2 * bmx, height: PAGE_H - bmyBot - bmyTop,
-      borderColor: borderColorHex, borderWidth: 2.5,
+      borderColor: borderColor, borderWidth: 3,
     });
+    // Inner border (thin) — 5pt inset from outer
     this.page.drawRectangle({
-      x: bmx + 3, y: bmyBot + 3,
-      width: PAGE_W - 2 * bmx - 6, height: PAGE_H - bmyBot - bmyTop - 6,
-      borderColor: borderColorHex, borderWidth: 0.75,
+      x: bmx + 5, y: bmyBot + 5,
+      width: PAGE_W - 2 * bmx - 10, height: PAGE_H - bmyBot - bmyTop - 10,
+      borderColor: borderColor, borderWidth: 1,
     });
 
     // Helper: draw centered bold text with optional underline on EVERY line
@@ -150,26 +154,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       }
     };
 
-    // Helper: draw centered regular (non-bold) text
-    const drawCenteredRegular = (text: string, size: number, ySpaceAfter: number) => {
-      const cleanText = this.sanitizeText(text);
-      const maxWidth = PAGE_W - 2 * bmx - 140;
-      const lines = this.wrapText(cleanText, maxWidth, size, false);
-
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        const tw = this.fontRegular.widthOfTextAtSize(line, size);
-        const startX = MARGIN_L + (CONTENT_W - tw) / 2;
-        const startY = this.pdfY(this.cursorY);
-        this.page.drawText(line, { x: startX, y: startY, size, font: this.fontRegular, color: rgb(0, 0, 0) });
-        if (i < lines.length - 1) {
-          this.cursorY += size + 4;
-        } else {
-          this.cursorY += ySpaceAfter;
-        }
-      }
-    };
-
     // ── 1. Main Title ──
     // "REPORT ON VALUATION OF" — bold, NO underline
     drawCenteredBold('REPORT ON VALUATION OF', FONT_SIZE_TITLE + 3, 25, false);
@@ -179,19 +163,19 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     // ── 2a. Bank & Branch Details ──
     const bankBranch = this.fv('bobBankBranchDetails');
     if (bankBranch) {
-      drawCenteredBold(bankBranch, FONT_SIZE, 14);
+      drawCenteredBold(bankBranch, FONT_SIZE, 20); // increased bottom space before AS ON DATE
     }
 
-    // ── 2b. As On Date ──
+    // ── 2b. As On Date (Subheading style spacing) ──
     const asOnDate = this.fv('bobAsOnDate');
     if (asOnDate) {
-      drawCenteredBold(`AS ON DATE: ${formatReportDate(asOnDate)}`, FONT_SIZE, 20);
+      drawCenteredBold(`AS ON DATE: ${formatReportDate(asOnDate)}`, FONT_SIZE_HEADER - 1, 48); // larger font, larger bottom space
     }
 
     // ── 2c. Full Legal Property Description (no heading, just the value) ──
     const legalDesc = this.fv('bobFullLegalPropertyDescription');
     if (legalDesc) {
-      drawCenteredRegular(legalDesc, FONT_SIZE_SMALL + 1, 25);
+      drawCenteredBold(legalDesc, FONT_SIZE_SMALL + 1, 25);
     }
 
     // ── 3. NAME OF THE OWNER (underlined subheading) ──
@@ -214,9 +198,15 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       if (ownerStrings.length === 1) ownersText = ownerStrings[0];
       else if (ownerStrings.length === 2) ownersText = ownerStrings.join(' & ');
       else { const last = ownerStrings.pop(); ownersText = ownerStrings.join(', ') + ' & ' + last; }
-      // Append address
+      
+      // Append address logic: Prevent duplicate "At:"
       if (address) {
-        ownersText += `, At: ${address}`;
+        const cleanAddr = address.trim();
+        if (/^at\s*:/i.test(cleanAddr)) {
+          ownersText += `, ${cleanAddr}`;
+        } else {
+          ownersText += `, At: ${cleanAddr}`;
+        }
       }
       drawCenteredBold(ownersText, FONT_SIZE, 14);
     } else {
@@ -275,13 +265,13 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     drawCenteredBold('Prepared By', FONT_SIZE_HEADER - 1, 14, true);
 
     // ── 8. Valuer credential lines ──
-    if (this.fv('bobPreparedByValuerName')) drawCenteredBold(this.fv('bobPreparedByValuerName'), FONT_SIZE_SMALL + 1, 10);
-    if (this.fv('bobPreparedByGovtReg')) drawCenteredBold(this.fv('bobPreparedByGovtReg'), FONT_SIZE_SMALL + 1, 10);
-    if (this.fv('bobPreparedByAcademicDegrees')) drawCenteredBold(this.fv('bobPreparedByAcademicDegrees'), FONT_SIZE_SMALL + 1, 10);
-    if (this.fv('bobPreparedByIoVMembership')) drawCenteredBold(this.fv('bobPreparedByIoVMembership'), FONT_SIZE_SMALL + 1, 10);
-    if (this.fv('bobPreparedByIoEMembership')) drawCenteredBold(this.fv('bobPreparedByIoEMembership'), FONT_SIZE_SMALL + 1, 10);
-    if (this.fv('bobPreparedByCharteredEng')) drawCenteredBold(this.fv('bobPreparedByCharteredEng'), FONT_SIZE_SMALL + 1, 10);
-    if (this.fv('bobPreparedByBankEmpanelment')) drawCenteredBold(this.fv('bobPreparedByBankEmpanelment'), FONT_SIZE_SMALL + 1, 10);
+    if (this.fv('bobPreparedByValuerName')) drawCenteredBold(this.fv('bobPreparedByValuerName'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bobPreparedByGovtReg')) drawCenteredBold(this.fv('bobPreparedByGovtReg'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bobPreparedByAcademicDegrees')) drawCenteredBold(this.fv('bobPreparedByAcademicDegrees'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bobPreparedByIoVMembership')) drawCenteredBold(this.fv('bobPreparedByIoVMembership'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bobPreparedByIoEMembership')) drawCenteredBold(this.fv('bobPreparedByIoEMembership'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bobPreparedByCharteredEng')) drawCenteredBold(this.fv('bobPreparedByCharteredEng'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bobPreparedByBankEmpanelment')) drawCenteredBold(this.fv('bobPreparedByBankEmpanelment'), FONT_SIZE_SMALL + 1, 16);
   }
 
   // ═══════════════════════════════════════════════════════════════════════
