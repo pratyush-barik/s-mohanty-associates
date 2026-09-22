@@ -9,7 +9,7 @@ import { Lock } from 'lucide-react';
 /* ═══════════════════════════════════════════════════════════════════════
    BOB-SPECIFIC SECTION (Olive Green Accordion Header)
    ═══════════════════════════════════════════════════════════════════════ */
-function BobSection({ title, number, id, children, defaultOpen = false }: {
+function BobSection({ title, number, id, children, defaultOpen = true }: {
   title: string; number?: number | string; id?: string; children: ReactNode; defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -747,7 +747,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       id: 'bob-section-general',
       title: 'Part I — GENERAL',
       number: 2,
-      defaultOpen: false,
+      defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => {
         const boundaries = fields.bobBoundaries || {};
         const dimensions = fields.bobDimensions || {};
@@ -1184,7 +1184,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       id: 'bob-section-characteristics',
       title: 'Part II — CHARACTERISTICS OF THE SITE',
       number: 3,
-      defaultOpen: false,
+      defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         return (
           <div className="animate-fade-in space-y-6">
@@ -1281,7 +1281,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       id: 'bob-section-land',
       title: 'Part A — Valuation of Land',
       number: 4,
-      defaultOpen: false,
+      defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const sizeNS = parseFloat(fields.bobLandSizeNS || '0') || 0;
         const sizeEW = parseFloat(fields.bobLandSizeEW || '0') || 0;
@@ -1341,7 +1341,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       id: 'bob-section-building',
       title: 'Part B — Valuation of Building',
       number: 5,
-      defaultOpen: false,
+      defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const currentYear = new Date().getFullYear();
         const yearOfConstruction = parseInt(fields.bobYearOfConstruction || '0') || 0;
@@ -1676,7 +1676,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       id: 'bob-section-valuation-details',
       title: 'Details of Valuation & Amenities',
       number: 6,
-      defaultOpen: false,
+      defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         // ── Container 13: Building Valuation (Dynamic rows) ──
         const buildingRows: any[] = fields.bobBuildingValuationRows || [{ particulars: '', particularsDropdown: '', plinthArea: '', roofHeight: '', replacementRate: '' }];
@@ -1976,7 +1976,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       id: 'bob-section-abstract',
       title: 'TOTAL ABSTRACT & REMARKS',
       number: 7,
-      defaultOpen: false,
+      defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         // Prefills from other sections
         const landMarketValue = fields.bobEstimatedLandValueEditOn ? parseFloat(fields.bobEstimatedLandValue || '0') : (() => {
@@ -2224,7 +2224,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       id: 'bob-section-questionnaire',
       title: 'DECLARATION FROM VALUERS (Questionnaire)',
       number: 8,
-      defaultOpen: false,
+      defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const questionnaireItems = [
           'Background information of the asset being valued;',
@@ -2288,7 +2288,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       id: 'bob-section-affirmations',
       title: 'DECLARATION FROM VALUERS (Affirmations)',
       number: 9,
-      defaultOpen: false,
+      defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const affirmChecks = fields.bobAffirmationChecks || {};
         const updateCheck = (key: string, val: boolean) => handleChange('bobAffirmationChecks', { ...affirmChecks, [key]: val });
@@ -2401,7 +2401,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       id: 'bob-section-code-of-conduct',
       title: 'MODEL CODE OF CONDUCT FOR VALUERS',
       number: 10,
-      defaultOpen: false,
+      defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const codeOfConductSections = [
           { heading: 'Integrity and Fairness', items: [
