@@ -123,6 +123,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       borderColor: borderColorHex, borderWidth: 0.75,
     });
 
+    // Helper: draw centered bold text with optional underline on EVERY line
     const drawCenteredBold = (text: string, size: number, ySpaceAfter: number, underline: boolean = false) => {
       const cleanText = this.sanitizeText(text);
       const maxWidth = PAGE_W - 2 * bmx - 140;
@@ -134,7 +135,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
         const startX = MARGIN_L + (CONTENT_W - tw) / 2;
         const startY = this.pdfY(this.cursorY);
         this.page.drawText(line, { x: startX, y: startY, size, font: this.fontBold, color: rgb(0, 0, 0) });
-        if (underline && i === lines.length - 1) {
+        if (underline) {
           this.page.drawLine({
             start: { x: startX, y: startY - 2 },
             end: { x: startX + tw, y: startY - 2 },
@@ -149,63 +150,138 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       }
     };
 
-    drawCenteredBold('REPORT ON VALUATION OF', FONT_SIZE_TITLE + 3, 25, true);
-    drawCenteredBold('IMMOVABLE PROPERTIES', FONT_SIZE_TITLE + 3, 40, true);
+    // Helper: draw centered regular (non-bold) text
+    const drawCenteredRegular = (text: string, size: number, ySpaceAfter: number) => {
+      const cleanText = this.sanitizeText(text);
+      const maxWidth = PAGE_W - 2 * bmx - 140;
+      const lines = this.wrapText(cleanText, maxWidth, size, false);
 
-    drawCenteredBold('VALUATION OF LAND & PROPERTY SUMMARY', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold('FULL LEGAL PROPERTY DESCRIPTION', FONT_SIZE_HEADER - 1, 10, false);
-    const legalDesc = this.fv('bobFullLegalPropertyDescription');
-    if (legalDesc) {
-      drawCenteredBold(legalDesc, FONT_SIZE, 30);
-    } else {
-      drawCenteredBold('NA', FONT_SIZE, 30);
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const tw = this.font.widthOfTextAtSize(line, size);
+        const startX = MARGIN_L + (CONTENT_W - tw) / 2;
+        const startY = this.pdfY(this.cursorY);
+        this.page.drawText(line, { x: startX, y: startY, size, font: this.font, color: rgb(0, 0, 0) });
+        if (i < lines.length - 1) {
+          this.cursorY += size + 4;
+        } else {
+          this.cursorY += ySpaceAfter;
+        }
+      }
+    };
+
+    // ── 1. Main Title ──
+    // "REPORT ON VALUATION OF" — bold, NO underline
+    drawCenteredBold('REPORT ON VALUATION OF', FONT_SIZE_TITLE + 3, 25, false);
+    // "IMMOVABLE PROPERTIES" — bold, underlined
+    drawCenteredBold('IMMOVABLE PROPERTIES', FONT_SIZE_TITLE + 3, 30, true);
+
+    // ── 2a. Bank & Branch Details ──
+    const bankBranch = this.fv('bobBankBranchDetails');
+    if (bankBranch) {
+      drawCenteredBold(bankBranch, FONT_SIZE, 14);
     }
 
-    drawCenteredBold('PROPERTY OWNER', FONT_SIZE_HEADER, 16, true);
+    // ── 2b. As On Date ──
+    const asOnDate = this.fv('bobAsOnDate');
+    if (asOnDate) {
+      drawCenteredBold(`AS ON DATE: ${formatReportDate(asOnDate)}`, FONT_SIZE, 20);
+    }
+
+    // ── 2c. Full Legal Property Description (no heading, just the value) ──
+    const legalDesc = this.fv('bobFullLegalPropertyDescription');
+    if (legalDesc) {
+      drawCenteredRegular(legalDesc, FONT_SIZE_SMALL + 1, 25);
+    }
+
+    // ── 3. NAME OF THE OWNER (underlined subheading) ──
+    drawCenteredBold('NAME OF THE OWNER', FONT_SIZE_HEADER, 14, true);
+
+    // ── 4a. Owner details with address ──
     const owners = Array.isArray(fields.bobPropertyOwners) && fields.bobPropertyOwners.length > 0
       ? fields.bobPropertyOwners
       : [{ name: '', relationship: 'S/O', relativeName: '', fatherName: '' }];
     const validOwners = owners.filter((o: any) => o.name);
+    const address = this.fv('bobAddressOfTheProperty');
+
     if (validOwners.length > 0) {
       const ownerStrings = validOwners.map((owner: any) => {
         const rel = owner.relationship || 'S/O';
         const relName = owner.relativeName || owner.fatherName;
-        return relName ? `${owner.name} ${rel} ${relName}` : owner.name;
+        return relName ? `${owner.name}, ${rel}: ${relName}` : owner.name;
       });
       let ownersText = '';
       if (ownerStrings.length === 1) ownersText = ownerStrings[0];
       else if (ownerStrings.length === 2) ownersText = ownerStrings.join(' & ');
       else { const last = ownerStrings.pop(); ownersText = ownerStrings.join(', ') + ' & ' + last; }
+      // Append address
+      if (address) {
+        ownersText += `, At: ${address}`;
+      }
       drawCenteredBold(ownersText, FONT_SIZE, 14);
     } else {
       drawCenteredBold('NA', FONT_SIZE, 14);
     }
-    this.cursorY += 16;
+    this.cursorY += 10;
 
-    drawCenteredBold('ADDRESS OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(this.fv('bobAddressOfTheProperty') || 'NA', FONT_SIZE, 40);
-
-    drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
+    // ── 4b. Value of the Property (2-column grid) ──
     const formatVal = (valStr: string) => {
       if (!valStr || isNaN(Number(valStr))) return '0.00';
-      return Number(valStr).toFixed(2);
+      return Number(valStr).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
-    drawCenteredBold(`PRESENT MARKET VALUE:- ${formatVal(this.fv('bobPresentMarketValue'))}`, FONT_SIZE, 14);
-    drawCenteredBold(`DISTRESS SALE VALUE:- ${formatVal(this.fv('bobDistressSaleValue'))}`, FONT_SIZE, 14);
-    drawCenteredBold(`REALIZABLE VALUE:- ${formatVal(this.fv('bobRealizableValue'))}`, FONT_SIZE, 40);
 
-    drawCenteredBold('PURPOSE OF VALUATION', FONT_SIZE_HEADER, 16, true);
-    drawCenteredBold(this.fv('bobPurposeOfValuation') || 'NA', FONT_SIZE, 40);
+    const valueLabels = [
+      { label: 'PRESENT MARKET VALUE', field: 'bobPresentMarketValue' },
+      { label: 'REALIZABLE VALUE', field: 'bobRealizableValue' },
+      { label: 'FORCED SALE VALUE', field: 'bobForcedSaleValue' },
+      { label: 'GOVT. VALUE', field: 'bobGovtValue' },
+    ];
 
-    drawCenteredBold('PREPARED BY', FONT_SIZE_HEADER, 16, true);
-    
-    if (this.fv('bobPreparedByValuerName')) drawCenteredBold(this.fv('bobPreparedByValuerName'), FONT_SIZE, 14);
-    if (this.fv('bobPreparedByGovtReg')) drawCenteredBold(this.fv('bobPreparedByGovtReg'), FONT_SIZE, 14);
-    if (this.fv('bobPreparedByAcademicDegrees')) drawCenteredBold(this.fv('bobPreparedByAcademicDegrees'), FONT_SIZE, 14);
-    if (this.fv('bobPreparedByIoVMembership')) drawCenteredBold(this.fv('bobPreparedByIoVMembership'), FONT_SIZE, 14);
-    if (this.fv('bobPreparedByIoEMembership')) drawCenteredBold(this.fv('bobPreparedByIoEMembership'), FONT_SIZE, 14);
-    if (this.fv('bobPreparedByCharteredEng')) drawCenteredBold(this.fv('bobPreparedByCharteredEng'), FONT_SIZE, 14);
-    if (this.fv('bobPreparedByBankEmpanelment')) drawCenteredBold(this.fv('bobPreparedByBankEmpanelment'), FONT_SIZE, 14);
+    const labelColW = Math.round(CONTENT_W * 0.42);
+    const valueColW = Math.round(CONTENT_W * 0.42);
+    const gridTotalW = labelColW + valueColW;
+    const gridStartX = MARGIN_L + (CONTENT_W - gridTotalW) / 2;
+
+    for (const item of valueLabels) {
+      const valText = `RS.${formatVal(this.fv(item.field))}`;
+      const labelY = this.pdfY(this.cursorY);
+      this.page.drawText(item.label, { x: gridStartX, y: labelY, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
+      this.page.drawText(valText, { x: gridStartX + labelColW, y: labelY, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
+      this.cursorY += FONT_SIZE + 8;
+    }
+    this.cursorY += 16;
+
+    // ── 5 & 6. Purpose of Valuation ──
+    const purposeText = this.fv('bobPurposeOfValuation') || 'NA';
+    // Render as italic bold: "PURPOSE : <value>"
+    const purposeStr = `PURPOSE : ${purposeText.toUpperCase()}`;
+    const purposeClean = this.sanitizeText(purposeStr);
+    const purposeMaxW = PAGE_W - 2 * bmx - 140;
+    const purposeLines = this.wrapText(purposeClean, purposeMaxW, FONT_SIZE_SMALL + 1, true);
+    for (let i = 0; i < purposeLines.length; i++) {
+      const line = purposeLines[i];
+      const tw = this.fontBold.widthOfTextAtSize(line, FONT_SIZE_SMALL + 1);
+      const startX = MARGIN_L + (CONTENT_W - tw) / 2;
+      const startY = this.pdfY(this.cursorY);
+      this.page.drawText(line, { x: startX, y: startY, size: FONT_SIZE_SMALL + 1, font: this.fontBold, color: rgb(0, 0, 0) });
+      if (i < purposeLines.length - 1) {
+        this.cursorY += FONT_SIZE_SMALL + 5;
+      } else {
+        this.cursorY += 30;
+      }
+    }
+
+    // ── 7. Prepared By (underlined subheading) ──
+    drawCenteredBold('Prepared By', FONT_SIZE_HEADER - 1, 14, true);
+
+    // ── 8. Valuer credential lines ──
+    if (this.fv('bobPreparedByValuerName')) drawCenteredBold(this.fv('bobPreparedByValuerName'), FONT_SIZE_SMALL + 1, 10);
+    if (this.fv('bobPreparedByGovtReg')) drawCenteredBold(this.fv('bobPreparedByGovtReg'), FONT_SIZE_SMALL + 1, 10);
+    if (this.fv('bobPreparedByAcademicDegrees')) drawCenteredBold(this.fv('bobPreparedByAcademicDegrees'), FONT_SIZE_SMALL + 1, 10);
+    if (this.fv('bobPreparedByIoVMembership')) drawCenteredBold(this.fv('bobPreparedByIoVMembership'), FONT_SIZE_SMALL + 1, 10);
+    if (this.fv('bobPreparedByIoEMembership')) drawCenteredBold(this.fv('bobPreparedByIoEMembership'), FONT_SIZE_SMALL + 1, 10);
+    if (this.fv('bobPreparedByCharteredEng')) drawCenteredBold(this.fv('bobPreparedByCharteredEng'), FONT_SIZE_SMALL + 1, 10);
+    if (this.fv('bobPreparedByBankEmpanelment')) drawCenteredBold(this.fv('bobPreparedByBankEmpanelment'), FONT_SIZE_SMALL + 1, 10);
   }
 
   // ═══════════════════════════════════════════════════════════════════════
