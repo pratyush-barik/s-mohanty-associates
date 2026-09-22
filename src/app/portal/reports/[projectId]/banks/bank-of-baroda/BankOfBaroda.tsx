@@ -351,8 +351,11 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     bobRealizableValue: '',
     bobForcedSaleValue: '',
     bobGovtValue: '',
-    bobBankBranchDetails: '',
-    bobAsOnDate: '',
+    bobBankBranchDetails: 'BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA', bobBankBranchDetailsEditOn: false,
+    bobAsOnDate: '2026-02-20', bobAsOnDateEditOn: false,
+    bobAddressee: 'TO, THE BRANCH MANAGER,', bobAddresseeEditOn: false,
+    bobReportTitle: 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)', bobReportTitleEditOn: false,
+    bobRefNo: 'BOB/02/2026/02', bobRefNoEditOn: false,
     bobEnableDateOfValuationEdit: false,
     bobFullLegalPropertyDescription: '',
     bobEnableLegalDescEdit: false,
@@ -448,18 +451,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           {/* Container 1: Bank & Report Header */}
           <div className="rounded-xl p-5 space-y-4 border border-blue-200" style={{ backgroundColor: '#e6f2ff' }}>
             <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">BANK & REPORT HEADER</h3>
-            <Field label="BANK & BRANCH DETAILS">
-              <textarea className={inputCls} rows={2} value={fields.bobBankBranchDetails || ''} onChange={e => handleChange('bobBankBranchDetails', e.target.value)} disabled={isReadOnly} placeholder="e.g., BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA" />
-            </Field>
-            <Field label="AS ON DATE">
-              <input
-                type="date"
-                className={inputCls}
-                value={fields.bobAsOnDate || ''}
-                onChange={e => handleChange('bobAsOnDate', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
+            <PrefillField label="BANK & BRANCH DETAILS" value={fields.bobBankBranchDetailsEditOn ? (fields.bobBankBranchDetails || '') : 'BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA'} hoverText='>>Prefills from Section 2<<.' />
+            <PrefillField label="AS ON DATE" value={fields.bobAsOnDateEditOn ? (fields.bobAsOnDate || '') : '2026-02-20'} hoverText='>>Prefills from Section 2<<.' />
           </div>
 
           {/* Container 4: Valuation of Land & Property Summary */}
@@ -768,6 +761,111 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
 
         return (
           <div className="animate-fade-in space-y-6">
+
+            {/* ── Container 0: Report Header & Bank Details ── */}
+            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e6f2ff' }}>
+              <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">Report Header & Bank Details</h3>
+              
+              <Field label="ADDRESSEE">
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1 relative">
+                    <textarea
+                      className={`${inputCls} ${!fields.bobAddresseeEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
+                      rows={2}
+                      value={fields.bobAddresseeEditOn ? (fields.bobAddressee || '') : 'TO, THE BRANCH MANAGER,'}
+                      onChange={e => handleChange('bobAddressee', e.target.value)}
+                      readOnly={isReadOnly || !fields.bobAddresseeEditOn}
+                    />
+                    {!fields.bobAddresseeEditOn && (
+                      <div className="absolute top-2 right-2 flex items-center pr-1 group">
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="pt-2"><EditSwitch checked={fields.bobAddresseeEditOn} onChange={v => { handleChange('bobAddresseeEditOn', v); if (v) handleChange('bobAddressee', ''); }} disabled={isReadOnly} /></div>
+                </div>
+              </Field>
+
+              <Field label="BANK & BRANCH DETAILS">
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1 relative" title='>>Prefills "BANK & BRANCH DETAILS" in Section 1 (Cover Page)<<.'>
+                    <textarea
+                      className={`${inputCls} ${!fields.bobBankBranchDetailsEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
+                      rows={2}
+                      value={fields.bobBankBranchDetailsEditOn ? (fields.bobBankBranchDetails || '') : 'BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA'}
+                      onChange={e => handleChange('bobBankBranchDetails', e.target.value)}
+                      readOnly={isReadOnly || !fields.bobBankBranchDetailsEditOn}
+                    />
+                    {!fields.bobBankBranchDetailsEditOn && (
+                      <div className="absolute top-2 right-2 flex items-center pr-1 group">
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="pt-2"><EditSwitch checked={fields.bobBankBranchDetailsEditOn} onChange={v => { handleChange('bobBankBranchDetailsEditOn', v); if (v) handleChange('bobBankBranchDetails', ''); }} disabled={isReadOnly} /></div>
+                </div>
+              </Field>
+
+              <Field label="REPORT TITLE">
+                <div className="flex gap-2 items-start">
+                  <div className="flex-1 relative">
+                    <textarea
+                      className={`${inputCls} ${!fields.bobReportTitleEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
+                      rows={2}
+                      value={fields.bobReportTitleEditOn ? (fields.bobReportTitle || '') : 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)'}
+                      onChange={e => handleChange('bobReportTitle', e.target.value)}
+                      readOnly={isReadOnly || !fields.bobReportTitleEditOn}
+                    />
+                    {!fields.bobReportTitleEditOn && (
+                      <div className="absolute top-2 right-2 flex items-center pr-1 group">
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="pt-2"><EditSwitch checked={fields.bobReportTitleEditOn} onChange={v => { handleChange('bobReportTitleEditOn', v); if (v) handleChange('bobReportTitle', ''); }} disabled={isReadOnly} /></div>
+                </div>
+              </Field>
+
+              <Field label="REF. NO.">
+                <div className="flex gap-2 items-center">
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      className={`${inputCls} ${!fields.bobRefNoEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
+                      value={fields.bobRefNoEditOn ? (fields.bobRefNo || '') : 'BOB/02/2026/02'}
+                      onChange={e => handleChange('bobRefNo', e.target.value)}
+                      readOnly={isReadOnly || !fields.bobRefNoEditOn}
+                    />
+                    {!fields.bobRefNoEditOn && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group">
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
+                  </div>
+                  <EditSwitch checked={fields.bobRefNoEditOn} onChange={v => { handleChange('bobRefNoEditOn', v); if (v) handleChange('bobRefNo', ''); }} disabled={isReadOnly} />
+                </div>
+              </Field>
+
+              <Field label="REPORT DATE">
+                <div className="flex gap-2 items-center">
+                  <div className="flex-1 relative" title='>>Prefills "AS ON DATE" in Section 1 (Cover Page)<<.'>
+                    <input
+                      type="date"
+                      className={`${inputCls} ${!fields.bobAsOnDateEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
+                      value={fields.bobAsOnDateEditOn ? (fields.bobAsOnDate || '') : '2026-02-20'}
+                      onChange={e => handleChange('bobAsOnDate', e.target.value)}
+                      readOnly={isReadOnly || !fields.bobAsOnDateEditOn}
+                    />
+                    {!fields.bobAsOnDateEditOn && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group">
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
+                  </div>
+                  <EditSwitch checked={fields.bobAsOnDateEditOn} onChange={v => { handleChange('bobAsOnDateEditOn', v); if (v) handleChange('bobAsOnDate', ''); }} disabled={isReadOnly} />
+                </div>
+              </Field>
+            </div>
 
             {/* ── Container 1: Inspection Details ── */}
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e6f2ff' }}>
