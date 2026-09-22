@@ -867,12 +867,15 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   </div>
               </Field>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <BaseDateInput
-                  label="2. a) Date of inspection"
-                  value={fields.bobDateOfInspection || ''}
-                  onChange={val => handleChange('bobDateOfInspection', val)}
-                  disabled={isReadOnly}
-                />
+                <Field label="2. a) Date of inspection">
+                  <input
+                    type="date"
+                    className={inputCls}
+                    value={fields.bobDateOfInspection || ''}
+                    onChange={e => handleChange('bobDateOfInspection', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
                 <Field label={<div className="flex items-center justify-between w-full"><span>2. b) Date on which the valuation is made</span><EditSwitch checked={fields.bobEnableDateOfValuationEdit} onChange={v => handleChange('bobEnableDateOfValuationEdit', v)} disabled={isReadOnly} /></div>}>
                 <div className="relative" title={!fields.bobEnableDateOfValuationEdit ? '>>Prefill from section 1, field "AS ON DATE"<<.' : undefined}>
                       <input
