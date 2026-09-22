@@ -1805,6 +1805,9 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const updateStructural = (key: string, col: string, val: string) => {
           handleChange('bobStructuralDetails', { ...structural, [`${key}_${col}`]: val });
         };
+        const updateStructuralMultiple = (updates: Record<string, string>) => {
+          handleChange('bobStructuralDetails', { ...structural, ...updates });
+        };
 
         return (
           <div className="animate-fade-in space-y-6">
@@ -1939,8 +1942,11 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                                 value={structural[`${row.key}_groundDropdown`] || ''}
                                 onChange={e => {
                                   const v = e.target.value;
-                                  updateStructural(row.key, 'groundDropdown', v);
-                                  if (v !== 'custom') updateStructural(row.key, 'ground', v);
+                                  if (v === 'custom') {
+                                    updateStructuralMultiple({ [`${row.key}_groundDropdown`]: v });
+                                  } else {
+                                    updateStructuralMultiple({ [`${row.key}_groundDropdown`]: v, [`${row.key}_ground`]: v });
+                                  }
                                 }}
                                 disabled={isReadOnly}>
                                 <option value="">Select</option>
@@ -1950,7 +1956,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                               {structural[`${row.key}_groundDropdown`] === 'custom' && (
                                 <input className={`${inputCls} mt-1`}
                                   value={structural[`${row.key}_groundCustom`] || ''}
-                                  onChange={e => { updateStructural(row.key, 'groundCustom', e.target.value); updateStructural(row.key, 'ground', e.target.value); }}
+                                  onChange={e => updateStructuralMultiple({ [`${row.key}_groundCustom`]: e.target.value, [`${row.key}_ground`]: e.target.value })}
                                   disabled={isReadOnly} placeholder="Custom..." />
                               )}
                               {row.hasInput && (
@@ -1979,8 +1985,11 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                                 value={structural[`${row.key}_otherDropdown`] || ''}
                                 onChange={e => {
                                   const v = e.target.value;
-                                  updateStructural(row.key, 'otherDropdown', v);
-                                  if (v !== 'custom') updateStructural(row.key, 'other', v);
+                                  if (v === 'custom') {
+                                    updateStructuralMultiple({ [`${row.key}_otherDropdown`]: v });
+                                  } else {
+                                    updateStructuralMultiple({ [`${row.key}_otherDropdown`]: v, [`${row.key}_other`]: v });
+                                  }
                                 }}
                                 disabled={isReadOnly || fields.bobOtherFloorsNA}>
                                 <option value="">Select</option>
@@ -1990,7 +1999,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                               {structural[`${row.key}_otherDropdown`] === 'custom' && (
                                 <input className={`${inputCls} mt-1`}
                                   value={structural[`${row.key}_otherCustom`] || ''}
-                                  onChange={e => { updateStructural(row.key, 'otherCustom', e.target.value); updateStructural(row.key, 'other', e.target.value); }}
+                                  onChange={e => updateStructuralMultiple({ [`${row.key}_otherCustom`]: e.target.value, [`${row.key}_other`]: e.target.value })}
                                   disabled={isReadOnly || fields.bobOtherFloorsNA} placeholder="Custom..." />
                               )}
                               {row.hasInput && (
