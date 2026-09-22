@@ -1209,10 +1209,9 @@ export default function BandhanHLLAP({
                 </Field>
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  {/* Container 1: Layout Approval (Emerald Theme) */}
-                  <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
-                    <div className="flex items-center gap-2 pb-2 border-b border-emerald-200/70">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                  {/* Container 1: Layout Approval */}
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
+                    <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
                       <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">Layout Approval</span>
                     </div>
                     <Field label="Layout Approval No:">
@@ -1241,10 +1240,9 @@ export default function BandhanHLLAP({
                     </Field>
                   </div>
 
-                  {/* Container 2: Building Plan Approval (Amber Theme) */}
-                  <div className="rounded-xl border border-amber-200/80 bg-amber-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
-                    <div className="flex items-center gap-2 pb-2 border-b border-amber-200/70">
-                      <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                  {/* Container 2: Building Plan Approval */}
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
+                    <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
                       <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">Building Plan Approval</span>
                     </div>
                     <Field label="Building Plan Approval No:">
@@ -1274,10 +1272,9 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* Container 3: Point 25 - Sanctioned Plan & Documentation Particulars (Indigo Theme) */}
-                <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
-                  <div className="flex items-center gap-2 pb-2 border-b border-indigo-200/70">
-                    <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+                {/* Container 3: Point 25 - Sanctioned Plan & Documentation Particulars */}
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
                     <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                       25. Sanctioned Plan &amp; Documentation Particulars
                     </span>
@@ -1471,11 +1468,10 @@ export default function BandhanHLLAP({
                   </button>
                 )}
 
-                {/* Soft Container: Supplementary Floor & Construction Details (Purple Theme) */}
-                <div className="rounded-xl border border-purple-200/80 bg-purple-50/50 p-4 sm:p-5 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-purple-200/70">
+                {/* Soft Container: Supplementary Floor & Construction Details */}
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
                     <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-purple-500"></span>
                       <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                         Floor Area Summary &amp; Construction Compliances
                       </span>
@@ -1650,10 +1646,9 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* 27. Setback Around the Property (Teal Theme) */}
-                <div className="rounded-xl border border-teal-200/80 bg-teal-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
-                  <div className="flex items-center gap-2 pb-2 border-b border-teal-200/70">
-                    <span className="w-2.5 h-2.5 rounded-full bg-teal-500"></span>
+                {/* 27. Setback Around the Property */}
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
                     <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                       27. Setback Around the Property
                     </span>
@@ -1712,8 +1707,8 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* 28 & 29. Property Maintenance & Life (Rose Theme - No container heading) */}
-                <div className="rounded-xl border border-rose-200/80 bg-rose-50/50 p-4 sm:p-5 shadow-xs space-y-4">
+                {/* 28 & 29. Property Maintenance & Life */}
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-4">
                   <Field label="28. Maintenance of Property:">
                     <select
                       className={selectCls}
@@ -1729,8 +1724,8 @@ export default function BandhanHLLAP({
                     </select>
                   </Field>
 
-                  {/* 29. Life of Property (Nested Soft Container on dedicated line) */}
-                  <div className="rounded-lg border border-rose-200/70 bg-white/75 p-3.5 sm:p-4 shadow-2xs">
+                  {/* 29. Life of Property */}
+                  <div className="rounded-lg border border-slate-200 bg-white p-3.5 sm:p-4 shadow-2xs">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Field label="29. Present Life (Years):">
                         <input
@@ -1774,11 +1769,10 @@ export default function BandhanHLLAP({
                   </Field>
                 </div>
 
-                {/* 31. Recommended Rate & Value of Plot (Sky Theme) */}
-                <div className="rounded-xl border border-sky-200/80 bg-sky-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-sky-200/70">
+                {/* 31. Recommended Rate & Value of Plot */}
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
                     <div className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-sky-500"></span>
                       <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                         31. Recommended Rate &amp; Value of the Plot
                       </span>
@@ -1803,7 +1797,7 @@ export default function BandhanHLLAP({
                     })()}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <Field label="31. Recommended Rate of the Plot (Rs./sqft):">
+                    <Field label="Recommended Rate of the Plot (Rs./sqft):">
                       <input
                         type="text"
                         className={inputCls}
@@ -1828,16 +1822,15 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* 32. Cost of Construction & Depreciation (Amber Theme) */}
-                <div className="rounded-xl border border-amber-200/80 bg-amber-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center gap-2 pb-2 border-b border-amber-200/70">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                {/* 32. Cost of Construction & Depreciation */}
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
                     <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                       32. Recommended Rate of Cost of Construction &amp; Depreciation
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <Field label="32. Rate of Cost of Construction (Rs./sqft):">
+                    <Field label="Rate of Cost of Construction (Rs./sqft):">
                       <input
                         type="text"
                         className={inputCls}
@@ -1860,17 +1853,16 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* 33. Net Value of Property & Flat Valuation (Emerald Theme) */}
-                <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center gap-2 pb-2 border-b border-emerald-200/70">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                {/* 33. Net Value of Property & Flat Valuation */}
+                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
                     <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                       33. Net Value of Property &amp; Valuation Breakdown
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                     <div className="sm:col-span-2">
-                      <Field label="33. Net Value of Property (Land + Building):">
+                      <Field label="Net Value of Property (Land + Building):">
                         <input
                           type="text"
                           className={inputCls}
@@ -1928,11 +1920,10 @@ export default function BandhanHLLAP({
 
             {/* 8. Progress of Work */}
             <Section number={8} id="sec-progress" title="Progress of Work (Point 34)">
-              {/* 34. Progress of Work (Indigo Theme) */}
-              <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/50 p-4 sm:p-5 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-indigo-200/70">
+              {/* 34. Progress of Work */}
+              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-200">
                   <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
                     <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
                       34. Progress of Work Stages &amp; Percentage
                     </span>
@@ -1941,7 +1932,7 @@ export default function BandhanHLLAP({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <Field label="34. Floor Structure Level:">
+                    <Field label="Floor Structure Level:">
                       <input
                         type="text"
                         className={inputCls}

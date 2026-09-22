@@ -384,36 +384,30 @@ export function ActiveConfigBanner({
         </div>
         <div className="flex flex-wrap gap-2">
           <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-            <span className={`w-1.5 h-1.5 rounded-full ${isIndividual ? 'bg-amber-500' : 'bg-blue-500'}`}></span>
             {isIndividual ? 'Individual' : 'Organisation / Bank'}
           </span>
           {!isIndividual && category && (
             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-500"></span>
               {category}
             </span>
           )}
           {!isIndividual && bankName && (
             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
               {bankName}
             </span>
           )}
           {!isIndividual && displaySubclass && (
             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
               {displaySubclass}
             </span>
           )}
           {serviceTitle && (
             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               Service: {serviceTitle}
             </span>
           )}
           {subjectType && (
             <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
               Subject: {subjectType.replace(/_/g, ' ')}
             </span>
           )}
@@ -1003,7 +997,6 @@ export function BaseMapsSection({
               <div className="rounded-lg p-2.5 bg-emerald-50 border border-emerald-200 text-xs text-slate-800 space-y-1">
                 <div className="flex items-center justify-between flex-wrap gap-1.5">
                   <div className="flex items-center gap-1.5">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0 shadow-xs" />
                     <span className="font-bold text-emerald-950">📍 Map Referenced From:</span>
                     <span className="font-semibold text-emerald-800 font-mono bg-emerald-100/80 px-1.5 py-0.5 rounded">
                       GPS Coordinates ({cleanLat}, {cleanLng})
@@ -1030,7 +1023,6 @@ export function BaseMapsSection({
               <div className="rounded-lg p-2.5 bg-blue-50 border border-blue-200 text-xs text-slate-800 space-y-1">
                 <div className="flex items-center justify-between flex-wrap gap-1.5">
                   <div className="flex items-center gap-1.5">
-                    <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0 shadow-xs" />
                     <span className="font-bold text-blue-950">📍 Map Referenced From:</span>
                     <span className="font-semibold text-blue-800 bg-blue-100/80 px-1.5 py-0.5 rounded">
                       {cleanTechnicalAddress ? 'Technical Address' : 'Property Address'}

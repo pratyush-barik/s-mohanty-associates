@@ -2187,7 +2187,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             </div>
             <div className="flex flex-wrap gap-2">
               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
-                <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                 Individual
               </span>
               <span className="text-xs font-bold text-[#0f2038] bg-white px-3 py-1.5 rounded-full border border-[#dee2e6] shadow-sm flex items-center gap-1.5 uppercase">
@@ -3255,7 +3254,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                       <div className="bg-emerald-50 border-t border-emerald-200 px-4 py-2.5 text-xs text-slate-800 space-y-1">
                         <div className="flex items-center justify-between flex-wrap gap-1.5">
                           <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
                             <span className="font-bold text-emerald-950">📍 Map Referenced From:</span>
                             <span className="font-semibold text-emerald-800 font-mono bg-emerald-100/80 px-1.5 py-0.5 rounded">
                               GPS Coordinates ({latStr}, {lngStr})
@@ -3278,7 +3276,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                       <div className="bg-blue-50 border-t border-blue-200 px-4 py-2.5 text-xs text-slate-800 space-y-1">
                         <div className="flex items-center justify-between flex-wrap gap-1.5">
                           <div className="flex items-center gap-1.5">
-                            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
                             <span className="font-bold text-blue-950">📍 Map Referenced From:</span>
                             <span className="font-semibold text-blue-800 bg-blue-100/80 px-1.5 py-0.5 rounded">
                               Technical Address

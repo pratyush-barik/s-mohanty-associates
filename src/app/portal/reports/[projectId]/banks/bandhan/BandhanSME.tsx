@@ -2735,7 +2735,6 @@ export default function BandhanSME({
                         <div className="rounded-xl overflow-hidden border border-slate-200 bg-white shadow-xs">
                           <div className="px-3.5 py-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
                             <div className="flex items-center gap-2">
-                              <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                               <span className="text-xs font-bold text-[#0f2038]">
                                 Interactive Live Satellite Map Preview
                               </span>

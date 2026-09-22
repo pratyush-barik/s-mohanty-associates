@@ -1013,7 +1013,6 @@ export default function AnnapurnaMicroFinance({
             {/* Schedule of the Property (Boundaries) Sub-Section */}
             <div className="md:col-span-2 border-t border-slate-200 pt-5 mt-2 space-y-4">
               <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
                 Schedule of the Property (Boundaries)
               </h3>
               <div className="overflow-x-auto">
@@ -1401,7 +1400,6 @@ export default function AnnapurnaMicroFinance({
             {/* Items Container */}
             <div className="p-4 border border-[#dee2e6] rounded-2xl bg-slate-50/70 space-y-3">
               <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
                 Items
               </h4>
               <div className="grid md:grid-cols-3 gap-4">
@@ -1437,7 +1435,6 @@ export default function AnnapurnaMicroFinance({
             {/* Status of the Property Container (Heading = Column 1, Sub-parts = Columns 2, 3, 4) */}
             <div className="p-4 border border-[#dee2e6] rounded-2xl bg-slate-50/70 space-y-3">
               <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-blue-500"></span>
                 Status of the Property (Plot/ Under Construction/ Completed/ Construction on Hold)
               </h4>
               <div className="grid md:grid-cols-3 gap-4">
