@@ -1769,7 +1769,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const currentYear = new Date().getFullYear();
-        const yearOfConstruction = parseInt(fields.bobYearOfConstruction || '0') || 0;
+        const yocMatch = (fields.bobYearOfConstruction || '').match(/\d{4}/);
+        const yearOfConstruction = yocMatch ? parseInt(yocMatch[0]) : 0;
         const calcAge = yearOfConstruction > 0 ? (currentYear - yearOfConstruction) : 0;
 
         const structuralRows = [
@@ -1805,7 +1806,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   options={['Load bearing', 'RCC Frame', 'Steel Framed']}
                   fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
                 <Field label="c) Year of construction">
-                  <input className={inputCls} type="number" value={fields.bobYearOfConstruction || ''} onChange={e => handleChange('bobYearOfConstruction', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2010" />
+                  <textarea className={inputCls} rows={2} value={fields.bobYearOfConstruction || ''} onChange={e => handleChange('bobYearOfConstruction', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2025&#10;Year of Completion-2026" />
                 </Field>
                 <Field label="d) Number of floors and height of each floor including basement, if any">
                   <textarea className={inputCls} rows={2} value={fields.bobFloorsDescription || ''} onChange={e => handleChange('bobFloorsDescription', e.target.value)} disabled={isReadOnly} placeholder="e.g. G+1, Ground floor height 10ft, First floor height 10ft" />
@@ -2118,7 +2119,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         // ── Container 13: Building Valuation (Dynamic rows) ──
         const buildingRows: any[] = fields.bobBuildingValuationRows || [{ particulars: '', particularsDropdown: '', plinthArea: '', roofHeight: '', replacementRate: '' }];
         const currentYear = new Date().getFullYear();
-        const yearOfConstruction = parseInt(fields.bobYearOfConstruction || '0') || 0;
+        const yocMatch = (fields.bobYearOfConstruction || '').match(/\d{4}/);
+        const yearOfConstruction = yocMatch ? parseInt(yocMatch[0]) : 0;
         const buildingAge = fields.bobBuildingAgeEditOn ? (parseFloat(fields.bobBuildingAge || '0') || 0) : (yearOfConstruction > 0 ? currentYear - yearOfConstruction : 0);
 
         const getRowCalcs = (row: any) => {
@@ -2428,7 +2430,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
 
         const buildingRows: any[] = fields.bobBuildingValuationRows || [];
         const currentYear = new Date().getFullYear();
-        const yearOfConst = parseInt(fields.bobYearOfConstruction || '0') || 0;
+        const yocMatch = (fields.bobYearOfConstruction || '').match(/\d{4}/);
+        const yearOfConst = yocMatch ? parseInt(yocMatch[0]) : 0;
         const bAge = fields.bobBuildingAgeEditOn ? (parseFloat(fields.bobBuildingAge || '0') || 0) : (yearOfConst > 0 ? currentYear - yearOfConst : 0);
         const buildingMarketValue = buildingRows.reduce((sum: number, row: any) => {
           const p = parseFloat(row.plinthArea || '0') || 0;

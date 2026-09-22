@@ -484,12 +484,21 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawSectionHeader('PART B — VALUATION OF BUILDING');
 
     const currentYear = new Date().getFullYear();
-    const yearOfConstruction = parseInt(this.fv('bobYearOfConstruction', '0')) || 0;
+    const yocMatch = this.fv('bobYearOfConstruction', '').match(/\d{4}/);
+    const yearOfConstruction = yocMatch ? parseInt(yocMatch[0]) : 0;
     const calcAge = yearOfConstruction > 0 ? (currentYear - yearOfConstruction) : 0;
+
+    const rawYoc = this.fv('bobYearOfConstruction');
+    let displayYoc = 'NA';
+    if (rawYoc) {
+      displayYoc = rawYoc.toLowerCase().includes('year of construction') 
+        ? rawYoc 
+        : `Year of Construction-${rawYoc}`;
+    }
 
     this.drawSimpleRow('1a. Type of Building', this.fv('bobBuildingType'));
     this.drawSimpleRow('1b. Type of construction', this.fv('bobConstructionType'));
-    this.drawSimpleRow('1c. Year of construction', this.fv('bobYearOfConstruction'));
+    this.drawSimpleRow('1c. Year of construction', displayYoc);
     this.drawSimpleRow('1d. Floors & height', this.fv('bobFloorsDescription'));
     this.drawSimpleRow('1e. Plinth area floor-wise', this.fv('bobPlinthArea'));
     this.drawSimpleRow('1f(i). Condition: Exterior', this.fv('bobConditionExterior'));
