@@ -578,7 +578,7 @@ export default function BankReportBuilder({
         console.error('Auto-save error:', err);
         setAutoSaveStatus('error');
       }
-    }, 1200);
+    }, 800);
 
     return () => {
       if (debouncedSaveTimer.current) {

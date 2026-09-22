@@ -161,6 +161,8 @@ export interface BandhanHLLAPReportFields {
   plotValueBreakdown?: string;
   rateOfCostOfConstruction?: string;
   depreciationOfConstruction?: string;
+  netValueLand?: string;
+  netValueBuilding?: string;
   netValueOfProperty?: string;
   rateOfFlat?: string;
   areaOfFlat?: string;

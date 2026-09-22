@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
@@ -286,6 +286,8 @@ export default function BandhanHLLAP({
       plotValueBreakdown: raw.plotValueBreakdown || '',
       rateOfCostOfConstruction: raw.rateOfCostOfConstruction || '',
       depreciationOfConstruction: raw.depreciationOfConstruction || '',
+      netValueLand: raw.netValueLand || '',
+      netValueBuilding: raw.netValueBuilding || '',
       netValueOfProperty: raw.netValueOfProperty || '',
       rateOfFlat: raw.rateOfFlat || '',
       areaOfFlat: raw.areaOfFlat || '',
@@ -381,6 +383,51 @@ export default function BandhanHLLAP({
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [showBucketModal, setShowBucketModal] = useState(false);
+  const isInitialMount = useRef(true);
+  const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Auto-Save Draft Effect
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (isReadOnly) return;
+
+    setAutoSaveStatus('saving');
+
+    if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
+
+    debouncedTimer.current = setTimeout(async () => {
+      try {
+        const res = await saveReportDraft(projectId, fields);
+        if (res && 'error' in res && res.error) {
+          console.error('Autosave error:', res.error);
+          setAutoSaveStatus('error');
+        } else {
+          setAutoSaveStatus('saved');
+        }
+      } catch (e) {
+        console.error('Autosave network error:', e);
+        setAutoSaveStatus('error');
+      }
+    }, 800);
+
+    return () => {
+      if (debouncedTimer.current) clearTimeout(debouncedTimer.current);
+    };
+  }, [fields, projectId, isReadOnly]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (isReadOnly) return;
+      try {
+        navigator.sendBeacon('/api/save-draft', JSON.stringify({ projectId, fields }));
+      } catch {}
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [projectId, fields, isReadOnly]);
 
   // Auto Calculations
   useEffect(() => {
@@ -423,21 +470,78 @@ export default function BandhanHLLAP({
         next.summaryLandValue = formatCurrencyINR(calculatedLandVal);
         changed = true;
       }
+      if (calculatedLandVal > 0 && !prev.netValueLand) {
+        next.netValueLand = String(calculatedLandVal);
+        changed = true;
+      }
       if (totalBldgVal > 0 && !prev.drcTotalBuildingValue) {
         next.drcTotalBuildingValue = formatCurrencyINR(totalBldgVal);
         next.summaryBuildingValue = formatCurrencyINR(totalBldgVal);
         changed = true;
       }
-      if (netVal > 0 && !prev.totalMarketValue) {
-        const netStr = `Rs.${formatCurrencyINR(netVal)}/-`;
-        next.totalMarketValue = netStr;
-        next.valuationAsOnDate = netStr;
-        next.recommendedValueOfProperty = netStr;
-        next.summaryMarketValue = formatCurrencyINR(netVal);
-        next.summaryMarketValueWords = formatIndianCurrency(netVal);
-        next.distressSaleValue = `Rs.${formatCurrencyINR(distress)}/-`;
-        next.realisableValue = `Rs.${formatCurrencyINR(realisable)}/-`;
+      if (totalBldgVal > 0 && !prev.netValueBuilding) {
+        next.netValueBuilding = String(totalBldgVal);
         changed = true;
+      }
+      const validNamedFloors = (fields.floors || []).filter(f => f.floor && f.floor.trim().length > 0);
+      const autoStructure = validNamedFloors.length > 1
+        ? `G+${validNamedFloors.length - 1} Storied Building`
+        : (validNamedFloors.length === 1 ? 'Ground Floor Building' : '');
+      if (autoStructure && !prev.progressStructureHeader) {
+        next.progressStructureHeader = autoStructure;
+        changed = true;
+      }
+      const curLand = parseNum(next.netValueLand || prev.netValueLand) || calculatedLandVal;
+      const curBldg = parseNum(next.netValueBuilding || prev.netValueBuilding) || totalBldgVal;
+      const curSum = curLand + curBldg;
+      const flatAreaVal = (parseNum(fields.rateOfFlat) > 0 && parseNum(fields.areaOfFlat) > 0)
+        ? (parseNum(fields.rateOfFlat) * parseNum(fields.areaOfFlat))
+        : 0;
+      const finalPropertyValue = flatAreaVal > 0 ? flatAreaVal : curSum;
+
+      if (curSum > 0) {
+        const netPropStr = `Rs.${formatCurrencyINR(curSum)}/-`;
+        if (prev.netValueOfProperty !== netPropStr) {
+          next.netValueOfProperty = netPropStr;
+          changed = true;
+        }
+      }
+
+      if (finalPropertyValue > 0) {
+        const finalStr = `Rs.${formatCurrencyINR(finalPropertyValue)}/-`;
+        const distStr = `Rs.${formatCurrencyINR(Math.round(finalPropertyValue * 0.90))}/-`;
+        const realStr = `Rs.${formatCurrencyINR(Math.round(finalPropertyValue * 0.95))}/-`;
+        const sumMktStr = formatCurrencyINR(finalPropertyValue);
+        const sumWords = formatIndianCurrency(finalPropertyValue);
+
+        if (prev.recommendedValueOfProperty !== finalStr) {
+          next.recommendedValueOfProperty = finalStr;
+          changed = true;
+        }
+        if (prev.totalMarketValue !== finalStr) {
+          next.totalMarketValue = finalStr;
+          changed = true;
+        }
+        if (prev.valuationAsOnDate !== finalStr) {
+          next.valuationAsOnDate = finalStr;
+          changed = true;
+        }
+        if (prev.summaryMarketValue !== sumMktStr) {
+          next.summaryMarketValue = sumMktStr;
+          changed = true;
+        }
+        if (prev.summaryMarketValueWords !== sumWords) {
+          next.summaryMarketValueWords = sumWords;
+          changed = true;
+        }
+        if (prev.distressSaleValue !== distStr) {
+          next.distressSaleValue = distStr;
+          changed = true;
+        }
+        if (prev.realisableValue !== realStr) {
+          next.realisableValue = realStr;
+          changed = true;
+        }
       }
       if (prev.builtUpAreaTotal !== calculatedBUAStr) {
         next.builtUpAreaTotal = calculatedBUAStr;
@@ -446,7 +550,18 @@ export default function BandhanHLLAP({
 
       return changed ? next : prev;
     });
-  }, [fields.propertyArea, fields.areaOfLand, fields.plotRate, fields.annexureAdoptedLandRate, fields.floors]);
+  }, [
+    fields.propertyArea,
+    fields.areaOfLand,
+    fields.plotRate,
+    fields.annexureAdoptedLandRate,
+    fields.floors,
+    fields.drcFloors,
+    fields.netValueLand,
+    fields.netValueBuilding,
+    fields.rateOfFlat,
+    fields.areaOfFlat,
+  ]);
 
   // Handler for standard input changes
   const handleChange = (name: keyof BandhanHLLAPReportFields, val: any) => {
@@ -876,19 +991,6 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.propertyAddress || ''}
                       onChange={(e) => handleChange('propertyAddress', e.target.value)}
-                      placeholder="e.g. Plot No. 123, Street Name, City, State"
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                </div>
-                <div className="sm:col-span-2">
-                  <Field label="8. Legal Address:">
-                    <textarea
-                      rows={2}
-                      className={inputCls}
-                      value={fields.legalAddress || ''}
-                      onChange={(e) => handleChange('legalAddress', e.target.value)}
-                      placeholder="e.g. Legal address as per Sale Deed / Khata record"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -899,17 +1001,26 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.pinCode || ''}
                     onChange={(e) => handleChange('pinCode', sanitizePositiveInt(e.target.value, 6))}
-                    placeholder="e.g. 751024"
                     disabled={isReadOnly}
                   />
                 </Field>
+                <div className="sm:col-span-2">
+                  <Field label="8. Legal Address:">
+                    <textarea
+                      rows={2}
+                      className={inputCls}
+                      value={fields.legalAddress || ''}
+                      onChange={(e) => handleChange('legalAddress', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+                </div>
                 <Field label="9. Nearby Landmark:">
                   <input
                     type="text"
                     className={inputCls}
                     value={fields.landmark || ''}
                     onChange={(e) => handleChange('landmark', e.target.value)}
-                    placeholder="e.g. Near City Hospital"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -919,7 +1030,6 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.distanceStation || ''}
                     onChange={(e) => handleChange('distanceStation', e.target.value)}
-                    placeholder="e.g. 2.5 km from Railway Station"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -996,7 +1106,6 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryNorthActual || ''}
                             onChange={(e) => handleChange('boundaryNorthActual', e.target.value)}
-                            placeholder="e.g. Plot No. 122 / Road"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1006,7 +1115,6 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryNorthDeed || ''}
                             onChange={(e) => handleChange('boundaryNorthDeed', e.target.value)}
-                            placeholder="e.g. Plot No. 122"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1019,7 +1127,6 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundarySouthActual || ''}
                             onChange={(e) => handleChange('boundarySouthActual', e.target.value)}
-                            placeholder="e.g. 20ft Wide Road"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1029,7 +1136,6 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundarySouthDeed || ''}
                             onChange={(e) => handleChange('boundarySouthDeed', e.target.value)}
-                            placeholder="e.g. Road"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1042,7 +1148,6 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryEastActual || ''}
                             onChange={(e) => handleChange('boundaryEastActual', e.target.value)}
-                            placeholder="e.g. Plot No. 124"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1052,7 +1157,6 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryEastDeed || ''}
                             onChange={(e) => handleChange('boundaryEastDeed', e.target.value)}
-                            placeholder="e.g. Plot No. 124"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1065,7 +1169,6 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryWestActual || ''}
                             onChange={(e) => handleChange('boundaryWestActual', e.target.value)}
-                            placeholder="e.g. Others Land"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1075,7 +1178,6 @@ export default function BandhanHLLAP({
                             className={inputCls}
                             value={fields.boundaryWestDeed || ''}
                             onChange={(e) => handleChange('boundaryWestDeed', e.target.value)}
-                            placeholder="e.g. Others Land"
                             disabled={isReadOnly}
                           />
                         </td>
@@ -1133,24 +1235,32 @@ export default function BandhanHLLAP({
                 <div className="rounded-xl border border-sky-200/80 bg-sky-50/50 p-4 sm:p-5 shadow-xs sm:col-span-2">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="19. Approved Usage:">
-                      <input
-                        type="text"
-                        className={inputCls}
+                      <select
+                        className={selectCls}
                         value={fields.approvedUsage || 'Residential'}
                         onChange={(e) => handleChange('approvedUsage', e.target.value)}
-                        placeholder="e.g. Residential"
                         disabled={isReadOnly}
-                      />
+                      >
+                        <option value="Residential">Residential</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Industrial">Industrial</option>
+                        <option value="Agricultural">Agricultural</option>
+                        <option value="Mixed">Mixed</option>
+                      </select>
                     </Field>
                     <Field label="20. Actual Usage:">
-                      <input
-                        type="text"
-                        className={inputCls}
+                      <select
+                        className={selectCls}
                         value={fields.actualUsage || 'Residential'}
                         onChange={(e) => handleChange('actualUsage', e.target.value)}
-                        placeholder="e.g. Residential"
                         disabled={isReadOnly}
-                      />
+                      >
+                        <option value="Residential">Residential</option>
+                        <option value="Commercial">Commercial</option>
+                        <option value="Industrial">Industrial</option>
+                        <option value="Agricultural">Agricultural</option>
+                        <option value="Mixed">Mixed</option>
+                      </select>
                     </Field>
                   </div>
                 </div>
@@ -1210,9 +1320,9 @@ export default function BandhanHLLAP({
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
                   {/* Container 1: Layout Approval */}
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
-                    <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                      <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">Layout Approval</span>
+                  <div className="rounded-xl border border-amber-200/80 bg-amber-50/40 p-4 sm:p-5 shadow-xs space-y-3.5">
+                    <div className="flex items-center gap-2 pb-2 border-b border-amber-200/60">
+                      <span className="font-sans font-semibold text-amber-900 text-xs sm:text-sm">Layout Approval</span>
                     </div>
                     <Field label="Layout Approval No:">
                       <input
@@ -1241,9 +1351,9 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* Container 2: Building Plan Approval */}
-                  <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
-                    <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                      <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">Building Plan Approval</span>
+                  <div className="rounded-xl border border-blue-200/80 bg-blue-50/40 p-4 sm:p-5 shadow-xs space-y-3.5">
+                    <div className="flex items-center gap-2 pb-2 border-b border-blue-200/60">
+                      <span className="font-sans font-semibold text-blue-900 text-xs sm:text-sm">Building Plan Approval</span>
                     </div>
                     <Field label="Building Plan Approval No:">
                       <input
@@ -1273,61 +1383,61 @@ export default function BandhanHLLAP({
                 </div>
 
                 {/* Container 3: Point 25 - Sanctioned Plan & Documentation Particulars */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
-                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                    <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
+                <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-4 sm:p-5 shadow-xs space-y-3.5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-indigo-200/60">
+                    <span className="font-sans font-semibold text-indigo-900 text-xs sm:text-sm">
                       25. Sanctioned Plan &amp; Documentation Particulars
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <Field label="Sanctioned Plan Provided / Plan No:">
+                    <Field label="25. Copy of sanctioned plan provided. Plan No:">
                       <input
                         type="text"
                         className={inputCls}
                         value={fields.sanctionedPlanProvided || ''}
                         onChange={(e) => handleChange('sanctionedPlanProvided', e.target.value)}
-                        placeholder="e.g. Yes / Plan No: 1234/2020"
+                        placeholder="e.g. BRIT-II-340/2011/BRIT"
                         disabled={isReadOnly}
                       />
                     </Field>
-                    <Field label="Plan Approved By:">
+                    <Field label="And approved by:">
                       <input
                         type="text"
                         className={inputCls}
                         value={fields.planApprovedBy || ''}
                         onChange={(e) => handleChange('planApprovedBy', e.target.value)}
-                        placeholder="e.g. Bhubaneswar Municipal Corporation"
+                        placeholder="e.g. Balasore Regional Improvement Trust (BRIT)"
                         disabled={isReadOnly}
                       />
                     </Field>
-                    <Field label="Deed Provided / Deed No:">
+                    <Field label="Copy of deed provided. Deed No:">
                       <input
                         type="text"
                         className={inputCls}
                         value={fields.deedProvided || ''}
                         onChange={(e) => handleChange('deedProvided', e.target.value)}
-                        placeholder="e.g. Sale Deed No. 1081609995"
+                        placeholder="e.g. NA / Sale Deed No. 1081609995"
                         disabled={isReadOnly}
                       />
                     </Field>
-                    <Field label="Construction Details:">
+                    <Field label="[Comments, if any:">
                       <input
                         type="text"
                         className={inputCls}
-                        value={fields.constructionDetails || 'RCC Framed structure'}
-                        onChange={(e) => handleChange('constructionDetails', e.target.value)}
-                        placeholder="e.g. RCC Framed structure"
+                        value={fields.comments || ''}
+                        onChange={(e) => handleChange('comments', e.target.value)}
+                        placeholder="e.g. ROR, Sale Deed, Approved Plan"
                         disabled={isReadOnly}
                       />
                     </Field>
                     <div className="sm:col-span-2">
-                      <Field label="Comments, if any:">
+                      <Field label="Construction details:">
                         <input
                           type="text"
                           className={inputCls}
-                          value={fields.comments || ''}
-                          onChange={(e) => handleChange('comments', e.target.value)}
-                          placeholder="e.g. Construction completed within validity period"
+                          value={fields.constructionDetails || 'RCC Framed structure'}
+                          onChange={(e) => handleChange('constructionDetails', e.target.value)}
+                          placeholder="e.g. RCC Framed structure"
                           disabled={isReadOnly}
                         />
                       </Field>
@@ -1469,10 +1579,10 @@ export default function BandhanHLLAP({
                 )}
 
                 {/* Soft Container: Supplementary Floor & Construction Details */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                <div className="rounded-xl border border-teal-200/80 bg-teal-50/40 p-4 sm:p-5 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-teal-200/60">
                     <div className="flex items-center gap-2">
-                      <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
+                      <span className="font-sans font-semibold text-teal-900 text-xs sm:text-sm">
                         Floor Area Summary &amp; Construction Compliances
                       </span>
                     </div>
@@ -1492,7 +1602,7 @@ export default function BandhanHLLAP({
                     </Field>
 
                     {/* Built Up Area: */}
-                    <Field label="Built Up Area:">
+                    <Field label="Built Up Area: (Auto-summed from Sanctioned Area / Measured Area)">
                       <div className="relative">
                         <input
                           type="text"
@@ -1500,10 +1610,10 @@ export default function BandhanHLLAP({
                           value={fields.builtUpAreaTotal || ''}
                           readOnly
                           disabled
-                          placeholder="Auto-calculated from floor details"
+                          placeholder="Auto-calculated from 'Sanctioned (sqft)' / 'Measured (sqft)' column"
                         />
                         <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
-                          <span className="text-[10px] font-semibold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">Auto</span>
+                          <span className="text-[10px] font-semibold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded">Auto: Sanctioned / Measured</span>
                         </div>
                       </div>
                     </Field>
@@ -1647,9 +1757,9 @@ export default function BandhanHLLAP({
                 </div>
 
                 {/* 27. Setback Around the Property */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5">
-                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                    <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
+                <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/40 p-4 sm:p-5 shadow-xs space-y-3.5">
+                  <div className="flex items-center gap-2 pb-2 border-b border-emerald-200/60">
+                    <span className="font-sans font-semibold text-emerald-900 text-xs sm:text-sm">
                       27. Setback Around the Property
                     </span>
                   </div>
@@ -1660,7 +1770,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.setbackFront || ''}
                         onChange={(e) => handleChange('setbackFront', e.target.value)}
-                        placeholder={'e.g. 5\'-0"'}
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1670,7 +1779,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.setbackBack || ''}
                         onChange={(e) => handleChange('setbackBack', e.target.value)}
-                        placeholder={'e.g. 3\'-0"'}
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1680,7 +1788,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.setbackSide1 || ''}
                         onChange={(e) => handleChange('setbackSide1', e.target.value)}
-                        placeholder={'e.g. 3\'-0"'}
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1690,7 +1797,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.setbackSide2 || ''}
                         onChange={(e) => handleChange('setbackSide2', e.target.value)}
-                        placeholder={'e.g. 3\'-0"'}
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1700,7 +1806,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.noOfFlatsPerFloor || 'NA'}
                         onChange={(e) => handleChange('noOfFlatsPerFloor', e.target.value)}
-                        placeholder="e.g. 1 Unit / NA"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1708,7 +1813,7 @@ export default function BandhanHLLAP({
                 </div>
 
                 {/* 28 & 29. Property Maintenance & Life */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-4">
+                <div className="rounded-xl border border-purple-200/80 bg-purple-50/40 p-4 sm:p-5 shadow-xs space-y-4">
                   <Field label="28. Maintenance of Property:">
                     <select
                       className={selectCls}
@@ -1725,7 +1830,7 @@ export default function BandhanHLLAP({
                   </Field>
 
                   {/* 29. Life of Property */}
-                  <div className="rounded-lg border border-slate-200 bg-white p-3.5 sm:p-4 shadow-2xs">
+                  <div className="rounded-lg border border-purple-200/60 bg-white/90 p-3.5 sm:p-4 shadow-2xs">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Field label="29. Present Life (Years):">
                         <input
@@ -1763,17 +1868,16 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.recommendedValuationFormula || ''}
                       onChange={(e) => handleChange('recommendedValuationFormula', e.target.value)}
-                      placeholder="e.g. (Total Land Area * Rate) + (BUA * Cost of Const. - Dep.)"
                       disabled={isReadOnly}
                     />
                   </Field>
                 </div>
 
                 {/* 31. Recommended Rate & Value of Plot */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                <div className="rounded-xl border border-blue-200/80 bg-blue-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-blue-200/60">
                     <div className="flex items-center gap-2">
-                      <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
+                      <span className="font-sans font-semibold text-blue-900 text-xs sm:text-sm">
                         31. Recommended Rate &amp; Value of the Plot
                       </span>
                     </div>
@@ -1803,7 +1907,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.plotRate || ''}
                         onChange={(e) => handleChange('plotRate', sanitizePositiveFloat(e.target.value))}
-                        placeholder="e.g. 3500"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1814,7 +1917,6 @@ export default function BandhanHLLAP({
                           className={inputCls}
                           value={fields.plotValueBreakdown || ''}
                           onChange={(e) => handleChange('plotValueBreakdown', e.target.value)}
-                          placeholder="e.g. Total Land Area: 1500 sq.ft * Rs.3,500/- = Rs.52,50,000/-"
                           disabled={isReadOnly}
                         />
                       </Field>
@@ -1823,9 +1925,9 @@ export default function BandhanHLLAP({
                 </div>
 
                 {/* 32. Cost of Construction & Depreciation */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                    <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
+                <div className="rounded-xl border border-amber-200/80 bg-amber-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center gap-2 pb-2 border-b border-amber-200/60">
+                    <span className="font-sans font-semibold text-amber-900 text-xs sm:text-sm">
                       32. Recommended Rate of Cost of Construction &amp; Depreciation
                     </span>
                   </div>
@@ -1836,7 +1938,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.rateOfCostOfConstruction || ''}
                         onChange={(e) => handleChange('rateOfCostOfConstruction', sanitizePositiveFloat(e.target.value))}
-                        placeholder="e.g. 1800"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1846,7 +1947,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.depreciationOfConstruction || ''}
                         onChange={(e) => handleChange('depreciationOfConstruction', sanitizePercentage(e.target.value))}
-                        placeholder="e.g. 5% (Rs. 76,500/-)"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1854,24 +1954,99 @@ export default function BandhanHLLAP({
                 </div>
 
                 {/* 33. Net Value of Property & Flat Valuation */}
-                <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                    <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
+                <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex items-center gap-2 pb-2 border-b border-emerald-200/60">
+                    <span className="font-sans font-semibold text-emerald-900 text-xs sm:text-sm">
                       33. Net Value of Property &amp; Valuation Breakdown
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    {/* Net Value of Property (Land + Building) - Divided into Land + Building = Total */}
                     <div className="sm:col-span-2">
-                      <Field label="Net Value of Property (Land + Building):">
-                        <input
-                          type="text"
-                          className={inputCls}
-                          value={fields.netValueOfProperty || ''}
-                          onChange={(e) => handleChange('netValueOfProperty', e.target.value)}
-                          placeholder="e.g. Rs. 67,00,000/-"
-                          disabled={isReadOnly}
-                        />
-                      </Field>
+                      <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Net Value of Property (Land + Building):
+                      </label>
+                      <div className="rounded-lg border border-emerald-200/80 bg-emerald-50/50 p-3 sm:p-3.5 space-y-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-11 gap-2 items-center">
+                          <div className="sm:col-span-4">
+                            <label className="block text-[11px] font-semibold text-emerald-950 mb-1">
+                              Land Value (Rs.):
+                            </label>
+                            <input
+                              type="text"
+                              className={inputCls}
+                              value={fields.netValueLand || ''}
+                              onChange={(e) => {
+                                const val = sanitizePositiveFloat(e.target.value);
+                                const land = parseNum(val);
+                                const bldg = parseNum(fields.netValueBuilding);
+                                const total = (land || 0) + (bldg || 0);
+                                setFields(prev => ({
+                                  ...prev,
+                                  netValueLand: val,
+                                  netValueOfProperty: total > 0 ? `Rs.${formatCurrencyINR(total)}/-` : '',
+                                }));
+                              }}
+                              disabled={isReadOnly}
+                            />
+                          </div>
+
+                          <div className="sm:col-span-1 flex items-center justify-center text-lg font-bold text-emerald-700 pt-1 sm:pt-4">
+                            +
+                          </div>
+
+                          <div className="sm:col-span-3">
+                            <label className="block text-[11px] font-semibold text-emerald-950 mb-1">
+                              Building Value (Rs.):
+                            </label>
+                            <input
+                              type="text"
+                              className={inputCls}
+                              value={fields.netValueBuilding || ''}
+                              onChange={(e) => {
+                                const val = sanitizePositiveFloat(e.target.value);
+                                const land = parseNum(fields.netValueLand);
+                                const bldg = parseNum(val);
+                                const total = (land || 0) + (bldg || 0);
+                                setFields(prev => ({
+                                  ...prev,
+                                  netValueBuilding: val,
+                                  netValueOfProperty: total > 0 ? `Rs.${formatCurrencyINR(total)}/-` : '',
+                                }));
+                              }}
+                              disabled={isReadOnly}
+                            />
+                          </div>
+
+                          <div className="sm:col-span-1 flex items-center justify-center text-lg font-bold text-emerald-700 pt-1 sm:pt-4">
+                            =
+                          </div>
+
+                          <div className="sm:col-span-2">
+                            <label className="block text-[11px] font-semibold text-emerald-950 mb-1">
+                              Total Net Value (Read-only):
+                            </label>
+                            <input
+                              type="text"
+                              className={`${inputCls} bg-white font-bold text-emerald-900 border-emerald-300 cursor-not-allowed`}
+                              value={fields.netValueOfProperty || ''}
+                              readOnly
+                              disabled
+                            />
+                          </div>
+                        </div>
+                        {(() => {
+                          const land = parseNum(fields.netValueLand);
+                          const bldg = parseNum(fields.netValueBuilding);
+                          const sum = land + bldg;
+                          return sum > 0 ? (
+                            <div className="flex items-center justify-between text-[11px] text-emerald-800 pt-1 border-t border-emerald-200/60">
+                              <span>Rs.{formatCurrencyINR(land)}/- + Rs.{formatCurrencyINR(bldg)}/-</span>
+                              <span className="font-semibold">{formatIndianCurrency(sum)}</span>
+                            </div>
+                          ) : null;
+                        })()}
+                      </div>
                     </div>
                     <Field label="Recommended Rate of the Flat:">
                       <input
@@ -1879,7 +2054,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.rateOfFlat || ''}
                         onChange={(e) => handleChange('rateOfFlat', sanitizePositiveFloat(e.target.value))}
-                        placeholder="e.g. 4500"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1889,29 +2063,36 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.areaOfFlat || ''}
                         onChange={(e) => handleChange('areaOfFlat', sanitizePositiveFloat(e.target.value))}
-                        placeholder="e.g. 1200"
                         disabled={isReadOnly}
                       />
                     </Field>
                     <Field label="Recommended Value of the Property:">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.recommendedValueOfProperty || ''}
-                        onChange={(e) => handleChange('recommendedValueOfProperty', e.target.value)}
-                        placeholder="e.g. Rs. 54,00,000/-"
-                        disabled={isReadOnly}
-                      />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          className={`${inputCls} bg-slate-100/90 text-slate-800 font-bold cursor-not-allowed`}
+                          value={fields.recommendedValueOfProperty || ''}
+                          readOnly
+                          disabled
+                        />
+                        <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+                          <span className="text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-200">Auto Rs.</span>
+                        </div>
+                      </div>
                     </Field>
                     <Field label="Total Market Value of Existing Property:">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.totalMarketValue || ''}
-                        onChange={(e) => handleChange('totalMarketValue', e.target.value)}
-                        placeholder="e.g. Rs. 67,00,000/-"
-                        disabled={isReadOnly}
-                      />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          className={`${inputCls} bg-slate-100/90 text-slate-800 font-bold cursor-not-allowed`}
+                          value={fields.totalMarketValue || ''}
+                          readOnly
+                          disabled
+                        />
+                        <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+                          <span className="text-[10px] font-semibold bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-200">Auto Rs.</span>
+                        </div>
+                      </div>
                     </Field>
                   </div>
                 </div>
@@ -1921,10 +2102,10 @@ export default function BandhanHLLAP({
             {/* 8. Progress of Work */}
             <Section number={8} id="sec-progress" title="Progress of Work (Point 34)">
               {/* 34. Progress of Work */}
-              <div className="rounded-xl border border-slate-200 bg-slate-50/50 p-4 sm:p-5 shadow-xs space-y-4">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+              <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-4 sm:p-5 shadow-xs space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-indigo-200/60">
                   <div className="flex items-center gap-2">
-                    <span className="font-sans font-semibold text-slate-800 text-xs sm:text-sm">
+                    <span className="font-sans font-semibold text-indigo-900 text-xs sm:text-sm">
                       34. Progress of Work Stages &amp; Percentage
                     </span>
                   </div>
@@ -1932,15 +2113,19 @@ export default function BandhanHLLAP({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="sm:col-span-2">
-                    <Field label="Floor Structure Level:">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.progressStructureHeader || ''}
-                        onChange={(e) => handleChange('progressStructureHeader', e.target.value)}
-                        placeholder="e.g. G+1 Storied Building"
-                        disabled={isReadOnly}
-                      />
+                    <Field label="Floor Structure Level: (Auto-derived from Point 26 Floor Breakdown Table)">
+                      <div className="relative">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.progressStructureHeader || ''}
+                          onChange={(e) => handleChange('progressStructureHeader', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                        <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none">
+                          <span className="text-[10px] font-semibold bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded border border-indigo-200">Auto: Pt 26 Floors</span>
+                        </div>
+                      </div>
                     </Field>
                   </div>
 
@@ -1950,7 +2135,6 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.progressFoundation || ''}
                       onChange={(e) => handleChange('progressFoundation', sanitizePercentage(e.target.value))}
-                      placeholder="e.g. 100%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1960,7 +2144,6 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.progressRCC || ''}
                       onChange={(e) => handleChange('progressRCC', sanitizePercentage(e.target.value))}
-                      placeholder="e.g. 100%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1970,7 +2153,6 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.progressBR || ''}
                       onChange={(e) => handleChange('progressBR', sanitizePercentage(e.target.value))}
-                      placeholder="e.g. 100%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1980,7 +2162,6 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.progressPlastering || ''}
                       onChange={(e) => handleChange('progressPlastering', sanitizePercentage(e.target.value))}
-                      placeholder="e.g. 90%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -1990,7 +2171,6 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.progressFlooring || ''}
                       onChange={(e) => handleChange('progressFlooring', sanitizePercentage(e.target.value))}
-                      placeholder="e.g. 80%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2000,7 +2180,6 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.progressDoorsWindows || ''}
                       onChange={(e) => handleChange('progressDoorsWindows', sanitizePercentage(e.target.value))}
-                      placeholder="e.g. 80%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2010,7 +2189,6 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.progressElectricalSanitary || ''}
                       onChange={(e) => handleChange('progressElectricalSanitary', sanitizePercentage(e.target.value))}
-                      placeholder="e.g. 75%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2020,7 +2198,6 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.progressPainting || ''}
                       onChange={(e) => handleChange('progressPainting', sanitizePercentage(e.target.value))}
-                      placeholder="e.g. 60%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2030,7 +2207,6 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.progressTotalPct || ''}
                       onChange={(e) => handleChange('progressTotalPct', sanitizePercentage(e.target.value))}
-                      placeholder="e.g. 85%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2040,7 +2216,6 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.progressRecommendationPct || ''}
                       onChange={(e) => handleChange('progressRecommendationPct', sanitizePercentage(e.target.value))}
-                      placeholder="e.g. 85%"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2128,167 +2303,227 @@ export default function BandhanHLLAP({
 
             {/* 10. NDMA Parameters */}
             <Section number={10} id="sec-ndma" title="NDMA Disaster Management Parameters (Point 41)">
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                <Field label="Concrete Grade:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaConcreteGrade || 'M25'}
-                    onChange={(e) => handleChange('ndmaConcreteGrade', e.target.value)}
-                    placeholder="e.g. M25"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Horizontal Floor Type:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaHorizontalFloorType || 'Beams and Slabs'}
-                    onChange={(e) => handleChange('ndmaHorizontalFloorType', e.target.value)}
-                    placeholder="e.g. Beams and Slabs"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Seismic Zone:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaSeismicZone || 'Zone-III'}
-                    onChange={(e) => handleChange('ndmaSeismicZone', e.target.value)}
-                    placeholder="e.g. Zone-III"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Steel Grade:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaSteelGrade || 'FE - 450'}
-                    onChange={(e) => handleChange('ndmaSteelGrade', e.target.value)}
-                    placeholder="e.g. FE - 450"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Flood Prone Area:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaFloodProne || 'NO'}
-                    onChange={(e) => handleChange('ndmaFloodProne', e.target.value)}
-                    placeholder="NO / YES"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Urban Floods:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaUrbanFloods || 'NO'}
-                    onChange={(e) => handleChange('ndmaUrbanFloods', e.target.value)}
-                    placeholder="NO / YES"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Environmental Exposure:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaEnvironmentExposure || 'Mild'}
-                    onChange={(e) => handleChange('ndmaEnvironmentExposure', e.target.value)}
-                    placeholder="e.g. Mild"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Soil Slope Landslide:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaSoilSlopeLandslide || 'Low Hazard Zone'}
-                    onChange={(e) => handleChange('ndmaSoilSlopeLandslide', e.target.value)}
-                    placeholder="e.g. Low Hazard Zone"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Wind / Cyclones:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaWindCyclones || 'Low Damage Risk Zone'}
-                    onChange={(e) => handleChange('ndmaWindCyclones', e.target.value)}
-                    placeholder="e.g. Low Damage Risk Zone"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Tsunami:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaTsunami || 'NO'}
-                    onChange={(e) => handleChange('ndmaTsunami', e.target.value)}
-                    placeholder="NO / YES"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Height Above Ground:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaHeightAboveGround || 'Less Than 15m Tall'}
-                    onChange={(e) => handleChange('ndmaHeightAboveGround', e.target.value)}
-                    placeholder="e.g. Less Than 15m Tall"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="CRZ (Coastal Zone):">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaCRZ || 'NA'}
-                    onChange={(e) => handleChange('ndmaCRZ', e.target.value)}
-                    placeholder="NA / In CRZ"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Nature of Building:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaNatureOfBuilding || 'Standalone Structure'}
-                    onChange={(e) => handleChange('ndmaNatureOfBuilding', e.target.value)}
-                    placeholder="e.g. Standalone Structure"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Function of Use:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaFunctionOfUse || 'Residential'}
-                    onChange={(e) => handleChange('ndmaFunctionOfUse', e.target.value)}
-                    placeholder="e.g. Residential"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Type of Foundation:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaFoundationType || 'Open Footing column'}
-                    onChange={(e) => handleChange('ndmaFoundationType', e.target.value)}
-                    placeholder="e.g. Open Footing column"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Type of Structure:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ndmaStructureType || 'RCC Framed Structure'}
-                    onChange={(e) => handleChange('ndmaStructureType', e.target.value)}
-                    placeholder="e.g. RCC Framed Structure"
-                    disabled={isReadOnly}
-                  />
-                </Field>
+              <div className="overflow-x-auto rounded-xl border border-slate-200 shadow-xs bg-white">
+                <table className="w-full text-xs border-collapse">
+                  <tbody className="divide-y divide-slate-200">
+                    {/* Row 1 */}
+                    <tr className="divide-x divide-slate-200">
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Concrete Grade
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaConcreteGrade || 'M25'}
+                          onChange={(e) => handleChange('ndmaConcreteGrade', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Horizontal floor type
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaHorizontalFloorType || 'Beams and Slabs'}
+                          onChange={(e) => handleChange('ndmaHorizontalFloorType', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                    {/* Row 2 */}
+                    <tr className="divide-x divide-slate-200">
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Seismic Zone
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaSeismicZone || 'Zone-III'}
+                          onChange={(e) => handleChange('ndmaSeismicZone', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Steel Grade
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaSteelGrade || 'FE - 450'}
+                          onChange={(e) => handleChange('ndmaSteelGrade', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                    {/* Row 3 */}
+                    <tr className="divide-x divide-slate-200">
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Flood Prone Area
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaFloodProne || 'NO'}
+                          onChange={(e) => handleChange('ndmaFloodProne', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Urban Floods
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaUrbanFloods || 'NO'}
+                          onChange={(e) => handleChange('ndmaUrbanFloods', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                    {/* Row 4 */}
+                    <tr className="divide-x divide-slate-200">
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Environment Exposure Condition
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaEnvironmentExposure || 'Mild'}
+                          onChange={(e) => handleChange('ndmaEnvironmentExposure', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Soil Slope vulnerable to landslide
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaSoilSlopeLandslide || 'Low Hazard Zone'}
+                          onChange={(e) => handleChange('ndmaSoilSlopeLandslide', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                    {/* Row 5 */}
+                    <tr className="divide-x divide-slate-200">
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Wind / Cyclones
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaWindCyclones || 'Low Damage Risk Zone'}
+                          onChange={(e) => handleChange('ndmaWindCyclones', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Tsunami
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaTsunami || 'NO'}
+                          onChange={(e) => handleChange('ndmaTsunami', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                    {/* Row 6 */}
+                    <tr className="divide-x divide-slate-200">
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Height of building above ground level
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaHeightAboveGround || 'Less Than 15m Tall'}
+                          onChange={(e) => handleChange('ndmaHeightAboveGround', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Coastal Regulatory Zone (CRZ)
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaCRZ || 'NA'}
+                          onChange={(e) => handleChange('ndmaCRZ', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                    {/* Row 7 */}
+                    <tr className="divide-x divide-slate-200">
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Nature of Building /Wing/Tower
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaNatureOfBuilding || 'Standalone Structure'}
+                          onChange={(e) => handleChange('ndmaNatureOfBuilding', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Function of use
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaFunctionOfUse || 'Residential'}
+                          onChange={(e) => handleChange('ndmaFunctionOfUse', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                    {/* Row 8 */}
+                    <tr className="divide-x divide-slate-200">
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Type of Foundation
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaFoundationType || 'Open Footing column'}
+                          onChange={(e) => handleChange('ndmaFoundationType', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
+                        Type of Structure
+                      </td>
+                      <td className="w-1/4 p-2 align-middle">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.ndmaStructureType || 'RCC Framed Structure'}
+                          onChange={(e) => handleChange('ndmaStructureType', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </Section>
 

@@ -182,9 +182,14 @@ export default function ArkaFinance({
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle'|'saving'|'saved'|'error'>('idle');
   const [uploading, setUploading] = useState(false);
   const [plotKhasraEditMode, setPlotKhasraEditMode] = useState(false);
+  const isInitialMount = useRef(true);
   const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
     if (isReadOnly) return;
     setAutoSaveStatus('saving');
     if (debouncedTimer.current) clearTimeout(debouncedTimer.current);

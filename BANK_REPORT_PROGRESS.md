@@ -8,9 +8,9 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 - **Total Banks / Organizations**: 60
 - **Total Subclasses / Templates**: 73
-- **Completed Subclasses**: 11 / 73 (1.1 `MLAP`, 1.2 `STSL`, 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 7.1 `AGRI` (Axis), 7.2 `HL-LAP` (Axis), 7.3 `SBB` (Axis), 7.4 `SME` (Axis), 8 `Standard` (Axis Finance), 10 `HL-LAP` (Bajaj Housing))
-- **Current Active Bank**: 7. `AXIS BANK` / 10. `BAJAJ HOUSING FINANCE LTD`
-- **Current Active Subclass**: 7.4 `SME` (Completed)
+- **Completed Subclasses**: 14 / 73 (1.1 `MLAP`, 1.2 `STSL`, 2.1 `HL-LAP` (Aditya Birla Housing), 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 7.1 `AGRI` (Axis), 7.2 `HL-LAP` (Axis), 7.3 `SBB` (Axis), 7.4 `SME` (Axis), 8 `Standard` (Axis Finance), 10 `HL-LAP` (Bajaj Housing), 11.1 `HL-LAP` (Bandhan), 11.2 `SME` (Bandhan))
+- **Current Active Bank**: 11. `BANDHAN BANK` (Completed) / 12. `BANK OF BARODA-BOB`
+- **Current Active Subclass**: 11.2 `SME` (Completed)
 - **Bucket Standard**: Enforced strictly per [docs/BUCKET_ARCHITECTURE_STANDARD.md](docs/BUCKET_ARCHITECTURE_STANDARD.md) (Cloud bucket exclusively for Property Photographs; Maps/Documents are device-upload only).
 
 ---
@@ -23,7 +23,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | 1.1 | ADITYA BIRLA CAPITAL LTD | `MLAP` | ✅ Complete | ✅ 12-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | 1.2 | ADITYA BIRLA CAPITAL LTD | `STSL` | ✅ Complete | ✅ 14-Section Custom UI | ✅ Dedicated 7-Page PDF | ✅ Validated |
 | **2** | **ADITYA BIRLA HOUSING FINANCE LTD** | | | | | |
-| 2.1 | ADITYA BIRLA HOUSING FINANCE LTD | `HL-LAP` | 🟡 Ready for Review | 🟡 Configured | 🟡 Custom Fields | ⏳ Pending |
+| 2.1 | ADITYA BIRLA HOUSING FINANCE LTD | `HL-LAP` | ✅ Complete | ✅ 11-Section Custom Config | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **3** | **ANNAPURNA MICRO FINANCE LTD** | `Standard` | ✅ Complete | ✅ 8-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **4** | **ARKA FINANCE LTD** | `Standard` | ✅ Complete | ✅ Custom UI | ✅ Dedicated PDF | ✅ Validated |
 | **5** | **ARTHAN FINANCE** | `Standard` | ✅ Complete | ✅ 13-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
@@ -37,8 +37,8 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | **9** | **AYE FINANCE LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **10** | **BAJAJ HOUSING FINANCE LTD** | `HL-LAP` | ✅ Complete | ✅ 12-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **11** | **BANDHAN BANK** | | | | | |
-| 11.1 | BANDHAN BANK | `HL-LAP` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| 11.2 | BANDHAN BANK | `SME` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| 11.1 | BANDHAN BANK | `HL-LAP` | ✅ Complete | ✅ 13-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
+| 11.2 | BANDHAN BANK | `SME` | ✅ Complete | ✅ Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **12** | **BANK OF BARODA-BOB** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **13** | **BANK OF INDIA-BOI** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **14** | **BANK OF MAHARASHTRA-BOM** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
