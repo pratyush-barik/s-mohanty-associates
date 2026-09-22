@@ -2029,7 +2029,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
 
               {/* 1. Compound wall */}
               <div className="bg-white rounded-lg p-4 border border-gray-100 space-y-3">
-                <DropdownWithCustom label="1. Compound wall" fieldKey="bobCompoundWall"
+                <DropdownWithCustom label="1. Compound wall (Status)" fieldKey="bobCompoundWall"
                   options={['Yes', 'No']}
                   fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
                 {(fields.bobCompoundWallDropdown === 'Yes' || fields.bobCompoundWall === 'Yes') && (
@@ -2071,7 +2071,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <div className="pl-4 grid grid-cols-1 md:grid-cols-2 gap-3">
                   {[
                     { label: 'Type of wiring', key: 'bobElectricalWiring', options: ['Concealed', 'Open'] },
-                    { label: 'Class of fittings', key: 'bobElectricalFittings', options: ['Superior', 'Ordinary', 'Poor'] },
+                    { label: 'Class of fittings (superior / ordinary / poor)', key: 'bobElectricalFittings', options: ['Superior', 'Ordinary', 'Poor'] },
                   ].map(item => (
                     <DropdownWithCustom key={item.key} label={item.label} fieldKey={item.key}
                       options={item.options}
@@ -2098,7 +2098,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
 
               {/* 3. Plumbing installation */}
               <div className="bg-white rounded-lg p-4 border border-gray-100 space-y-3">
-                <DropdownWithCustom label="3. Plumbing installation" fieldKey="bobPlumbing"
+                <DropdownWithCustom label="3. Plumbing installation (Status)" fieldKey="bobPlumbing"
                   options={['Yes', 'No']}
                   fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
                 {(fields.bobPlumbingDropdown === 'Yes' || fields.bobPlumbing === 'Yes') && (
