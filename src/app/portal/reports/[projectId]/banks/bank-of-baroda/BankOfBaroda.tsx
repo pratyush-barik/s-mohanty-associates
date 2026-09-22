@@ -1196,16 +1196,16 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <span className="text-sm font-medium text-gray-700">9. Classification of the area</span>
                 <div className="pl-4 space-y-3">
                   <DropdownWithCustom
-                    label="i) High / Middle / Poor"
+                    label="I) HIGH / MIDDLE / POOR"
                     fieldKey="bobClassHighMiddlePoor"
-                    options={['High', 'Middle', 'Poor']}
+                    options={['High Class', 'Middle Class', 'Poor Class']}
                     fields={fields} handleChange={handleChange} isReadOnly={isReadOnly}
                     naKey="bobClassHighMiddlePoorNA"
                   />
                   <DropdownWithCustom
-                    label="ii) Urban / Semi Urban / Rural"
+                    label="II) URBAN / SEMI URBAN / RURAL"
                     fieldKey="bobClassUrbanRural"
-                    options={['Urban', 'Semi Urban', 'Rural']}
+                    options={['Urban Area', 'Semi Urban Area', 'Rural Area']}
                     fields={fields} handleChange={handleChange} isReadOnly={isReadOnly}
                     naKey="bobClassUrbanRuralNA"
                   />
