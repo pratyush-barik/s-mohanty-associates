@@ -457,8 +457,8 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const acreValue = parseFloat(this.fv('bobGovtBenchmarkPerAcre', '0')) || 0;
     const sftRate = acreValue > 0 ? Math.round(acreValue / 43560) : 0;
     const totalGuideline = areaSft > 0 && sftRate > 0 ? Math.round(areaSft * sftRate) : 0;
-    const guidelineStr1 = acreValue > 0 ? `Govt. Benchmark Value: Rs.${fmtINR(acreValue)}/- Per Acre i.e. Rs.${fmtINR(sftRate)}/- Per Sft` : 'NA';
-    const guidelineStr2 = totalGuideline > 0 ? `Guideline Value of Land= ${areaSftFormatted} Sft X Rs.${fmtINR(sftRate)}/- Per Sft = Rs.${fmtINR(totalGuideline)}/-` : '';
+    const guidelineStr1 = acreValue > 0 ? `Govt. Benchmark Value: Rs.${fmtINR(acreValue)}/- Per Acre i.e. Rs.${fmtINR(sftRate)}/- Per Sft` : 'Govt. Benchmark Value: Rs.00.00/- Per Acre i.e. Rs.00.00/- Per Sft';
+    const guidelineStr2 = totalGuideline > 0 ? `Guideline Value of Land= ${areaSftFormatted} Sft X Rs.${fmtINR(sftRate)}/- Per Sft = Rs.${fmtINR(totalGuideline)}/-` : 'Guideline Value of Land= 00.00 Sft X Rs.00.00/- Per Sft = Rs.00.00/-';
 
     // Field 6: Estimated value
     const adoptedRate = parseFloat(this.fv('bobAdoptedRate', '0')) || 0;
@@ -472,7 +472,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawSimpleRow('2. Total extent of the plot', displayTotalExtent, true, true);
     this.drawSimpleRow('3. Prevailing market rate', this.fv('bobPrevailingMarketRate'));
     this.drawSimpleRow('4. Guideline rate', guidelineStr1);
-    if (guidelineStr2) this.drawSimpleRow('   Guideline Value', guidelineStr2);
+    this.drawSimpleRow('   Guideline Value', guidelineStr2);
     this.drawSimpleRow('5. Adopted rate of valuation', this.fv('bobAdoptedRate'));
     this.drawSimpleRow('6. Estimated value of land', calcEstimatedStr, true, true);
   }

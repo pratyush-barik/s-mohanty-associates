@@ -372,13 +372,15 @@ function AutoCalcField({ label, fieldKey, fields, handleChange, isReadOnly, calc
 
   return (
     <Field label={<div className="flex items-center justify-between w-full"><span>{label}</span>{switchEl}</div>}>
-      <div className="relative">
+      <div className="relative" title={!isEditOn ? hoverText : undefined}>
         <input
-          className={`${inputCls} pr-10 ${!isEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed' : ''}`}
+          className={`${inputCls} pr-10 ${!isEditOn ? 'bg-gray-100 text-gray-700 cursor-not-allowed' : ''}`}
           value={displayVal}
           onChange={e => handleChange(fieldKey, e.target.value)}
-          disabled={isReadOnly || !isEditOn}
+          disabled={isReadOnly}
+          readOnly={!isEditOn}
           placeholder={isEditOn ? 'Enter value...' : ''}
+          title={!isEditOn ? hoverText : undefined}
         />
         {!isEditOn && (
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title={hoverText}>
@@ -391,16 +393,18 @@ function AutoCalcField({ label, fieldKey, fields, handleChange, isReadOnly, calc
 }
 
 /** Prefill field with Lock icon only (no edit switch) */
-function PrefillField({ label, value, hoverText }: {
-  label: string | ReactNode; value: string; hoverText: string;
+function PrefillField({ label, value, hoverText, isReadOnly }: {
+  label: string | ReactNode; value: string; hoverText: string; isReadOnly?: boolean;
 }) {
   return (
     <Field label={label}>
-      <div className="relative">
+      <div className="relative" title={hoverText}>
         <input
-          className={`${inputCls} pr-10 bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed`}
+          className={`${inputCls} pr-10 bg-gray-100 text-gray-700 cursor-not-allowed`}
           value={value}
-          disabled
+          disabled={isReadOnly}
+          readOnly
+          title={hoverText}
         />
         <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title={hoverText}>
           <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
@@ -1575,13 +1579,37 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const fmtINR = (v: number) => new Intl.NumberFormat('en-IN').format(v);
         const guidelineStr1 = acreValue > 0
           ? `Govt. Benchmark Value: Rs.${fmtINR(acreValue)}/- Per Acre i.e. Rs.${fmtINR(sftRate)}/- Per Sft`
-          : '';
+          : 'Govt. Benchmark Value: Rs.00.00/- Per Acre i.e. Rs.00.00/- Per Sft';
         const guidelineStr2 = totalGuideline > 0
           ? `Guideline Value of Land= ${areaSftFormatted} Sft X Rs.${fmtINR(sftRate)}/- Per Sft = Rs.${fmtINR(totalGuideline)}/-`
-          : '';
+          : 'Guideline Value of Land= 00.00 Sft X Rs.00.00/- Per Sft = Rs.00.00/-';
+
+        // ── Field 5: Validation — parse min/max from Field 3 ──
+        const marketRateText = fields.bobPrevailingMarketRate || '';
+        let rateMin = -Infinity;
+        let rateMax = Infinity;
+        let singleRateValue: number | null = null;
+        // Try to extract a range like "Rs.1700/- to Rs.1900/-" or "1700 to 1900"
+        const rangeMatch = marketRateText.match(/(?:Rs\.?\s*)?([\d,]+)\/?-?\s*(?:to|-)\s*(?:Rs\.?\s*)?([\d,]+)/i);
+        if (rangeMatch) {
+          rateMin = parseFloat(rangeMatch[1].replace(/,/g, '')) || -Infinity;
+          rateMax = parseFloat(rangeMatch[2].replace(/,/g, '')) || Infinity;
+          if (rateMin > rateMax) { const tmp = rateMin; rateMin = rateMax; rateMax = tmp; }
+        } else {
+          // Try to extract a single numeric value
+          const singleMatch = marketRateText.match(/(?:Rs\.?\s*)?([\d,]+)/);
+          if (singleMatch) {
+            singleRateValue = parseFloat(singleMatch[1].replace(/,/g, ''));
+          }
+        }
+        // Prefill Field 5 if single value found and field is empty
+        if (singleRateValue !== null && !fields.bobAdoptedRate && !fields._bobAdoptedRateUserCleared) {
+          handleChange('bobAdoptedRate', String(singleRateValue));
+        }
+        const adoptedRate = parseFloat(fields.bobAdoptedRate || '0') || 0;
+        const adoptedRateValid = adoptedRate === 0 || (adoptedRate >= rateMin && adoptedRate <= rateMax);
 
         // ── Field 6: Estimated value of land ──
-        const adoptedRate = parseFloat(fields.bobAdoptedRate || '0') || 0;
         const estimatedValue = areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
         const calcEstimatedStr = estimatedValue > 0
           ? `Total Market Value of Land: ${areaSftFormatted} Sft X Rs.${fmtINR(adoptedRate)}/- Per Sft = Rs.${fmtINR(estimatedValue)}/-`
@@ -1599,11 +1627,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <Field label={<div className="flex items-center justify-between w-full"><span>North & South</span><EditSwitch checked={fields.bobLandSizeNSEditOn || false} onChange={v => { handleChange('bobLandSizeNSEditOn', v); if (v) handleChange('bobLandSizeNS', ''); }} disabled={isReadOnly} /></div>}>
                     <div className="relative" title={!fields.bobLandSizeNSEditOn ? '>>Prefills from Field 14.1 (Dimensions of the site)<<' : undefined}>
                       <input
-                        className={`${inputCls} pr-10 ${!fields.bobLandSizeNSEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed' : ''}`}
+                        className={`${inputCls} pr-10 ${!fields.bobLandSizeNSEditOn ? 'bg-gray-100 text-gray-700 cursor-not-allowed' : ''}`}
                         value={displayNS}
                         onChange={e => handleChange('bobLandSizeNS', e.target.value)}
-                        disabled={isReadOnly || !fields.bobLandSizeNSEditOn}
+                        disabled={isReadOnly}
+                        readOnly={!fields.bobLandSizeNSEditOn}
                         placeholder={fields.bobLandSizeNSEditOn ? 'Enter value...' : ''}
+                        title={!fields.bobLandSizeNSEditOn ? '>>Prefills from Field 14.1 (Dimensions of the site)<<' : undefined}
                       />
                       {!fields.bobLandSizeNSEditOn && (
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
@@ -1615,11 +1645,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <Field label={<div className="flex items-center justify-between w-full"><span>East & West</span><EditSwitch checked={fields.bobLandSizeEWEditOn || false} onChange={v => { handleChange('bobLandSizeEWEditOn', v); if (v) handleChange('bobLandSizeEW', ''); }} disabled={isReadOnly} /></div>}>
                     <div className="relative" title={!fields.bobLandSizeEWEditOn ? '>>Prefills from Field 14.1 (Dimensions of the site)<<' : undefined}>
                       <input
-                        className={`${inputCls} pr-10 ${!fields.bobLandSizeEWEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed' : ''}`}
+                        className={`${inputCls} pr-10 ${!fields.bobLandSizeEWEditOn ? 'bg-gray-100 text-gray-700 cursor-not-allowed' : ''}`}
                         value={displayEW}
                         onChange={e => handleChange('bobLandSizeEW', e.target.value)}
-                        disabled={isReadOnly || !fields.bobLandSizeEWEditOn}
+                        disabled={isReadOnly}
+                        readOnly={!fields.bobLandSizeEWEditOn}
                         placeholder={fields.bobLandSizeEWEditOn ? 'Enter value...' : ''}
+                        title={!fields.bobLandSizeEWEditOn ? '>>Prefills from Field 14.1 (Dimensions of the site)<<' : undefined}
                       />
                       {!fields.bobLandSizeEWEditOn && (
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
@@ -1659,48 +1691,62 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       placeholder="e.g. 25788000"
                     />
                   </Field>
-                  {guidelineStr1 && (
-                    <div className="relative" title=">>Auto-calculated from Benchmark Value / 43560<<">
-                      <textarea
-                        className={`${inputCls} pr-10 bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed`}
-                        rows={2}
-                        value={guidelineStr1}
-                        readOnly
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
-                        <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
-                      </div>
+                  <div className="relative" title=">>Auto-calculated from Benchmark Value / 43560<<">
+                    <textarea
+                      className={`${inputCls} pr-10 bg-gray-100 text-gray-700 cursor-not-allowed`}
+                      rows={2}
+                      value={guidelineStr1}
+                      readOnly
+                      title=">>Auto-calculated from Benchmark Value / 43560<<"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                      <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
                     </div>
-                  )}
-                  {guidelineStr2 && (
-                    <div className="relative" title=">>Auto-calculated: Area (Sft) x Rate Per Sft<<">
-                      <textarea
-                        className={`${inputCls} pr-10 bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed`}
-                        rows={2}
-                        value={guidelineStr2}
-                        readOnly
-                      />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
-                        <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
-                      </div>
+                  </div>
+                  <div className="relative" title=">>Auto-calculated: Area (Sft) x Rate Per Sft<<">
+                    <textarea
+                      className={`${inputCls} pr-10 bg-gray-100 text-gray-700 cursor-not-allowed`}
+                      rows={2}
+                      value={guidelineStr2}
+                      readOnly
+                      title=">>Auto-calculated: Area (Sft) x Rate Per Sft<<"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                      <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
-              {/* ── Field 5: Assessed / adopted rate ── */}
+              {/* ── Field 5: Assessed / adopted rate with validation ── */}
               <Field label="5. Assessed / adopted rate of valuation">
-                <input className={inputCls} type="number" step="0.01" value={fields.bobAdoptedRate || ''} onChange={e => handleChange('bobAdoptedRate', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1800" />
+                <input
+                  className={`${inputCls} ${!adoptedRateValid ? 'border-red-500 ring-2 ring-red-200 focus:ring-red-300 focus:border-red-500' : ''}`}
+                  type="number" step="0.01"
+                  value={fields.bobAdoptedRate || ''}
+                  onChange={e => {
+                    handleChange('bobAdoptedRate', e.target.value);
+                    handleChange('_bobAdoptedRateUserCleared', true);
+                  }}
+                  disabled={isReadOnly}
+                  placeholder={singleRateValue !== null ? `Suggested: ${singleRateValue}` : 'e.g. 1800'}
+                />
+                {!adoptedRateValid && (
+                  <p className="text-red-600 text-xs mt-1 font-medium">
+                    Error: The adopted rate must fall between the prevailing market range of Rs.{fmtINR(rateMin)} and Rs.{fmtINR(rateMax)}.
+                  </p>
+                )}
               </Field>
 
               {/* ── Field 6: Estimated value of land (strict read-only) ── */}
               <Field label="6. Estimated value of land">
                 <div className="relative" title=">>Auto-calculated: Area (Sft) x Adopted Rate<<">
                   <textarea
-                    className={`${inputCls} pr-10 bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed`}
+                    className={`${inputCls} pr-10 bg-gray-100 text-gray-700 cursor-not-allowed`}
                     rows={2}
                     value={calcEstimatedStr}
                     readOnly
+                    title=">>Auto-calculated: Area (Sft) x Adopted Rate<<"
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
                     <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
@@ -2168,7 +2214,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                           </td>
                           <td className="border border-gray-300 px-1 py-1">
                             <div className="relative group">
-                              <input className={`${inputCls} bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed pr-6`}
+                              <input className={`${inputCls} bg-gray-100 text-gray-700 cursor-not-allowed pr-6`}
                                 value={calcs.age} disabled title=">>Prefill from section 5, field 'Age of the Building'<<." />
                               <Lock className="w-3 h-3 text-emerald-800 absolute right-2 top-1/2 -translate-y-1/2" />
                             </div>
@@ -2179,7 +2225,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                           </td>
                           <td className="border border-gray-300 px-1 py-1">
                             <div className="relative" title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<.">
-                              <input className={`${inputCls} pr-14 ${!row.estCostEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
+                              <input className={`${inputCls} pr-14 ${!row.estCostEditOn ? 'bg-gray-100 text-gray-700' : ''}`}
                                 value={row.estCostEditOn ? (row.estCost || '') : calcs.estCost.toFixed(2)}
                                 onChange={e => updateRow('estCost', e.target.value)}
                                 readOnly={isReadOnly || !row.estCostEditOn}
@@ -2196,7 +2242,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                           </td>
                           <td className="border border-gray-300 px-1 py-1">
                             <div className="relative" title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<.">
-                              <input className={`${inputCls} pr-14 ${!row.depreciationEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
+                              <input className={`${inputCls} pr-14 ${!row.depreciationEditOn ? 'bg-gray-100 text-gray-700' : ''}`}
                                 value={row.depreciationEditOn ? (row.depreciation || '') : calcs.depreciation.toFixed(2)}
                                 onChange={e => updateRow('depreciation', e.target.value)}
                                 readOnly={isReadOnly || !row.depreciationEditOn}
@@ -2213,7 +2259,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                           </td>
                           <td className="border border-gray-300 px-1 py-1">
                             <div className="relative" title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<.">
-                              <input className={`${inputCls} pr-14 ${!row.netValueEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
+                              <input className={`${inputCls} pr-14 ${!row.netValueEditOn ? 'bg-gray-100 text-gray-700' : ''}`}
                                 value={row.netValueEditOn ? (row.netValue || '') : calcs.netValue.toFixed(2)}
                                 onChange={e => updateRow('netValue', e.target.value)}
                                 readOnly={isReadOnly || !row.netValueEditOn}
@@ -2440,7 +2486,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           return (
             <div className="relative">
               <input
-                className={`${inputCls} pr-14 ${!isEditing ? 'bg-[#A7F3D0] font-bold text-emerald-800' : ''}`}
+                className={`${inputCls} pr-14 ${!isEditing ? 'bg-gray-100 text-gray-700' : ''}`}
                 type="number" step="0.01"
                 value={isEditing ? (fields[fieldKey] || '') : autoValue.toFixed(2)}
                 onChange={e => handleChange(fieldKey, e.target.value)}
@@ -2488,7 +2534,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                         <td className="border border-gray-300 px-1 py-1">
                           {row.prefillMarket !== null ? (
                             <div className="relative group">
-                              <input className={`${inputCls} bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed pr-6`}
+                              <input className={`${inputCls} bg-gray-100 text-gray-700 cursor-not-allowed pr-6`}
                                 value={row.prefillMarket.toFixed(2)} disabled title={row.prefillHover} />
                               <Lock className="w-3 h-3 text-emerald-800 absolute right-2 top-1/2 -translate-y-1/2" />
                             </div>
@@ -2917,3 +2963,5 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
 export default function BankOfBaroda(props: BankReportBuilderProps) {
   return <BankReportBuilder config={BANK_OF_BARODA_CONFIG} {...props} />;
 }
+
+
