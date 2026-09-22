@@ -1417,15 +1417,37 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               <DropdownWithCustom label="1. Classification of locality" fieldKey="bobClassificationOfLocality"
                 options={['Developed', 'Developing', 'Underdeveloped']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} naKey="bobClassificationOfLocalityNA" />
-              <DropdownWithTextarea label="2. Development of surrounding areas" fieldKey="bobDevelopmentOfSurrounding"
-                options={['Developing with Residential buildings', 'Developing with Commercial buildings', 'Industrial Development']}
-                fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} placeholder="Describe surrounding development..." />
+              <Field label="2. Development of surrounding areas">
+                <textarea className={inputCls} rows={2} value={fields.bobDevelopmentOfSurrounding || ''} onChange={e => handleChange('bobDevelopmentOfSurrounding', e.target.value)} disabled={isReadOnly} placeholder="Describe surrounding development..." />
+              </Field>
               <DropdownWithCustom label="3. Possibility of frequent flooding / sub-merging" fieldKey="bobFloodingPossibility"
                 options={['Yes', 'No']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} naKey="bobFloodingPossibilityNA" />
-              <DropdownWithTextarea label="4. Feasibility to the Civic amenities like school, hospital, bus stop, market etc." fieldKey="bobCivicAmenities"
-                options={['Available within 1 km', 'Available within 2-3 km', 'Not easily accessible']}
-                fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} placeholder="Describe civic amenities..." />
+              <Field label="4. Feasibility to the Civic amenities like school, hospital, bus stop, market etc.">
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-wrap items-center gap-4">
+                    {['All the civic amenities are within 2-3 km radious from the site.', 'NA', 'Custom'].map(opt => (
+                      <label key={opt} className="flex items-center gap-1.5 cursor-pointer select-none">
+                        <input type="radio" name="bobCivicAmenities" value={opt} checked={fields.bobCivicAmenitiesRadio === opt}
+                          onChange={() => {
+                            handleChange('bobCivicAmenitiesRadio', opt);
+                            if (opt !== 'Custom') handleChange('bobCivicAmenities', opt);
+                            else handleChange('bobCivicAmenities', fields.bobCivicAmenitiesCustom || '');
+                          }}
+                          disabled={isReadOnly}
+                          className="w-4 h-4 text-emerald-600 focus:ring-emerald-500" />
+                        <span className="text-xs text-gray-700">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {fields.bobCivicAmenitiesRadio === 'Custom' && (
+                    <input className={inputCls} value={fields.bobCivicAmenitiesCustom || ''} onChange={e => {
+                      handleChange('bobCivicAmenitiesCustom', e.target.value);
+                      handleChange('bobCivicAmenities', e.target.value);
+                    }} disabled={isReadOnly} placeholder="Enter custom value..." />
+                  )}
+                </div>
+              </Field>
               <DropdownWithInput label="5. Level of land with topographical Conditions" fieldKey="bobLevelOfLand"
                 options={['Leveled and Plain', 'Sloping', 'Undulating']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
@@ -1433,7 +1455,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 options={['Regular in Size', 'Irregular in Size']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
               <DropdownWithInput label="7. Type of use to which it can be put" fieldKey="bobTypeOfUse"
-                options={['Residential Purpose', 'Commercial Purpose', 'Industrial Purpose', 'Agricultural']}
+                options={['Residential Purpose', 'Commercial Purpose', 'Industrial Purpose', 'Agriculture Purpose']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
               <DropdownWithInput label="8. Any usage restriction" fieldKey="bobUsageRestriction"
                 options={['None', 'Industrial', 'Commercial']}
