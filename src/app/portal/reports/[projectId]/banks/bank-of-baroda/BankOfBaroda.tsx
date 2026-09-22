@@ -2513,6 +2513,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFBankOfBarodaRenderer({
     ...fields,
+    bobRefNo: fields.bobRefNo || projectCode || '',
   })
 };
 

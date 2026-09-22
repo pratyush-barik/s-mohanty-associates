@@ -278,8 +278,34 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   // SECTION 2: PART I — GENERAL
   // ═══════════════════════════════════════════════════════════════════════
   private drawBobSection2() {
-    this.drawSectionHeader('PART I — GENERAL');
+    const addressee = this.fv('bobAddressee') || 'TO,\nTHE BRANCH MANAGER,';
+    const bankDetails = this.fv('bobBankBranchDetails') || 'BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA';
+    const reportTitle = this.fv('bobReportTitle') || 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)';
+    const refNo = this.fv('bobRefNo') || '';
+    const asOnDate = formatReportDate(this.fv('bobAsOnDate') || '');
 
+    // Address block (left-aligned, bold)
+    this.doc.setFont(FONT_BOLD);
+    this.doc.setFontSize(9);
+    
+    // Split the address block into lines to fit page width
+    const addressBlock = `${addressee}\n${bankDetails}`.replace(/\\n/g, '\n');
+    const addressLines = this.doc.splitTextToSize(addressBlock, CONTENT_W);
+    this.doc.text(addressLines, MARGIN_L, this.cursorY);
+    this.cursorY += (addressLines.length * (9 * 1.15)) + 15; // approximate line height + padding
+
+    // Title Block (centered, bold)
+    super.drawCenteredTitle(reportTitle, 10, false);
+    this.cursorY += 10;
+
+    // Ref No & Date (bold)
+    this.doc.setFont(FONT_BOLD);
+    this.doc.setFontSize(9);
+    this.doc.text(`REF. NO: ${refNo}`, MARGIN_L, this.cursorY);
+    this.doc.text(`DATE: ${asOnDate}`, PAGE_W - MARGIN_R - this.doc.getTextWidth(`DATE: ${asOnDate}`), this.cursorY);
+    this.cursorY += 20;
+
+    this.drawSectionHeader('PART I — GENERAL');
     this.drawSimpleRow('1. Purpose for which the valuation is made', this.fv('bobPurposeForValuation'));
     this.drawKeyValueRow([
       { label: '2a. Date of inspection', value: formatReportDate(this.fv('bobDateOfInspection')), labelWidth: 120, valueWidth: CONTENT_W / 2 - 120 },
