@@ -766,8 +766,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           <div className="animate-fade-in space-y-6">
 
             {/* ── Container 0: Report Header & Bank Details ── */}
-            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e6f2ff' }}>
-              <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">Report Header & Bank Details</h3>
+            <div className="rounded-xl p-5 space-y-4 border border-slate-200" style={{ backgroundColor: '#f0f4f8' }}>
+              <h3 className="font-bold text-gray-700 border-b border-slate-200 pb-2">Report Header & Bank Details</h3>
               
               <Field label={<div className="flex items-center justify-between w-full"><span>ADDRESSEE</span><EditSwitch checked={fields.bobAddresseeEditOn} onChange={v => { handleChange('bobAddresseeEditOn', v); if (v) handleChange('bobAddressee', ''); }} disabled={isReadOnly} /></div>}>
                 <div className="relative">
