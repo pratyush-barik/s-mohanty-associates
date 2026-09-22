@@ -364,7 +364,15 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       [], [0]
     );
 
-    this.drawSimpleRow('14.2 Lat/Long & Coordinates', this.fv('bobLatLong'));
+    const lat = this.fv('latitude');
+    const lon = this.fv('longitude');
+    const coords = this.fv('bobCoordinates');
+    const latLongStr = [
+      lat ? `Latitude: ${lat}` : '',
+      lon ? `Longitude: ${lon}` : '',
+      coords ? `Coordinates: ${coords}` : ''
+    ].filter(Boolean).join(', ');
+    this.drawSimpleRow('14.2 Latitude, Longitude and Coordinates of the site', latLongStr || 'NA');
     this.drawSimpleRow('15. Extent of the site', this.fv('bobExtentOfSite'));
 
     // Calc extent for valuation

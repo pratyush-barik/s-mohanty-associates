@@ -1308,9 +1308,20 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 </div>
               </div>
 
-              <Field label="14.2 Latitude, Longitude and Coordinates of the site">
-                <input className={inputCls} value={fields.bobLatLong || ''} onChange={e => handleChange('bobLatLong', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20.2961° N, 85.8245° E" />
-              </Field>
+              <div className="space-y-3">
+                <span className="text-sm font-medium text-gray-700">14.2 Latitude, Longitude and Coordinates of the site</span>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pl-4">
+                  <Field label="a. Latitude">
+                    <input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20.207639" />
+                  </Field>
+                  <Field label="b. Longitude">
+                    <input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} placeholder="e.g. 85.876887" />
+                  </Field>
+                  <Field label="c. Coordinates">
+                    <input className={inputCls} value={fields.bobCoordinates || ''} onChange={e => handleChange('bobCoordinates', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20°12'27.5''N 85°52'36.0''E" />
+                  </Field>
+                </div>
+              </div>
 
               <Field label="15. Extent of the site">
                 <input className={inputCls} value={fields.bobExtentOfSite || ''} onChange={e => handleChange('bobExtentOfSite', e.target.value)} disabled={isReadOnly} placeholder="e.g. 2000 Sq.ft." />
