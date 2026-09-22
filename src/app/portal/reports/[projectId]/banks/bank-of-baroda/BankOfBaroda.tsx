@@ -718,37 +718,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <input className={inputCls} value={fields.bobPreparedByBankEmpanelment || ''} onChange={e => handleChange('bobPreparedByBankEmpanelment', e.target.value)} disabled={isReadOnly || fields.bobPreparedByBankEmpanelmentNA} placeholder="e.g. Empanelled Valuer of Bank of Baroda" />
               </Field>
             </div>
-            <div className="rounded-md p-4 shadow-sm mt-4" style={{ backgroundColor: '#e6f2ff' }}>
-              <h4 className="font-bold text-gray-700 mb-3 text-sm">Address Breakdown</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label={<><span>PLOT NUMBER</span><label className="flex items-center gap-1.5 cursor-pointer select-none font-normal normal-case tracking-normal shrink-0"><input type="checkbox" checked={fields.bobPreparedByPlotNoNA || false} onChange={e => { handleChange('bobPreparedByPlotNoNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByPlotNo', 'NA'); }} disabled={isReadOnly} className="w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-[10px] text-gray-500 font-medium">N/A</span></label></>}>
-                  <input className={inputCls} value={fields.bobPreparedByPlotNo || ''} onChange={e => handleChange('bobPreparedByPlotNo', e.target.value)} disabled={isReadOnly || fields.bobPreparedByPlotNoNA} />
-                </Field>
-                <Field label={<><span>STREET/LOCALITY</span><label className="flex items-center gap-1.5 cursor-pointer select-none font-normal normal-case tracking-normal shrink-0"><input type="checkbox" checked={fields.bobPreparedByStreetNA || false} onChange={e => { handleChange('bobPreparedByStreetNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByStreet', 'NA'); }} disabled={isReadOnly} className="w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-[10px] text-gray-500 font-medium">N/A</span></label></>}>
-                  <input className={inputCls} value={fields.bobPreparedByStreet || ''} onChange={e => handleChange('bobPreparedByStreet', e.target.value)} disabled={isReadOnly || fields.bobPreparedByStreetNA} />
-                </Field>
-                <Field label={<><span>CITY</span><label className="flex items-center gap-1.5 cursor-pointer select-none font-normal normal-case tracking-normal shrink-0"><input type="checkbox" checked={fields.bobPreparedByCityNA || false} onChange={e => { handleChange('bobPreparedByCityNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByCity', 'NA'); }} disabled={isReadOnly} className="w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-[10px] text-gray-500 font-medium">N/A</span></label></>}>
-                  <input className={inputCls} value={fields.bobPreparedByCity || ''} onChange={e => handleChange('bobPreparedByCity', e.target.value)} disabled={isReadOnly || fields.bobPreparedByCityNA} />
-                </Field>
-                <Field label={<><span>STATE</span><label className="flex items-center gap-1.5 cursor-pointer select-none font-normal normal-case tracking-normal shrink-0"><input type="checkbox" checked={fields.bobPreparedByStateNA || false} onChange={e => { handleChange('bobPreparedByStateNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByState', 'NA'); }} disabled={isReadOnly} className="w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-[10px] text-gray-500 font-medium">N/A</span></label></>}>
-                  <input className={inputCls} value={fields.bobPreparedByState || ''} onChange={e => handleChange('bobPreparedByState', e.target.value)} disabled={isReadOnly || fields.bobPreparedByStateNA} />
-                </Field>
-                <Field label={<><span>PIN CODE</span><label className="flex items-center gap-1.5 cursor-pointer select-none font-normal normal-case tracking-normal shrink-0"><input type="checkbox" checked={fields.bobPreparedByPinCodeNA || false} onChange={e => { handleChange('bobPreparedByPinCodeNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByPinCode', 'NA'); }} disabled={isReadOnly} className="w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-[10px] text-gray-500 font-medium">N/A</span></label></>}>
-                  <input className={inputCls} type="number" value={fields.bobPreparedByPinCode || ''} onChange={e => handleChange('bobPreparedByPinCode', e.target.value)} disabled={isReadOnly || fields.bobPreparedByPinCodeNA} />
-                </Field>
-              </div>
-            </div>
-            <div className="bg-white rounded-md p-4 border border-gray-100 shadow-sm mt-4">
-              <h4 className="font-bold text-gray-700 mb-3 text-sm">Contact Details</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label={<><span>PHONE (LANDLINE)</span><label className="flex items-center gap-1.5 cursor-pointer select-none font-normal normal-case tracking-normal shrink-0"><input type="checkbox" checked={fields.bobPreparedByPhoneNA || false} onChange={e => { handleChange('bobPreparedByPhoneNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByPhone', 'NA'); }} disabled={isReadOnly} className="w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-[10px] text-gray-500 font-medium">N/A</span></label></>}>
-                  <input className={inputCls} value={fields.bobPreparedByPhone || ''} onChange={e => { handleChange('bobPreparedByPhone', e.target.value.replace(/[^0-9]/g, '')); }} disabled={isReadOnly || fields.bobPreparedByPhoneNA} />
-                </Field>
-                <Field label={<><span>MOBILE NUMBER</span><label className="flex items-center gap-1.5 cursor-pointer select-none font-normal normal-case tracking-normal shrink-0"><input type="checkbox" checked={fields.bobPreparedByMobileNA || false} onChange={e => { handleChange('bobPreparedByMobileNA', e.target.checked); if (e.target.checked) handleChange('bobPreparedByMobile', 'NA'); }} disabled={isReadOnly} className="w-3.5 h-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" /><span className="text-[10px] text-gray-500 font-medium">N/A</span></label></>}>
-                  <input className={inputCls} value={fields.bobPreparedByMobile || ''} onChange={e => { handleChange('bobPreparedByMobile', e.target.value); }} disabled={isReadOnly || fields.bobPreparedByMobileNA} />
-                </Field>
-              </div>
-            </div>
+
           </div>
         </div>
         );
