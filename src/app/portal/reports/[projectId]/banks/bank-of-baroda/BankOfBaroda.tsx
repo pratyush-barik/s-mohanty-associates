@@ -2184,14 +2184,14 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <table className="w-full border-collapse border border-gray-300 text-xs">
                   <thead>
                     <tr className="bg-gray-100">
-                      <th className="border border-gray-300 px-2 py-2 w-[16%]">PARTICULARS</th>
-                      <th className="border border-gray-300 px-2 py-2 w-[10%]">PLINTH AREA (SQFT)</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[16%]">PARTICULARS OF ITEMS</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[10%]">PLINTH AREA IN SQFT</th>
                       <th className="border border-gray-300 px-2 py-2 w-[8%]">ROOF HEIGHT</th>
-                      <th className="border border-gray-300 px-2 py-2 w-[8%]" title=">>Prefill from section 5, field 'Age of the Building'<<.">AGE (YRS) <span title=">>Prefill from section 5, field 'Age of the Building'<<.">🔒</span></th>
-                      <th className="border border-gray-300 px-2 py-2 w-[10%]">REPLACEMENT RATE</th>
-                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<.">EST. COST <span title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<.">🔒🎚️</span></th>
-                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<.">DEPRECIATION <span title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<.">🔒🎚️</span></th>
-                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<.">NET VALUE <span title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<.">🔒🎚️</span></th>
+                      <th className="border border-gray-300 px-2 py-2 w-[8%]" title=">>Prefill from section 5, field 'Age of the Building'<<.">AGE OF THE BUILDING IN YEARS</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[10%]">REPLACEMENT RATE OF CONSTRUCTION</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [PLINTH AREA (SQFT)] * [REPLACEMENT RATE]<<.">ESTIMATED REPLACEMENT COST OF CONSTRUCTION</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [EST. COST] * 0.01 * [AGE (YRS)]<<.">DEPRECIATION AMOUNT IN RS. (1% per Anm)</th>
+                      <th className="border border-gray-300 px-2 py-2 w-[13%]" title=">>Auto calculates from [EST. COST] - [DEPRECIATION]<<.">NET VALUE AFTER DEPRECIATION</th>
                       <th className="border border-gray-300 px-2 py-2 w-[5%]"></th>
                     </tr>
                   </thead>
