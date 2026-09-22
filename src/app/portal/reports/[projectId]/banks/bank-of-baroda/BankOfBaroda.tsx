@@ -246,7 +246,6 @@ function DropdownWithInput({ label, fieldKey, options, fields, handleChange, isR
   );
 }
 
-/** Auto-calculated field with Lock + Edit Switch */
 function AutoCalcField({ label, fieldKey, fields, handleChange, isReadOnly, calcValue, hoverText }: {
   label: string | ReactNode; fieldKey: string; fields: any; handleChange: any; isReadOnly: boolean;
   calcValue: number | string; hoverText: string;
@@ -254,34 +253,41 @@ function AutoCalcField({ label, fieldKey, fields, handleChange, isReadOnly, calc
   const editOnKey = `${fieldKey}EditOn`;
   const isEditOn = fields[editOnKey] === true;
   const displayVal = isEditOn ? (fields[fieldKey] || '') : String(calcValue);
+  
+  const switchEl = (
+    <div className="flex items-center gap-2 shrink-0">
+      <span className={`text-[10px] font-bold uppercase tracking-wider ${isEditOn ? 'text-emerald-700' : 'text-gray-400'}`}>
+        {isEditOn ? 'Edit On' : 'Edit Off'}
+      </span>
+      <button
+        type="button"
+        onClick={() => {
+          handleChange(editOnKey, !isEditOn);
+          if (isEditOn) handleChange(fieldKey, '');
+        }}
+        disabled={isReadOnly}
+        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${isEditOn ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+      >
+        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 shadow ${isEditOn ? 'translate-x-4.5' : 'translate-x-0.75'}`} />
+      </button>
+    </div>
+  );
+
   return (
-    <Field label={label}>
+    <Field label={<div className="flex items-center justify-between w-full"><span>{label}</span>{switchEl}</div>}>
       <div className="relative">
         <input
-          className={`${inputCls} pr-20 ${!isEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed' : ''}`}
+          className={`${inputCls} pr-10 ${!isEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed' : ''}`}
           value={displayVal}
           onChange={e => handleChange(fieldKey, e.target.value)}
           disabled={isReadOnly || !isEditOn}
           placeholder={isEditOn ? 'Enter value...' : ''}
         />
-        <div className="absolute inset-y-0 right-0 flex items-center gap-1.5 pr-2">
-          {!isEditOn && (
-            <div className="group cursor-help" title={hoverText}>
-              <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
-            </div>
-          )}
-          <button
-            type="button"
-            onClick={() => {
-              handleChange(editOnKey, !isEditOn);
-              if (isEditOn) handleChange(fieldKey, '');
-            }}
-            disabled={isReadOnly}
-            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${isEditOn ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 shadow ${isEditOn ? 'translate-x-4.5' : 'translate-x-0.75'}`} />
-          </button>
-        </div>
+        {!isEditOn && (
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title={hoverText}>
+            <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+          </div>
+        )}
       </div>
     </Field>
   );
@@ -311,6 +317,25 @@ function PrefillField({ label, value, hoverText }: {
 /* ═══════════════════════════════════════════════════════════════════════
    BANK OF BARODA CONFIGURATION
    ═══════════════════════════════════════════════════════════════════════ */
+
+
+export function EditSwitch({ checked, onChange, disabled }: { checked: boolean, onChange: (v: boolean) => void, disabled: boolean }) {
+  return (
+    <div className="flex items-center gap-2 shrink-0">
+      <span className={`text-[10px] font-bold uppercase tracking-wider ${checked ? 'text-emerald-700' : 'text-gray-400'}`}>
+        {checked ? 'Edit On' : 'Edit Off'}
+      </span>
+      <button
+        type="button"
+        onClick={() => onChange(!checked)}
+        disabled={disabled}
+        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${checked ? 'bg-emerald-500' : 'bg-gray-300'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      >
+        <span className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform duration-200 shadow ${checked ? 'translate-x-4.5' : 'translate-x-0.75'}`} />
+      </button>
+    </div>
+  );
+}
 
 export const BANK_OF_BARODA_CONFIG: BankConfig = {
   bankId: 'BANK OF BARODA',
@@ -429,22 +454,6 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const realizableValue = 0;
         const forcedSaleValue = 0;
         const govtValue = 0;
-
-        const EditSwitch = ({ checked, onChange, disabled }: { checked: boolean, onChange: (v: boolean) => void, disabled: boolean }) => (
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={() => onChange(!checked)}
-              disabled={disabled}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${checked ? 'bg-emerald-500' : 'bg-gray-300'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
-            </button>
-            <span className={`text-xs font-medium ${checked ? 'text-emerald-700' : 'text-gray-500'}`}>
-              {checked ? 'Edit On' : 'Edit Off'}
-            </span>
-          </div>
-        );
 
         return (
         <div className="animate-fade-in space-y-6">
@@ -743,22 +752,6 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const actualArea = actualNS * actualEW;
         const calcExtent = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea).toFixed(2) : (deedArea || actualArea || 0).toFixed(2);
 
-        const EditSwitch = ({ checked, onChange, disabled }: { checked: boolean, onChange: (v: boolean) => void, disabled: boolean }) => (
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              type="button"
-              onClick={() => onChange(!checked)}
-              disabled={disabled}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${checked ? 'bg-emerald-500' : 'bg-gray-300'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
-            </button>
-            <span className={`text-xs font-medium ${checked ? 'text-emerald-700' : 'text-gray-500'}`}>
-              {checked ? 'Edit On' : 'Edit Off'}
-            </span>
-          </div>
-        );
-
         return (
           <div className="animate-fade-in space-y-6">
 
@@ -766,9 +759,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e6f2ff' }}>
               <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">Report Header & Bank Details</h3>
               
-              <Field label="ADDRESSEE">
-                <div className="flex gap-2 items-start">
-                  <div className="flex-1 relative">
+              <Field label={<div className="flex items-center justify-between w-full"><span>ADDRESSEE</span><EditSwitch checked={fields.bobAddresseeEditOn} onChange={v => { handleChange('bobAddresseeEditOn', v); if (v) handleChange('bobAddressee', ''); }} disabled={isReadOnly} /></div>}>
+                <div className="relative">
                     <textarea
                       className={`${inputCls} ${!fields.bobAddresseeEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
                       rows={2}
@@ -782,13 +774,10 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       </div>
                     )}
                   </div>
-                  <div className="pt-2"><EditSwitch checked={fields.bobAddresseeEditOn} onChange={v => { handleChange('bobAddresseeEditOn', v); if (v) handleChange('bobAddressee', ''); }} disabled={isReadOnly} /></div>
-                </div>
               </Field>
 
-              <Field label="BANK & BRANCH DETAILS">
-                <div className="flex gap-2 items-start">
-                  <div className="flex-1 relative" title='>>Prefills "BANK & BRANCH DETAILS" in Section 1 (Cover Page)<<.'>
+              <Field label={<div className="flex items-center justify-between w-full"><span>BANK & BRANCH DETAILS</span><EditSwitch checked={fields.bobBankBranchDetailsEditOn} onChange={v => { handleChange('bobBankBranchDetailsEditOn', v); if (v) handleChange('bobBankBranchDetails', ''); }} disabled={isReadOnly} /></div>}>
+                <div className="relative" title='>>Prefills "BANK & BRANCH DETAILS" in Section 1 (Cover Page)<<.'>
                     <textarea
                       className={`${inputCls} ${!fields.bobBankBranchDetailsEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
                       rows={2}
@@ -802,13 +791,10 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       </div>
                     )}
                   </div>
-                  <div className="pt-2"><EditSwitch checked={fields.bobBankBranchDetailsEditOn} onChange={v => { handleChange('bobBankBranchDetailsEditOn', v); if (v) handleChange('bobBankBranchDetails', ''); }} disabled={isReadOnly} /></div>
-                </div>
               </Field>
 
-              <Field label="REPORT TITLE">
-                <div className="flex gap-2 items-start">
-                  <div className="flex-1 relative">
+              <Field label={<div className="flex items-center justify-between w-full"><span>REPORT TITLE</span><EditSwitch checked={fields.bobReportTitleEditOn} onChange={v => { handleChange('bobReportTitleEditOn', v); if (v) handleChange('bobReportTitle', ''); }} disabled={isReadOnly} /></div>}>
+                <div className="relative">
                     <textarea
                       className={`${inputCls} ${!fields.bobReportTitleEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
                       rows={2}
@@ -822,13 +808,10 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       </div>
                     )}
                   </div>
-                  <div className="pt-2"><EditSwitch checked={fields.bobReportTitleEditOn} onChange={v => { handleChange('bobReportTitleEditOn', v); if (v) handleChange('bobReportTitle', ''); }} disabled={isReadOnly} /></div>
-                </div>
               </Field>
 
-              <Field label="REF. NO.">
-                <div className="flex gap-2 items-center">
-                  <div className="flex-1 relative">
+              <Field label={<div className="flex items-center justify-between w-full"><span>REF. NO.</span><EditSwitch checked={fields.bobRefNoEditOn} onChange={v => { handleChange('bobRefNoEditOn', v); if (v) handleChange('bobRefNo', ''); }} disabled={isReadOnly} /></div>}>
+                <div className="relative">
                     <input
                       type="text"
                       className={`${inputCls} ${!fields.bobRefNoEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
@@ -842,13 +825,10 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       </div>
                     )}
                   </div>
-                  <EditSwitch checked={fields.bobRefNoEditOn} onChange={v => { handleChange('bobRefNoEditOn', v); if (v) handleChange('bobRefNo', ''); }} disabled={isReadOnly} />
-                </div>
               </Field>
 
-              <Field label="REPORT DATE">
-                <div className="flex gap-2 items-center">
-                  <div className="flex-1 relative" title='>>Prefills "AS ON DATE" in Section 1 (Cover Page)<<.'>
+              <Field label={<div className="flex items-center justify-between w-full"><span>REPORT DATE</span><EditSwitch checked={fields.bobAsOnDateEditOn} onChange={v => { handleChange('bobAsOnDateEditOn', v); if (v) handleChange('bobAsOnDate', ''); }} disabled={isReadOnly} /></div>}>
+                <div className="relative" title='>>Prefills "AS ON DATE" in Section 1 (Cover Page)<<.'>
                     <input
                       type="date"
                       className={`${inputCls} ${!fields.bobAsOnDateEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
@@ -862,17 +842,14 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       </div>
                     )}
                   </div>
-                  <EditSwitch checked={fields.bobAsOnDateEditOn} onChange={v => { handleChange('bobAsOnDateEditOn', v); if (v) handleChange('bobAsOnDate', ''); }} disabled={isReadOnly} />
-                </div>
               </Field>
             </div>
 
             {/* ── Container 1: Inspection Details ── */}
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e6f2ff' }}>
               <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">Inspection Details</h3>
-              <Field label="1. Purpose for which the valuation is made">
-                <div className="flex gap-2 items-start">
-                  <div className="flex-1 relative" title={!fields.bobEnablePurposeEdit ? '>>Prefill from section 1, field "PURPOSE OF VALUATION"<<.' : undefined}>
+              <Field label={<div className="flex items-center justify-between w-full"><span>1. Purpose for which the valuation is made</span><EditSwitch checked={fields.bobEnablePurposeEdit} onChange={v => handleChange('bobEnablePurposeEdit', v)} disabled={isReadOnly} /></div>}>
+                <div className="relative" title={!fields.bobEnablePurposeEdit ? '>>Prefill from section 1, field "PURPOSE OF VALUATION"<<.' : undefined}>
                     <textarea
                       className={`${inputCls} ${!fields.bobEnablePurposeEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
                       rows={3}
@@ -887,8 +864,6 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       </div>
                     )}
                   </div>
-                  <div className="pt-2"><EditSwitch checked={fields.bobEnablePurposeEdit} onChange={v => handleChange('bobEnablePurposeEdit', v)} disabled={isReadOnly} /></div>
-                </div>
               </Field>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <BaseDateInput
@@ -897,9 +872,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   onChange={val => handleChange('bobDateOfInspection', val)}
                   disabled={isReadOnly}
                 />
-                <Field label="2. b) Date on which the valuation is made">
-                  <div className="flex gap-2 items-center">
-                    <div className="flex-1 relative" title={!fields.bobEnableDateOfValuationEdit ? '>>Prefill from section 1, field "AS ON DATE"<<.' : undefined}>
+                <Field label={<div className="flex items-center justify-between w-full"><span>2. b) Date on which the valuation is made</span><EditSwitch checked={fields.bobEnableDateOfValuationEdit} onChange={v => handleChange('bobEnableDateOfValuationEdit', v)} disabled={isReadOnly} /></div>}>
+                <div className="relative" title={!fields.bobEnableDateOfValuationEdit ? '>>Prefill from section 1, field "AS ON DATE"<<.' : undefined}>
                       <input
                         type="date"
                         className={`${inputCls} ${!fields.bobEnableDateOfValuationEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
@@ -913,9 +887,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                         </div>
                       )}
                     </div>
-                    <EditSwitch checked={fields.bobEnableDateOfValuationEdit} onChange={v => handleChange('bobEnableDateOfValuationEdit', v)} disabled={isReadOnly} />
-                  </div>
-                </Field>
+              </Field>
               </div>
               <div className="space-y-3">
                 <span className="text-sm font-medium text-gray-700">3. List of documents produced for perusal</span>
@@ -981,9 +953,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   placeholder="Enter owner details, addresses, phone numbers..."
                 />
               </Field>
-              <Field label="5. Brief description of the property (Including leasehold / freehold etc)">
-                <div className="flex gap-2 items-start">
-                  <div className="flex-1 relative" title={!fields.bobEnableLegalDescEdit ? '>>Prefill from section 1, field "FULL LEGAL PROPERTY DESCRIPTION"<<.' : undefined}>
+              <Field label={<div className="flex items-center justify-between w-full"><span>5. Brief description of the property (Including leasehold / freehold etc)</span><EditSwitch checked={fields.bobEnableLegalDescEdit} onChange={v => handleChange('bobEnableLegalDescEdit', v)} disabled={isReadOnly} /></div>}>
+                <div className="relative" title={!fields.bobEnableLegalDescEdit ? '>>Prefill from section 1, field "FULL LEGAL PROPERTY DESCRIPTION"<<.' : undefined}>
                     <textarea
                       className={`${inputCls} ${!fields.bobEnableLegalDescEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
                       rows={3}
@@ -998,8 +969,6 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                       </div>
                     )}
                   </div>
-                  <div className="pt-2"><EditSwitch checked={fields.bobEnableLegalDescEdit} onChange={v => handleChange('bobEnableLegalDescEdit', v)} disabled={isReadOnly} /></div>
-                </div>
               </Field>
             </div>
 
