@@ -772,7 +772,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               <Field label={<div className="flex items-center justify-between w-full"><span>ADDRESSEE</span><EditSwitch checked={fields.bobAddresseeEditOn} onChange={v => { handleChange('bobAddresseeEditOn', v); if (v) handleChange('bobAddressee', ''); }} disabled={isReadOnly} /></div>}>
                 <div className="relative">
                     <textarea
-                      className={`${inputCls} ${!fields.bobAddresseeEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
+                      className={`${inputCls} ${!fields.bobAddresseeEditOn ? 'bg-[#f8f9fa] cursor-not-allowed text-[#475569] font-bold' : ''}`}
                       rows={2}
                       value={fields.bobAddresseeEditOn ? (fields.bobAddressee || '') : 'TO, THE BRANCH MANAGER,'}
                       onChange={e => handleChange('bobAddressee', e.target.value)}
@@ -780,7 +780,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                     />
                     {!fields.bobAddresseeEditOn && (
                       <div className="absolute top-2 right-2 flex items-center pr-1 group">
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                        <Lock className="w-5 h-5 text-emerald-700 group-hover:text-emerald-800" />
                       </div>
                     )}
                   </div>
@@ -789,13 +789,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               <Field label="BANK & BRANCH DETAILS">
                 <div className="relative" title='>>Prefills from Section 1 (Cover Page)<<.'>
                   <textarea
-                    className={`${inputCls} bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold`}
+                    className={`${inputCls} bg-[#f8f9fa] cursor-not-allowed text-[#475569] font-bold`}
                     rows={2}
                     value={fields.bobBankBranchDetails || ''}
                     readOnly
                   />
                   <div className="absolute top-2 right-2 flex items-center pr-1 group">
-                    <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                    <Lock className="w-5 h-5 text-emerald-700 group-hover:text-emerald-800" />
                   </div>
                 </div>
               </Field>
@@ -803,7 +803,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               <Field label={<div className="flex items-center justify-between w-full"><span>REPORT TITLE</span><EditSwitch checked={fields.bobReportTitleEditOn} onChange={v => { handleChange('bobReportTitleEditOn', v); if (v) handleChange('bobReportTitle', ''); }} disabled={isReadOnly} /></div>}>
                 <div className="relative">
                     <textarea
-                      className={`${inputCls} ${!fields.bobReportTitleEditOn ? 'bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold' : ''}`}
+                      className={`${inputCls} ${!fields.bobReportTitleEditOn ? 'bg-[#f8f9fa] cursor-not-allowed text-[#475569] font-bold' : ''}`}
                       rows={2}
                       value={fields.bobReportTitleEditOn ? (fields.bobReportTitle || '') : 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)'}
                       onChange={e => handleChange('bobReportTitle', e.target.value)}
@@ -811,7 +811,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                     />
                     {!fields.bobReportTitleEditOn && (
                       <div className="absolute top-2 right-2 flex items-center pr-1 group">
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                        <Lock className="w-5 h-5 text-emerald-700 group-hover:text-emerald-800" />
                       </div>
                     )}
                   </div>
@@ -821,12 +821,12 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <div className="relative" title='>>Prefills from Project Case ID<<.'>
                     <input
                       type="text"
-                      className={`${inputCls} bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold`}
+                      className={`${inputCls} bg-[#f8f9fa] cursor-not-allowed text-[#475569] font-bold`}
                       value={projectCode || ''}
                       readOnly
                     />
                     <div className="absolute inset-y-0 right-0 flex items-center pr-3 group">
-                      <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      <Lock className="w-5 h-5 text-emerald-700 group-hover:text-emerald-800" />
                     </div>
                   </div>
               </Field>
@@ -835,12 +835,12 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <div className="relative" title='>>Prefills from Section 1 (Cover Page)<<.'>
                   <input
                     type="date"
-                    className={`${inputCls} bg-[#A7F3D0] cursor-not-allowed text-emerald-800 font-bold`}
+                    className={`${inputCls} bg-[#f8f9fa] cursor-not-allowed text-[#475569] font-bold`}
                     value={fields.bobAsOnDate || ''}
                     readOnly
                   />
                   <div className="absolute inset-y-0 right-0 flex items-center pr-3 group">
-                    <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                    <Lock className="w-5 h-5 text-emerald-700 group-hover:text-emerald-800" />
                   </div>
                 </div>
               </Field>
