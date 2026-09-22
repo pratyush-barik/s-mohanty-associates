@@ -322,7 +322,10 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawSimpleRow('6c. T.S. No. / Village', this.fv('bobTSNoVillage'));
     this.drawSimpleRow('6d. Ward / Taluka', this.fv('bobWardTaluka'));
     this.drawSimpleRow('6e. Mandal / District', this.fv('bobMandalDistrict'));
-    this.drawSimpleRow('7. Postal address', this.fv('bobPostalAddress'));
+    const postalAddress = this.fv('bobPostalAddress') || '';
+    const pinCode = this.fv('bobPinCode');
+    const finalPostal = pinCode ? (postalAddress ? `${postalAddress}. Pin: ${pinCode}` : `Pin: ${pinCode}`) : postalAddress;
+    this.drawSimpleRow('7. Postal address', finalPostal);
     this.drawSimpleRow('8. City / Town', this.fv('bobCityTown') || 'NA');
     this.drawSimpleRow('9i. Classification (High/Middle/Poor)', this.fv('bobClassHighMiddlePoor') || 'NA');
     this.drawSimpleRow('9ii. Classification (Urban/Rural)', this.fv('bobClassUrbanRural') || 'NA');

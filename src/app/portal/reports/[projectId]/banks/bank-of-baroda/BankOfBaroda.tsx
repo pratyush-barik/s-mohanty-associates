@@ -1067,8 +1067,38 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.bobMandalDistrict || ''} onChange={e => handleChange('bobMandalDistrict', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="7. Postal address of the property">
-                <textarea className={inputCls} rows={3} value={fields.bobPostalAddress || ''} onChange={e => handleChange('bobPostalAddress', e.target.value)} disabled={isReadOnly} placeholder="Enter postal address..." />
+              <Field label={<div className="flex items-center justify-between w-full"><span>7. Postal address of the property</span><EditSwitch checked={fields.bobEnablePostalAddressEdit} onChange={v => handleChange('bobEnablePostalAddressEdit', v)} disabled={isReadOnly} /></div>}>
+                <div className="flex flex-col gap-3">
+                  <div className="relative" title={!fields.bobEnablePostalAddressEdit ? '>>Prefills from "ADDRESS OF THE PROPERTY" of section 1 cover page<<.' : undefined}>
+                    <textarea
+                      className={`${inputCls} ${!fields.bobEnablePostalAddressEdit ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}`}
+                      rows={3}
+                      value={fields.bobEnablePostalAddressEdit ? (fields.bobPostalAddress || '') : (fields.bobAddressOfTheProperty || '')}
+                      onChange={e => handleChange('bobPostalAddress', e.target.value)}
+                      readOnly={isReadOnly || !fields.bobEnablePostalAddressEdit}
+                      placeholder="Enter postal address..."
+                    />
+                    {!fields.bobEnablePostalAddressEdit && (
+                      <div className="absolute top-2 right-2 flex items-center pr-1 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-semibold text-gray-600 w-24">PINCODE:</span>
+                    <input 
+                      type="text" 
+                      className={`${inputCls} flex-1`}
+                      value={fields.bobPinCode || ''} 
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+                        handleChange('bobPinCode', val);
+                      }} 
+                      disabled={isReadOnly} 
+                      placeholder="Enter 6-digit PIN..." 
+                    />
+                  </div>
+                </div>
               </Field>
             </div>
 
