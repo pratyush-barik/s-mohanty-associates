@@ -22,6 +22,7 @@ import {
   MARGIN_L,
   MARGIN_T,
   MARGIN_B,
+  MARGIN_R,
   CONTENT_W,
   FONT_SIZE,
   FONT_SIZE_HEADER,
