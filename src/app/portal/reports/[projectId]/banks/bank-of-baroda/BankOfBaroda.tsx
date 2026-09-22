@@ -1793,7 +1793,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           { label: '2. Basement', key: 'basement', options: ['Yes', 'No'] },
           { label: '3. Superstructure', key: 'superstructure', options: ['Brick Masonary Super Structure'] },
           { label: '4. Joinery / Doors & Windows', key: 'joinery', options: [], isTextarea: true },
-          { label: '5. RCC works', key: 'rccWorks', options: ['Lintel Chajja Beam'] },
+          { label: '5. RCC works', key: 'rccWorks', options: ['Lintel, Chajja, Beam'] },
           { label: '6. Plastering', key: 'plastering', options: ['Cement Plastering'] },
           { label: '7. Flooring, Skirting, dadoing', key: 'flooring', options: ['VT Flooring', 'Marble Flooring', 'Tiles Flooring'] },
           { label: '8. Special finish as marble, granite, wooden paneling, grills, etc', key: 'specialFinish', options: ['Yes', 'No'], hasInput: true },
