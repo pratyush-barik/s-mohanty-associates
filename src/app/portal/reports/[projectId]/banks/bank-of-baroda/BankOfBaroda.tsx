@@ -850,13 +850,15 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const dimensions = fields.bobDimensions || {};
 
         // Auto-calc: Extent for valuation = MIN(deed area, actual area)
-        // Using simple average-based area estimate from dimensions
-        const deedNS = parseFloat(dimensions.deedNorth || '0') || parseFloat(dimensions.deedSouth || '0') || 0;
-        const deedEW = parseFloat(dimensions.deedEast || '0') || parseFloat(dimensions.deedWest || '0') || 0;
-        const actualNS = parseFloat(dimensions.actualNorth || '0') || parseFloat(dimensions.actualSouth || '0') || 0;
-        const actualEW = parseFloat(dimensions.actualEast || '0') || parseFloat(dimensions.actualWest || '0') || 0;
-        const deedArea = deedNS * deedEW;
-        const actualArea = actualNS * actualEW;
+        // Area = SUM of all four directional measurements (East + West + North + South)
+        const deedArea = (parseFloat(dimensions.deedEast || '0') || 0)
+          + (parseFloat(dimensions.deedWest || '0') || 0)
+          + (parseFloat(dimensions.deedNorth || '0') || 0)
+          + (parseFloat(dimensions.deedSouth || '0') || 0);
+        const actualArea = (parseFloat(dimensions.actualEast || '0') || 0)
+          + (parseFloat(dimensions.actualWest || '0') || 0)
+          + (parseFloat(dimensions.actualNorth || '0') || 0)
+          + (parseFloat(dimensions.actualSouth || '0') || 0);
         const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
         const sftValue = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(minArea * 43560);
         const calcExtent = minArea > 0 
@@ -1434,7 +1436,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 options={['Yes', 'No']}
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} naKey="bobFloodingPossibilityNA" />
               <Field label="4. Feasibility to the Civic amenities like school, hospital, bus stop, market etc.">
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 pl-4">
                   <div className="flex flex-wrap items-center gap-4">
                     {['All the civic amenities are within 2-3 km radious from the site.', 'NA', 'Custom'].map(opt => (
                       <label key={opt} className="flex items-center gap-1.5 cursor-pointer select-none">
@@ -1537,51 +1539,174 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       number: 4,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
-        const sizeNS = parseFloat(fields.bobLandSizeNS || '0') || 0;
-        const sizeEW = parseFloat(fields.bobLandSizeEW || '0') || 0;
-        const calcTotalExtent = (sizeNS > 0 && sizeEW > 0) ? (sizeNS * sizeEW).toFixed(2) : '0.00';
-        const totalExtent = fields.bobLandTotalExtentEditOn ? parseFloat(fields.bobLandTotalExtent || '0') : parseFloat(calcTotalExtent);
+        const dimensions = fields.bobDimensions || {};
+
+        // ── Field 1: Size of plot — prefill from 14.1 "As per the Deed" ──
+        const deedNorth = dimensions.deedNorth || '';
+        const deedSouth = dimensions.deedSouth || '';
+        const deedEast = dimensions.deedEast || '';
+        const deedWest = dimensions.deedWest || '';
+        const calcNS = (deedNorth && deedSouth && deedNorth !== deedSouth) ? `${deedNorth} & ${deedSouth}` : (deedNorth || deedSouth || '');
+        const calcEW = (deedEast && deedWest && deedEast !== deedWest) ? `${deedEast} & ${deedWest}` : (deedEast || deedWest || '');
+        const displayNS = fields.bobLandSizeNSEditOn ? (fields.bobLandSizeNS || '') : calcNS;
+        const displayEW = fields.bobLandSizeEWEditOn ? (fields.bobLandSizeEW || '') : calcEW;
+
+        // ── Field 2: Total extent — mirror Field 16 string ──
+        const deedArea = (parseFloat(deedEast || '0') || 0)
+          + (parseFloat(deedWest || '0') || 0)
+          + (parseFloat(deedNorth || '0') || 0)
+          + (parseFloat(deedSouth || '0') || 0);
+        const actualArea = (parseFloat(dimensions.actualEast || '0') || 0)
+          + (parseFloat(dimensions.actualWest || '0') || 0)
+          + (parseFloat(dimensions.actualNorth || '0') || 0)
+          + (parseFloat(dimensions.actualSouth || '0') || 0);
+        const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+        const areaSft = minArea * 43560;
+        const areaSftFormatted = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(areaSft);
+        const calcTotalExtent = minArea > 0
+          ? `Total Area: Ac. ${minArea} Dec i.e. ${areaSftFormatted} Sft`
+          : 'Total Area: Ac. 0.00 Dec i.e. 0.00 Sft';
+        const displayTotalExtent = fields.bobLandTotalExtentEditOn ? (fields.bobLandTotalExtent || '') : calcTotalExtent;
+
+        // ── Field 4: Guideline rate calculation ──
+        const acreValue = parseFloat(fields.bobGovtBenchmarkPerAcre || '0') || 0;
+        const sftRate = acreValue > 0 ? Math.round(acreValue / 43560) : 0;
+        const totalGuideline = areaSft > 0 && sftRate > 0 ? Math.round(areaSft * sftRate) : 0;
+        const fmtINR = (v: number) => new Intl.NumberFormat('en-IN').format(v);
+        const guidelineStr1 = acreValue > 0
+          ? `Govt. Benchmark Value: Rs.${fmtINR(acreValue)}/- Per Acre i.e. Rs.${fmtINR(sftRate)}/- Per Sft`
+          : '';
+        const guidelineStr2 = totalGuideline > 0
+          ? `Guideline Value of Land= ${areaSftFormatted} Sft X Rs.${fmtINR(sftRate)}/- Per Sft = Rs.${fmtINR(totalGuideline)}/-`
+          : '';
+
+        // ── Field 6: Estimated value of land ──
         const adoptedRate = parseFloat(fields.bobAdoptedRate || '0') || 0;
-        const calcEstimatedValue = (totalExtent * adoptedRate).toFixed(2);
+        const estimatedValue = areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
+        const calcEstimatedStr = estimatedValue > 0
+          ? `Total Market Value of Land: ${areaSftFormatted} Sft X Rs.${fmtINR(adoptedRate)}/- Per Sft = Rs.${fmtINR(estimatedValue)}/-`
+          : 'Total Market Value of Land: 0.00 Sft X Rs.0/- Per Sft = Rs.0/-';
 
         return (
           <div className="animate-fade-in space-y-6">
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e6ebff' }}>
               <h3 className="font-bold text-gray-700 border-b border-indigo-200 pb-2">Land Valuation Metrics</h3>
+
+              {/* ── Field 1: Size of plot ── */}
               <div>
                 <span className="text-sm font-medium text-gray-700">1. Size of plot</span>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2 pl-4">
-                  <Field label="North & South">
-                    <input className={inputCls} value={fields.bobLandSizeNS || ''} onChange={e => handleChange('bobLandSizeNS', e.target.value)} disabled={isReadOnly} placeholder="e.g. 50 ft" />
+                  <Field label={<div className="flex items-center justify-between w-full"><span>North & South</span><EditSwitch checked={fields.bobLandSizeNSEditOn || false} onChange={v => { handleChange('bobLandSizeNSEditOn', v); if (v) handleChange('bobLandSizeNS', ''); }} disabled={isReadOnly} /></div>}>
+                    <div className="relative" title={!fields.bobLandSizeNSEditOn ? '>>Prefills from Field 14.1 (Dimensions of the site)<<' : undefined}>
+                      <input
+                        className={`${inputCls} pr-10 ${!fields.bobLandSizeNSEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed' : ''}`}
+                        value={displayNS}
+                        onChange={e => handleChange('bobLandSizeNS', e.target.value)}
+                        disabled={isReadOnly || !fields.bobLandSizeNSEditOn}
+                        placeholder={fields.bobLandSizeNSEditOn ? 'Enter value...' : ''}
+                      />
+                      {!fields.bobLandSizeNSEditOn && (
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                          <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                        </div>
+                      )}
+                    </div>
                   </Field>
-                  <Field label="East & West">
-                    <input className={inputCls} value={fields.bobLandSizeEW || ''} onChange={e => handleChange('bobLandSizeEW', e.target.value)} disabled={isReadOnly} placeholder="e.g. 40 ft" />
+                  <Field label={<div className="flex items-center justify-between w-full"><span>East & West</span><EditSwitch checked={fields.bobLandSizeEWEditOn || false} onChange={v => { handleChange('bobLandSizeEWEditOn', v); if (v) handleChange('bobLandSizeEW', ''); }} disabled={isReadOnly} /></div>}>
+                    <div className="relative" title={!fields.bobLandSizeEWEditOn ? '>>Prefills from Field 14.1 (Dimensions of the site)<<' : undefined}>
+                      <input
+                        className={`${inputCls} pr-10 ${!fields.bobLandSizeEWEditOn ? 'bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed' : ''}`}
+                        value={displayEW}
+                        onChange={e => handleChange('bobLandSizeEW', e.target.value)}
+                        disabled={isReadOnly || !fields.bobLandSizeEWEditOn}
+                        placeholder={fields.bobLandSizeEWEditOn ? 'Enter value...' : ''}
+                      />
+                      {!fields.bobLandSizeEWEditOn && (
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                          <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                        </div>
+                      )}
+                    </div>
                   </Field>
                 </div>
               </div>
+
+              {/* ── Field 2: Total extent of the plot ── */}
               <AutoCalcField
                 label="2. Total extent of the plot"
                 fieldKey="bobLandTotalExtent"
                 fields={fields} handleChange={handleChange} isReadOnly={isReadOnly}
                 calcValue={calcTotalExtent}
-                hoverText=">>Auto calculates from [North & South] * [East & West]<<."
+                hoverText=">>Prefills exact string from Field 16 (General Section)<<."
               />
+
+              {/* ── Field 3: Prevailing market rate ── */}
               <Field label="3. Prevailing market rate (Along with details /reference of at least two latest deals/ transactions with respect to adjacent properties in the areas)">
                 <textarea className={inputCls} rows={3} value={fields.bobPrevailingMarketRate || ''} onChange={e => handleChange('bobPrevailingMarketRate', e.target.value)} disabled={isReadOnly} placeholder="Enter market rate details with references..." />
               </Field>
-              <Field label="4. Guideline rate obtained from the Registrar's Office (an evidence thereof to be enclosed)">
-                <textarea className={inputCls} rows={3} value={fields.bobGuidelineRate || ''} onChange={e => handleChange('bobGuidelineRate', e.target.value)} disabled={isReadOnly} placeholder="Enter guideline rate details..." />
-              </Field>
+
+              {/* ── Field 4: Guideline rate — structured calculation ── */}
+              <div>
+                <span className="text-sm font-medium text-gray-700">4. Guideline rate obtained from the Registrar's Office (an evidence thereof to be enclosed)</span>
+                <div className="pl-4 mt-2 space-y-3">
+                  <Field label="Govt. Benchmark Value (Per Acre)">
+                    <input
+                      className={inputCls}
+                      type="number"
+                      value={fields.bobGovtBenchmarkPerAcre || ''}
+                      onChange={e => handleChange('bobGovtBenchmarkPerAcre', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="e.g. 25788000"
+                    />
+                  </Field>
+                  {guidelineStr1 && (
+                    <div className="relative" title=">>Auto-calculated from Benchmark Value / 43560<<">
+                      <textarea
+                        className={`${inputCls} pr-10 bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed`}
+                        rows={2}
+                        value={guidelineStr1}
+                        readOnly
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    </div>
+                  )}
+                  {guidelineStr2 && (
+                    <div className="relative" title=">>Auto-calculated: Area (Sft) x Rate Per Sft<<">
+                      <textarea
+                        className={`${inputCls} pr-10 bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed`}
+                        rows={2}
+                        value={guidelineStr2}
+                        readOnly
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Field 5: Assessed / adopted rate ── */}
               <Field label="5. Assessed / adopted rate of valuation">
-                <input className={inputCls} type="number" step="0.01" value={fields.bobAdoptedRate || ''} onChange={e => handleChange('bobAdoptedRate', e.target.value)} disabled={isReadOnly} placeholder="e.g. 500" />
+                <input className={inputCls} type="number" step="0.01" value={fields.bobAdoptedRate || ''} onChange={e => handleChange('bobAdoptedRate', e.target.value)} disabled={isReadOnly} placeholder="e.g. 1800" />
               </Field>
-              <AutoCalcField
-                label="6. Estimated value of land"
-                fieldKey="bobEstimatedLandValue"
-                fields={fields} handleChange={handleChange} isReadOnly={isReadOnly}
-                calcValue={calcEstimatedValue}
-                hoverText=">>Auto calculates from [Total extent of the plot] * [Assessed / adopted rate of valuation]<<."
-              />
+
+              {/* ── Field 6: Estimated value of land (strict read-only) ── */}
+              <Field label="6. Estimated value of land">
+                <div className="relative" title=">>Auto-calculated: Area (Sft) x Adopted Rate<<">
+                  <textarea
+                    className={`${inputCls} pr-10 bg-[#A7F3D0] font-bold text-emerald-800 cursor-not-allowed`}
+                    rows={2}
+                    value={calcEstimatedStr}
+                    readOnly
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                    <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                  </div>
+                </div>
+              </Field>
             </div>
           </div>
         );
@@ -2245,11 +2370,14 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         // Prefills from other sections
-        const landMarketValue = fields.bobEstimatedLandValueEditOn ? parseFloat(fields.bobEstimatedLandValue || '0') : (() => {
-          const sizeNS = parseFloat(fields.bobLandSizeNS || '0') || 0;
-          const sizeEW = parseFloat(fields.bobLandSizeEW || '0') || 0;
-          const totalExtent = fields.bobLandTotalExtentEditOn ? parseFloat(fields.bobLandTotalExtent || '0') : sizeNS * sizeEW;
-          return totalExtent * (parseFloat(fields.bobAdoptedRate || '0') || 0);
+        const landMarketValue = (() => {
+          const dimensions = fields.bobDimensions || {};
+          const deedArea = (parseFloat(dimensions.deedEast || '0') || 0) + (parseFloat(dimensions.deedWest || '0') || 0) + (parseFloat(dimensions.deedNorth || '0') || 0) + (parseFloat(dimensions.deedSouth || '0') || 0);
+          const actualArea = (parseFloat(dimensions.actualEast || '0') || 0) + (parseFloat(dimensions.actualWest || '0') || 0) + (parseFloat(dimensions.actualNorth || '0') || 0) + (parseFloat(dimensions.actualSouth || '0') || 0);
+          const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+          const areaSft = minArea * 43560;
+          const adoptedRate = parseFloat(fields.bobAdoptedRate || '0') || 0;
+          return areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
         })();
 
         const buildingRows: any[] = fields.bobBuildingValuationRows || [];

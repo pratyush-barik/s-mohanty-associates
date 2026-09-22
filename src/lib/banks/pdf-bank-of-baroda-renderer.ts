@@ -375,12 +375,15 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawSimpleRow('14.2 Latitude, Longitude and Coordinates of the site', latLongStr || 'NA');
     this.drawSimpleRow('15. Extent of the site', this.fv('bobExtentOfSite'));
 
-    // Calc extent for valuation
-    const dNS = parseFloat(dimensions.deedNorth || '0') || parseFloat(dimensions.deedSouth || '0') || 0;
-    const dEW = parseFloat(dimensions.deedEast || '0') || parseFloat(dimensions.deedWest || '0') || 0;
-    const aNS = parseFloat(dimensions.actualNorth || '0') || parseFloat(dimensions.actualSouth || '0') || 0;
-    const aEW = parseFloat(dimensions.actualEast || '0') || parseFloat(dimensions.actualWest || '0') || 0;
-    const deedArea = dNS * dEW; const actualArea = aNS * aEW;
+    // Calc extent for valuation — SUM all four directional measurements
+    const deedArea = (parseFloat(dimensions.deedEast || '0') || 0)
+      + (parseFloat(dimensions.deedWest || '0') || 0)
+      + (parseFloat(dimensions.deedNorth || '0') || 0)
+      + (parseFloat(dimensions.deedSouth || '0') || 0);
+    const actualArea = (parseFloat(dimensions.actualEast || '0') || 0)
+      + (parseFloat(dimensions.actualWest || '0') || 0)
+      + (parseFloat(dimensions.actualNorth || '0') || 0)
+      + (parseFloat(dimensions.actualSouth || '0') || 0);
     const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
     const sftValue = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(minArea * 43560);
     const calcExtent = minArea > 0 
@@ -426,20 +429,52 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   private drawBobSection4() {
     this.drawSectionHeader('PART A — VALUATION OF LAND');
 
-    const sizeNS = parseFloat(this.fv('bobLandSizeNS', '0')) || 0;
-    const sizeEW = parseFloat(this.fv('bobLandSizeEW', '0')) || 0;
-    const calcTotalExtent = (sizeNS > 0 && sizeEW > 0) ? (sizeNS * sizeEW).toFixed(2) : '0.00';
-    const totalExtent = this.fields.bobLandTotalExtentEditOn ? parseFloat(this.fv('bobLandTotalExtent', '0')) : parseFloat(calcTotalExtent);
-    const adoptedRate = parseFloat(this.fv('bobAdoptedRate', '0')) || 0;
-    const calcEstimatedValue = (totalExtent * adoptedRate).toFixed(2);
+    const dimensions = this.fields.bobDimensions || {};
 
-    this.drawSimpleRow('1. Size of plot (N&S)', this.fv('bobLandSizeNS'));
-    this.drawSimpleRow('   Size of plot (E&W)', this.fv('bobLandSizeEW'));
-    this.drawSimpleRow('2. Total extent of the plot', this.fields.bobLandTotalExtentEditOn ? this.fv('bobLandTotalExtent') : calcTotalExtent, true, true);
+    // Field 1: Size of plot — prefill from 14.1
+    const deedNorth = dimensions.deedNorth || '';
+    const deedSouth = dimensions.deedSouth || '';
+    const deedEast = dimensions.deedEast || '';
+    const deedWest = dimensions.deedWest || '';
+    const calcNS = (deedNorth && deedSouth && deedNorth !== deedSouth) ? `${deedNorth} & ${deedSouth}` : (deedNorth || deedSouth || '');
+    const calcEW = (deedEast && deedWest && deedEast !== deedWest) ? `${deedEast} & ${deedWest}` : (deedEast || deedWest || '');
+    const displayNS = this.fields.bobLandSizeNSEditOn ? this.fv('bobLandSizeNS') : calcNS;
+    const displayEW = this.fields.bobLandSizeEWEditOn ? this.fv('bobLandSizeEW') : calcEW;
+
+    // Field 2: Total extent — mirror Field 16
+    const deedArea = (parseFloat(deedEast || '0') || 0) + (parseFloat(deedWest || '0') || 0) + (parseFloat(deedNorth || '0') || 0) + (parseFloat(deedSouth || '0') || 0);
+    const actualArea = (parseFloat(dimensions.actualEast || '0') || 0) + (parseFloat(dimensions.actualWest || '0') || 0) + (parseFloat(dimensions.actualNorth || '0') || 0) + (parseFloat(dimensions.actualSouth || '0') || 0);
+    const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+    const areaSft = minArea * 43560;
+    const areaSftFormatted = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(areaSft);
+    const calcTotalExtent = minArea > 0
+      ? `Total Area: Ac. ${minArea} Dec i.e. ${areaSftFormatted} Sft`
+      : 'Total Area: Ac. 0.00 Dec i.e. 0.00 Sft';
+    const displayTotalExtent = this.fields.bobLandTotalExtentEditOn ? this.fv('bobLandTotalExtent') : calcTotalExtent;
+
+    // Field 4: Guideline rate
+    const fmtINR = (v: number) => new Intl.NumberFormat('en-IN').format(v);
+    const acreValue = parseFloat(this.fv('bobGovtBenchmarkPerAcre', '0')) || 0;
+    const sftRate = acreValue > 0 ? Math.round(acreValue / 43560) : 0;
+    const totalGuideline = areaSft > 0 && sftRate > 0 ? Math.round(areaSft * sftRate) : 0;
+    const guidelineStr1 = acreValue > 0 ? `Govt. Benchmark Value: Rs.${fmtINR(acreValue)}/- Per Acre i.e. Rs.${fmtINR(sftRate)}/- Per Sft` : 'NA';
+    const guidelineStr2 = totalGuideline > 0 ? `Guideline Value of Land= ${areaSftFormatted} Sft X Rs.${fmtINR(sftRate)}/- Per Sft = Rs.${fmtINR(totalGuideline)}/-` : '';
+
+    // Field 6: Estimated value
+    const adoptedRate = parseFloat(this.fv('bobAdoptedRate', '0')) || 0;
+    const estimatedValue = areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
+    const calcEstimatedStr = estimatedValue > 0
+      ? `Total Market Value of Land: ${areaSftFormatted} Sft X Rs.${fmtINR(adoptedRate)}/- Per Sft = Rs.${fmtINR(estimatedValue)}/-`
+      : 'Total Market Value of Land: 0.00 Sft X Rs.0/- Per Sft = Rs.0/-';
+
+    this.drawSimpleRow('1. Size of plot (N&S)', displayNS || 'NA');
+    this.drawSimpleRow('   Size of plot (E&W)', displayEW || 'NA');
+    this.drawSimpleRow('2. Total extent of the plot', displayTotalExtent, true, true);
     this.drawSimpleRow('3. Prevailing market rate', this.fv('bobPrevailingMarketRate'));
-    this.drawSimpleRow('4. Guideline rate', this.fv('bobGuidelineRate'));
+    this.drawSimpleRow('4. Guideline rate', guidelineStr1);
+    if (guidelineStr2) this.drawSimpleRow('   Guideline Value', guidelineStr2);
     this.drawSimpleRow('5. Adopted rate of valuation', this.fv('bobAdoptedRate'));
-    this.drawSimpleRow('6. Estimated value of land', this.fields.bobEstimatedLandValueEditOn ? this.fv('bobEstimatedLandValue') : calcEstimatedValue, true, true);
+    this.drawSimpleRow('6. Estimated value of land', calcEstimatedStr, true, true);
   }
 
   // ═══════════════════════════════════════════════════════════════════════
