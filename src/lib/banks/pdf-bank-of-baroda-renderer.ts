@@ -559,7 +559,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     // Electrical installation
     this.drawSimpleRow('Electrical: Wiring type', this.fv('bobElectricalWiring') || 'NA');
-    this.drawSimpleRow('Electrical: Class of fittings', this.fv('bobElectricalFittings') || 'NA');
+    this.drawSimpleRow('Electrical: Class of fittings (superior / ordinary / poor)', this.fv('bobElectricalFittings') || 'NA');
     this.drawKeyValueRow([
       { label: 'Light points', value: this.fv('bobElectricalLightPoints') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
       { label: 'Fan points', value: this.fv('bobElectricalFanPoints') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
