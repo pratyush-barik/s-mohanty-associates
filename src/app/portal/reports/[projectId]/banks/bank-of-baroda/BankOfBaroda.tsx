@@ -41,6 +41,76 @@ function BobSection({ title, number, id, children, defaultOpen = true }: {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   MULTI SELECT COMPONENT
+   ═══════════════════════════════════════════════════════════════════════ */
+function MultiSelectDocs({ value, onChange, disabled }: { value: string; onChange: (v: string) => void; disabled?: boolean; }) {
+  const [open, setOpen] = useState(false);
+  const options = ['Sale Deed', 'Patta', 'Road Agreement', 'Sketch Map', 'Approval Plan'];
+  
+  const selectedOptions = options.filter(opt => value.includes(opt));
+  const customParts = value.split(', ').filter(p => p && !options.includes(p));
+  const [customText, setCustomText] = useState(customParts.join(', '));
+
+  const toggleOption = (opt: string) => {
+    let next;
+    if (selectedOptions.includes(opt)) {
+      next = selectedOptions.filter(o => o !== opt);
+    } else {
+      next = [...selectedOptions, opt];
+    }
+    const finalVal = [...next, ...(customText ? [customText] : [])].join(', ');
+    onChange(finalVal);
+  };
+
+  const updateCustomText = (txt: string) => {
+    setCustomText(txt);
+    const finalVal = [...selectedOptions, ...(txt ? [txt] : [])].join(', ');
+    onChange(finalVal);
+  };
+
+  return (
+    <div className="relative flex-1 text-sm font-sans">
+      <div 
+        className={`${inputCls} min-h-[42px] cursor-pointer flex items-center justify-between ${disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'}`}
+        onClick={() => !disabled && setOpen(!open)}
+      >
+        <span className="truncate pr-4">{value || 'Select...'}</span>
+        <svg className="w-4 h-4 shrink-0 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+            {options.map(opt => (
+              <label key={opt} className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-50 m-0">
+                <input 
+                  type="checkbox" 
+                  className="mr-2 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                  checked={selectedOptions.includes(opt)} 
+                  onChange={() => toggleOption(opt)}
+                />
+                <span className="text-gray-700">{opt}</span>
+              </label>
+            ))}
+            <div className="p-2 border-t border-gray-100 bg-gray-50">
+              <input
+                type="text"
+                placeholder="Other (Custom)..."
+                className="w-full text-sm p-1.5 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white text-gray-700"
+                value={customText}
+                onChange={e => updateCustomText(e.target.value)}
+              />
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    REUSABLE HELPERS
    ═══════════════════════════════════════════════════════════════════════ */
 
@@ -899,41 +969,17 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   const key = `bobDocument${num}`;
                   const naKey = `${key}NA`;
                   const isNA = fields[naKey] === true;
-                  const dKey = `${key}Dropdown`;
                   return (
                     <div key={num} className="flex gap-2 items-center bg-white rounded-lg p-3 border border-gray-100">
                       <span className="text-sm text-gray-500 w-8 shrink-0">{num.toLowerCase()})</span>
-                      <select
-                        className={`${inputCls} flex-1`}
-                        value={fields[dKey] || ''}
-                        onChange={e => {
-                          const v = e.target.value;
-                          handleChange(dKey, v);
-                          if (v !== 'custom') handleChange(key, v);
-                          else handleChange(key, fields[`${key}Custom`] || '');
-                        }}
+                      <MultiSelectDocs
+                        value={fields[key] || ''}
+                        onChange={v => handleChange(key, v)}
                         disabled={isReadOnly || isNA}
-                      >
-                        <option value="">Select</option>
-                        <option value="Sale Deed">Sale Deed</option>
-                        <option value="Patta">Patta</option>
-                        <option value="Road Agreement">Road Agreement</option>
-                        <option value="Sketch Map">Sketch Map</option>
-                        <option value="Approval Plan">Approval Plan</option>
-                        <option value="custom">Custom</option>
-                      </select>
-                      {fields[dKey] === 'custom' && (
-                        <input
-                          className={`${inputCls} flex-1`}
-                          value={fields[`${key}Custom`] || ''}
-                          onChange={e => { handleChange(`${key}Custom`, e.target.value); handleChange(key, e.target.value); }}
-                          disabled={isReadOnly || isNA}
-                          placeholder="Enter document name..."
-                        />
-                      )}
+                      />
                       <label className="flex items-center gap-1.5 cursor-pointer select-none shrink-0">
                         <input type="checkbox" checked={isNA}
-                          onChange={e => { handleChange(naKey, e.target.checked); if (e.target.checked) { handleChange(key, 'NA'); handleChange(dKey, ''); } }}
+                          onChange={e => { handleChange(naKey, e.target.checked); if (e.target.checked) { handleChange(key, 'NA'); } }}
                           disabled={isReadOnly}
                           className="w-4 h-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                         />
