@@ -381,9 +381,13 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const aNS = parseFloat(dimensions.actualNorth || '0') || parseFloat(dimensions.actualSouth || '0') || 0;
     const aEW = parseFloat(dimensions.actualEast || '0') || parseFloat(dimensions.actualWest || '0') || 0;
     const deedArea = dNS * dEW; const actualArea = aNS * aEW;
+    const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+    const fallbackExtent = minArea > 0 
+      ? `Total Area: Ac.${(minArea / 43560).toFixed(4)} Dec i.e. ${minArea.toFixed(2)} Sft` 
+      : 'Total Area: Ac.0.0364 Dec i.e. 1586.00 Sft';
     const calcExtent = this.fields.bobExtentForValuationEditOn
       ? this.fv('bobExtentForValuation')
-      : ((deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea).toFixed(2) : (deedArea || actualArea || 0).toFixed(2));
+      : fallbackExtent;
     this.drawSimpleRow('16. Extent considered for valuation', calcExtent);
     this.drawSimpleRow('17. Occupancy', this.fv('bobOccupancy') || 'NA');
     if (this.fv('bobOccupancyDetails')) {

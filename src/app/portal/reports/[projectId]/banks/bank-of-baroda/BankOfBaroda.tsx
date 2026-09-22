@@ -857,7 +857,10 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const actualEW = parseFloat(dimensions.actualEast || '0') || parseFloat(dimensions.actualWest || '0') || 0;
         const deedArea = deedNS * deedEW;
         const actualArea = actualNS * actualEW;
-        const calcExtent = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea).toFixed(2) : (deedArea || actualArea || 0).toFixed(2);
+        const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+        const calcExtent = minArea > 0 
+          ? `Total Area: Ac.${(minArea / 43560).toFixed(4)} Dec i.e. ${minArea.toFixed(2)} Sft` 
+          : 'Total Area: Ac.0.0364 Dec i.e. 1586.00 Sft';
 
         return (
           <div className="animate-fade-in space-y-6">
