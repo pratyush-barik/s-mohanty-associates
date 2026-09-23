@@ -4,7 +4,7 @@ import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuild
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFBankOfBarodaRenderer } from '@/lib/banks/pdf-bank-of-baroda-renderer';
 import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
-import { Lock } from 'lucide-react';
+import { Lock, Info } from 'lucide-react';
 
 /* ═══════════════════════════════════════════════════════════════════════
    BOB-SPECIFIC SECTION (Olive Green Accordion Header)
@@ -411,6 +411,41 @@ function PrefillField({ label, value, hoverText, isReadOnly }: {
         </div>
       </div>
     </Field>
+  );
+}
+
+/** Segmented toggle for Manual Grid Input vs Upload via Annexure */
+function DataEntryModeToggle({ modeKey, fields, handleChange, isReadOnly }: {
+  modeKey: string; fields: any; handleChange: any; isReadOnly: boolean;
+}) {
+  const isAnnexure = fields[modeKey] === 'annexure';
+  return (
+    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 w-fit text-xs">
+      <button type="button" onClick={() => handleChange(modeKey, 'manual')} disabled={isReadOnly}
+        className={`px-3 py-1.5 rounded-md transition-all font-medium ${!isAnnexure ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}>
+        Manual Grid Input
+      </button>
+      <button type="button" onClick={() => handleChange(modeKey, 'annexure')} disabled={isReadOnly}
+        className={`px-3 py-1.5 rounded-md transition-all font-medium ${isAnnexure ? 'bg-white shadow-sm text-amber-700' : 'text-gray-500 hover:text-gray-700'}`}>
+        Upload via Annexure
+      </button>
+    </div>
+  );
+}
+
+/** Info banner shown when Annexure mode is active */
+function AnnexureBanner({ sectionLabel }: { sectionLabel: string }) {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
+        <Info className="w-4 h-4 mt-0.5 shrink-0" />
+        <span>Grid entry disabled. Data for <strong>{sectionLabel}</strong> will be fetched from the uploaded file in Section 13.</span>
+      </div>
+      <button type="button" onClick={() => document.getElementById('annexures')?.scrollIntoView({ behavior: 'smooth' })}
+        className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
+        📎 Jump to Annexures &amp; Schedules
+      </button>
+    </div>
   );
 }
 
@@ -2180,6 +2215,10 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   + Add Row
                 </button>
               </div>
+              <DataEntryModeToggle modeKey="bobBuildingValuationMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+              {fields.bobBuildingValuationMode === 'annexure' ? (
+                <AnnexureBanner sectionLabel="Building Valuation" />
+              ) : (<>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-xs">
                   <thead>
@@ -2318,11 +2357,16 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   </tbody>
                 </table>
               </div>
+              </>)}
             </div>
 
             {/* ── Container 14: Part D - Amenities ── */}
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#f0f8ff' }}>
               <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">Part D — Amenities</h3>
+              <DataEntryModeToggle modeKey="bobAmenitiesMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+              {fields.bobAmenitiesMode === 'annexure' ? (
+                <AnnexureBanner sectionLabel="Part D — Amenities" />
+              ) : (<>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
@@ -2352,11 +2396,16 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   </tbody>
                 </table>
               </div>
+              </>)}
             </div>
 
             {/* ── Container 15: Part E - Miscellaneous ── */}
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#f5fffa' }}>
               <h3 className="font-bold text-gray-700 border-b border-green-200 pb-2">Part E — Miscellaneous</h3>
+              <DataEntryModeToggle modeKey="bobMiscMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+              {fields.bobMiscMode === 'annexure' ? (
+                <AnnexureBanner sectionLabel="Part E — Miscellaneous" />
+              ) : (<>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
@@ -2386,11 +2435,16 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   </tbody>
                 </table>
               </div>
+              </>)}
             </div>
 
             {/* ── Container 16: Part F - Services ── */}
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#fff5ee' }}>
               <h3 className="font-bold text-gray-700 border-b border-orange-200 pb-2">Part F — Services</h3>
+              <DataEntryModeToggle modeKey="bobServicesMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+              {fields.bobServicesMode === 'annexure' ? (
+                <AnnexureBanner sectionLabel="Part F — Services" />
+              ) : (<>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
@@ -2420,6 +2474,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   </tbody>
                 </table>
               </div>
+              </>)}
             </div>
           </div>
         );
@@ -2531,6 +2586,10 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             {/* ── Container 17: Final Values Abstract Table ── */}
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#f5f5dc' }}>
               <h3 className="font-bold text-gray-700 border-b border-yellow-300 pb-2">Final Values Abstract Table</h3>
+              <DataEntryModeToggle modeKey="bobAbstractMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+              {fields.bobAbstractMode === 'annexure' ? (
+                <AnnexureBanner sectionLabel="Total Abstract" />
+              ) : (<>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
@@ -2635,6 +2694,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   </tbody>
                 </table>
               </div>
+              </>)}
             </div>
 
             {/* ── Container 18: Valuer Sign-off & Bank Endorsement ── */}
