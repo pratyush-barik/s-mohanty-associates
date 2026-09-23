@@ -1647,11 +1647,15 @@ export function BaseAnnexureSection({
   sectionNumber = 12,
   sectionId = 'section-12-annexure',
   title,
+  pendingUploads,
+  onUpdateCategory,
+  categoryOptions,
 }: {
   annexures: Array<{
     id: string;
     label: string;
     title?: string;
+    category?: string;
     excelFileUrl?: string;
     excelFileName?: string;
     parsedData?: {
@@ -1672,6 +1676,9 @@ export function BaseAnnexureSection({
   sectionNumber?: number | string;
   sectionId?: string;
   title?: string;
+  pendingUploads?: { key: string; label: string }[];
+  onUpdateCategory?: (id: string, category: string) => void;
+  categoryOptions?: { value: string; label: string }[];
 }) {
   return (
     <Section title={title || "Annexures & Schedules"} number={sectionNumber} id={sectionId} defaultOpen={true}>
@@ -1685,6 +1692,22 @@ export function BaseAnnexureSection({
             Upload detailed property address schedules, khasra details, or other annexure data in Excel format (.xlsx, .xls, .csv).
           </p>
         </div>
+
+        {/* Pending Uploads Checklist */}
+        {pendingUploads && pendingUploads.length > 0 && (
+          <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 space-y-2">
+            <p className="text-xs font-bold text-amber-800 uppercase tracking-wider">Pending Uploads</p>
+            {pendingUploads.map(pu => {
+              const hasMatch = annexures.some(a => a.category === pu.key && a.excelFileUrl);
+              return (
+                <div key={pu.key} className={`flex items-center gap-2 text-sm ${hasMatch ? 'text-green-700' : 'text-amber-800'}`}>
+                  <span>{hasMatch ? '✅' : '⚠️'}</span>
+                  <span>{hasMatch ? `Uploaded:` : `Pending Upload:`} Excel/CSV for <strong>{pu.label}</strong></span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* Annexure Cards */}
         {annexures.map((annexure) => (
@@ -1726,6 +1749,25 @@ export function BaseAnnexureSection({
                   className={inputCls}
                 />
               </div>
+
+              {/* File Category Dropdown (optional, shown when categoryOptions provided) */}
+              {categoryOptions && onUpdateCategory && (
+                <div>
+                  <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5">
+                    File Category
+                  </label>
+                  <select
+                    value={annexure.category || 'general'}
+                    onChange={e => onUpdateCategory(annexure.id, e.target.value)}
+                    disabled={isReadOnly}
+                    className={inputCls}
+                  >
+                    {categoryOptions.map(opt => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-semibold text-[#495057] uppercase tracking-wider mb-1.5">

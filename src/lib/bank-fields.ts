@@ -29,6 +29,7 @@ export interface AnnexureItem {
   id: string;
   label: string;
   title?: string;
+  category?: string; // 'general' | 'grid-valuation' | 'grid-amenities' | 'grid-misc' | 'grid-services' | 'grid-abstract'
   excelFileUrl: string;
   excelFileName: string;
   parsedData?: {

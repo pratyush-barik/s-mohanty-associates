@@ -698,6 +698,9 @@ export default function BankReportBuilder({
   const updateAnnexureTitle = (id: string, title: string) => {
     handleChange('annexures', fields.annexures.map(a => a.id === id ? { ...a, title } : a));
   };
+  const updateAnnexureCategory = (id: string, category: string) => {
+    handleChange('annexures', fields.annexures.map(a => a.id === id ? { ...a, category } : a));
+  };
   const handleAnnexureUpload = async (annexureId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -972,7 +975,33 @@ export default function BankReportBuilder({
     setLoading(false);
   };
 
+  // BOB-specific: validate that all required annexure grid files are uploaded & tagged
+  const getMissingAnnexures = (): string[] => {
+    if (config?.bankId !== 'BANK OF BARODA') return [];
+    const toggles = [
+      { stateKey: 'bobBuildingValuationMode', categoryKey: 'grid-valuation', label: 'Details of Valuation' },
+      { stateKey: 'bobAmenitiesMode', categoryKey: 'grid-amenities', label: 'Part D (Amenities)' },
+      { stateKey: 'bobMiscMode', categoryKey: 'grid-misc', label: 'Part E (Miscellaneous)' },
+      { stateKey: 'bobServicesMode', categoryKey: 'grid-services', label: 'Part F (Services)' },
+      { stateKey: 'bobAbstractMode', categoryKey: 'grid-abstract', label: 'Total Abstract' },
+    ];
+    const missing: string[] = [];
+    for (const t of toggles) {
+      if (fields[t.stateKey] === 'annexure') {
+        const hasFile = (fields.annexures || []).some((a: any) => a.category === t.categoryKey && a.excelFileUrl);
+        if (!hasFile) missing.push(t.label);
+      }
+    }
+    return missing;
+  };
+
   const handleSubmit = async () => {
+    // Validate annexure uploads before submit
+    const missingAnnexuresSubmit = getMissingAnnexures();
+    if (missingAnnexuresSubmit.length > 0) {
+      setMessage({ type: 'error', text: `Missing Annexure: Please upload the required data grid for ${missingAnnexuresSubmit.join(', ')} in Section 13.` });
+      return;
+    }
     if (!Array.isArray(fields.propertyImages) || fields.propertyImages.length < 2) {
       setMessage({ type: 'error', text: 'Please upload at least 2 property photographs before submitting.' });
       return;
@@ -1428,6 +1457,13 @@ export default function BankReportBuilder({
   };
 
   const handlePreviewPDF = async () => {
+    // Validate annexure uploads before preview
+    const missingAnnexures = getMissingAnnexures();
+    if (missingAnnexures.length > 0) {
+      setMessage({ type: 'error', text: `Missing Annexure: Please upload the required data grid for ${missingAnnexures.join(', ')} in Section 13.` });
+      return;
+    }
+
     const previewWindow = window.open('', '_blank');
     if (previewWindow) {
       previewWindow.document.write(`
@@ -1470,6 +1506,12 @@ export default function BankReportBuilder({
   };
 
   const handleDownloadPDF = async () => {
+    // Validate annexure uploads before download
+    const missingAnnexuresDownload = getMissingAnnexures();
+    if (missingAnnexuresDownload.length > 0) {
+      setMessage({ type: 'error', text: `Missing Annexure: Please upload the required data grid for ${missingAnnexuresDownload.join(', ')} in Section 13.` });
+      return;
+    }
     try {
       setLoading(true);
       setLoadingText('Downloading PDF...');
@@ -2643,21 +2685,47 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
         ))}
 
         {/* ── Section 14 / 15: Annexures ── */}
-        {!isSectionHidden(`section-${isApartmentFlat ? 14 : 15}`) && !isSectionHidden('annexures') && (
-          <BaseAnnexureSection
-            title={config?.fieldLabels?.['annexures-title'] || 'Annexures & Schedules'}
-            annexures={fields.annexures || []}
-            isReadOnly={isReadOnly}
-            uploading={uploading}
-            onAddAnnexure={addAnnexure}
-            onRemoveAnnexure={removeAnnexure}
-            onUpdateTitle={updateAnnexureTitle}
-            onUploadExcel={handleAnnexureUpload}
-            onRemoveFile={removeAnnexureFile}
-            sectionNumber={getSectionNumber(`section-${isApartmentFlat ? 14 : 15}`, isApartmentFlat ? 14 : 15)}
-            sectionId="annexures"
-          />
-        )}
+        {!isSectionHidden(`section-${isApartmentFlat ? 14 : 15}`) && !isSectionHidden('annexures') && (() => {
+          // BOB-specific annexure mode mapping
+          const isBOB = config?.bankId === 'BANK OF BARODA';
+          const bobModeToggles = isBOB ? [
+            { stateKey: 'bobBuildingValuationMode', categoryKey: 'grid-valuation', label: 'Details of Valuation' },
+            { stateKey: 'bobAmenitiesMode', categoryKey: 'grid-amenities', label: 'Part D (Amenities)' },
+            { stateKey: 'bobMiscMode', categoryKey: 'grid-misc', label: 'Part E (Miscellaneous)' },
+            { stateKey: 'bobServicesMode', categoryKey: 'grid-services', label: 'Part F (Services)' },
+            { stateKey: 'bobAbstractMode', categoryKey: 'grid-abstract', label: 'Total Abstract' },
+          ] : [];
+          const bobPendingUploads = bobModeToggles
+            .filter(t => fields[t.stateKey] === 'annexure')
+            .map(t => ({ key: t.categoryKey, label: t.label }));
+          const bobCategoryOptions = isBOB ? [
+            { value: 'general', label: 'General Annexure / Schedule' },
+            { value: 'grid-valuation', label: 'Grid: Details of Valuation' },
+            { value: 'grid-amenities', label: 'Grid: Part D (Amenities)' },
+            { value: 'grid-misc', label: 'Grid: Part E (Miscellaneous)' },
+            { value: 'grid-services', label: 'Grid: Part F (Services)' },
+            { value: 'grid-abstract', label: 'Grid: Total Abstract' },
+          ] : undefined;
+
+          return (
+            <BaseAnnexureSection
+              title={config?.fieldLabels?.['annexures-title'] || 'Annexures & Schedules'}
+              annexures={fields.annexures || []}
+              isReadOnly={isReadOnly}
+              uploading={uploading}
+              onAddAnnexure={addAnnexure}
+              onRemoveAnnexure={removeAnnexure}
+              onUpdateTitle={updateAnnexureTitle}
+              onUploadExcel={handleAnnexureUpload}
+              onRemoveFile={removeAnnexureFile}
+              sectionNumber={getSectionNumber(`section-${isApartmentFlat ? 14 : 15}`, isApartmentFlat ? 14 : 15)}
+              sectionId="annexures"
+              pendingUploads={bobPendingUploads.length > 0 ? bobPendingUploads : undefined}
+              onUpdateCategory={isBOB ? updateAnnexureCategory : undefined}
+              categoryOptions={bobCategoryOptions}
+            />
+          );
+        })()}
 
         {/* ── Action Buttons Footer ── */}
         <div className="p-5 bg-[#556B2F] border-2 border-[#3F5021] rounded-2xl shadow-xl flex flex-wrap items-center justify-between gap-4 sticky bottom-4 z-40">
