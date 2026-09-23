@@ -71,7 +71,7 @@ function MultiSelectDocs({ value, onChange, disabled }: { value: string; onChang
   return (
     <div className="relative flex-1 text-sm font-sans">
       <div 
-        className={`${inputCls} min-h-[42px] cursor-pointer flex items-center justify-between ${disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'}`}
+        className={`${inputCls} min-h-10.5 cursor-pointer flex items-center justify-between ${disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'}`}
         onClick={() => !disabled && setOpen(!open)}
       >
         <span className="truncate pr-4">{value || 'Select...'}</span>
