@@ -2345,8 +2345,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                     <tr className="bg-amber-50 font-bold">
                       <td colSpan={2} className="border border-gray-300 px-3 py-2 text-right">TOTAL:</td>
                       <td className="border border-gray-300 px-1 py-1">
-                        <AutoCalcField label="" fieldKey="bobAmenitiesTotalOverride" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly}
-                          calcValue={amenitiesTotal.toFixed(2)}
+                        <PrefillField label="" value={amenitiesTotal.toFixed(2)} isReadOnly={isReadOnly}
                           hoverText=">>Auto calculates from SUM([AMOUNT] of all Amenities rows)<<." />
                       </td>
                     </tr>
@@ -2380,8 +2379,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                     <tr className="bg-amber-50 font-bold">
                       <td colSpan={2} className="border border-gray-300 px-3 py-2 text-right">TOTAL:</td>
                       <td className="border border-gray-300 px-1 py-1">
-                        <AutoCalcField label="" fieldKey="bobMiscTotalOverride" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly}
-                          calcValue={miscTotal.toFixed(2)}
+                        <PrefillField label="" value={miscTotal.toFixed(2)} isReadOnly={isReadOnly}
                           hoverText=">>Auto calculates from SUM([AMOUNT] of all Miscellaneous rows)<<." />
                       </td>
                     </tr>
@@ -2415,8 +2413,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                     <tr className="bg-amber-50 font-bold">
                       <td colSpan={2} className="border border-gray-300 px-3 py-2 text-right">TOTAL:</td>
                       <td className="border border-gray-300 px-1 py-1">
-                        <AutoCalcField label="" fieldKey="bobServicesTotalOverride" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly}
-                          calcValue={servicesTotal.toFixed(2)}
+                        <PrefillField label="" value={servicesTotal.toFixed(2)} isReadOnly={isReadOnly}
                           hoverText=">>Auto calculates from SUM([AMOUNT] of all Services rows)<<." />
                       </td>
                     </tr>
