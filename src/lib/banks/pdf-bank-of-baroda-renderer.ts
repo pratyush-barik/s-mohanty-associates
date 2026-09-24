@@ -36,6 +36,7 @@ import {
 export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   private fields: any;
   private drawnCover = false;
+  private isBobDrawing = false;
 
   constructor(fields?: any) {
     super();
@@ -43,6 +44,10 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   }
 
   // ── Helper: field value ──
+  override drawKeyValueRow(items: any[]): void { if (this.isBobDrawing) super.drawKeyValueRow(items); }
+  override drawTextBlock(text: string, opts?: any): void { if (this.isBobDrawing) super.drawTextBlock(text, opts); }
+  override drawRichTextBlock(segments: any[]): void { if (this.isBobDrawing) super.drawRichTextBlock(segments); }
+
   private fv(key: string, defaultVal = ''): string {
     return String((this.fields as any)[key] ?? defaultVal).replace(/[\t\n\r]+/g, ' ').trim();
   }
@@ -59,6 +64,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
   // ── Helper: drawSimpleRow override for BOB 40/60 layout ──
   override drawSimpleRow(label: string, value: string, highlight?: boolean, bold?: boolean): void {
+    if (!this.isBobDrawing) return;
     const labelW = Math.round(CONTENT_W * 0.40);
     const valueW = CONTENT_W - labelW;
     super.drawKeyValueRow([{
@@ -79,6 +85,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   override drawCenteredTitle(title: string, fontSize?: number, underline?: boolean) {
     if (!this.drawnCover) {
       this.drawnCover = true;
+      this.isBobDrawing = true;
       this.drawBobCoverPage();
       this.newPage();
       this.drawBobSection2();
@@ -91,17 +98,21 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       this.drawBobSection9();
       this.drawBobSection10();
       this.drawBobSection11();
+      this.isBobDrawing = false;
       return;
     }
 
-    const isValuationReport = title.trim().toLowerCase() === 'valuation report';
-    const finalTitle = isValuationReport
-      ? 'VALUATION REPORT FOR BANK OF BARODA'
-      : title;
-    super.drawCenteredTitle(finalTitle, fontSize, isValuationReport ? true : underline);
+    if (this.isBobDrawing) {
+      const isValuationReport = title.trim().toLowerCase() === 'valuation report';
+      const finalTitle = isValuationReport
+        ? 'VALUATION REPORT FOR BANK OF BARODA'
+        : title;
+      super.drawCenteredTitle(finalTitle, fontSize, isValuationReport ? true : underline);
+    }
   }
 
   override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
+    if (!this.isBobDrawing) return;
     if (title.toUpperCase() === 'CASE DETAILS & REPORT METADATA') {
       if (this.doc.getPages().length === 1) {
         this.newPage();
