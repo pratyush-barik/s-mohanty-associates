@@ -2682,8 +2682,6 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ________. We are satisfied that the fair and reasonable market value of the property is Rs. ${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only).`;
         const currentEndorsement = fields.bobBankEndorsement || defaultEndorsement;
 
-        const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
-
         const ReadOnlyCell = ({ val, hoverTitle }: { val: number; hoverTitle: string }) => (
           <div className="relative group cursor-help" title={hoverTitle}>
             <input 
