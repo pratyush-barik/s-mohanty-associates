@@ -226,16 +226,61 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.cursorY += 10;
 
     // ── 4b. Value of the Property (2-column grid) ──
-    const formatVal = (valStr: string) => {
-      if (!valStr || isNaN(Number(valStr))) return '0.00';
-      return Number(valStr).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const dimensions = this.fields.bobDimensions || {};
+    const deedArea = (parseFloat(dimensions.deedEast || '0') || 0) + (parseFloat(dimensions.deedWest || '0') || 0) + (parseFloat(dimensions.deedNorth || '0') || 0) + (parseFloat(dimensions.deedSouth || '0') || 0);
+    const actualArea = (parseFloat(dimensions.actualEast || '0') || 0) + (parseFloat(dimensions.actualWest || '0') || 0) + (parseFloat(dimensions.actualNorth || '0') || 0) + (parseFloat(dimensions.actualSouth || '0') || 0);
+    const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+    const areaSft = minArea * 43560;
+
+    const acreValue = parseFloat(this.fv('bobGovtBenchmarkPerAcre', '0')) || 0;
+    const sftRate = acreValue > 0 ? Math.round(acreValue / 43560) : 0;
+    const landGovtValue = areaSft > 0 && sftRate > 0 ? Math.round(areaSft * sftRate) : 0;
+
+    const adoptedRate = parseFloat(this.fv('bobAdoptedRate', '0')) || 0;
+    const calculatedLandMarketValue = areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
+    const landMarketValue = this.fields.bobEstimatedLandValueEditOn
+      ? (parseFloat(this.fv('bobEstimatedLandValue', '0')) || 0)
+      : calculatedLandMarketValue;
+
+    const currentYear = new Date().getFullYear();
+    const yearOfConstStr = this.fv('bobYearOfConstruction', '');
+    const yearMatch = yearOfConstStr.match(/\d{4}/);
+    const yearOfConst = yearMatch ? parseInt(yearMatch[0], 10) : 0;
+    const bAge = this.fields.bobBuildingAgeEditOn ? (parseFloat(this.fv('bobBuildingAge', '0')) || 0) : (yearOfConst > 0 ? currentYear - yearOfConst : 0);
+    
+    const buildingRows: any[] = this.fields.bobBuildingValuationRows || [];
+    const buildingMarketValue = buildingRows.reduce((sum: number, row: any) => {
+      const p = parseFloat(row.plinthArea || '0') || 0;
+      const r = parseFloat(row.replacementRate || '0') || 0;
+      const est = row.estCostEditOn ? (parseFloat(row.estCost || '0') || 0) : p * r;
+      const dep = row.depreciationEditOn ? (parseFloat(row.depreciation || '0') || 0) : est * 0.01 * bAge;
+      const net = row.netValueEditOn ? (parseFloat(row.netValue || '0') || 0) : est - dep;
+      return sum + net;
+    }, 0);
+
+    const amenitiesMarketValue = Array.from({ length: 10 }, (_, i) => parseFloat(this.fv(`bobAmenity_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+    const miscMarketValue = Array.from({ length: 4 }, (_, i) => parseFloat(this.fv(`bobMisc_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+    const servicesMarketValue = Array.from({ length: 5 }, (_, i) => parseFloat(this.fv(`bobService_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+
+    const calcTotalGovt = landGovtValue;
+    const calcTotalMarket = landMarketValue + buildingMarketValue + amenitiesMarketValue + miscMarketValue + servicesMarketValue;
+    const calcTotalRealizable = calcTotalMarket * 0.95;
+    const calcTotalDistress = calcTotalMarket * 0.85;
+
+    const presentMarketValue = Math.round(calcTotalMarket / 1000) * 1000;
+    const realizableValue = Math.round(calcTotalRealizable / 1000) * 1000;
+    const forcedSaleValue = Math.round(calcTotalDistress / 1000) * 1000;
+    const govtValue = Math.round(calcTotalGovt / 1000) * 1000;
+
+    const formatVal = (val: number) => {
+      return val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
     const valueLabels = [
-      { label: 'PRESENT MARKET VALUE', field: 'bobPresentMarketValue' },
-      { label: 'REALIZABLE VALUE', field: 'bobRealizableValue' },
-      { label: 'FORCED SALE VALUE', field: 'bobForcedSaleValue' },
-      { label: 'GOVT. VALUE', field: 'bobGovtValue' },
+      { label: 'PRESENT MARKET VALUE', val: presentMarketValue },
+      { label: 'REALIZABLE VALUE', val: realizableValue },
+      { label: 'FORCED SALE VALUE', val: forcedSaleValue },
+      { label: 'GOVT. VALUE', val: govtValue },
     ];
 
     const labelColW = Math.round(CONTENT_W * 0.42);
@@ -244,7 +289,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const gridStartX = MARGIN_L + (CONTENT_W - gridTotalW) / 2;
 
     for (const item of valueLabels) {
-      const valText = `RS.${formatVal(this.fv(item.field))}`;
+      const valText = `RS. ${formatVal(item.val)}`;
       const labelY = this.pdfY(this.cursorY);
       this.page.drawText(item.label, { x: gridStartX, y: labelY, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
       this.page.drawText(valText, { x: gridStartX + labelColW, y: labelY, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });

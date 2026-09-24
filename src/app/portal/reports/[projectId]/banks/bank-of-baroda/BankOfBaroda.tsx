@@ -627,10 +627,52 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       number: 1,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
-        const presentMarketValue = 0;
-        const realizableValue = 0;
-        const forcedSaleValue = 0;
-        const govtValue = 0;
+        const dimensions = fields.bobDimensions || {};
+        const deedArea = (parseFloat(dimensions.deedEast || '0') || 0) + (parseFloat(dimensions.deedWest || '0') || 0) + (parseFloat(dimensions.deedNorth || '0') || 0) + (parseFloat(dimensions.deedSouth || '0') || 0);
+        const actualArea = (parseFloat(dimensions.actualEast || '0') || 0) + (parseFloat(dimensions.actualWest || '0') || 0) + (parseFloat(dimensions.actualNorth || '0') || 0) + (parseFloat(dimensions.actualSouth || '0') || 0);
+        const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+        const areaSft = minArea * 43560;
+
+        const acreValue = parseFloat(fields.bobGovtBenchmarkPerAcre || '0') || 0;
+        const sftRate = acreValue > 0 ? Math.round(acreValue / 43560) : 0;
+        const landGovtValue = areaSft > 0 && sftRate > 0 ? Math.round(areaSft * sftRate) : 0;
+
+        const adoptedRate = parseFloat(fields.bobAdoptedRate || '0') || 0;
+        const calculatedLandMarketValue = areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
+        const landMarketValue = fields.bobEstimatedLandValueEditOn
+          ? (parseFloat(fields.bobEstimatedLandValue || '0') || 0)
+          : calculatedLandMarketValue;
+
+        const buildingRows: any[] = fields.bobBuildingValuationRows || [];
+        const currentYear = new Date().getFullYear();
+        const yearOfConstStr = fields.bobYearOfConstruction || '';
+        const yearMatch = yearOfConstStr.match(/\d{4}/);
+        const yearOfConst = yearMatch ? parseInt(yearMatch[0], 10) : 0;
+        const bAge = fields.bobBuildingAgeEditOn ? (parseFloat(fields.bobBuildingAge || '0') || 0) : (yearOfConst > 0 ? currentYear - yearOfConst : 0);
+        const buildingMarketValue = buildingRows.reduce((sum: number, row: any) => {
+          const p = parseFloat(row.plinthArea || '0') || 0;
+          const r = parseFloat(row.replacementRate || '0') || 0;
+          const est = row.estCostEditOn ? (parseFloat(row.estCost || '0') || 0) : p * r;
+          const dep = row.depreciationEditOn ? (parseFloat(row.depreciation || '0') || 0) : est * 0.01 * bAge;
+          const net = row.netValueEditOn ? (parseFloat(row.netValue || '0') || 0) : est - dep;
+          return sum + net;
+        }, 0);
+
+        const amenitiesMarketValue = Array.from({ length: 10 }, (_, i) => parseFloat(fields[`bobAmenity_${i}`] || '0') || 0).reduce((a, b) => a + b, 0);
+        const miscMarketValue = Array.from({ length: 4 }, (_, i) => parseFloat(fields[`bobMisc_${i}`] || '0') || 0).reduce((a, b) => a + b, 0);
+        const servicesMarketValue = Array.from({ length: 5 }, (_, i) => parseFloat(fields[`bobService_${i}`] || '0') || 0).reduce((a, b) => a + b, 0);
+
+        const calcTotalGovt = landGovtValue;
+        const calcTotalMarket = landMarketValue + buildingMarketValue + amenitiesMarketValue + miscMarketValue + servicesMarketValue;
+        const calcTotalRealizable = calcTotalMarket * 0.95;
+        const calcTotalDistress = calcTotalMarket * 0.85;
+
+        const presentMarketValue = Math.round(calcTotalMarket / 1000) * 1000;
+        const realizableValue = Math.round(calcTotalRealizable / 1000) * 1000;
+        const forcedSaleValue = Math.round(calcTotalDistress / 1000) * 1000;
+        const govtValue = Math.round(calcTotalGovt / 1000) * 1000;
+
+        const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 
         return (
         <div className="animate-fade-in space-y-6">
@@ -763,20 +805,16 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">PRESENT MARKET VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "MARKET VALUE IN RS." (Row: OR SAY, Container 17)<<.' : undefined}>
-                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
+                  <div className="relative mt-1" title=">>Auto-populates from the TOTAL ABSTRACT grid (OR SAY row)<<">
                     <input
                       type="text"
-                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
-                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobPresentMarketValue || '') : presentMarketValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      onChange={(e) => handleChange('bobPresentMarketValue', e.target.value.replace(/[^0-9.]/g, ''))}
-                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed font-bold text-gray-700`}
+                      value={`RS. ${fmtINR(presentMarketValue)}`}
+                      readOnly
                     />
-                    {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
-                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                      </div>
-                    )}
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -785,20 +823,16 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">REALIZABLE VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "REALIZABLE VALUE (95%)" (Row: OR SAY, Container 17)<<.' : undefined}>
-                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
+                  <div className="relative mt-1" title=">>Auto-populates from the TOTAL ABSTRACT grid (OR SAY row)<<">
                     <input
                       type="text"
-                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
-                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobRealizableValue || '') : realizableValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      onChange={(e) => handleChange('bobRealizableValue', e.target.value.replace(/[^0-9.]/g, ''))}
-                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed font-bold text-gray-700`}
+                      value={`RS. ${fmtINR(realizableValue)}`}
+                      readOnly
                     />
-                    {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
-                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                      </div>
-                    )}
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -807,20 +841,16 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">FORCED SALE VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "DISTRESS VALUE (85%)" (Row: OR SAY, Container 17)<<.' : undefined}>
-                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
+                  <div className="relative mt-1" title=">>Auto-populates from the TOTAL ABSTRACT grid (OR SAY row)<<">
                     <input
                       type="text"
-                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
-                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobForcedSaleValue || '') : forcedSaleValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      onChange={(e) => handleChange('bobForcedSaleValue', e.target.value.replace(/[^0-9.]/g, ''))}
-                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed font-bold text-gray-700`}
+                      value={`RS. ${fmtINR(forcedSaleValue)}`}
+                      readOnly
                     />
-                    {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
-                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                      </div>
-                    )}
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -829,20 +859,16 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">GOVT. VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Prefill from section 6, field "GOVT. VALUE IN RS." (Row: OR SAY, Container 17)<<.' : undefined}>
-                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
+                  <div className="relative mt-1" title=">>Auto-populates from the TOTAL ABSTRACT grid (OR SAY row)<<">
                     <input
                       type="text"
-                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
-                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobGovtValue || '') : govtValue.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                      onChange={(e) => handleChange('bobGovtValue', e.target.value.replace(/[^0-9.]/g, ''))}
-                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed font-bold text-gray-700`}
+                      value={`RS. ${fmtINR(govtValue)}`}
+                      readOnly
                     />
-                    {!fields.bobEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
-                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                      </div>
-                    )}
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                    </div>
                   </div>
                 </div>
               </div>
