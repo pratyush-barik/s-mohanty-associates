@@ -860,7 +860,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawSimpleRow('1h. Approving authority', this.fv('bobApprovedMapAuthority') || 'NA');
     this.drawSimpleRow('1i. Map authenticity verified', this.fv('bobApprovedMapVerified') || 'NA');
     this.drawSimpleRow('1j. Valuer comments on plan', this.fv('bobApprovedMapComments') || 'NA');
-    this.drawSimpleRow('1k. Age of the Building', this.fields.bobBuildingAgeEditOn ? this.fv('bobBuildingAge') : (calcAge > 0 ? `${calcAge} years` : '0'), true, true);
+    this.drawSimpleRow('1k. Age of the Building', this.fields.bobBuildingAgeEditOn ? this.fv('bobBuildingAge') : (calcAge > 0 ? `${calcAge} years` : '0'));
     this.drawSimpleRow('1l. Residual life', this.fv('bobResidualLife'));
 
     // Structural Descriptions Table
