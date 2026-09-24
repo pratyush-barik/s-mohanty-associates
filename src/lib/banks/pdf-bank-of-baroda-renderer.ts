@@ -357,19 +357,19 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     // Address block (left-aligned, bold)
     const addressBlock = `${addressee}\n${bankDetails}`.replace(/\\n/g, '\n');
-    const addressH = this.drawWrappedTextAt(addressBlock, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: 9, bold: true });
+    const addressH = this.drawWrappedTextAt(addressBlock, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE, bold: true });
     this.cursorY += addressH + 15;
 
     // Title Block (centered, bold)
-    super.drawCenteredTitle(reportTitle, 10, false);
+    super.drawCenteredTitle(reportTitle, FONT_SIZE, false);
     this.cursorY += 10;
 
     // Ref No & Date (bold)
-    this.drawTextAt(`REF. NO: ${refNo}`, MARGIN_L, this.cursorY, { fontSize: 9, bold: true });
+    this.drawTextAt(`REF. NO: ${refNo}`, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE, bold: true });
     const dateStr = `DATE: ${asOnDate}`;
     const dateFont = this.getFont(true);
-    const dateW = dateFont.widthOfTextAtSize(dateStr, 9);
-    this.drawTextAt(dateStr, PAGE_W - MARGIN_R - dateW, this.cursorY, { fontSize: 9, bold: true });
+    const dateW = dateFont.widthOfTextAtSize(dateStr, FONT_SIZE);
+    this.drawTextAt(dateStr, PAGE_W - MARGIN_R - dateW, this.cursorY, { fontSize: FONT_SIZE, bold: true });
     this.cursorY += 20;
 
     let allRows: string[][] = [
