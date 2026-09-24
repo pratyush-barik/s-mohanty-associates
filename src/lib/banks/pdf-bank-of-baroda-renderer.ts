@@ -710,15 +710,28 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       this.drawSimpleRow('Total Abstract', 'Please refer to the attached Annexure for the detailed breakdown.');
     } else {
     // Compute prefill values
-    const sizeNS = parseFloat(this.fv('bobLandSizeNS', '0')) || 0;
-    const sizeEW = parseFloat(this.fv('bobLandSizeEW', '0')) || 0;
-    const totalExtent = this.fields.bobLandTotalExtentEditOn ? parseFloat(this.fv('bobLandTotalExtent', '0')) : sizeNS * sizeEW;
+    const dimensions = this.fields.bobDimensions || {};
+    const deedArea = (parseFloat(dimensions.deedEast || '0') || 0) + (parseFloat(dimensions.deedWest || '0') || 0) + (parseFloat(dimensions.deedNorth || '0') || 0) + (parseFloat(dimensions.deedSouth || '0') || 0);
+    const actualArea = (parseFloat(dimensions.actualEast || '0') || 0) + (parseFloat(dimensions.actualWest || '0') || 0) + (parseFloat(dimensions.actualNorth || '0') || 0) + (parseFloat(dimensions.actualSouth || '0') || 0);
+    const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+    const areaSft = minArea * 43560;
+
+    const acreValue = parseFloat(this.fv('bobGovtBenchmarkPerAcre', '0')) || 0;
+    const sftRate = acreValue > 0 ? Math.round(acreValue / 43560) : 0;
+    const landGovtValue = areaSft > 0 && sftRate > 0 ? Math.round(areaSft * sftRate) : 0;
+
     const adoptedRate = parseFloat(this.fv('bobAdoptedRate', '0')) || 0;
-    const landMarketValue = this.fields.bobEstimatedLandValueEditOn ? parseFloat(this.fv('bobEstimatedLandValue', '0')) : totalExtent * adoptedRate;
+    const calculatedLandMarketValue = areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
+    const landMarketValue = this.fields.bobEstimatedLandValueEditOn
+      ? (parseFloat(this.fv('bobEstimatedLandValue', '0')) || 0)
+      : calculatedLandMarketValue;
 
     const currentYear = new Date().getFullYear();
-    const yearOfConst = parseInt(this.fv('bobYearOfConstruction', '0')) || 0;
+    const yearOfConstStr = this.fv('bobYearOfConstruction', '');
+    const yearMatch = yearOfConstStr.match(/\d{4}/);
+    const yearOfConst = yearMatch ? parseInt(yearMatch[0], 10) : 0;
     const bAge = this.fields.bobBuildingAgeEditOn ? (parseFloat(this.fv('bobBuildingAge', '0')) || 0) : (yearOfConst > 0 ? currentYear - yearOfConst : 0);
+    
     const buildingRows: any[] = this.fields.bobBuildingValuationRows || [];
     const buildingMarketValue = buildingRows.reduce((sum: number, row: any) => {
       const p = parseFloat(row.plinthArea || '0') || 0;
@@ -733,60 +746,64 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const miscMarketValue = Array.from({ length: 4 }, (_, i) => parseFloat(this.fv(`bobMisc_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
     const servicesMarketValue = Array.from({ length: 5 }, (_, i) => parseFloat(this.fv(`bobService_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
 
-    const abstractRows: { label: string; key: string; prefillMarket: number | null }[] = [
-      { label: 'LAND', key: 'land', prefillMarket: landMarketValue },
-      { label: 'BUILDING', key: 'building', prefillMarket: buildingMarketValue },
-      { label: 'EXTRA ITEMS', key: 'extraItems', prefillMarket: null },
-      { label: 'AMENITIES', key: 'amenities', prefillMarket: amenitiesMarketValue },
-      { label: 'MISCELLANEOUS', key: 'miscellaneous', prefillMarket: miscMarketValue },
-      { label: 'SERVICES', key: 'services', prefillMarket: servicesMarketValue },
-    ];
+    const abstractRows = [
+      { label: 'LAND', govtVal: landGovtValue, marketVal: landMarketValue },
+      { label: 'BUILDING', govtVal: 0, marketVal: buildingMarketValue },
+      { label: 'EXTRA ITEMS', govtVal: 0, marketVal: 0 },
+      { label: 'AMENITIES', govtVal: 0, marketVal: amenitiesMarketValue },
+      { label: 'MISCELLANEOUS', govtVal: 0, marketVal: miscMarketValue },
+      { label: 'SERVICES', govtVal: 0, marketVal: servicesMarketValue },
+    ].map(row => ({
+      ...row,
+      realizableVal: row.marketVal * 0.95,
+      distressVal: row.marketVal * 0.85
+    }));
+
+    const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 
     const tableRows: string[][] = [];
     let totalGovt = 0, totalMarket = 0, totalRealizable = 0, totalDistress = 0;
 
     for (const row of abstractRows) {
-      const govtVal = parseFloat(this.fv(`bobAbstract_${row.key}_govt`, '0')) || 0;
-      const marketVal = row.prefillMarket !== null ? row.prefillMarket : (parseFloat(this.fv(`bobAbstract_${row.key}_market`, '0')) || 0);
-      const realizableVal = this.fields[`bobAbstract_${row.key}_realizableEditOn`]
-        ? (parseFloat(this.fv(`bobAbstract_${row.key}_realizable`, '0')) || 0)
-        : marketVal * 0.95;
-      const distressVal = this.fields[`bobAbstract_${row.key}_distressEditOn`]
-        ? (parseFloat(this.fv(`bobAbstract_${row.key}_distress`, '0')) || 0)
-        : marketVal * 0.85;
-
-      totalGovt += govtVal;
-      totalMarket += marketVal;
-      totalRealizable += realizableVal;
-      totalDistress += distressVal;
+      totalGovt += row.govtVal;
+      totalMarket += row.marketVal;
+      totalRealizable += row.realizableVal;
+      totalDistress += row.distressVal;
 
       tableRows.push([
         row.label,
-        govtVal > 0 ? govtVal.toFixed(2) : '',
-        marketVal.toFixed(2),
-        realizableVal.toFixed(2),
-        distressVal.toFixed(2),
+        row.govtVal > 0 ? `Rs. ${fmtINR(row.govtVal)}` : 'Rs. 0.00',
+        `Rs. ${fmtINR(row.marketVal)}`,
+        `Rs. ${fmtINR(row.realizableVal)}`,
+        `Rs. ${fmtINR(row.distressVal)}`,
       ]);
     }
 
-    // TOTAL row — use edit switch overrides if enabled
-    const finalTotalGovt = this.fields.bobAbstractTotalGovtEditOn ? (parseFloat(this.fv('bobAbstractTotalGovt', '0')) || 0) : totalGovt;
-    const finalTotalMarket = this.fields.bobAbstractTotalMarketEditOn ? (parseFloat(this.fv('bobAbstractTotalMarket', '0')) || 0) : totalMarket;
-    const finalTotalRealizable = this.fields.bobAbstractTotalRealizableEditOn ? (parseFloat(this.fv('bobAbstractTotalRealizable', '0')) || 0) : totalRealizable;
-    const finalTotalDistress = this.fields.bobAbstractTotalDistressEditOn ? (parseFloat(this.fv('bobAbstractTotalDistress', '0')) || 0) : totalDistress;
-    tableRows.push(['TOTAL', finalTotalGovt.toFixed(2), finalTotalMarket.toFixed(2), finalTotalRealizable.toFixed(2), finalTotalDistress.toFixed(2)]);
+    // TOTAL row 
+    tableRows.push([
+      'TOTAL',
+      `Rs. ${fmtINR(totalGovt)}`,
+      `Rs. ${fmtINR(totalMarket)}`,
+      `Rs. ${fmtINR(totalRealizable)}`,
+      `Rs. ${fmtINR(totalDistress)}`
+    ]);
 
     // OR SAY row
+    const orSayGovt = Math.round(totalGovt / 1000) * 1000;
+    const orSayMarket = Math.round(totalMarket / 1000) * 1000;
+    const orSayRealizable = Math.round(totalRealizable / 1000) * 1000;
+    const orSayDistress = Math.round(totalDistress / 1000) * 1000;
+
     tableRows.push([
       'OR SAY',
-      this.fv('bobAbstractOrSayGovt') || '',
-      this.fv('bobAbstractOrSayMarket') || '',
-      this.fv('bobAbstractOrSayRealizable') || '',
-      this.fv('bobAbstractOrSayDistress') || '',
+      `Rs. ${fmtINR(orSayGovt)}`,
+      `Rs. ${fmtINR(orSayMarket)}`,
+      `Rs. ${fmtINR(orSayRealizable)}`,
+      `Rs. ${fmtINR(orSayDistress)}`,
     ]);
 
     this.drawTable(
-      ['PARTICULARS', 'GOVT. VALUE (RS.)', 'MARKET VALUE (RS.)', 'REALIZABLE (95%)', 'DISTRESS (85%)'],
+      ['PARTICULARS', 'GOVT. VALUE', 'MARKET VALUE', 'REALIZABLE (95%)', 'DISTRESS (85%)'],
       tableRows,
       [CONTENT_W * 0.22, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195],
       [1, 2, 3, 4], [0], [],

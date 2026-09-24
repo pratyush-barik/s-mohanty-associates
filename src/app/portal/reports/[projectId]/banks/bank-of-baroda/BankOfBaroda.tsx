@@ -2515,20 +2515,29 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       number: 7,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
-        // Prefills from other sections
-        const landMarketValue = (() => {
-          const dimensions = fields.bobDimensions || {};
-          const deedArea = (parseFloat(dimensions.deedEast || '0') || 0) + (parseFloat(dimensions.deedWest || '0') || 0) + (parseFloat(dimensions.deedNorth || '0') || 0) + (parseFloat(dimensions.deedSouth || '0') || 0);
-          const actualArea = (parseFloat(dimensions.actualEast || '0') || 0) + (parseFloat(dimensions.actualWest || '0') || 0) + (parseFloat(dimensions.actualNorth || '0') || 0) + (parseFloat(dimensions.actualSouth || '0') || 0);
-          const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
-          const areaSft = minArea * 43560;
-          const adoptedRate = parseFloat(fields.bobAdoptedRate || '0') || 0;
-          return areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
-        })();
+        const acreValue = parseFloat(fields.bobGovtBenchmarkPerAcre || '0') || 0;
+        const sftRate = acreValue > 0 ? Math.round(acreValue / 43560) : 0;
+        
+        // We need areaSft from landMarketValue calculation
+        const dimensions = fields.bobDimensions || {};
+        const deedArea = (parseFloat(dimensions.deedEast || '0') || 0) + (parseFloat(dimensions.deedWest || '0') || 0) + (parseFloat(dimensions.deedNorth || '0') || 0) + (parseFloat(dimensions.deedSouth || '0') || 0);
+        const actualArea = (parseFloat(dimensions.actualEast || '0') || 0) + (parseFloat(dimensions.actualWest || '0') || 0) + (parseFloat(dimensions.actualNorth || '0') || 0) + (parseFloat(dimensions.actualSouth || '0') || 0);
+        const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+        const areaSft = minArea * 43560;
+        
+        const landGovtValue = areaSft > 0 && sftRate > 0 ? Math.round(areaSft * sftRate) : 0;
+        
+        const adoptedRate = parseFloat(fields.bobAdoptedRate || '0') || 0;
+        const calculatedLandMarketValue = areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
+        const landMarketValue = fields.bobEstimatedLandValueEditOn
+          ? (parseFloat(fields.bobEstimatedLandValue || '0') || 0)
+          : calculatedLandMarketValue;
 
         const buildingRows: any[] = fields.bobBuildingValuationRows || [];
         const currentYear = new Date().getFullYear();
-        const yearOfConst = extractYearOfConstruction(fields.bobYearOfConstruction || '');
+        const yearOfConstStr = fields.bobYearOfConstruction || '';
+        const yearMatch = yearOfConstStr.match(/\d{4}/);
+        const yearOfConst = yearMatch ? parseInt(yearMatch[0], 10) : 0;
         const bAge = fields.bobBuildingAgeEditOn ? (parseFloat(fields.bobBuildingAge || '0') || 0) : (yearOfConst > 0 ? currentYear - yearOfConst : 0);
         const buildingMarketValue = buildingRows.reduce((sum: number, row: any) => {
           const p = parseFloat(row.plinthArea || '0') || 0;
@@ -2545,176 +2554,93 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const servicesMarketValue = Array.from({ length: 5 }, (_, i) => parseFloat(fields[`bobService_${i}`] || '0') || 0).reduce((a, b) => a + b, 0);
 
         const abstractRows = [
-          { label: 'LAND', key: 'land', prefillMarket: landMarketValue, prefillHover: '>>Prefill from section 4, field "Estimated value of land"<<.' },
-          { label: 'BUILDING', key: 'building', prefillMarket: buildingMarketValue, prefillHover: '>>Prefill from section 6, field "TOTAL" (Container 13)<<.' },
-          { label: 'EXTRA ITEMS', key: 'extraItems', prefillMarket: null, prefillHover: '' },
-          { label: 'AMENITIES', key: 'amenities', prefillMarket: amenitiesMarketValue, prefillHover: '>>Prefill from section 6, field "TOTAL" (Part D)<<.' },
-          { label: 'MISCELLANEOUS', key: 'miscellaneous', prefillMarket: miscMarketValue, prefillHover: '>>Prefill from section 6, field "TOTAL" (Part E)<<.' },
-          { label: 'SERVICES', key: 'services', prefillMarket: servicesMarketValue, prefillHover: '>>Prefill from section 6, field "TOTAL" (Part F)<<.' },
-        ];
+          { label: 'LAND', key: 'land', govtVal: landGovtValue, marketVal: landMarketValue },
+          { label: 'BUILDING', key: 'building', govtVal: 0, marketVal: buildingMarketValue },
+          { label: 'EXTRA ITEMS', key: 'extraItems', govtVal: 0, marketVal: 0 },
+          { label: 'AMENITIES', key: 'amenities', govtVal: 0, marketVal: amenitiesMarketValue },
+          { label: 'MISCELLANEOUS', key: 'miscellaneous', govtVal: 0, marketVal: miscMarketValue },
+          { label: 'SERVICES', key: 'services', govtVal: 0, marketVal: servicesMarketValue },
+        ].map(row => ({
+          ...row,
+          realizableVal: row.marketVal * 0.95,
+          distressVal: row.marketVal * 0.85
+        }));
 
-        const getAbstractVal = (key: string, col: string) => parseFloat(fields[`bobAbstract_${key}_${col}`] || '0') || 0;
+        const calcTotalGovt = abstractRows.reduce((sum, r) => sum + r.govtVal, 0);
+        const calcTotalMarket = abstractRows.reduce((sum, r) => sum + r.marketVal, 0);
+        const calcTotalRealizable = abstractRows.reduce((sum, r) => sum + r.realizableVal, 0);
+        const calcTotalDistress = abstractRows.reduce((sum, r) => sum + r.distressVal, 0);
+        
+        const orSayGovt = Math.round(calcTotalGovt / 1000) * 1000;
+        const orSayMarket = Math.round(calcTotalMarket / 1000) * 1000;
+        const orSayRealizable = Math.round(calcTotalRealizable / 1000) * 1000;
+        const orSayDistress = Math.round(calcTotalDistress / 1000) * 1000;
 
-        // Per-row resolved values (needed for TOTAL row sums)
-        const resolvedRows = abstractRows.map(row => {
-          const govtVal = getAbstractVal(row.key, 'govt');
-          const marketVal = row.prefillMarket !== null ? row.prefillMarket : getAbstractVal(row.key, 'market');
-          const realizableVal = fields[`bobAbstract_${row.key}_realizableEditOn`]
-            ? (parseFloat(fields[`bobAbstract_${row.key}_realizable`] || '0') || 0)
-            : marketVal * 0.95;
-          const distressVal = fields[`bobAbstract_${row.key}_distressEditOn`]
-            ? (parseFloat(fields[`bobAbstract_${row.key}_distress`] || '0') || 0)
-            : marketVal * 0.85;
-          return { ...row, govtVal, marketVal, realizableVal, distressVal };
-        });
+        const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 
-        // TOTAL row: SUM of all 6 rows for each column, with edit switch override
-        const calcTotalGovt = resolvedRows.reduce((sum, r) => sum + r.govtVal, 0);
-        const calcTotalMarket = resolvedRows.reduce((sum, r) => sum + r.marketVal, 0);
-        const calcTotalRealizable = resolvedRows.reduce((sum, r) => sum + r.realizableVal, 0);
-        const calcTotalDistress = resolvedRows.reduce((sum, r) => sum + r.distressVal, 0);
-
-        const totalGovt = fields.bobAbstractTotalGovtEditOn ? (parseFloat(fields.bobAbstractTotalGovt || '0') || 0) : calcTotalGovt;
-        const totalMarket = fields.bobAbstractTotalMarketEditOn ? (parseFloat(fields.bobAbstractTotalMarket || '0') || 0) : calcTotalMarket;
-        const totalRealizable = fields.bobAbstractTotalRealizableEditOn ? (parseFloat(fields.bobAbstractTotalRealizable || '0') || 0) : calcTotalRealizable;
-        const totalDistress = fields.bobAbstractTotalDistressEditOn ? (parseFloat(fields.bobAbstractTotalDistress || '0') || 0) : calcTotalDistress;
-
-        // Reusable cell with Lock + Edit Switch
-        const EditSwitchCell = ({ fieldKey, autoValue, hoverText }: { fieldKey: string; autoValue: number; hoverText: string }) => {
-          const editOnKey = `${fieldKey}EditOn`;
-          const isEditing = !!fields[editOnKey];
-          return (
-            <div className="relative">
-              <input
-                className={`${inputCls} pr-14 ${!isEditing ? 'bg-gray-100 text-gray-700' : ''}`}
-                type="number" step="0.01"
-                value={isEditing ? (fields[fieldKey] || '') : autoValue.toFixed(2)}
-                onChange={e => handleChange(fieldKey, e.target.value)}
-                readOnly={isReadOnly || !isEditing}
-                title={hoverText}
-              />
-              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5" title={hoverText}>
-                {!isEditing && <Lock className="w-3 h-3 text-emerald-800" />}
-                <button type="button" onClick={() => handleChange(editOnKey, !isEditing)} disabled={isReadOnly}
-                  className={`relative inline-flex h-4 w-7 items-center rounded-full transition-colors ${isEditing ? 'bg-emerald-500' : 'bg-gray-300'}`}
-                  title={hoverText}>
-                  <span className={`inline-block h-2.5 w-2.5 rounded-full bg-white transition-transform ${isEditing ? 'translate-x-3.5' : 'translate-x-0.5'}`} />
-                </button>
-              </div>
-            </div>
-          );
-        };
+        const ReadOnlyCell = ({ val }: { val: number }) => (
+          <div className="relative group cursor-help">
+            <input 
+              className={`${inputCls} bg-gray-50 text-gray-700 cursor-not-allowed`}
+              value={`Rs. ${fmtINR(val)}`}
+              readOnly 
+              title=">>Values are auto-calculated from previous valuation sections<<"
+            />
+            <Lock className="w-3.5 h-3.5 text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 group-hover:text-emerald-700 transition-colors" />
+          </div>
+        );
 
         return (
           <div className="animate-fade-in space-y-6">
 
             {/* ── Container 17: Final Values Abstract Table ── */}
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#f5f5dc' }}>
-              <h3 className="font-bold text-gray-700 border-b border-yellow-300 pb-2">Final Values Abstract Table</h3>
+              <div className="flex justify-between items-center border-b border-yellow-300 pb-2">
+                <h3 className="font-bold text-gray-700">Final Values Abstract Table</h3>
+                <span className="text-xs font-semibold text-yellow-700 bg-yellow-100 px-2 py-0.5 rounded-full border border-yellow-200 shadow-sm flex items-center gap-1 cursor-help" title=">>Values are auto-calculated from previous valuation sections<<">
+                  <Lock className="w-3 h-3" /> Auto-Calculated
+                </span>
+              </div>
               <DataEntryModeToggle modeKey="bobAbstractMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
               {fields.bobAbstractMode === 'annexure' ? (
                 <AnnexureBanner sectionLabel="Total Abstract" />
               ) : (<>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto" title=">>Values are auto-calculated from previous valuation sections<<">
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
                     <tr className="bg-gray-100">
                       <th className="border border-gray-300 px-3 py-2 text-left">PERTICULARS</th>
-                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">GOVT. VALUE IN RS.</th>
-                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">MARKET VALUE IN RS.</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">GOVT. VALUE</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">MARKET VALUE</th>
                       <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">REALIZABLE VALUE (95%)</th>
                       <th className="border border-gray-300 px-3 py-2 text-left w-[18%]">DISTRESS VALUE (85%)</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {resolvedRows.map(row => (
+                    {abstractRows.map(row => (
                       <tr key={row.key}>
                         <td className="border border-gray-300 px-3 py-2 font-medium bg-white">{row.label}</td>
-                        {/* GOVT. VALUE */}
-                        <td className="border border-gray-300 px-1 py-1">
-                          <input className={inputCls} type="number" step="0.01" value={fields[`bobAbstract_${row.key}_govt`] || ''} onChange={e => handleChange(`bobAbstract_${row.key}_govt`, e.target.value)} disabled={isReadOnly} />
-                        </td>
-                        {/* MARKET VALUE */}
-                        <td className="border border-gray-300 px-1 py-1">
-                          {row.prefillMarket !== null ? (
-                            <div className="relative group">
-                              <input className={`${inputCls} bg-gray-100 text-gray-700 cursor-not-allowed pr-6`}
-                                value={row.prefillMarket.toFixed(2)} disabled title={row.prefillHover} />
-                              <Lock className="w-3 h-3 text-emerald-800 absolute right-2 top-1/2 -translate-y-1/2" />
-                            </div>
-                          ) : (
-                            <input className={inputCls} type="number" step="0.01" value={fields[`bobAbstract_${row.key}_market`] || ''} onChange={e => handleChange(`bobAbstract_${row.key}_market`, e.target.value)} disabled={isReadOnly} />
-                          )}
-                        </td>
-                        {/* REALIZABLE VALUE (95%) 🔒🎚️ */}
-                        <td className="border border-gray-300 px-1 py-1">
-                          <EditSwitchCell
-                            fieldKey={`bobAbstract_${row.key}_realizable`}
-                            autoValue={row.marketVal * 0.95}
-                            hoverText=">>Auto calculates from [MARKET VALUE IN RS.] * 0.95<<."
-                          />
-                        </td>
-                        {/* DISTRESS VALUE (85%) 🔒🎚️ */}
-                        <td className="border border-gray-300 px-1 py-1">
-                          <EditSwitchCell
-                            fieldKey={`bobAbstract_${row.key}_distress`}
-                            autoValue={row.marketVal * 0.85}
-                            hoverText=">>Auto calculates from [MARKET VALUE IN RS.] * 0.85<<."
-                          />
-                        </td>
+                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.govtVal} /></td>
+                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.marketVal} /></td>
+                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.realizableVal} /></td>
+                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.distressVal} /></td>
                       </tr>
                     ))}
-                    {/* ── TOTAL Row: auto-summed with edit switches ── */}
+                    {/* ── TOTAL Row ── */}
                     <tr className="bg-amber-50 font-bold">
-                      <td className="border border-gray-300 px-3 py-2">TOTAL</td>
-                      {/* TOTAL — Govt */}
-                      <td className="border border-gray-300 px-1 py-1">
-                        <EditSwitchCell
-                          fieldKey="bobAbstractTotalGovt"
-                          autoValue={calcTotalGovt}
-                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for this column<<."
-                        />
-                      </td>
-                      {/* TOTAL — Market */}
-                      <td className="border border-gray-300 px-1 py-1">
-                        <EditSwitchCell
-                          fieldKey="bobAbstractTotalMarket"
-                          autoValue={calcTotalMarket}
-                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for this column<<."
-                        />
-                      </td>
-                      {/* TOTAL — Realizable */}
-                      <td className="border border-gray-300 px-1 py-1">
-                        <EditSwitchCell
-                          fieldKey="bobAbstractTotalRealizable"
-                          autoValue={calcTotalRealizable}
-                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for this column<<."
-                        />
-                      </td>
-                      {/* TOTAL — Distress */}
-                      <td className="border border-gray-300 px-1 py-1">
-                        <EditSwitchCell
-                          fieldKey="bobAbstractTotalDistress"
-                          autoValue={calcTotalDistress}
-                          hoverText=">>Auto calculates from SUM(LAND, BUILDING, EXTRA ITEMS, AMENITIES, MISCELLANEOUS, SERVICES) for this column<<."
-                        />
-                      </td>
+                      <td className="border border-gray-300 px-3 py-2 text-right">TOTAL:</td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalGovt} /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalMarket} /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalRealizable} /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalDistress} /></td>
                     </tr>
-                    {/* ── OR SAY Row: Manual rounding input ── */}
-                    <tr>
-                      <td className="border border-gray-300 px-3 py-2 font-medium">OR SAY</td>
-                      <td className="border border-gray-300 px-1 py-1">
-                        <input className={inputCls} type="number" step="0.01" value={fields.bobAbstractOrSayGovt || ''} onChange={e => handleChange('bobAbstractOrSayGovt', e.target.value)} disabled={isReadOnly} placeholder="Manual" />
-                      </td>
-                      <td className="border border-gray-300 px-1 py-1">
-                        <input className={inputCls} type="number" step="0.01" value={fields.bobAbstractOrSayMarket || ''} onChange={e => handleChange('bobAbstractOrSayMarket', e.target.value)} disabled={isReadOnly} placeholder="Manual" />
-                      </td>
-                      <td className="border border-gray-300 px-1 py-1">
-                        <input className={inputCls} type="number" step="0.01" value={fields.bobAbstractOrSayRealizable || ''} onChange={e => handleChange('bobAbstractOrSayRealizable', e.target.value)} disabled={isReadOnly} placeholder="Manual" />
-                      </td>
-                      <td className="border border-gray-300 px-1 py-1">
-                        <input className={inputCls} type="number" step="0.01" value={fields.bobAbstractOrSayDistress || ''} onChange={e => handleChange('bobAbstractOrSayDistress', e.target.value)} disabled={isReadOnly} placeholder="Manual" />
-                      </td>
+                    {/* ── OR SAY Row ── */}
+                    <tr className="bg-emerald-50 font-bold">
+                      <td className="border border-gray-300 px-3 py-2 text-right text-emerald-900">OR SAY:</td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayGovt} /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayMarket} /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayRealizable} /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayDistress} /></td>
                     </tr>
                   </tbody>
                 </table>
