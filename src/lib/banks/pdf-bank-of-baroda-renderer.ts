@@ -781,7 +781,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       ['', 'East & West', displayEW || 'As Per Sketch Map'],
       ['2.', 'Total extent of the plot', displayTotalExtent],
       ['3.', 'Prevailing market rate (Along with details /reference of at least two latest deals/ transactions with respect to adjacent properties in the areas)', this.fv('bobPrevailingMarketRate') || 'NA'],
-      ['4.', 'Guideline rate obtained from the Registrar\'s Office (an evidence thereof to be enclosed)', guidelineStr1],
+      ['4.', 'Guideline rate obtained from the Registrar\'s\u00A0Office (an evidence thereof to be enclosed)', guidelineStr1],
       ['', 'Guideline Value', guidelineStr2],
       ['5.', 'Assessed / adopted rate of valuation', this.fv('bobAdoptedRate') || 'NA'],
       ['6.', 'Estimated value of land', calcEstimatedStr]
@@ -816,8 +816,8 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       return { align, bold, fillColor, bgOpacity, hideBorder };
     };
 
-    // Columns: Number (0.06), Label (0.34), Value (0.60)
-    this.drawMergedTable(allRows, [], [0.06, 0.34, 0.60], styleOpts, { fontSize: 12 });
+    // Columns: Number (0.06), Label (0.44), Value (0.50)
+    this.drawMergedTable(allRows, [], [0.06, 0.44, 0.50], styleOpts, { fontSize: 12 });
   }
 
   // ═══════════════════════════════════════════════════════════════════════

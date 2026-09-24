@@ -1320,12 +1320,18 @@ export class PDFGeneralRenderer {
         
         // Fetch custom font size for height calculation if any
         let customFontSize = fontSize;
+        let isBold = isHeader;
+        let isItalic = false;
         if (cellOpts) {
            const opts = cellOpts(ri, ci, isHeader, colSpan === numCols);
-           if (opts && opts.fontSize) customFontSize = opts.fontSize;
+           if (opts) {
+             if (opts.fontSize) customFontSize = opts.fontSize;
+             if (opts.bold !== undefined) isBold = opts.bold;
+             if (opts.italic !== undefined) isItalic = opts.italic;
+           }
         }
 
-        const lines = this.wrapText(text, cellW - padX * 2, customFontSize, isHeader);
+        const lines = this.wrapText(text, cellW - padX * 2, customFontSize, isBold, isItalic);
         const needed = lines.length * customFontSize * LINE_HEIGHT + padY * 2 + 2;
         if (needed > h) h = needed;
       }
