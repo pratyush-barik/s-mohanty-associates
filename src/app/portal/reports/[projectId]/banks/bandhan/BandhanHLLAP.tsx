@@ -3118,8 +3118,8 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* 37. Distress Sale Value & Realizable Value (Percentage manual decimal input + presets, read-only auto-calculated value) */}
-                <div className="rounded-xl border border-sky-200/80 bg-sky-50/40 p-4 sm:p-5 shadow-xs space-y-4 sm:col-span-2">
+                {/* 37. Distress Sale Value & Realizable Value (Efficient compact one-liner layout) */}
+                <div className="rounded-xl border border-sky-200/80 bg-sky-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
                   <div className="flex flex-wrap items-center justify-between pb-2 border-b border-sky-200/60 gap-2">
                     <div className="flex items-center gap-2">
                       <span className="font-sans font-semibold text-sky-900 text-xs sm:text-sm">
@@ -3136,24 +3136,19 @@ export default function BandhanHLLAP({
                     })()}
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                    {/* Card 1: Distress Sale Value */}
-                    <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3.5 shadow-2xs">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {/* Distress Sale Value Compact One-Liner */}
+                    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-2">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                          Distress Sale Value
+                        <label className="text-xs font-bold text-slate-800">
+                          Distress Sale Value:
                         </label>
                         <span className="text-[10.5px] px-2 py-0.5 rounded-full font-medium bg-sky-50 text-sky-700 border border-sky-200">
-                          ⚡ Auto % of Market Value
+                          ⚡ {fields.distressSalePct !== undefined && fields.distressSalePct !== '' ? fields.distressSalePct : '90'}% of Market Value
                         </span>
                       </div>
-
-                      {/* Percentage manual decimal input */}
-                      <div className="space-y-1.5">
-                        <span className="text-[11px] font-semibold text-slate-600 block">
-                          Distress Percentage (%):
-                        </span>
-                        <div className="relative">
+                      <div className="grid grid-cols-12 gap-2.5 items-center">
+                        <div className="col-span-4 relative">
                           <input
                             type="text"
                             className={inputCls}
@@ -3173,71 +3168,48 @@ export default function BandhanHLLAP({
                                 distressSaleValue: amt,
                               }));
                             }}
-                            placeholder="e.g. 90 or 0"
                             disabled={isReadOnly}
                           />
-                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-xs font-semibold text-slate-400">
+                          <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-xs font-bold text-slate-400">
                             %
                           </div>
                         </div>
-                      </div>
 
-                      {/* Read-only Distress Sale Value */}
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-slate-600">
-                          Resulting Distress Sale Value (Read-only):
-                        </label>
-                        {(() => {
-                          const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
-                          const pctStr = fields.distressSalePct !== undefined ? fields.distressSalePct : '90';
-                          let displayVal = fields.distressSaleValue || '';
-                          let calcAmt: number | null = null;
-                          if (pctStr !== '' && baseNum > 0) {
-                            const p = parseNum(pctStr);
-                            calcAmt = Math.round((baseNum * p) / 100);
-                            displayVal = calcAmt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(calcAmt)}/-`;
-                          } else if (pctStr === '0') {
-                            displayVal = 'Rs.0/-';
-                          }
-                          return (
-                            <>
-                              <input
-                                type="text"
-                                className={`${inputCls} bg-sky-50/60 font-bold text-sky-950 border-sky-300 cursor-not-allowed`}
-                                value={displayVal}
-                                readOnly
-                                disabled
-                              />
-                              <div className="flex items-center justify-between text-[10.5px] text-slate-500 pt-0.5 font-sans">
-                                <span>
-                                  {baseNum > 0
-                                    ? (pctStr !== '' ? `Rs.${formatCurrencyINR(baseNum)} × ${pctStr}% = ${displayVal || 'Rs.0/-'}` : 'Enter percentage above')
-                                    : 'Set Market Value in Pt 33 to calculate'}
-                                </span>
-                              </div>
-                            </>
-                          );
-                        })()}
+                        <div className="col-span-8">
+                          <input
+                            type="text"
+                            className={`${inputCls} bg-sky-50/70 font-bold text-sky-950 border-sky-300 cursor-not-allowed`}
+                            value={(() => {
+                              const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
+                              const pctStr = fields.distressSalePct !== undefined ? fields.distressSalePct : '90';
+                              if (pctStr !== '' && baseNum > 0) {
+                                const p = parseNum(pctStr);
+                                const calcAmt = Math.round((baseNum * p) / 100);
+                                return calcAmt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(calcAmt)}/-`;
+                              } else if (pctStr === '0') {
+                                return 'Rs.0/-';
+                              }
+                              return fields.distressSaleValue || 'Rs.0/-';
+                            })()}
+                            readOnly
+                            disabled
+                          />
+                        </div>
                       </div>
                     </div>
 
-                    {/* Card 2: Realizable Value */}
-                    <div className="rounded-xl border border-slate-200 bg-white p-4 space-y-3.5 shadow-2xs">
+                    {/* Realizable Value Compact One-Liner */}
+                    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-2">
                       <div className="flex items-center justify-between">
-                        <label className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                          Realizable Value
+                        <label className="text-xs font-bold text-slate-800">
+                          Realizable Value:
                         </label>
                         <span className="text-[10.5px] px-2 py-0.5 rounded-full font-medium bg-sky-50 text-sky-700 border border-sky-200">
-                          ⚡ Auto % of Market Value
+                          ⚡ {fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '95'}% of Market Value
                         </span>
                       </div>
-
-                      {/* Percentage manual decimal input */}
-                      <div className="space-y-1.5">
-                        <span className="text-[11px] font-semibold text-slate-600 block">
-                          Realizable Percentage (%):
-                        </span>
-                        <div className="relative">
+                      <div className="grid grid-cols-12 gap-2.5 items-center">
+                        <div className="col-span-4 relative">
                           <input
                             type="text"
                             className={inputCls}
@@ -3257,51 +3229,33 @@ export default function BandhanHLLAP({
                                 realisableValue: amt,
                               }));
                             }}
-                            placeholder="e.g. 95 or 0"
                             disabled={isReadOnly}
                           />
-                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-xs font-semibold text-slate-400">
+                          <div className="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-xs font-bold text-slate-400">
                             %
                           </div>
                         </div>
-                      </div>
 
-                      {/* Read-only Realizable Value */}
-                      <div className="space-y-1">
-                        <label className="text-[11px] font-semibold text-slate-600">
-                          Resulting Realizable Value (Read-only):
-                        </label>
-                        {(() => {
-                          const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
-                          const pctStr = fields.realisableValuePct !== undefined ? fields.realisableValuePct : '95';
-                          let displayVal = fields.realisableValue || '';
-                          let calcAmt: number | null = null;
-                          if (pctStr !== '' && baseNum > 0) {
-                            const p = parseNum(pctStr);
-                            calcAmt = Math.round((baseNum * p) / 100);
-                            displayVal = calcAmt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(calcAmt)}/-`;
-                          } else if (pctStr === '0') {
-                            displayVal = 'Rs.0/-';
-                          }
-                          return (
-                            <>
-                              <input
-                                type="text"
-                                className={`${inputCls} bg-sky-50/60 font-bold text-sky-950 border-sky-300 cursor-not-allowed`}
-                                value={displayVal}
-                                readOnly
-                                disabled
-                              />
-                              <div className="flex items-center justify-between text-[10.5px] text-slate-500 pt-0.5 font-sans">
-                                <span>
-                                  {baseNum > 0
-                                    ? (pctStr !== '' ? `Rs.${formatCurrencyINR(baseNum)} × ${pctStr}% = ${displayVal || 'Rs.0/-'}` : 'Enter percentage above')
-                                    : 'Set Market Value in Pt 33 to calculate'}
-                                </span>
-                              </div>
-                            </>
-                          );
-                        })()}
+                        <div className="col-span-8">
+                          <input
+                            type="text"
+                            className={`${inputCls} bg-sky-50/70 font-bold text-sky-950 border-sky-300 cursor-not-allowed`}
+                            value={(() => {
+                              const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
+                              const pctStr = fields.realisableValuePct !== undefined ? fields.realisableValuePct : '95';
+                              if (pctStr !== '' && baseNum > 0) {
+                                const p = parseNum(pctStr);
+                                const calcAmt = Math.round((baseNum * p) / 100);
+                                return calcAmt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(calcAmt)}/-`;
+                              } else if (pctStr === '0') {
+                                return 'Rs.0/-';
+                              }
+                              return fields.realisableValue || 'Rs.0/-';
+                            })()}
+                            readOnly
+                            disabled
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
