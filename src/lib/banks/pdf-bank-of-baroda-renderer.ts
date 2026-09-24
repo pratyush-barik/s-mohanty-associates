@@ -15,6 +15,7 @@
  */
 
 import { rgb } from 'pdf-lib';
+import { rupeesInWords } from '@/lib/numberToWords';
 import {
   PDFBankRenderer,
   PAGE_W,
@@ -1280,7 +1281,21 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     }
 
     // Remarks
-    this.drawRemarksBox('REMARKS', this.fv('bobRemarks'));
+    const propLegal = this.fv('bobPropertyLegalRemarks');
+    if (propLegal) {
+      this.drawRemarksBox('PROPERTY & LEGAL REMARKS', propLegal);
+      this.cursorY += 5;
+    }
+    
+    const marketValNum = this.fields.bobEnableCoverPageValueEdit ? (parseFloat(this.fv('bobPresentMarketValue', '0')) || 0) : orSayMarket;
+    const realizableValNum = this.fields.bobEnableCoverPageValueEdit ? (parseFloat(this.fv('bobRealizableValue', '0')) || 0) : orSayRealizable;
+    const distressValNum = this.fields.bobEnableCoverPageValueEdit ? (parseFloat(this.fv('bobForcedSaleValue', '0')) || 0) : orSayDistress;
+    const govtValNum = this.fields.bobEnableCoverPageValueEdit ? (parseFloat(this.fv('bobGovtValue', '0')) || 0) : orSayGovt;
+
+    const defaultValuationConclusion = `As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only). The Realizable Value of the above Property is Rs.${fmtINR(realizableValNum)}/- (Rupees ${rupeesInWords(realizableValNum)} only). The book value of the above property as of Land is Rs.${fmtINR(govtValNum)}/- (Rupees ${rupeesInWords(govtValNum)} only) and the distress value Rs.${fmtINR(distressValNum)}/- (Rupees ${rupeesInWords(distressValNum)} only)`;
+    const valConclusion = this.fields.bobValuationConclusionEditOn ? this.fv('bobValuationConclusion', '') : defaultValuationConclusion;
+
+    this.drawRemarksBox('VALUATION CONCLUSION', valConclusion);
 
     // Sign-off
     this.cursorY += 10;

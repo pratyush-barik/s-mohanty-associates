@@ -2733,8 +2733,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
 
         const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 
-        const defaultRemarks = `SUBJECT PROPERTY IS A ${buildingType}, LAND EXTENT OF ${landExtentStr}.\n\nAs a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only). The Realizable Value of the above Property is Rs.${fmtINR(realizableValNum)}/- (Rupees ${rupeesInWords(realizableValNum)} only). The book value of the above property as of Land is Rs.${fmtINR(govtValNum)}/- (Rupees ${rupeesInWords(govtValNum)} only) and the distress value Rs.${fmtINR(distressValNum)}/- (Rupees ${rupeesInWords(distressValNum)} only)`;
-        const currentRemarks = fields.bobValuerRemarks || defaultRemarks;
+        const defaultValuationConclusion = `As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only). The Realizable Value of the above Property is Rs.${fmtINR(realizableValNum)}/- (Rupees ${rupeesInWords(realizableValNum)} only). The book value of the above property as of Land is Rs.${fmtINR(govtValNum)}/- (Rupees ${rupeesInWords(govtValNum)} only) and the distress value Rs.${fmtINR(distressValNum)}/- (Rupees ${rupeesInWords(distressValNum)} only)`;
 
         let parsedEndorsementDate = '';
         if (fields.bobAsOnDate) {
@@ -2815,14 +2814,33 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e0ffff' }}>
               <h3 className="font-bold text-gray-700 border-b border-cyan-200 pb-2">Valuer Sign-off & Bank Endorsement</h3>
               
-              <Field label="REMARKS">
-                <textarea className={inputCls} rows={6} value={currentRemarks} onChange={e => handleChange('bobValuerRemarks', e.target.value)} disabled={isReadOnly} />
-                {!fields.bobValuerRemarks && (
-                  <button type="button" onClick={() => handleChange('bobValuerRemarks', defaultRemarks)} disabled={isReadOnly} className="mt-2 text-sm text-blue-600 hover:underline">
-                    Load Default Remarks Template
-                  </button>
-                )}
+              <Field label="PROPERTY & LEGAL REMARKS">
+                <textarea className={inputCls} rows={4} value={fields.bobPropertyLegalRemarks || ''} onChange={e => handleChange('bobPropertyLegalRemarks', e.target.value)} disabled={isReadOnly} placeholder="Enter location details, municipal limits, civic amenities, legal observations, etc." />
               </Field>
+
+              <div>
+                <div className="flex items-center justify-between mb-2 mt-4">
+                  <span className="text-sm font-semibold text-gray-700">VALUATION CONCLUSION</span>
+                  <label className="flex items-center cursor-pointer">
+                    <span className="mr-2 text-xs font-medium text-gray-600">Edit Text</span>
+                    <div className="relative">
+                      <input type="checkbox" className="sr-only" checked={fields.bobValuationConclusionEditOn || false} onChange={e => handleChange('bobValuationConclusionEditOn', e.target.checked)} disabled={isReadOnly} />
+                      <div className={`block w-8 h-5 rounded-full transition-colors ${fields.bobValuationConclusionEditOn ? 'bg-emerald-500' : 'bg-gray-300'}`}></div>
+                      <div className={`dot absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform ${fields.bobValuationConclusionEditOn ? 'transform translate-x-3' : ''}`}></div>
+                    </div>
+                  </label>
+                </div>
+                <div className="relative group cursor-help" title={!fields.bobValuationConclusionEditOn ? '>>Auto-populated from TOTAL ABSTRACT (OR SAY row) calculations<<' : undefined}>
+                  <textarea 
+                    className={`${inputCls} ${!fields.bobValuationConclusionEditOn ? 'bg-gray-50 cursor-not-allowed text-gray-700' : ''}`} 
+                    rows={5} 
+                    value={fields.bobValuationConclusionEditOn ? (fields.bobValuationConclusion || '') : defaultValuationConclusion} 
+                    onChange={e => handleChange('bobValuationConclusion', e.target.value)} 
+                    disabled={isReadOnly || !fields.bobValuationConclusionEditOn} 
+                  />
+                  {!fields.bobValuationConclusionEditOn && <Lock className="w-4 h-4 text-gray-400 absolute right-3 top-3 group-hover:text-emerald-700 transition-colors" />}
+                </div>
+              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="PLACE:">
