@@ -5,6 +5,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { PDFBankOfBarodaRenderer } from '@/lib/banks/pdf-bank-of-baroda-renderer';
 import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
 import { Lock, Info } from 'lucide-react';
+import { rupeesInWords } from '@/lib/numberToWords';
 
 /* ═══════════════════════════════════════════════════════════════════════
    BOB-SPECIFIC SECTION (Olive Green Accordion Header)
@@ -3070,6 +3071,145 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         );
       }
     },
+
+    /* ──────────────────────────────────────────────────────────────────────
+       SECTION 11: VALUER SIGN-OFF & BANK ENDORSEMENT
+       ────────────────────────────────────────────────────────────────────── */
+    {
+      id: 'bob-section-bank-endorsement',
+      title: 'Valuer Sign-off & Bank Endorsement',
+      number: 11,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const buildingType = fields.bobBuildingType || '';
+        const fmt = (v: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+
+        // Calculation Logic
+        const dimensions = fields.bobDimensions || {};
+        const deedArea = (parseFloat(dimensions.deedEast || '0') || 0) + (parseFloat(dimensions.deedWest || '0') || 0) + (parseFloat(dimensions.deedNorth || '0') || 0) + (parseFloat(dimensions.deedSouth || '0') || 0);
+        const actualArea = (parseFloat(dimensions.actualEast || '0') || 0) + (parseFloat(dimensions.actualWest || '0') || 0) + (parseFloat(dimensions.actualNorth || '0') || 0) + (parseFloat(dimensions.actualSouth || '0') || 0);
+        const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+        const areaSft = minArea * 43560;
+        const areaSftFormatted = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(areaSft);
+        const calcLandExtent = minArea > 0
+          ? `(AC.${minArea} DEC i.e. ${areaSftFormatted} SFT)`
+          : '(AC.0.00 DEC i.e. 0.00 SFT)';
+        const landExtentStr = fields.bobLandTotalExtentEditOn ? (fields.bobLandTotalExtent || '') : calcLandExtent;
+
+        const acreValue = parseFloat(fields.bobGovtBenchmarkPerAcre || '0') || 0;
+        const sftRate = acreValue > 0 ? Math.round(acreValue / 43560) : 0;
+        const landGovtValue = areaSft > 0 && sftRate > 0 ? Math.round(areaSft * sftRate) : 0;
+
+        const adoptedRate = parseFloat(fields.bobAdoptedRate || '0') || 0;
+        const calculatedLandMarketValue = areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
+        const landMarketValue = fields.bobEstimatedLandValueEditOn
+          ? (parseFloat(fields.bobEstimatedLandValue || '0') || 0)
+          : calculatedLandMarketValue;
+
+        const currentYear = new Date().getFullYear();
+        const yearOfConstStr = fields.bobYearOfConstruction || '';
+        const yearMatch = yearOfConstStr.match(/\d{4}/);
+        const yearOfConst = yearMatch ? parseInt(yearMatch[0], 10) : 0;
+        const bAge = fields.bobBuildingAgeEditOn ? (parseFloat(fields.bobBuildingAge || '0') || 0) : (yearOfConst > 0 ? currentYear - yearOfConst : 0);
+
+        const buildingRows: any[] = fields.bobBuildingValuationRows || [];
+        const buildingMarketValue = buildingRows.reduce((sum: number, row: any) => {
+          const p = parseFloat(row.plinthArea || '0') || 0;
+          const r = parseFloat(row.replacementRate || '0') || 0;
+          const est = row.estCostEditOn ? (parseFloat(row.estCost || '0') || 0) : p * r;
+          const dep = row.depreciationEditOn ? (parseFloat(row.depreciation || '0') || 0) : est * 0.01 * bAge;
+          const net = row.netValueEditOn ? (parseFloat(row.netValue || '0') || 0) : est - dep;
+          return sum + net;
+        }, 0);
+
+        const amenitiesMarketValue = Array.from({ length: 10 }, (_, i) => parseFloat(fields[`bobAmenity_${i}`] || '0') || 0).reduce((a, b) => a + b, 0);
+        const miscMarketValue = Array.from({ length: 4 }, (_, i) => parseFloat(fields[`bobMisc_${i}`] || '0') || 0).reduce((a, b) => a + b, 0);
+        const servicesMarketValue = Array.from({ length: 5 }, (_, i) => parseFloat(fields[`bobService_${i}`] || '0') || 0).reduce((a, b) => a + b, 0);
+
+        const calcTotalGovt = landGovtValue + amenitiesMarketValue + miscMarketValue + servicesMarketValue;
+        const calcTotalMarket = landMarketValue + buildingMarketValue + amenitiesMarketValue + miscMarketValue + servicesMarketValue;
+        const calcTotalRealizable = calcTotalMarket * 0.95;
+        const calcTotalDistress = calcTotalMarket * 0.85;
+
+        const presentMarketValue = Math.round(calcTotalMarket / 1000) * 1000;
+        const realizableValue = Math.round(calcTotalRealizable / 1000) * 1000;
+        const forcedSaleValue = Math.round(calcTotalDistress / 1000) * 1000;
+        const govtValue = Math.round(calcTotalGovt / 1000) * 1000;
+
+        const marketValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobPresentMarketValue || '0') || 0) : presentMarketValue;
+        const realizableValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobRealizableValue || '0') || 0) : realizableValue;
+        const distressValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobForcedSaleValue || '0') || 0) : forcedSaleValue;
+        const govtValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobGovtValue || '0') || 0) : govtValue;
+
+        const defaultRemarks = `SUBJECT PROPERTY IS A ${buildingType}, LAND EXTENT OF ${landExtentStr}.\n\nAs a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmt(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only). The Realizable Value of the above Property is Rs.${fmt(realizableValNum)}/- (Rupees ${rupeesInWords(realizableValNum)} only). The book value of the above property as of Land is Rs.${fmt(govtValNum)}/- (Rupees ${rupeesInWords(govtValNum)} only) and the distress value Rs.${fmt(distressValNum)}/- (Rupees ${rupeesInWords(distressValNum)} only)`;
+        const currentRemarks = fields.bobValuerRemarks || defaultRemarks;
+
+        const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ________. We are satisfied that the fair and reasonable market value of the property is Rs. ${fmt(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only).`;
+        const currentEndorsement = fields.bobBankEndorsement || defaultEndorsement;
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#fdf5e6' }}>
+              <h3 className="font-bold text-gray-700 border-b border-orange-200 pb-2">Valuer Sign-off</h3>
+              
+              <Field label="Remarks">
+                <textarea className={inputCls} rows={6} value={currentRemarks} onChange={e => handleChange('bobValuerRemarks', e.target.value)} disabled={isReadOnly} />
+                {!fields.bobValuerRemarks && (
+                  <button type="button" onClick={() => handleChange('bobValuerRemarks', defaultRemarks)} disabled={isReadOnly} className="mt-2 text-sm text-blue-600 hover:underline">
+                    Load Default Remarks Template
+                  </button>
+                )}
+              </Field>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <PrefillField label="Date:" value={fields.bobDateOfValuationMade || ''} hoverText='>>Auto-populates from Cover Page Date<<' />
+                <Field label="Place:">
+                  <input className={inputCls} value={fields.bobSignoffPlace || 'Bhubaneswar'} onChange={e => handleChange('bobSignoffPlace', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+
+              <Field label="Signature (Name and Official Seal of the Approved Valuer)">
+                <input type="file" accept="image/*" className={inputCls}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bobSignoffSignature', reader.result); reader.readAsDataURL(file); }
+                  }} disabled={isReadOnly} />
+                {fields.bobSignoffSignature && <img src={fields.bobSignoffSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
+              </Field>
+            </div>
+
+            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e6f7ff' }}>
+              <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">Bank Endorsement</h3>
+              
+              <Field label='Endorsement Paragraph ("THE UNDERSIGNED...")'>
+                <textarea className={inputCls} rows={3} value={currentEndorsement} onChange={e => handleChange('bobBankEndorsement', e.target.value)} disabled={isReadOnly} />
+                {!fields.bobBankEndorsement && (
+                  <button type="button" onClick={() => handleChange('bobBankEndorsement', defaultEndorsement)} disabled={isReadOnly} className="mt-2 text-sm text-blue-600 hover:underline">
+                    Load Default Endorsement Template
+                  </button>
+                )}
+              </Field>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Date (Branch Manager):">
+                  <BaseDateInput value={fields.bobEndorsementDate || ''} onChange={val => handleChange('bobEndorsementDate', val)} disabled={isReadOnly} />
+                </Field>
+                <div />
+              </div>
+
+              <Field label="Signature (Branch Manager)">
+                <input type="file" accept="image/*" className={inputCls}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bobEndorsementSignature', reader.result); reader.readAsDataURL(file); }
+                  }} disabled={isReadOnly} />
+                {fields.bobEndorsementSignature && <img src={fields.bobEndorsementSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
+              </Field>
+            </div>
+          </div>
+        );
+      }
+    }
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFBankOfBarodaRenderer({
     ...fields,
