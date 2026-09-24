@@ -718,8 +718,30 @@ export default function BankReportBuilder({
     const nextLegalEnabled = isLegal ? false : fields.legalAnnexureEnabled;
     const nextLegalRef = isLegal ? '' : fields.legalAnnexureRef;
 
+    let modeKeyToReset: string | undefined = undefined;
+    if (config?.bankId === 'BANK OF BARODA') {
+      const removedCategory = fields.annexures.find((a: any) => a.id === id)?.category;
+      if (removedCategory && removedCategory !== 'general') {
+        const modeKey: Record<string, string> = {
+          'grid-valuation': 'bobBuildingValuationMode',
+          'grid-amenities': 'bobAmenitiesMode',
+          'grid-misc': 'bobMiscMode',
+          'grid-services': 'bobServicesMode',
+          'grid-abstract': 'bobAbstractMode',
+        };
+        const key = modeKey[removedCategory];
+        if (key) {
+          const stillHasFile = remaining.some((a: any) => a.category === removedCategory && a.excelFileUrl);
+          if (!stillHasFile) {
+            modeKeyToReset = key;
+          }
+        }
+      }
+    }
+
     setFields(prev => ({
       ...prev,
+      ...(modeKeyToReset ? { [modeKeyToReset]: 'manual' } : {}),
       annexureEnabled: nextTechEnabled,
       annexureRef: nextTechRef,
       annexureRefShowAlso: isTech ? false : prev.annexureRefShowAlso,
@@ -740,7 +762,35 @@ export default function BankReportBuilder({
     handleChange('annexures', fields.annexures.map(a => a.id === id ? { ...a, title } : a));
   };
   const updateAnnexureCategory = (id: string, category: string) => {
-    handleChange('annexures', fields.annexures.map(a => a.id === id ? { ...a, category } : a));
+    // Update the annexure's category
+    const updatedAnnexures = fields.annexures.map((a: any) => a.id === id ? { ...a, category } : a);
+    handleChange('annexures', updatedAnnexures);
+
+    // BOB auto-toggle: map category keys to container mode keys
+    if (config?.bankId === 'BANK OF BARODA') {
+      const categoryToModeKey: Record<string, string> = {
+        'grid-valuation': 'bobBuildingValuationMode',
+        'grid-amenities': 'bobAmenitiesMode',
+        'grid-misc': 'bobMiscMode',
+        'grid-services': 'bobServicesMode',
+        'grid-abstract': 'bobAbstractMode',
+      };
+
+      // Get the OLD category of this annexure (before change) to potentially reset its mode
+      const oldCategory = fields.annexures.find((a: any) => a.id === id)?.category;
+      if (oldCategory && oldCategory !== 'general' && categoryToModeKey[oldCategory]) {
+        // Check if any OTHER annexure still has this old category
+        const otherHasOldCategory = updatedAnnexures.some((a: any) => a.id !== id && a.category === oldCategory && a.excelFileUrl);
+        if (!otherHasOldCategory) {
+          handleChange(categoryToModeKey[oldCategory], 'manual');
+        }
+      }
+
+      // Set new category's container to 'annexure' mode (if it's a grid category)
+      if (category !== 'general' && categoryToModeKey[category]) {
+        handleChange(categoryToModeKey[category], 'annexure');
+      }
+    }
   };
   const handleAnnexureUpload = async (annexureId: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -871,9 +921,34 @@ export default function BankReportBuilder({
     setUploading(false);
   };
   const removeAnnexureFile = (annexureId: string) => {
-    handleChange('annexures', fields.annexures.map(a =>
-      a.id === annexureId ? { ...a, excelFileUrl: '', excelFileName: '', parsedData: undefined } : a
-    ));
+    let modeKeyToReset: string | undefined = undefined;
+    if (config?.bankId === 'BANK OF BARODA') {
+      const removedCategory = fields.annexures.find((a: any) => a.id === annexureId)?.category;
+      if (removedCategory && removedCategory !== 'general') {
+        const modeKey: Record<string, string> = {
+          'grid-valuation': 'bobBuildingValuationMode',
+          'grid-amenities': 'bobAmenitiesMode',
+          'grid-misc': 'bobMiscMode',
+          'grid-services': 'bobServicesMode',
+          'grid-abstract': 'bobAbstractMode',
+        };
+        const key = modeKey[removedCategory];
+        if (key) {
+          const stillHasFile = fields.annexures.some((a: any) => a.id !== annexureId && a.category === removedCategory && a.excelFileUrl);
+          if (!stillHasFile) {
+            modeKeyToReset = key;
+          }
+        }
+      }
+    }
+
+    setFields(prev => ({
+      ...prev,
+      ...(modeKeyToReset ? { [modeKeyToReset]: 'manual' } : {}),
+      annexures: prev.annexures.map(a =>
+        a.id === annexureId ? { ...a, excelFileUrl: '', excelFileName: '', parsedData: undefined } : a
+      )
+    }));
   };
 
   // ── AI Assist handlers ──
