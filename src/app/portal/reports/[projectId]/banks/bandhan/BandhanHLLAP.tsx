@@ -127,8 +127,8 @@ export const computeBandhanValuation = (
   calculatedLandVal: number = 0,
   totalBldgVal: number = 0
 ) => {
-  const land = parseNum(fields.netValueLand) || calculatedLandVal;
-  const bldg = parseNum(fields.netValueBuilding) || totalBldgVal;
+  const land = calculatedLandVal > 0 ? calculatedLandVal : parseNum(fields.netValueLand);
+  const bldg = totalBldgVal > 0 ? totalBldgVal : parseNum(fields.netValueBuilding);
   const netLandBldg = Math.round(((land + bldg) + Number.EPSILON) * 100) / 100;
 
   const flatRate = parseNum(fields.rateOfFlat);
@@ -151,7 +151,11 @@ export const computeBandhanValuation = (
   const recommendedValue = Math.max(0, Math.round(((netLandBldg + flatVal - depAmount) + Number.EPSILON) * 100) / 100);
 
   // Base Market Value for Distress / Realisable calculations
-  const baseMarketValue = parseNum(fields.totalMarketValue) || (fields.recommendedValueOfProperty ? parseNum(fields.recommendedValueOfProperty) : recommendedValue);
+  const baseMarketValue = (fields.totalMarketValue && parseNum(fields.totalMarketValue) > 0)
+    ? parseNum(fields.totalMarketValue)
+    : (fields.recommendedValueOfProperty && parseNum(fields.recommendedValueOfProperty) > 0
+        ? parseNum(fields.recommendedValueOfProperty)
+        : recommendedValue);
 
   // Decimal percentage handling
   const distressPct = fields.distressSalePct !== undefined && fields.distressSalePct !== '' ? parseNum(fields.distressSalePct) : 90;
@@ -177,8 +181,8 @@ export const computeBandhanValuation = (
     realisablePct,
     realisableValue,
     recommendedStr: recommendedValue > 0 ? `Rs.${formatCurrencyINR(recommendedValue)}/-` : '',
-    distressStr: distressValue > 0 ? `Rs.${formatCurrencyINR(distressValue)}/-` : '',
-    realisableStr: realisableValue > 0 ? `Rs.${formatCurrencyINR(realisableValue)}/-` : '',
+    distressStr: distressValue >= 0 && baseMarketValue > 0 ? (distressValue === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(distressValue)}/-`) : '',
+    realisableStr: realisableValue >= 0 && baseMarketValue > 0 ? (realisableValue === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(realisableValue)}/-`) : '',
   };
 };
 
@@ -585,12 +589,12 @@ export default function BandhanHLLAP({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [projectId, fields, isReadOnly]);
 
-  // Auto Calculations
+  // Auto Calculations & Dynamic Synchronization of all related valuation fields
   useEffect(() => {
     // 1. Calculate Land Value: area in sqft * land rate
-    const pArea = parseNum(fields.propertyArea || fields.areaOfLand);
+    const pArea = parseSqftFromArea(fields.propertyArea || fields.areaOfLand, fields.propertyAreaUnit, fields.propertyAreaValue);
     const pRate = parseNum(fields.plotRate || fields.annexureAdoptedLandRate);
-    const calculatedLandVal = pArea * pRate;
+    const calculatedLandVal = (pArea > 0 && pRate > 0) ? Math.round(((pArea * pRate) + Number.EPSILON) * 100) / 100 : 0;
 
     // 2. Calculate DRC Building Total
     let totalBldgVal = 0;
@@ -604,10 +608,6 @@ export default function BandhanHLLAP({
       totalBldgVal += (parseNum(df.value) || v);
     });
 
-    const netVal = calculatedLandVal + totalBldgVal;
-    const realisable = Math.round(netVal * 0.95);
-    const distress = Math.round(netVal * 0.90);
-
     // 3. Calculate Floor BUA
     const totalFloorSanctioned = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.sanctionedArea), 0);
     const totalFloorMeasured = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.measuredArea), 0);
@@ -616,29 +616,61 @@ export default function BandhanHLLAP({
     const floorPrefix = validFloors.length > 1 ? `G+${validFloors.length - 1} ` : (validFloors.length === 1 ? 'GF ' : '');
     const calculatedBUAStr = totalBUA > 0 ? `${floorPrefix}Total BUA = ${totalBUA}sqft.` : '';
 
-    // Sync values
+    // 4. Compute Dynamic Valuation Breakdown & Recommended Value
+    const valCalc = computeBandhanValuation(
+      {
+        ...fields,
+        netValueLand: calculatedLandVal > 0 ? String(calculatedLandVal) : fields.netValueLand,
+        netValueBuilding: totalBldgVal > 0 ? String(totalBldgVal) : fields.netValueBuilding,
+      },
+      calculatedLandVal,
+      totalBldgVal
+    );
+
+    // Sync values into state dynamically
     setFields(prev => {
       let changed = false;
       const next = { ...prev };
 
-      if (calculatedLandVal > 0 && !prev.annexureLandValue) {
-        next.annexureLandValue = formatCurrencyINR(calculatedLandVal);
-        next.summaryLandValue = formatCurrencyINR(calculatedLandVal);
-        changed = true;
+      // Land & Plot Valuation
+      if (calculatedLandVal > 0) {
+        const landStr = String(calculatedLandVal);
+        const landFmt = formatCurrencyINR(calculatedLandVal);
+        if (prev.netValueLand !== landStr) {
+          next.netValueLand = landStr;
+          changed = true;
+        }
+        if (prev.annexureLandValue !== landFmt) {
+          next.annexureLandValue = landFmt;
+          next.summaryLandValue = landFmt;
+          changed = true;
+        }
+        const areaStr = fields.propertyArea || fields.areaOfLand || '';
+        const calcFormula = areaStr && pRate > 0
+          ? `${areaStr} * Rs.${fields.plotRate || pRate}/- = Rs.${landFmt}/-`
+          : '';
+        if (calcFormula && prev.plotValueBreakdown !== calcFormula) {
+          next.plotValueBreakdown = calcFormula;
+          next.recommendedValuationFormula = calcFormula;
+          changed = true;
+        }
       }
-      if (calculatedLandVal > 0 && !prev.netValueLand) {
-        next.netValueLand = String(calculatedLandVal);
-        changed = true;
+
+      // Building Value
+      if (totalBldgVal > 0) {
+        const bldgStr = String(totalBldgVal);
+        const bldgFmt = formatCurrencyINR(totalBldgVal);
+        if (prev.netValueBuilding !== bldgStr) {
+          next.netValueBuilding = bldgStr;
+          changed = true;
+        }
+        if (prev.drcTotalBuildingValue !== bldgFmt) {
+          next.drcTotalBuildingValue = bldgFmt;
+          next.summaryBuildingValue = bldgFmt;
+          changed = true;
+        }
       }
-      if (totalBldgVal > 0 && !prev.drcTotalBuildingValue) {
-        next.drcTotalBuildingValue = formatCurrencyINR(totalBldgVal);
-        next.summaryBuildingValue = formatCurrencyINR(totalBldgVal);
-        changed = true;
-      }
-      if (totalBldgVal > 0 && !prev.netValueBuilding) {
-        next.netValueBuilding = String(totalBldgVal);
-        changed = true;
-      }
+
       const validNamedFloors = (fields.floors || []).filter(f => f.floor && f.floor.trim().length > 0);
       const autoStructure = validNamedFloors.length > 1
         ? `G+${validNamedFloors.length - 1} Storied Building`
@@ -647,20 +679,8 @@ export default function BandhanHLLAP({
         next.progressStructureHeader = autoStructure;
         changed = true;
       }
-      const valCalc = computeBandhanValuation(
-        {
-          ...prev,
-          ...next,
-          netValueLand: next.netValueLand || prev.netValueLand,
-          netValueBuilding: next.netValueBuilding || prev.netValueBuilding,
-          rateOfFlat: fields.rateOfFlat,
-          areaOfFlat: fields.areaOfFlat,
-          depreciationOfConstruction: fields.depreciationOfConstruction,
-        },
-        calculatedLandVal,
-        totalBldgVal
-      );
 
+      // Net Value of Property (Land + Building)
       if (valCalc.netLandBldg > 0) {
         const netPropStr = `Rs.${formatCurrencyINR(valCalc.netLandBldg)}/-`;
         if (prev.netValueOfProperty !== netPropStr) {
@@ -669,6 +689,7 @@ export default function BandhanHLLAP({
         }
       }
 
+      // Recommended Value of the Property & all downstream related fields
       if (valCalc.recommendedValue > 0) {
         const recStr = valCalc.recommendedStr;
         const distStr = valCalc.distressStr;
@@ -676,36 +697,74 @@ export default function BandhanHLLAP({
         const sumMktStr = formatCurrencyINR(valCalc.recommendedValue);
         const sumWords = formatIndianCurrency(valCalc.recommendedValue);
 
-        if (prev.recommendedValueOfProperty === undefined) {
+        if (prev.recommendedValueOfProperty !== recStr) {
           next.recommendedValueOfProperty = recStr;
           changed = true;
         }
-        if (prev.totalMarketValue === undefined) {
+        if (prev.totalMarketValue !== recStr) {
           next.totalMarketValue = recStr;
           changed = true;
         }
-        if (prev.valuationAsOnDate === undefined) {
-          next.valuationAsOnDate = recStr;
+        const recNumStr = String(valCalc.recommendedValue);
+        if (prev.valuationAsOnDate !== recNumStr && prev.valuationAsOnDate !== recStr) {
+          next.valuationAsOnDate = recNumStr;
           changed = true;
         }
-        if (prev.summaryMarketValue === undefined) {
+        if (prev.summaryMarketValue !== sumMktStr) {
           next.summaryMarketValue = sumMktStr;
           changed = true;
         }
-        if (prev.summaryMarketValueWords === undefined) {
+        if (prev.summaryMarketValueWords !== sumWords) {
           next.summaryMarketValueWords = sumWords;
           changed = true;
         }
-        if (distStr && prev.distressSaleValue === undefined) {
+        if (distStr && prev.distressSaleValue !== distStr) {
           next.distressSaleValue = distStr;
+          next.distressedValue = formatCurrencyINR(valCalc.distressValue);
           changed = true;
         }
-
-        if (realStr && prev.realisableValue === undefined) {
+        if (realStr && prev.realisableValue !== realStr) {
           next.realisableValue = realStr;
+          next.realizableValue = formatCurrencyINR(valCalc.realisableValue);
           changed = true;
         }
       }
+
+      // Govt Rate Valuation formula (Pt 36)
+      if (prev.valuationGovtRateLocked !== false && fields.govtRateLand) {
+        const govtAreaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
+        const govtAreaNum = parseSqftFromArea(govtAreaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
+        const govtRateNum = parseNum(fields.govtRateLand);
+        const calcGovtVal = (govtAreaNum > 0 && govtRateNum > 0) ? Math.round(((govtAreaNum * govtRateNum) + Number.EPSILON) * 100) / 100 : 0;
+        if (govtAreaStr && govtRateNum > 0 && calcGovtVal > 0) {
+          const govtFormula = `${govtAreaStr} * Rs.${fields.govtRateLand}/- = Rs.${formatCurrencyINR(calcGovtVal)}/-`;
+          if (prev.valuationGovtRate !== govtFormula) {
+            next.valuationGovtRate = govtFormula;
+            changed = true;
+          }
+        }
+      }
+
+      // Area of Land statement sync (Pt 39)
+      if (prev.areaOfLandLocked !== false && fields.propertyAreaValue) {
+        if (prev.areaOfLandUnit !== fields.propertyAreaUnit || prev.areaOfLandValue !== fields.propertyAreaValue) {
+          const formatted = formatAreaOfLandStatement(
+            fields.propertyAreaUnit || 'ACRE_DEC',
+            fields.propertyAreaValue || '',
+            '',
+            '',
+            ''
+          );
+          if (prev.areaOfLand !== formatted.statement) {
+            next.areaOfLandUnit = fields.propertyAreaUnit;
+            next.areaOfLandValue = fields.propertyAreaValue;
+            next.areaOfLand = formatted.statement;
+            next.areaOfLandSqft = formatted.sqftStr;
+            changed = true;
+          }
+        }
+      }
+
       if (prev.builtUpAreaTotal !== calculatedBUAStr) {
         next.builtUpAreaTotal = calculatedBUAStr;
         changed = true;
@@ -714,20 +773,22 @@ export default function BandhanHLLAP({
       return changed ? next : prev;
     });
   }, [
+    fields.propertyAreaUnit,
+    fields.propertyAreaValue,
     fields.propertyArea,
     fields.areaOfLand,
     fields.plotRate,
     fields.annexureAdoptedLandRate,
     fields.floors,
     fields.drcFloors,
-    fields.netValueLand,
-    fields.netValueBuilding,
     fields.rateOfFlat,
     fields.areaOfFlat,
     fields.depreciationOfConstruction,
     fields.distressSalePct,
     fields.realisableValuePct,
-    fields.totalMarketValue,
+    fields.govtRateLand,
+    fields.valuationGovtRateLocked,
+    fields.areaOfLandLocked,
   ]);
 
   // Handler for standard input changes
