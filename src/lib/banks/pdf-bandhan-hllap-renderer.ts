@@ -680,14 +680,42 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawBandhanRow('', 'Net value of the property (Land + Building)', fields.netValueOfProperty || '');
     this.drawBandhanRow('', 'Recommended rate of the flat', fields.rateOfFlat || '');
     this.drawBandhanRow('', 'Area of the flat', fields.areaOfFlat || '');
-    this.drawBandhanRow('', 'Recommended value of the property', fields.recommendedValueOfProperty || '');
-    this.drawBandhanRow('', 'Total Market Value of existing property', fields.totalMarketValue || '');
+    let valRec = (fields.recommendedValueOfProperty || '').trim();
+    if (valRec) {
+      if (valRec.startsWith('Rs.') || valRec.startsWith('₹')) {
+        // already formatted
+      } else {
+        const num = parseNum(valRec);
+        if (num > 0) valRec = `Rs.${formatCurrencyINR(num)}/-`;
+      }
+    }
+    this.drawBandhanRow('', 'Recommended value of the property', valRec);
+
+    let valMkt = (fields.totalMarketValue || '').trim();
+    if (valMkt) {
+      if (valMkt.startsWith('Rs.') || valMkt.startsWith('₹')) {
+        // already formatted
+      } else {
+        const num = parseNum(valMkt);
+        if (num > 0) valMkt = `Rs.${formatCurrencyINR(num)}/-`;
+      }
+    }
+    this.drawBandhanRow('', 'Total Market Value of existing property', valMkt);
 
     // 34. Progress of work checklist
     this.drawProgressOfWorkSection(fields);
 
     // 35 to 40
-    this.drawBandhanRow('35.', 'Valuation of the property as on date', fields.valuationAsOnDate || '');
+    let val35 = (fields.valuationAsOnDate || '').trim();
+    if (val35) {
+      if (val35.startsWith('Rs.') || val35.startsWith('₹')) {
+        // already formatted
+      } else {
+        const num = parseNum(val35);
+        if (num > 0) val35 = `Rs.${formatCurrencyINR(num)}/-`;
+      }
+    }
+    this.drawBandhanRow('35.', 'Valuation of the property as on date', val35);
     this.drawBandhanRow('36.', 'Valuation as per govt. rates (Land)', fields.valuationGovtRate || '');
     this.drawBandhanRow('37.', 'Distress sale value', fields.distressSaleValue || '');
     this.drawBandhanRow('', 'Realisable Value', fields.realisableValue || '');
@@ -1323,8 +1351,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.cursorY += 4;
 
     const rawMktVal = fields.summaryMarketValue || (fields.totalMarketValue ? fields.totalMarketValue.replace(/^Rs\./i, '').replace(/\/-$/i, '') : '') || (fields.recommendedValueOfProperty ? fields.recommendedValueOfProperty.replace(/^Rs\./i, '').replace(/\/-$/i, '') : '') || '2,59,72,000';
-    const finalMktValStr = `Rs.${rawMktVal}/-`;
     const mktNum = parseNum(rawMktVal);
+    const finalMktValStr = mktNum > 0 ? `Rs.${formatCurrencyINR(mktNum)}/-` : `Rs.${rawMktVal}/-`;
     const finalRealVal = fields.realisableValue || (mktNum > 0 ? `Rs.${formatCurrencyINR(Math.round(mktNum * 0.95))}/-` : 'Rs.2,46,73,400/-');
     const finalDistVal = fields.distressSaleValue || (mktNum > 0 ? `Rs.${formatCurrencyINR(Math.round(mktNum * 0.90))}/-` : 'Rs.2,33,74,800/-');
 

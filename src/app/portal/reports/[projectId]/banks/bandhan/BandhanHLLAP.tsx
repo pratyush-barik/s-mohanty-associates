@@ -2539,30 +2539,39 @@ export default function BandhanHLLAP({
                     <div className="sm:col-span-2 space-y-2">
                       {(() => {
                         const valCalc = computeBandhanValuation(fields);
+                        const recNum = parseNum(fields.recommendedValueOfProperty);
                         return (
                           <>
                             <div className="flex items-center justify-between">
                               <label className="block text-xs font-semibold text-slate-800">
-                                Recommended Value of the Property:
+                                Recommended Value of the Property (Float Amount in Rs.):
                               </label>
-                              {valCalc.recommendedValue > 0 && (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    handleChange('recommendedValueOfProperty', valCalc.recommendedStr);
-                                  }}
-                                  className="text-[11px] text-emerald-700 hover:text-emerald-900 font-medium flex items-center gap-1 bg-emerald-100/70 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors cursor-pointer"
-                                  title="Auto-calculate Recommended Value"
-                                >
-                                  ↺ Auto: {valCalc.recommendedStr}
-                                </button>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {recNum > 0 && (
+                                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                    ₹{formatCurrencyINR(recNum)}
+                                  </span>
+                                )}
+                                {valCalc.recommendedValue > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      handleChange('recommendedValueOfProperty', String(valCalc.recommendedValue));
+                                    }}
+                                    className="text-[11px] text-emerald-700 hover:text-emerald-900 font-medium flex items-center gap-1 bg-emerald-100/70 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors cursor-pointer"
+                                    title="Auto-calculate Recommended Value"
+                                  >
+                                    ↺ Auto: {formatCurrencyINR(valCalc.recommendedValue)}
+                                  </button>
+                                )}
+                              </div>
                             </div>
                             <input
                               type="text"
                               className={inputCls}
                               value={fields.recommendedValueOfProperty || ''}
-                              onChange={(e) => handleChange('recommendedValueOfProperty', e.target.value)}
+                              onChange={(e) => handleChange('recommendedValueOfProperty', sanitizePositiveFloat(e.target.value))}
+                              placeholder="e.g. 5000000 (Float amount in Rs.)"
                               disabled={isReadOnly}
                             />
 
@@ -2602,33 +2611,42 @@ export default function BandhanHLLAP({
                     <div className="sm:col-span-2 space-y-1.5">
                       {(() => {
                         const valCalc = computeBandhanValuation(fields);
-                        const refVal = fields.recommendedValueOfProperty || valCalc.recommendedStr;
+                        const refNum = parseNum(fields.recommendedValueOfProperty) || valCalc.recommendedValue;
+                        const mktNum = parseNum(fields.totalMarketValue);
                         return (
                           <>
                             <div className="flex items-center justify-between">
                               <label className="block text-xs font-semibold text-slate-800">
-                                Total Market Value of Existing Property:
+                                Total Market Value of Existing Property (Float Amount in Rs.):
                               </label>
-                              {refVal && (
-                                <button
-                                  type="button"
-                                  onClick={() => handleChange('totalMarketValue', refVal)}
-                                  className="text-[11px] text-emerald-700 hover:text-emerald-900 font-medium flex items-center gap-1 bg-emerald-100/70 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors cursor-pointer"
-                                  title="Sync with Recommended Value"
-                                >
-                                  ↺ Sync from Recommended: {refVal}
-                                </button>
-                              )}
+                              <div className="flex items-center gap-2">
+                                {mktNum > 0 && (
+                                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                    ₹{formatCurrencyINR(mktNum)}
+                                  </span>
+                                )}
+                                {refNum > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleChange('totalMarketValue', String(refNum))}
+                                    className="text-[11px] text-emerald-700 hover:text-emerald-900 font-medium flex items-center gap-1 bg-emerald-100/70 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors cursor-pointer"
+                                    title="Sync with Recommended Value"
+                                  >
+                                    ↺ Sync from Recommended: {formatCurrencyINR(refNum)}
+                                  </button>
+                                )}
+                              </div>
                             </div>
                             <input
                               type="text"
                               className={inputCls}
                               value={fields.totalMarketValue || ''}
-                              onChange={(e) => handleChange('totalMarketValue', e.target.value)}
+                              onChange={(e) => handleChange('totalMarketValue', sanitizePositiveFloat(e.target.value))}
+                              placeholder="e.g. 5000000 (Float amount in Rs.)"
                               disabled={isReadOnly}
                             />
                             <p className="text-[11px] text-slate-500">
-                              Auto-referenced from Recommended Value of the Property. Freely editable for custom adjustments.
+                              Auto-referenced from Recommended Value of the Property. Freely editable float amount for custom adjustments.
                             </p>
                           </>
                         );
