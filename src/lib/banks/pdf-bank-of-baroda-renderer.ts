@@ -619,8 +619,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
     rIdx++;
 
-    this.drawSectionHeader('PART I — GENERAL', false, false);
-
     const styleOpts = (ri: number, ci: number) => {
       const row = allRows[ri];
       const isSubTableHdr = row[3] === 'As per Sketch Map' || row[3] === 'A' || row[3] === 'As per the Deed';
@@ -630,6 +628,17 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       let bold = false;
       let fillColor: any = undefined;
       let bgOpacity = 0.5;
+      let hideBorder: any = undefined;
+
+      // Hide horizontal borders for grouped cells in Column 0
+      if (ci === 0) {
+        if (row[0] === '') {
+          hideBorder = { top: true };
+        }
+        if (ri < allRows.length - 1 && allRows[ri + 1][0] === '') {
+          hideBorder = { ...(hideBorder || {}), bottom: true };
+        }
+      }
 
       let isFieldName = false;
 
@@ -653,7 +662,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
         fillColor = undefined;
       }
       
-      return { align, bold, fillColor, bgOpacity };
+      return { align, bold, fillColor, bgOpacity, hideBorder };
     };
 
     // We pass tableOpts with fontSize: 12 (FONT_SIZE) which mimics drawSimpleRow
@@ -694,6 +703,18 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       let bold = false;
       let fillColor: any = undefined;
       let bgOpacity = 0.5;
+      let hideBorder: any = undefined;
+
+      const row = allRows[ri];
+
+      if (ci === 0) {
+        if (row[0] === '') {
+          hideBorder = { top: true };
+        }
+        if (ri < allRows.length - 1 && allRows[ri + 1][0] === '') {
+          hideBorder = { ...(hideBorder || {}), bottom: true };
+        }
+      }
 
       if (ci < 2) {
         bold = true;
@@ -703,7 +724,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
         fillColor = undefined;
       }
       
-      return { align, bold, fillColor, bgOpacity };
+      return { align, bold, fillColor, bgOpacity, hideBorder };
     };
 
     // Columns: Number (0.06), Label (0.34), Value (0.60)

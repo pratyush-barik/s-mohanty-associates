@@ -358,6 +358,18 @@ export class PDFGeneralRenderer {
     });
   }
 
+  /** Draw a vertical line */
+  protected drawVLine(x: number, topY1: number, topY2: number, color?: string, width?: number): void {
+    const pY1 = this.pdfY(topY1);
+    const pY2 = this.pdfY(topY2);
+    this.page.drawLine({
+      start: { x: x, y: pY1 },
+      end: { x: x, y: pY2 },
+      thickness: width || 0.5,
+      color: color ? hexToRgb(color) : rgb(0, 0, 0),
+    });
+  }
+
   /** Draw a single line of text at absolute coordinates */
   protected drawTextAt(text: string, x: number, topY: number, opts?: DrawTextOptions & { textColor?: string }): void {
     const strText = this.sanitizeText(text);
@@ -464,6 +476,7 @@ export class PDFGeneralRenderer {
       fillColor?: string; bgOpacity?: number; borderColor?: string;
       textColor?: string;
       vAlign?: 'top' | 'middle';
+      hideBorder?: { top?: boolean; bottom?: boolean; left?: boolean; right?: boolean };
     }
   ): void {
     const fontSize = opts?.fontSize || FONT_SIZE;
@@ -474,7 +487,15 @@ export class PDFGeneralRenderer {
     }
 
     // Border
-    this.drawRect(x, topY, w, h, undefined, opts?.borderColor || '#000000', BORDER_W);
+    if (!opts?.hideBorder) {
+      this.drawRect(x, topY, w, h, undefined, opts?.borderColor || '#000000', BORDER_W);
+    } else {
+      const bc = opts.borderColor || '#000000';
+      if (!opts.hideBorder.top) this.drawHLine(x, x + w, topY, bc, BORDER_W);
+      if (!opts.hideBorder.bottom) this.drawHLine(x, x + w, topY + h, bc, BORDER_W);
+      if (!opts.hideBorder.left) this.drawVLine(x, topY, topY + h, bc, BORDER_W);
+      if (!opts.hideBorder.right) this.drawVLine(x + w, topY, topY + h, bc, BORDER_W);
+    }
 
     // Text
     const textW = w - CELL_PAD_X * 2;
