@@ -118,22 +118,56 @@ export function formatCommencementCompletion(
   return 'NA';
 }
 
+export function convertAreaToSqft(
+  unit: string = 'ACRE_DEC',
+  valStr: string = ''
+): { sqft: number; sqftStr: string } {
+  const num = parseFloat(String(valStr).replace(/[^0-9.]/g, ''));
+  if (isNaN(num) || num <= 0) {
+    return { sqft: 0, sqftStr: '' };
+  }
+  let sqft = 0;
+  if (unit === 'ACRE_DEC') {
+    sqft = num * 43560;
+  } else if (unit === 'DECIMAL') {
+    sqft = num * 435.6;
+  } else if (unit === 'SQFT') {
+    sqft = num;
+  } else if (unit === 'SQYD') {
+    sqft = num * 9;
+  } else if (unit === 'SQMT') {
+    sqft = num * 10.7639;
+  } else if (unit === 'GUNTHA') {
+    sqft = num * 1089;
+  }
+  const rounded = Math.round((sqft + Number.EPSILON) * 100) / 100;
+  const formatted = rounded % 1 === 0
+    ? formatCurrencyINR(rounded)
+    : rounded.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return {
+    sqft: rounded,
+    sqftStr: `${formatted} sqft.`,
+  };
+}
+
 export function formatAreaOfLandStatement(
   unit: string = 'ACRE_DEC',
   primaryVal: string = '',
   acresVal: string = '',
   decsVal: string = '',
   rawResult: string = ''
-): { statement: string; sqft: number } {
+): { statement: string; sqft: number; sqftStr: string } {
   const pNum = parseFloat(String(primaryVal).replace(/[^0-9.]/g, '')) || 0;
   const aNum = parseFloat(String(acresVal).replace(/[^0-9.]/g, '')) || 0;
   const dNum = parseFloat(String(decsVal).replace(/[^0-9.]/g, '')) || 0;
 
   if (unit === 'SQFT') {
     if (pNum > 0) {
-      return { statement: `${formatCurrencyINR(pNum)} sqft.`, sqft: pNum };
+      const rounded = Math.round((pNum + Number.EPSILON) * 100) / 100;
+      const f = rounded % 1 === 0 ? formatCurrencyINR(rounded) : rounded.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return { statement: `${f} sqft.`, sqft: rounded, sqftStr: `${f} sqft.` };
     }
-    return { statement: primaryVal ? `${primaryVal} sqft.` : (rawResult || ''), sqft: 0 };
+    return { statement: primaryVal ? `${primaryVal} sqft.` : (rawResult || ''), sqft: 0, sqftStr: '' };
   }
 
   if (unit === 'ACRE_DEC') {
@@ -145,61 +179,73 @@ export function formatAreaOfLandStatement(
       totalAcres = pNum;
     }
     if (totalAcres > 0) {
-      const sqft = Math.round(totalAcres * 43560);
+      const sqft = Math.round(((totalAcres * 43560) + Number.EPSILON) * 100) / 100;
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       const decsStr = totalAcres.toFixed(3);
       return {
-        statement: `(AC.${decsStr}Decs) i.e. ${formatCurrencyINR(sqft)}sqft.`,
+        statement: `(AC.${decsStr}Decs) i.e. ${f} sqft.`,
         sqft,
+        sqftStr: `${f} sqft.`,
       };
     }
-    return { statement: rawResult || '', sqft: 0 };
+    return { statement: rawResult || '', sqft: 0, sqftStr: '' };
   }
 
   if (unit === 'DECIMAL') {
     if (pNum > 0) {
-      const sqft = Math.round(pNum * 435.6);
+      const sqft = Math.round(((pNum * 435.6) + Number.EPSILON) * 100) / 100;
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       return {
-        statement: `(${pNum} Decs) i.e. ${formatCurrencyINR(sqft)}sqft.`,
+        statement: `(${pNum} Decs) i.e. ${f} sqft.`,
         sqft,
+        sqftStr: `${f} sqft.`,
       };
     }
-    return { statement: rawResult || '', sqft: 0 };
+    return { statement: rawResult || '', sqft: 0, sqftStr: '' };
   }
 
   if (unit === 'SQYD') {
     if (pNum > 0) {
-      const sqft = Math.round(pNum * 9);
+      const sqft = Math.round(((pNum * 9) + Number.EPSILON) * 100) / 100;
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fNum = pNum % 1 === 0 ? formatCurrencyINR(pNum) : pNum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       return {
-        statement: `(${formatCurrencyINR(pNum)} Sq.Yds) i.e. ${formatCurrencyINR(sqft)}sqft.`,
+        statement: `(${fNum} Sq.Yds) i.e. ${f} sqft.`,
         sqft,
+        sqftStr: `${f} sqft.`,
       };
     }
-    return { statement: rawResult || '', sqft: 0 };
+    return { statement: rawResult || '', sqft: 0, sqftStr: '' };
   }
 
   if (unit === 'SQMT') {
     if (pNum > 0) {
-      const sqft = Math.round(pNum * 10.7639);
+      const sqft = Math.round(((pNum * 10.7639) + Number.EPSILON) * 100) / 100;
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fNum = pNum % 1 === 0 ? formatCurrencyINR(pNum) : pNum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       return {
-        statement: `(${formatCurrencyINR(pNum)} Sq.Mtr) i.e. ${formatCurrencyINR(sqft)}sqft.`,
+        statement: `(${fNum} Sq.Mtr) i.e. ${f} sqft.`,
         sqft,
+        sqftStr: `${f} sqft.`,
       };
     }
-    return { statement: rawResult || '', sqft: 0 };
+    return { statement: rawResult || '', sqft: 0, sqftStr: '' };
   }
 
   if (unit === 'GUNTHA') {
     if (pNum > 0) {
-      const sqft = Math.round(pNum * 1089);
+      const sqft = Math.round(((pNum * 1089) + Number.EPSILON) * 100) / 100;
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       return {
-        statement: `(${pNum} Guntha) i.e. ${formatCurrencyINR(sqft)}sqft.`,
+        statement: `(${pNum} Guntha) i.e. ${f} sqft.`,
         sqft,
+        sqftStr: `${f} sqft.`,
       };
     }
-    return { statement: rawResult || '', sqft: 0 };
+    return { statement: rawResult || '', sqft: 0, sqftStr: '' };
   }
 
-  return { statement: rawResult || '', sqft: 0 };
+  return { statement: rawResult || '', sqft: 0, sqftStr: '' };
 }
 
 export interface BandhanHLLAPDRCFloor {
@@ -296,6 +342,7 @@ export interface BandhanHLLAPReportFields {
   propertyArea?: string;
   propertyAreaUnit?: string;
   propertyAreaValue?: string;
+  propertyAreaSqft?: string;
   propertyAreaAcres?: string;
   propertyAreaDecimals?: string;
   propertyAreaLocked?: boolean;
@@ -348,6 +395,7 @@ export interface BandhanHLLAPReportFields {
   areaOfLand?: string;
   areaOfLandUnit?: 'ACRE_DEC' | 'DECIMAL' | 'SQFT' | 'SQYD' | 'SQMT' | 'GUNTHA';
   areaOfLandValue?: string;
+  areaOfLandSqft?: string;
   areaOfLandAcres?: string;
   areaOfLandDecimals?: string;
   areaOfLandLocked?: boolean;
@@ -743,13 +791,33 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
         val36 = `${fields.govtLandArea || fields.propertyArea || fields.areaOfLand} * Rs.${fields.govtRateLand}/- = Rs.${formatCurrencyINR(area * rate)}/-`;
       }
     }
-    this.drawBandhanRow('36.', 'Valuation as per govt. rates (Land)', val36);
-    this.drawBandhanRow('37.', 'Distress sale value', fields.distressSaleValue || '');
-    this.drawBandhanRow('', 'Realisable Value', fields.realisableValue || '');
+    let val37 = (fields.distressSaleValue || '').trim();
+    if (!val37 || fields.distressSaleLocked !== false) {
+      const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
+      const pctStr = fields.distressSalePct !== undefined && fields.distressSalePct !== '' ? fields.distressSalePct : '90';
+      const pctNum = parseFloat(pctStr);
+      if (baseNum > 0 && !isNaN(pctNum)) {
+        const amt = Math.round((baseNum * pctNum) / 100);
+        val37 = amt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(amt)}/-`;
+      }
+    }
+    this.drawBandhanRow('37.', 'Distress sale value', val37 || '');
+
+    let valRealisable = (fields.realisableValue || '').trim();
+    if (!valRealisable || fields.realisableValueLocked !== false) {
+      const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
+      const pctStr = fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '95';
+      const pctNum = parseFloat(pctStr);
+      if (baseNum > 0 && !isNaN(pctNum)) {
+        const amt = Math.round((baseNum * pctNum) / 100);
+        valRealisable = amt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(amt)}/-`;
+      }
+    }
+    this.drawBandhanRow('', 'Realisable Value', valRealisable || '');
     const val38 = formatCommencementCompletion(fields.projectCommencementDate, fields.expectedCompletionDate, fields.dateCommencementCompletion);
     this.drawBandhanRow('38.', 'Date of project commencement & date of expected project completion', val38);
     let val39 = fields.areaOfLand;
-    if (!val39) {
+    if (!val39 || fields.areaOfLandLocked !== false) {
       if (fields.areaOfLandValue || fields.areaOfLandAcres) {
         val39 = formatAreaOfLandStatement(
           fields.areaOfLandUnit || 'ACRE_DEC',
@@ -763,7 +831,19 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       }
     }
     this.drawBandhanRow('39.', 'Area of land', val39 || '');
-    this.drawBandhanRow('40.', 'Expected cost of the project', fields.expectedCostOfProject || 'NA');
+
+    let val40 = (fields.expectedCostOfProject || '').trim();
+    if (!val40 || val40 === 'NA') {
+      val40 = 'NA';
+    } else if (val40.startsWith('Rs.') || val40.startsWith('₹')) {
+      // already currency formatted
+    } else {
+      const num40 = parseNum(val40);
+      if (num40 > 0) {
+        val40 = `Rs.${formatCurrencyINR(num40)}/-`;
+      }
+    }
+    this.drawBandhanRow('40.', 'Expected cost of the project', val40 || 'NA');
   }
 
   /**
