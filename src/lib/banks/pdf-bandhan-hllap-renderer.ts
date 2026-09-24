@@ -45,9 +45,12 @@ const parseNum = (v: any): number => {
 };
 
 const formatCurrencyINR = (val: number): string => {
+  if (val === undefined || val === null || isNaN(val)) return '0';
+  const rounded = Math.round((val + Number.EPSILON) * 100) / 100;
   return new Intl.NumberFormat('en-IN', {
-    maximumFractionDigits: 0,
-  }).format(val);
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(rounded);
 };
 
 export interface BandhanHLLAPFloor {

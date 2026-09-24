@@ -111,9 +111,12 @@ const getNextFloorName = (existingFloors: BandhanHLLAPFloor[]): string => {
 };
 
 const formatCurrencyINR = (val: number): string => {
+  if (val === undefined || val === null || isNaN(val)) return '0';
+  const rounded = Math.round((val + Number.EPSILON) * 100) / 100;
   return new Intl.NumberFormat('en-IN', {
-    maximumFractionDigits: 0,
-  }).format(val);
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(rounded);
 };
 
 export const computeBandhanValuation = (
@@ -123,11 +126,11 @@ export const computeBandhanValuation = (
 ) => {
   const land = parseNum(fields.netValueLand) || calculatedLandVal;
   const bldg = parseNum(fields.netValueBuilding) || totalBldgVal;
-  const netLandBldg = land + bldg;
+  const netLandBldg = Math.round(((land + bldg) + Number.EPSILON) * 100) / 100;
 
   const flatRate = parseNum(fields.rateOfFlat);
   const flatArea = parseNum(fields.areaOfFlat);
-  const flatVal = (flatRate > 0 && flatArea > 0) ? Math.round(flatRate * flatArea) : 0;
+  const flatVal = (flatRate > 0 && flatArea > 0) ? Math.round(((flatRate * flatArea) + Number.EPSILON) * 100) / 100 : 0;
 
   const depRaw = (fields.depreciationOfConstruction || '').trim();
   let depAmount = 0;
@@ -136,26 +139,26 @@ export const computeBandhanValuation = (
   if (depRaw && !/^(nil|na|n\.a\.|none|0|0%)$/i.test(depRaw)) {
     const depNum = parseNum(depRaw);
     if (depRaw.includes('%') || (depNum <= 100 && bldg > 1000)) {
-      depAmount = Math.round((bldg * depNum) / 100);
+      depAmount = Math.round((((bldg * depNum) / 100) + Number.EPSILON) * 100) / 100;
       depDescription = `${depNum}% on Building = Rs.${formatCurrencyINR(depAmount)}/-`;
     } else {
-      depAmount = depNum;
+      depAmount = Math.round((depNum + Number.EPSILON) * 100) / 100;
       depDescription = `Rs.${formatCurrencyINR(depAmount)}/-`;
     }
   }
 
   // Exact Formula: Net Value of Property (Land + Building) + (Recommended Rate of Flat * Area of Flat) - Depreciation of Construction
-  const recommendedValue = Math.max(0, netLandBldg + flatVal - depAmount);
+  const recommendedValue = Math.max(0, Math.round(((netLandBldg + flatVal - depAmount) + Number.EPSILON) * 100) / 100);
 
   // Base Market Value for Distress / Realisable calculations
   const baseMarketValue = parseNum(fields.totalMarketValue) || (fields.recommendedValueOfProperty ? parseNum(fields.recommendedValueOfProperty) : recommendedValue);
 
   // Decimal percentage handling
   const distressPct = fields.distressSalePct !== undefined && fields.distressSalePct !== '' ? parseNum(fields.distressSalePct) : 90;
-  const distressValue = Math.round((baseMarketValue * distressPct) / 100);
+  const distressValue = Math.round((((baseMarketValue * distressPct) / 100) + Number.EPSILON) * 100) / 100;
 
   const realisablePct = fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? parseNum(fields.realisableValuePct) : 95;
-  const realisableValue = Math.round((baseMarketValue * realisablePct) / 100);
+  const realisableValue = Math.round((((baseMarketValue * realisablePct) / 100) + Number.EPSILON) * 100) / 100;
 
   return {
     land,
@@ -637,32 +640,32 @@ export default function BandhanHLLAP({
         const sumMktStr = formatCurrencyINR(valCalc.recommendedValue);
         const sumWords = formatIndianCurrency(valCalc.recommendedValue);
 
-        if (!prev.recommendedValueOfProperty) {
+        if (prev.recommendedValueOfProperty === undefined) {
           next.recommendedValueOfProperty = recStr;
           changed = true;
         }
-        if (!prev.totalMarketValue) {
+        if (prev.totalMarketValue === undefined) {
           next.totalMarketValue = recStr;
           changed = true;
         }
-        if (!prev.valuationAsOnDate) {
+        if (prev.valuationAsOnDate === undefined) {
           next.valuationAsOnDate = recStr;
           changed = true;
         }
-        if (!prev.summaryMarketValue) {
+        if (prev.summaryMarketValue === undefined) {
           next.summaryMarketValue = sumMktStr;
           changed = true;
         }
-        if (!prev.summaryMarketValueWords) {
+        if (prev.summaryMarketValueWords === undefined) {
           next.summaryMarketValueWords = sumWords;
           changed = true;
         }
-        if (distStr && prev.distressSaleValue !== distStr) {
+        if (distStr && prev.distressSaleValue === undefined) {
           next.distressSaleValue = distStr;
           changed = true;
         }
 
-        if (realStr && prev.realisableValue !== realStr) {
+        if (realStr && prev.realisableValue === undefined) {
           next.realisableValue = realStr;
           changed = true;
         }
@@ -1633,50 +1636,21 @@ export default function BandhanHLLAP({
                         26. Total Land / Property Area
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {fields.areaOfLand && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setFields(prev => ({
-                              ...prev,
-                              propertyArea: prev.areaOfLand || prev.propertyArea,
-                              propertyAreaLocked: false,
-                            }));
-                          }}
-                          className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
-                          title="Sync from Pt 39 Area of Land"
-                        >
-                          ↺ Sync Pt 39: {fields.areaOfLand}
-                        </button>
-                      )}
+                    {fields.areaOfLand && (
                       <button
                         type="button"
                         onClick={() => {
-                          const nextLocked = fields.propertyAreaLocked === false;
-                          if (nextLocked) {
-                            const unit = fields.propertyAreaUnit || 'ACRE_DEC';
-                            const val = fields.propertyAreaValue || '';
-                            const formatted = formatAreaOfLandStatement(unit, val, fields.propertyAreaAcres, fields.propertyAreaDecimals, fields.propertyArea);
-                            setFields(prev => ({
-                              ...prev,
-                              propertyAreaLocked: true,
-                              propertyArea: formatted.statement || prev.propertyArea,
-                            }));
-                          } else {
-                            setFields(prev => ({ ...prev, propertyAreaLocked: false }));
-                          }
+                          setFields(prev => ({
+                            ...prev,
+                            propertyArea: prev.areaOfLand || prev.propertyArea,
+                          }));
                         }}
-                        className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1 border transition-colors cursor-pointer ${
-                          fields.propertyAreaLocked !== false
-                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
-                            : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
-                        }`}
-                        title={fields.propertyAreaLocked !== false ? 'Constrained & auto-converted to sqft. Click to unlock for manual custom text.' : 'Unlocked for custom entry. Click to lock back to auto-conversion.'}
+                        className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
+                        title="Sync from Pt 39 Area of Land"
                       >
-                        {fields.propertyAreaLocked !== false ? '🔒 Locked (Auto-convert)' : '🔓 Unlocked (Manual)'}
+                        ↺ Sync Pt 39: {fields.areaOfLand}
                       </button>
-                    </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1691,17 +1665,17 @@ export default function BandhanHLLAP({
                           setFields(prev => ({
                             ...prev,
                             propertyAreaUnit: unit,
-                            propertyArea: prev.propertyAreaLocked !== false ? formatted.statement : prev.propertyArea,
+                            propertyArea: formatted.statement,
                           }));
                         }}
                         disabled={isReadOnly}
                       >
-                        <option value="ACRE_DEC">Acres &amp; Decimals (e.g. AC.0.250Decs)</option>
-                        <option value="DECIMAL">Decimals / Cents (1 Dec = 435.6 sqft)</option>
-                        <option value="SQFT">Square Feet (sqft - Direct / No conversion)</option>
-                        <option value="SQYD">Square Yards / Gaj (1 Sq.Yd = 9 sqft)</option>
-                        <option value="SQMT">Square Meters (1 Sq.M = 10.7639 sqft)</option>
-                        <option value="GUNTHA">Guntha (1 Guntha = 1089 sqft)</option>
+                        <option value="ACRE_DEC">Acres &amp; Decimals</option>
+                        <option value="DECIMAL">Decimals / Cents</option>
+                        <option value="SQFT">Square Feet (sqft)</option>
+                        <option value="SQYD">Square Yards / Gaj</option>
+                        <option value="SQMT">Square Meters (Sq.M)</option>
+                        <option value="GUNTHA">Guntha</option>
                       </select>
                     </Field>
 
@@ -1709,16 +1683,16 @@ export default function BandhanHLLAP({
                     <Field
                       label={
                         fields.propertyAreaUnit === 'ACRE_DEC'
-                          ? 'Land Area in Acres (e.g. 0.250 or 0.25):'
+                          ? 'Land Area (Acres):'
                           : fields.propertyAreaUnit === 'DECIMAL'
-                          ? 'Land Area in Decimals (e.g. 25):'
+                          ? 'Land Area (Decimals):'
                           : fields.propertyAreaUnit === 'SQFT'
-                          ? 'Land Area in Sq. Feet (e.g. 10890):'
+                          ? 'Land Area (Sq. Feet):'
                           : fields.propertyAreaUnit === 'SQYD'
-                          ? 'Land Area in Sq. Yards (e.g. 200):'
+                          ? 'Land Area (Sq. Yards):'
                           : fields.propertyAreaUnit === 'SQMT'
-                          ? 'Land Area in Sq. Meters (e.g. 100):'
-                          : 'Land Area in Guntha (e.g. 10):'
+                          ? 'Land Area (Sq. Meters):'
+                          : 'Land Area (Guntha):'
                       }
                     >
                       <input
@@ -1732,52 +1706,13 @@ export default function BandhanHLLAP({
                           setFields(prev => ({
                             ...prev,
                             propertyAreaValue: val,
-                            propertyArea: prev.propertyAreaLocked !== false ? formatted.statement : prev.propertyArea,
+                            propertyArea: formatted.statement,
                           }));
                         }}
-                        placeholder={
-                          fields.propertyAreaUnit === 'ACRE_DEC' ? '0.250' :
-                          fields.propertyAreaUnit === 'DECIMAL' ? '25' :
-                          fields.propertyAreaUnit === 'SQFT' ? '10890' : '100'
-                        }
+                        placeholder="0.00"
                         disabled={isReadOnly}
                       />
                     </Field>
-
-                    {/* Result statement */}
-                    <div className="sm:col-span-2 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="block text-xs font-semibold text-slate-700">
-                          Resulting Total Land / Property Area Statement (Report &amp; PDF):
-                        </label>
-                        {fields.propertyAreaLocked === false && (
-                          <span className="text-[10.5px] text-amber-700 font-semibold">
-                            Manual Custom Text
-                          </span>
-                        )}
-                      </div>
-                      <input
-                        type="text"
-                        className={`${inputCls} ${
-                          fields.propertyAreaLocked !== false
-                            ? 'bg-indigo-50/60 font-bold text-indigo-950 border-indigo-300'
-                            : 'bg-white text-slate-900 border-amber-300'
-                        }`}
-                        value={fields.propertyArea || ''}
-                        onChange={(e) => handleChange('propertyArea', e.target.value)}
-                        readOnly={fields.propertyAreaLocked !== false}
-                        disabled={isReadOnly}
-                      />
-                      <p className="text-[11px] text-slate-500">
-                        {fields.propertyAreaLocked !== false
-                          ? fields.propertyAreaUnit === 'ACRE_DEC'
-                            ? 'Auto-converted using standard 1 Acre = 43,560 sqft. Formatted as (AC.0.250Decs) i.e. 10,890sqft.'
-                            : fields.propertyAreaUnit === 'SQFT'
-                            ? 'Direct Sq.Ft. input without conversion.'
-                            : 'Auto-converted to equivalent square feet.'
-                          : 'Unlocked: Type any custom property area statement directly.'}
-                      </p>
-                    </div>
                   </div>
                 </div>
 
@@ -2422,7 +2357,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.depreciationOfConstruction || ''}
                         onChange={(e) => handleChange('depreciationOfConstruction', sanitizePositiveFloat(e.target.value))}
-                        placeholder="e.g. 0 or 250000 (Amount in Rs.)"
                         disabled={isReadOnly}
                       />
                       <p className="text-[11px] text-slate-500">
@@ -2545,7 +2479,7 @@ export default function BandhanHLLAP({
                           <>
                             <div className="flex items-center justify-between">
                               <label className="block text-xs font-semibold text-slate-800">
-                                Recommended Value of the Property (Float Amount in Rs.):
+                                Recommended Value of the Property:
                               </label>
                               <div className="flex items-center gap-2">
                                 {recNum > 0 && (
@@ -2572,7 +2506,6 @@ export default function BandhanHLLAP({
                               className={inputCls}
                               value={fields.recommendedValueOfProperty || ''}
                               onChange={(e) => handleChange('recommendedValueOfProperty', sanitizePositiveFloat(e.target.value))}
-                              placeholder="e.g. 5000000 (Float amount in Rs.)"
                               disabled={isReadOnly}
                             />
 
@@ -2595,10 +2528,10 @@ export default function BandhanHLLAP({
                                     • <strong>Flat Component:</strong> {valCalc.flatVal > 0 ? `Rs.${fields.rateOfFlat}/sqft × ${fields.areaOfFlat} sqft = ` : ''}<span className={valCalc.flatVal > 0 ? 'font-semibold text-emerald-950' : 'text-slate-500'}>{valCalc.flatVal > 0 ? `Rs.${formatCurrencyINR(valCalc.flatVal)}/-` : 'Nil (Rs. 0)'}</span>
                                   </div>
                                   <div>
-                                    • <strong>Depreciation:</strong> {valCalc.depAmount > 0 ? <span className="text-rose-700 font-semibold">- Rs.${formatCurrencyINR(valCalc.depAmount)}/- ({valCalc.depDescription})</span> : <span className="text-slate-500">Nil (Rs. 0)</span>}
+                                    • <strong>Depreciation:</strong> {valCalc.depAmount > 0 ? <span className="text-rose-700 font-semibold">- Rs.{formatCurrencyINR(valCalc.depAmount)}/- ({valCalc.depDescription})</span> : <span className="text-slate-500">Nil (Rs. 0)</span>}
                                   </div>
                                   <div>
-                                    • <strong>Calculated Result:</strong> <span className="font-bold text-emerald-800 font-mono text-xs">Rs.{formatCurrencyINR(valCalc.recommendedValue)}/-</span> {valCalc.recommendedValue > 0 ? `(${formatIndianCurrency(valCalc.recommendedValue)})` : ''}
+                                    • <strong>Calculated Result:</strong> <span className="font-bold text-emerald-800 font-mono text-xs">Rs.{formatCurrencyINR(valCalc.recommendedValue)}/-</span>
                                   </div>
                                 </div>
                               </div>
@@ -2618,7 +2551,7 @@ export default function BandhanHLLAP({
                           <>
                             <div className="flex items-center justify-between">
                               <label className="block text-xs font-semibold text-slate-800">
-                                Total Market Value of Existing Property (Float Amount in Rs.):
+                                Total Market Value of Existing Property:
                               </label>
                               <div className="flex items-center gap-2">
                                 {mktNum > 0 && (
@@ -2643,7 +2576,6 @@ export default function BandhanHLLAP({
                               className={inputCls}
                               value={fields.totalMarketValue || ''}
                               onChange={(e) => handleChange('totalMarketValue', sanitizePositiveFloat(e.target.value))}
-                              placeholder="e.g. 5000000 (Float amount in Rs.)"
                               disabled={isReadOnly}
                             />
                             <p className="text-[11px] text-slate-500">
@@ -3261,43 +3193,10 @@ export default function BandhanHLLAP({
                         disabled={isReadOnly}
                       />
                     </Field>
-
-                    <div className="sm:col-span-2 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="block text-xs font-semibold text-slate-700">
-                          Rendered Statement (Report &amp; PDF):
-                        </label>
-                        {(() => {
-                          const autoFormatted = formatCommencementCompletion(fields.projectCommencementDate, fields.expectedCompletionDate);
-                          return autoFormatted && autoFormatted !== fields.dateCommencementCompletion ? (
-                            <button
-                              type="button"
-                              onClick={() => handleChange('dateCommencementCompletion', autoFormatted)}
-                              className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
-                              title="Re-apply auto format from dates"
-                            >
-                              ↺ Auto-format: {autoFormatted}
-                            </button>
-                          ) : null;
-                        })()}
-                      </div>
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.dateCommencementCompletion !== undefined ? fields.dateCommencementCompletion : formatCommencementCompletion(fields.projectCommencementDate, fields.expectedCompletionDate)}
-                        onChange={(e) => handleChange('dateCommencementCompletion', e.target.value)}
-                        disabled={isReadOnly}
-                      />
-                      <p className="text-[11px] text-slate-500">
-                        {fields.projectCommencementDate || fields.expectedCompletionDate
-                          ? 'Auto-generated from selected dates. Rendered as Project Commencement - <date> and/or Expected Completion - <date>.'
-                          : 'Displays "NA" when no dates are selected.'}
-                      </p>
-                    </div>
                   </div>
                 </div>
 
-                {/* 39. Area of Land (Unit selector, auto-convert to sqft, and constrain lock) */}
+                {/* 39. Area of Land */}
                 <div className="rounded-xl border border-sky-200/80 bg-sky-50/40 p-4 sm:p-5 shadow-xs space-y-4 sm:col-span-2">
                   <div className="flex flex-wrap items-center justify-between pb-2 border-b border-sky-200/60 gap-2">
                     <div className="flex items-center gap-2">
@@ -3305,58 +3204,30 @@ export default function BandhanHLLAP({
                         39. Area of Land
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {fields.propertyArea && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const refVal = fields.propertyArea || '';
-                            const num = parseNum(refVal);
-                            const unit = fields.areaOfLandUnit || 'ACRE_DEC';
-                            let valStr = refVal;
-                            if (unit === 'ACRE_DEC' && num > 0) {
-                              valStr = (num / 43560).toFixed(3);
-                            }
-                            const formatted = formatAreaOfLandStatement(unit, valStr, '', '', refVal);
-                            setFields(prev => ({
-                              ...prev,
-                              areaOfLandValue: valStr,
-                              areaOfLand: prev.areaOfLandLocked !== false ? formatted.statement : prev.areaOfLand,
-                            }));
-                          }}
-                          className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
-                          title="Sync from Pt 13 Property Area"
-                        >
-                          ↺ Sync Pt 13: {fields.propertyArea} sqft
-                        </button>
-                      )}
+                    {fields.propertyArea && (
                       <button
                         type="button"
                         onClick={() => {
-                          const nextLocked = fields.areaOfLandLocked === false;
-                          if (nextLocked) {
-                            const unit = fields.areaOfLandUnit || 'ACRE_DEC';
-                            const val = fields.areaOfLandValue || fields.areaOfLandAcres || '';
-                            const formatted = formatAreaOfLandStatement(unit, val, fields.areaOfLandAcres, fields.areaOfLandDecimals, fields.areaOfLand);
-                            setFields(prev => ({
-                              ...prev,
-                              areaOfLandLocked: true,
-                              areaOfLand: formatted.statement || prev.areaOfLand,
-                            }));
-                          } else {
-                            setFields(prev => ({ ...prev, areaOfLandLocked: false }));
+                          const refVal = fields.propertyArea || '';
+                          const num = parseNum(refVal);
+                          const unit = fields.areaOfLandUnit || 'ACRE_DEC';
+                          let valStr = refVal;
+                          if (unit === 'ACRE_DEC' && num > 0) {
+                            valStr = (num / 43560).toFixed(3);
                           }
+                          const formatted = formatAreaOfLandStatement(unit, valStr, '', '', refVal);
+                          setFields(prev => ({
+                            ...prev,
+                            areaOfLandValue: valStr,
+                            areaOfLand: formatted.statement,
+                          }));
                         }}
-                        className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1 border transition-colors cursor-pointer ${
-                          fields.areaOfLandLocked !== false
-                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
-                            : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
-                        }`}
-                        title={fields.areaOfLandLocked !== false ? 'Constrained & auto-converted to sqft. Click to unlock for manual custom text.' : 'Unlocked for custom entry. Click to lock back to auto-conversion.'}
+                        className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
+                        title="Sync from Pt 13 Property Area"
                       >
-                        {fields.areaOfLandLocked !== false ? '🔒 Locked (Auto-convert)' : '🔓 Unlocked (Manual)'}
+                        ↺ Sync Pt 13: {fields.propertyArea} sqft
                       </button>
-                    </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -3371,17 +3242,17 @@ export default function BandhanHLLAP({
                           setFields(prev => ({
                             ...prev,
                             areaOfLandUnit: unit,
-                            areaOfLand: prev.areaOfLandLocked !== false ? formatted.statement : prev.areaOfLand,
+                            areaOfLand: formatted.statement,
                           }));
                         }}
                         disabled={isReadOnly}
                       >
-                        <option value="ACRE_DEC">Acres &amp; Decimals (e.g. AC.0.250Decs)</option>
-                        <option value="DECIMAL">Decimals / Cents (1 Dec = 435.6 sqft)</option>
-                        <option value="SQFT">Square Feet (sqft - Direct / No conversion)</option>
-                        <option value="SQYD">Square Yards / Gaj (1 Sq.Yd = 9 sqft)</option>
-                        <option value="SQMT">Square Meters (1 Sq.M = 10.7639 sqft)</option>
-                        <option value="GUNTHA">Guntha (1 Guntha = 1089 sqft)</option>
+                        <option value="ACRE_DEC">Acres &amp; Decimals</option>
+                        <option value="DECIMAL">Decimals / Cents</option>
+                        <option value="SQFT">Square Feet (sqft)</option>
+                        <option value="SQYD">Square Yards / Gaj</option>
+                        <option value="SQMT">Square Meters (Sq.M)</option>
+                        <option value="GUNTHA">Guntha</option>
                       </select>
                     </Field>
 
@@ -3389,16 +3260,16 @@ export default function BandhanHLLAP({
                     <Field
                       label={
                         fields.areaOfLandUnit === 'ACRE_DEC'
-                          ? 'Land Area in Acres (e.g. 0.250 or 0.25):'
+                          ? 'Land Area (Acres):'
                           : fields.areaOfLandUnit === 'DECIMAL'
-                          ? 'Land Area in Decimals (e.g. 25):'
+                          ? 'Land Area (Decimals):'
                           : fields.areaOfLandUnit === 'SQFT'
-                          ? 'Land Area in Sq. Feet (e.g. 10890):'
+                          ? 'Land Area (Sq. Feet):'
                           : fields.areaOfLandUnit === 'SQYD'
-                          ? 'Land Area in Sq. Yards (e.g. 200):'
+                          ? 'Land Area (Sq. Yards):'
                           : fields.areaOfLandUnit === 'SQMT'
-                          ? 'Land Area in Sq. Meters (e.g. 100):'
-                          : 'Land Area in Guntha (e.g. 10):'
+                          ? 'Land Area (Sq. Meters):'
+                          : 'Land Area (Guntha):'
                       }
                     >
                       <input
@@ -3412,47 +3283,13 @@ export default function BandhanHLLAP({
                           setFields(prev => ({
                             ...prev,
                             areaOfLandValue: val,
-                            areaOfLand: prev.areaOfLandLocked !== false ? formatted.statement : prev.areaOfLand,
+                            areaOfLand: formatted.statement,
                           }));
                         }}
+                        placeholder="0.00"
                         disabled={isReadOnly}
                       />
                     </Field>
-
-                    {/* Result statement */}
-                    <div className="sm:col-span-2 space-y-1.5">
-                      <div className="flex items-center justify-between">
-                        <label className="block text-xs font-semibold text-slate-700">
-                          Resulting Area of Land Statement (Report &amp; PDF):
-                        </label>
-                        {fields.areaOfLandLocked === false && (
-                          <span className="text-[10.5px] text-amber-700 font-semibold">
-                            Manual Custom Text
-                          </span>
-                        )}
-                      </div>
-                      <input
-                        type="text"
-                        className={`${inputCls} ${
-                          fields.areaOfLandLocked !== false
-                            ? 'bg-sky-50/60 font-bold text-sky-950 border-sky-300'
-                            : 'bg-white text-slate-900 border-amber-300'
-                        }`}
-                        value={fields.areaOfLand || ''}
-                        onChange={(e) => handleChange('areaOfLand', e.target.value)}
-                        readOnly={fields.areaOfLandLocked !== false}
-                        disabled={isReadOnly}
-                      />
-                      <p className="text-[11px] text-slate-500">
-                        {fields.areaOfLandLocked !== false
-                          ? fields.areaOfLandUnit === 'ACRE_DEC'
-                            ? 'Auto-converted using standard 1 Acre = 43,560 sqft. Formatted as (AC.0.250Decs) i.e. 10,890sqft.'
-                            : fields.areaOfLandUnit === 'SQFT'
-                            ? 'Direct Sq.Ft. input without conversion.'
-                            : 'Auto-converted to equivalent square feet.'
-                          : 'Unlocked: Type any custom land area statement directly.'}
-                      </p>
-                    </div>
                   </div>
                 </div>
 
