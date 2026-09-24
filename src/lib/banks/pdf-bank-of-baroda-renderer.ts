@@ -346,8 +346,11 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   // SECTION 2: PART I — GENERAL
   // ═══════════════════════════════════════════════════════════════════════
   private drawBobSection2() {
-    const addressee = this.fv('bobAddressee') || 'TO,\nTHE BRANCH MANAGER,';
-    const bankDetails = this.fv('bobBankBranchDetails') || 'BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA';
+    let addressee = this.fv('bobAddressee') || 'TO,\nTHE BRANCH MANAGER,';
+    if (addressee === 'TO, THE BRANCH MANAGER,') addressee = 'TO,\nTHE BRANCH MANAGER,';
+
+    let bankDetails = this.fv('bobBankBranchDetails') || 'BANK OF BARODA,\nBARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA';
+    if (bankDetails === 'BANK OF BARODA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA') bankDetails = 'BANK OF BARODA,\nBARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA';
     const reportTitle = this.fv('bobReportTitle') || 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)';
     const refNo = this.fv('bobRefNo') || '';
     const asOnDate = formatReportDate(this.fv('bobAsOnDate') || '');
