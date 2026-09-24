@@ -2893,38 +2893,26 @@ export default function BandhanHLLAP({
                   {/* Horizontal Formula Row: _______ * ________ = ________ */}
                   <div className="rounded-lg border border-sky-200/90 bg-white/80 p-3.5 sm:p-4 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-3 items-center">
-                      {/* Box 1: Land Area (sqft) */}
-                      <div className="sm:col-span-3 space-y-1">
+                      {/* Box 1: Land Area for Govt. Valuation (sqft) - Referenced from Pt 26 */}
+                      <div className="sm:col-span-4 space-y-1">
                         <div className="flex items-center justify-between">
                           <label className="block text-[11px] font-semibold text-slate-700">
-                            Land Area (sqft):
+                            Land Area for Govt. Valuation (sqft):
                           </label>
-                          <span className="text-[9.5px] font-medium text-sky-700 bg-sky-50 px-1 py-0.5 rounded border border-sky-200">
-                            Pt 26 / 39
+                          <span className="text-[9.5px] font-semibold bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded border border-sky-200">
+                            ⚡ Referenced from Pt 26
                           </span>
                         </div>
                         <input
                           type="text"
-                          className={inputCls}
-                          value={fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '')}
-                          onChange={(e) => {
-                            const newArea = sanitizePositiveFloat(e.target.value);
-                            const rateStr = fields.govtRateLand || '';
-                            const areaNum = parseNum(newArea);
-                            const rateNum = parseNum(rateStr);
-                            const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
-                            const calcFormula = (newArea && rateNum > 0)
-                              ? `${newArea} * Rs.${rateStr}/- = Rs.${formatCurrencyINR(calcVal)}/-`
-                              : '';
-                            setFields(prev => ({
-                              ...prev,
-                              govtLandArea: newArea,
-                              valuationGovtRate: prev.valuationGovtRateLocked !== false ? (calcFormula || prev.valuationGovtRate) : prev.valuationGovtRate,
-                            }));
-                          }}
-                          placeholder="e.g. 10890"
-                          disabled={isReadOnly}
+                          className={`${inputCls} bg-slate-100/90 text-slate-700 font-semibold cursor-not-allowed border-slate-300`}
+                          value={fields.propertyArea || fields.areaOfLand || fields.govtLandArea || 'NA'}
+                          readOnly
+                          disabled
                         />
+                        <p className="text-[10.5px] text-slate-500">
+                          Automatically populated from Point 26 Total Land / Property Area.
+                        </p>
                       </div>
 
                       {/* Multiply sign * */}
@@ -2935,7 +2923,7 @@ export default function BandhanHLLAP({
                       {/* Box 2: Govt. Land Rate (Rs./sqft) */}
                       <div className="sm:col-span-3 space-y-1">
                         <label className="block text-[11px] font-semibold text-slate-700">
-                          Govt. Rate (Rs./sqft):
+                          Govt. Land Rate (Rs./sqft):
                         </label>
                         <input
                           type="text"
@@ -2943,7 +2931,7 @@ export default function BandhanHLLAP({
                           value={fields.govtRateLand || ''}
                           onChange={(e) => {
                             const newRate = sanitizePositiveFloat(e.target.value);
-                            const areaStr = fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '');
+                            const areaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
                             const areaNum = parseNum(areaStr);
                             const rateNum = parseNum(newRate);
                             const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
@@ -2959,6 +2947,9 @@ export default function BandhanHLLAP({
                           placeholder="e.g. 1800"
                           disabled={isReadOnly}
                         />
+                        <p className="text-[10.5px] text-slate-500">
+                          Govt. benchmark / guideline rate per sqft.
+                        </p>
                       </div>
 
                       {/* Equal sign = */}
@@ -2967,7 +2958,7 @@ export default function BandhanHLLAP({
                       </div>
 
                       {/* Box 3: Valuation as per Govt. Rates (Locked Read-only) */}
-                      <div className="sm:col-span-4 space-y-1">
+                      <div className="sm:col-span-3 space-y-1">
                         <div className="flex items-center justify-between">
                           <label className="block text-[11px] font-semibold text-sky-950">
                             Govt. Valuation (Locked Read-only):
@@ -2977,7 +2968,7 @@ export default function BandhanHLLAP({
                             onClick={() => {
                               const nextLocked = fields.valuationGovtRateLocked === false;
                               if (nextLocked) {
-                                const areaStr = fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '');
+                                const areaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
                                 const areaNum = parseNum(areaStr);
                                 const rateNum = parseNum(fields.govtRateLand);
                                 const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
@@ -3014,7 +3005,7 @@ export default function BandhanHLLAP({
                           value={(() => {
                             if (fields.valuationGovtRateLocked !== false) {
                               if (fields.valuationGovtRate) return fields.valuationGovtRate;
-                              const areaStr = fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '');
+                              const areaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
                               const areaNum = parseNum(areaStr);
                               const rateNum = parseNum(fields.govtRateLand);
                               const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
@@ -3036,7 +3027,7 @@ export default function BandhanHLLAP({
                     <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-sky-100">
                       <span>
                         {fields.valuationGovtRateLocked !== false
-                          ? 'Auto-computed formula: Land Area (sqft) * Govt. Rate (Rs./sqft) = Resulting Valuation'
+                          ? 'Auto-computed formula: Land Area (Referenced from Pt 26) * Govt. Rate (Rs./sqft) = Resulting Valuation'
                           : 'Unlocked: Type any custom govt. valuation statement directly.'}
                       </span>
                       {(() => {
