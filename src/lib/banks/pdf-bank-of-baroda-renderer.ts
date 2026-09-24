@@ -606,7 +606,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const calcExtent = minArea > 0 
       ? `Total Area: Ac. ${minArea} Dec i.e. ${sftValue} Sft` 
       : 'Total Area: Ac. 0.00 Dec i.e. 0.00 Sft';
-    allRows.push(['16.', 'Extent of the site considered for valuation\n(least of 14 A & 14 B)', '', calcExtent, '']);
+    allRows.push(['16.', 'Extent of the site considered for valuation (least of 14 A & 14 B)', '', calcExtent, '']);
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
     allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
     rIdx++;
@@ -614,7 +614,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     // Point 17
     let occStr = this.fv('bobOccupancy') || 'NA';
     if (this.fv('bobOccupancyDetails')) occStr += `\n${this.fv('bobOccupancyDetails')}`;
-    allRows.push(['17.', 'Whether occupied by the owner /\ntenant? If occupied by tenant, since how\nlong? Rent Received per month.', '', occStr, '']);
+    allRows.push(['17.', 'Whether occupied by the owner/ tenant? If occupied by tenant, since how long? Rent Received per month.', '', occStr, '']);
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
     allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
     rIdx++;
