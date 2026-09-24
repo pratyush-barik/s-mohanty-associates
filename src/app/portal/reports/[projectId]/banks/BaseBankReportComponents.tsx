@@ -476,12 +476,16 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
   };
 
   return (
-    <div className="hidden xl:flex flex-col bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-43.75 sticky top-4 shrink-0 z-40 max-h-[calc(100vh-32px)] overflow-hidden">
-      <div className="text-[10px] font-black text-emerald-500 mb-2 px-2 uppercase tracking-widest shrink-0">Sections</div>
+    <div className="hidden xl:flex flex-col bg-white/90 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-48 sticky top-4 shrink-0 z-40 max-h-[calc(100vh-32px)] overflow-hidden">
+      <div className="text-[10px] font-black text-emerald-600 mb-2 px-2 uppercase tracking-widest shrink-0">Sections</div>
       <div className="flex flex-col gap-1 overflow-y-auto pr-1 custom-scrollbar">
         {sections.map((sec) => {
           const isActive = activeId === sec.id;
           const cleanTitle = (sec.title || '').replace(/^\d+[\.\s\-:]*\s*/, '');
+          const match = cleanTitle.match(/^(.*?)\s*(\([^\)]+\))$/);
+          const mainTitle = match ? match[1] : cleanTitle;
+          const badgeRange = match ? match[2] : null;
+
           return (
             <button
               key={sec.id}
@@ -494,8 +498,13 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
                   : 'bg-indigo-50/90 text-indigo-900 border border-indigo-100/80 shadow-sm hover:bg-indigo-100 hover:border-indigo-200'
               }`}
             >
-              <span className="leading-snug block w-full whitespace-normal wrap-break-word">
-                {cleanTitle}
+              <span className="leading-snug block w-full whitespace-normal">
+                {mainTitle}
+                {badgeRange && (
+                  <span className={`block text-[10.5px] font-semibold tracking-tight whitespace-nowrap mt-0.5 ${isActive ? 'text-amber-100' : 'text-indigo-700/80'}`}>
+                    {badgeRange}
+                  </span>
+                )}
               </span>
             </button>
           );
