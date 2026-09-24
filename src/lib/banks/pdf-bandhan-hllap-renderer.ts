@@ -314,6 +314,7 @@ export interface BandhanHLLAPReportFields {
 
   // Valuation Computation & Summary (30 - 33, 35 - 40)
   recommendedValuationFormula?: string;
+  recommendedValuationFormulaLocked?: boolean;
   plotRate?: string;
   plotValueBreakdown?: string;
   rateOfCostOfConstruction?: string;
@@ -649,7 +650,16 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       ? `${presentStr}, ${residualStr}`
       : (presentStr || residualStr || '');
     this.drawBandhanRow('29.', 'Present life &residual life', lifeStr);
-    this.drawBandhanRow('30.', 'Recommended valuation of the property', fields.recommendedValuationFormula || '');
+    let val30 = fields.recommendedValuationFormula || '';
+    if (!val30 && (fields.propertyArea || fields.areaOfLand) && fields.plotRate) {
+      const landArea = parseNum(fields.propertyArea || fields.areaOfLand);
+      const rate = parseNum(fields.plotRate);
+      const calcVal = (landArea > 0 && rate > 0) ? landArea * rate : 0;
+      if (calcVal > 0) {
+        val30 = `${fields.propertyArea || fields.areaOfLand} * Rs.${fields.plotRate}/- = Rs.${formatCurrencyINR(calcVal)}/-`;
+      }
+    }
+    this.drawBandhanRow('30.', 'Recommended valuation of the property', val30);
     this.drawBandhanRow('31.', 'Recommended rate of the plot', fields.plotRate ? `Rs.${fields.plotRate}/-` : '');
     this.drawBandhanRow('', 'Recommended value of the plot', fields.plotValueBreakdown || '');
     this.drawBandhanRow('32.', 'Recommended rate of cost of construction', fields.rateOfCostOfConstruction || '');

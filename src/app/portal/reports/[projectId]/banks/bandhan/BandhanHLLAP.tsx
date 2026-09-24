@@ -384,6 +384,7 @@ export default function BandhanHLLAP({
       residualLife: raw.residualLife || '',
 
       // 7. Valuation Details (30 - 33, 35 - 40)
+      recommendedValuationFormulaLocked: raw.recommendedValuationFormulaLocked !== undefined ? raw.recommendedValuationFormulaLocked : true,
       recommendedValuationFormula: raw.recommendedValuationFormula || '',
       plotRate: raw.plotRate || '',
       plotValueBreakdown: raw.plotValueBreakdown || '',
@@ -2179,16 +2180,146 @@ export default function BandhanHLLAP({
             {/* 7. Valuation & Computations */}
             <Section number={7} id="sec-valuation" title="Valuation Computations (Points 30–33)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <Field label="30. Recommended Valuation of the Property (Land Component Formula):">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.recommendedValuationFormula || ''}
-                      onChange={(e) => handleChange('recommendedValuationFormula', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
+                {/* 30. Recommended Valuation of the Property (Land Component Formula) */}
+                <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex flex-wrap items-center justify-between pb-2 border-b border-indigo-200/60 gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-sans font-semibold text-indigo-900 text-xs sm:text-sm">
+                        30. Recommended Valuation of the Property (Land Component Formula)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextLocked = fields.recommendedValuationFormulaLocked === false;
+                          if (nextLocked) {
+                            const areaStr = fields.propertyArea || fields.areaOfLand || '';
+                            const landArea = parseNum(areaStr);
+                            const rate = parseNum(fields.plotRate);
+                            const calcVal = (landArea > 0 && rate > 0) ? landArea * rate : 0;
+                            const calcFormula = (areaStr && rate > 0)
+                              ? `${areaStr} * Rs.${fields.plotRate}/- = Rs.${formatCurrencyINR(calcVal)}/-`
+                              : '';
+                            setFields(prev => ({
+                              ...prev,
+                              recommendedValuationFormulaLocked: true,
+                              recommendedValuationFormula: calcFormula || prev.recommendedValuationFormula,
+                              netValueLand: calcVal > 0 ? String(calcVal) : prev.netValueLand,
+                              plotValueBreakdown: calcFormula || prev.plotValueBreakdown,
+                            }));
+                          } else {
+                            setFields(prev => ({ ...prev, recommendedValuationFormulaLocked: false }));
+                          }
+                        }}
+                        className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1 border transition-colors cursor-pointer ${
+                          fields.recommendedValuationFormulaLocked !== false
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                            : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
+                        }`}
+                        title={fields.recommendedValuationFormulaLocked !== false ? 'Auto-calculating formula from Pt 26 area & Pt 31 rate. Click to unlock for custom manual text.' : 'Unlocked for custom entry. Click to lock back to auto-calculation.'}
+                      >
+                        {fields.recommendedValuationFormulaLocked !== false ? '🔒 Locked (Auto-calculate)' : '🔓 Unlocked (Manual)'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    {/* 26. Total Land / Property Area (Read-only Reference) */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          26. Total Land / Property Area: (Read-only)
+                        </label>
+                        <span className="text-[10px] font-semibold bg-indigo-100 text-indigo-800 px-1.5 py-0.5 rounded border border-indigo-200">
+                          ⚡ Referenced from Pt 26
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        className={`${inputCls} bg-slate-100/90 text-slate-700 font-semibold cursor-not-allowed border-slate-300`}
+                        value={fields.propertyArea || fields.areaOfLand || 'NA'}
+                        readOnly
+                        disabled
+                      />
+                      <p className="text-[11px] text-slate-500">
+                        Automatically populated from Point 26 Total Land / Property Area.
+                      </p>
+                    </div>
+
+                    {/* Rate per sq.ft (Float Input) */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Rate of the Plot (Rs./sqft):
+                        </label>
+                        <span className="text-[10px] font-semibold bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded border border-blue-200">
+                          ⚡ Referenced from Pt 31
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.plotRate || ''}
+                          onChange={(e) => {
+                            const newRate = sanitizePositiveFloat(e.target.value);
+                            const areaStr = fields.propertyArea || fields.areaOfLand || '';
+                            const landArea = parseNum(areaStr);
+                            const rateNum = parseNum(newRate);
+                            const calcVal = (landArea > 0 && rateNum > 0) ? landArea * rateNum : 0;
+                            const calcFormula = (areaStr && rateNum > 0)
+                              ? `${areaStr} * Rs.${newRate}/- = Rs.${formatCurrencyINR(calcVal)}/-`
+                              : '';
+                            setFields(prev => ({
+                              ...prev,
+                              plotRate: newRate,
+                              recommendedValuationFormula: prev.recommendedValuationFormulaLocked !== false ? (calcFormula || prev.recommendedValuationFormula) : prev.recommendedValuationFormula,
+                              netValueLand: calcVal > 0 ? String(calcVal) : prev.netValueLand,
+                              plotValueBreakdown: prev.recommendedValuationFormulaLocked !== false ? (calcFormula || prev.plotValueBreakdown) : prev.plotValueBreakdown,
+                            }));
+                          }}
+                          placeholder="e.g. 1800"
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                      <p className="text-[11px] text-slate-500">
+                        Float rate per square foot used for land valuation.
+                      </p>
+                    </div>
+
+                    {/* Resulting Formula */}
+                    <div className="sm:col-span-2 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Resulting Land Component Valuation Formula (Report &amp; PDF):
+                        </label>
+                        {fields.recommendedValuationFormulaLocked === false && (
+                          <span className="text-[10.5px] text-amber-700 font-semibold">
+                            Manual Custom Text
+                          </span>
+                        )}
+                      </div>
+                      <textarea
+                        rows={2}
+                        className={`${inputCls} ${
+                          fields.recommendedValuationFormulaLocked !== false
+                            ? 'bg-indigo-50/60 font-bold text-indigo-950 border-indigo-300'
+                            : 'bg-white text-slate-900 border-amber-300'
+                        }`}
+                        value={fields.recommendedValuationFormula || ''}
+                        onChange={(e) => handleChange('recommendedValuationFormula', e.target.value)}
+                        readOnly={fields.recommendedValuationFormulaLocked !== false}
+                        disabled={isReadOnly}
+                        placeholder="e.g. Total Land Area: 10,890 sqft. * Rs.1800/- = Rs.1,96,02,000/-"
+                      />
+                      <p className="text-[11px] text-slate-500">
+                        {fields.recommendedValuationFormulaLocked !== false
+                          ? 'Auto-computed from Point 26 Land Area and Point 31 Rate.'
+                          : 'Unlocked: Type any custom valuation formula statement directly.'}
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* 31. Recommended Rate & Value of Plot */}
