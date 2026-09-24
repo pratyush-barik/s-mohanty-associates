@@ -3330,127 +3330,27 @@ export default function BandhanHLLAP({
                 </div>
 
                 {/* 39. Area of Land */}
-                <div className="rounded-xl border border-sky-200/80 bg-sky-50/40 p-4 sm:p-5 shadow-xs space-y-4 sm:col-span-2">
+                <div className="rounded-xl border border-sky-200/80 bg-sky-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
                   <div className="flex flex-wrap items-center justify-between pb-2 border-b border-sky-200/60 gap-2">
                     <div className="flex items-center gap-2">
                       <span className="font-sans font-semibold text-sky-900 text-xs sm:text-sm">
                         39. Area of Land
                       </span>
                     </div>
-                    {(() => {
-                      const areaRef = fields.propertyArea || '';
-                      const sqftNum = parseSqftFromArea(areaRef, fields.propertyAreaUnit, fields.propertyAreaValue);
-                      return (
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] font-semibold bg-sky-100 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
-                            ⚡ Referenced from Pt 26 Total Land Area
-                          </span>
-                          {sqftNum > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const unit = fields.propertyAreaUnit || 'ACRE_DEC';
-                                const valStr = fields.propertyAreaValue || '';
-                                const formatted = formatAreaOfLandStatement(unit, valStr, '', '', '');
-                                setFields(prev => ({
-                                  ...prev,
-                                  areaOfLandUnit: unit,
-                                  areaOfLandValue: valStr,
-                                  areaOfLand: formatted.statement,
-                                  areaOfLandSqft: formatted.sqftStr,
-                                }));
-                              }}
-                              className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
-                              title="Sync from Pt 26 Total Land / Property Area"
-                            >
-                              ↺ Sync from Pt 26: {fields.propertyArea || `${formatCurrencyINR(sqftNum)} sqft.`}
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })()}
+                    <span className="text-[10.5px] font-semibold bg-sky-100 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
+                      ⚡ Referenced from Pt 26 Total Land Area
+                    </span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <Field label="Choose Area Unit:">
-                      <select
-                        className={selectCls}
-                        value={fields.areaOfLandUnit || 'ACRE_DEC'}
-                        onChange={(e) => {
-                          const unit = e.target.value as any;
-                          const val = fields.areaOfLandValue || '';
-                          const formatted = formatAreaOfLandStatement(unit, val, '', '', '');
-                          setFields(prev => ({
-                            ...prev,
-                            areaOfLandUnit: unit,
-                            areaOfLand: val ? formatted.statement : '',
-                            areaOfLandSqft: val ? formatted.sqftStr : '',
-                          }));
-                        }}
-                        disabled={isReadOnly}
-                      >
-                        <option value="ACRE_DEC">Acre</option>
-                        <option value="DECIMAL">Decimal</option>
-                        <option value="SQFT">Sq.Ft</option>
-                        <option value="SQYD">Sq.Yards</option>
-                        <option value="SQMT">Sq.Meters</option>
-                        <option value="GUNTHA">Guntha</option>
-                      </select>
-                    </Field>
-
-                    {/* Numeric Input */}
-                    <Field
-                      label={
-                        fields.areaOfLandUnit === 'ACRE_DEC'
-                          ? 'Land Area (Acre):'
-                          : fields.areaOfLandUnit === 'DECIMAL'
-                          ? 'Land Area (Decimal):'
-                          : fields.areaOfLandUnit === 'SQFT'
-                          ? 'Land Area (Sq.Ft):'
-                          : fields.areaOfLandUnit === 'SQYD'
-                          ? 'Land Area (Sq.Yards):'
-                          : fields.areaOfLandUnit === 'SQMT'
-                          ? 'Land Area (Sq.Meters):'
-                          : 'Land Area (Guntha):'
-                      }
-                    >
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.areaOfLandValue || ''}
-                        onChange={(e) => {
-                          const val = sanitizePositiveFloat(e.target.value);
-                          const unit = fields.areaOfLandUnit || 'ACRE_DEC';
-                          const formatted = formatAreaOfLandStatement(unit, val, '', '', '');
-                          setFields(prev => ({
-                            ...prev,
-                            areaOfLandValue: val,
-                            areaOfLand: val ? formatted.statement : '',
-                            areaOfLandSqft: val ? formatted.sqftStr : '',
-                          }));
-                        }}
-                        placeholder="0.00"
-                        disabled={isReadOnly}
-                      />
-                    </Field>
-
-                    {/* Converted Read-only Sqft Box */}
-                    <Field label="Land Area in sqft (Read-only):">
-                      <input
-                        type="text"
-                        className={`${inputCls} bg-slate-100/90 text-slate-800 font-semibold cursor-not-allowed border-slate-300`}
-                        value={(() => {
-                          const val = fields.areaOfLandValue || '';
-                          if (!val || parseFloat(val) <= 0) return '';
-                          const conv = convertAreaToSqft(fields.areaOfLandUnit || 'ACRE_DEC', val);
-                          return conv.sqftStr || '';
-                        })()}
-                        readOnly
-                        disabled
-                        placeholder="0 sqft."
-                      />
-                    </Field>
-                  </div>
+                  <Field label="Area of Land (Read-only):">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100/90 text-slate-800 font-semibold cursor-not-allowed border-slate-300`}
+                      value={fields.propertyArea || fields.areaOfLand || 'NA'}
+                      readOnly
+                      disabled
+                    />
+                  </Field>
                 </div>
 
                 {/* 40. Expected Cost of the Project */}
@@ -3475,7 +3375,7 @@ export default function BandhanHLLAP({
                     })()}
                   </div>
 
-                  <Field label="Expected Cost of the Project (Amount in Rs. / Blank for NA):">
+                  <Field label="Expected Cost of the Project:">
                     <input
                       type="text"
                       className={inputCls}
@@ -3487,7 +3387,6 @@ export default function BandhanHLLAP({
                           expectedCostOfProject: val,
                         }));
                       }}
-                      placeholder="Enter amount (leave blank for NA)"
                       disabled={isReadOnly}
                     />
                   </Field>
