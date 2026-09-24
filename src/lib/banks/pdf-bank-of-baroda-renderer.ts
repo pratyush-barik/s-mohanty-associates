@@ -425,7 +425,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       ['e)', 'Mandal / District', this.fv('bobMandalDistrict') || 'NA'],
     ];
 
-    allMerges.push({ sr: p6StartRow, sc: 0, er: p6StartRow + locFields.length, ec: 0 });
+    // allMerges.push({ sr: p6StartRow, sc: 0, er: p6StartRow + locFields.length, ec: 0 });
     for (const f of locFields) {
       allRows.push(['', f[0], f[1], f[2]]);
       rIdx++;
@@ -478,7 +478,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     // Point 8: City / Town
     allRows.push(['8.', 'City / Town', '', this.fv('bobCityTown') || 'NA', '']);
-    allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 3, ec: 0 }); // 8. vertically
+    // allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 3, ec: 0 }); // 8. vertically
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 }); // City/Town
     allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
     rIdx++;
@@ -497,7 +497,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     // Point 9: Classification
     allRows.push(['9.', 'Classification of the area', '', '', '']);
-    allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 2, ec: 0 }); // 9. vertically
+    // allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 2, ec: 0 }); // 9. vertically
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 4 });
     rIdx++;
     allRows.push(['', 'i)', 'High / Middle / Poor', this.fv('bobClassHighMiddlePoor') || 'NA', '']);
@@ -528,7 +528,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     // Point 13: Boundaries
     const boundaries = this.fields.bobBoundaries || {};
     allRows.push(['13.', 'Boundaries of the property', '', '', '']);
-    allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 5, ec: 0 }); // 13. vertically
+    // allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 5, ec: 0 }); // 13. vertically
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 4 });
     rIdx++;
     allRows.push(['', '', '', 'As per Sketch Map', 'As per Verification']);
@@ -550,7 +550,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     // Point 14: Dimensions
     const dimensions = this.fields.bobDimensions || {};
     allRows.push(['14.1', 'Dimensions of the site', '', '', '']);
-    allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 6, ec: 0 }); // 14.1 vertically
+    // allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 6, ec: 0 }); // 14.1 vertically
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 4 });
     rIdx++;
     allRows.push(['', '', '', 'A', 'B']);
