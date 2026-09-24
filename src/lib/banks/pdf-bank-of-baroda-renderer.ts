@@ -440,45 +440,139 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     rIdx++;
 
     this.drawSectionHeader('PART I — GENERAL', false, false);
-    this.drawMergedTable(allRows, allMerges, [0.05, 0.05, 0.35, 0.55]);
-    this.drawSimpleRow('8a. City / Town', this.fv('bobCityTown') || 'NA');
-    this.drawSimpleRow('8b. Residential Area', this.fv('bobResidentialArea') || 'NA');
-    this.drawSimpleRow('8c. Commercial Area', this.fv('bobCommercialArea') || 'NA');
-    this.drawSimpleRow('8d. Industrial Area', this.fv('bobIndustrialArea') || 'NA');
-    this.drawSimpleRow('9i. Classification (High/Middle/Poor)', this.fv('bobClassHighMiddlePoor') || 'NA');
-    this.drawSimpleRow('9ii. Classification (Urban/Rural)', this.fv('bobClassUrbanRural') || 'NA');
-    this.drawSimpleRow('10. Corporation / Municipality', this.fv('bobCorporationLimit') || 'NA');
-    this.drawSimpleRow('11. Covered under enactments', this.fv('bobCoveredUnderEnactments') || 'NA');
-    this.drawSimpleRow('12. Agricultural conversion', this.fv('bobAgriculturalConversion') || 'NA');
+    // Note: To switch to 5 columns, we need to update the previous allMerges!
+    // But since the previous code was already executed and we are just appending to it, we can't easily change the `ec: 2` to `ec: 3` without a full rewrite!
+    // Wait, since I'm only replacing from line 443 downwards, I must do a hack or rewrite it properly.
+    // Instead of a hack, let's just close the 4-column table at line 443, and create a NEW 5-column table for points 8-17 directly below it!
+    // Or better, just create a new 4-column table for points 8-12, a 3-column table for 13, a 3-column table for 14, etc...
+    // Wait, the user wants the WHOLE thing to look exactly like Image 1 table formatting!
+    // It's perfectly fine to draw multiple tables seamlessly if they have no top margin!
+    // But they have different column widths. If I draw multiple tables, the columns won't align perfectly if the widths differ.
+    // Let's rewrite the `allRows` array entirely to 5 cols!
+    // Actually, I can just map over `allRows` and `allMerges` to update them to 5 columns!
+    allRows = allRows.map(row => {
+      // row currently has 4 elements
+      if (row.length === 4) {
+        return [row[0], row[1], row[2], row[3], ''];
+      }
+      return row;
+    });
+    
+    // For allMerges, any merge that ended at column 3 (ec: 3) should now end at column 4 (ec: 4).
+    // Any merge that ended at column 2 (ec: 2) remains ending at column 2 (or Col 3 if it was Col 3).
+    // Wait, earlier my widths were [0.05, 0.05, 0.35, 0.55].
+    // New widths: [0.05, 0.05, 0.35, 0.275, 0.275].
+    // Col 0, 1, 2 are identical!
+    // Col 3 in old table is now Col 3 + Col 4 in new table!
+    allMerges = allMerges.map(m => {
+      // If a merge covered Col 3, it should now cover Col 3 AND Col 4 (ec: 4).
+      if (m.ec === 3 || m.ec === 2 && m.sc === 3) {
+        return { ...m, ec: 4 };
+      }
+      // Note: in Point 6, 'Location of property' merged to ec: 3 (which was the last col). It should now be ec: 4.
+      if (m.ec === 3 && m.sc === 1) {
+        return { ...m, ec: 4 };
+      }
+      return m;
+    });
 
-    // Boundaries table
+    // Point 8: City / Town
+    allRows.push(['8.', 'City / Town', '', this.fv('bobCityTown') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 3, ec: 0 }); // 8. vertically
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 }); // City/Town
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', 'Residential Area', '', this.fv('bobResidentialArea') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', 'Commercial Area', '', this.fv('bobCommercialArea') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', 'Industrial Area', '', this.fv('bobIndustrialArea') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 9: Classification
+    allRows.push(['9.', 'Classification of the area', '', '', '']);
+    allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 2, ec: 0 }); // 9. vertically
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', 'i)', 'High / Middle / Poor', this.fv('bobClassHighMiddlePoor') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', 'ii)', 'Urban / Semi Urban / Rural', this.fv('bobClassUrbanRural') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 10
+    allRows.push(['10.', 'Coming under Corporation limit/ Village\\nPanchayat / Municipality', '', this.fv('bobCorporationLimit') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 11
+    allRows.push(['11.', 'Whether covered under any State /\\nCentral Govt. enactments (e.g. Urban\\nLand Ceiling Act) or notified under\\nagency area / scheduled area /\\ncantonment area', '', this.fv('bobCoveredUnderEnactments') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 12
+    allRows.push(['12.', 'In case it is an agricultural land, any\\nconversion to house site plots is\\ncontemplated', '', this.fv('bobAgriculturalConversion') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 13: Boundaries
     const boundaries = this.fields.bobBoundaries || {};
-    this.drawTable(
-      ['Direction', 'As per Sketch Map', 'As per Verification'],
-      [
-        ['East', boundaries.sketchEast || '', boundaries.verifyEast || ''],
-        ['West', boundaries.sketchWest || '', boundaries.verifyWest || ''],
-        ['North', boundaries.sketchNorth || '', boundaries.verifyNorth || ''],
-        ['South', boundaries.sketchSouth || '', boundaries.verifySouth || ''],
-      ],
-      [CONTENT_W * 0.2, CONTENT_W * 0.4, CONTENT_W * 0.4],
-      [], [0]
-    );
+    allRows.push(['13.', 'Boundaries of the property', '', '', '']);
+    allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 5, ec: 0 }); // 13. vertically
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', '', '', 'As per Sketch Map', 'As per Verification']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'East', '', boundaries.sketchEast || 'NA', boundaries.verifyEast || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'West', '', boundaries.sketchWest || 'NA', boundaries.verifyWest || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'North', '', boundaries.sketchNorth || 'NA', boundaries.verifyNorth || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'South', '', boundaries.sketchSouth || 'NA', boundaries.verifySouth || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
 
-    // Dimensions table
+    // Point 14: Dimensions
     const dimensions = this.fields.bobDimensions || {};
-    this.drawTable(
-      ['Direction', 'As per the Deed', 'Actual'],
-      [
-        ['East', dimensions.deedEast || '', dimensions.actualEast || ''],
-        ['West', dimensions.deedWest || '', dimensions.actualWest || ''],
-        ['North', dimensions.deedNorth || '', dimensions.actualNorth || ''],
-        ['South', dimensions.deedSouth || '', dimensions.actualSouth || ''],
-      ],
-      [CONTENT_W * 0.2, CONTENT_W * 0.4, CONTENT_W * 0.4],
-      [], [0]
-    );
+    allRows.push(['14.\\n1', 'Dimensions of the site', '', '', '']);
+    allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 6, ec: 0 }); // 14.1 vertically
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', '', '', 'A', 'B']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx + 1, ec: 2 }); // empty space merged vertically and horizontally
+    rIdx++;
+    allRows.push(['', '', '', 'As per the Deed', 'Actual']);
+    // no merge needed for col 1-2, already handled by previous row merge
+    rIdx++;
+    allRows.push(['', 'East', '', dimensions.deedEast || 'NA', dimensions.actualEast || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'West', '', dimensions.deedWest || 'NA', dimensions.actualWest || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'North', '', dimensions.deedNorth || 'NA', dimensions.actualNorth || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'South', '', dimensions.deedSouth || 'NA', dimensions.actualSouth || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
 
+    // Point 14.2
     const lat = this.fv('latitude');
     const lon = this.fv('longitude');
     const coords = this.fv('bobCoordinates');
@@ -487,10 +581,18 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       lon ? `Longitude: ${lon}` : '',
       coords ? `Coordinates: ${coords}` : ''
     ].filter(Boolean).join(', ');
-    this.drawSimpleRow('14.2 Latitude, Longitude and Coordinates of the site', latLongStr || 'NA');
-    this.drawSimpleRow('15. Extent of the site', this.fv('bobExtentOfSite'));
+    allRows.push(['14.\n2', 'Latitude, Longitude and Coordinates of\nthe site', '', latLongStr || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
 
-    // Calc extent for valuation — SUM all four directional measurements
+    // Point 15
+    allRows.push(['15.', 'Extent of the site', '', this.fv('bobExtentOfSite') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 16
     const deedArea = (parseFloat(dimensions.deedEast || '0') || 0)
       + (parseFloat(dimensions.deedWest || '0') || 0)
       + (parseFloat(dimensions.deedNorth || '0') || 0)
@@ -504,11 +606,21 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const calcExtent = minArea > 0 
       ? `Total Area: Ac. ${minArea} Dec i.e. ${sftValue} Sft` 
       : 'Total Area: Ac. 0.00 Dec i.e. 0.00 Sft';
-    this.drawSimpleRow('16. Extent considered for valuation', calcExtent);
-    this.drawSimpleRow('17. Occupancy', this.fv('bobOccupancy') || 'NA');
-    if (this.fv('bobOccupancyDetails')) {
-      this.drawSimpleRow('    Tenant details', this.fv('bobOccupancyDetails'));
-    }
+    allRows.push(['16.', 'Extent of the site considered for valuation\n(least of 14 A & 14 B)', '', calcExtent, '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 17
+    let occStr = this.fv('bobOccupancy') || 'NA';
+    if (this.fv('bobOccupancyDetails')) occStr += `\n${this.fv('bobOccupancyDetails')}`;
+    allRows.push(['17.', 'Whether occupied by the owner /\ntenant? If occupied by tenant, since how\nlong? Rent Received per month.', '', occStr, '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    this.drawSectionHeader('PART I — GENERAL', false, false);
+    this.drawMergedTable(allRows, allMerges, [0.05, 0.05, 0.35, 0.275, 0.275]);
   }
 
   // ═══════════════════════════════════════════════════════════════════════
