@@ -3108,15 +3108,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                     <h4 className="font-bold text-gray-800 text-sm mb-2 bg-gray-50 px-3 py-2 rounded border-l-4 border-[#4A5D23]">{section.heading}</h4>
                     <div className="space-y-2 pl-2">
                       {section.items.map(item => (
-                        <div key={item.num} className="space-y-1">
-                          <p className="text-xs text-gray-700"><strong>{item.num}.</strong> {item.text}</p>
-                          <textarea
-                            className={`${inputCls} text-xs`}
-                            rows={2}
-                            value={cocValues[`item_${item.num}`] || item.text}
-                            onChange={e => handleChange('bobCodeOfConductValues', { ...cocValues, [`item_${item.num}`]: e.target.value })}
-                            disabled={isReadOnly}
-                          />
+                        <div key={item.num} className="mb-2">
+                          <p className="text-sm text-gray-700 leading-relaxed"><strong>{item.num}.</strong> {item.text}</p>
                         </div>
                       ))}
                     </div>
@@ -3138,9 +3131,9 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <PrefillField label="Date:" value={fields.bobDateOfValuationMade || ''} hoverText='>>Prefill from section 2, field "Date on which the valuation is made"<<.' />
+                <PrefillField label="Date:" value={fields.bobAsOnDate ? fields.bobAsOnDate.split('-').reverse().join('-') : ''} hoverText='>>Auto-populated from Cover Page Date<<' />
                 <Field label="Place:">
-                  <input className={inputCls} value={fields.bobCodeOfConductPlace || ''} onChange={e => handleChange('bobCodeOfConductPlace', e.target.value)} disabled={isReadOnly} />
+                  <input className={inputCls} value={fields.bobCodeOfConductPlace ?? 'Bhubaneswar'} onChange={e => handleChange('bobCodeOfConductPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
               <Field label="Signature of the Approved Valuer and Seal">
