@@ -38,6 +38,18 @@ import {
 } from '../pdf-bank-renderer';
 import { formatIndianCurrency } from '@/lib/numberToWords';
 
+const parseNum = (v: any): number => {
+  if (!v) return 0;
+  const n = parseFloat(String(v).replace(/[^0-9.-]/g, ''));
+  return isNaN(n) ? 0 : n;
+};
+
+const formatCurrencyINR = (val: number): string => {
+  return new Intl.NumberFormat('en-IN', {
+    maximumFractionDigits: 0,
+  }).format(val);
+};
+
 export interface BandhanHLLAPFloor {
   floor: string;
   measuredArea: string;
@@ -68,6 +80,123 @@ export function getNdmaStructureTypeForStructure(structureType?: string): string
 export function getWorkProgressStructureLabel(structureType?: string): string {
   const st = (structureType || 'RCC').trim();
   return `${st} work`;
+}
+
+export function formatDateDisplay(d?: string): string {
+  if (!d || !d.trim()) return '';
+  const trimmed = d.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [y, m, day] = trimmed.split('-');
+    return `${day}/${m}/${y}`;
+  }
+  return trimmed;
+}
+
+export function formatCommencementCompletion(
+  commencement?: string,
+  completion?: string,
+  rawCombined?: string
+): string {
+  const c = commencement ? formatDateDisplay(commencement) : '';
+  const e = completion ? formatDateDisplay(completion) : '';
+
+  if (c && e) {
+    return `Project Commencement - ${c}, Expected Completion - ${e}`;
+  }
+  if (c) {
+    return `Project Commencement - ${c}`;
+  }
+  if (e) {
+    return `Expected Completion - ${e}`;
+  }
+  if (rawCombined && rawCombined.trim() && rawCombined.trim() !== 'NA') {
+    return rawCombined.trim();
+  }
+  return 'NA';
+}
+
+export function formatAreaOfLandStatement(
+  unit: string = 'ACRE_DEC',
+  primaryVal: string = '',
+  acresVal: string = '',
+  decsVal: string = '',
+  rawResult: string = ''
+): { statement: string; sqft: number } {
+  const pNum = parseFloat(String(primaryVal).replace(/[^0-9.]/g, '')) || 0;
+  const aNum = parseFloat(String(acresVal).replace(/[^0-9.]/g, '')) || 0;
+  const dNum = parseFloat(String(decsVal).replace(/[^0-9.]/g, '')) || 0;
+
+  if (unit === 'SQFT') {
+    if (pNum > 0) {
+      return { statement: `${formatCurrencyINR(pNum)} sqft.`, sqft: pNum };
+    }
+    return { statement: primaryVal ? `${primaryVal} sqft.` : (rawResult || ''), sqft: 0 };
+  }
+
+  if (unit === 'ACRE_DEC') {
+    let totalAcres = 0;
+    if (acresVal || decsVal) {
+      const decsPart = dNum >= 1 ? dNum / 100 : dNum;
+      totalAcres = aNum + decsPart;
+    } else if (pNum > 0) {
+      totalAcres = pNum;
+    }
+    if (totalAcres > 0) {
+      const sqft = Math.round(totalAcres * 43560);
+      const decsStr = totalAcres.toFixed(3);
+      return {
+        statement: `(AC.${decsStr}Decs) i.e. ${formatCurrencyINR(sqft)}sqft.`,
+        sqft,
+      };
+    }
+    return { statement: rawResult || '', sqft: 0 };
+  }
+
+  if (unit === 'DECIMAL') {
+    if (pNum > 0) {
+      const sqft = Math.round(pNum * 435.6);
+      return {
+        statement: `(${pNum} Decs) i.e. ${formatCurrencyINR(sqft)}sqft.`,
+        sqft,
+      };
+    }
+    return { statement: rawResult || '', sqft: 0 };
+  }
+
+  if (unit === 'SQYD') {
+    if (pNum > 0) {
+      const sqft = Math.round(pNum * 9);
+      return {
+        statement: `(${formatCurrencyINR(pNum)} Sq.Yds) i.e. ${formatCurrencyINR(sqft)}sqft.`,
+        sqft,
+      };
+    }
+    return { statement: rawResult || '', sqft: 0 };
+  }
+
+  if (unit === 'SQMT') {
+    if (pNum > 0) {
+      const sqft = Math.round(pNum * 10.7639);
+      return {
+        statement: `(${formatCurrencyINR(pNum)} Sq.Mtr) i.e. ${formatCurrencyINR(sqft)}sqft.`,
+        sqft,
+      };
+    }
+    return { statement: rawResult || '', sqft: 0 };
+  }
+
+  if (unit === 'GUNTHA') {
+    if (pNum > 0) {
+      const sqft = Math.round(pNum * 1089);
+      return {
+        statement: `(${pNum} Guntha) i.e. ${formatCurrencyINR(sqft)}sqft.`,
+        sqft,
+      };
+    }
+    return { statement: rawResult || '', sqft: 0 };
+  }
+
+  return { statement: rawResult || '', sqft: 0 };
 }
 
 export interface BandhanHLLAPDRCFloor {
@@ -192,12 +321,27 @@ export interface BandhanHLLAPReportFields {
   recommendedValueOfProperty?: string;
   totalMarketValue?: string;
   valuationAsOnDate?: string;
+  govtRateLand?: string;
+  govtLandArea?: string;
   valuationGovtRate?: string;
   distressSaleValue?: string;
+  distressSalePct?: string;
+  distressSaleLocked?: boolean;
   realisableValue?: string;
+  realisableValuePct?: string;
+  realisableValueLocked?: boolean;
+  projectCommencementDate?: string;
+  expectedCompletionDate?: string;
   dateCommencementCompletion?: string;
   areaOfLand?: string;
+  areaOfLandUnit?: 'ACRE_DEC' | 'DECIMAL' | 'SQFT' | 'SQYD' | 'SQMT' | 'GUNTHA';
+  areaOfLandValue?: string;
+  areaOfLandAcres?: string;
+  areaOfLandDecimals?: string;
+  areaOfLandLocked?: boolean;
   expectedCostOfProject?: string;
+  expectedCostOfProjectRef?: 'BUILDING' | 'MARKET' | 'NA' | 'MANUAL';
+  expectedCostOfProjectLocked?: boolean;
 
   // Progress of Work (34)
   progressStructureHeader?: string;
@@ -504,8 +648,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawBandhanRow('31.', 'Recommended rate of the plot', fields.plotRate ? `Rs.${fields.plotRate}/-` : '');
     this.drawBandhanRow('', 'Recommended value of the plot', fields.plotValueBreakdown || '');
     this.drawBandhanRow('32.', 'Recommended rate of cost of construction', fields.rateOfCostOfConstruction || '');
-    this.drawBandhanRow('', 'Depreciation of the construction', fields.depreciationOfConstruction || '');
-    this.drawBandhanRow('33.', 'Net value of the property (Land + Building)', fields.netValueOfProperty || '');
+    this.drawBandhanRow('33.', 'Depreciation of the construction', fields.depreciationOfConstruction || '');
+    this.drawBandhanRow('', 'Net value of the property (Land + Building)', fields.netValueOfProperty || '');
     this.drawBandhanRow('', 'Recommended rate of the flat', fields.rateOfFlat || '');
     this.drawBandhanRow('', 'Area of the flat', fields.areaOfFlat || '');
     this.drawBandhanRow('', 'Recommended value of the property', fields.recommendedValueOfProperty || '');
@@ -519,9 +663,24 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawBandhanRow('36.', 'Valuation as per govt. rates (Land)', fields.valuationGovtRate || '');
     this.drawBandhanRow('37.', 'Distress sale value', fields.distressSaleValue || '');
     this.drawBandhanRow('', 'Realisable Value', fields.realisableValue || '');
-    this.drawBandhanRow('38.', 'Date of project commencement & date of expected project completion', fields.dateCommencementCompletion || '');
-    this.drawBandhanRow('39.', 'Area of land', fields.areaOfLand || fields.propertyArea || '');
-    this.drawBandhanRow('40.', 'Expected cost of the project', fields.expectedCostOfProject || '');
+    const val38 = formatCommencementCompletion(fields.projectCommencementDate, fields.expectedCompletionDate, fields.dateCommencementCompletion);
+    this.drawBandhanRow('38.', 'Date of project commencement & date of expected project completion', val38);
+    let val39 = fields.areaOfLand;
+    if (!val39) {
+      if (fields.areaOfLandValue || fields.areaOfLandAcres) {
+        val39 = formatAreaOfLandStatement(
+          fields.areaOfLandUnit || 'ACRE_DEC',
+          fields.areaOfLandValue || '',
+          fields.areaOfLandAcres || '',
+          fields.areaOfLandDecimals || '',
+          fields.propertyArea || ''
+        ).statement;
+      } else if (fields.propertyArea) {
+        val39 = `${fields.propertyArea} sqft.`;
+      }
+    }
+    this.drawBandhanRow('39.', 'Area of land', val39 || '');
+    this.drawBandhanRow('40.', 'Expected cost of the project', fields.expectedCostOfProject || 'NA');
   }
 
   /**
@@ -858,14 +1017,14 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
 
     const defaultNdmaStructure = getNdmaStructureTypeForStructure(fields.typeOfStructure);
     const ndmaRows = [
-      { l1: 'Concrete Grade', v1: fields.ndmaConcreteGrade || 'M25', l2: 'Horizontal floor type', v2: fields.ndmaHorizontalFloorType || 'Beams and Slabs' },
-      { l1: 'Seismic Zone', v1: fields.ndmaSeismicZone || 'Zone-III', l2: 'Steel Grade', v2: fields.ndmaSteelGrade || 'FE - 450' },
-      { l1: 'Flood Prone Area', v1: fields.ndmaFloodProne || 'NO', l2: 'Urban Floods', v2: fields.ndmaUrbanFloods || 'NO' },
-      { l1: 'Environment Exposure\nCondition', v1: fields.ndmaEnvironmentExposure || 'Mild', l2: 'Soil Slope vulnerable to\nlandslide', v2: fields.ndmaSoilSlopeLandslide || 'Low Hazard Zone' },
-      { l1: 'Wind / Cyclones', v1: fields.ndmaWindCyclones || 'Low Damage Risk Zone', l2: 'Tsunami', v2: fields.ndmaTsunami || 'NO' },
-      { l1: 'Height of building above\nground level', v1: fields.ndmaHeightAboveGround || 'Less Than 15m Tall', l2: 'Coastal Regulatory Zone\n(CRZ)', v2: fields.ndmaCRZ || 'NA' },
-      { l1: 'Nature of Building\n/Wing/Tower', v1: fields.ndmaNatureOfBuilding || 'Standalone Structure', l2: 'Function of use', v2: fields.ndmaFunctionOfUse || 'Residential' },
-      { l1: 'Type of Foundation', v1: fields.ndmaFoundationType || 'Open Footing column', l2: 'Type of Structure', v2: fields.ndmaStructureType || defaultNdmaStructure },
+      { l1: 'Concrete Grade', v1: fields.ndmaConcreteGrade ?? 'M25', l2: 'Horizontal floor type', v2: fields.ndmaHorizontalFloorType ?? 'Beams and Slabs' },
+      { l1: 'Seismic Zone', v1: fields.ndmaSeismicZone ?? 'Zone-III', l2: 'Steel Grade', v2: fields.ndmaSteelGrade ?? 'FE - 450' },
+      { l1: 'Flood Prone Area', v1: fields.ndmaFloodProne ?? 'NO', l2: 'Urban Floods', v2: fields.ndmaUrbanFloods ?? 'NO' },
+      { l1: 'Environment Exposure\nCondition', v1: fields.ndmaEnvironmentExposure ?? 'Mild', l2: 'Soil Slope vulnerable to\nlandslide', v2: fields.ndmaSoilSlopeLandslide ?? 'Low Hazard Zone' },
+      { l1: 'Wind / Cyclones', v1: fields.ndmaWindCyclones ?? 'Low Damage Risk Zone', l2: 'Tsunami', v2: fields.ndmaTsunami ?? 'NO' },
+      { l1: 'Height of building above\nground level', v1: fields.ndmaHeightAboveGround ?? 'Less Than 15m Tall', l2: 'Coastal Regulatory Zone\n(CRZ)', v2: fields.ndmaCRZ ?? 'NA' },
+      { l1: 'Nature of Building\n/Wing/Tower', v1: fields.ndmaNatureOfBuilding ?? 'Standalone Structure', l2: 'Function of use', v2: fields.ndmaFunctionOfUse ?? 'Residential' },
+      { l1: 'Type of Foundation', v1: fields.ndmaFoundationType ?? 'Open Footing column', l2: 'Type of Structure', v2: fields.ndmaStructureType ?? defaultNdmaStructure },
     ];
 
     for (const r of ndmaRows) {
@@ -895,6 +1054,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     // Titles
     this.drawHeadingText('ANNEXURE-A', FONT_SIZE_TITLE, 'center');
     this.drawHeadingText('DETAILS OF VALUATION AND VALUATION COMPUTATION', FONT_SIZE_HEADER, 'center');
+    this.cursorY += 4;
 
     // Introduction
     this.drawHeadingText('INTRODUCTION: -', TABLE_FONT_SIZE, 'left');
@@ -903,17 +1063,17 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const introText = fields.annexureIntro ||
       `Pursuant to the instructions received from Bandhan Bank, ${branchDisplay || 'Bhubaneswar Branch'}, to ascertain 'MARKET VALUE' (MV) of the above property, in favour of ${fields.customerName || 'Loan Applicant'} (Applicant Name), the site and its neighbourhood area had been inspected on ${fields.dateOfVisit || ''} in presence of the owner and the property had been identified by us with the help of available documents.`;
     this.drawParagraph(introText);
-    this.cursorY += 6;
+    this.cursorY += 8;
 
     // Description of Property
     this.drawHeadingText('DESCRIPTION OF THE PROPERTY:', TABLE_FONT_SIZE, 'left');
     this.drawParagraph(fields.annexurePropertyDesc || fields.propertyAddress || '');
-    this.cursorY += 6;
+    this.cursorY += 8;
 
     // List of Documents for Verification
     const docText = `LIST OF DOCUMENTS FOR VERIFICATION: ${fields.annexureDocsVerified || 'ROR, Copy of Sale deed & approved Plan'}`;
     this.drawHeadingText(docText, TABLE_FONT_SIZE, 'left');
-    this.cursorY += 6;
+    this.cursorY += 8;
 
     // Relevant Data / Information Points
     this.drawHeadingText('RELEVANT DATA/ INFORMATION IN RESPECT OF THE PROPERTY UNDER REFERENCE:', TABLE_FONT_SIZE, 'left');
@@ -936,7 +1096,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     ];
 
     for (const p of relPoints) {
-      this.checkPageBreak(28);
+      this.checkPageBreak(30);
       this.drawParagraph(`${p.prefix}${p.text}`);
       this.cursorY += 4;
     }
@@ -944,21 +1104,27 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     // Adopted Cost of Construction Table
     const colStruc = CONTENT_W / 2;
     const colCost = CONTENT_W / 2;
-    this.checkPageBreak(TABLE_MIN_ROW_H * 3);
+    const h1 = this.cellHeight('Structures', colStruc, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const h2 = this.cellHeight('Adopted Cost of Construction Rs. /Sqft. of BUA', colCost, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const headerH = Math.max(TABLE_MIN_ROW_H, h1, h2);
 
-    this.drawCell(MARGIN_L, this.cursorY, colStruc, TABLE_MIN_ROW_H, 'Structures', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colStruc, this.cursorY, colCost, TABLE_MIN_ROW_H, 'Adopted Cost of Construction Rs. /Sqft. of BUA', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.cursorY += TABLE_MIN_ROW_H;
+    this.checkPageBreak(headerH + TABLE_MIN_ROW_H * 2);
+    this.drawCell(MARGIN_L, this.cursorY, colStruc, headerH, 'Structures', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colStruc, this.cursorY, colCost, headerH, 'Adopted Cost of Construction Rs. /Sqft. of BUA', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.cursorY += headerH;
 
     const adopted = (fields.annexureAdoptedStructures && fields.annexureAdoptedStructures.length > 0)
       ? fields.annexureAdoptedStructures
       : [{ structure: `${structName} Roofing Ground Floor`, cost: fields.rateOfCostOfConstruction ? `GF- Rs.${fields.rateOfCostOfConstruction}/-` : 'GF- Rs.1,600/- & FF- Rs.1,800/-' }];
 
     for (const a of adopted) {
-      this.checkPageBreak(TABLE_MIN_ROW_H);
-      this.drawCell(MARGIN_L, this.cursorY, colStruc, TABLE_MIN_ROW_H, a.structure, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center' });
-      this.drawCell(MARGIN_L + colStruc, this.cursorY, colCost, TABLE_MIN_ROW_H, a.cost, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center' });
-      this.cursorY += TABLE_MIN_ROW_H;
+      const rh1 = this.cellHeight(a.structure, colStruc, { fontSize: TABLE_FONT_SIZE });
+      const rh2 = this.cellHeight(a.cost, colCost, { fontSize: TABLE_FONT_SIZE });
+      const rowH = Math.max(TABLE_MIN_ROW_H, rh1, rh2);
+      this.checkPageBreak(rowH);
+      this.drawCell(MARGIN_L, this.cursorY, colStruc, rowH, a.structure, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colStruc, this.cursorY, colCost, rowH, a.cost, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+      this.cursorY += rowH;
     }
     this.cursorY += 10;
 
@@ -972,28 +1138,43 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
 
     // Method Classification 6-col table
     const mcW = CONTENT_W / 6;
-    this.checkPageBreak(30 + TABLE_MIN_ROW_H);
-    this.drawCell(MARGIN_L, this.cursorY, mcW, 26, 'DESCRIPTION\nOF PROPERTY', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + mcW, this.cursorY, mcW, 26, 'PROPERTY\nCLASSIFICATION', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + mcW * 2, this.cursorY, mcW, 26, 'VALUE\nINGREDIENTS', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + mcW * 3, this.cursorY, mcW, 26, 'VALUE\nELEMENTS', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + mcW * 4, this.cursorY, mcW, 26, 'APPROACH\nTO\nVALUATION', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + mcW * 5, this.cursorY, mcW, 26, 'METHOD OF\nVALUATION', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.cursorY += 26;
+    const mcH1 = this.cellHeight('DESCRIPTION\nOF PROPERTY', mcW, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const mcH2 = this.cellHeight('PROPERTY\nCLASSIFICATION', mcW, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const mcH3 = this.cellHeight('VALUE\nINGREDIENTS', mcW, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const mcH4 = this.cellHeight('VALUE\nELEMENTS', mcW, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const mcH5 = this.cellHeight('APPROACH\nTO\nVALUATION', mcW, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const mcH6 = this.cellHeight('METHOD OF\nVALUATION', mcW, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const mcHeaderH = Math.max(TABLE_MIN_ROW_H, mcH1, mcH2, mcH3, mcH4, mcH5, mcH6);
+
+    this.checkPageBreak(mcHeaderH + TABLE_MIN_ROW_H);
+    this.drawCell(MARGIN_L, this.cursorY, mcW, mcHeaderH, 'DESCRIPTION\nOF PROPERTY', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + mcW, this.cursorY, mcW, mcHeaderH, 'PROPERTY\nCLASSIFICATION', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + mcW * 2, this.cursorY, mcW, mcHeaderH, 'VALUE\nINGREDIENTS', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + mcW * 3, this.cursorY, mcW, mcHeaderH, 'VALUE\nELEMENTS', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + mcW * 4, this.cursorY, mcW, mcHeaderH, 'APPROACH\nTO\nVALUATION', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + mcW * 5, this.cursorY, mcW, mcHeaderH, 'METHOD OF\nVALUATION', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.cursorY += mcHeaderH;
 
     const methodRows = (fields.annexureMethodClassification && fields.annexureMethodClassification.length > 0)
       ? fields.annexureMethodClassification
       : [{ description: 'Residential building', classification: 'Residential', ingredients: '', elements: '', approach: 'Market Approach', method: '' }];
 
     for (const mr of methodRows) {
-      this.checkPageBreak(TABLE_MIN_ROW_H);
-      this.drawCell(MARGIN_L, this.cursorY, mcW, TABLE_MIN_ROW_H, mr.description, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + mcW, this.cursorY, mcW, TABLE_MIN_ROW_H, mr.classification, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + mcW * 2, this.cursorY, mcW, TABLE_MIN_ROW_H, mr.ingredients, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + mcW * 3, this.cursorY, mcW, TABLE_MIN_ROW_H, mr.elements, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + mcW * 4, this.cursorY, mcW, TABLE_MIN_ROW_H, mr.approach, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + mcW * 5, this.cursorY, mcW, TABLE_MIN_ROW_H, mr.method, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.cursorY += TABLE_MIN_ROW_H;
+      const rh1 = this.cellHeight(mr.description || '', mcW, { fontSize: FONT_SIZE_SMALL });
+      const rh2 = this.cellHeight(mr.classification || '', mcW, { fontSize: FONT_SIZE_SMALL });
+      const rh3 = this.cellHeight(mr.ingredients || '', mcW, { fontSize: FONT_SIZE_SMALL });
+      const rh4 = this.cellHeight(mr.elements || '', mcW, { fontSize: FONT_SIZE_SMALL });
+      const rh5 = this.cellHeight(mr.approach || '', mcW, { fontSize: FONT_SIZE_SMALL });
+      const rh6 = this.cellHeight(mr.method || '', mcW, { fontSize: FONT_SIZE_SMALL });
+      const rowH = Math.max(TABLE_MIN_ROW_H, rh1, rh2, rh3, rh4, rh5, rh6);
+      this.checkPageBreak(rowH);
+      this.drawCell(MARGIN_L, this.cursorY, mcW, rowH, mr.description || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + mcW, this.cursorY, mcW, rowH, mr.classification || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + mcW * 2, this.cursorY, mcW, rowH, mr.ingredients || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + mcW * 3, this.cursorY, mcW, rowH, mr.elements || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + mcW * 4, this.cursorY, mcW, rowH, mr.approach || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + mcW * 5, this.cursorY, mcW, rowH, mr.method || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.cursorY += rowH;
     }
     this.cursorY += 10;
 
@@ -1003,9 +1184,11 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     // (A) Land Component
     this.drawHeadingText('(A) VALUATION OF LAND COMPONENT: -', TABLE_FONT_SIZE, 'left');
     this.drawParagraph(`Adopted land rate for this case as on date                              = Rs.${fields.annexureAdoptedLandRate || fields.plotRate || '1800'}/-`);
+    this.cursorY += 3;
 
     const landCalc = `Multiplying by the area of the land Component ${fields.annexureLandArea || fields.propertyArea || '10,890 sqft.'} (x) Rs.${fields.annexureAdoptedLandRate || fields.plotRate || '1800'}/- = Rs.${fields.annexureLandValue || '1,96,02,000'}/-`;
     this.drawParagraph(landCalc, { bold: true });
+    this.cursorY += 3;
 
     this.drawParagraph(`Value of the land component as on date          =   Rs.${fields.annexureLandValue || '1,96,02,000'} /- ...............(A)`, { bold: true });
     this.cursorY += 8;
@@ -1023,16 +1206,26 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const drcW7 = 76;  // Dep %
     const drcW8 = CONTENT_W - drcW1 - drcW2 - drcW3 - drcW4 - drcW5 - drcW6 - drcW7; // ~100.28 pt Value
 
-    this.checkPageBreak(30 + TABLE_MIN_ROW_H * 3);
-    this.drawCell(MARGIN_L, this.cursorY, drcW1, 26, 'Particulars', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + drcW1, this.cursorY, drcW2, 26, 'Area\nin Sqft.', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + drcW1 + drcW2, this.cursorY, drcW3, 26, 'Year\nof\nConst.', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3, this.cursorY, drcW4, 26, 'Life\nin\nYrs.', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4, this.cursorY, drcW5, 26, 'Cost of\nconstructi\non', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5, this.cursorY, drcW6, 26, 'G.C.R.\nC.', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5 + drcW6, this.cursorY, drcW7, 26, 'Depreciation.\nAge (100-10) %\nlife', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5 + drcW6 + drcW7, this.cursorY, drcW8, 26, 'Value\nIn Rs.', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.cursorY += 26;
+    const drcH1 = this.cellHeight('Particulars', drcW1, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const drcH2 = this.cellHeight('Area\nin Sqft.', drcW2, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const drcH3 = this.cellHeight('Year\nof\nConst.', drcW3, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const drcH4 = this.cellHeight('Life\nin\nYrs.', drcW4, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const drcH5 = this.cellHeight('Cost of\nconstructi\non', drcW5, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const drcH6 = this.cellHeight('G.C.R.\nC.', drcW6, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const drcH7 = this.cellHeight('Depreciation.\nAge (100-10) %\nlife', drcW7, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const drcH8 = this.cellHeight('Value\nIn Rs.', drcW8, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const drcHeaderH = Math.max(TABLE_MIN_ROW_H, drcH1, drcH2, drcH3, drcH4, drcH5, drcH6, drcH7, drcH8);
+
+    this.checkPageBreak(drcHeaderH + TABLE_MIN_ROW_H * 3);
+    this.drawCell(MARGIN_L, this.cursorY, drcW1, drcHeaderH, 'Particulars', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + drcW1, this.cursorY, drcW2, drcHeaderH, 'Area\nin Sqft.', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + drcW1 + drcW2, this.cursorY, drcW3, drcHeaderH, 'Year\nof\nConst.', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3, this.cursorY, drcW4, drcHeaderH, 'Life\nin\nYrs.', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4, this.cursorY, drcW5, drcHeaderH, 'Cost of\nconstructi\non', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5, this.cursorY, drcW6, drcHeaderH, 'G.C.R.\nC.', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5 + drcW6, this.cursorY, drcW7, drcHeaderH, 'Depreciation.\nAge (100-10) %\nlife', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5 + drcW6 + drcW7, this.cursorY, drcW8, drcHeaderH, 'Value\nIn Rs.', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.cursorY += drcHeaderH;
 
     const drcFloors = (fields.drcFloors && fields.drcFloors.length > 0)
       ? fields.drcFloors
@@ -1042,30 +1235,45 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
         ];
 
     for (const df of drcFloors) {
-      this.checkPageBreak(TABLE_MIN_ROW_H);
-      this.drawCell(MARGIN_L, this.cursorY, drcW1, TABLE_MIN_ROW_H, df.particulars, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + drcW1, this.cursorY, drcW2, TABLE_MIN_ROW_H, df.area, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + drcW1 + drcW2, this.cursorY, drcW3, TABLE_MIN_ROW_H, df.yearOfConst, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3, this.cursorY, drcW4, TABLE_MIN_ROW_H, df.lifeInYrs, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4, this.cursorY, drcW5, TABLE_MIN_ROW_H, df.costOfConst, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5, this.cursorY, drcW6, TABLE_MIN_ROW_H, df.gcrc, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5 + drcW6, this.cursorY, drcW7, TABLE_MIN_ROW_H, df.depreciation, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5 + drcW6 + drcW7, this.cursorY, drcW8, TABLE_MIN_ROW_H, df.value, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-      this.cursorY += TABLE_MIN_ROW_H;
+      const rh1 = this.cellHeight(df.particulars || '', drcW1, { fontSize: FONT_SIZE_SMALL });
+      const rh2 = this.cellHeight(df.area || '', drcW2, { fontSize: FONT_SIZE_SMALL });
+      const rh3 = this.cellHeight(df.yearOfConst || '', drcW3, { fontSize: FONT_SIZE_SMALL });
+      const rh4 = this.cellHeight(df.lifeInYrs || '', drcW4, { fontSize: FONT_SIZE_SMALL });
+      const rh5 = this.cellHeight(df.costOfConst || '', drcW5, { fontSize: FONT_SIZE_SMALL });
+      const rh6 = this.cellHeight(df.gcrc || '', drcW6, { fontSize: FONT_SIZE_SMALL });
+      const rh7 = this.cellHeight(df.depreciation || '', drcW7, { fontSize: FONT_SIZE_SMALL });
+      const rh8 = this.cellHeight(df.value || '', drcW8, { fontSize: FONT_SIZE_SMALL });
+      const rowH = Math.max(TABLE_MIN_ROW_H, rh1, rh2, rh3, rh4, rh5, rh6, rh7, rh8);
+      this.checkPageBreak(rowH);
+      this.drawCell(MARGIN_L, this.cursorY, drcW1, rowH, df.particulars || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + drcW1, this.cursorY, drcW2, rowH, df.area || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + drcW1 + drcW2, this.cursorY, drcW3, rowH, df.yearOfConst || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3, this.cursorY, drcW4, rowH, df.lifeInYrs || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4, this.cursorY, drcW5, rowH, df.costOfConst || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5, this.cursorY, drcW6, rowH, df.gcrc || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5 + drcW6, this.cursorY, drcW7, rowH, df.depreciation || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5 + drcW6 + drcW7, this.cursorY, drcW8, rowH, df.value || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.cursorY += rowH;
     }
 
     // Add Services row
     const spanW = drcW1 + drcW2 + drcW3 + drcW4 + drcW5;
-    this.checkPageBreak(TABLE_MIN_ROW_H * 2);
-    this.drawCell(MARGIN_L, this.cursorY, spanW, TABLE_MIN_ROW_H, 'ADD: - Depreciated Replacement Cost (DRC) of the water\narrangement, electrification & other building services etc.', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'left' });
-    this.drawCell(MARGIN_L + spanW, this.cursorY, drcW6 + drcW7, TABLE_MIN_ROW_H, fields.drcServicesCost || 'Rs.0/-', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-    this.drawCell(MARGIN_L + spanW + drcW6 + drcW7, this.cursorY, drcW8, TABLE_MIN_ROW_H, fields.drcServicesValue || 'Rs.0/-', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center' });
-    this.cursorY += TABLE_MIN_ROW_H;
+    const servText = 'ADD: - Depreciated Replacement Cost (DRC) of the water\narrangement, electrification & other building services etc.';
+    const servH1 = this.cellHeight(servText, spanW, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const servH2 = this.cellHeight(fields.drcServicesCost || 'Rs.0/-', drcW6 + drcW7, { fontSize: FONT_SIZE_SMALL });
+    const servH3 = this.cellHeight(fields.drcServicesValue || 'Rs.0/-', drcW8, { fontSize: FONT_SIZE_SMALL });
+    const servRowH = Math.max(TABLE_MIN_ROW_H * 2, servH1, servH2, servH3);
+
+    this.checkPageBreak(servRowH + TABLE_MIN_ROW_H);
+    this.drawCell(MARGIN_L, this.cursorY, spanW, servRowH, servText, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'left', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + spanW, this.cursorY, drcW6 + drcW7, servRowH, fields.drcServicesCost || 'Rs.0/-', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + spanW + drcW6 + drcW7, this.cursorY, drcW8, servRowH, fields.drcServicesValue || 'Rs.0/-', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.cursorY += servRowH;
 
     // DRC Total Row
-    this.drawCell(MARGIN_L, this.cursorY, spanW, TABLE_MIN_ROW_H, 'TOTAL', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + spanW, this.cursorY, drcW6 + drcW7, TABLE_MIN_ROW_H, fields.drcTotalBuildingValue ? `Rs.${fields.drcTotalBuildingValue}/-` : 'Rs.63,70,000/-', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + spanW + drcW6 + drcW7, this.cursorY, drcW8, TABLE_MIN_ROW_H, '............ (B)', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
+    this.drawCell(MARGIN_L, this.cursorY, spanW, TABLE_MIN_ROW_H, 'TOTAL', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + spanW, this.cursorY, drcW6 + drcW7, TABLE_MIN_ROW_H, fields.drcTotalBuildingValue ? `Rs.${fields.drcTotalBuildingValue}/-` : 'Rs.63,70,000/-', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + spanW + drcW6 + drcW7, this.cursorY, drcW8, TABLE_MIN_ROW_H, '............ (B)', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
     this.cursorY += TABLE_MIN_ROW_H + 10;
 
     // Summary Land + Building
@@ -1073,19 +1281,26 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawParagraph("Thus, the 'MARKET VALUE' (M.V.) of the property comprises of its land component and the building erected upon it comes to: -");
     this.cursorY += 4;
 
+    const rawMktVal = fields.summaryMarketValue || (fields.totalMarketValue ? fields.totalMarketValue.replace(/^Rs\./i, '').replace(/\/-$/i, '') : '') || (fields.recommendedValueOfProperty ? fields.recommendedValueOfProperty.replace(/^Rs\./i, '').replace(/\/-$/i, '') : '') || '2,59,72,000';
+    const finalMktValStr = `Rs.${rawMktVal}/-`;
+    const mktNum = parseNum(rawMktVal);
+    const finalRealVal = fields.realisableValue || (mktNum > 0 ? `Rs.${formatCurrencyINR(Math.round(mktNum * 0.95))}/-` : 'Rs.2,46,73,400/-');
+    const finalDistVal = fields.distressSaleValue || (mktNum > 0 ? `Rs.${formatCurrencyINR(Math.round(mktNum * 0.90))}/-` : 'Rs.2,33,74,800/-');
+
     this.drawParagraph(`Land Value:                                                          Rs.${fields.summaryLandValue || fields.annexureLandValue || '1,96,02,000'} /- ......(A)`, { bold: true });
     this.drawParagraph(`Value of the Building:                                                Rs.${fields.summaryBuildingValue || fields.drcTotalBuildingValue || '63,70,000'}/-.........(B)`, { bold: true });
     this.cursorY += 4;
 
-    this.drawParagraph(`So, MARKET VALUE (M.V) of the property as on date    Rs.${fields.summaryMarketValue || fields.totalMarketValue || '2,59,72,000'}/-`, { bold: true });
+    this.drawParagraph(`So, MARKET VALUE (M.V) of the property as on date    ${finalMktValStr}`, { bold: true });
 
-    const words = fields.summaryMarketValueWords || '(Rupees Two Crore Fifty-Nine Lakhs Seventy-Two Thousand Only)';
-    this.drawParagraph(`(${words})`, { bold: true });
+    const rawWords = fields.summaryMarketValueWords || (mktNum > 0 ? formatIndianCurrency(mktNum) : 'Two Crore Fifty-Nine Lakhs Seventy-Two Thousand');
+    const words = rawWords.startsWith('(') ? rawWords : `(Rupees ${rawWords} Only)`;
+    this.drawParagraph(words, { bold: true });
     this.cursorY += 12;
 
     // Opinion Statement
     this.checkPageBreak(50);
-    const opinion = fields.opinionStatement || `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS Rs.${fields.totalMarketValue || '2,59,72,000'}/- AND INSURABLE VALUE OF THE PROPERTY IS NOT IN OUR SCOPE.`;
+    const opinion = fields.opinionStatement || `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS ${finalMktValStr} AND INSURABLE VALUE OF THE PROPERTY IS NOT IN OUR SCOPE.`;
     this.drawParagraph(opinion, { bold: true, fontSize: TABLE_FONT_SIZE });
     this.cursorY += 10;
 
@@ -1107,7 +1322,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       'J. THE VALUE OF LAND IS TAKEN INTO ACCOUNT BY MAKING DUE ENQUIRES IN THE LOCALITY AND ASCERTAINING THE SALES VALUE OF THE PROPERTIES IN THE LOCALITY.',
       'K. ANY ADDITIONS / ALTERATIONS MADE TO THE PROPERTY AFTER THE DATE OF VALUATIONS SHALL NOT FALL UNDER THE SCOPE OF THIS REPORT.',
       'L. WE ARE NEITHER THE AUDITORS TO THE OWNER OF THE PROPERTY (IES) NOR THEIR FIRMS, ASSOCIATES NOR ARE WE THE STATUTORY AUDITORS TO THE BRANCH FROM WHICH THE LOAN IS PROPOSED TO BE AVAILED / ALREADY AVAILED.',
-      `M. IT IS HEREBY CERTIFIED THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IS, IN MY OPINION/OUR OPINION Rs.${fields.totalMarketValue || '2,59,72,000'}/- AND THE ESTIMATED REALIZABLE VALUE Rs.${fields.realisableValue || '2,46,73,400'}/- UNDER DISTRESS SALE WILL BE Rs.${fields.distressSaleValue || '2,33,74,800'} /-VALUE VARIES WITH THE PURPOSE AND DATE. THIS REPORT IS NOT TO BE REFERRED FOR THE PURPOSE IS DIFFERENT OTHER THAN VALUATION OF THE MORTGAGED PROPERTY.`,
+      `M. IT IS HEREBY CERTIFIED THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IS, IN MY OPINION/OUR OPINION ${finalMktValStr} AND THE ESTIMATED REALIZABLE VALUE ${finalRealVal} UNDER DISTRESS SALE WILL BE ${finalDistVal} -VALUE VARIES WITH THE PURPOSE AND DATE. THIS REPORT IS NOT TO BE REFERRED FOR THE PURPOSE IS DIFFERENT OTHER THAN VALUATION OF THE MORTGAGED PROPERTY.`,
       'N. I HAVE NOT BEEN DISMISSED OR REMOVED FROM GOVT, SERVICE OR CONVICTED OF AN OFFENCE CONNECTED WITH ANY PROCEEDINGS OF INCOME TAX ACT, WEALTH TAX ACT OR GIFT TAX ACT OR HAVE BEEN BLACKLISTED BY ANY BANK/FINANCIAL INSTITUTION/ GOVT. DEPARTMENT/PUBLIC SECTORE ENTEREPRISE/BODY CORPORATE ETC.',
       `O. THIS VALUATION REPORT CONTAINS ${fields.valuerReportPagesCount || '12'} PAGES ONLY.`,
       'P. PHOTOGRAPHS OF THE ASSET VALUED ENCLOSED.',
@@ -1196,28 +1411,23 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
    * Helper to draw a heading line with font & spacing
    */
   private drawHeadingText(text: string, fontSize: number, align: 'left' | 'center' | 'right' = 'left'): void {
-    this.checkPageBreak(fontSize + 6);
-    const y = this.pdfY(this.cursorY);
-    const font = this.fontBold;
     const clean = this.sanitizeText(text);
-    const textW = font.widthOfTextAtSize(clean, fontSize);
+    const lineH = Math.round(fontSize * 1.3);
+    const lines = this.wrapText(clean, CONTENT_W, fontSize, true);
 
-    let x = MARGIN_L;
-    if (align === 'center') {
-      x = MARGIN_L + (CONTENT_W - textW) / 2;
-    } else if (align === 'right') {
-      x = MARGIN_L + CONTENT_W - textW;
+    for (const line of lines) {
+      this.checkPageBreak(lineH);
+      const textW = this.fontBold.widthOfTextAtSize(line, fontSize);
+      let x = MARGIN_L;
+      if (align === 'center') {
+        x = MARGIN_L + (CONTENT_W - textW) / 2;
+      } else if (align === 'right') {
+        x = MARGIN_L + CONTENT_W - textW;
+      }
+      this.drawTextAt(line, x, this.cursorY, { fontSize, bold: true });
+      this.cursorY += lineH;
     }
-
-    this.page.drawText(clean, {
-      x,
-      y: y - fontSize,
-      size: fontSize,
-      font,
-      color: rgb(0, 0, 0),
-    });
-
-    this.cursorY += fontSize + 6;
+    this.cursorY += 4;
   }
 
   /**
@@ -1316,23 +1526,25 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
    */
   private drawParagraph(
     text: string,
-    options: { bold?: boolean; fontSize?: number } = {}
+    options: { bold?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right' } = {}
   ): void {
     const fontSize = options.fontSize || TABLE_FONT_SIZE;
     const isBold = options.bold || false;
+    const lineH = Math.round(fontSize * 1.35);
     const lines = this.wrapText(text, CONTENT_W, fontSize, isBold);
 
     for (const line of lines) {
-      this.checkPageBreak(LINE_HEIGHT);
-      const y = this.pdfY(this.cursorY);
-      this.page.drawText(this.sanitizeText(line), {
-        x: MARGIN_L,
-        y: y - fontSize,
-        size: fontSize,
-        font: isBold ? this.fontBold : this.fontRegular,
-        color: rgb(0, 0, 0),
-      });
-      this.cursorY += LINE_HEIGHT;
+      this.checkPageBreak(lineH);
+      let x = MARGIN_L;
+      if (options.align === 'center') {
+        const textW = (isBold ? this.fontBold : this.fontRegular).widthOfTextAtSize(this.sanitizeText(line), fontSize);
+        x = MARGIN_L + (CONTENT_W - textW) / 2;
+      } else if (options.align === 'right') {
+        const textW = (isBold ? this.fontBold : this.fontRegular).widthOfTextAtSize(this.sanitizeText(line), fontSize);
+        x = MARGIN_L + CONTENT_W - textW;
+      }
+      this.drawTextAt(line, x, this.cursorY, { fontSize, bold: isBold });
+      this.cursorY += lineH;
     }
   }
 }
