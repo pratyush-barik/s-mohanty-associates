@@ -2759,8 +2759,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             </div>
 
             {/* ── Container 18: Valuer Sign-off & Bank Endorsement ── */}
-            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#fdf5e6' }}>
-              <h3 className="font-bold text-gray-700 border-b border-orange-200 pb-2">Valuer Sign-off</h3>
+            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e0ffff' }}>
+              <h3 className="font-bold text-gray-700 border-b border-cyan-200 pb-2">Valuer Sign-off & Bank Endorsement</h3>
               
               <Field label="REMARKS">
                 <textarea className={inputCls} rows={6} value={currentRemarks} onChange={e => handleChange('bobValuerRemarks', e.target.value)} disabled={isReadOnly} />
@@ -2772,13 +2772,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               </Field>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <PrefillField label="Date:" value={fields.bobAsOnDate || ''} hoverText='>>Auto-populates from Cover Page Date<<' />
-                <Field label="Place:">
-                  <input className={inputCls} value={fields.bobSignoffPlace || 'Bhubaneswar'} onChange={e => handleChange('bobSignoffPlace', e.target.value)} disabled={isReadOnly} />
+                <Field label="PLACE:">
+                  <input className={inputCls} value={fields.bobSignoffPlace ?? 'Bhubaneswar'} onChange={e => handleChange('bobSignoffPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
+                <PrefillField label="DATE:" value={fields.bobAsOnDate ? fields.bobAsOnDate.split('-').reverse().join('-') : ''} hoverText='>>Auto-populates from Cover Page Date<<' />
               </div>
 
-              <Field label="Signature (Name and Official Seal of the Approved Valuer)">
+              <Field label="SIGNATURE (NAME AND OFFICIAL SEAL OF THE APPROVED VALUER)">
                 <input type="file" accept="image/*" className={inputCls}
                   onChange={e => {
                     const file = e.target.files?.[0];
@@ -2786,35 +2786,49 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   }} disabled={isReadOnly} />
                 {fields.bobSignoffSignature && <img src={fields.bobSignoffSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
               </Field>
-            </div>
 
-            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e6f7ff' }}>
-              <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">Bank Endorsement</h3>
-              
-              <Field label='Endorsement Paragraph ("THE UNDERSIGNED...")'>
-                <textarea className={inputCls} rows={3} value={currentEndorsement} onChange={e => handleChange('bobBankEndorsement', e.target.value)} disabled={isReadOnly} />
-                {!fields.bobBankEndorsement && (
-                  <button type="button" onClick={() => handleChange('bobBankEndorsement', defaultEndorsement)} disabled={isReadOnly} className="mt-2 text-sm text-blue-600 hover:underline">
-                    Load Default Endorsement Template
-                  </button>
-                )}
-              </Field>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Date (Branch Manager):">
-                  <BaseDateInput value={fields.bobEndorsementDate || ''} onChange={val => handleChange('bobEndorsementDate', val)} disabled={isReadOnly} />
-                </Field>
-                <div />
+              <div>
+                <div className="flex items-center justify-between mb-2 mt-4">
+                  <span className="text-sm font-semibold text-gray-700">Endorsement Paragraph ("THE UNDERSIGNED...")</span>
+                  <label className="flex items-center cursor-pointer">
+                    <span className="mr-2 text-xs font-medium text-gray-600">Edit Text</span>
+                    <div className="relative">
+                      <input type="checkbox" className="sr-only" checked={fields.bobBankEndorsementEditOn || false} onChange={e => handleChange('bobBankEndorsementEditOn', e.target.checked)} disabled={isReadOnly} />
+                      <div className={`block w-8 h-5 rounded-full transition-colors ${fields.bobBankEndorsementEditOn ? 'bg-emerald-500' : 'bg-gray-300'}`}></div>
+                      <div className={`dot absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform ${fields.bobBankEndorsementEditOn ? 'transform translate-x-3' : ''}`}></div>
+                    </div>
+                  </label>
+                </div>
+                <div className="relative group cursor-help" title={!fields.bobBankEndorsementEditOn ? '>>Auto-populated: Date from Cover Page | Market Value from Total Abstract (OR SAY row)<<' : undefined}>
+                  <textarea 
+                    className={`${inputCls} ${!fields.bobBankEndorsementEditOn ? 'bg-gray-50 cursor-not-allowed text-gray-700' : ''}`} 
+                    rows={4} 
+                    value={fields.bobBankEndorsementEditOn ? (fields.bobBankEndorsement || '') : defaultEndorsement} 
+                    onChange={e => handleChange('bobBankEndorsement', e.target.value)} 
+                    disabled={isReadOnly || !fields.bobBankEndorsementEditOn} 
+                  />
+                  {!fields.bobBankEndorsementEditOn && <Lock className="w-4 h-4 text-gray-400 absolute right-3 top-3 group-hover:text-emerald-700 transition-colors" />}
+                </div>
               </div>
 
-              <Field label="Signature (Branch Manager)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bobBankManagerSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.bobBankManagerSignature && <img src={fields.bobBankManagerSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              {/* Branch Manager Fields in Light Grey Container */}
+              <div className="rounded-xl p-5 space-y-4 mt-6 border border-gray-200" style={{ backgroundColor: '#f3f4f6' }}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="DATE:">
+                    <BaseDateInput value={fields.bobEndorsementDate || ''} onChange={val => handleChange('bobEndorsementDate', val)} disabled={isReadOnly} />
+                  </Field>
+                  <div />
+                </div>
+
+                <Field label="SIGNATURE (NAME OF THE BRANCH MANAGER WITH OFFICIAL SEAL)">
+                  <input type="file" accept="image/*" className={inputCls}
+                    onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bobBankManagerSignature', reader.result); reader.readAsDataURL(file); }
+                    }} disabled={isReadOnly} />
+                  {fields.bobBankManagerSignature && <img src={fields.bobBankManagerSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
+                </Field>
+              </div>
             </div>
           </div>
         );
