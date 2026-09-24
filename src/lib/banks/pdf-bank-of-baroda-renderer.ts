@@ -647,7 +647,14 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     // Building Valuation Table
     if (this.fields.bobBuildingValuationMode === 'annexure') {
-      this.drawSimpleRow('Building Valuation', 'Please refer to the attached Annexure for the detailed breakdown.');
+      const parsedData = this.fields.bobBuildingValuationMode_parsedData;
+      if (parsedData && parsedData.headers && parsedData.rows) {
+        this.cursorY += 5;
+        this.drawDataTable(parsedData.headers, parsedData.rows);
+        this.cursorY += 5;
+      } else {
+        this.drawSimpleRow('Building Valuation', 'No data uploaded.');
+      }
     } else {
     const buildingRows: any[] = this.fields.bobBuildingValuationRows || [];
     if (buildingRows.length > 0) {
@@ -687,7 +694,14 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     // Part D: Amenities
     this.drawSectionHeader('PART D — AMENITIES', true, true);
     if (this.fields.bobAmenitiesMode === 'annexure') {
-      this.drawSimpleRow('Amenities', 'Please refer to the attached Annexure for the detailed breakdown.');
+      const parsedData = this.fields.bobAmenitiesMode_parsedData;
+      if (parsedData && parsedData.headers && parsedData.rows) {
+        this.cursorY += 5;
+        this.drawDataTable(parsedData.headers, parsedData.rows);
+        this.cursorY += 5;
+      } else {
+        this.drawSimpleRow('Amenities', 'No data uploaded.');
+      }
     } else {
     const amenityItems = ['Wardrobes & Cupboard', 'Modular Kitchen', 'Extra sinks and bath tub', 'Marble / Ceramic tiles flooring', 'Interior decorations', 'Architectural elevation works', 'Paneling works', 'Aluminium works', 'Aluminium hand rails', 'False ceiling'];
     const amenityRows: string[][] = [];
@@ -711,7 +725,14 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     // Part E: Miscellaneous
     this.drawSectionHeader('PART E — MISCELLANEOUS', true, true);
     if (this.fields.bobMiscMode === 'annexure') {
-      this.drawSimpleRow('Miscellaneous', 'Please refer to the attached Annexure for the detailed breakdown.');
+      const parsedData = this.fields.bobMiscMode_parsedData;
+      if (parsedData && parsedData.headers && parsedData.rows) {
+        this.cursorY += 5;
+        this.drawDataTable(parsedData.headers, parsedData.rows);
+        this.cursorY += 5;
+      } else {
+        this.drawSimpleRow('Miscellaneous', 'No data uploaded.');
+      }
     } else {
     const miscItems = ['Separate toilet room', 'Separate lumber room', 'Separate water tank/ sump', 'Trees, gardening'];
     const miscRows: string[][] = [];
@@ -735,7 +756,14 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     // Part F: Services
     this.drawSectionHeader('PART F — SERVICES', true, true);
     if (this.fields.bobServicesMode === 'annexure') {
-      this.drawSimpleRow('Services', 'Please refer to the attached Annexure for the detailed breakdown.');
+      const parsedData = this.fields.bobServicesMode_parsedData;
+      if (parsedData && parsedData.headers && parsedData.rows) {
+        this.cursorY += 5;
+        this.drawDataTable(parsedData.headers, parsedData.rows);
+        this.cursorY += 5;
+      } else {
+        this.drawSimpleRow('Services', 'No data uploaded.');
+      }
     } else {
     const serviceItems = ['Bore Well with Motor', 'Head Room, Parapet Wall, Grinding', 'Compound Wall', 'Marble Flooring in staircase & Steel Handrail', 'Extra cost for Lifts with installation'];
     const serviceRows: string[][] = [];
@@ -764,7 +792,14 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawSectionHeader('TOTAL ABSTRACT');
 
     if (this.fields.bobAbstractMode === 'annexure') {
-      this.drawSimpleRow('Total Abstract', 'Please refer to the attached Annexure for the detailed breakdown.');
+      const parsedData = this.fields.bobAbstractMode_parsedData;
+      if (parsedData && parsedData.headers && parsedData.rows) {
+        this.cursorY += 5;
+        this.drawDataTable(parsedData.headers, parsedData.rows);
+        this.cursorY += 5;
+      } else {
+        this.drawSimpleRow('Total Abstract', 'No data uploaded.');
+      }
     } else {
     // Compute prefill values
     const dimensions = this.fields.bobDimensions || {};

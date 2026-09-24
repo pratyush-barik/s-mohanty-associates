@@ -3,6 +3,7 @@ import React, { useState, ReactNode } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFBankOfBarodaRenderer } from '@/lib/banks/pdf-bank-of-baroda-renderer';
+import * as XLSX from 'xlsx';
 import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
 import { Lock, Info } from 'lucide-react';
 import { rupeesInWords } from '@/lib/numberToWords';
@@ -415,62 +416,116 @@ function PrefillField({ label, value, hoverText, isReadOnly }: {
   );
 }
 
-/** Segmented toggle for Manual Grid Input vs Upload via Annexure */
-function DataEntryModeToggle({ modeKey, fields, handleChange, isReadOnly }: {
+/** Segmented toggle for Manual Grid Input vs Upload file */
+function DirectFileUploadToggle({ modeKey, fields, handleChange, isReadOnly }: {
   modeKey: string; fields: any; handleChange: any; isReadOnly: boolean;
 }) {
   const isAnnexure = fields[modeKey] === 'annexure';
 
-  const handleManualClick = (e: React.MouseEvent) => {
-    if (isReadOnly) return;
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('File exceeds 5MB limit.'); return; }
     
-    // Check if an annexure file is actually uploaded for this mode's category
-    const modeToCategory: Record<string, string> = {
-      'bobBuildingValuationMode': 'grid-valuation',
-      'bobAmenitiesMode': 'grid-amenities',
-      'bobMiscMode': 'grid-misc',
-      'bobServicesMode': 'grid-services',
-      'bobAbstractMode': 'grid-abstract',
-    };
-    
-    const category = modeToCategory[modeKey];
-    if (category) {
-      const hasUploadedFile = fields.annexures?.some((a: any) => a.category === category && a.excelFileUrl);
-      if (hasUploadedFile) {
-        alert('Please remove the uploaded file first from annexure section given below.');
-        return;
+    e.target.value = '';
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const ws = workbook.Sheets[workbook.SheetNames[0]];
+      const ref = ws['!ref'];
+      if (ref) {
+        const range = XLSX.utils.decode_range(ref);
+        let allRows: string[][] = [];
+        for (let r = range.s.r; r <= range.e.r; r++) {
+          const row: string[] = [];
+          for (let c = range.s.c; c <= range.e.c; c++) {
+            const addr = XLSX.utils.encode_cell({ r, c });
+            const cell = ws[addr];
+            row.push(cell ? String(XLSX.utils.format_cell(cell)) : '');
+          }
+          allRows.push(row);
+        }
+        const parsedData = {
+          headers: allRows[0]?.map(h => String(h)) || [],
+          rows: allRows.slice(1).map(row => row.map(c => String(c))),
+          allRows,
+        };
+        handleChange(`${modeKey}_fileName`, file.name);
+        handleChange(`${modeKey}_parsedData`, parsedData);
       }
+    } catch (parseErr) {
+      console.warn('Could not parse Excel/CSV file:', parseErr);
+      alert('Error parsing file. Please ensure it is a valid Excel or CSV file.');
     }
-    
-    handleChange(modeKey, 'manual');
   };
 
   return (
-    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 w-fit text-xs">
-      <button type="button" onClick={handleManualClick} disabled={isReadOnly}
-        className={`px-3 py-1.5 rounded-md transition-all font-medium ${!isAnnexure ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}>
-        Manual Grid Input
-      </button>
-      <button type="button" onClick={() => handleChange(modeKey, 'annexure')} disabled={isReadOnly}
-        className={`px-3 py-1.5 rounded-md transition-all font-medium ${isAnnexure ? 'bg-white shadow-sm text-amber-700' : 'text-gray-500 hover:text-gray-700'}`}>
-        Upload via Annexure
-      </button>
-    </div>
-  );
-}
-
-/** Info banner shown when Annexure mode is active */
-function AnnexureBanner({ sectionLabel }: { sectionLabel: string }) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-        <Info className="w-4 h-4 mt-0.5 shrink-0" />
-        <span>Grid entry disabled. Data for <strong>{sectionLabel}</strong> will be fetched from the uploaded file in Section 13.</span>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 w-fit text-xs">
+        <button type="button" onClick={() => handleChange(modeKey, 'manual')} disabled={isReadOnly}
+          className={`px-3 py-1.5 rounded-md transition-all font-medium ${!isAnnexure ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}>
+          Manual Grid Input
+        </button>
+        <button type="button" onClick={() => handleChange(modeKey, 'annexure')} disabled={isReadOnly}
+          className={`px-3 py-1.5 rounded-md transition-all font-medium ${isAnnexure ? 'bg-white shadow-sm text-amber-700' : 'text-gray-500 hover:text-gray-700'}`}>
+          Upload file
+        </button>
       </div>
-      <button type="button" onClick={() => document.getElementById('annexures')?.scrollIntoView({ behavior: 'smooth' })}
-        className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors">
-        📎 Jump to Annexures &amp; Schedules
-      </button>
+
+      {isAnnexure && (
+        <div className="flex items-center gap-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="flex-1">
+            {fields[`${modeKey}_parsedData`] ? (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-green-800">File uploaded: {fields[`${modeKey}_fileName`]}</p>
+                    <p className="text-xs text-green-600">{fields[`${modeKey}_parsedData`].rows?.length || 0} rows parsed successfully.</p>
+                  </div>
+                  {!isReadOnly && (
+                    <button type="button" onClick={() => {
+                      handleChange(`${modeKey}_fileName`, null);
+                      handleChange(`${modeKey}_parsedData`, null);
+                    }} className="text-xs bg-red-100 text-red-700 px-3 py-1 rounded hover:bg-red-200 font-medium">Remove File</button>
+                  )}
+                </div>
+                
+                <div className="border border-[#dee2e6] rounded-xl overflow-hidden shadow-xs mt-2">
+                  <div className="bg-white px-4 py-2 border-b border-[#dee2e6] flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-gray-700 uppercase tracking-wider">Spreadsheet Preview</span>
+                  </div>
+                  <div className="overflow-x-auto max-h-48">
+                    <table className="w-full text-xs text-left border-collapse">
+                      <thead>
+                        <tr className="bg-[#f8f9fa] border-b border-[#dee2e6]">
+                          {fields[`${modeKey}_parsedData`].headers.map((h: string, hi: number) => (
+                            <th key={hi} className="px-3 py-2 font-bold text-gray-700 border-r border-[#dee2e6] whitespace-nowrap">{h || `Col ${hi + 1}`}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {fields[`${modeKey}_parsedData`].rows.map((row: string[], ri: number) => (
+                          <tr key={ri} className="border-b border-[#eee] hover:bg-slate-50">
+                            {row.map((cell: string, ci: number) => (
+                              <td key={ci} className="px-3 py-1.5 border-r border-[#eee] text-gray-600 whitespace-nowrap">{cell}</td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm font-medium text-amber-800 mb-2">Upload Excel/CSV File</p>
+                <input type="file" accept=".xlsx,.xls,.csv" onChange={handleFileUpload} disabled={isReadOnly} className="text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-amber-100 file:text-amber-700 hover:file:bg-amber-200 transition-colors cursor-pointer" />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -539,7 +594,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     { id: 'bob-section-code-of-conduct', title: '10. Code of Conduct' },
     { id: 'section-11', title: '11. Property Photographs' },
     { id: 'section-12', title: '12. Maps & Documents' },
-    { id: 'annexures', title: '13. Annexures' },
+
   ],
   fieldLabels: {
     'section-11-title': '11. PROPERTY PHOTOGRAPHS',
@@ -2284,10 +2339,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   + Add Row
                 </button>
               </div>
-              <DataEntryModeToggle modeKey="bobBuildingValuationMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
-              {fields.bobBuildingValuationMode === 'annexure' ? (
-                <AnnexureBanner sectionLabel="Building Valuation" />
-              ) : (<>
+              <DirectFileUploadToggle modeKey="bobBuildingValuationMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+              {fields.bobBuildingValuationMode !== 'annexure' && (<>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-xs">
                   <thead>
@@ -2432,10 +2485,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             {/* ── Container 14: Part D - Amenities ── */}
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#f0f8ff' }}>
               <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">Part D — Amenities</h3>
-              <DataEntryModeToggle modeKey="bobAmenitiesMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
-              {fields.bobAmenitiesMode === 'annexure' ? (
-                <AnnexureBanner sectionLabel="Part D — Amenities" />
-              ) : (<>
+              <DirectFileUploadToggle modeKey="bobAmenitiesMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+              {fields.bobAmenitiesMode !== 'annexure' && (<>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
@@ -2471,10 +2522,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             {/* ── Container 15: Part E - Miscellaneous ── */}
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#f5fffa' }}>
               <h3 className="font-bold text-gray-700 border-b border-green-200 pb-2">Part E — Miscellaneous</h3>
-              <DataEntryModeToggle modeKey="bobMiscMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
-              {fields.bobMiscMode === 'annexure' ? (
-                <AnnexureBanner sectionLabel="Part E — Miscellaneous" />
-              ) : (<>
+              <DirectFileUploadToggle modeKey="bobMiscMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+              {fields.bobMiscMode !== 'annexure' && (<>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
@@ -2510,10 +2559,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             {/* ── Container 16: Part F - Services ── */}
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#fff5ee' }}>
               <h3 className="font-bold text-gray-700 border-b border-orange-200 pb-2">Part F — Services</h3>
-              <DataEntryModeToggle modeKey="bobServicesMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
-              {fields.bobServicesMode === 'annexure' ? (
-                <AnnexureBanner sectionLabel="Part F — Services" />
-              ) : (<>
+              <DirectFileUploadToggle modeKey="bobServicesMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+              {fields.bobServicesMode !== 'annexure' && (<>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
@@ -2711,10 +2758,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <Lock className="w-3 h-3" /> Auto-Calculated
                 </span>
               </div>
-              <DataEntryModeToggle modeKey="bobAbstractMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
-              {fields.bobAbstractMode === 'annexure' ? (
-                <AnnexureBanner sectionLabel="Total Abstract" />
-              ) : (<>
+              <DirectFileUploadToggle modeKey="bobAbstractMode" fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+              {fields.bobAbstractMode !== 'annexure' && (<>
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
