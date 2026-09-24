@@ -2837,7 +2837,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <div key={item.key} className="flex items-start gap-3 bg-white rounded-lg p-3 border border-gray-100">
                     <input
                       type="checkbox"
-                      checked={affirmChecks[item.key] || false}
+                      checked={affirmChecks[item.key] !== false}
                       onChange={e => updateCheck(item.key, e.target.checked)}
                       disabled={isReadOnly}
                       className="w-4 h-4 mt-1 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 shrink-0"

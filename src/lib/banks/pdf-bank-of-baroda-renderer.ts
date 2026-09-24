@@ -920,9 +920,13 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     const name = this.fv('bobAffirmationName');
     const father = this.fv('bobAffirmationFatherName');
-    this.drawSimpleRow('I, Mr.', name);
-    this.drawSimpleRow('S/o: Mr.', father);
-    this.cursorY += 5;
+    this.doc.setFont(FONT_HEADING, 'normal');
+    this.doc.setFontSize(FONT_SIZE_NORMAL);
+    this.cursorY += 2;
+    const introText = `I Mr. ${name || '......................................'}, S/o: Mr. ${father || '......................................'} do hereby solemnly affirm and state that:`;
+    const introLines = this.doc.splitTextToSize(introText, CONTENT_W);
+    this.doc.text(introLines, MARGIN_X, this.cursorY);
+    this.cursorY += introLines.length * 5 + 3;
 
     const affirmChecks = this.fields.bobAffirmationChecks || {};
     const affirmationItems: { key: string; text: string }[] = [
@@ -954,20 +958,23 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       { key: 'z', text: 'Further, I hereby provide the following information.' },
     ];
 
-    const tableRows: string[][] = affirmationItems.map(item => [
-      `${item.key})`,
-      item.text,
-      affirmChecks[item.key] ? '[X]' : '[ ]',
-    ]);
-
-    this.drawTable(
-      ['', 'Statement', 'Affirm'],
-      tableRows,
-      [CONTENT_W * 0.06, CONTENT_W * 0.82, CONTENT_W * 0.12],
-      [], [], [2], [], [],
-      ['left', 'left', 'center'],
-      ['left', 'left', 'center']
-    );
+    this.doc.setFont(FONT_HEADING, 'normal');
+    this.doc.setFontSize(FONT_SIZE_SMALL);
+    
+    affirmationItems.forEach(item => {
+      if (affirmChecks[item.key] === false) return;
+      
+      const bullet = `${item.key}.`;
+      let text = item.text;
+      
+      const textLines = this.doc.splitTextToSize(text, CONTENT_W - 10);
+      this.doc.setFont(FONT_HEADING, 'bold');
+      this.doc.text(bullet, MARGIN_X + 2, this.cursorY);
+      this.doc.setFont(FONT_HEADING, 'normal');
+      this.doc.text(textLines, MARGIN_X + 10, this.cursorY);
+      this.cursorY += textLines.length * 4.5 + 2;
+      this.checkPageBreak(10);
+    });
 
     // Sign-off
     this.cursorY += 10;
