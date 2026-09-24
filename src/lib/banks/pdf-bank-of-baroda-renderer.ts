@@ -624,38 +624,38 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const styleOpts = (ri: number, ci: number) => {
       const row = allRows[ri];
       const isSubTableHdr = row[3] === 'As per Sketch Map' || row[3] === 'A' || row[3] === 'As per the Deed';
-      const isSubTable = (ri >= 16 && ri <= 20) || (ri >= 22 && ri <= 27); // approx rows for boundaries/dimensions
-      // Note: we can just check if row[0] starts with '' and we are inside the 13/14 block, but it's simpler to just set fontSize based on the content or position.
-      // Actually, if we just use fontSize: 9 for the headers and values of boundaries/dimensions.
-      let fontSize = undefined; // defaults to tableOpts.fontSize (which we will set to 12)
-      if (isSubTableHdr || (row[1] && ['East', 'West', 'North', 'South'].includes(row[1]))) {
-        // use smaller font for subtable to fit nicely, exactly as drawTable did (it used 9)
-        fontSize = 9;
-      }
+      const isSubTableRow = row[1] && ['East', 'West', 'North', 'South'].includes(row[1]);
       
       let align: 'left' | 'center' | 'right' = 'left';
       let bold = false;
       let fillColor: any = '#f4f4f4'; // equivalent to LBL_BG
       let bgOpacity = 0.5;
 
-      if (isSubTableHdr && ci >= 3) {
+      if (isSubTableHdr) {
         align = 'center';
         bold = true;
-      } else if (ci >= 3 && row[ci] !== '') {
-        // value columns (excluding empty spacers)
-        fillColor = undefined;
-        bold = true;
-      } else if (ci < 3) {
-        bold = false;
+      } else if (isSubTableRow) {
+        // Original drawTable centered everything and used grey bg
+        if (ci >= 1) align = 'center';
+        bold = false; // Original rows were not bold
+        fillColor = '#f4f4f4';
+      } else {
+        // Normal rows
+        if (ci >= 3 && row[ci] !== '') {
+          // value columns
+          fillColor = undefined;
+          bold = true;
+        } else if (ci < 3) {
+          bold = false;
+        }
       }
       
-      // If it spans all columns (e.g. some headers in future), we could center it.
-      // But we just return the calculated styles.
-      return { align, bold, fillColor, bgOpacity, fontSize };
+      return { align, bold, fillColor, bgOpacity };
     };
 
     // We pass tableOpts with fontSize: 12 (FONT_SIZE) which mimics drawSimpleRow
-    this.drawMergedTable(allRows, allMerges, [0.05, 0.05, 0.35, 0.275, 0.275], styleOpts, { fontSize: 12 });
+    // We adjust widths slightly so "14.1" and "14.2" don't wrap: [0.06, 0.04, 0.35, 0.275, 0.275]
+    this.drawMergedTable(allRows, allMerges, [0.06, 0.04, 0.35, 0.275, 0.275], styleOpts, { fontSize: 12 });
   }
 
   // ═══════════════════════════════════════════════════════════════════════
