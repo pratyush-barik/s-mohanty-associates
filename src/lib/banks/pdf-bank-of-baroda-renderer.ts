@@ -850,65 +850,158 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       plinthVal = 'NA';
     }
 
-    this.drawSimpleRow('1a. Type of Building', this.fv('bobBuildingType'));
-    this.drawSimpleRow('1b. Type of construction', this.fv('bobConstructionType'));
-    this.drawSimpleRow('1c. Year of construction', displayYoc);
-    this.drawSimpleRow('1d. Floors & height', this.fv('bobFloorsDescription'));
-    this.drawSimpleRow('1e. Plinth area floor-wise', plinthVal);
-    this.drawSimpleRow('1f(i). Condition: Exterior', this.fv('bobConditionExterior'));
-    this.drawSimpleRow('1f(ii). Condition: Interior', this.fv('bobConditionInterior'));
-    this.drawSimpleRow('1g. Approved map/plan date', this.fv('bobApprovedMapDate') || 'NA');
-    this.drawSimpleRow('1h. Approving authority', this.fv('bobApprovedMapAuthority') || 'NA');
-    this.drawSimpleRow('1i. Map authenticity verified', this.fv('bobApprovedMapVerified') || 'NA');
-    this.drawSimpleRow('1j. Valuer comments on plan', this.fv('bobApprovedMapComments') || 'NA');
-    this.drawSimpleRow('1k. Age of the Building', this.fields.bobBuildingAgeEditOn ? this.fv('bobBuildingAge') : (calcAge > 0 ? `${calcAge} years` : '0'));
-    this.drawSimpleRow('1l. Residual life', this.fv('bobResidualLife'));
+    // ──────────────────────────────────────────────────────────
+    // Table 1: Technical details
+    let t1Rows: string[][] = [
+      ['1.', 'Technical details of the building', '', ''],
+      ['a)', 'Type of Building (Residential / Commercial/ Industrial)', '', this.fv('bobBuildingType') || 'NA'],
+      ['b)', 'Type of construction (Load bearing / RCC/ Steel Framed)', '', this.fv('bobConstructionType') || 'NA'],
+      ['c)', 'Year of construction', '', displayYoc],
+      ['d)', 'Number of floors and height of each floor including basement, if any', '', this.fv('bobFloorsDescription') || 'NA'],
+      ['e)', 'Plinth area floor-wise', '', plinthVal],
+      ['f)', 'Condition of the building', '', ''],
+      ['', 'i)', 'Exterior \u2013 Excellent, Good, Normal, Poor', this.fv('bobConditionExterior') || 'NA'],
+      ['', 'ii)', 'Interior - Excellent, Good, Normal, Poor', this.fv('bobConditionInterior') || 'NA'],
+      ['g)', 'Date of issue and validity of layout of approved map / plan', '', this.fv('bobApprovedMapDate') || 'NA'],
+      ['h)', 'Approved map / plan issuing authority', '', this.fv('bobApprovedMapAuthority') || 'NA'],
+      ['i)', 'Whether genuineness or authenticity of approved map / plan is verified', '', this.fv('bobApprovedMapVerified') || 'NA'],
+      ['j)', 'Any other comments by our empanelled valuers on authentic of approved plan', '', this.fv('bobApprovedMapComments') || 'NA'],
+      ['k)', 'Age of the Building', '', this.fields.bobBuildingAgeEditOn ? this.fv('bobBuildingAge') : (calcAge > 0 ? `${calcAge} years` : '0')],
+      ['l)', 'Residual life of the building', '', this.fv('bobResidualLife') || 'NA'],
+    ];
 
-    // Structural Descriptions Table
+    let t1Merges = [];
+    for (let r = 0; r < t1Rows.length; r++) {
+      if (t1Rows[r][0] !== '') {
+        t1Merges.push({ sr: r, sc: 1, er: r, ec: 2 });
+      }
+    }
+
+    const t1StyleOpts = (ri: number, ci: number) => {
+      const row = t1Rows[ri];
+      let align: 'left' | 'center' | 'right' = 'left';
+      let bold = false;
+      let fillColor: any = undefined;
+      let hideBorder: any = undefined;
+
+      if (ci === 0) {
+        if (row[0] === '') hideBorder = { top: true };
+        if (ri < t1Rows.length - 1 && t1Rows[ri + 1][0] === '') hideBorder = { ...(hideBorder || {}), bottom: true };
+      }
+
+      if (ci < 3) {
+        bold = true;
+        fillColor = '#DBE6F0';
+      }
+
+      return { align, bold, fillColor, bgOpacity: 0.5, hideBorder };
+    };
+
+    this.drawMergedTable(t1Rows, t1Merges, [0.06, 0.04, 0.40, 0.50], t1StyleOpts, { fontSize: 12 });
+    this.advanceCursor(5);
+
+    // ──────────────────────────────────────────────────────────
+    // Table 2: Structural Descriptions
     const structural = this.fields.bobStructuralDetails || {};
     const structKeys = ['foundation', 'basement', 'superstructure', 'joinery', 'rccWorks', 'plastering', 'flooring', 'specialFinish', 'roofing', 'drainage'];
-    const structLabels = ['1. Foundation', '2. Basement', '3. Superstructure', '4. Joinery', '5. RCC works', '6. Plastering', '7. Flooring/Skirting', '8. Special finish', '9. Roofing', '10. Drainage'];
+    const structLabels = [
+      'Foundation', 'Basement', 'Superstructure', 
+      'Joinery / Doors & Windows (please furnish details about size of frames, shutters, glazing, fitting etc. and specify the species of timber)', 
+      'RCC works', 'Plastering', 'Flooring, Skirting, dadoing', 
+      'Special finish as marble, granite, wooden paneling, grills, etc.', 
+      'Roofing including weather proof course', 'Drainage'
+    ];
 
-    this.drawTable(
-      ['Description', 'Ground Floor', 'Other Floors'],
-      structKeys.map((key, idx) => [
-        structLabels[idx],
-        structural[`${key}_ground`] || structural[`${key}_groundCustom`] || '',
-        this.fields.bobOtherFloorsNA ? 'NA' : (structural[`${key}_other`] || structural[`${key}_otherCustom`] || ''),
-      ]),
-      [CONTENT_W * 0.35, CONTENT_W * 0.325, CONTENT_W * 0.325],
-      [], [0]
-    );
-
-    // Compound wall
-    this.drawSimpleRow('Compound wall', this.fv('bobCompoundWall'));
-    if (this.fv('bobCompoundWall') === 'Yes') {
-      this.drawKeyValueRow([
-        { label: 'Height', value: this.fv('bobCompoundWallHeight') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
-        { label: 'Length', value: this.fv('bobCompoundWallLength') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
-        { label: 'Type', value: this.fv('bobCompoundWallType') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
+    let t2Rows: string[][] = [
+      ['Sl.\nNo.', 'Description', 'Ground floor', 'Other floors']
+    ];
+    for (let i = 0; i < structKeys.length; i++) {
+      const key = structKeys[i];
+      t2Rows.push([
+        `${i + 1}.`,
+        structLabels[i],
+        structural[`${key}_ground`] || structural[`${key}_groundCustom`] || 'NA',
+        this.fields.bobOtherFloorsNA ? 'NA' : (structural[`${key}_other`] || structural[`${key}_otherCustom`] || 'NA')
       ]);
     }
 
-    // Electrical installation
-    this.drawSimpleRow('Electrical: Wiring type', this.fv('bobElectricalWiring') || 'NA');
-    this.drawSimpleRow('Electrical: Class of fittings (superior / ordinary / poor)', this.fv('bobElectricalFittings') || 'NA');
-    this.drawKeyValueRow([
-      { label: 'Light points', value: this.fv('bobElectricalLightPoints') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
-      { label: 'Fan points', value: this.fv('bobElectricalFanPoints') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
-      { label: 'Plug points', value: this.fv('bobElectricalPlugPoints') || 'NA', labelWidth: CONTENT_W / 6, valueWidth: CONTENT_W / 6 },
-    ]);
+    const t2StyleOpts = (ri: number, ci: number, isHeader: boolean) => {
+      let align: 'left' | 'center' | 'right' = 'left';
+      if (isHeader || ci === 0) align = 'center';
+      let bold = isHeader || ci < 2;
+      let fillColor = (isHeader || ci < 2) ? '#DBE6F0' : undefined;
+      return { align, bold, fillColor, bgOpacity: 0.5 };
+    };
 
-    // Plumbing
-    this.drawSimpleRow('Plumbing installation', this.fv('bobPlumbing'));
-    if (this.fv('bobPlumbing') === 'Yes') {
-      this.drawSimpleRow('  Water closets', this.fv('bobWaterClosets') || 'NA');
-      this.drawSimpleRow('  Wash basins', this.fv('bobWashBasins') || 'NA');
-      this.drawSimpleRow('  Urinals', this.fv('bobUrinals') || 'NA');
-      this.drawSimpleRow('  Bath tubs', this.fv('bobBathTubs') || 'NA');
-      this.drawSimpleRow('  Water meter/taps', this.fv('bobWaterMeterTaps') || 'NA');
-      this.drawSimpleRow('  Other fixtures', this.fv('bobOtherFixtures') || 'NA');
+    this.drawMergedTable(t2Rows, [], [0.06, 0.34, 0.30, 0.30], t2StyleOpts, { fontSize: 12 });
+    this.advanceCursor(5);
+
+    // ──────────────────────────────────────────────────────────
+    // Table 3: Specifications
+    this.drawSectionHeader('Specifications of construction (floor-wise) in respect of', false, false);
+    
+    let t3Rows: string[][] = [
+      ['S.\nNo.', 'Description', '', ''],
+      ['1.', 'Compound wall', '', this.fv('bobCompoundWall') || 'NA'],
+    ];
+    if (this.fv('bobCompoundWall') === 'Yes') {
+      t3Rows.push(
+        ['', 'Height', '', this.fv('bobCompoundWallHeight') || 'NA'],
+        ['', 'Length', '', this.fv('bobCompoundWallLength') || 'NA'],
+        ['', 'Type', '', this.fv('bobCompoundWallType') || 'NA']
+      );
     }
+
+    t3Rows.push(
+      ['', 'Type of construction', '', ''],
+      ['', 'Electrical installation', '', ''],
+      ['2.', 'Type of wiring', '', this.fv('bobElectricalWiring') || 'NA'],
+      ['', 'Class of fittings (superior / ordinary / poor)', '', this.fv('bobElectricalFittings') || 'NA'],
+      ['', 'Number of light points', '', this.fv('bobElectricalLightPoints') || 'NA'],
+      ['', 'Fan points', '', this.fv('bobElectricalFanPoints') || 'NA'],
+      ['', 'Spare plug points', '', this.fv('bobElectricalPlugPoints') || 'NA'],
+      ['', 'Any other item', '', 'NA'],
+      ['', 'Plumbing installation', '', this.fv('bobPlumbing') || 'NA']
+    );
+
+    if (this.fv('bobPlumbing') === 'Yes') {
+      t3Rows.push(
+        ['3.', 'a)', 'No. of water closets and their type', this.fv('bobWaterClosets') || 'NA'],
+        ['', 'b)', 'No. of wash basins', this.fv('bobWashBasins') || 'NA'],
+        ['', 'c)', 'No. of urinals', this.fv('bobUrinals') || 'NA'],
+        ['', 'd)', 'No. of bath tubs', this.fv('bobBathTubs') || 'NA'],
+        ['', 'e)', 'Water meter, taps, etc.', this.fv('bobWaterMeterTaps') || 'NA'],
+        ['', 'f)', 'Any other fixtures', this.fv('bobOtherFixtures') || 'NA']
+      );
+    }
+
+    let t3Merges = [
+      { sr: 0, sc: 1, er: 0, ec: 2 }
+    ];
+    for (let r = 1; r < t3Rows.length; r++) {
+      if (t3Rows[r][1] !== 'a)' && t3Rows[r][1] !== 'b)' && t3Rows[r][1] !== 'c)' && t3Rows[r][1] !== 'd)' && t3Rows[r][1] !== 'e)' && t3Rows[r][1] !== 'f)') {
+        t3Merges.push({ sr: r, sc: 1, er: r, ec: 2 });
+      }
+    }
+
+    const t3StyleOpts = (ri: number, ci: number, isHeader: boolean) => {
+      const row = t3Rows[ri];
+      let align: 'left' | 'center' | 'right' = 'left';
+      if (isHeader || ci === 0 || ci === 1) align = 'center';
+      if (ci === 2) align = 'left';
+
+      let hideBorder: any = undefined;
+      if (ci === 0) {
+        if (row[0] === '') hideBorder = { top: true };
+        if (ri < t3Rows.length - 1 && t3Rows[ri + 1][0] === '') hideBorder = { ...(hideBorder || {}), bottom: true };
+      }
+
+      let bold = isHeader || ci < 3;
+      let fillColor = (isHeader || ci < 3) ? '#DBE6F0' : undefined;
+      return { align, bold, fillColor, bgOpacity: 0.5, hideBorder };
+    };
+
+    this.drawMergedTable(t3Rows, t3Merges, [0.06, 0.04, 0.40, 0.50], t3StyleOpts, { fontSize: 12 });
   }
 
   // ═══════════════════════════════════════════════════════════════════════
