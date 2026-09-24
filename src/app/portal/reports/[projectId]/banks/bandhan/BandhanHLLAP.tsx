@@ -390,6 +390,16 @@ export default function BandhanHLLAP({
       plotRate: raw.plotRate || '',
       plotValueBreakdown: raw.plotValueBreakdown || '',
       rateOfCostOfConstruction: raw.rateOfCostOfConstruction || '',
+      rateOfCostOfConstructionMin: raw.rateOfCostOfConstructionMin !== undefined ? raw.rateOfCostOfConstructionMin : (() => {
+        if (!raw.rateOfCostOfConstruction) return '';
+        const match = String(raw.rateOfCostOfConstruction).match(/(\d+(?:\.\d+)?)/g);
+        return match && match[0] ? match[0] : '';
+      })(),
+      rateOfCostOfConstructionMax: raw.rateOfCostOfConstructionMax !== undefined ? raw.rateOfCostOfConstructionMax : (() => {
+        if (!raw.rateOfCostOfConstruction) return '';
+        const match = String(raw.rateOfCostOfConstruction).match(/(\d+(?:\.\d+)?)/g);
+        return match && match[1] ? match[1] : (match && match[0] ? match[0] : '');
+      })(),
       depreciationOfConstruction: raw.depreciationOfConstruction || '',
       netValueLand: raw.netValueLand || '',
       netValueBuilding: raw.netValueBuilding || '',
@@ -2250,25 +2260,90 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* 32. Cost of Construction */}
+                {/* 32. Recommended Rate of Cost of Construction */}
                 <div className="rounded-xl border border-amber-200/80 bg-amber-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center gap-2 pb-2 border-b border-amber-200/60">
-                    <span className="font-sans font-semibold text-amber-900 text-xs sm:text-sm">
-                      32. Recommended Rate of Cost of Construction
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <div className="sm:col-span-2">
-                      <Field label="Rate of Cost of Construction (Rs./sqft):">
-                        <input
-                          type="text"
-                          className={inputCls}
-                          value={fields.rateOfCostOfConstruction || ''}
-                          onChange={(e) => handleChange('rateOfCostOfConstruction', sanitizePositiveFloat(e.target.value))}
-                          disabled={isReadOnly}
-                        />
-                      </Field>
+                  <div className="flex flex-wrap items-center justify-between pb-2 border-b border-amber-200/60 gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-sans font-semibold text-amber-900 text-xs sm:text-sm">
+                        32. Recommended Rate of Cost of Construction
+                      </span>
                     </div>
+                    {(() => {
+                      const min = (fields.rateOfCostOfConstructionMin || '').trim();
+                      const max = (fields.rateOfCostOfConstructionMax || '').trim();
+                      const minNum = parseNum(min);
+                      const maxNum = parseNum(max);
+                      if (minNum > 0 && maxNum > 0 && minNum !== maxNum) {
+                        return (
+                          <span className="text-[11px] font-semibold text-amber-900 bg-white/90 px-2.5 py-0.5 rounded border border-amber-200 shadow-2xs">
+                            ₹{formatCurrencyINR(minNum)} – ₹{formatCurrencyINR(maxNum)} / sq.ft.
+                          </span>
+                        );
+                      } else if (minNum > 0 || maxNum > 0) {
+                        return (
+                          <span className="text-[11px] font-semibold text-amber-900 bg-white/90 px-2.5 py-0.5 rounded border border-amber-200 shadow-2xs">
+                            ₹{formatCurrencyINR(minNum || maxNum)} / sq.ft.
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                    <Field label="Min Rate (Rs./sqft):">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.rateOfCostOfConstructionMin || ''}
+                        onChange={(e) => {
+                          const newMin = sanitizePositiveFloat(e.target.value);
+                          const currentMax = fields.rateOfCostOfConstructionMax || '';
+                          const minNum = parseNum(newMin);
+                          const maxNum = parseNum(currentMax);
+                          let formattedRange = '';
+                          if (minNum > 0 && maxNum > 0 && minNum !== maxNum) {
+                            formattedRange = `Rs.${formatCurrencyINR(minNum)}/- to Rs.${formatCurrencyINR(maxNum)}/- per sqft`;
+                          } else if (minNum > 0 || maxNum > 0) {
+                            formattedRange = `Rs.${formatCurrencyINR(minNum || maxNum)}/- per sqft`;
+                          }
+                          setFields(prev => ({
+                            ...prev,
+                            rateOfCostOfConstructionMin: newMin,
+                            rateOfCostOfConstruction: formattedRange,
+                          }));
+                        }}
+                        placeholder="e.g. 1500"
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+
+                    <Field label="Max Rate (Rs./sqft):">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.rateOfCostOfConstructionMax || ''}
+                        onChange={(e) => {
+                          const newMax = sanitizePositiveFloat(e.target.value);
+                          const currentMin = fields.rateOfCostOfConstructionMin || '';
+                          const minNum = parseNum(currentMin);
+                          const maxNum = parseNum(newMax);
+                          let formattedRange = '';
+                          if (minNum > 0 && maxNum > 0 && minNum !== maxNum) {
+                            formattedRange = `Rs.${formatCurrencyINR(minNum)}/- to Rs.${formatCurrencyINR(maxNum)}/- per sqft`;
+                          } else if (minNum > 0 || maxNum > 0) {
+                            formattedRange = `Rs.${formatCurrencyINR(minNum || maxNum)}/- per sqft`;
+                          }
+                          setFields(prev => ({
+                            ...prev,
+                            rateOfCostOfConstructionMax: newMax,
+                            rateOfCostOfConstruction: formattedRange,
+                          }));
+                        }}
+                        placeholder="e.g. 1800"
+                        disabled={isReadOnly}
+                      />
+                    </Field>
                   </div>
                 </div>
 

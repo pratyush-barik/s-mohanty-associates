@@ -321,6 +321,8 @@ export interface BandhanHLLAPReportFields {
   plotRate?: string;
   plotValueBreakdown?: string;
   rateOfCostOfConstruction?: string;
+  rateOfCostOfConstructionMin?: string;
+  rateOfCostOfConstructionMax?: string;
   depreciationOfConstruction?: string;
   netValueLand?: string;
   netValueBuilding?: string;
@@ -670,7 +672,17 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawBandhanRow('30.', 'Recommended valuation of the property', val30);
     this.drawBandhanRow('31.', 'Recommended rate of the plot', fields.plotRate ? `Rs.${fields.plotRate}/-` : '');
     this.drawBandhanRow('', 'Recommended value of the plot', fields.plotValueBreakdown || '');
-    this.drawBandhanRow('32.', 'Recommended rate of cost of construction', fields.rateOfCostOfConstruction || '');
+    let val32 = (fields.rateOfCostOfConstruction || '').trim();
+    if (!val32 && (fields.rateOfCostOfConstructionMin || fields.rateOfCostOfConstructionMax)) {
+      const minNum = parseNum(fields.rateOfCostOfConstructionMin);
+      const maxNum = parseNum(fields.rateOfCostOfConstructionMax);
+      if (minNum > 0 && maxNum > 0 && minNum !== maxNum) {
+        val32 = `Rs.${formatCurrencyINR(minNum)}/- to Rs.${formatCurrencyINR(maxNum)}/- per sqft`;
+      } else if (minNum > 0 || maxNum > 0) {
+        val32 = `Rs.${formatCurrencyINR(minNum || maxNum)}/- per sqft`;
+      }
+    }
+    this.drawBandhanRow('32.', 'Recommended rate of cost of construction', val32);
     let val33 = (fields.depreciationOfConstruction || '').trim();
     if (val33) {
       if (val33.startsWith('Rs.') || val33.startsWith('₹') || val33.toLowerCase() === 'nil') {
