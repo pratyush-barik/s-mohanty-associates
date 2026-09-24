@@ -2580,16 +2580,60 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const servicesMarketValue = Array.from({ length: 5 }, (_, i) => parseFloat(fields[`bobService_${i}`] || '0') || 0).reduce((a, b) => a + b, 0);
 
         const abstractRows = [
-          { label: 'LAND', key: 'land', govtVal: landGovtValue, marketVal: landMarketValue },
-          { label: 'BUILDING', key: 'building', govtVal: 0, marketVal: buildingMarketValue },
-          { label: 'EXTRA ITEMS', key: 'extraItems', govtVal: 0, marketVal: 0 },
-          { label: 'AMENITIES', key: 'amenities', govtVal: 0, marketVal: amenitiesMarketValue },
-          { label: 'MISCELLANEOUS', key: 'miscellaneous', govtVal: 0, marketVal: miscMarketValue },
-          { label: 'SERVICES', key: 'services', govtVal: 0, marketVal: servicesMarketValue },
+          { 
+            label: 'LAND', 
+            key: 'land', 
+            govtVal: landGovtValue, 
+            marketVal: landMarketValue,
+            govtHover: '>>Auto-calculated from Part A — Field 4<<',
+            marketHover: '>>Auto-calculated from Part A — Field 6<<'
+          },
+          { 
+            label: 'BUILDING', 
+            key: 'building', 
+            govtVal: 0, 
+            marketVal: buildingMarketValue,
+            govtHover: '>>Auto-calculated from Building statutory value<<',
+            marketHover: '>>Auto-calculated from Details of Valuation Grid<<'
+          },
+          { 
+            label: 'EXTRA ITEMS', 
+            key: 'extraItems', 
+            govtVal: 0, 
+            marketVal: 0,
+            govtHover: '>>Auto-calculated from preceding grid total<<',
+            marketHover: '>>Auto-calculated from preceding grid total<<'
+          },
+          { 
+            label: 'AMENITIES', 
+            key: 'amenities', 
+            govtVal: 0, 
+            marketVal: amenitiesMarketValue,
+            govtHover: '>>Auto-calculated from preceding grid total<<',
+            marketHover: '>>Auto-calculated from preceding grid total<<'
+          },
+          { 
+            label: 'MISCELLANEOUS', 
+            key: 'miscellaneous', 
+            govtVal: 0, 
+            marketVal: miscMarketValue,
+            govtHover: '>>Auto-calculated from preceding grid total<<',
+            marketHover: '>>Auto-calculated from preceding grid total<<'
+          },
+          { 
+            label: 'SERVICES', 
+            key: 'services', 
+            govtVal: 0, 
+            marketVal: servicesMarketValue,
+            govtHover: '>>Auto-calculated from preceding grid total<<',
+            marketHover: '>>Auto-calculated from preceding grid total<<'
+          },
         ].map(row => ({
           ...row,
           realizableVal: row.marketVal * 0.95,
-          distressVal: row.marketVal * 0.85
+          distressVal: row.marketVal * 0.85,
+          realizableHover: '>>Auto-calculated: Market Value x 0.95<<',
+          distressHover: '>>Auto-calculated: Market Value x 0.85<<'
         }));
 
         const calcTotalGovt = abstractRows.reduce((sum, r) => sum + r.govtVal, 0);
@@ -2604,15 +2648,15 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
 
         const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 
-        const ReadOnlyCell = ({ val }: { val: number }) => (
+        const ReadOnlyCell = ({ val, hoverTitle }: { val: number; hoverTitle: string }) => (
           <div className="relative group cursor-help">
             <input 
               className={`${inputCls} bg-gray-50 text-gray-700 cursor-not-allowed`}
               value={`Rs. ${fmtINR(val)}`}
               readOnly 
-              title=">>Values are auto-calculated from previous valuation sections<<"
+              title={hoverTitle}
             />
-            <Lock className="w-3.5 h-3.5 text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 group-hover:text-emerald-700 transition-colors" />
+            <Lock className="w-3.5 h-3.5 text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 group-hover:text-emerald-700 transition-colors" title={hoverTitle} />
           </div>
         );
 
@@ -2631,7 +2675,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               {fields.bobAbstractMode === 'annexure' ? (
                 <AnnexureBanner sectionLabel="Total Abstract" />
               ) : (<>
-              <div className="overflow-x-auto" title=">>Values are auto-calculated from previous valuation sections<<">
+              <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
                     <tr className="bg-gray-100">
@@ -2646,27 +2690,27 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                     {abstractRows.map(row => (
                       <tr key={row.key}>
                         <td className="border border-gray-300 px-3 py-2 font-medium bg-white">{row.label}</td>
-                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.govtVal} /></td>
-                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.marketVal} /></td>
-                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.realizableVal} /></td>
-                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.distressVal} /></td>
+                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.govtVal} hoverTitle={row.govtHover} /></td>
+                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.marketVal} hoverTitle={row.marketHover} /></td>
+                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.realizableVal} hoverTitle={row.realizableHover} /></td>
+                        <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={row.distressVal} hoverTitle={row.distressHover} /></td>
                       </tr>
                     ))}
                     {/* ── TOTAL Row ── */}
                     <tr className="bg-amber-50 font-bold">
                       <td className="border border-gray-300 px-3 py-2 text-right">TOTAL:</td>
-                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalGovt} /></td>
-                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalMarket} /></td>
-                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalRealizable} /></td>
-                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalDistress} /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalGovt} hoverTitle=">>Auto-calculated: Vertical sum of column<<" /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalMarket} hoverTitle=">>Auto-calculated: Vertical sum of column<<" /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalRealizable} hoverTitle=">>Auto-calculated: Vertical sum of column<<" /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={calcTotalDistress} hoverTitle=">>Auto-calculated: Vertical sum of column<<" /></td>
                     </tr>
                     {/* ── OR SAY Row ── */}
                     <tr className="bg-emerald-50 font-bold">
                       <td className="border border-gray-300 px-3 py-2 text-right text-emerald-900">OR SAY:</td>
-                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayGovt} /></td>
-                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayMarket} /></td>
-                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayRealizable} /></td>
-                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayDistress} /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayGovt} hoverTitle=">>Auto-calculated: Rounded to nearest thousand<<" /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayMarket} hoverTitle=">>Auto-calculated: Rounded to nearest thousand<<" /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayRealizable} hoverTitle=">>Auto-calculated: Rounded to nearest thousand<<" /></td>
+                      <td className="border border-gray-300 px-1 py-1"><ReadOnlyCell val={orSayDistress} hoverTitle=">>Auto-calculated: Rounded to nearest thousand<<" /></td>
                     </tr>
                   </tbody>
                 </table>
