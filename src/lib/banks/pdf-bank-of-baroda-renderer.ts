@@ -372,30 +372,75 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawTextAt(dateStr, PAGE_W - MARGIN_R - dateW, this.cursorY, { fontSize: 9, bold: true });
     this.cursorY += 20;
 
-    this.drawSectionHeader('PART I — GENERAL');
-    this.drawSimpleRow('1. Purpose for which the valuation is made', this.fv('bobPurposeForValuation'));
-    this.drawKeyValueRow([
-      { label: '2a. Date of inspection', value: formatReportDate(this.fv('bobDateOfInspection')), labelWidth: 120, valueWidth: CONTENT_W / 2 - 120 },
-      { label: '2b. Date of valuation', value: formatReportDate(this.fv('bobDateOfValuationMade')), labelWidth: 120, valueWidth: CONTENT_W / 2 - 120 },
-    ]);
-    this.drawSimpleRow('3. Documents produced', [
-      this.fv('bobDocumentI') ? `i) ${this.fv('bobDocumentI')}` : '',
-      this.fv('bobDocumentII') ? `ii) ${this.fv('bobDocumentII')}` : '',
-      this.fv('bobDocumentIII') ? `iii) ${this.fv('bobDocumentIII')}` : '',
-    ].filter(Boolean).join(', ') || 'NA');
-    this.drawSimpleRow('4. Name & address of owner(s)', this.fv('bobOwnerNamesAddresses'));
-    this.drawSimpleRow('5. Brief description of property', this.fv('bobBriefDescription'));
+    let allRows: string[][] = [
+      ['1.', 'Purpose for which the valuation is made', '', this.fv('bobPurposeForValuation') || 'NA'],
+      ['2.', 'a)', 'Date of inspection', formatReportDate(this.fv('bobDateOfInspection')) || 'NA'],
+      ['',   'b)', 'Date on which the valuation is made', formatReportDate(this.fv('bobDateOfValuationMade')) || 'NA'],
+      ['3.', 'List of documents produced for perusal', '', '']
+    ];
+    let allMerges = [
+      { sr: 0, sc: 1, er: 0, ec: 2 },
+      { sr: 1, sc: 0, er: 2, ec: 0 },
+      { sr: 3, sc: 1, er: 3, ec: 3 },
+    ];
+    
+    let rIdx = 4;
+    let docList = [];
+    if (this.fv('bobDocumentI')) docList.push(`i)|${this.fv('bobDocumentI')}`);
+    if (this.fv('bobDocumentII')) docList.push(`ii)|${this.fv('bobDocumentII')}`);
+    if (this.fv('bobDocumentIII')) docList.push(`iii)|${this.fv('bobDocumentIII')}`);
 
-    // Location
-    this.drawSimpleRow('6a. Plot No. / Survey No.', this.fv('bobPlotNo'));
-    this.drawSimpleRow('6b. Door No.', this.fv('bobDoorNo') || 'NA');
-    this.drawSimpleRow('6c. T.S. No. / Village', this.fv('bobTSNoVillage'));
-    this.drawSimpleRow('6d. Ward / Taluka', this.fv('bobWardTaluka'));
-    this.drawSimpleRow('6e. Mandal / District', this.fv('bobMandalDistrict'));
+    if (docList.length === 0) {
+      allRows[3][3] = 'NA';
+      allMerges.pop(); // remove the span across all columns if it's NA
+      allMerges.push({ sr: 3, sc: 1, er: 3, ec: 2 });
+    } else {
+      allMerges.push({ sr: 3, sc: 0, er: 3 + docList.length, ec: 0 }); // merge '3.' vertically
+      for (const d of docList) {
+        const [label, val] = d.split('|');
+        allRows.push(['', label, '', val]);
+        allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+        rIdx++;
+      }
+    }
+
+    allRows.push(['4.', 'Name of the owner(s) and his / their address\n(es) with Phone no. (details of share of each\nowner incase of joint ownership)', '', this.fv('bobOwnerNamesAddresses') || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+
+    allRows.push(['5.', 'Brief description of the property\n(Including leasehold / freehold etc)', '', this.fv('bobBriefDescription') || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+
+    allRows.push(['6.', 'Location of property', '', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 3 });
+    const p6StartRow = rIdx;
+    rIdx++;
+
+    const locFields = [
+      ['a)', 'Plot No. / Survey No.', this.fv('bobPlotNo') || 'NA'],
+      ['b)', 'Door No.', this.fv('bobDoorNo') || 'NA'],
+      ['c)', 'T. S. No. / Village', this.fv('bobTSNoVillage') || 'NA'],
+      ['d)', 'Ward / Taluka', this.fv('bobWardTaluka') || 'NA'],
+      ['e)', 'Mandal / District', this.fv('bobMandalDistrict') || 'NA'],
+    ];
+
+    allMerges.push({ sr: p6StartRow, sc: 0, er: p6StartRow + locFields.length, ec: 0 });
+    for (const f of locFields) {
+      allRows.push(['', f[0], f[1], f[2]]);
+      rIdx++;
+    }
+
     const postalAddress = this.fv('bobPostalAddress') || '';
     const pinCode = this.fv('bobPinCode');
     const finalPostal = pinCode ? (postalAddress ? `${postalAddress}. Pin: ${pinCode}` : `Pin: ${pinCode}`) : postalAddress;
-    this.drawSimpleRow('7. Postal address', finalPostal);
+    
+    allRows.push(['7.', 'Postal address of the property', '', finalPostal || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+
+    this.drawSectionHeader('PART I — GENERAL', false, false);
+    this.drawMergedTable(allRows, allMerges, [0.05, 0.05, 0.35, 0.55]);
     this.drawSimpleRow('8a. City / Town', this.fv('bobCityTown') || 'NA');
     this.drawSimpleRow('8b. Residential Area', this.fv('bobResidentialArea') || 'NA');
     this.drawSimpleRow('8c. Commercial Area', this.fv('bobCommercialArea') || 'NA');
