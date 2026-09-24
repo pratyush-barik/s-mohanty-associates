@@ -40,7 +40,12 @@ import { formatIndianCurrency } from '@/lib/numberToWords';
 
 const parseNum = (v: any): number => {
   if (!v) return 0;
-  const n = parseFloat(String(v).replace(/[^0-9.-]/g, ''));
+  const s = String(v)
+    .replace(/Rs\.?/gi, '')
+    .replace(/₹/g, '')
+    .replace(/,/g, '')
+    .trim();
+  const n = parseFloat(s.replace(/[^0-9.-]/g, ''));
   return isNaN(n) ? 0 : n;
 };
 

@@ -61,7 +61,12 @@ export interface BandhanHLLAPProps {
 
 const parseNum = (v: any): number => {
   if (!v) return 0;
-  const n = parseFloat(String(v).replace(/[^0-9.-]/g, ''));
+  const s = String(v)
+    .replace(/Rs\.?/gi, '')
+    .replace(/₹/g, '')
+    .replace(/,/g, '')
+    .trim();
+  const n = parseFloat(s.replace(/[^0-9.-]/g, ''));
   return isNaN(n) ? 0 : n;
 };
 
@@ -425,9 +430,21 @@ export default function BandhanHLLAP({
       netValueOfProperty: raw.netValueOfProperty || '',
       rateOfFlat: raw.rateOfFlat || '',
       areaOfFlat: raw.areaOfFlat || '',
-      recommendedValueOfProperty: raw.recommendedValueOfProperty || '',
-      totalMarketValue: raw.totalMarketValue || '',
-      valuationAsOnDate: raw.valuationAsOnDate || '',
+      recommendedValueOfProperty: (() => {
+        if (!raw.recommendedValueOfProperty) return '';
+        const n = parseNum(raw.recommendedValueOfProperty);
+        return n > 0 ? String(n) : '';
+      })(),
+      totalMarketValue: (() => {
+        if (!raw.totalMarketValue) return '';
+        const n = parseNum(raw.totalMarketValue);
+        return n > 0 ? String(n) : '';
+      })(),
+      valuationAsOnDate: (() => {
+        if (!raw.valuationAsOnDate) return '';
+        const n = parseNum(raw.valuationAsOnDate);
+        return n > 0 ? String(n) : '';
+      })(),
       govtRateLand: raw.govtRateLand || '',
       govtLandArea: raw.govtLandArea || raw.propertyArea || raw.areaOfLand || '',
       valuationGovtRate: raw.valuationGovtRate || '',
@@ -689,24 +706,23 @@ export default function BandhanHLLAP({
         }
       }
 
-      // Recommended Value of the Property & all downstream related fields
+      // Recommended Value of the Property & all downstream related fields (Pure positive decimal strings)
       if (valCalc.recommendedValue > 0) {
-        const recStr = valCalc.recommendedStr;
+        const recNumStr = String(valCalc.recommendedValue);
         const distStr = valCalc.distressStr;
         const realStr = valCalc.realisableStr;
         const sumMktStr = formatCurrencyINR(valCalc.recommendedValue);
         const sumWords = formatIndianCurrency(valCalc.recommendedValue);
 
-        if (prev.recommendedValueOfProperty !== recStr) {
-          next.recommendedValueOfProperty = recStr;
+        if (prev.recommendedValueOfProperty !== recNumStr) {
+          next.recommendedValueOfProperty = recNumStr;
           changed = true;
         }
-        if (prev.totalMarketValue !== recStr) {
-          next.totalMarketValue = recStr;
+        if (prev.totalMarketValue !== recNumStr) {
+          next.totalMarketValue = recNumStr;
           changed = true;
         }
-        const recNumStr = String(valCalc.recommendedValue);
-        if (prev.valuationAsOnDate !== recNumStr && prev.valuationAsOnDate !== recStr) {
+        if (prev.valuationAsOnDate !== recNumStr) {
           next.valuationAsOnDate = recNumStr;
           changed = true;
         }
