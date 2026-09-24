@@ -878,9 +878,9 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // SECTION 8: DECLARATION FROM VALUERS (Questionnaire)
+  // SECTION 9: DECLARATION FROM VALUERS (Questionnaire)
   // ═══════════════════════════════════════════════════════════════════════
-  private drawBobSection8() {
+  private drawBobSection9() {
     this.drawSectionHeader('DECLARATION FROM VALUERS (QUESTIONNAIRE)');
 
     const questionnaireItems = [
@@ -913,9 +913,9 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   }
 
   // ═══════════════════════════════════════════════════════════════════════
-  // SECTION 9: DECLARATION FROM VALUERS (Affirmations)
+  // SECTION 8: DECLARATION FROM VALUERS (Affirmations)
   // ═══════════════════════════════════════════════════════════════════════
-  private drawBobSection9() {
+  private drawBobSection8() {
     this.drawSectionHeader('DECLARATION FROM VALUERS (AFFIRMATIONS)');
 
     const name = this.fv('bobAffirmationName');

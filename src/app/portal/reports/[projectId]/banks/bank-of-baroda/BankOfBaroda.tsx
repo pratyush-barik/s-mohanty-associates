@@ -2776,76 +2776,12 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     },
 
     /* ──────────────────────────────────────────────────────────────────────
-       SECTION 8: DECLARATION FROM VALUERS (Questionnaire) (Container 19)
-       ────────────────────────────────────────────────────────────────────── */
-    {
-      id: 'bob-section-questionnaire',
-      title: 'DECLARATION FROM VALUERS (Questionnaire)',
-      number: 8,
-      defaultOpen: true,
-      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
-        const questionnaireItems = [
-          'Background information of the asset being valued;',
-          'Purpose of valuation and appointing authority',
-          'Identity of the Valuers and any other experts involved in the valuation;',
-          'Disclosure of Valuers interest or conflict, if any;',
-          'Date of appointment, valuation date and date of report;',
-          'Inspections and/or investigations undertaken;',
-          'Nature and sources of the information used or relied upon;',
-          'Procedures adopted in carrying out the valuation and valuation standards followed;',
-          'Restrictions on use of the report, if any;',
-          'Major factors that were taken into account during the valuation;',
-          'Caveats, limitations and disclaimers to the extent they explain or elucidate the limitations faced by valuers, which shall not be for the purpose of limiting his responsibility for the valuation report.',
-        ];
-        const qAnswers: string[] = fields.bobDeclarationQuestionnaire || new Array(11).fill('');
-
-        return (
-          <div className="animate-fade-in space-y-6">
-            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#fafad2' }}>
-              <h3 className="font-bold text-gray-700 border-b border-yellow-300 pb-2">Engagement Details</h3>
-              <div className="overflow-x-auto">
-                <table className="w-full border-collapse border border-gray-300 text-sm">
-                  <thead>
-                    <tr className="bg-gray-100">
-                      <th className="border border-gray-300 px-3 py-2 text-left w-12">Sl No.</th>
-                      <th className="border border-gray-300 px-3 py-2 text-left w-[50%]">Particulars</th>
-                      <th className="border border-gray-300 px-3 py-2 text-left">Valuers Comment</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {questionnaireItems.map((item, idx) => (
-                      <tr key={idx}>
-                        <td className="border border-gray-300 px-3 py-2 bg-white">{idx + 1}</td>
-                        <td className="border border-gray-300 px-3 py-2 bg-white text-xs">{item}</td>
-                        <td className="border border-gray-300 px-1 py-1">
-                          <textarea className={inputCls} rows={2}
-                            value={qAnswers[idx] || ''}
-                            onChange={e => {
-                              const arr = [...qAnswers];
-                              arr[idx] = e.target.value;
-                              handleChange('bobDeclarationQuestionnaire', arr);
-                            }}
-                            disabled={isReadOnly}
-                            placeholder="Enter comment..." />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        );
-      }
-    },
-
-    /* ──────────────────────────────────────────────────────────────────────
-       SECTION 9: DECLARATION FROM VALUERS (Affirmations) (Container 20)
+       SECTION 8: DECLARATION FROM VALUERS (Affirmations) (Container 20)
        ────────────────────────────────────────────────────────────────────── */
     {
       id: 'bob-section-affirmations',
       title: 'DECLARATION FROM VALUERS (Affirmations)',
-      number: 9,
+      number: 8,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
         const affirmChecks = fields.bobAffirmationChecks || {};
@@ -2946,6 +2882,70 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   }} disabled={isReadOnly} />
                 {fields.bobAffirmationSignature && <img src={fields.bobAffirmationSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
               </Field>
+            </div>
+          </div>
+        );
+      }
+    },
+
+    /* ──────────────────────────────────────────────────────────────────────
+       SECTION 9: DECLARATION FROM VALUERS (Questionnaire) (Container 19)
+       ────────────────────────────────────────────────────────────────────── */
+    {
+      id: 'bob-section-questionnaire',
+      title: 'DECLARATION FROM VALUERS (Questionnaire)',
+      number: 9,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const questionnaireItems = [
+          'Background information of the asset being valued;',
+          'Purpose of valuation and appointing authority',
+          'Identity of the Valuers and any other experts involved in the valuation;',
+          'Disclosure of Valuers interest or conflict, if any;',
+          'Date of appointment, valuation date and date of report;',
+          'Inspections and/or investigations undertaken;',
+          'Nature and sources of the information used or relied upon;',
+          'Procedures adopted in carrying out the valuation and valuation standards followed;',
+          'Restrictions on use of the report, if any;',
+          'Major factors that were taken into account during the valuation;',
+          'Caveats, limitations and disclaimers to the extent they explain or elucidate the limitations faced by valuers, which shall not be for the purpose of limiting his responsibility for the valuation report.',
+        ];
+        const qAnswers: string[] = fields.bobDeclarationQuestionnaire || new Array(11).fill('');
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#fafad2' }}>
+              <h3 className="font-bold text-gray-700 border-b border-yellow-300 pb-2">Engagement Details</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-gray-300 text-sm">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 px-3 py-2 text-left w-12">Sl No.</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left w-[50%]">Particulars</th>
+                      <th className="border border-gray-300 px-3 py-2 text-left">Valuers Comment</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {questionnaireItems.map((item, idx) => (
+                      <tr key={idx}>
+                        <td className="border border-gray-300 px-3 py-2 bg-white">{idx + 1}</td>
+                        <td className="border border-gray-300 px-3 py-2 bg-white text-xs">{item}</td>
+                        <td className="border border-gray-300 px-1 py-1">
+                          <textarea className={inputCls} rows={2}
+                            value={qAnswers[idx] || ''}
+                            onChange={e => {
+                              const arr = [...qAnswers];
+                              arr[idx] = e.target.value;
+                              handleChange('bobDeclarationQuestionnaire', arr);
+                            }}
+                            disabled={isReadOnly}
+                            placeholder="Enter comment..." />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         );
