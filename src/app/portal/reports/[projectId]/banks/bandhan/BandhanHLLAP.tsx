@@ -196,17 +196,17 @@ export const computeBandhanValuation = (
 };
 
 const NAV_SECTIONS: NavItem[] = [
-  { id: 'sec-basic', title: '1. Basic & Loan Details (1–5)' },
-  { id: 'sec-address', title: '2. Location & Address (6–14)' },
-  { id: 'sec-boundaries', title: '3. Boundaries Verification (15–16)' },
-  { id: 'sec-class', title: '4. Property Classification (17–23)' },
-  { id: 'sec-approvals', title: '5. Approval & Plan Details (24–25)' },
-  { id: 'sec-floors', title: '6. Floor Areas & Setbacks (26–29)' },
-  { id: 'sec-valuation', title: '7. Valuation Computations (30–33)' },
-  { id: 'sec-progress', title: '8. Progress of Work (34)' },
-  { id: 'sec-final-valuation', title: '9. Final Valuation & Project (35–40)' },
-  { id: 'sec-ndma', title: '10. NDMA Parameters (41)' },
-  { id: 'sec-annexure-a', title: '11. Detailed DRC & Annexure' },
+  { id: 'sec-basic', title: '1. Basic & Loan Details (Points 1–5)' },
+  { id: 'sec-address', title: '2. Location & Address Details (Points 6–14)' },
+  { id: 'sec-boundaries', title: '3. Boundaries & Physical Verification (Points 15–16)' },
+  { id: 'sec-class', title: '4. Property Classification & Structural Usage (Points 17–23)' },
+  { id: 'sec-approvals', title: '5. Approval & Plan Details (Points 24–25)' },
+  { id: 'sec-floors', title: '6. Area, Floor Breakdown & Setbacks (Points 26–29)' },
+  { id: 'sec-valuation', title: '7. Valuation Computations (Points 30–33)' },
+  { id: 'sec-progress', title: '8. Progress of Work (Point 34)' },
+  { id: 'sec-final-valuation', title: '9. Final Valuation Summary & Project Details (Points 35–40)' },
+  { id: 'sec-ndma', title: '10. NDMA Disaster Management Parameters (Point 41)' },
+  { id: 'sec-annexure-a', title: '11. Annexure-A' },
   { id: 'sec-docs', title: '12. Maps & Documents' },
   { id: 'sec-photos', title: '13. Property Photographs' },
 ];
@@ -4015,212 +4015,626 @@ export default function BandhanHLLAP({
             </Section>
 
             {/* 11. Annexure-A */}
-            <Section number={11} id="sec-annexure-a" title="Annexure-A: Valuation Computation & Declaration">
+            <Section number={11} id="sec-annexure-a" title="Annexure-A">
               <div className="space-y-4">
-                <Field label="Introduction Paragraph:">
+                {/* Header notice */}
+                <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-4 shadow-xs space-y-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="font-bold text-sky-950 text-xs sm:text-sm">
+                      ANNEXURE-A: DETAILS OF VALUATION AND VALUATION COMPUTATION
+                    </span>
+                    <span className="text-[11px] font-semibold bg-sky-100 text-sky-800 px-2.5 py-0.5 rounded border border-sky-200">
+                      Official Valuation Annexure
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    This annexure generates the detailed valuation sheets and computation in the PDF report. Values shown with reference badges are dynamically linked from previous report sections.
+                  </p>
+                </div>
+
+                {/* 1. Introduction */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                      Introduction:
+                    </label>
+                    <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                      ⚡ Referenced from: Bank Branch, Pt 1 (Customer Name), Pt 14 (Date of Visit)
+                    </span>
+                  </div>
                   <textarea
                     rows={3}
                     className={inputCls}
-                    value={fields.annexureIntro || ''}
+                    value={fields.annexureIntro || `Pursuant to the instructions received from Bandhan Bank, ${fields.branchDetails || (fields.branchName ? fields.branchName.replace(/^The\s+Bandhan\s+Bank,?\s*|^Bandhan\s+Bank,?\s*/i, '').trim() : 'Bhubaneswar Branch')}, to ascertain 'MARKET VALUE' (MV) of the above property, in favour of ${fields.customerName || 'Loan Applicant'} (Applicant Name), the site and its neighbourhood area had been inspected on ${fields.dateOfVisit || ''} in presence of the owner and the property had been identified by us with the help of available documents.`}
                     onChange={(e) => handleChange('annexureIntro', e.target.value)}
-                    placeholder="e.g. Based on inspection and documents submitted..."
+                    placeholder="Enter custom introduction or leave blank for auto-generated text"
                     disabled={isReadOnly}
                   />
-                </Field>
-                <Field label="Description of Property:">
+                </div>
+
+                {/* 2. Description of Property */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                      Description of the Property:
+                    </label>
+                    <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                      ⚡ Referenced from: Pt 8 (Property Address)
+                    </span>
+                  </div>
                   <textarea
                     rows={2}
                     className={inputCls}
-                    value={fields.annexurePropertyDesc || ''}
+                    value={fields.annexurePropertyDesc !== undefined && fields.annexurePropertyDesc !== '' ? fields.annexurePropertyDesc : (fields.propertyAddress || '')}
                     onChange={(e) => handleChange('annexurePropertyDesc', e.target.value)}
-                    placeholder="e.g. Residential Building over Plot No..."
+                    placeholder="Enter description of property or leave blank to use Property Address"
                     disabled={isReadOnly}
                   />
-                </Field>
-                <Field label="List of Documents for Verification:">
+                </div>
+
+                {/* 3. List of Documents for Verification */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                      List of Documents for Verification:
+                    </label>
+                    <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                      ⚡ Referenced from: Pt 24 (Documents Verified)
+                    </span>
+                  </div>
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.annexureDocsVerified || ''}
+                    value={fields.annexureDocsVerified !== undefined && fields.annexureDocsVerified !== '' ? fields.annexureDocsVerified : 'ROR, Copy of Sale deed & approved Plan'}
                     onChange={(e) => handleChange('annexureDocsVerified', e.target.value)}
-                    placeholder="e.g. Sale Deed, Approved Plan, ROR"
+                    placeholder="e.g. ROR, Copy of Sale deed & approved Plan"
                     disabled={isReadOnly}
                   />
-                </Field>
+                </div>
 
-                {/* DRC Building Table */}
-                <div className="pt-2">
-                  <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                    (B) Depreciated Replacement Cost (DRC) Table
-                  </p>
+                {/* 4. Relevant Data / Information (Clauses i–v) */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3.5">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wide block border-b border-slate-100 pb-1.5">
+                    Relevant Data / Information in Respect of the Property Under Reference:
+                  </span>
+                  
+                  <div className="space-y-3">
+                    {/* Clause i */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-slate-700">
+                          i) Purpose of Valuation:
+                        </label>
+                        <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                          ⚡ Referenced from: Pt 5 (Purpose)
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.annexurePurpose || 'Mortgage and Bank finance.'}
+                        onChange={(e) => handleChange('annexurePurpose', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Clause ii */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-slate-700">
+                          ii) Govt. Guideline Value of Land:
+                        </label>
+                        <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                          ⚡ Referenced from: Pt 36 (Govt Rate)
+                        </span>
+                      </div>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.annexureGovtGuideline || `Rs.${fields.valuationGovtRate ? fields.valuationGovtRate.split('*')[0].trim() : (fields.govtRateLand ? `${fields.govtRateLand}/- per sqft` : '286/- per sqft')} (As per IGR, Odisha Govt. Website)`}
+                        onChange={(e) => handleChange('annexureGovtGuideline', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Clause iii */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-slate-700">
+                          iii) Local Market Investigation &amp; Land Rate:
+                        </label>
+                        <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                          ⚡ Referenced from: Pt 30 (Market Land Rate: Rs.{fields.plotRate || '1800'}/-)
+                        </span>
+                      </div>
+                      <textarea
+                        rows={2}
+                        className={inputCls}
+                        value={fields.annexureMarketEnquiry || `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. 1700per sqft to @ Rs. 1900per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.`}
+                        onChange={(e) => handleChange('annexureMarketEnquiry', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Clause iv */}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold text-slate-700">
+                          iv) CPWD Construction Rate &amp; Extra Amenities:
+                        </label>
+                        <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                          ⚡ Referenced from: Pt 22 (${fields.typeOfStructure || 'RCC'}) &amp; Pt 31 (Rate: Rs.{fields.rateOfCostOfConstruction || '1800'}/-)
+                        </span>
+                      </div>
+                      <textarea
+                        rows={2}
+                        className={inputCls}
+                        value={fields.annexureCpwdBaseRate || `The base rate of construction has been considered at ₹1,300 per sq. ft. for ${(() => {
+                          const structName = (fields.typeOfStructure || 'RCC').trim();
+                          return structName.toLowerCase().includes('load')
+                            ? 'a load bearing structure'
+                            : structName.toLowerCase().includes('aluform')
+                            ? 'an Aluform (Mivan) shuttering structure'
+                            : structName.toLowerCase().includes('steel')
+                            ? 'a steel framed structure'
+                            : `an ${structName} framed structure`;
+                        })()} for the location. An additional ₹500 per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹${fields.rateOfCostOfConstruction || '1,800'} per sq. ft. of Super built-up area (SBUA).`}
+                        onChange={(e) => handleChange('annexureCpwdBaseRate', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Clause v */}
+                    <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 italic">
+                      v) Considering the above CPWD rate, CPWD specification and the specification of the house under consideration, cost of construction for the above building may reasonably be taken as under: -
+                    </div>
+                  </div>
+                </div>
+
+                {/* 5. Adopted Cost of Construction Table */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                      Adopted Cost of Construction Table:
+                    </span>
+                    <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                      ⚡ Referenced from: Pt 22 (Structure) &amp; Pt 31 (Rate: Rs.{fields.rateOfCostOfConstruction || '1800'}/-)
+                    </span>
+                  </div>
                   <div className="overflow-x-auto border border-slate-200 rounded-lg">
                     <table className="w-full text-xs">
-                      <thead className="bg-slate-100 text-slate-700">
+                      <thead className="bg-slate-100 text-slate-700 font-semibold">
                         <tr>
-                          <th className="p-2 text-left">Particulars</th>
-                          <th className="p-2 text-left">Area (sqft)</th>
-                          <th className="p-2 text-left">Year</th>
-                          <th className="p-2 text-left">Life (Yrs)</th>
-                          <th className="p-2 text-left">Cost (Rs.)</th>
-                          <th className="p-2 text-left">GCRC</th>
-                          <th className="p-2 text-left">Dep. %</th>
-                          <th className="p-2 text-left">Value (Rs.)</th>
-                          {!isReadOnly && <th className="p-2 w-10 text-center">Action</th>}
+                          <th className="p-2 text-left w-1/2">Structures</th>
+                          <th className="p-2 text-left w-1/2">Adopted Cost of Construction Rs. /Sqft. of BUA</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-200">
-                        {(fields.drcFloors || []).map((df, idx) => (
-                          <tr key={idx}>
-                            <td className="p-1.5">
-                              <input
-                                type="text"
-                                className={inputCls}
-                                value={df.particulars || ''}
-                                onChange={(e) => handleDRCFloorChange(idx, 'particulars', e.target.value)}
-                                placeholder="e.g. Ground Floor"
-                                disabled={isReadOnly}
-                              />
-                            </td>
-                            <td className="p-1.5">
-                              <input
-                                type="text"
-                                className={inputCls}
-                                value={df.area || ''}
-                                onChange={(e) => handleDRCFloorChange(idx, 'area', sanitizePositiveFloat(e.target.value))}
-                                placeholder="e.g. 850"
-                                disabled={isReadOnly}
-                              />
-                            </td>
-                            <td className="p-1.5">
-                              <input
-                                type="text"
-                                className={inputCls}
-                                value={df.yearOfConst || ''}
-                                onChange={(e) => handleDRCFloorChange(idx, 'yearOfConst', sanitizePositiveInt(e.target.value, 4))}
-                                placeholder="e.g. 2020"
-                                disabled={isReadOnly}
-                              />
-                            </td>
-                            <td className="p-1.5">
-                              <input
-                                type="text"
-                                className={inputCls}
-                                value={df.lifeInYrs || '10'}
-                                onChange={(e) => handleDRCFloorChange(idx, 'lifeInYrs', sanitizePositiveInt(e.target.value, 3))}
-                                placeholder="e.g. 10"
-                                disabled={isReadOnly}
-                              />
-                            </td>
-                            <td className="p-1.5">
-                              <input
-                                type="text"
-                                className={inputCls}
-                                value={df.costOfConst || ''}
-                                onChange={(e) => handleDRCFloorChange(idx, 'costOfConst', sanitizePositiveFloat(e.target.value))}
-                                placeholder="e.g. 1800"
-                                disabled={isReadOnly}
-                              />
-                            </td>
-                            <td className="p-1.5">
-                              <input
-                                type="text"
-                                className={inputCls}
-                                value={df.gcrc || 'No'}
-                                onChange={(e) => handleDRCFloorChange(idx, 'gcrc', e.target.value)}
-                                placeholder="e.g. No"
-                                disabled={isReadOnly}
-                              />
-                            </td>
-                            <td className="p-1.5">
-                              <input
-                                type="text"
-                                className={inputCls}
-                                value={df.depreciation || '50'}
-                                onChange={(e) => handleDRCFloorChange(idx, 'depreciation', sanitizePercentage(e.target.value))}
-                                placeholder="e.g. 50"
-                                disabled={isReadOnly}
-                              />
-                            </td>
-                            <td className="p-1.5">
-                              <input
-                                type="text"
-                                className={inputCls}
-                                value={df.value || ''}
-                                onChange={(e) => handleDRCFloorChange(idx, 'value', sanitizePositiveFloat(e.target.value))}
-                                placeholder="Net Value"
-                                disabled={isReadOnly}
-                              />
-                            </td>
-                            {!isReadOnly && (
-                              <td className="p-1.5 text-center">
-                                <button
-                                  type="button"
-                                  onClick={() => removeDRCRow(idx)}
-                                  className="text-red-500 hover:text-red-700 font-bold px-2 py-1"
-                                >
-                                  ×
-                                </button>
-                              </td>
-                            )}
-                          </tr>
-                        ))}
+                      <tbody>
+                        <tr>
+                          <td className="p-2 font-medium text-slate-800 bg-slate-50">
+                            {fields.typeOfStructure || 'RCC'} Roofing {fields.floors && fields.floors.length > 1 ? 'All Floors' : 'Ground Floor'}
+                          </td>
+                          <td className="p-2 font-bold text-sky-950 bg-slate-50">
+                            {fields.rateOfCostOfConstruction ? `Rs.${fields.rateOfCostOfConstruction}/- per sqft.` : 'GF- Rs.1,600/- & FF- Rs.1,800/-'}
+                          </td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>
-
-                  {!isReadOnly && (
-                    <button
-                      type="button"
-                      onClick={addDRCRow}
-                      className="mt-2 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded border border-slate-300"
-                    >
-                      + Add DRC Row
-                    </button>
-                  )}
                 </div>
 
-                {/* Valuer Credentials & Sign-off */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-200">
-                  <Field label="Valuer Name:">
-                    <input
-                      type="text"
+                {/* 6. Basis & Method of Valuation */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wide block">
+                      Basis of Valuation:
+                    </label>
+                    <textarea
+                      rows={2}
                       className={inputCls}
-                      value={fields.valuerSignatureName || 'S. MOHANTY & ASSOCIATES'}
-                      onChange={(e) => handleChange('valuerSignatureName', e.target.value)}
-                      placeholder="e.g. S. MOHANTY & ASSOCIATES"
+                      value={fields.annexureBasisOfValuation || 'HERE THE APPROVED VALUER SHOULD DISCUSS IN DETAIL HIS APPROACH TO VALUATION OF PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATIONS. ALSO, SUCH ASPECTS AS I.) SALE ABILITY. II.) LIKELY RENTAL VALUES IN FUTURE AND. ii.) ANY LIKELY INCOME IT MAY GENERATE MAY BE DISCUSSED.'}
+                      onChange={(e) => handleChange('annexureBasisOfValuation', e.target.value)}
                       disabled={isReadOnly}
                     />
-                  </Field>
-                  <Field label="Qualifications:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.valuerQualification || 'B.Tech (Civil), M.Val (RE)'}
-                      onChange={(e) => handleChange('valuerQualification', e.target.value)}
-                      placeholder="e.g. B.Tech (Civil), M.Val (RE)"
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="IOV Reg. No:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.valuerIovRegNo || '107/2016-17, CAT-1'}
-                      onChange={(e) => handleChange('valuerIovRegNo', e.target.value)}
-                      placeholder="e.g. 107/2016-17, CAT-1"
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="Wealth Tax Reg. No:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.valuerWealthTaxRegNo || 'CCIT/BBSR/Tech-10/2017-18'}
-                      onChange={(e) => handleChange('valuerWealthTaxRegNo', e.target.value)}
-                      placeholder="e.g. CCIT/BBSR/Tech-10/2017-18"
-                      disabled={isReadOnly}
-                    />
-                  </Field>
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t border-slate-100">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                        Method of Valuation (Classification, Ingredients &amp; Approach):
+                      </span>
+                      <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                        ⚡ Referenced from: Pt 18 ({fields.propertyType || 'Residential'}) &amp; Pt 23 ({fields.natureOfBuilding || 'Standalone Structure'})
+                      </span>
+                    </div>
+                    <div className="overflow-x-auto border border-slate-200 rounded-lg">
+                      <table className="w-full text-xs">
+                        <thead className="bg-slate-100 text-slate-700 font-semibold text-center">
+                          <tr>
+                            <th className="p-2">DESCRIPTION OF PROPERTY</th>
+                            <th className="p-2">PROPERTY CLASSIFICATION</th>
+                            <th className="p-2">VALUE INGREDIENTS</th>
+                            <th className="p-2">VALUE ELEMENTS</th>
+                            <th className="p-2">APPROACH TO VALUATION</th>
+                            <th className="p-2">METHOD OF VALUATION</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          <tr className="text-center bg-slate-50">
+                            <td className="p-2 font-medium">{fields.propertyType || 'Residential'} building</td>
+                            <td className="p-2">{fields.propertyType || 'Residential'}</td>
+                            <td className="p-2">Land &amp; Building</td>
+                            <td className="p-2">Land &amp; Structure</td>
+                            <td className="p-2 font-semibold text-sky-900">Market Approach</td>
+                            <td className="p-2">Land &amp; Building Method</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 7. Valuation Computation */}
+                <div className="rounded-xl border border-sky-200 bg-sky-50/30 p-4 shadow-2xs space-y-4">
+                  <span className="text-xs font-bold text-sky-950 uppercase tracking-wider block border-b border-sky-200/80 pb-2">
+                    Valuation Computation:
+                  </span>
+
+                  {/* (A) Land Component */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-slate-800">
+                        (A) Valuation of Land Component:
+                      </span>
+                      <span className="text-[10.5px] font-semibold bg-sky-50 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
+                        ⚡ Formula: Area (Pt 26) × Land Rate (Pt 30) = Land Value (Pt 30)
+                      </span>
+                    </div>
+                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs font-mono space-y-1">
+                      <div>Adopted land rate as on date = <strong>Rs.{fields.plotRate || '1800'}/-</strong></div>
+                      <div>Multiplying by area of land Component: <strong>{fields.propertyArea || '10,890 sqft.'}</strong> × <strong>Rs.{fields.plotRate || '1800'}/-</strong> = <strong className="text-sky-950">Rs.{formatCurrencyINR(parseNum(fields.netValueLand))}/-</strong></div>
+                      <div className="text-sm font-bold text-sky-950 pt-1 border-t border-slate-200">
+                        Value of the land component as on date (A) = Rs.{formatCurrencyINR(parseNum(fields.netValueLand))}/-
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* (B) DRC Table of Existing Building */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-xs font-bold text-slate-800">
+                        (B) Depreciated Replacement Cost (D.R.C.) of Existing Building:
+                      </span>
+                      <span className="text-[10.5px] font-semibold bg-sky-50 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
+                        ⚡ Referenced from Pt 26 / Pt 31
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto border border-slate-200 rounded-lg">
+                      <table className="w-full text-xs">
+                        <thead className="bg-slate-100 text-slate-700">
+                          <tr>
+                            <th className="p-2 text-left">Particulars</th>
+                            <th className="p-2 text-left">Area (sqft)</th>
+                            <th className="p-2 text-left">Year</th>
+                            <th className="p-2 text-left">Life (Yrs)</th>
+                            <th className="p-2 text-left">Cost (Rs.)</th>
+                            <th className="p-2 text-left">GCRC</th>
+                            <th className="p-2 text-left">Dep. %</th>
+                            <th className="p-2 text-left">Value (Rs.)</th>
+                            {!isReadOnly && <th className="p-2 w-10 text-center">Action</th>}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-200">
+                          {(fields.drcFloors || []).map((df, idx) => (
+                            <tr key={idx}>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  className={inputCls}
+                                  value={df.particulars || ''}
+                                  onChange={(e) => handleDRCFloorChange(idx, 'particulars', e.target.value)}
+                                  placeholder="e.g. Ground Floor"
+                                  disabled={isReadOnly}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  className={inputCls}
+                                  value={df.area || ''}
+                                  onChange={(e) => handleDRCFloorChange(idx, 'area', sanitizePositiveFloat(e.target.value))}
+                                  placeholder="e.g. 850"
+                                  disabled={isReadOnly}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  className={inputCls}
+                                  value={df.yearOfConst || ''}
+                                  onChange={(e) => handleDRCFloorChange(idx, 'yearOfConst', sanitizePositiveInt(e.target.value, 4))}
+                                  placeholder="e.g. 2020"
+                                  disabled={isReadOnly}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  className={inputCls}
+                                  value={df.lifeInYrs || '10'}
+                                  onChange={(e) => handleDRCFloorChange(idx, 'lifeInYrs', sanitizePositiveInt(e.target.value, 3))}
+                                  placeholder="e.g. 10"
+                                  disabled={isReadOnly}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  className={inputCls}
+                                  value={df.costOfConst || ''}
+                                  onChange={(e) => handleDRCFloorChange(idx, 'costOfConst', sanitizePositiveFloat(e.target.value))}
+                                  placeholder="e.g. 1800"
+                                  disabled={isReadOnly}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  className={inputCls}
+                                  value={df.gcrc || 'No'}
+                                  onChange={(e) => handleDRCFloorChange(idx, 'gcrc', e.target.value)}
+                                  placeholder="e.g. No"
+                                  disabled={isReadOnly}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  className={inputCls}
+                                  value={df.depreciation || '50'}
+                                  onChange={(e) => handleDRCFloorChange(idx, 'depreciation', sanitizePercentage(e.target.value))}
+                                  placeholder="e.g. 50"
+                                  disabled={isReadOnly}
+                                />
+                              </td>
+                              <td className="p-1.5">
+                                <input
+                                  type="text"
+                                  className={inputCls}
+                                  value={df.value || ''}
+                                  onChange={(e) => handleDRCFloorChange(idx, 'value', sanitizePositiveFloat(e.target.value))}
+                                  placeholder="Net Value"
+                                  disabled={isReadOnly}
+                                />
+                              </td>
+                              {!isReadOnly && (
+                                <td className="p-1.5 text-center">
+                                  <button
+                                    type="button"
+                                    onClick={() => removeDRCRow(idx)}
+                                    className="text-red-500 hover:text-red-700 font-bold px-2 py-1 cursor-pointer"
+                                  >
+                                    ×
+                                  </button>
+                                </td>
+                              )}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {!isReadOnly && (
+                      <button
+                        type="button"
+                        onClick={addDRCRow}
+                        className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded border border-slate-300 cursor-pointer"
+                      >
+                        + Add DRC Row
+                      </button>
+                    )}
+
+                    {/* Building Services Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                      <Field label="DRC of Water, Electrification & Building Services (Cost in Rs.):">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.drcServicesCost || 'Rs.0/-'}
+                          onChange={(e) => handleChange('drcServicesCost', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                      <Field label="DRC Services Net Value (Rs.):">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.drcServicesValue || 'Rs.0/-'}
+                          onChange={(e) => handleChange('drcServicesValue', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                    </div>
+
+                    {/* Total Building Value (B) */}
+                    <div className="p-3 bg-sky-50 rounded-lg border border-sky-200 flex items-center justify-between">
+                      <span className="text-xs font-bold text-sky-950">
+                        TOTAL Depreciated Replacement Cost of Building (B):
+                      </span>
+                      <span className="text-sm font-extrabold text-sky-950 font-mono">
+                        Rs.{fields.drcTotalBuildingValue || formatCurrencyINR(parseNum(fields.netValueBuilding))}/-
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Summary (Land + Building = Market Value) */}
+                  <div className="rounded-xl border border-sky-300 bg-white p-4 shadow-xs space-y-2.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                      <span className="text-xs font-bold text-slate-900 uppercase">
+                        Market Value Summary (Land + Building):
+                      </span>
+                      <span className="text-[10.5px] font-semibold bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded border border-emerald-200">
+                        ⚡ Dynamically Synchronized
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                      <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
+                        <span className="text-slate-500 font-semibold block">Land Value (A):</span>
+                        <span className="font-bold text-slate-900 font-mono text-sm">
+                          Rs.{formatCurrencyINR(parseNum(fields.netValueLand))}/-
+                        </span>
+                      </div>
+                      <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
+                        <span className="text-slate-500 font-semibold block">Building Value (B):</span>
+                        <span className="font-bold text-slate-900 font-mono text-sm">
+                          Rs.{formatCurrencyINR(parseNum(fields.netValueBuilding))}/-
+                        </span>
+                      </div>
+                      <div className="p-2.5 bg-sky-50 rounded border border-sky-200 sm:col-span-2 space-y-1">
+                        <span className="text-sky-900 font-bold block">Market Value (M.V.) as on date (A + B):</span>
+                        <span className="font-extrabold text-sky-950 font-mono text-base block">
+                          Rs.{formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/-
+                        </span>
+                        <span className="text-slate-600 text-[11px] font-medium italic block">
+                          (Rupees {formatIndianCurrency(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))} Only)
+                        </span>
+                      </div>
+                      <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
+                        <span className="text-slate-500 font-semibold block">Realizable Value (95%):</span>
+                        <span className="font-bold text-slate-900 font-mono">
+                          {fields.realisableValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.95))}/-`}
+                        </span>
+                      </div>
+                      <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
+                        <span className="text-slate-500 font-semibold block">Distress Sale Value (90%):</span>
+                        <span className="font-bold text-slate-900 font-mono">
+                          {fields.distressSaleValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.90))}/-`}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 8. Opinion Statement */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                      Opinion Statement:
+                    </label>
+                    <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                      ⚡ Dynamically includes Market Value (Rs.{formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/-)
+                    </span>
+                  </div>
+                  <textarea
+                    rows={3}
+                    className={inputCls}
+                    value={fields.opinionStatement || `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS Rs.${formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/- AND INSURABLE VALUE OF THE PROPERTY IS NOT IN OUR SCOPE.`}
+                    onChange={(e) => handleChange('opinionStatement', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </div>
+
+                {/* 9. Declaration (Clauses A through P) */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                      Declaration (Clauses A to P):
+                    </label>
+                    <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                      ⚡ Dynamically includes Visit Date, Market Value, Realizable &amp; Distress Values
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-xs text-slate-700 max-h-80 overflow-y-auto pr-1">
+                    {[
+                      'A. THE INFORMATION FURNISHED ABOVE IS TRUE TO THE BEST OF MY / OUR KNOWLEDGE AND BELIEF.',
+                      'B. NEITHER ME/WE NOR MY/ OUR ASSOCIATE HAVE ANY DIRECT OR INDIRECT INTEREST IN THE ADVANCE OR ASSETS VALUED.',
+                      'C. I/WE ARE NEITHER RELATED TO THE OWNER OF THE PROPERTY WHICH IS BEING VALUED NOR THE OFFICIALS OF THE BRANCH FROM WHICH THE BORROWER PROPOSES TO MORTGAGE THE PROPERTY BEING VALUED / ALREADY MORTGAGED TO THE BRANCH.',
+                      `D. THE PROPERTY WAS PHYSICALLY INSPECTED BY ME/US ON ${fields.dateOfVisit || fields.reportDate || '________'} ALONG WITH CUSTOMER.`,
+                      'E. THE TITLE DEED (S) OF THE PROPERTY UNDER VALUATION IS AVAILABLE WITH THE BANK.',
+                      'F. THE PROPERTY IS IDENTIFIED BY THE REPERESNTIVE OF THE BANK.',
+                      'G. THIS VALUATION IS PREPARED WITHOUT ANY PREJUDICE OR BIAS TO ANY PERSON OR INSTITUTION.',
+                      'H. THIS REPORT IS PREPARED BASED ON AVAILABLE DOCUMENTS DURING OUR VISIT TO THE SITE AND DISCUSSIONS MADE WITH THE OWNER OF THE PROPERTY.',
+                      'I. THE LEGAL ASPECTS ARE NOT CONSIDERED IN THIS VALUATION.',
+                      'J. THE VALUE OF LAND IS TAKEN INTO ACCOUNT BY MAKING DUE ENQUIRES IN THE LOCALITY AND ASCERTAINING THE SALES VALUE OF THE PROPERTIES IN THE LOCALITY.',
+                      'K. ANY ADDITIONS / ALTERATIONS MADE TO THE PROPERTY AFTER THE DATE OF VALUATIONS SHALL NOT FALL UNDER THE SCOPE OF THIS REPORT.',
+                      'L. WE ARE NEITHER THE AUDITORS TO THE OWNER OF THE PROPERTY (IES) NOR THEIR FIRMS, ASSOCIATES NOR ARE WE THE STATUTORY AUDITORS TO THE BRANCH FROM WHICH THE LOAN IS PROPOSED TO BE AVAILED / ALREADY AVAILED.',
+                      `M. IT IS HEREBY CERTIFIED THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IS, IN MY OPINION/OUR OPINION Rs.${formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/- AND THE ESTIMATED REALIZABLE VALUE ${fields.realisableValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.95))}/-`} UNDER DISTRESS SALE WILL BE ${fields.distressSaleValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.90))}/-`} -VALUE VARIES WITH THE PURPOSE AND DATE. THIS REPORT IS NOT TO BE REFERRED FOR THE PURPOSE IS DIFFERENT OTHER THAN VALUATION OF THE MORTGAGED PROPERTY.`,
+                      'N. I HAVE NOT BEEN DISMISSED OR REMOVED FROM GOVT, SERVICE OR CONVICTED OF AN OFFENCE CONNECTED WITH ANY PROCEEDINGS OF INCOME TAX ACT, WEALTH TAX ACT OR GIFT TAX ACT OR HAVE BEEN BLACKLISTED BY ANY BANK/FINANCIAL INSTITUTION/ GOVT. DEPARTMENT/PUBLIC SECTORE ENTEREPRISE/BODY CORPORATE ETC.',
+                      `O. THIS VALUATION REPORT CONTAINS ${fields.valuerReportPagesCount || '12'} PAGES ONLY.`,
+                      'P. PHOTOGRAPHS OF THE ASSET VALUED ENCLOSED.',
+                    ].map((item, idx) => (
+                      <div key={idx} className="p-2 rounded bg-slate-50 border border-slate-150 leading-relaxed font-sans">
+                        {item}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
+                    <Field label="Declaration Date:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.declarationDate || fields.reportDate || formatReportDate(new Date())}
+                        onChange={(e) => handleChange('declarationDate', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="Total Report Pages Count:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.valuerReportPagesCount || '12'}
+                        onChange={(e) => handleChange('valuerReportPagesCount', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                  </div>
+                </div>
+
+                {/* 10. Valuer Credentials & Sign-off */}
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wide block border-b border-slate-100 pb-2">
+                    Valuer Credentials &amp; Sign-off:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Valuer Name:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.valuerSignatureName || 'S. MOHANTY & ASSOCIATES'}
+                        onChange={(e) => handleChange('valuerSignatureName', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="Qualifications:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.valuerQualification || 'B.Tech (Civil), M.Val (RE)'}
+                        onChange={(e) => handleChange('valuerQualification', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="IOV Reg. No:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.valuerIovRegNo || '107/2016-17, CAT-1'}
+                        onChange={(e) => handleChange('valuerIovRegNo', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <Field label="Wealth Tax Reg. No:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.valuerWealthTaxRegNo || 'CCIT/BBSR/Tech-10/2017-18'}
+                        onChange={(e) => handleChange('valuerWealthTaxRegNo', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                  </div>
                 </div>
               </div>
             </Section>
