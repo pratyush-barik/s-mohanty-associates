@@ -735,7 +735,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   // SECTION 4: PART A — VALUATION OF LAND
   // ═══════════════════════════════════════════════════════════════════════
   private drawBobSection4() {
-    this.drawSectionHeader('PART A — VALUATION OF LAND');
+    this.drawSectionHeader('PART A — VALUATION OF LAND', false, false);
 
     const dimensions = this.fields.bobDimensions || {};
 
@@ -775,14 +775,48 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       ? `Total Market Value of Land: ${areaSftFormatted} Sft X Rs.${fmtINR(adoptedRate)}/- Per Sft = Rs.${fmtINR(estimatedValue)}/-`
       : 'Total Market Value of Land: 0.00 Sft X Rs.0/- Per Sft = Rs.0/-';
 
-    this.drawSimpleRow('1. Size of plot (N&S)', displayNS || 'NA');
-    this.drawSimpleRow('   Size of plot (E&W)', displayEW || 'NA');
-    this.drawSimpleRow('2. Total extent of the plot', displayTotalExtent, true, true);
-    this.drawSimpleRow('3. Prevailing market rate', this.fv('bobPrevailingMarketRate'));
-    this.drawSimpleRow('4. Guideline rate', guidelineStr1);
-    this.drawSimpleRow('   Guideline Value', guidelineStr2);
-    this.drawSimpleRow('5. Adopted rate of valuation', this.fv('bobAdoptedRate'));
-    this.drawSimpleRow('6. Estimated value of land', calcEstimatedStr, true, true);
+    let allRows: string[][] = [
+      ['', 'Size of plot', ''],
+      ['1.', 'North & South', displayNS || 'As Per Sketch Map'],
+      ['', 'East & West', displayEW || 'As Per Sketch Map'],
+      ['2.', 'Total extent of the plot', displayTotalExtent],
+      ['3.', 'Prevailing market rate (Along with details /reference of at least two latest deals/ transactions with respect to adjacent properties in the areas)', this.fv('bobPrevailingMarketRate') || 'NA'],
+      ['4.', 'Guideline rate obtained from the Registrar\'s\nOffice (an evidence thereof to be enclosed)', `${guidelineStr1}\n\n${guidelineStr2}`],
+      ['5.', 'Assessed / adopted rate of valuation', this.fv('bobAdoptedRate') || 'NA'],
+      ['6.', 'Estimated value of land', calcEstimatedStr]
+    ];
+
+    const styleOpts = (ri: number, ci: number) => {
+      let align: 'left' | 'center' | 'right' = 'left';
+      let bold = false;
+      let fillColor: any = undefined;
+      let bgOpacity = 0.5;
+      let hideBorder: any = undefined;
+
+      const row = allRows[ri];
+
+      if (ci === 0) {
+        if (row[0] === '') {
+          hideBorder = { top: true };
+        }
+        if (ri < allRows.length - 1 && allRows[ri + 1][0] === '') {
+          hideBorder = { ...(hideBorder || {}), bottom: true };
+        }
+      }
+
+      if (ci < 2) {
+        bold = true;
+        fillColor = '#DBE6F0'; // LBL_BG
+      } else {
+        bold = false;
+        fillColor = undefined;
+      }
+      
+      return { align, bold, fillColor, bgOpacity, hideBorder };
+    };
+
+    // Columns: Number (0.06), Label (0.34), Value (0.60)
+    this.drawMergedTable(allRows, [], [0.06, 0.34, 0.60], styleOpts, { fontSize: 12 });
   }
 
   // ═══════════════════════════════════════════════════════════════════════
