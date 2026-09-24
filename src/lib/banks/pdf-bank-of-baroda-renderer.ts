@@ -920,60 +920,58 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     const name = this.fv('bobAffirmationName');
     const father = this.fv('bobAffirmationFatherName');
-    this.doc.setFont(FONT_HEADING, 'normal');
-    this.doc.setFontSize(FONT_SIZE_NORMAL);
     this.cursorY += 2;
     const introText = `I Mr. ${name || '......................................'}, S/o: Mr. ${father || '......................................'} do hereby solemnly affirm and state that:`;
-    const introLines = this.doc.splitTextToSize(introText, CONTENT_W);
-    this.doc.text(introLines, MARGIN_X, this.cursorY);
-    this.cursorY += introLines.length * 5 + 3;
+    const introH = this.drawWrappedTextAt(introText, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
+    this.cursorY += introH + 4;
+
+    const formatDotDate = (dateStr?: string) => {
+      if (!dateStr) return '________';
+      const m = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return `${m[3]}.${m[2]}.${m[1]}`;
+      return dateStr;
+    };
 
     const affirmChecks = this.fields.bobAffirmationChecks || {};
     const affirmationItems: { key: string; text: string }[] = [
       { key: 'a', text: 'I am citizen of India.' },
-      { key: 'b', text: 'I will not undertake valuation of any assets in which I have a direct or indirect interest.' },
-      { key: 'c', text: 'The information furnished in my valuation report is true & correct.' },
-      { key: 'd', text: 'I have personally inspected the property. The work is not sub-contracted.' },
-      { key: 'e', text: 'Valuation report is submitted in the format prescribed by the bank.' },
-      { key: 'f', text: 'I have not been depanelled by any other bank.' },
+      { key: 'b', text: 'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.' },
+      { key: 'c', text: `The information furnished in my valuation report dated ${formatDotDate(this.fv('bobAsOnDate'))} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.` },
+      { key: 'd', text: `I have personally inspected the property on ${formatDotDate(this.fv('bobDateOfInspection'))} & I have valued the property which is identified by documents & help of customer. The work is not sub-contracted to any other valuer & carried out by myself.` },
+      { key: 'e', text: 'Valuation report is submitted in the format as prescribed by the bank.' },
+      { key: 'f', text: 'I have not been depanelled by any other bank and in case any such depanelment by other banks during my empanelment with you, I will inform you within three days of such depanelment.' },
       { key: 'g', text: 'I have not been removed from service earlier.' },
-      { key: 'h', text: 'I have not been convicted of any offence.' },
-      { key: 'i', text: 'I have not been declared to be of unsound mind.' },
-      { key: 'j', text: 'I have not been found guilty of misconduct.' },
-      { key: 'k', text: 'I am not an undischarged bankrupt.' },
+      { key: 'h', text: 'I have not been convicted of any offence & sentenced to a term of imprisonment' },
+      { key: 'i', text: 'I have not been declared to be unsound mind.' },
+      { key: 'j', text: 'I have not been found guilty of misconduct in my professional capacity.' },
+      { key: 'k', text: 'I am not an undischarged bankrupt, or have not applied to be adjudicated as a bankrupt.' },
       { key: 'l', text: 'I have not undischarged insolvent.' },
-      { key: 'm', text: 'I have not been levied a penalty under section 271J of Income-Tax Act, 1961.' },
-      { key: 'n', text: 'I have not been convicted of an offence under Income-Tax/Wealth Tax/Gift Tax Act.' },
-      { key: 'o', text: `My PAN Card number is: ${this.fv('bobAffirmationPAN')}` },
-      { key: 'p', text: 'I undertake to keep you informed of any events affecting eligibility.' },
-      { key: 'q', text: 'I have not concealed or suppressed any material information.' },
-      { key: 'r', text: 'I have read the IBA handbook on policy & this report is in conformity.' },
-      { key: 's', text: 'I have read the IVS & the report is in conformity.' },
-      { key: 't', text: 'I abide by the Model Code of Conduct.' },
-      { key: 'u', text: 'I am registered under Section 34 AB of the Wealth Tax Act, 1957.' },
-      { key: 'v', text: 'I am valuer registered with IBBI.' },
-      { key: 'w', text: "My CIBIL Score is as per Bank's guidelines." },
-      { key: 'x', text: 'I am the authorized official competent to sign this valuation report.' },
-      { key: 'y', text: 'I will undertake valuation work on receipt of letter of Engagement only.' },
+      { key: 'm', text: 'I have not been levied a penalty under section 271J of Income-Tax Act, 1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.' },
+      { key: 'n', text: 'I have not been convicted of an offence connected with any proceeding under the Income-Tax Act 1961, wealth Tax Act 1957 or Gift Tax Act 1958.' },
+      { key: 'o', text: `My PAN Card number as applicable is: ${this.fv('bobAffirmationPAN')}` },
+      { key: 'p', text: 'I undertake to keep you informed of any events or happenings which would make me ineligible for empanelment as a valuer.' },
+      { key: 'q', text: 'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure' },
+      { key: 'r', text: 'I have read the hand book on policy, standards & procedure for real Estate valuation, 2011 of the IBA & this report is in conformity to the "Standards" enshrined for valuation in the part -B of the above handbook to the best of my knowledge.' },
+      { key: 's', text: 'I have read the International Valuation Standards (IVS) & the report submitted to the Bank for the respective asset class is in conformity to the "Standards" enshrined for valuation in the IVS in "General Standards" & "Asset Standards" as applicable.' },
+      { key: 't', text: 'I abide by the Model Code of Conduct for empanelment of valuer in the Bank.' },
+      { key: 'u', text: 'I am registered under Section 34 AB of the Wealth Tax Act,1957.' },
+      { key: 'v', text: 'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI)' },
+      { key: 'w', text: "My CIBIL Score and credit worthiness is as per Bank's guidelines." },
+      { key: 'x', text: 'I am the authorized official of the firm who is competent to sign this valuation report' },
+      { key: 'y', text: 'I will undertake the valuation work on receipt of letter of Engagement generated from the System. (i.e. LLMS/LOS) only' },
       { key: 'z', text: 'Further, I hereby provide the following information.' },
     ];
 
-    this.doc.setFont(FONT_HEADING, 'normal');
-    this.doc.setFontSize(FONT_SIZE_SMALL);
-    
     affirmationItems.forEach(item => {
       if (affirmChecks[item.key] === false) return;
       
       const bullet = `${item.key}.`;
-      let text = item.text;
+      const text = item.text;
       
-      const textLines = this.doc.splitTextToSize(text, CONTENT_W - 10);
-      this.doc.setFont(FONT_HEADING, 'bold');
-      this.doc.text(bullet, MARGIN_X + 2, this.cursorY);
-      this.doc.setFont(FONT_HEADING, 'normal');
-      this.doc.text(textLines, MARGIN_X + 10, this.cursorY);
-      this.cursorY += textLines.length * 4.5 + 2;
-      this.checkPageBreak(10);
+      this.drawTextAt(bullet, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+      const textH = this.drawWrappedTextAt(text, MARGIN_L + 15, this.cursorY, CONTENT_W - 15, { fontSize: FONT_SIZE_SMALL });
+      this.cursorY += textH + 4;
+      this.checkPageBreak(20);
     });
 
     // Sign-off
