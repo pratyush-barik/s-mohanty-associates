@@ -2364,6 +2364,11 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                         rows[idx] = { ...rows[idx], [key]: val };
                         handleChange('bobBuildingValuationRows', rows);
                       };
+                      const updateRowMultiple = (updates: Record<string, any>) => {
+                        const rows = [...buildingRows];
+                        rows[idx] = { ...rows[idx], ...updates };
+                        handleChange('bobBuildingValuationRows', rows);
+                      };
                       return (
                         <tr key={idx}>
                           <td className="border border-gray-300 px-1 py-1">
@@ -2377,8 +2382,11 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                             ) : (
                               <select className={inputCls} value={row.particularsDropdown || ''}
                                 onChange={e => {
-                                  updateRow('particularsDropdown', e.target.value);
-                                  updateRow('particulars', e.target.value === 'Custom' ? '' : e.target.value);
+                                  const val = e.target.value;
+                                  updateRowMultiple({
+                                    particularsDropdown: val,
+                                    particulars: val === 'Custom' ? '' : val
+                                  });
                                 }} disabled={isReadOnly}>
                                 <option value="">Select</option>
                                 <option value="Ground Floor">Ground Floor</option>
