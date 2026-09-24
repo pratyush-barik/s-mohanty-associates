@@ -2897,10 +2897,25 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       number: 9,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const formatDate = (dateString: string) => {
+          if (!dateString) return '';
+          const parts = dateString.split('-');
+          if (parts.length === 3 && parts[0].length === 4) {
+            return `${parts[2]}-${parts[1]}-${parts[0]}`;
+          }
+          return dateString;
+        };
+
+        const vName = fields.bobTSNoVillage || '[Village]';
+        const pOffice = fields.bobWardTaluka || '[Post Office]';
+        const dName = fields.bobMandalDistrict || '[District]';
+        const generatedBackground = `The property is situated in a good developed Residential area of ${vName}, ${pOffice},${dName}`;
+
         const generatedPurpose = fields.bobPurposeOfValuation ? `${fields.bobPurposeOfValuation}. The Manager of above said bank is the Appointing authority.` : 'The Manager of above said bank is the Appointing authority.';
-        const appDateStr = fields.bobQuestionnaireAppointmentDate || '';
-        const valDateStr = fields.bobQuestionnaireValuationDate || fields.bobDateOfValuationMade || '';
-        const repDateStr = fields.bobAsOnDate || '';
+        
+        const appDateStr = formatDate(fields.bobQuestionnaireAppointmentDate || '');
+        const valDateStr = formatDate(fields.bobDateOfInspection || '');
+        const repDateStr = formatDate(fields.bobAsOnDate || '');
         const generatedDates = `Date of Appointment: ${appDateStr}\nValuation Date: ${valDateStr}\nDate of Report: ${repDateStr}`;
 
         const questionnaireItems = [
@@ -2920,6 +2935,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
 
         const getDisplayValue = (idx: number) => {
           if (qAnswers[idx]) return qAnswers[idx];
+          if (idx === 0) return generatedBackground;
           if (idx === 1) return generatedPurpose;
           if (idx === 4) return generatedDates;
           return '';
@@ -2936,9 +2952,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <Field label="Appointment Date">
                   <BaseDateInput value={fields.bobQuestionnaireAppointmentDate || ''} onChange={(val: string) => handleChange('bobQuestionnaireAppointmentDate', val)} disabled={isReadOnly} />
                 </Field>
-                <Field label="Valuation Date">
-                  <BaseDateInput value={fields.bobQuestionnaireValuationDate || ''} onChange={(val: string) => handleChange('bobQuestionnaireValuationDate', val)} disabled={isReadOnly} />
-                </Field>
+                <div />
               </div>
 
               <div className="overflow-x-auto">
