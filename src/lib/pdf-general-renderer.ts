@@ -1249,13 +1249,14 @@ export class PDFGeneralRenderer {
     rawAllRows: string[][],
     rawMerges: { sr: number; sc: number; er: number; ec: number }[],
     rawColWidths: number[],
-    cellOpts?: (ri: number, ci: number, isHeader: boolean, isSpannedHeader: boolean) => any
+    cellOpts?: (ri: number, ci: number, isHeader: boolean, isSpannedHeader: boolean) => any,
+    tableOpts?: { fontSize?: number }
   ): void {
     const { allRows, merges, colWidths } = this.trimEmptyGrid(rawAllRows, rawMerges, rawColWidths);
     if (!allRows || allRows.length === 0) return;
 
     const numCols = allRows[0].length;
-    const fontSize = 9;
+    const fontSize = tableOpts?.fontSize || FONT_SIZE;
     const padX = 4;
     const padY = 4;
     const DEFAULT_ROW_H = fontSize * LINE_HEIGHT + padY * 2 + 2;
@@ -1295,8 +1296,16 @@ export class PDFGeneralRenderer {
         const cellW = colPx.slice(ci, ci + colSpan).reduce((s, w) => s + w, 0);
         const text = row[ci] || '';
         const isHeader = ri === 0;
-        const lines = this.wrapText(text, cellW - padX * 2, fontSize, isHeader);
-        const needed = lines.length * fontSize * LINE_HEIGHT + padY * 2 + 2;
+        
+        // Fetch custom font size for height calculation if any
+        let customFontSize = fontSize;
+        if (cellOpts) {
+           const opts = cellOpts(ri, ci, isHeader, colSpan === numCols);
+           if (opts && opts.fontSize) customFontSize = opts.fontSize;
+        }
+
+        const lines = this.wrapText(text, cellW - padX * 2, customFontSize, isHeader);
+        const needed = lines.length * customFontSize * LINE_HEIGHT + padY * 2 + 2;
         if (needed > h) h = needed;
       }
       return h;
@@ -1333,7 +1342,7 @@ export class PDFGeneralRenderer {
           align: 'center' as const,
           vAlign: 'middle' as const,
           fillColor: LBL_BG,
-          bgOpacity: 0.45,
+          bgOpacity: 0.5, // Changed to 0.5 to exactly match drawSimpleRow
         };
         
         const customOpts = cellOpts ? cellOpts(ri, ci, isHeader, isSpannedHeader) : {};
