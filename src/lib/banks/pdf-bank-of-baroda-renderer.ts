@@ -549,7 +549,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     // Point 14: Dimensions
     const dimensions = this.fields.bobDimensions || {};
-    allRows.push(['14.\\n1', 'Dimensions of the site', '', '', '']);
+    allRows.push(['14.1', 'Dimensions of the site', '', '', '']);
     allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 6, ec: 0 }); // 14.1 vertically
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 4 });
     rIdx++;
@@ -581,7 +581,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       lon ? `Longitude: ${lon}` : '',
       coords ? `Coordinates: ${coords}` : ''
     ].filter(Boolean).join(', ');
-    allRows.push(['14.\n2', 'Latitude, Longitude and Coordinates of\nthe site', '', latLongStr || 'NA', '']);
+    allRows.push(['14.2', 'Latitude, Longitude and Coordinates of\nthe site', '', latLongStr || 'NA', '']);
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
     allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
     rIdx++;
