@@ -2819,29 +2819,38 @@ export default function BandhanHLLAP({
             <Section number={9} id="sec-final-valuation" title="Final Valuation Summary & Project Details (Points 35–40)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-medium text-slate-700">
+                  <div className="flex flex-wrap items-center justify-between gap-1 pb-1">
+                    <label className="block text-xs font-semibold text-slate-700">
                       35. Valuation of the property as on date:
                     </label>
-                    {(() => {
-                      const refVal = fields.totalMarketValue || fields.recommendedValueOfProperty;
-                      return refVal ? (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('valuationAsOnDate', refVal)}
-                          className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
-                          title="Sync with Market Value"
-                        >
-                          ↺ Sync (Referenced from Market Value): {refVal}
-                        </button>
-                      ) : null;
-                    })()}
+                    <div className="flex items-center gap-2">
+                      {parseNum(fields.valuationAsOnDate) > 0 && (
+                        <span className="text-[11px] font-semibold text-sky-900 bg-white/90 px-2 py-0.5 rounded border border-sky-200 shadow-2xs">
+                          ₹{formatCurrencyINR(parseNum(fields.valuationAsOnDate))}
+                        </span>
+                      )}
+                      {(() => {
+                        const rawRef = fields.totalMarketValue || fields.recommendedValueOfProperty;
+                        const numRef = parseNum(rawRef);
+                        return numRef > 0 ? (
+                          <button
+                            type="button"
+                            onClick={() => handleChange('valuationAsOnDate', String(numRef))}
+                            className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
+                            title="Sync with Market Value"
+                          >
+                            ↺ Sync (Referenced from Market Value): {numRef}
+                          </button>
+                        ) : null;
+                      })()}
+                    </div>
                   </div>
                   <input
                     type="text"
                     className={inputCls}
                     value={fields.valuationAsOnDate || ''}
-                    onChange={(e) => handleChange('valuationAsOnDate', e.target.value)}
+                    onChange={(e) => handleChange('valuationAsOnDate', sanitizePositiveFloat(e.target.value))}
+                    placeholder="0.00"
                     disabled={isReadOnly}
                   />
                 </div>
