@@ -16,6 +16,7 @@ import {
   BaseDateInput,
   BasePhotoBucketModal,
   BasePhotographsSection,
+  BaseMapsSection,
   DEFAULT_PHOTO_LABEL,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency } from '@/lib/numberToWords';
@@ -191,7 +192,7 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-final-valuation', title: '9. Final Valuation & Project (35–40)' },
   { id: 'sec-ndma', title: '10. NDMA Parameters (41)' },
   { id: 'sec-annexure-a', title: '11. Detailed DRC & Annexure' },
-  { id: 'sec-docs', title: '12. Document Enclosures' },
+  { id: 'sec-docs', title: '12. Maps & Documents' },
   { id: 'sec-photos', title: '13. Property Photographs' },
 ];
 
@@ -866,16 +867,42 @@ export default function BandhanHLLAP({
     }));
   };
 
-  // Enclosure Document Upload Helper
-  const handleEnclosureUpload = (fieldKey: 'rorImageUrl' | 'locationMapImageUrl' | 'bhuNakshaImageUrl' | 'guidelineValueImageUrl', e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
+  // Map Handlers for BaseMapsSection
+  const handleMapUpload = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    Array.from(files).forEach((file) => {
       const reader = new FileReader();
       reader.onload = (ev) => {
-        handleChange(fieldKey, ev.target?.result as string);
+        const dataUrl = ev.target?.result as string;
+        setFields(prev => {
+          const curr = Array.isArray(prev[fieldKey]) ? prev[fieldKey] : (prev[fieldKey] ? [prev[fieldKey]] : []);
+          return {
+            ...prev,
+            [fieldKey]: [...curr, dataUrl],
+          };
+        });
       };
       reader.readAsDataURL(file);
+    });
+  };
+
+  const handleMapRemove = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', idx?: number) => {
+    if (idx === undefined) {
+      setFields(prev => ({ ...prev, [fieldKey]: [] }));
+      return;
     }
+    setFields(prev => {
+      const curr = Array.isArray(prev[fieldKey]) ? prev[fieldKey] : (prev[fieldKey] ? [prev[fieldKey]] : []);
+      return {
+        ...prev,
+        [fieldKey]: curr.filter((_, i) => i !== idx),
+      };
+    });
+  };
+
+  const handleMapReorder = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', newImgs: string[]) => {
+    setFields(prev => ({ ...prev, [fieldKey]: newImgs }));
   };
 
   // Save Draft
@@ -4272,338 +4299,38 @@ export default function BandhanHLLAP({
               </div>
             </Section>
 
-            {/* 12. Documents & Maps */}
-            <Section number={12} id="sec-docs" title="Maps & Document Enclosures">
-              <div className="space-y-6">
-                {/* Enclosure 1: ROR Document */}
-                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">📜</span>
-                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
-                        Enclosure 1: ROR (Record of Rights) {fields.rorImageUrl ? '(Uploaded)' : ''}
-                      </h4>
-                    </div>
-                    {!isReadOnly && (
-                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
-                        {fields.rorImageUrl ? '🔄 Replace ROR Document' : '+ Add ROR Document'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleEnclosureUpload('rorImageUrl', e)}
-                          disabled={isReadOnly}
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  {fields.rorImageUrl ? (
-                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
-                      <img
-                        src={fields.rorImageUrl}
-                        alt="ROR Document"
-                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
-                      />
-                      {!isReadOnly && (
-                        <div className="flex justify-end w-full pt-2">
-                          <button
-                            type="button"
-                            onClick={() => handleChange('rorImageUrl', '')}
-                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
-                          >
-                            ✕ Remove ROR Document
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
-                      <span className="text-2xl mb-1">📄</span>
-                      <span className="text-xs font-semibold text-slate-700">No ROR document uploaded</span>
-                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleEnclosureUpload('rorImageUrl', e)}
-                        disabled={isReadOnly}
-                      />
-                    </label>
-                  )}
-                </div>
-
-                {/* Enclosure 2: GPS Location Map */}
-                <div className="space-y-4 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🛰️</span>
-                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
-                        Enclosure 2: GPS Location Map &amp; Satellite Preview
-                      </h4>
-                    </div>
-                    {!isReadOnly && (
-                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
-                        {fields.locationMapImageUrl ? '🔄 Replace Map Screenshot' : '+ Add Map Screenshot'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleEnclosureUpload('locationMapImageUrl', e)}
-                          disabled={isReadOnly}
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Live Satellite Preview */}
-                  <div className="space-y-2">
-                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                      Live Satellite &amp; Coordinate Preview
-                    </div>
-
-                    {(() => {
-                      const cleanLat = (fields.latitude || '').trim();
-                      const cleanLng = (fields.longitude || '').trim();
-                      const hasCoordinates = Boolean(cleanLat && cleanLng && !isNaN(Number(cleanLat)) && !isNaN(Number(cleanLng)));
-                      const cleanTechnicalAddress = (fields.legalAddress || '').trim();
-                      const cleanPropertyAddress = (fields.propertyAddress || '').trim();
-                      const effectiveAddress = cleanTechnicalAddress || cleanPropertyAddress;
-                      const queryParam = hasCoordinates ? `${cleanLat},${cleanLng}` : effectiveAddress;
-                      const encodedQuery = encodeURIComponent(queryParam);
-                      const hasQuery = hasCoordinates || effectiveAddress.length > 0;
-                      const googleMapsUrl = hasCoordinates
-                        ? `https://www.google.com/maps?q=${cleanLat},${cleanLng}&z=17&t=k`
-                        : `https://www.google.com/maps/search/${encodeURIComponent(effectiveAddress)}`;
-
-                      return hasQuery ? (
-                        <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-xs">
-                          <div className="bg-[#d5e8f5] px-3.5 py-1.5 flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
-                                📍 Live Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : `— ${cleanTechnicalAddress ? 'Legal Address' : 'Property Address'}`}
-                              </span>
-                            </div>
-                            <a
-                              href={googleMapsUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs font-semibold text-accent-500 hover:underline"
-                            >
-                              Open in Google Maps ↗
-                            </a>
-                          </div>
-                          <iframe
-                            src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
-                            width="100%"
-                            height="260"
-                            style={{ border: 0 }}
-                            allowFullScreen
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                            title="Property Location Map"
-                          />
-                        </div>
-                      ) : (
-                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
-                          Enter property address in section 2 or input GPS coordinates below to view live satellite map preview.
-                        </div>
-                      );
-                    })()}
-
-                    {/* Coordinates input block */}
-                    <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 space-y-2 mt-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-[#0f2038] flex items-center gap-1.5">
-                          🧭 GPS Coordinates Entry
-                        </span>
-                        <span className="text-[11px] text-slate-500 font-medium">
-                          Input latitude &amp; longitude to set precise map pin
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <Field label="Latitude (DD):">
-                          <input
-                            type="text"
-                            className={inputCls}
-                            placeholder="e.g. 20.2961"
-                            value={fields.latitude || ''}
-                            onChange={(e) => handleChange('latitude', sanitizePositiveFloat(e.target.value))}
-                            disabled={isReadOnly}
-                          />
-                        </Field>
-                        <Field label="Longitude (DD):">
-                          <input
-                            type="text"
-                            className={inputCls}
-                            placeholder="e.g. 85.8245"
-                            value={fields.longitude || ''}
-                            onChange={(e) => handleChange('longitude', sanitizePositiveFloat(e.target.value))}
-                            disabled={isReadOnly}
-                          />
-                        </Field>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Uploaded Satellite Screenshot for PDF */}
-                  <div className="pt-2 border-t border-slate-100">
-                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                      Screenshot for PDF Report
-                    </div>
-                    {fields.locationMapImageUrl ? (
-                      <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
-                        <img
-                          src={fields.locationMapImageUrl}
-                          alt="GPS Location Map Screenshot"
-                          className="max-h-72 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
-                        />
-                        {!isReadOnly && (
-                          <div className="flex justify-end w-full pt-2">
-                            <button
-                              type="button"
-                              onClick={() => handleChange('locationMapImageUrl', '')}
-                              className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
-                            >
-                              ✕ Remove Screenshot
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
-                        <span className="text-xl mb-1">🛰️</span>
-                        <span className="text-xs font-semibold text-slate-700">No static location map screenshot uploaded</span>
-                        <span className="text-[11px] text-slate-400 mt-0.5">Capture or upload screenshot of Google Satellite Map for PDF</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleEnclosureUpload('locationMapImageUrl', e)}
-                          disabled={isReadOnly}
-                        />
-                      </label>
-                    )}
-                  </div>
-                </div>
-
-                {/* Enclosure 4: Bhu Naksha / Cadastral Map */}
-                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🗺️</span>
-                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
-                        Enclosure 4: Bhu Naksha / Cadastral Map {fields.bhuNakshaImageUrl ? '(Uploaded)' : ''}
-                      </h4>
-                    </div>
-                    {!isReadOnly && (
-                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
-                        {fields.bhuNakshaImageUrl ? '🔄 Replace Bhu Naksha' : '+ Add Bhu Naksha Map'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleEnclosureUpload('bhuNakshaImageUrl', e)}
-                          disabled={isReadOnly}
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  {fields.bhuNakshaImageUrl ? (
-                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
-                      <img
-                        src={fields.bhuNakshaImageUrl}
-                        alt="Bhu Naksha Map"
-                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
-                      />
-                      {!isReadOnly && (
-                        <div className="flex justify-end w-full pt-2">
-                          <button
-                            type="button"
-                            onClick={() => handleChange('bhuNakshaImageUrl', '')}
-                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
-                          >
-                            ✕ Remove Bhu Naksha
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
-                      <span className="text-2xl mb-1">🗺️</span>
-                      <span className="text-xs font-semibold text-slate-700">No Bhu Naksha cadastral map uploaded</span>
-                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleEnclosureUpload('bhuNakshaImageUrl', e)}
-                        disabled={isReadOnly}
-                      />
-                    </label>
-                  )}
-                </div>
-
-                {/* Enclosure 5: Guideline Value Proof (Annexure-C) */}
-                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">📑</span>
-                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
-                        Enclosure 5 / Annexure-C: Guideline Value Proof {fields.guidelineValueImageUrl ? '(Uploaded)' : ''}
-                      </h4>
-                    </div>
-                    {!isReadOnly && (
-                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
-                        {fields.guidelineValueImageUrl ? '🔄 Replace Guideline Proof' : '+ Add Guideline Proof'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleEnclosureUpload('guidelineValueImageUrl', e)}
-                          disabled={isReadOnly}
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  {fields.guidelineValueImageUrl ? (
-                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
-                      <img
-                        src={fields.guidelineValueImageUrl}
-                        alt="Guideline Value Proof"
-                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
-                      />
-                      {!isReadOnly && (
-                        <div className="flex justify-end w-full pt-2">
-                          <button
-                            type="button"
-                            onClick={() => handleChange('guidelineValueImageUrl', '')}
-                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
-                          >
-                            ✕ Remove Guideline Proof
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
-                      <span className="text-2xl mb-1">📑</span>
-                      <span className="text-xs font-semibold text-slate-700">No guideline value proof uploaded</span>
-                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleEnclosureUpload('guidelineValueImageUrl', e)}
-                        disabled={isReadOnly}
-                      />
-                    </label>
-                  )}
-                </div>
-              </div>
-            </Section>
+            {/* 12. Maps & Documents */}
+            <BaseMapsSection
+              title="Maps & Documents"
+              sectionId="sec-docs"
+              sectionNumber={12}
+              locationMapImages={fields.locationMapImages || (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : [])}
+              mouzaMapImages={fields.mouzaMapImages || (fields.rorImageUrl ? [fields.rorImageUrl] : [])}
+              sketchMapImages={fields.sketchMapImages || (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : [])}
+              cadastralMapImages={fields.cadastralMapImages || (fields.bhuNakshaImageUrl ? [fields.bhuNakshaImageUrl] : [])}
+              latitude={fields.latitude}
+              longitude={fields.longitude}
+              technicalAddress={fields.legalAddress || ''}
+              propertyAddress={fields.propertyAddress || ''}
+              hasExternalCoordinatesField={true}
+              coordinatesSectionName="Section 2: Location & Address"
+              isReadOnly={isReadOnly}
+              uploading={saving}
+              onLatitudeChange={val => handleChange('latitude', val)}
+              onLongitudeChange={val => handleChange('longitude', val)}
+              onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
+              onLocationMapRemove={idx => handleMapRemove('locationMapImages', idx)}
+              onMouzaMapUpload={e => handleMapUpload('mouzaMapImages', e)}
+              onMouzaMapRemove={idx => handleMapRemove('mouzaMapImages', idx)}
+              onSketchMapUpload={e => handleMapUpload('sketchMapImages', e)}
+              onSketchMapRemove={idx => handleMapRemove('sketchMapImages', idx)}
+              onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
+              onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
+              onReorderLocationMap={newImgs => handleMapReorder('locationMapImages', newImgs)}
+              onReorderMouzaMap={newImgs => handleMapReorder('mouzaMapImages', newImgs)}
+              onReorderSketchMap={newImgs => handleMapReorder('sketchMapImages', newImgs)}
+              onReorderCadastralMap={newImgs => handleMapReorder('cadastralMapImages', newImgs)}
+            />
 
             {/* 13. Property Photographs */}
             <BasePhotographsSection

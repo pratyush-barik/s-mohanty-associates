@@ -429,6 +429,10 @@ export interface BandhanHLLAPReportFields {
   locationMapImageUrl?: string;
   bhuNakshaImageUrl?: string;
   guidelineValueImageUrl?: string;
+  locationMapImages?: string[];
+  mouzaMapImages?: string[];
+  sketchMapImages?: string[];
+  cadastralMapImages?: string[];
   propertyPhotos?: BandhanHLLAPPhoto[];
   propertyImages?: string[];
   propertyImageNames?: string[];
@@ -1439,19 +1443,29 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
    * Enclosures: ROR, Location Map, Photos, Bhu Naksha, Guideline Value Proof
    */
   private async drawEnclosures(fields: BandhanHLLAPReportFields): Promise<void> {
-    // 1. ROR Document Page
-    if (fields.rorImageUrl) {
-      this.addPage();
-      this.drawHeadingText('ROR', FONT_SIZE_TITLE, 'left');
-      await this.drawDocImage(fields.rorImageUrl, CONTENT_W, 600);
+    // 1. ROR / Mouza Document Pages
+    const rorList = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0)
+      ? fields.mouzaMapImages
+      : (fields.rorImageUrl ? [fields.rorImageUrl] : []);
+    for (const imgUrl of rorList) {
+      if (imgUrl) {
+        this.addPage();
+        this.drawHeadingText('ROR / MOUZA MAP', FONT_SIZE_TITLE, 'left');
+        await this.drawDocImage(imgUrl, CONTENT_W, 600);
+      }
     }
 
     // 2. GPS Location Map Page
-    if (fields.locationMapImageUrl) {
-      this.addPage();
-      this.drawHeadingText('GPS LOCATION OF THE PROPERTY:', FONT_SIZE_HEADER, 'left');
-      await this.drawDocImage(fields.locationMapImageUrl, CONTENT_W, 260);
-      this.cursorY += 15;
+    const locList = (fields.locationMapImages && fields.locationMapImages.length > 0)
+      ? fields.locationMapImages
+      : (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : []);
+    for (const imgUrl of locList) {
+      if (imgUrl) {
+        this.addPage();
+        this.drawHeadingText('GPS LOCATION OF THE PROPERTY:', FONT_SIZE_HEADER, 'left');
+        await this.drawDocImage(imgUrl, CONTENT_W, 260);
+        this.cursorY += 15;
+      }
     }
 
     // 3. Property Photographs Grid (with GPS stamps)
@@ -1473,17 +1487,27 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     }
 
     // 4. Bhu Naksha / Cadastral Map
-    if (fields.bhuNakshaImageUrl) {
-      this.addPage();
-      this.drawHeadingText('Bhu Naksha: -', FONT_SIZE_HEADER, 'left');
-      await this.drawDocImage(fields.bhuNakshaImageUrl, CONTENT_W, 580);
+    const cadastralList = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0)
+      ? fields.cadastralMapImages
+      : (fields.bhuNakshaImageUrl ? [fields.bhuNakshaImageUrl] : []);
+    for (const imgUrl of cadastralList) {
+      if (imgUrl) {
+        this.addPage();
+        this.drawHeadingText('Bhu Naksha / Cadastral Map: -', FONT_SIZE_HEADER, 'left');
+        await this.drawDocImage(imgUrl, CONTENT_W, 580);
+      }
     }
 
-    // 5. Guideline Value Proof Document (Annexure-C)
-    if (fields.guidelineValueImageUrl) {
-      this.addPage();
-      this.drawHeadingText('Annexure-C - Guide line value of the land', FONT_SIZE_HEADER, 'left');
-      await this.drawDocImage(fields.guidelineValueImageUrl, CONTENT_W, 600);
+    // 5. Guideline Value Proof Document / Sketch Map (Annexure-C)
+    const sketchList = (fields.sketchMapImages && fields.sketchMapImages.length > 0)
+      ? fields.sketchMapImages
+      : (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : []);
+    for (const imgUrl of sketchList) {
+      if (imgUrl) {
+        this.addPage();
+        this.drawHeadingText('Annexure-C - Guide line value of the land / Sketch Map', FONT_SIZE_HEADER, 'left');
+        await this.drawDocImage(imgUrl, CONTENT_W, 600);
+      }
     }
   }
 
