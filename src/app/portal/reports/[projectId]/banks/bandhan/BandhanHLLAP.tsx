@@ -138,10 +138,7 @@ export const computeBandhanValuation = (
 
   if (depRaw && !/^(nil|na|n\.a\.|none|0|0%)$/i.test(depRaw)) {
     const depNum = parseNum(depRaw);
-    if (depRaw.includes('%') || (depNum <= 100 && bldg > 1000)) {
-      depAmount = Math.round((((bldg * depNum) / 100) + Number.EPSILON) * 100) / 100;
-      depDescription = `${depNum}% on Building = Rs.${formatCurrencyINR(depAmount)}/-`;
-    } else {
+    if (depNum > 0) {
       depAmount = Math.round((depNum + Number.EPSILON) * 100) / 100;
       depDescription = `Rs.${formatCurrencyINR(depAmount)}/-`;
     }
@@ -2528,7 +2525,7 @@ export default function BandhanHLLAP({
                                     • <strong>Flat Component:</strong> {valCalc.flatVal > 0 ? `Rs.${fields.rateOfFlat}/sqft × ${fields.areaOfFlat} sqft = ` : ''}<span className={valCalc.flatVal > 0 ? 'font-semibold text-emerald-950' : 'text-slate-500'}>{valCalc.flatVal > 0 ? `Rs.${formatCurrencyINR(valCalc.flatVal)}/-` : 'Nil (Rs. 0)'}</span>
                                   </div>
                                   <div>
-                                    • <strong>Depreciation:</strong> {valCalc.depAmount > 0 ? <span className="text-rose-700 font-semibold">- Rs.{formatCurrencyINR(valCalc.depAmount)}/- ({valCalc.depDescription})</span> : <span className="text-slate-500">Nil (Rs. 0)</span>}
+                                    • <strong>Depreciation:</strong> {valCalc.depAmount > 0 ? <span className="text-rose-700 font-semibold">- Rs.{formatCurrencyINR(valCalc.depAmount)}/-</span> : <span className="text-slate-500">Nil (Rs. 0)</span>}
                                   </div>
                                   <div>
                                     • <strong>Calculated Result:</strong> <span className="font-bold text-emerald-800 font-mono text-xs">Rs.{formatCurrencyINR(valCalc.recommendedValue)}/-</span>
