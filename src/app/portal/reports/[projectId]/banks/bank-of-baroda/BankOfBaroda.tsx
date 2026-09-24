@@ -2847,11 +2847,18 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const affirmChecks = fields.bobAffirmationChecks || {};
         const updateCheck = (key: string, val: boolean) => handleChange('bobAffirmationChecks', { ...affirmChecks, [key]: val });
 
+        const formatDotDate = (dateStr?: string) => {
+          if (!dateStr) return '________';
+          const m = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+          if (m) return `${m[3]}.${m[2]}.${m[1]}`;
+          return dateStr;
+        };
+
         const affirmationItems: { key: string; text: string; hasNA?: boolean; hasInput?: boolean; inputKey?: string; }[] = [
           { key: 'a', text: 'I am citizen of India.' },
           { key: 'b', text: 'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.' },
-          { key: 'c', text: 'The information furnished in my valuation report is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.' },
-          { key: 'd', text: 'I have personally inspected the property & I have valued the property which is identified by documents & help of customer. The work is not sub-contracted to any other valuer & carried out by myself.' },
+          { key: 'c', text: `The information furnished in my valuation report dated ${formatDotDate(fields.bobAsOnDate)} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.` },
+          { key: 'd', text: `I have personally inspected the property on ${formatDotDate(fields.bobDateOfInspection)} & I have valued the property which is identified by documents & help of customer. The work is not sub-contracted to any other valuer & carried out by myself.` },
           { key: 'e', text: 'Valuation report is submitted in the format as prescribed by the bank.' },
           { key: 'f', text: 'I have not been depanelled by any other bank and in case any such depanelment by other banks during my empanelment with you, I will inform you within three days of such depanelment.' },
           { key: 'g', text: 'I have not been removed from service earlier.' },
