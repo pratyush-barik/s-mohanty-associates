@@ -2875,12 +2875,12 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           { key: 'r', text: 'I have read the hand book on policy, standards & procedure for real Estate valuation, 2011 of the IBA & this report is in conformity to the "Standards" enshrined for valuation in the part -B of the above handbook to the best of my knowledge.' },
           { key: 's', text: 'I have read the International Valuation Standards (IVS) & the report submitted to the Bank for the respective asset class is in conformity to the "Standards" enshrined for valuation in the IVS in "General Standards" & "Asset Standards" as applicable.' },
           { key: 't', text: 'I abide by the Model Code of Conduct for empanelment of valuer in the Bank.' },
-          { key: 'u', text: 'I am registered under Section 34 AB of the Wealth Tax Act,1957.', hasNA: true },
-          { key: 'v', text: 'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI)', hasNA: true },
+          { key: 'u', text: 'I am registered under Section 34 AB of the Wealth Tax Act,1957.' },
+          { key: 'v', text: 'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI)' },
           { key: 'w', text: 'My CIBIL Score and credit worthiness is as per Bank\'s guidelines.' },
           { key: 'x', text: 'I am the authorized official of the firm who is competent to sign this valuation report' },
           { key: 'y', text: 'I will undertake the valuation work on receipt of letter of Engagement generated from the System. (i.e. LLMS/LOS) only' },
-          { key: 'z', text: 'Further, I hereby provide the following information.', hasNA: true },
+          { key: 'z', text: 'Further, I hereby provide the following information.' },
         ];
 
         return (
