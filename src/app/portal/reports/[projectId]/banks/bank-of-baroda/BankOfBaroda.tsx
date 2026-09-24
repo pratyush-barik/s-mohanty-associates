@@ -675,6 +675,25 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
 
         const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 
+        const marketValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobPresentMarketValue || '0') || 0) : orSayMarket;
+        const realizableValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobRealizableValue || '0') || 0) : orSayRealizable;
+        const distressValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobForcedSaleValue || '0') || 0) : orSayDistress;
+        const govtValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobGovtValue || '0') || 0) : orSayGovt;
+
+        const buildingType = fields.bobBuildingType || '';
+        const areaSftFormatted = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(areaSft);
+        const calcLandExtent = minArea > 0
+          ? `(AC.${minArea} DEC i.e. ${areaSftFormatted} SFT)`
+          : '(AC.0.00 DEC i.e. 0.00 SFT)';
+        const landExtentStr = fields.bobLandTotalExtentEditOn ? (fields.bobLandTotalExtent || '') : calcLandExtent;
+
+        const defaultRemarks = `SUBJECT PROPERTY IS A ${buildingType}, LAND EXTENT OF ${landExtentStr}.\n\nAs a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only). The Realizable Value of the above Property is Rs.${fmtINR(realizableValNum)}/- (Rupees ${rupeesInWords(realizableValNum)} only). The book value of the above property as of Land is Rs.${fmtINR(govtValNum)}/- (Rupees ${rupeesInWords(govtValNum)} only) and the distress value Rs.${fmtINR(distressValNum)}/- (Rupees ${rupeesInWords(distressValNum)} only)`;
+        const currentRemarks = fields.bobValuerRemarks || defaultRemarks;
+
+        const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ________. We are satisfied that the fair and reasonable market value of the property is Rs. ${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only).`;
+        const currentEndorsement = fields.bobBankEndorsement || defaultEndorsement;
+
+
         return (
         <div className="animate-fade-in space-y-6">
           {/* Container 1: Bank & Report Header */}
@@ -2736,39 +2755,62 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
             </div>
 
             {/* ── Container 18: Valuer Sign-off & Bank Endorsement ── */}
-            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e0ffff' }}>
-              <h3 className="font-bold text-gray-700 border-b border-cyan-200 pb-2">Valuer Sign-off & Bank Endorsement</h3>
+            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#fdf5e6' }}>
+              <h3 className="font-bold text-gray-700 border-b border-orange-200 pb-2">Valuer Sign-off</h3>
+              
               <Field label="REMARKS">
-                <textarea className={inputCls} rows={3} value={fields.bobRemarks || ''} onChange={e => handleChange('bobRemarks', e.target.value)} disabled={isReadOnly} placeholder="Enter remarks..." />
+                <textarea className={inputCls} rows={6} value={currentRemarks} onChange={e => handleChange('bobValuerRemarks', e.target.value)} disabled={isReadOnly} />
+                {!fields.bobValuerRemarks && (
+                  <button type="button" onClick={() => handleChange('bobValuerRemarks', defaultRemarks)} disabled={isReadOnly} className="mt-2 text-sm text-blue-600 hover:underline">
+                    Load Default Remarks Template
+                  </button>
+                )}
               </Field>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <PrefillField label="Date:" value={fields.bobAsOnDate || ''} hoverText='>>Auto-populates from Cover Page Date<<' />
                 <Field label="Place:">
-                  <input className={inputCls} value={fields.bobSignOffPlace || ''} onChange={e => handleChange('bobSignOffPlace', e.target.value)} disabled={isReadOnly} />
+                  <input className={inputCls} value={fields.bobSignoffPlace || 'Bhubaneswar'} onChange={e => handleChange('bobSignoffPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
-                <PrefillField label="Date:" value={fields.bobDateOfValuationMade || ''} hoverText='>>Prefill from section 2, field "Date on which the valuation is made"<<.' />
               </div>
-              <Field label="Signature (Name and Official seal of the Approved Valuer)">
+
+              <Field label="Signature (Name and Official Seal of the Approved Valuer)">
                 <input type="file" accept="image/*" className={inputCls}
                   onChange={e => {
                     const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bobSignOffSignature', reader.result); reader.readAsDataURL(file); }
+                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bobSignoffSignature', reader.result); reader.readAsDataURL(file); }
                   }} disabled={isReadOnly} />
-                {fields.bobSignOffSignature && <img src={fields.bobSignOffSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
+                {fields.bobSignoffSignature && <img src={fields.bobSignoffSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
               </Field>
-              <Field label="The undersigned has inspected the property detailed in the Valuation Report. We are satisfied that the fair and reasonable market value of the property is as stated above.">
-                <textarea className={inputCls} rows={3} value={fields.bobBankEndorsementText || ''} onChange={e => handleChange('bobBankEndorsementText', e.target.value)} disabled={isReadOnly} />
+            </div>
+
+            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e6f7ff' }}>
+              <h3 className="font-bold text-gray-700 border-b border-blue-200 pb-2">Bank Endorsement</h3>
+              
+              <Field label='Endorsement Paragraph ("THE UNDERSIGNED...")'>
+                <textarea className={inputCls} rows={3} value={currentEndorsement} onChange={e => handleChange('bobBankEndorsement', e.target.value)} disabled={isReadOnly} />
+                {!fields.bobBankEndorsement && (
+                  <button type="button" onClick={() => handleChange('bobBankEndorsement', defaultEndorsement)} disabled={isReadOnly} className="mt-2 text-sm text-blue-600 hover:underline">
+                    Load Default Endorsement Template
+                  </button>
+                )}
               </Field>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <BaseDateInput label="Date:" value={fields.bobBankEndorsementDate || ''} onChange={val => handleChange('bobBankEndorsementDate', val)} disabled={isReadOnly} />
-                <Field label="Signature (Name of the Branch Manager with Official seal)">
-                  <input type="file" accept="image/*" className={inputCls}
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bobBankManagerSignature', reader.result); reader.readAsDataURL(file); }
-                    }} disabled={isReadOnly} />
-                  {fields.bobBankManagerSignature && <img src={fields.bobBankManagerSignature} alt="Branch Manager Signature" className="mt-2 max-h-24 border rounded" />}
+                <Field label="Date (Branch Manager):">
+                  <BaseDateInput value={fields.bobEndorsementDate || ''} onChange={val => handleChange('bobEndorsementDate', val)} disabled={isReadOnly} />
                 </Field>
+                <div />
               </div>
+
+              <Field label="Signature (Branch Manager)">
+                <input type="file" accept="image/*" className={inputCls}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bobBankManagerSignature', reader.result); reader.readAsDataURL(file); }
+                  }} disabled={isReadOnly} />
+                {fields.bobBankManagerSignature && <img src={fields.bobBankManagerSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
+              </Field>
             </div>
           </div>
         );
