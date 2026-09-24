@@ -2679,8 +2679,12 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const defaultRemarks = `SUBJECT PROPERTY IS A ${buildingType}, LAND EXTENT OF ${landExtentStr}.\n\nAs a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only). The Realizable Value of the above Property is Rs.${fmtINR(realizableValNum)}/- (Rupees ${rupeesInWords(realizableValNum)} only). The book value of the above property as of Land is Rs.${fmtINR(govtValNum)}/- (Rupees ${rupeesInWords(govtValNum)} only) and the distress value Rs.${fmtINR(distressValNum)}/- (Rupees ${rupeesInWords(distressValNum)} only)`;
         const currentRemarks = fields.bobValuerRemarks || defaultRemarks;
 
-        const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ________. We are satisfied that the fair and reasonable market value of the property is Rs. ${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only).`;
-        const currentEndorsement = fields.bobBankEndorsement || defaultEndorsement;
+        let parsedEndorsementDate = '';
+        if (fields.bobAsOnDate) {
+          const m = fields.bobAsOnDate.match(/(\d{4})-(\d{2})-(\d{2})/);
+          parsedEndorsementDate = m ? `${m[3]}-${m[2]}-${m[1]}` : fields.bobAsOnDate;
+        }
+        const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ${parsedEndorsementDate || '________'}. We are satisfied that the fair and reasonable market value of the property is Rs. ${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only).`;
 
         const ReadOnlyCell = ({ val, hoverTitle }: { val: number; hoverTitle: string }) => (
           <div className="relative group cursor-help" title={hoverTitle}>
