@@ -1015,7 +1015,9 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     } else {
     const buildingRows: any[] = this.fields.bobBuildingValuationRows || [];
     if (buildingRows.length > 0) {
-      const tableRows: string[][] = [];
+      let mergedData = [
+        ['PARTICULARS', 'PLINTH AREA', 'ROOF HT', 'AGE', 'RATE', 'EST. COST', 'DEPRECIATION', 'NET VALUE']
+      ];
       let totalNet = 0;
       for (const row of buildingRows) {
         const plinth = parseFloat(row.plinthArea || '0') || 0;
@@ -1024,7 +1026,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
         const depreciation = row.depreciationEditOn ? (parseFloat(row.depreciation || '0') || 0) : estCost * 0.01 * buildingAge;
         const netValue = row.netValueEditOn ? (parseFloat(row.netValue || '0') || 0) : estCost - depreciation;
         totalNet += netValue;
-        tableRows.push([
+        mergedData.push([
           row.particulars || row.particularsCustom || '',
           plinth.toFixed(2),
           row.roofHeight || '',
@@ -1035,15 +1037,25 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
           netValue.toFixed(2),
         ]);
       }
-      tableRows.push(['TOTAL', '', '', '', '', '', '', totalNet.toFixed(2)]);
+      mergedData.push(['TOTAL', '', '', '', '', '', '', totalNet.toFixed(2)]);
 
-      this.drawTable(
-        ['PARTICULARS', 'PLINTH AREA', 'ROOF HT', 'AGE', 'RATE', 'EST. COST', 'DEPRECIATION', 'NET VALUE'],
-        tableRows,
-        [CONTENT_W * 0.18, CONTENT_W * 0.10, CONTENT_W * 0.08, CONTENT_W * 0.07, CONTENT_W * 0.10, CONTENT_W * 0.16, CONTENT_W * 0.16, CONTENT_W * 0.15],
-        [7], [0], [],
-        [{ r: tableRows.length - 1, c: 0 }, { r: tableRows.length - 1, c: 7 }],
-        [{ r: tableRows.length - 1, c: 0 }, { r: tableRows.length - 1, c: 7 }]
+      let merges = [{ sr: mergedData.length - 1, sc: 0, er: mergedData.length - 1, ec: 6 }];
+
+      const styleOpts = (ri: number, ci: number, isHeader: boolean) => {
+        let align: 'left' | 'center' | 'right' = 'center';
+        if (ri > 0 && ci === 0 && ri < mergedData.length - 1) align = 'left';
+        if (ri === mergedData.length - 1 && ci === 0) align = 'right';
+        let bold = isHeader || ri === mergedData.length - 1;
+        let fillColor = isHeader ? '#e6f0ff' : undefined;
+        return { align, bold, fillColor, bgOpacity: 0.5 };
+      };
+
+      this.drawMergedTable(
+        mergedData,
+        merges,
+        [0.18, 0.10, 0.08, 0.07, 0.10, 0.16, 0.16, 0.15],
+        styleOpts,
+        { fontSize: 9 }
       );
     }
     }
