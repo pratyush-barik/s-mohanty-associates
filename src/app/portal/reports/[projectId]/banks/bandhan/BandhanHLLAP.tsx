@@ -2313,7 +2313,6 @@ export default function BandhanHLLAP({
                             rateOfCostOfConstruction: formattedRange,
                           }));
                         }}
-                        placeholder="e.g. 1500"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -2340,7 +2339,6 @@ export default function BandhanHLLAP({
                             rateOfCostOfConstruction: formattedRange,
                           }));
                         }}
-                        placeholder="e.g. 1800"
                         disabled={isReadOnly}
                       />
                     </Field>
