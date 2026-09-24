@@ -1017,7 +1017,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const buildingRows: any[] = this.fields.bobBuildingValuationRows || [];
     if (buildingRows.length > 0) {
       let mergedData = [
-        ['PARTICULARS', 'PLINTH AREA', 'ROOF HT', 'AGE', 'RATE', 'EST. COST', 'DEPRECIATION', 'NET VALUE']
+        ['PARTICULARS OF ITEMS', 'PLINTH AREA IN SQFT', 'ROOF HEIGHT', 'AGE OF THE BUILDING IN YEARS', 'REPLACEMENT RATE OF CONSTRUCTION', 'ESTIMATED REPLACEMENT COST OF CONSTRUCTION', 'DEPRECIATION AMOUNT IN RS. (1% per Anm)', 'NET VALUE AFTER DEPRECIATION']
       ];
       let totalNet = 0;
       for (const row of buildingRows) {
