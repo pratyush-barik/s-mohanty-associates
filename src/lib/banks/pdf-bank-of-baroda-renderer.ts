@@ -620,7 +620,33 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     rIdx++;
 
     this.drawSectionHeader('PART I — GENERAL', false, false);
-    this.drawMergedTable(allRows, allMerges, [0.05, 0.05, 0.35, 0.275, 0.275]);
+
+    const styleOpts = (ri: number, ci: number) => {
+      const row = allRows[ri];
+      const isSubTableHdr = row[3] === 'As per Sketch Map' || row[3] === 'A' || row[3] === 'As per the Deed';
+      
+      let align: 'left' | 'center' | 'right' = 'left';
+      let bold = false;
+      let fillColor: any = '#f4f4f4'; // equivalent to LBL_BG
+      let bgOpacity = 0.5;
+
+      if (isSubTableHdr && ci >= 3) {
+        align = 'center';
+        bold = true;
+      } else if (ci >= 3 && row[ci] !== '') {
+        // value columns (excluding empty spacers)
+        fillColor = undefined;
+        bold = true;
+      } else if (ci < 3) {
+        bold = false;
+      }
+      
+      // If it spans all columns (e.g. some headers in future), we could center it.
+      // But we just return the calculated styles.
+      return { align, bold, fillColor, bgOpacity };
+    };
+
+    this.drawMergedTable(allRows, allMerges, [0.05, 0.05, 0.35, 0.275, 0.275], styleOpts);
   }
 
   // ═══════════════════════════════════════════════════════════════════════

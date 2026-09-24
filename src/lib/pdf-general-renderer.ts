@@ -1249,6 +1249,7 @@ export class PDFGeneralRenderer {
     rawAllRows: string[][],
     rawMerges: { sr: number; sc: number; er: number; ec: number }[],
     rawColWidths: number[],
+    cellOpts?: (ri: number, ci: number, isHeader: boolean, isSpannedHeader: boolean) => any
   ): void {
     const { allRows, merges, colWidths } = this.trimEmptyGrid(rawAllRows, rawMerges, rawColWidths);
     if (!allRows || allRows.length === 0) return;
@@ -1325,14 +1326,20 @@ export class PDFGeneralRenderer {
 
         const isHeader = ri === 0;
         const isSpannedHeader = colSpan === numCols;
-        this.drawCell(x, this.cursorY, cellW, cellH, row[ci] || '', {
+        
+        const defaultOpts = {
           bold: isHeader || isSpannedHeader,
           fontSize,
-          align: 'center',
-          vAlign: 'middle',
+          align: 'center' as const,
+          vAlign: 'middle' as const,
           fillColor: LBL_BG,
           bgOpacity: 0.45,
-        });
+        };
+        
+        const customOpts = cellOpts ? cellOpts(ri, ci, isHeader, isSpannedHeader) : {};
+        const finalOpts = { ...defaultOpts, ...customOpts };
+
+        this.drawCell(x, this.cursorY, cellW, cellH, row[ci] || '', finalOpts);
 
         x += colW;
       }
