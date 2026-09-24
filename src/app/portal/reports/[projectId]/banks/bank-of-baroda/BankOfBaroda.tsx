@@ -2666,14 +2666,14 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 
         const ReadOnlyCell = ({ val, hoverTitle }: { val: number; hoverTitle: string }) => (
-          <div className="relative group cursor-help">
+          <div className="relative group cursor-help" title={hoverTitle}>
             <input 
               className={`${inputCls} bg-gray-50 text-gray-700 cursor-not-allowed`}
               value={`Rs. ${fmtINR(val)}`}
               readOnly 
               title={hoverTitle}
             />
-            <Lock className="w-3.5 h-3.5 text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 group-hover:text-emerald-700 transition-colors" title={hoverTitle} />
+            <Lock className="w-3.5 h-3.5 text-gray-400 absolute right-2 top-1/2 -translate-y-1/2 group-hover:text-emerald-700 transition-colors" />
           </div>
         );
 
