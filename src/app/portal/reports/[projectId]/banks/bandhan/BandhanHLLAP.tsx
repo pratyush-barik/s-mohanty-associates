@@ -163,11 +163,15 @@ export const computeBandhanValuation = (
         : recommendedValue);
 
   // Decimal percentage handling
-  const distressPct = fields.distressSalePct !== undefined && fields.distressSalePct !== '' ? parseNum(fields.distressSalePct) : 90;
-  const distressValue = Math.round((((baseMarketValue * distressPct) / 100) + Number.EPSILON) * 100) / 100;
+  const distressPct = (fields.distressSalePct !== undefined && fields.distressSalePct !== null && String(fields.distressSalePct).trim() !== '')
+    ? parseNum(fields.distressSalePct)
+    : 90;
+  const distressValue = Math.round((baseMarketValue * distressPct) / 100);
 
-  const realisablePct = fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? parseNum(fields.realisableValuePct) : 95;
-  const realisableValue = Math.round((((baseMarketValue * realisablePct) / 100) + Number.EPSILON) * 100) / 100;
+  const realisablePct = (fields.realisableValuePct !== undefined && fields.realisableValuePct !== null && String(fields.realisableValuePct).trim() !== '')
+    ? parseNum(fields.realisableValuePct)
+    : 95;
+  const realisableValue = Math.round((baseMarketValue * realisablePct) / 100);
 
   return {
     land,
@@ -450,9 +454,9 @@ export default function BandhanHLLAP({
       valuationGovtRate: raw.valuationGovtRate || '',
       valuationGovtRateLocked: raw.valuationGovtRateLocked !== undefined ? raw.valuationGovtRateLocked : true,
       distressSaleValue: raw.distressSaleValue || '',
-      distressSalePct: raw.distressSalePct !== undefined ? raw.distressSalePct : '90',
+      distressSalePct: (raw.distressSalePct !== undefined && raw.distressSalePct !== null && String(raw.distressSalePct).trim() !== '') ? String(raw.distressSalePct) : '90',
       realisableValue: raw.realisableValue || '',
-      realisableValuePct: raw.realisableValuePct !== undefined ? raw.realisableValuePct : '95',
+      realisableValuePct: (raw.realisableValuePct !== undefined && raw.realisableValuePct !== null && String(raw.realisableValuePct).trim() !== '') ? String(raw.realisableValuePct) : '95',
       projectCommencementDate: raw.projectCommencementDate || '',
       expectedCompletionDate: raw.expectedCompletionDate || '',
       areaOfLand: raw.areaOfLand || '',
@@ -744,6 +748,15 @@ export default function BandhanHLLAP({
           next.realizableValue = formatCurrencyINR(valCalc.realisableValue);
           changed = true;
         }
+      }
+
+      if (!prev.distressSalePct && prev.distressSalePct !== '0') {
+        next.distressSalePct = '90';
+        changed = true;
+      }
+      if (!prev.realisableValuePct && prev.realisableValuePct !== '0') {
+        next.realisableValuePct = '95';
+        changed = true;
       }
 
       // Govt Rate Valuation final value (Pt 36)
@@ -3143,16 +3156,13 @@ export default function BandhanHLLAP({
                         <label className="text-xs font-bold text-slate-800">
                           Distress Sale Value:
                         </label>
-                        <span className="text-[10.5px] px-2 py-0.5 rounded-full font-medium bg-sky-50 text-sky-700 border border-sky-200">
-                          ⚡ {fields.distressSalePct !== undefined && fields.distressSalePct !== '' ? fields.distressSalePct : '90'}% of Market Value
-                        </span>
                       </div>
                       <div className="grid grid-cols-12 gap-2.5 items-center">
                         <div className="col-span-4 relative">
                           <input
                             type="text"
                             className={inputCls}
-                            value={fields.distressSalePct !== undefined ? fields.distressSalePct : '90'}
+                            value={fields.distressSalePct !== undefined && fields.distressSalePct !== null ? fields.distressSalePct : '90'}
                             onChange={(e) => {
                               const cleanPct = sanitizePercentage(e.target.value);
                               const numPct = cleanPct !== '' ? parseNum(cleanPct) : null;
@@ -3181,7 +3191,9 @@ export default function BandhanHLLAP({
                             className={`${inputCls} bg-sky-50/70 font-bold text-sky-950 border-sky-300 cursor-not-allowed`}
                             value={(() => {
                               const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
-                              const pctStr = fields.distressSalePct !== undefined ? fields.distressSalePct : '90';
+                              const pctStr = (fields.distressSalePct !== undefined && fields.distressSalePct !== null && fields.distressSalePct !== '')
+                                ? String(fields.distressSalePct)
+                                : '90';
                               if (pctStr !== '' && baseNum > 0) {
                                 const p = parseNum(pctStr);
                                 const calcAmt = Math.round((baseNum * p) / 100);
@@ -3204,16 +3216,13 @@ export default function BandhanHLLAP({
                         <label className="text-xs font-bold text-slate-800">
                           Realizable Value:
                         </label>
-                        <span className="text-[10.5px] px-2 py-0.5 rounded-full font-medium bg-sky-50 text-sky-700 border border-sky-200">
-                          ⚡ {fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '95'}% of Market Value
-                        </span>
                       </div>
                       <div className="grid grid-cols-12 gap-2.5 items-center">
                         <div className="col-span-4 relative">
                           <input
                             type="text"
                             className={inputCls}
-                            value={fields.realisableValuePct !== undefined ? fields.realisableValuePct : '95'}
+                            value={fields.realisableValuePct !== undefined && fields.realisableValuePct !== null ? fields.realisableValuePct : '95'}
                             onChange={(e) => {
                               const cleanPct = sanitizePercentage(e.target.value);
                               const numPct = cleanPct !== '' ? parseNum(cleanPct) : null;
@@ -3242,7 +3251,9 @@ export default function BandhanHLLAP({
                             className={`${inputCls} bg-sky-50/70 font-bold text-sky-950 border-sky-300 cursor-not-allowed`}
                             value={(() => {
                               const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
-                              const pctStr = fields.realisableValuePct !== undefined ? fields.realisableValuePct : '95';
+                              const pctStr = (fields.realisableValuePct !== undefined && fields.realisableValuePct !== null && fields.realisableValuePct !== '')
+                                ? String(fields.realisableValuePct)
+                                : '95';
                               if (pctStr !== '' && baseNum > 0) {
                                 const p = parseNum(pctStr);
                                 const calcAmt = Math.round((baseNum * p) / 100);
@@ -3330,67 +3341,32 @@ export default function BandhanHLLAP({
                 </div>
 
                 {/* 39. Area of Land */}
-                <div className="rounded-xl border border-sky-200/80 bg-sky-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex flex-wrap items-center justify-between pb-2 border-b border-sky-200/60 gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-sans font-semibold text-sky-900 text-xs sm:text-sm">
-                        39. Area of Land
-                      </span>
-                    </div>
-                    <span className="text-[10.5px] font-semibold bg-sky-100 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
-                      ⚡ Referenced from Pt 26 Total Land Area
-                    </span>
-                  </div>
-
-                  <Field label="Area of Land (Read-only):">
-                    <input
-                      type="text"
-                      className={`${inputCls} bg-slate-100/90 text-slate-800 font-semibold cursor-not-allowed border-slate-300`}
-                      value={fields.propertyArea || fields.areaOfLand || 'NA'}
-                      readOnly
-                      disabled
-                    />
-                  </Field>
-                </div>
+                <Field label="39. Area of Land (Read-only):" span={2}>
+                  <input
+                    type="text"
+                    className={`${inputCls} bg-slate-100/90 text-slate-800 font-semibold cursor-not-allowed border-slate-300`}
+                    value={fields.propertyArea || fields.areaOfLand || 'NA'}
+                    readOnly
+                    disabled
+                  />
+                </Field>
 
                 {/* 40. Expected Cost of the Project */}
-                <div className="rounded-xl border border-sky-200/80 bg-sky-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex flex-wrap items-center justify-between pb-2 border-b border-sky-200/60 gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="font-sans font-semibold text-sky-900 text-xs sm:text-sm">
-                        40. Expected Cost of the Project
-                      </span>
-                    </div>
-                    {(() => {
-                      const costNum = parseNum(fields.expectedCostOfProject);
-                      return costNum > 0 ? (
-                        <span className="text-[11px] font-semibold text-sky-900 bg-white/90 px-2.5 py-0.5 rounded border border-sky-200 shadow-2xs">
-                          ₹{formatCurrencyINR(costNum)} ({formatIndianCurrency(costNum)})
-                        </span>
-                      ) : (
-                        <span className="text-[11px] font-medium text-slate-500 bg-white/90 px-2.5 py-0.5 rounded border border-slate-200">
-                          Blank defaults to NA
-                        </span>
-                      );
-                    })()}
-                  </div>
-
-                  <Field label="Expected Cost of the Project:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.expectedCostOfProject && fields.expectedCostOfProject !== 'NA' ? fields.expectedCostOfProject : ''}
-                      onChange={(e) => {
-                        const val = sanitizePositiveFloat(e.target.value);
-                        setFields(prev => ({
-                          ...prev,
-                          expectedCostOfProject: val,
-                        }));
-                      }}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                </div>
+                <Field label="40. Expected Cost of the Project:" span={2}>
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.expectedCostOfProject && fields.expectedCostOfProject !== 'NA' ? fields.expectedCostOfProject : ''}
+                    onChange={(e) => {
+                      const val = sanitizePositiveFloat(e.target.value);
+                      setFields(prev => ({
+                        ...prev,
+                        expectedCostOfProject: val,
+                      }));
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </Field>
               </div>
             </Section>
 
