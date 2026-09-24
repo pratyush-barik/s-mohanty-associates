@@ -1085,7 +1085,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       ['SL NO.', 'ITEM', 'AMOUNT'],
       amenityRows,
       [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
-      [2], [0], [],
+      [], [0], [],
       [{ r: amenityRows.length - 1, c: 1 }, { r: amenityRows.length - 1, c: 2 }],
       [{ r: amenityRows.length - 1, c: 1 }, { r: amenityRows.length - 1, c: 2 }]
     );
@@ -1116,7 +1116,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       ['SL NO.', 'ITEM', 'AMOUNT'],
       miscRows,
       [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
-      [2], [0], [],
+      [], [0], [],
       [{ r: miscRows.length - 1, c: 1 }, { r: miscRows.length - 1, c: 2 }],
       [{ r: miscRows.length - 1, c: 1 }, { r: miscRows.length - 1, c: 2 }]
     );
@@ -1147,7 +1147,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       ['SL NO.', 'ITEM', 'AMOUNT'],
       serviceRows,
       [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
-      [2], [0], [],
+      [], [0], [],
       [{ r: serviceRows.length - 1, c: 1 }, { r: serviceRows.length - 1, c: 2 }],
       [{ r: serviceRows.length - 1, c: 1 }, { r: serviceRows.length - 1, c: 2 }]
     );
@@ -1267,7 +1267,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       ['PARTICULARS', 'GOVT. VALUE', 'MARKET VALUE', 'REALIZABLE (95%)', 'DISTRESS (85%)'],
       tableRows,
       [CONTENT_W * 0.22, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195],
-      [1, 2, 3, 4], [0], [],
+      [], [0], [],
       // Bold the TOTAL and OR SAY rows
       [
         { r: tableRows.length - 2, c: 0 }, { r: tableRows.length - 2, c: 1 }, { r: tableRows.length - 2, c: 2 }, { r: tableRows.length - 2, c: 3 }, { r: tableRows.length - 2, c: 4 },
