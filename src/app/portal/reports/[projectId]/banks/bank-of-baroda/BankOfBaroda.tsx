@@ -2897,6 +2897,12 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
       number: 9,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const generatedPurpose = fields.bobPurposeOfValuation ? `${fields.bobPurposeOfValuation}. The Manager of above said bank is the Appointing authority.` : 'The Manager of above said bank is the Appointing authority.';
+        const appDateStr = fields.bobQuestionnaireAppointmentDate || '';
+        const valDateStr = fields.bobQuestionnaireValuationDate || fields.bobDateOfValuationMade || '';
+        const repDateStr = fields.bobAsOnDate || '';
+        const generatedDates = `Date of Appointment: ${appDateStr}\nValuation Date: ${valDateStr}\nDate of Report: ${repDateStr}`;
+
         const questionnaireItems = [
           'Background information of the asset being valued;',
           'Purpose of valuation and appointing authority',
@@ -2912,10 +2918,29 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         ];
         const qAnswers: string[] = fields.bobDeclarationQuestionnaire || new Array(11).fill('');
 
+        const getDisplayValue = (idx: number) => {
+          if (qAnswers[idx]) return qAnswers[idx];
+          if (idx === 1) return generatedPurpose;
+          if (idx === 4) return generatedDates;
+          return '';
+        };
+
         return (
           <div className="animate-fade-in space-y-6">
             <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#fafad2' }}>
-              <h3 className="font-bold text-gray-700 border-b border-yellow-300 pb-2">Engagement Details</h3>
+              <div className="flex justify-between items-center border-b border-yellow-300 pb-2">
+                <h3 className="font-bold text-gray-700">Engagement Details</h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white/50 p-4 rounded-lg border border-yellow-200 mb-2">
+                <Field label="Appointment Date">
+                  <BaseDateInput value={fields.bobQuestionnaireAppointmentDate || ''} onChange={(val: string) => handleChange('bobQuestionnaireAppointmentDate', val)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Valuation Date">
+                  <BaseDateInput value={fields.bobQuestionnaireValuationDate || ''} onChange={(val: string) => handleChange('bobQuestionnaireValuationDate', val)} disabled={isReadOnly} />
+                </Field>
+              </div>
+
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse border border-gray-300 text-sm">
                   <thead>
@@ -2931,8 +2956,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                         <td className="border border-gray-300 px-3 py-2 bg-white">{idx + 1}</td>
                         <td className="border border-gray-300 px-3 py-2 bg-white text-xs">{item}</td>
                         <td className="border border-gray-300 px-1 py-1">
-                          <textarea className={inputCls} rows={2}
-                            value={qAnswers[idx] || ''}
+                          <textarea className={inputCls} rows={idx === 4 ? 3 : 2}
+                            value={getDisplayValue(idx)}
                             onChange={e => {
                               const arr = [...qAnswers];
                               arr[idx] = e.target.value;
