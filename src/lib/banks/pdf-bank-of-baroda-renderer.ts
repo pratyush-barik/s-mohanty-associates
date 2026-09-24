@@ -1382,10 +1382,10 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   private drawBobSection8() {
     this.drawSectionHeader('DECLARATION FROM VALUERS (AFFIRMATIONS)');
 
-    const name = this.fv('bobAffirmationName');
-    const father = this.fv('bobAffirmationFatherName');
+    const name = this.fv('bobAffirmationName') || 'Satyajit Mohanty';
+    const father = this.fv('bobAffirmationFatherName') || 'Nityananda Mohanty';
     this.cursorY += 2;
-    const introText = `I Mr. ${name || '......................................'}, S/o: Mr. ${father || '......................................'} do hereby solemnly affirm and state that:`;
+    const introText = `I Mr. ${name}, S/o: Mr. ${father} do hereby solemnly affirm and state that:`;
     const introH = this.drawWrappedTextAt(introText, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
     this.cursorY += introH + 4;
 
@@ -1397,6 +1397,9 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     };
 
     const affirmChecks = this.fields.bobAffirmationChecks || {};
+    const panNumber = this.fv('bobAffirmationPAN');
+    const panText = panNumber ? `My PAN Card number as applicable is: ${panNumber}` : `My PAN Card number as applicable is:`;
+
     const affirmationItems: { key: string; text: string }[] = [
       { key: 'a', text: 'I am citizen of India.' },
       { key: 'b', text: 'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.' },
@@ -1412,7 +1415,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       { key: 'l', text: 'I have not undischarged insolvent.' },
       { key: 'm', text: 'I have not been levied a penalty under section 271J of Income-Tax Act, 1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.' },
       { key: 'n', text: 'I have not been convicted of an offence connected with any proceeding under the Income-Tax Act 1961, wealth Tax Act 1957 or Gift Tax Act 1958.' },
-      { key: 'o', text: `My PAN Card number as applicable is: ${this.fv('bobAffirmationPAN')}` },
+      { key: 'o', text: panText },
       { key: 'p', text: 'I undertake to keep you informed of any events or happenings which would make me ineligible for empanelment as a valuer.' },
       { key: 'q', text: 'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure' },
       { key: 'r', text: 'I have read the hand book on policy, standards & procedure for real Estate valuation, 2011 of the IBA & this report is in conformity to the "Standards" enshrined for valuation in the part -B of the above handbook to the best of my knowledge.' },
@@ -1438,14 +1441,36 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       this.checkPageBreak(20);
     });
 
+    const additionalInfo = this.fv('bobAffirmationAdditionalInfo');
+    if (affirmChecks['z'] !== false && additionalInfo) {
+      this.cursorY += 2;
+      const h = this.drawWrappedTextAt(additionalInfo, MARGIN_L + 15, this.cursorY, CONTENT_W - 15, { fontSize: FONT_SIZE_SMALL, italic: true });
+      this.cursorY += h + 6;
+      this.checkPageBreak(30);
+    }
+
     // Sign-off
     this.cursorY += 10;
-    this.drawKeyValueRow([
-      { label: 'Date:', value: formatReportDate(this.fv('bobDateOfValuationMade')), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
-      { label: 'Place:', value: this.fv('bobAffirmationPlace'), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
-    ]);
-    this.cursorY += 5;
-    this.drawSimpleRow('Signature of Approved Valuer', '(Signature & Official seal)');
+    this.checkPageBreak(60);
+    const affirmDate = formatReportDate(this.fv('bobAsOnDate'));
+    const affirmPlace = this.fv('bobAffirmationPlace') || 'Bhubaneswar';
+    
+    const sigBlockW = 200;
+    const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
+
+    this.drawTextAt(`Date: ${affirmDate}`, MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
+    this.drawTextAt(`Place: ${affirmPlace}`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
+    
+    this.cursorY += 40;
+
+    const valuerSig = this.fields.bobAffirmationSignature;
+    if (valuerSig && valuerSig.length > 50) {
+      // Future image rendering can go here if needed
+    }
+
+    this.drawTextAt(`Signature of Approved Valuer`, MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
+    this.drawTextAt(`(Signature & Official seal)`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
+    this.cursorY += 10;
   }
 
   // ═══════════════════════════════════════════════════════════════════════
