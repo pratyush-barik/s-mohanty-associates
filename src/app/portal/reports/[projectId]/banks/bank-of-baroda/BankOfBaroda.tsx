@@ -673,7 +673,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const forcedSaleValue = Math.round(calcTotalDistress / 1000) * 1000;
         const govtValue = Math.round(calcTotalGovt / 1000) * 1000;
 
-        const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
+        const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 
 
         return (
