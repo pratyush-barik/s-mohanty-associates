@@ -663,7 +663,20 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawBandhanRow('31.', 'Recommended rate of the plot', fields.plotRate ? `Rs.${fields.plotRate}/-` : '');
     this.drawBandhanRow('', 'Recommended value of the plot', fields.plotValueBreakdown || '');
     this.drawBandhanRow('32.', 'Recommended rate of cost of construction', fields.rateOfCostOfConstruction || '');
-    this.drawBandhanRow('33.', 'Depreciation of the construction', fields.depreciationOfConstruction || '');
+    let val33 = (fields.depreciationOfConstruction || '').trim();
+    if (val33) {
+      if (val33.startsWith('Rs.') || val33.startsWith('₹') || val33.toLowerCase() === 'nil') {
+        // already formatted or Nil
+      } else {
+        const num = parseNum(val33);
+        if (num > 0) {
+          val33 = `Rs.${formatCurrencyINR(num)}/-`;
+        } else if (num === 0 && (val33 === '0' || val33.toLowerCase() === 'nil')) {
+          val33 = 'Nil';
+        }
+      }
+    }
+    this.drawBandhanRow('33.', 'Depreciation of the construction', val33);
     this.drawBandhanRow('', 'Net value of the property (Land + Building)', fields.netValueOfProperty || '');
     this.drawBandhanRow('', 'Recommended rate of the flat', fields.rateOfFlat || '');
     this.drawBandhanRow('', 'Area of the flat', fields.areaOfFlat || '');

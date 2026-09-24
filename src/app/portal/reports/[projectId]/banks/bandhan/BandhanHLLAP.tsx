@@ -2407,44 +2407,26 @@ export default function BandhanHLLAP({
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                     <div className="sm:col-span-2 space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label className="block text-xs font-medium text-slate-700">
-                          Depreciation of Construction:
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Depreciation of Construction (Amount in Rs.):
                         </label>
-                        <div className="flex items-center gap-1">
-                          {['Nil', '5%', '10%', '15%', '20%', '25%'].map((chip) => (
-                            <button
-                              key={chip}
-                              type="button"
-                              onClick={() => handleChange('depreciationOfConstruction', chip === 'Nil' ? 'Nil' : chip)}
-                              disabled={isReadOnly}
-                              className={`text-[10px] px-1.5 py-0.5 rounded font-medium transition-colors cursor-pointer ${
-                                (fields.depreciationOfConstruction || '').toLowerCase() === chip.toLowerCase()
-                                  ? 'bg-emerald-700 text-white font-bold'
-                                  : 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-200'
-                              }`}
-                            >
-                              {chip}
-                            </button>
-                          ))}
-                          {!isReadOnly && fields.depreciationOfConstruction && (
-                            <button
-                              type="button"
-                              onClick={() => handleChange('depreciationOfConstruction', '')}
-                              className="text-[10px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 cursor-pointer"
-                              title="Clear value"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
+                        {parseNum(fields.depreciationOfConstruction) > 0 && (
+                          <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                            ₹{formatCurrencyINR(parseNum(fields.depreciationOfConstruction))}
+                          </span>
+                        )}
                       </div>
                       <input
                         type="text"
                         className={inputCls}
                         value={fields.depreciationOfConstruction || ''}
-                        onChange={(e) => handleChange('depreciationOfConstruction', sanitizePercentage(e.target.value))}
+                        onChange={(e) => handleChange('depreciationOfConstruction', sanitizePositiveFloat(e.target.value))}
+                        placeholder="e.g. 0 or 250000 (Amount in Rs.)"
                         disabled={isReadOnly}
                       />
+                      <p className="text-[11px] text-slate-500">
+                        Direct depreciation amount in Rupees deducted from building valuation (enter 0 for Nil).
+                      </p>
                     </div>
 
                     {/* Net Value of Property (Land + Building) - Divided into Land + Building = Total */}
