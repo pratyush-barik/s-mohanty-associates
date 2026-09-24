@@ -2623,7 +2623,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           { 
             label: 'AMENITIES', 
             key: 'amenities', 
-            govtVal: 0, 
+            govtVal: amenitiesMarketValue, 
             marketVal: amenitiesMarketValue,
             govtHover: '>>Auto-calculated from preceding grid total<<',
             marketHover: '>>Auto-calculated from preceding grid total<<'
@@ -2631,7 +2631,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           { 
             label: 'MISCELLANEOUS', 
             key: 'miscellaneous', 
-            govtVal: 0, 
+            govtVal: miscMarketValue, 
             marketVal: miscMarketValue,
             govtHover: '>>Auto-calculated from preceding grid total<<',
             marketHover: '>>Auto-calculated from preceding grid total<<'
@@ -2639,7 +2639,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
           { 
             label: 'SERVICES', 
             key: 'services', 
-            govtVal: 0, 
+            govtVal: servicesMarketValue, 
             marketVal: servicesMarketValue,
             govtHover: '>>Auto-calculated from preceding grid total<<',
             marketHover: '>>Auto-calculated from preceding grid total<<'

@@ -262,7 +262,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const miscMarketValue = Array.from({ length: 4 }, (_, i) => parseFloat(this.fv(`bobMisc_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
     const servicesMarketValue = Array.from({ length: 5 }, (_, i) => parseFloat(this.fv(`bobService_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
 
-    const calcTotalGovt = landGovtValue;
+    const calcTotalGovt = landGovtValue + amenitiesMarketValue + miscMarketValue + servicesMarketValue;
     const calcTotalMarket = landMarketValue + buildingMarketValue + amenitiesMarketValue + miscMarketValue + servicesMarketValue;
     const calcTotalRealizable = calcTotalMarket * 0.95;
     const calcTotalDistress = calcTotalMarket * 0.85;
