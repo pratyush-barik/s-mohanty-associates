@@ -508,19 +508,19 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     rIdx++;
 
     // Point 10
-    allRows.push(['10.', 'Coming under Corporation limit/ Village\\nPanchayat / Municipality', '', this.fv('bobCorporationLimit') || 'NA', '']);
+    allRows.push(['10.', 'Coming under Corporation limit/ Village Panchayat / Municipality', '', this.fv('bobCorporationLimit') || 'NA', '']);
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
     allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
     rIdx++;
 
     // Point 11
-    allRows.push(['11.', 'Whether covered under any State /\\nCentral Govt. enactments (e.g. Urban\\nLand Ceiling Act) or notified under\\nagency area / scheduled area /\\ncantonment area', '', this.fv('bobCoveredUnderEnactments') || 'NA', '']);
+    allRows.push(['11.', 'Whether covered under any State / Central Govt. enactments (e.g. Urban Land Ceiling Act) or notified under agency area / scheduled area / cantonment area', '', this.fv('bobCoveredUnderEnactments') || 'NA', '']);
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
     allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
     rIdx++;
 
     // Point 12
-    allRows.push(['12.', 'In case it is an agricultural land, any\\nconversion to house site plots is\\ncontemplated', '', this.fv('bobAgriculturalConversion') || 'NA', '']);
+    allRows.push(['12.', 'In case it is an agricultural land, any conversion to house site plots is contemplated', '', this.fv('bobAgriculturalConversion') || 'NA', '']);
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
     allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
     rIdx++;
