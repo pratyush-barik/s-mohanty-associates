@@ -1641,7 +1641,7 @@ export default function BandhanHLLAP({
                               className="ml-1 text-indigo-600 hover:text-indigo-900 underline font-medium cursor-pointer"
                               title="Sync with Point 21"
                             >
-                              ↺ Sync with Pt 21
+                              ↺ Sync (Referenced from Pt 21)
                             </button>
                           )}
                         </div>
@@ -1682,7 +1682,7 @@ export default function BandhanHLLAP({
                         className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
                         title="Sync from Pt 39 Area of Land"
                       >
-                        ↺ Sync Pt 39: {fields.areaOfLand}
+                        ↺ Sync (Referenced from Pt 39): {fields.areaOfLand}
                       </button>
                     )}
                   </div>
@@ -2510,7 +2510,7 @@ export default function BandhanHLLAP({
                                     className="text-[11px] text-emerald-700 hover:text-emerald-900 font-medium flex items-center gap-1 bg-emerald-100/70 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors cursor-pointer"
                                     title="Auto-calculate Recommended Value"
                                   >
-                                    ↺ Auto: {formatCurrencyINR(valCalc.recommendedValue)}
+                                    ↺ Sync (Referenced from Valuation Formula): ₹{formatCurrencyINR(valCalc.recommendedValue)}
                                   </button>
                                 )}
                               </div>
@@ -2580,7 +2580,7 @@ export default function BandhanHLLAP({
                                     className="text-[11px] text-emerald-700 hover:text-emerald-900 font-medium flex items-center gap-1 bg-emerald-100/70 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors cursor-pointer"
                                     title="Sync with Recommended Value"
                                   >
-                                    ↺ Sync from Recommended: {formatCurrencyINR(refNum)}
+                                    ↺ Sync (Referenced from Recommended Value): ₹{formatCurrencyINR(refNum)}
                                   </button>
                                 )}
                               </div>
@@ -2799,7 +2799,7 @@ export default function BandhanHLLAP({
                           className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
                           title="Sync with Market Value"
                         >
-                          ↺ Sync: {refVal}
+                          ↺ Sync (Referenced from Market Value): {refVal}
                         </button>
                       ) : null;
                     })()}
@@ -3239,7 +3239,7 @@ export default function BandhanHLLAP({
                         className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
                         title="Sync from Pt 13 Property Area"
                       >
-                        ↺ Sync Pt 13: {fields.propertyArea} sqft
+                        ↺ Sync (Referenced from Pt 26 Area): {fields.propertyArea} sqft
                       </button>
                     )}
                   </div>
@@ -3550,7 +3550,7 @@ export default function BandhanHLLAP({
                             className="ml-1 text-indigo-600 hover:text-indigo-900 underline font-medium cursor-pointer"
                             title="Reset to Beams and Slabs"
                           >
-                            ↺ Sync
+                            ↺ Sync (Referenced from Pt 21)
                           </button>
                         )}
                       </div>
@@ -3853,7 +3853,7 @@ export default function BandhanHLLAP({
                             className="ml-1 text-indigo-600 hover:text-indigo-900 underline font-medium cursor-pointer"
                             title="Sync with Pt 26"
                           >
-                            ↺ Sync
+                            ↺ Sync (Referenced from Pt 26 Floor Levels)
                           </button>
                         )}
                       </div>
@@ -3964,7 +3964,7 @@ export default function BandhanHLLAP({
                             className="ml-1 text-indigo-600 hover:text-indigo-900 underline font-medium cursor-pointer"
                             title="Sync with Pt 1"
                           >
-                            ↺ Sync
+                            ↺ Sync (Referenced from Pt 1)
                           </button>
                         )}
                       </div>
@@ -4043,7 +4043,7 @@ export default function BandhanHLLAP({
                             className="ml-1 text-indigo-600 hover:text-indigo-900 underline font-medium cursor-pointer"
                             title="Sync with Pt 21"
                           >
-                            ↺ Sync
+                            ↺ Sync (Referenced from Pt 21)
                           </button>
                         )}
                       </div>
