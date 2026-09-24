@@ -805,16 +805,20 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">PRESENT MARKET VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1" title=">>Auto-populates from the TOTAL ABSTRACT grid (OR SAY row)<<">
+                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Auto-calculated from TOTAL ABSTRACT (OR SAY row) - MARKET VALUE IN RS.<<' : undefined}>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
                     <input
                       type="text"
-                      className={`${inputCls} bg-gray-100 cursor-not-allowed font-bold text-gray-700`}
-                      value={`RS. ${fmtINR(presentMarketValue)}`}
-                      readOnly
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
+                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobPresentMarketValue || '') : fmtINR(presentMarketValue)}
+                      onChange={(e) => handleChange('bobPresentMarketValue', e.target.value.replace(/[^0-9.]/g, ''))}
+                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
                     />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
-                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                    </div>
+                    {!fields.bobEnableCoverPageValueEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -823,16 +827,20 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">REALIZABLE VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1" title=">>Auto-populates from the TOTAL ABSTRACT grid (OR SAY row)<<">
+                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Auto-calculated from TOTAL ABSTRACT (OR SAY row) - REALIZABLE VALUE (95%)<<' : undefined}>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
                     <input
                       type="text"
-                      className={`${inputCls} bg-gray-100 cursor-not-allowed font-bold text-gray-700`}
-                      value={`RS. ${fmtINR(realizableValue)}`}
-                      readOnly
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
+                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobRealizableValue || '') : fmtINR(realizableValue)}
+                      onChange={(e) => handleChange('bobRealizableValue', e.target.value.replace(/[^0-9.]/g, ''))}
+                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
                     />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
-                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                    </div>
+                    {!fields.bobEnableCoverPageValueEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -841,16 +849,20 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">FORCED SALE VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1" title=">>Auto-populates from the TOTAL ABSTRACT grid (OR SAY row)<<">
+                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Auto-calculated from TOTAL ABSTRACT (OR SAY row) - DISTRESS VALUE (85%)<<' : undefined}>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
                     <input
                       type="text"
-                      className={`${inputCls} bg-gray-100 cursor-not-allowed font-bold text-gray-700`}
-                      value={`RS. ${fmtINR(forcedSaleValue)}`}
-                      readOnly
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
+                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobForcedSaleValue || '') : fmtINR(forcedSaleValue)}
+                      onChange={(e) => handleChange('bobForcedSaleValue', e.target.value.replace(/[^0-9.]/g, ''))}
+                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
                     />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
-                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                    </div>
+                    {!fields.bobEnableCoverPageValueEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -859,16 +871,20 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <span className="text-sm font-medium text-gray-700">GOVT. VALUE</span>
                 </div>
                 <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1" title=">>Auto-populates from the TOTAL ABSTRACT grid (OR SAY row)<<">
+                  <div className="relative mt-1" title={!fields.bobEnableCoverPageValueEdit ? '>>Auto-calculated from TOTAL ABSTRACT (OR SAY row) - GOVT. VALUE IN RS.<<' : undefined}>
+                    <span className={`absolute inset-y-0 left-0 flex items-center pl-3 text-sm font-bold ${!fields.bobEnableCoverPageValueEdit ? 'text-gray-500' : 'text-gray-500'}`}>RS.</span>
                     <input
                       type="text"
-                      className={`${inputCls} bg-gray-100 cursor-not-allowed font-bold text-gray-700`}
-                      value={`RS. ${fmtINR(govtValue)}`}
-                      readOnly
+                      className={`${inputCls} pl-10 pr-8 ${!fields.bobEnableCoverPageValueEdit ? 'bg-gray-100 cursor-not-allowed font-bold text-gray-700' : 'bg-white'}`}
+                      value={fields.bobEnableCoverPageValueEdit ? (fields.bobGovtValue || '') : fmtINR(govtValue)}
+                      onChange={(e) => handleChange('bobGovtValue', e.target.value.replace(/[^0-9.]/g, ''))}
+                      readOnly={isReadOnly || !fields.bobEnableCoverPageValueEdit}
                     />
-                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
-                      <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
-                    </div>
+                    {!fields.bobEnableCoverPageValueEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
