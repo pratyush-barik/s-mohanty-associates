@@ -330,6 +330,7 @@ export interface BandhanHLLAPReportFields {
   govtRateLand?: string;
   govtLandArea?: string;
   valuationGovtRate?: string;
+  valuationGovtRateLocked?: boolean;
   distressSaleValue?: string;
   distressSalePct?: string;
   distressSaleLocked?: boolean;
@@ -715,8 +716,15 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
         if (num > 0) val35 = `Rs.${formatCurrencyINR(num)}/-`;
       }
     }
-    this.drawBandhanRow('35.', 'Valuation of the property as on date', val35);
-    this.drawBandhanRow('36.', 'Valuation as per govt. rates (Land)', fields.valuationGovtRate || '');
+    let val36 = (fields.valuationGovtRate || '').trim();
+    if (!val36 && fields.govtRateLand) {
+      const area = parseNum(fields.govtLandArea || fields.propertyArea || fields.areaOfLand);
+      const rate = parseNum(fields.govtRateLand);
+      if (area > 0 && rate > 0) {
+        val36 = `${fields.govtLandArea || fields.propertyArea || fields.areaOfLand} * Rs.${fields.govtRateLand}/- = Rs.${formatCurrencyINR(area * rate)}/-`;
+      }
+    }
+    this.drawBandhanRow('36.', 'Valuation as per govt. rates (Land)', val36);
     this.drawBandhanRow('37.', 'Distress sale value', fields.distressSaleValue || '');
     this.drawBandhanRow('', 'Realisable Value', fields.realisableValue || '');
     const val38 = formatCommencementCompletion(fields.projectCommencementDate, fields.expectedCompletionDate, fields.dateCommencementCompletion);

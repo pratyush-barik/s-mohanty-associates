@@ -401,6 +401,7 @@ export default function BandhanHLLAP({
       govtRateLand: raw.govtRateLand || '',
       govtLandArea: raw.govtLandArea || raw.propertyArea || raw.areaOfLand || '',
       valuationGovtRate: raw.valuationGovtRate || '',
+      valuationGovtRateLocked: raw.valuationGovtRateLocked !== undefined ? raw.valuationGovtRateLocked : true,
       distressSaleValue: raw.distressSaleValue || '',
       distressSalePct: raw.distressSalePct !== undefined ? raw.distressSalePct : '90',
       realisableValue: raw.realisableValue || '',
@@ -2866,87 +2867,189 @@ export default function BandhanHLLAP({
                   />
                 </div>
 
-                {/* 36. Valuation as per govt. rates (Land) - Area and Rate inputs with Auto-calculation */}
+                {/* 36. Valuation as per Govt. Rates (Land) */}
                 <div className="rounded-xl border border-sky-200/80 bg-sky-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-sky-200/60">
+                  <div className="flex flex-wrap items-center justify-between pb-2 border-b border-sky-200/60 gap-2">
                     <div className="flex items-center gap-2">
                       <span className="font-sans font-semibold text-sky-900 text-xs sm:text-sm">
                         36. Valuation as per Govt. Rates (Land)
                       </span>
                     </div>
                     {(() => {
-                      const rate = parseNum(fields.govtRateLand);
-                      const area = parseNum(fields.govtLandArea || fields.propertyArea || fields.areaOfLand);
-                      const calcVal = (rate > 0 && area > 0) ? rate * area : 0;
-                      const calcText = calcVal > 0
-                        ? `Rs.${fields.govtRateLand}/- Per sqft * ${fields.govtLandArea || fields.propertyArea || fields.areaOfLand}sqft. = Rs.${formatCurrencyINR(calcVal)}/-`
-                        : '';
-                      return calcText ? (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('valuationGovtRate', calcText)}
-                          className="text-xs text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2.5 py-1 rounded border border-sky-200 transition-colors cursor-pointer"
-                          title="Auto-calculate Govt rate valuation"
-                        >
-                          ↻ Auto-calc: Rs.{formatCurrencyINR(calcVal)}/-
-                        </button>
+                      const areaStr = fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '');
+                      const areaNum = parseNum(areaStr);
+                      const rateNum = parseNum(fields.govtRateLand);
+                      const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
+                      return calcVal > 0 ? (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-semibold text-sky-900 bg-white/90 px-2.5 py-0.5 rounded border border-sky-200 shadow-2xs">
+                            ₹{formatCurrencyINR(calcVal)} ({formatIndianCurrency(calcVal)})
+                          </span>
+                        </div>
                       ) : null;
                     })()}
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <Field label="Govt. Land Rate (Rs./sqft):">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.govtRateLand || ''}
-                        onChange={(e) => {
-                          const val = sanitizePositiveFloat(e.target.value);
-                          const rateNum = parseNum(val);
-                          const areaVal = fields.govtLandArea || fields.propertyArea || fields.areaOfLand || '';
-                          const areaNum = parseNum(areaVal);
-                          const calcVal = (rateNum > 0 && areaNum > 0) ? rateNum * areaNum : 0;
-                          setFields(prev => ({
-                            ...prev,
-                            govtRateLand: val,
-                            valuationGovtRate: calcVal > 0 ? `Rs.${val}/- Per sqft * ${areaVal}sqft. = Rs.${formatCurrencyINR(calcVal)}/-` : prev.valuationGovtRate,
-                          }));
-                        }}
-                        disabled={isReadOnly}
-                      />
-                    </Field>
-
-                    <Field label="Land Area for Govt. Valuation (sqft):">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.govtLandArea || fields.propertyArea || fields.areaOfLand || ''}
-                        onChange={(e) => {
-                          const val = sanitizePositiveFloat(e.target.value);
-                          const areaNum = parseNum(val);
-                          const rateVal = fields.govtRateLand || '';
-                          const rateNum = parseNum(rateVal);
-                          const calcVal = (rateNum > 0 && areaNum > 0) ? rateNum * areaNum : 0;
-                          setFields(prev => ({
-                            ...prev,
-                            govtLandArea: val,
-                            valuationGovtRate: calcVal > 0 ? `Rs.${rateVal}/- Per sqft * ${val}sqft. = Rs.${formatCurrencyINR(calcVal)}/-` : prev.valuationGovtRate,
-                          }));
-                        }}
-                        disabled={isReadOnly}
-                      />
-                    </Field>
-
-                    <div className="sm:col-span-2">
-                      <Field label="Valuation as per Govt. Rates (Result Statement / Editable):">
-                        <textarea
-                          rows={2}
+                  {/* Horizontal Formula Row: _______ * ________ = ________ */}
+                  <div className="rounded-lg border border-sky-200/90 bg-white/80 p-3.5 sm:p-4 space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-3 items-center">
+                      {/* Box 1: Land Area (sqft) */}
+                      <div className="sm:col-span-3 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-[11px] font-semibold text-slate-700">
+                            Land Area (sqft):
+                          </label>
+                          <span className="text-[9.5px] font-medium text-sky-700 bg-sky-50 px-1 py-0.5 rounded border border-sky-200">
+                            Pt 26 / 39
+                          </span>
+                        </div>
+                        <input
+                          type="text"
                           className={inputCls}
-                          value={fields.valuationGovtRate || ''}
-                          onChange={(e) => handleChange('valuationGovtRate', e.target.value)}
+                          value={fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '')}
+                          onChange={(e) => {
+                            const newArea = sanitizePositiveFloat(e.target.value);
+                            const rateStr = fields.govtRateLand || '';
+                            const areaNum = parseNum(newArea);
+                            const rateNum = parseNum(rateStr);
+                            const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
+                            const calcFormula = (newArea && rateNum > 0)
+                              ? `${newArea} * Rs.${rateStr}/- = Rs.${formatCurrencyINR(calcVal)}/-`
+                              : '';
+                            setFields(prev => ({
+                              ...prev,
+                              govtLandArea: newArea,
+                              valuationGovtRate: prev.valuationGovtRateLocked !== false ? (calcFormula || prev.valuationGovtRate) : prev.valuationGovtRate,
+                            }));
+                          }}
+                          placeholder="e.g. 10890"
                           disabled={isReadOnly}
                         />
-                      </Field>
+                      </div>
+
+                      {/* Multiply sign * */}
+                      <div className="sm:col-span-1 flex items-center justify-center text-xl font-black text-sky-700 pt-1 sm:pt-4">
+                        *
+                      </div>
+
+                      {/* Box 2: Govt. Land Rate (Rs./sqft) */}
+                      <div className="sm:col-span-3 space-y-1">
+                        <label className="block text-[11px] font-semibold text-slate-700">
+                          Govt. Rate (Rs./sqft):
+                        </label>
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.govtRateLand || ''}
+                          onChange={(e) => {
+                            const newRate = sanitizePositiveFloat(e.target.value);
+                            const areaStr = fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '');
+                            const areaNum = parseNum(areaStr);
+                            const rateNum = parseNum(newRate);
+                            const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
+                            const calcFormula = (areaStr && rateNum > 0)
+                              ? `${areaStr} * Rs.${newRate}/- = Rs.${formatCurrencyINR(calcVal)}/-`
+                              : '';
+                            setFields(prev => ({
+                              ...prev,
+                              govtRateLand: newRate,
+                              valuationGovtRate: prev.valuationGovtRateLocked !== false ? (calcFormula || prev.valuationGovtRate) : prev.valuationGovtRate,
+                            }));
+                          }}
+                          placeholder="e.g. 1800"
+                          disabled={isReadOnly}
+                        />
+                      </div>
+
+                      {/* Equal sign = */}
+                      <div className="sm:col-span-1 flex items-center justify-center text-xl font-black text-sky-700 pt-1 sm:pt-4">
+                        =
+                      </div>
+
+                      {/* Box 3: Valuation as per Govt. Rates (Locked Read-only) */}
+                      <div className="sm:col-span-4 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-[11px] font-semibold text-sky-950">
+                            Govt. Valuation (Locked Read-only):
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const nextLocked = fields.valuationGovtRateLocked === false;
+                              if (nextLocked) {
+                                const areaStr = fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '');
+                                const areaNum = parseNum(areaStr);
+                                const rateNum = parseNum(fields.govtRateLand);
+                                const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
+                                const calcFormula = (areaStr && rateNum > 0)
+                                  ? `${areaStr} * Rs.${fields.govtRateLand}/- = Rs.${formatCurrencyINR(calcVal)}/-`
+                                  : '';
+                                setFields(prev => ({
+                                  ...prev,
+                                  valuationGovtRateLocked: true,
+                                  valuationGovtRate: calcFormula || prev.valuationGovtRate,
+                                }));
+                              } else {
+                                setFields(prev => ({ ...prev, valuationGovtRateLocked: false }));
+                              }
+                            }}
+                            disabled={isReadOnly}
+                            className={`text-[10px] px-1.5 py-0.5 rounded font-medium border flex items-center gap-1 cursor-pointer transition-colors ${
+                              fields.valuationGovtRateLocked !== false
+                                ? 'bg-sky-100 text-sky-800 border-sky-300 hover:bg-sky-200'
+                                : 'bg-amber-100 text-amber-800 border-amber-300 hover:bg-amber-200'
+                            }`}
+                            title={fields.valuationGovtRateLocked !== false ? 'Locked & auto-computed. Click to unlock for custom manual text.' : 'Unlocked for custom entry. Click to lock back to auto-calculation.'}
+                          >
+                            {fields.valuationGovtRateLocked !== false ? '🔒 Locked' : '🔓 Unlocked'}
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          className={`${inputCls} ${
+                            fields.valuationGovtRateLocked !== false
+                              ? 'bg-sky-50/70 font-bold text-sky-950 border-sky-300 cursor-not-allowed'
+                              : 'bg-white text-slate-900 border-amber-300'
+                          }`}
+                          value={(() => {
+                            if (fields.valuationGovtRateLocked !== false) {
+                              if (fields.valuationGovtRate) return fields.valuationGovtRate;
+                              const areaStr = fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '');
+                              const areaNum = parseNum(areaStr);
+                              const rateNum = parseNum(fields.govtRateLand);
+                              const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
+                              if (areaStr && rateNum > 0) {
+                                return `${areaStr} * Rs.${fields.govtRateLand}/- = Rs.${formatCurrencyINR(calcVal)}/-`;
+                              }
+                            }
+                            return fields.valuationGovtRate || '';
+                          })()}
+                          onChange={(e) => handleChange('valuationGovtRate', e.target.value)}
+                          readOnly={fields.valuationGovtRateLocked !== false}
+                          disabled={isReadOnly}
+                          placeholder="e.g. 10890 * Rs.1800/- = Rs.1,96,02,000/-"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Formula helper message */}
+                    <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-sky-100">
+                      <span>
+                        {fields.valuationGovtRateLocked !== false
+                          ? 'Auto-computed formula: Land Area (sqft) * Govt. Rate (Rs./sqft) = Resulting Valuation'
+                          : 'Unlocked: Type any custom govt. valuation statement directly.'}
+                      </span>
+                      {(() => {
+                        const areaStr = fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '');
+                        const areaNum = parseNum(areaStr);
+                        const rateNum = parseNum(fields.govtRateLand);
+                        const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
+                        return calcVal > 0 ? (
+                          <span className="font-semibold text-sky-900 font-sans">
+                            {areaStr} sqft. × Rs.{fields.govtRateLand}/- = Rs.${formatCurrencyINR(calcVal)}/-
+                          </span>
+                        ) : null;
+                      })()}
                     </div>
                   </div>
                 </div>
