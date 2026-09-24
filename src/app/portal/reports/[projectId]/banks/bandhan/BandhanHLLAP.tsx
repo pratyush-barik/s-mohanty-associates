@@ -746,16 +746,16 @@ export default function BandhanHLLAP({
         }
       }
 
-      // Govt Rate Valuation formula (Pt 36)
+      // Govt Rate Valuation final value (Pt 36)
       if (prev.valuationGovtRateLocked !== false && fields.govtRateLand) {
         const govtAreaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
         const govtAreaNum = parseSqftFromArea(govtAreaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
         const govtRateNum = parseNum(fields.govtRateLand);
         const calcGovtVal = (govtAreaNum > 0 && govtRateNum > 0) ? Math.round(((govtAreaNum * govtRateNum) + Number.EPSILON) * 100) / 100 : 0;
-        if (govtAreaStr && govtRateNum > 0 && calcGovtVal > 0) {
-          const govtFormula = `${govtAreaStr} * Rs.${fields.govtRateLand}/- = Rs.${formatCurrencyINR(calcGovtVal)}/-`;
-          if (prev.valuationGovtRate !== govtFormula) {
-            next.valuationGovtRate = govtFormula;
+        if (calcGovtVal > 0) {
+          const govtValStr = `Rs.${formatCurrencyINR(calcGovtVal)}/-`;
+          if (prev.valuationGovtRate !== govtValStr) {
+            next.valuationGovtRate = govtValStr;
             changed = true;
           }
         }
@@ -3008,14 +3008,12 @@ export default function BandhanHLLAP({
                             const areaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
                             const areaNum = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
                             const rateNum = parseNum(newRate);
-                            const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
-                            const calcFormula = (areaStr && rateNum > 0)
-                              ? `${areaStr} * Rs.${newRate}/- = Rs.${formatCurrencyINR(calcVal)}/-`
-                              : '';
+                            const calcVal = (areaNum > 0 && rateNum > 0) ? Math.round(((areaNum * rateNum) + Number.EPSILON) * 100) / 100 : 0;
+                            const calcValStr = calcVal > 0 ? `Rs.${formatCurrencyINR(calcVal)}/-` : '';
                             setFields(prev => ({
                               ...prev,
                               govtRateLand: newRate,
-                              valuationGovtRate: prev.valuationGovtRateLocked !== false ? (calcFormula || prev.valuationGovtRate) : prev.valuationGovtRate,
+                              valuationGovtRate: prev.valuationGovtRateLocked !== false ? calcValStr : prev.valuationGovtRate,
                             }));
                           }}
                           placeholder="e.g. 1800"
@@ -3045,14 +3043,12 @@ export default function BandhanHLLAP({
                                 const areaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
                                 const areaNum = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
                                 const rateNum = parseNum(fields.govtRateLand);
-                                const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
-                                const calcFormula = (areaStr && rateNum > 0)
-                                  ? `${areaStr} * Rs.${fields.govtRateLand}/- = Rs.${formatCurrencyINR(calcVal)}/-`
-                                  : '';
+                                const calcVal = (areaNum > 0 && rateNum > 0) ? Math.round(((areaNum * rateNum) + Number.EPSILON) * 100) / 100 : 0;
+                                const calcValStr = calcVal > 0 ? `Rs.${formatCurrencyINR(calcVal)}/-` : '';
                                 setFields(prev => ({
                                   ...prev,
                                   valuationGovtRateLocked: true,
-                                  valuationGovtRate: calcFormula || prev.valuationGovtRate,
+                                  valuationGovtRate: calcValStr || prev.valuationGovtRate,
                                 }));
                               } else {
                                 setFields(prev => ({ ...prev, valuationGovtRateLocked: false }));
@@ -3078,13 +3074,16 @@ export default function BandhanHLLAP({
                           }`}
                           value={(() => {
                             if (fields.valuationGovtRateLocked !== false) {
-                              if (fields.valuationGovtRate) return fields.valuationGovtRate;
                               const areaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
                               const areaNum = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
                               const rateNum = parseNum(fields.govtRateLand);
-                              const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
-                              if (areaStr && rateNum > 0) {
-                                return `${areaStr} * Rs.${fields.govtRateLand}/- = Rs.${formatCurrencyINR(calcVal)}/-`;
+                              const calcVal = (areaNum > 0 && rateNum > 0) ? Math.round(((areaNum * rateNum) + Number.EPSILON) * 100) / 100 : 0;
+                              if (calcVal > 0) {
+                                return `Rs.${formatCurrencyINR(calcVal)}/-`;
+                              }
+                              if (fields.valuationGovtRate) {
+                                const n = parseNum(fields.valuationGovtRate);
+                                return n > 0 ? `Rs.${formatCurrencyINR(n)}/-` : fields.valuationGovtRate;
                               }
                             }
                             return fields.valuationGovtRate || '';
@@ -3092,7 +3091,7 @@ export default function BandhanHLLAP({
                           onChange={(e) => handleChange('valuationGovtRate', e.target.value)}
                           readOnly={fields.valuationGovtRateLocked !== false}
                           disabled={isReadOnly}
-                          placeholder="e.g. 10890 * Rs.1800/- = Rs.1,96,02,000/-"
+                          placeholder="Rs.0/-"
                         />
                       </div>
                     </div>
