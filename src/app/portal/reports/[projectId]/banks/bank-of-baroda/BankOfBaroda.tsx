@@ -2810,9 +2810,9 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               </>)}
             </div>
 
-            {/* ── Container 18: Valuer Sign-off & Bank Endorsement ── */}
-            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e0ffff' }}>
-              <h3 className="font-bold text-gray-700 border-b border-cyan-200 pb-2">Valuer Sign-off & Bank Endorsement</h3>
+            {/* ── Container 17.5: Remarks ── */}
+            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#ffe4e1' }}>
+              <h3 className="font-bold text-gray-700 border-b border-red-200 pb-2">Remarks</h3>
               
               <Field label="PROPERTY & LEGAL REMARKS">
                 <textarea className={inputCls} rows={4} value={fields.bobPropertyLegalRemarks || ''} onChange={e => handleChange('bobPropertyLegalRemarks', e.target.value)} disabled={isReadOnly} placeholder="Enter location details, municipal limits, civic amenities, legal observations, etc." />
@@ -2841,6 +2841,11 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   {!fields.bobValuationConclusionEditOn && <Lock className="w-4 h-4 text-gray-400 absolute right-3 top-3 group-hover:text-emerald-700 transition-colors" />}
                 </div>
               </div>
+            </div>
+
+            {/* ── Container 18: Valuer Sign-off & Bank Endorsement ── */}
+            <div className="rounded-xl p-5 space-y-4" style={{ backgroundColor: '#e0ffff' }}>
+              <h3 className="font-bold text-gray-700 border-b border-cyan-200 pb-2">Valuer Sign-off & Bank Endorsement</h3>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="PLACE:">
