@@ -589,9 +589,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const buildingAge = this.fields.bobBuildingAgeEditOn ? (parseFloat(this.fv('bobBuildingAge', '0')) || 0) : (yearOfConstruction > 0 ? currentYear - yearOfConstruction : 0);
 
     // Building Valuation Table
-    if (this.fields.bobBuildingValuationMode === 'annexure') {
-      this.drawSimpleRow('Building Valuation', 'Please refer to the attached Annexure for the detailed breakdown.');
-    } else {
     const buildingRows: any[] = this.fields.bobBuildingValuationRows || [];
     if (buildingRows.length > 0) {
       const tableRows: string[][] = [];
@@ -625,13 +622,9 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
         [{ r: tableRows.length - 1, c: 0 }, { r: tableRows.length - 1, c: 7 }]
       );
     }
-    }
 
     // Part D: Amenities
     this.drawSectionHeader('PART D — AMENITIES', true, true);
-    if (this.fields.bobAmenitiesMode === 'annexure') {
-      this.drawSimpleRow('Amenities', 'Please refer to the attached Annexure for the detailed breakdown.');
-    } else {
     const amenityItems = ['Wardrobes & Cupboard', 'Modular Kitchen', 'Extra sinks and bath tub', 'Marble / Ceramic tiles flooring', 'Interior decorations', 'Architectural elevation works', 'Paneling works', 'Aluminium works', 'Aluminium hand rails', 'False ceiling'];
     const amenityRows: string[][] = [];
     let amenitiesTotal = 0;
@@ -649,13 +642,9 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       [{ r: amenityRows.length - 1, c: 1 }, { r: amenityRows.length - 1, c: 2 }],
       [{ r: amenityRows.length - 1, c: 1 }, { r: amenityRows.length - 1, c: 2 }]
     );
-    }
 
     // Part E: Miscellaneous
     this.drawSectionHeader('PART E — MISCELLANEOUS', true, true);
-    if (this.fields.bobMiscMode === 'annexure') {
-      this.drawSimpleRow('Miscellaneous', 'Please refer to the attached Annexure for the detailed breakdown.');
-    } else {
     const miscItems = ['Separate toilet room', 'Separate lumber room', 'Separate water tank/ sump', 'Trees, gardening'];
     const miscRows: string[][] = [];
     let miscTotal = 0;
@@ -673,13 +662,9 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       [{ r: miscRows.length - 1, c: 1 }, { r: miscRows.length - 1, c: 2 }],
       [{ r: miscRows.length - 1, c: 1 }, { r: miscRows.length - 1, c: 2 }]
     );
-    }
 
     // Part F: Services
     this.drawSectionHeader('PART F — SERVICES', true, true);
-    if (this.fields.bobServicesMode === 'annexure') {
-      this.drawSimpleRow('Services', 'Please refer to the attached Annexure for the detailed breakdown.');
-    } else {
     const serviceItems = ['Bore Well with Motor', 'Head Room, Parapet Wall, Grinding', 'Compound Wall', 'Marble Flooring in staircase & Steel Handrail', 'Extra cost for Lifts with installation'];
     const serviceRows: string[][] = [];
     let servicesTotal = 0;
@@ -697,7 +682,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       [{ r: serviceRows.length - 1, c: 1 }, { r: serviceRows.length - 1, c: 2 }],
       [{ r: serviceRows.length - 1, c: 1 }, { r: serviceRows.length - 1, c: 2 }]
     );
-    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -706,9 +690,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   private drawBobSection7() {
     this.drawSectionHeader('TOTAL ABSTRACT');
 
-    if (this.fields.bobAbstractMode === 'annexure') {
-      this.drawSimpleRow('Total Abstract', 'Please refer to the attached Annexure for the detailed breakdown.');
-    } else {
     // Compute prefill values
     const sizeNS = parseFloat(this.fv('bobLandSizeNS', '0')) || 0;
     const sizeEW = parseFloat(this.fv('bobLandSizeEW', '0')) || 0;
@@ -799,7 +780,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
         { r: tableRows.length - 2, c: 0 }, { r: tableRows.length - 2, c: 1 }, { r: tableRows.length - 2, c: 2 }, { r: tableRows.length - 2, c: 3 }, { r: tableRows.length - 2, c: 4 },
       ]
     );
-    }
 
     // Remarks
     this.drawRemarksBox('REMARKS', this.fv('bobRemarks'));
