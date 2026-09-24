@@ -830,25 +830,11 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const yearOfConstruction = this.extractYearOfConstruction();
     const calcAge = yearOfConstruction > 0 ? (currentYear - yearOfConstruction) : 0;
 
-    const rawYoc = this.fv('bobYearOfConstruction');
-    let displayYoc = 'NA';
-    if (rawYoc) {
-      displayYoc = rawYoc.toLowerCase().includes('year of construction') 
-        ? rawYoc 
-        : `Year of Construction-${rawYoc}`;
-    }
+    const displayYoc = this.fv('bobYearOfConstruction') || 'NA';
 
     const plinthApproval = this.fv('bobPlinthAreaApproval');
     const plinthActual = this.fv('bobPlinthAreaActual');
-    let plinthVal = '';
-    if (plinthApproval || plinthActual) {
-      const parts = [];
-      if (plinthApproval) parts.push(`As Per Approval\n${plinthApproval}`);
-      if (plinthActual) parts.push(`As Per Actual\n${plinthActual}`);
-      plinthVal = parts.join('\n');
-    } else {
-      plinthVal = 'NA';
-    }
+    let plinthVal = [plinthApproval, plinthActual].filter(Boolean).join('\n') || 'NA';
 
     // ──────────────────────────────────────────────────────────
     // Table 1: Technical details
@@ -917,11 +903,13 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     ];
     for (let i = 0; i < structKeys.length; i++) {
       const key = structKeys[i];
+      const gVal = [structural[`${key}_ground`] || structural[`${key}_groundCustom`], structural[`${key}_groundInput`]].filter(Boolean).join(' ') || 'NA';
+      const oVal = this.fields.bobOtherFloorsNA ? 'NA' : ([structural[`${key}_other`] || structural[`${key}_otherCustom`], structural[`${key}_otherInput`]].filter(Boolean).join(' ') || 'NA');
       t2Rows.push([
         `${i + 1}.`,
         structLabels[i],
-        structural[`${key}_ground`] || structural[`${key}_groundCustom`] || 'NA',
-        this.fields.bobOtherFloorsNA ? 'NA' : (structural[`${key}_other`] || structural[`${key}_otherCustom`] || 'NA')
+        gVal,
+        oVal
       ]);
     }
 
