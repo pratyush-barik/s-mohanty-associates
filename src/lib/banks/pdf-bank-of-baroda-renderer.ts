@@ -628,26 +628,29 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       
       let align: 'left' | 'center' | 'right' = 'left';
       let bold = false;
-      let fillColor: any = '#f4f4f4'; // equivalent to LBL_BG
+      let fillColor: any = undefined;
       let bgOpacity = 0.5;
+
+      let isFieldName = false;
 
       if (isSubTableHdr) {
         align = 'center';
-        bold = true;
+        isFieldName = true; // Subtable headers are field names
       } else if (isSubTableRow) {
-        // Original drawTable centered everything and used grey bg
         if (ci >= 1) align = 'center';
-        bold = false; // Original rows were not bold
-        fillColor = '#f4f4f4';
+        if (ci < 3) isFieldName = true; // 'East', 'West' etc. are field names
+        else isFieldName = false; // Values are not
       } else {
-        // Normal rows
-        if (ci >= 3 && row[ci] !== '') {
-          // value columns
-          fillColor = undefined;
-          bold = true;
-        } else if (ci < 3) {
-          bold = false;
-        }
+        if (ci < 3) isFieldName = true;
+        else isFieldName = false;
+      }
+
+      if (isFieldName) {
+        bold = true;
+        fillColor = '#DBE6F0'; // LBL_BG (Blue background color)
+      } else {
+        bold = false;
+        fillColor = undefined;
       }
       
       return { align, bold, fillColor, bgOpacity };
