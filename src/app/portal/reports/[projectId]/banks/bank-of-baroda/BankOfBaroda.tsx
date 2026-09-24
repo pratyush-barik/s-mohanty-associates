@@ -2812,7 +2812,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               </div>
 
               {/* Branch Manager Fields in Light Grey Container */}
-              <div className="rounded-xl p-5 space-y-4 mt-6 border border-gray-200" style={{ backgroundColor: '#f3f4f6' }}>
+              <div className="rounded-xl p-5 space-y-4 mt-6 border border-blue-100" style={{ backgroundColor: '#e6f7ff' }}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Field label="DATE:">
                     <BaseDateInput value={fields.bobEndorsementDate || ''} onChange={val => handleChange('bobEndorsementDate', val)} disabled={isReadOnly} />
