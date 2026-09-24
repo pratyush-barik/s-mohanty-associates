@@ -404,7 +404,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       }
     }
 
-    allRows.push(['4.', 'Name of the owner(s) and his / their address\n(es) with Phone no. (details of share of each\nowner incase of joint ownership)', '', this.fv('bobOwnerNamesAddresses') || 'NA']);
+    allRows.push(['4.', 'Name of the owner(s) and his / their address (es) with Phone no. (details of share of each owner incase of joint ownership)', '', this.fv('bobOwnerNamesAddresses') || 'NA']);
     allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
     rIdx++;
 
