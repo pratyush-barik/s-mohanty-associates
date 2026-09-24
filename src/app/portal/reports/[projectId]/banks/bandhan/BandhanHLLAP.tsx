@@ -3673,16 +3673,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaConcreteGrade && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaConcreteGrade', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -3730,16 +3720,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaHorizontalFloorType && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaHorizontalFloorType', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -3772,16 +3752,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaSeismicZone && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaSeismicZone', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -3814,16 +3784,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaSteelGrade && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaSteelGrade', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -3856,16 +3816,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaFloodProne && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaFloodProne', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -3898,16 +3848,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaUrbanFloods && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaUrbanFloods', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -3940,16 +3880,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaEnvironmentExposure && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaEnvironmentExposure', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -3982,16 +3912,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaSoilSlopeLandslide && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaSoilSlopeLandslide', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -4024,16 +3944,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaWindCyclones && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaWindCyclones', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -4066,16 +3976,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaTsunami && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaTsunami', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -4123,16 +4023,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaHeightAboveGround && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaHeightAboveGround', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -4165,16 +4055,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaCRZ && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaCRZ', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -4207,16 +4087,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaNatureOfBuilding && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaNatureOfBuilding', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -4264,16 +4134,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaFunctionOfUse && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaFunctionOfUse', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -4306,16 +4166,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaFoundationType && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaFoundationType', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
@@ -4363,16 +4213,6 @@ export default function BandhanHLLAP({
                           {opt}
                         </button>
                       ))}
-                      {!isReadOnly && fields.ndmaStructureType && (
-                        <button
-                          type="button"
-                          onClick={() => handleChange('ndmaStructureType', '')}
-                          className="text-[11px] px-1.5 py-0.5 rounded font-medium bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200"
-                          title="Clear value"
-                        >
-                          ✕
-                        </button>
-                      )}
                     </div>
                     <input
                       type="text"
