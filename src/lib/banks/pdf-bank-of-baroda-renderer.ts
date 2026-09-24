@@ -1082,7 +1082,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     }
     amenityRows.push(['', 'TOTAL', amenitiesTotal.toFixed(2)]);
     this.drawTable(
-      ['SL NO.', 'ITEM', 'AMOUNT'],
+      ['SL NO.', 'PARTICULARS OF ITEM', 'AMOUNT'],
       amenityRows,
       [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
       [], [0], [],
@@ -1113,7 +1113,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     }
     miscRows.push(['', 'TOTAL', miscTotal.toFixed(2)]);
     this.drawTable(
-      ['SL NO.', 'ITEM', 'AMOUNT'],
+      ['SL NO.', 'PARTICULARS OF ITEM', 'AMOUNT'],
       miscRows,
       [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
       [], [0], [],
@@ -1144,7 +1144,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     }
     serviceRows.push(['', 'TOTAL', servicesTotal.toFixed(2)]);
     this.drawTable(
-      ['SL NO.', 'ITEM', 'AMOUNT'],
+      ['SL NO.', 'PARTICULARS OF ITEM', 'AMOUNT'],
       serviceRows,
       [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
       [], [0], [],
@@ -1264,7 +1264,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     ]);
 
     this.drawTable(
-      ['PARTICULARS', 'GOVT. VALUE', 'MARKET VALUE', 'REALIZABLE (95%)', 'DISTRESS (85%)'],
+      ['PARTICULARS', 'GOVT. VALUE IN RS.', 'MARKET VALUE IN RS.', 'REALIZABLE VALUE (95%)', 'DISTRESS VALUE (85%)'],
       tableRows,
       [CONTENT_W * 0.22, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195],
       [], [0], [],
