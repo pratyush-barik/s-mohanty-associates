@@ -1338,6 +1338,22 @@ export class PDFGeneralRenderer {
       return h;
     });
 
+    // Pre-calculate page breaks to handle hideBorder edge cases at page boundaries
+    const isFirstRowOnPage = new Array(allRows.length).fill(false);
+    const isLastRowOnPage = new Array(allRows.length).fill(false);
+    
+    let tempY = this.cursorY;
+    for (let ri = 0; ri < allRows.length; ri++) {
+      if (PAGE_H - MARGIN_T - MARGIN_B - tempY < rowH[ri]) {
+        if (ri > 0) isLastRowOnPage[ri - 1] = true;
+        isFirstRowOnPage[ri] = true;
+        tempY = 0;
+      }
+      if (ri === 0 && tempY === 0) isFirstRowOnPage[ri] = true;
+      tempY += rowH[ri];
+    }
+    isLastRowOnPage[allRows.length - 1] = true;
+
     for (let ri = 0; ri < allRows.length; ri++) {
       const row = allRows[ri];
       this.checkPageBreak(rowH[ri]);
@@ -1369,11 +1385,20 @@ export class PDFGeneralRenderer {
           align: 'center' as const,
           vAlign: 'middle' as const,
           fillColor: LBL_BG,
-          bgOpacity: 0.5, // Changed to 0.5 to exactly match drawSimpleRow
+          bgOpacity: 0.5,
         };
         
         const customOpts = cellOpts ? cellOpts(ri, ci, isHeader, isSpannedHeader) : {};
-        const finalOpts = { ...defaultOpts, ...customOpts };
+        const finalOpts = { ...defaultOpts, ...customOpts } as any;
+
+        if (finalOpts.hideBorder) {
+           if (isFirstRowOnPage[ri] && finalOpts.hideBorder.top) {
+             finalOpts.hideBorder.top = false;
+           }
+           if (isLastRowOnPage[ri] && finalOpts.hideBorder.bottom) {
+             finalOpts.hideBorder.bottom = false;
+           }
+        }
 
         this.drawCell(x, this.cursorY, cellW, cellH, row[ci] || '', finalOpts);
 
