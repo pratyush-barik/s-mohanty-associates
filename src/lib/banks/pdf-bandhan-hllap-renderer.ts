@@ -150,6 +150,31 @@ export function convertAreaToSqft(
   };
 }
 
+export function parseSqftFromArea(
+  valStr?: string,
+  unit?: string,
+  numVal?: string
+): number {
+  if (numVal && unit) {
+    const conv = convertAreaToSqft(unit, numVal);
+    if (conv.sqft > 0) return conv.sqft;
+  }
+  if (!valStr) return 0;
+  const s = String(valStr);
+  const ieMatch = s.match(/i\.e\.\s*([\d,]+(?:\.\d+)?)\s*sqft/i);
+  if (ieMatch && ieMatch[1]) {
+    const n = parseFloat(ieMatch[1].replace(/,/g, ''));
+    if (!isNaN(n) && n > 0) return n;
+  }
+  const sqftMatch = s.match(/([\d,]+(?:\.\d+)?)\s*sqft/i);
+  if (sqftMatch && sqftMatch[1]) {
+    const n = parseFloat(sqftMatch[1].replace(/,/g, ''));
+    if (!isNaN(n) && n > 0) return n;
+  }
+  const plain = parseFloat(s.replace(/[^0-9.]/g, ''));
+  return isNaN(plain) ? 0 : plain;
+}
+
 export function formatAreaOfLandStatement(
   unit: string = 'ACRE_DEC',
   primaryVal: string = '',

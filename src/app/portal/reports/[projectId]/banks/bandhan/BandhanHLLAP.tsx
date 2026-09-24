@@ -34,6 +34,7 @@ import {
   formatCommencementCompletion,
   formatAreaOfLandStatement,
   convertAreaToSqft,
+  parseSqftFromArea,
 } from '@/lib/banks/pdf-bandhan-hllap-renderer';
 
 export const BANDHAN_HLLAP_CONFIG: BankConfig = {
@@ -364,7 +365,19 @@ export default function BandhanHLLAP({
 
       // 6. Area & Floor Details (26 - 29)
       propertyAreaUnit: raw.propertyAreaUnit || (raw.areaOfLandUnit || 'ACRE_DEC'),
-      propertyAreaValue: raw.propertyAreaValue || (raw.propertyArea ? String(raw.propertyArea).replace(/[^0-9.]/g, '') : ''),
+      propertyAreaValue: (() => {
+        if (raw.propertyAreaValue !== undefined && raw.propertyAreaValue !== '') return raw.propertyAreaValue;
+        if (!raw.propertyArea) return '';
+        const s = String(raw.propertyArea).trim();
+        const acMatch = s.match(/AC\.(\d+(?:\.\d+)?)/i);
+        if (acMatch && acMatch[1]) return acMatch[1];
+        const parenMatch = s.match(/\((\d+(?:\.\d+)?)\s*(?:Decs|Sq\.Yds|Sq\.Mtr|Guntha|Acre|Decimal)/i);
+        if (parenMatch && parenMatch[1]) return parenMatch[1];
+        const sqftMatch = s.match(/^([\d,]+(?:\.\d+)?)\s*sqft/i);
+        if (sqftMatch && sqftMatch[1]) return sqftMatch[1].replace(/,/g, '');
+        if (/^\d+(?:\.\d+)?$/.test(s)) return s;
+        return '';
+      })(),
       propertyAreaSqft: raw.propertyAreaSqft || '',
       propertyAreaLocked: raw.propertyAreaLocked !== undefined ? raw.propertyAreaLocked : true,
       propertyAreaAcres: raw.propertyAreaAcres || '',
@@ -423,7 +436,19 @@ export default function BandhanHLLAP({
       expectedCompletionDate: raw.expectedCompletionDate || '',
       areaOfLand: raw.areaOfLand || '',
       areaOfLandUnit: raw.areaOfLandUnit || 'ACRE_DEC',
-      areaOfLandValue: raw.areaOfLandValue || '',
+      areaOfLandValue: (() => {
+        if (raw.areaOfLandValue !== undefined && raw.areaOfLandValue !== '') return raw.areaOfLandValue;
+        if (!raw.areaOfLand) return '';
+        const s = String(raw.areaOfLand).trim();
+        const acMatch = s.match(/AC\.(\d+(?:\.\d+)?)/i);
+        if (acMatch && acMatch[1]) return acMatch[1];
+        const parenMatch = s.match(/\((\d+(?:\.\d+)?)\s*(?:Decs|Sq\.Yds|Sq\.Mtr|Guntha|Acre|Decimal)/i);
+        if (parenMatch && parenMatch[1]) return parenMatch[1];
+        const sqftMatch = s.match(/^([\d,]+(?:\.\d+)?)\s*sqft/i);
+        if (sqftMatch && sqftMatch[1]) return sqftMatch[1].replace(/,/g, '');
+        if (/^\d+(?:\.\d+)?$/.test(s)) return s;
+        return '';
+      })(),
       areaOfLandSqft: raw.areaOfLandSqft || '',
       areaOfLandAcres: raw.areaOfLandAcres || '',
       areaOfLandDecimals: raw.areaOfLandDecimals || '',
@@ -1750,12 +1775,12 @@ export default function BandhanHLLAP({
                         onChange={(e) => {
                           const val = sanitizePositiveFloat(e.target.value);
                           const unit = fields.propertyAreaUnit || 'ACRE_DEC';
-                          const formatted = formatAreaOfLandStatement(unit, val, fields.propertyAreaAcres, fields.propertyAreaDecimals, fields.propertyArea);
+                          const formatted = formatAreaOfLandStatement(unit, val, '', '', '');
                           setFields(prev => ({
                             ...prev,
                             propertyAreaValue: val,
-                            propertyArea: formatted.statement,
-                            propertyAreaSqft: formatted.sqftStr,
+                            propertyArea: val ? formatted.statement : '',
+                            propertyAreaSqft: val ? formatted.sqftStr : '',
                           }));
                         }}
                         placeholder="0.00"
@@ -1769,11 +1794,10 @@ export default function BandhanHLLAP({
                         type="text"
                         className={`${inputCls} bg-slate-100/90 text-slate-800 font-semibold cursor-not-allowed border-slate-300`}
                         value={(() => {
-                          if (fields.propertyAreaSqft) return fields.propertyAreaSqft;
-                          const conv = convertAreaToSqft(fields.propertyAreaUnit || 'ACRE_DEC', fields.propertyAreaValue || '');
-                          if (conv.sqftStr) return conv.sqftStr;
-                          const sqftNum = parseNum(fields.propertyArea);
-                          return sqftNum > 0 ? `${formatCurrencyINR(sqftNum)} sqft.` : (fields.propertyArea || '');
+                          const val = fields.propertyAreaValue || '';
+                          if (!val || parseFloat(val) <= 0) return '';
+                          const conv = convertAreaToSqft(fields.propertyAreaUnit || 'ACRE_DEC', val);
+                          return conv.sqftStr || '';
                         })()}
                         readOnly
                         disabled
@@ -2192,7 +2216,7 @@ export default function BandhanHLLAP({
                       </span>
                     </div>
                     {(() => {
-                      const landArea = parseNum(fields.propertyArea || fields.areaOfLand);
+                      const landArea = parseSqftFromArea(fields.propertyArea || fields.areaOfLand, fields.propertyAreaUnit, fields.propertyAreaValue);
                       const rate = parseNum(fields.plotRate);
                       const calcVal = (landArea > 0 && rate > 0) ? Math.round(((landArea * rate) + Number.EPSILON) * 100) / 100 : 0;
                       return calcVal > 0 ? (
@@ -2222,7 +2246,7 @@ export default function BandhanHLLAP({
                         onChange={(e) => {
                           const newRate = sanitizePositiveFloat(e.target.value);
                           const areaStr = fields.propertyArea || fields.areaOfLand || '';
-                          const landArea = parseNum(areaStr);
+                          const landArea = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
                           const rateNum = parseNum(newRate);
                           const calcVal = (landArea > 0 && rateNum > 0) ? Math.round(((landArea * rateNum) + Number.EPSILON) * 100) / 100 : 0;
                           const calcFormula = (areaStr && rateNum > 0)
@@ -2251,11 +2275,11 @@ export default function BandhanHLLAP({
                       </span>
                     </div>
                     {(() => {
-                      const landArea = parseNum(fields.propertyArea || fields.areaOfLand);
+                      const landArea = parseSqftFromArea(fields.propertyArea || fields.areaOfLand, fields.propertyAreaUnit, fields.propertyAreaValue);
                       const rate = parseNum(fields.plotRate);
                       const calcVal = (landArea > 0 && rate > 0) ? landArea * rate : 0;
                       const calcText = calcVal > 0 
-                        ? `Total Land Area: ${fields.propertyArea || fields.areaOfLand} sq.ft * Rs.${fields.plotRate}/- = Rs.${calcVal.toLocaleString('en-IN')}/-`
+                        ? `Total Land Area: ${fields.propertyArea || fields.areaOfLand} * Rs.${fields.plotRate}/- = Rs.${formatCurrencyINR(calcVal)}/-`
                         : '';
                       return calcText ? (
                         <button
@@ -2865,7 +2889,7 @@ export default function BandhanHLLAP({
                     </div>
                     {(() => {
                       const areaStr = fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '');
-                      const areaNum = parseNum(areaStr);
+                      const areaNum = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
                       const rateNum = parseNum(fields.govtRateLand);
                       const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
                       return calcVal > 0 ? (
@@ -2920,7 +2944,7 @@ export default function BandhanHLLAP({
                           onChange={(e) => {
                             const newRate = sanitizePositiveFloat(e.target.value);
                             const areaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
-                            const areaNum = parseNum(areaStr);
+                            const areaNum = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
                             const rateNum = parseNum(newRate);
                             const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
                             const calcFormula = (areaStr && rateNum > 0)
@@ -2957,7 +2981,7 @@ export default function BandhanHLLAP({
                               const nextLocked = fields.valuationGovtRateLocked === false;
                               if (nextLocked) {
                                 const areaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
-                                const areaNum = parseNum(areaStr);
+                                const areaNum = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
                                 const rateNum = parseNum(fields.govtRateLand);
                                 const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
                                 const calcFormula = (areaStr && rateNum > 0)
@@ -2994,7 +3018,7 @@ export default function BandhanHLLAP({
                             if (fields.valuationGovtRateLocked !== false) {
                               if (fields.valuationGovtRate) return fields.valuationGovtRate;
                               const areaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
-                              const areaNum = parseNum(areaStr);
+                              const areaNum = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
                               const rateNum = parseNum(fields.govtRateLand);
                               const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
                               if (areaStr && rateNum > 0) {
@@ -3300,21 +3324,29 @@ export default function BandhanHLLAP({
                     </div>
                     {(() => {
                       const areaRef = fields.propertyArea || fields.areaOfLand || '';
-                      const areaNum = parseNum(areaRef);
+                      const sqftNum = parseSqftFromArea(areaRef, fields.propertyAreaUnit, fields.propertyAreaValue);
                       const rateNum = parseNum(fields.plotRate);
-                      const calcPlotVal = (areaNum > 0 && rateNum > 0) ? Math.round(((areaNum * rateNum) + Number.EPSILON) * 100) / 100 : 0;
-                      return areaRef ? (
+                      const calcPlotVal = (sqftNum > 0 && rateNum > 0) ? Math.round(((sqftNum * rateNum) + Number.EPSILON) * 100) / 100 : 0;
+                      return sqftNum > 0 ? (
                         <button
                           type="button"
                           onClick={() => {
-                            const refVal = areaRef;
-                            const num = parseNum(refVal);
                             const unit = fields.areaOfLandUnit || 'ACRE_DEC';
-                            let valStr = refVal;
-                            if (unit === 'ACRE_DEC' && num > 0) {
-                              valStr = (num / 43560).toFixed(3);
+                            let valStr = '';
+                            if (unit === 'ACRE_DEC' && sqftNum > 0) {
+                              valStr = String(Math.round(((sqftNum / 43560) + Number.EPSILON) * 1000) / 1000);
+                            } else if (unit === 'DECIMAL' && sqftNum > 0) {
+                              valStr = String(Math.round(((sqftNum / 435.6) + Number.EPSILON) * 100) / 100);
+                            } else if (unit === 'SQFT' && sqftNum > 0) {
+                              valStr = String(sqftNum);
+                            } else if (unit === 'SQYD' && sqftNum > 0) {
+                              valStr = String(Math.round(((sqftNum / 9) + Number.EPSILON) * 100) / 100);
+                            } else if (unit === 'SQMT' && sqftNum > 0) {
+                              valStr = String(Math.round(((sqftNum / 10.7639) + Number.EPSILON) * 100) / 100);
+                            } else if (unit === 'GUNTHA' && sqftNum > 0) {
+                              valStr = String(Math.round(((sqftNum / 1089) + Number.EPSILON) * 100) / 100);
                             }
-                            const formatted = formatAreaOfLandStatement(unit, valStr, '', '', refVal);
+                            const formatted = formatAreaOfLandStatement(unit, valStr, '', '', '');
                             setFields(prev => ({
                               ...prev,
                               areaOfLandValue: valStr,
@@ -3325,7 +3357,7 @@ export default function BandhanHLLAP({
                           className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
                           title="Sync from Pt 30 Recommended Valuation of the Property"
                         >
-                          ↺ Sync (Referenced from Pt 30 Recommended Valuation): Area: {areaRef} sqft {calcPlotVal > 0 ? `| ₹${formatCurrencyINR(calcPlotVal)}` : ''}
+                          ↺ Sync (Referenced from Pt 30 Recommended Valuation): Area: {formatCurrencyINR(sqftNum)} sqft {calcPlotVal > 0 ? `| ₹${formatCurrencyINR(calcPlotVal)}` : ''}
                         </button>
                       ) : null;
                     })()}
@@ -3339,12 +3371,12 @@ export default function BandhanHLLAP({
                         onChange={(e) => {
                           const unit = e.target.value as any;
                           const val = fields.areaOfLandValue || '';
-                          const formatted = formatAreaOfLandStatement(unit, val, fields.areaOfLandAcres, fields.areaOfLandDecimals, fields.areaOfLand);
+                          const formatted = formatAreaOfLandStatement(unit, val, '', '', '');
                           setFields(prev => ({
                             ...prev,
                             areaOfLandUnit: unit,
-                            areaOfLand: formatted.statement,
-                            areaOfLandSqft: formatted.sqftStr,
+                            areaOfLand: val ? formatted.statement : '',
+                            areaOfLandSqft: val ? formatted.sqftStr : '',
                           }));
                         }}
                         disabled={isReadOnly}
@@ -3381,12 +3413,12 @@ export default function BandhanHLLAP({
                         onChange={(e) => {
                           const val = sanitizePositiveFloat(e.target.value);
                           const unit = fields.areaOfLandUnit || 'ACRE_DEC';
-                          const formatted = formatAreaOfLandStatement(unit, val, fields.areaOfLandAcres, fields.areaOfLandDecimals, fields.areaOfLand);
+                          const formatted = formatAreaOfLandStatement(unit, val, '', '', '');
                           setFields(prev => ({
                             ...prev,
                             areaOfLandValue: val,
-                            areaOfLand: formatted.statement,
-                            areaOfLandSqft: formatted.sqftStr,
+                            areaOfLand: val ? formatted.statement : '',
+                            areaOfLandSqft: val ? formatted.sqftStr : '',
                           }));
                         }}
                         placeholder="0.00"
@@ -3400,11 +3432,10 @@ export default function BandhanHLLAP({
                         type="text"
                         className={`${inputCls} bg-slate-100/90 text-slate-800 font-semibold cursor-not-allowed border-slate-300`}
                         value={(() => {
-                          if (fields.areaOfLandSqft) return fields.areaOfLandSqft;
-                          const conv = convertAreaToSqft(fields.areaOfLandUnit || 'ACRE_DEC', fields.areaOfLandValue || '');
-                          if (conv.sqftStr) return conv.sqftStr;
-                          const sqftNum = parseNum(fields.areaOfLand);
-                          return sqftNum > 0 ? `${formatCurrencyINR(sqftNum)} sqft.` : (fields.areaOfLand || '');
+                          const val = fields.areaOfLandValue || '';
+                          if (!val || parseFloat(val) <= 0) return '';
+                          const conv = convertAreaToSqft(fields.areaOfLandUnit || 'ACRE_DEC', val);
+                          return conv.sqftStr || '';
                         })()}
                         readOnly
                         disabled
