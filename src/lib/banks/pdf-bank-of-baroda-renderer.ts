@@ -667,25 +667,47 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   private drawBobSection3() {
     this.drawSectionHeader('PART II — CHARACTERISTICS OF THE SITE');
 
-    this.drawSimpleRow('1. Classification of locality', this.fv('bobClassificationOfLocality') || 'NA');
-    this.drawSimpleRow('2. Development of surrounding areas', this.fv('bobDevelopmentOfSurrounding'));
-    this.drawSimpleRow('3. Flooding / sub-merging possibility', this.fv('bobFloodingPossibility') || 'NA');
-    this.drawSimpleRow('4. Civic amenities (school, hospital etc.)', this.fv('bobCivicAmenities'));
-    this.drawSimpleRow('5. Level of land', this.fv('bobLevelOfLand'));
-    this.drawSimpleRow('6. Shape of land', this.fv('bobShapeOfLand'));
-    this.drawSimpleRow('7. Type of use', this.fv('bobTypeOfUse'));
-    this.drawSimpleRow('8. Usage restriction', this.fv('bobUsageRestriction') || 'NA');
-    this.drawSimpleRow('9. Town planning approved layout', this.fv('bobTownPlanningApproved'));
-    this.drawSimpleRow('10. Corner / Intermittent plot', this.fv('bobCornerOrIntermittent'));
-    this.drawSimpleRow('11. Road facilities', this.fv('bobRoadFacilities'));
-    this.drawSimpleRow('12. Type of road', this.fv('bobTypeOfRoad'));
-    this.drawSimpleRow('13. Width of road', this.fv('bobWidthOfRoad'));
-    this.drawSimpleRow('14. Land-locked land', this.fv('bobLandLocked'));
-    this.drawSimpleRow('15. Water potentiality', this.fv('bobWaterPotentiality'));
-    this.drawSimpleRow('16. Underground sewerage', this.fv('bobSewerage'));
-    this.drawSimpleRow('17. Power supply', this.fv('bobPowerSupply'));
-    this.drawSimpleRow('18. Advantage of the site', this.fv('bobAdvantageOfSite'));
-    this.drawSimpleRow('19. Special remarks', this.fv('bobSpecialRemarks') || 'NA');
+    let allRows: string[][] = [
+      ['1.', 'Classification of locality', this.fv('bobClassificationOfLocality') || 'NA'],
+      ['2.', 'Development of surrounding areas', this.fv('bobDevelopmentOfSurrounding') || 'NA'],
+      ['3.', 'Flooding / sub-merging possibility', this.fv('bobFloodingPossibility') || 'NA'],
+      ['4.', 'Civic amenities (school, hospital etc.)', this.fv('bobCivicAmenities') || 'NA'],
+      ['5.', 'Level of land', this.fv('bobLevelOfLand') || 'NA'],
+      ['6.', 'Shape of land', this.fv('bobShapeOfLand') || 'NA'],
+      ['7.', 'Type of use', this.fv('bobTypeOfUse') || 'NA'],
+      ['8.', 'Usage restriction', this.fv('bobUsageRestriction') || 'NA'],
+      ['9.', 'Town planning approved layout', this.fv('bobTownPlanningApproved') || 'NA'],
+      ['10.', 'Corner / Intermittent plot', this.fv('bobCornerOrIntermittent') || 'NA'],
+      ['11.', 'Road facilities', this.fv('bobRoadFacilities') || 'NA'],
+      ['12.', 'Type of road', this.fv('bobTypeOfRoad') || 'NA'],
+      ['13.', 'Width of road', this.fv('bobWidthOfRoad') || 'NA'],
+      ['14.', 'Land-locked land', this.fv('bobLandLocked') || 'NA'],
+      ['15.', 'Water potentiality', this.fv('bobWaterPotentiality') || 'NA'],
+      ['16.', 'Underground sewerage', this.fv('bobSewerage') || 'NA'],
+      ['17.', 'Power supply', this.fv('bobPowerSupply') || 'NA'],
+      ['18.', 'Advantage of the site', this.fv('bobAdvantageOfSite') || 'NA'],
+      ['19.', 'Special remarks', this.fv('bobSpecialRemarks') || 'NA'],
+    ];
+
+    const styleOpts = (ri: number, ci: number) => {
+      let align: 'left' | 'center' | 'right' = 'left';
+      let bold = false;
+      let fillColor: any = undefined;
+      let bgOpacity = 0.5;
+
+      if (ci < 2) {
+        bold = true;
+        fillColor = '#DBE6F0'; // LBL_BG
+      } else {
+        bold = false;
+        fillColor = undefined;
+      }
+      
+      return { align, bold, fillColor, bgOpacity };
+    };
+
+    // Columns: Number (0.06), Label (0.34), Value (0.60)
+    this.drawMergedTable(allRows, [], [0.06, 0.34, 0.60], styleOpts, { fontSize: 12 });
   }
 
   // ═══════════════════════════════════════════════════════════════════════
