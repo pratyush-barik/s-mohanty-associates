@@ -419,9 +419,34 @@ function DataEntryModeToggle({ modeKey, fields, handleChange, isReadOnly }: {
   modeKey: string; fields: any; handleChange: any; isReadOnly: boolean;
 }) {
   const isAnnexure = fields[modeKey] === 'annexure';
+
+  const handleManualClick = (e: React.MouseEvent) => {
+    if (isReadOnly) return;
+    
+    // Check if an annexure file is actually uploaded for this mode's category
+    const modeToCategory: Record<string, string> = {
+      'bobBuildingValuationMode': 'grid-valuation',
+      'bobAmenitiesMode': 'grid-amenities',
+      'bobMiscMode': 'grid-misc',
+      'bobServicesMode': 'grid-services',
+      'bobAbstractMode': 'grid-abstract',
+    };
+    
+    const category = modeToCategory[modeKey];
+    if (category) {
+      const hasUploadedFile = fields.annexures?.some((a: any) => a.category === category && a.excelFileUrl);
+      if (hasUploadedFile) {
+        alert('Please remove the uploaded file first from annexure section given below.');
+        return;
+      }
+    }
+    
+    handleChange(modeKey, 'manual');
+  };
+
   return (
     <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-0.5 w-fit text-xs">
-      <button type="button" onClick={() => handleChange(modeKey, 'manual')} disabled={isReadOnly}
+      <button type="button" onClick={handleManualClick} disabled={isReadOnly}
         className={`px-3 py-1.5 rounded-md transition-all font-medium ${!isAnnexure ? 'bg-white shadow-sm text-emerald-700' : 'text-gray-500 hover:text-gray-700'}`}>
         Manual Grid Input
       </button>
