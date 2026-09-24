@@ -776,12 +776,13 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       : 'Total Market Value of Land: 0.00 Sft X Rs.0/- Per Sft = Rs.0/-';
 
     let allRows: string[][] = [
-      ['', 'Size of plot', ''],
-      ['1.', 'North & South', displayNS || 'As Per Sketch Map'],
+      ['1.', 'Size of plot', ''],
+      ['', 'North & South', displayNS || 'As Per Sketch Map'],
       ['', 'East & West', displayEW || 'As Per Sketch Map'],
       ['2.', 'Total extent of the plot', displayTotalExtent],
       ['3.', 'Prevailing market rate (Along with details /reference of at least two latest deals/ transactions with respect to adjacent properties in the areas)', this.fv('bobPrevailingMarketRate') || 'NA'],
-      ['4.', 'Guideline rate obtained from the Registrar\'s\nOffice (an evidence thereof to be enclosed)', `${guidelineStr1}\n\n${guidelineStr2}`],
+      ['4.', 'Guideline rate obtained from the Registrar\'s Office (an evidence thereof to be enclosed)', guidelineStr1],
+      ['', 'Guideline Value', guidelineStr2],
       ['5.', 'Assessed / adopted rate of valuation', this.fv('bobAdoptedRate') || 'NA'],
       ['6.', 'Estimated value of land', calcEstimatedStr]
     ];
