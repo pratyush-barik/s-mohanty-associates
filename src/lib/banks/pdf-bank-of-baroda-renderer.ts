@@ -1283,7 +1283,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     // Remarks
     this.cursorY += 10;
     this.checkPageBreak(50);
-    this.setFont(this.fonts.bold, 9);
     this.drawTextAt('REMARKS', MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
     const tw = this.fontBold.widthOfTextAtSize('REMARKS', 9);
     this.drawHLine(MARGIN_L, MARGIN_L + tw, this.cursorY + 2);
@@ -1291,7 +1290,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     const propLegal = this.fv('bobPropertyLegalRemarks');
     if (propLegal) {
-      this.setFont(this.fonts.regular, 9);
       const h = this.drawWrappedTextAt(propLegal, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: 9 });
       this.cursorY += h + 10;
     }
@@ -1305,7 +1303,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const valConclusion = this.fields.bobValuationConclusionEditOn ? this.fv('bobValuationConclusion', '') : defaultValuationConclusion;
 
     this.checkPageBreak(40);
-    this.setFont(this.fonts.regular, 9);
     const h2 = this.drawWrappedTextAt(`• ${valConclusion}`, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: 9 });
     this.cursorY += h2 + 30;
 
@@ -1317,8 +1314,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     
     const sigBlockW = 220;
     const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
-
-    this.setFont(this.fonts.bold, 9);
     this.drawTextAt(`Place: ${place}`, MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
     this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
     this.cursorY += 12;
@@ -1329,12 +1324,8 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ${date}. We are satisfied that the fair and reasonable market value of the property is Rs.${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only).`;
     const endorsement = this.fields.bobBankEndorsementEditOn ? this.fv('bobBankEndorsement', '') : defaultEndorsement;
-
-    this.setFont(this.fonts.regular, 9);
     const h3 = this.drawWrappedTextAt(endorsement, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: 9 });
     this.cursorY += h3 + 30;
-
-    this.setFont(this.fonts.bold, 9);
     this.drawTextAt(`Date:`, MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
     this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
     this.cursorY += 12;
