@@ -1759,31 +1759,16 @@ export default function BandhanHLLAP({
                         26. Total Land / Property Area
                       </span>
                     </div>
-                    {fields.areaOfLand && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const ref = fields.areaOfLand || '';
-                          const num = parseNum(ref);
-                          const unit = fields.propertyAreaUnit || 'ACRE_DEC';
-                          let valStr = ref;
-                          if (unit === 'ACRE_DEC' && num > 0) {
-                            valStr = (num / 43560).toFixed(3);
-                          }
-                          const formatted = formatAreaOfLandStatement(unit, valStr, '', '', ref);
-                          setFields(prev => ({
-                            ...prev,
-                            propertyAreaValue: valStr,
-                            propertyArea: formatted.statement,
-                            propertyAreaSqft: formatted.sqftStr,
-                          }));
-                        }}
-                        className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
-                        title="Sync from Pt 39 Area of Land"
-                      >
-                        ↺ Sync (Referenced from Pt 39 Area of Land): {fields.areaOfLand}
-                      </button>
-                    )}
+                    {(() => {
+                      const val = fields.propertyAreaValue || '';
+                      if (!val || parseFloat(val) <= 0) return null;
+                      const conv = convertAreaToSqft(fields.propertyAreaUnit || 'ACRE_DEC', val);
+                      return conv.sqftStr ? (
+                        <span className="text-[11px] font-semibold text-indigo-900 bg-white/90 px-2.5 py-0.5 rounded border border-indigo-200 shadow-2xs">
+                          ⚡ Master Area: {conv.sqftStr}
+                        </span>
+                      ) : null;
+                    })()}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -2289,7 +2274,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <Field label="Area:">
+                    <Field label="Area (Referenced from Pt 26 Total Land Area):">
                       <input
                         type="text"
                         className={`${inputCls} bg-slate-100/90 text-slate-700 font-semibold cursor-not-allowed border-slate-300`}
@@ -3384,43 +3369,36 @@ export default function BandhanHLLAP({
                       </span>
                     </div>
                     {(() => {
-                      const areaRef = fields.propertyArea || fields.areaOfLand || '';
+                      const areaRef = fields.propertyArea || '';
                       const sqftNum = parseSqftFromArea(areaRef, fields.propertyAreaUnit, fields.propertyAreaValue);
-                      const rateNum = parseNum(fields.plotRate);
-                      const calcPlotVal = (sqftNum > 0 && rateNum > 0) ? Math.round(((sqftNum * rateNum) + Number.EPSILON) * 100) / 100 : 0;
-                      return sqftNum > 0 ? (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const unit = fields.areaOfLandUnit || 'ACRE_DEC';
-                            let valStr = '';
-                            if (unit === 'ACRE_DEC' && sqftNum > 0) {
-                              valStr = String(Math.round(((sqftNum / 43560) + Number.EPSILON) * 1000) / 1000);
-                            } else if (unit === 'DECIMAL' && sqftNum > 0) {
-                              valStr = String(Math.round(((sqftNum / 435.6) + Number.EPSILON) * 100) / 100);
-                            } else if (unit === 'SQFT' && sqftNum > 0) {
-                              valStr = String(sqftNum);
-                            } else if (unit === 'SQYD' && sqftNum > 0) {
-                              valStr = String(Math.round(((sqftNum / 9) + Number.EPSILON) * 100) / 100);
-                            } else if (unit === 'SQMT' && sqftNum > 0) {
-                              valStr = String(Math.round(((sqftNum / 10.7639) + Number.EPSILON) * 100) / 100);
-                            } else if (unit === 'GUNTHA' && sqftNum > 0) {
-                              valStr = String(Math.round(((sqftNum / 1089) + Number.EPSILON) * 100) / 100);
-                            }
-                            const formatted = formatAreaOfLandStatement(unit, valStr, '', '', '');
-                            setFields(prev => ({
-                              ...prev,
-                              areaOfLandValue: valStr,
-                              areaOfLand: formatted.statement,
-                              areaOfLandSqft: formatted.sqftStr,
-                            }));
-                          }}
-                          className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
-                          title="Sync from Pt 30 Recommended Valuation of the Property"
-                        >
-                          ↺ Sync (Referenced from Pt 30 Recommended Valuation): Area: {formatCurrencyINR(sqftNum)} sqft {calcPlotVal > 0 ? `| ₹${formatCurrencyINR(calcPlotVal)}` : ''}
-                        </button>
-                      ) : null;
+                      return (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-semibold bg-sky-100 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
+                            ⚡ Referenced from Pt 26 Total Land Area
+                          </span>
+                          {sqftNum > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const unit = fields.propertyAreaUnit || 'ACRE_DEC';
+                                const valStr = fields.propertyAreaValue || '';
+                                const formatted = formatAreaOfLandStatement(unit, valStr, '', '', '');
+                                setFields(prev => ({
+                                  ...prev,
+                                  areaOfLandUnit: unit,
+                                  areaOfLandValue: valStr,
+                                  areaOfLand: formatted.statement,
+                                  areaOfLandSqft: formatted.sqftStr,
+                                }));
+                              }}
+                              className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
+                              title="Sync from Pt 26 Total Land / Property Area"
+                            >
+                              ↺ Sync from Pt 26: {fields.propertyArea || `${formatCurrencyINR(sqftNum)} sqft.`}
+                            </button>
+                          )}
+                        </div>
+                      );
                     })()}
                   </div>
 
