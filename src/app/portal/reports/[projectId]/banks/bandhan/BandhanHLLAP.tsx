@@ -26,6 +26,9 @@ import {
   BandhanHLLAPFloor,
   BandhanHLLAPDRCFloor,
   BandhanHLLAPPhoto,
+  getConstructionDetailsForStructure,
+  getNdmaStructureTypeForStructure,
+  getWorkProgressStructureLabel,
 } from '@/lib/banks/pdf-bandhan-hllap-renderer';
 
 export const BANDHAN_HLLAP_CONFIG: BankConfig = {
@@ -147,6 +150,33 @@ export default function BandhanHLLAP({
     return id ? (id.toLowerCase().startsWith('bandhan/') ? id : `Bandhan/${id}`) : '';
   }, [projectCode, projectId]);
 
+  // ── Find First Field Engineer Visit Date (Earliest Visit Date) ──
+  const firstFieldAgentVisit = useMemo(() => {
+    if (bucketImages && bucketImages.length > 0) {
+      const validImages = [...bucketImages]
+        .filter(img => img.createdAt)
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      if (validImages.length > 0) {
+        return {
+          dateStr: formatReportDate(validImages[0].createdAt),
+          rawDate: validImages[0].createdAt,
+          agentName: validImages[0].employee?.name || prefill?.firstFieldAgentName || '',
+          agentId: validImages[0].employee?.employeeId || '',
+        };
+      }
+    }
+    const fallbackDate = prefill?.fieldVisitDate || prefill?.inspectionDate;
+    if (fallbackDate) {
+      return {
+        dateStr: formatReportDate(fallbackDate),
+        rawDate: fallbackDate,
+        agentName: prefill?.firstFieldAgentName || prefill?.fieldEmployees?.[0]?.name || '',
+        agentId: prefill?.fieldEmployees?.[0]?.employeeId || '',
+      };
+    }
+    return null;
+  }, [bucketImages, prefill]);
+
   // Initial State Setup
   const [fields, setFields] = useState<BandhanHLLAPReportFields>(() => {
     const raw = typeof initialFields === 'object' && initialFields !== null ? initialFields : (initialData?.reportFields || initialData || {});
@@ -225,7 +255,9 @@ export default function BandhanHLLAP({
       distanceStation: raw.distanceStation || '',
       classOfLocality: raw.classOfLocality || 'Residential',
       valuationType: raw.valuationType || 'Fresh Valuation',
-      dateOfVisit: raw.dateOfVisit ? formatReportDate(raw.dateOfVisit) : (prefill?.inspectionDate ? formatReportDate(prefill.inspectionDate) : formatReportDate(new Date())),
+      dateOfVisit: raw.dateOfVisit
+        ? formatReportDate(raw.dateOfVisit)
+        : (firstFieldAgentVisit?.dateStr || (prefill?.fieldVisitDate ? formatReportDate(prefill.fieldVisitDate) : (prefill?.inspectionDate ? formatReportDate(prefill.inspectionDate) : formatReportDate(new Date())))),
       qualityOfInfrastructure: raw.qualityOfInfrastructure || 'Good',
 
       // 3. Boundaries (15 - 16)
@@ -260,7 +292,7 @@ export default function BandhanHLLAP({
       planApprovedBy: raw.planApprovedBy || '',
       deedProvided: raw.deedProvided || 'NA',
       comments: raw.comments || '',
-      constructionDetails: raw.constructionDetails || 'RCC Framed structure',
+      constructionDetails: raw.constructionDetails || getConstructionDetailsForStructure(raw.typeOfStructure || 'RCC'),
 
       // 6. Area & Floor Details (26 - 29)
       propertyArea: raw.propertyArea || '',
@@ -330,7 +362,7 @@ export default function BandhanHLLAP({
       ndmaNatureOfBuilding: raw.ndmaNatureOfBuilding || 'Standalone Structure',
       ndmaFunctionOfUse: raw.ndmaFunctionOfUse || 'Residential',
       ndmaFoundationType: raw.ndmaFoundationType || 'Open Footing column',
-      ndmaStructureType: raw.ndmaStructureType || 'RCC Framed Structure',
+      ndmaStructureType: raw.ndmaStructureType || getNdmaStructureTypeForStructure(raw.typeOfStructure || 'RCC'),
 
       // 10. Annexure-A
       annexureIntro: raw.annexureIntro || '',
@@ -569,6 +601,20 @@ export default function BandhanHLLAP({
       const next = { ...prev, [name]: val };
       if (name === 'reportDate' && (!prev.declarationDate || prev.declarationDate === prev.reportDate)) {
         next.declarationDate = val;
+      }
+      if (name === 'typeOfStructure') {
+        const prevDerivedConst = getConstructionDetailsForStructure(prev.typeOfStructure);
+        const prevDerivedNdma = getNdmaStructureTypeForStructure(prev.typeOfStructure);
+        
+        // If constructionDetails was empty or matched previous auto-derived default, update to new derived default
+        if (!prev.constructionDetails || prev.constructionDetails === prevDerivedConst) {
+          next.constructionDetails = getConstructionDetailsForStructure(val);
+        }
+        
+        // If ndmaStructureType was empty or matched previous auto-derived default, update to new derived default
+        if (!prev.ndmaStructureType || prev.ndmaStructureType === prevDerivedNdma) {
+          next.ndmaStructureType = getNdmaStructureTypeForStructure(val);
+        }
       }
       return next;
     });
@@ -1060,11 +1106,30 @@ export default function BandhanHLLAP({
                   </select>
                 </Field>
                 <Field label="13. Date of Visit / Valuation Made:">
-                  <BaseDateInput
-                    value={fields.dateOfVisit || ''}
-                    onChange={(val) => handleChange('dateOfVisit', val)}
-                    disabled={isReadOnly}
-                  />
+                  <div className="space-y-1">
+                    <BaseDateInput
+                      value={fields.dateOfVisit || ''}
+                      onChange={(val) => handleChange('dateOfVisit', val)}
+                      disabled={isReadOnly}
+                    />
+                    {firstFieldAgentVisit?.dateStr && (
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+                        <span className="truncate">
+                          Earliest Field Visit: <span className="font-semibold text-slate-700">{firstFieldAgentVisit.dateStr}</span>
+                          {firstFieldAgentVisit.agentName ? ` (${firstFieldAgentVisit.agentName})` : ''}
+                        </span>
+                        {!isReadOnly && fields.dateOfVisit !== firstFieldAgentVisit.dateStr && (
+                          <button
+                            type="button"
+                            onClick={() => handleChange('dateOfVisit', firstFieldAgentVisit.dateStr)}
+                            className="text-blue-600 hover:text-blue-800 font-semibold underline text-[11px] shrink-0 ml-2 cursor-pointer"
+                          >
+                            Use Field Date
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </Field>
                 <Field label="14. Quality of Infrastructure in Vicinity:">
                   <select
@@ -1265,18 +1330,24 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                <Field label="21. Type of Structure:">
-                  <select
-                    className={selectCls}
-                    value={fields.typeOfStructure || 'RCC'}
-                    onChange={(e) => handleChange('typeOfStructure', e.target.value)}
-                    disabled={isReadOnly}
-                  >
-                    <option value="RCC">RCC</option>
-                    <option value="Load bearing">Load bearing</option>
-                    <option value="Aluform shuttering">Aluform shuttering</option>
-                  </select>
-                </Field>
+                <div>
+                  <Field label="21. Type of Structure:">
+                    <select
+                      className={selectCls}
+                      value={fields.typeOfStructure || 'RCC'}
+                      onChange={(e) => handleChange('typeOfStructure', e.target.value)}
+                      disabled={isReadOnly}
+                    >
+                      <option value="RCC">RCC</option>
+                      <option value="Load bearing">Load bearing</option>
+                      <option value="Aluform shuttering">Aluform shuttering</option>
+                      <option value="Steel Structure">Steel Structure</option>
+                    </select>
+                  </Field>
+                  <p className="text-[11px] text-indigo-700/80 mt-1 flex items-center gap-1 font-medium">
+                    <span>⚡ Automatically sets default structure values in Pt 25, Pt 34, &amp; Pt 41</span>
+                  </p>
+                </div>
                 <Field label="22. Occupancy Details:">
                   <select
                     className={selectCls}
@@ -1313,7 +1384,6 @@ export default function BandhanHLLAP({
                     className={inputCls}
                     value={fields.approvalAuthority || ''}
                     onChange={(e) => handleChange('approvalAuthority', e.target.value)}
-                    placeholder="e.g. BMC / BDA / Gram Panchayat"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1330,7 +1400,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.layoutApprovalNo || ''}
                         onChange={(e) => handleChange('layoutApprovalNo', e.target.value)}
-                        placeholder="e.g. LP/1024/2019"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1361,7 +1430,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.buildingPlanApprovalNo || ''}
                         onChange={(e) => handleChange('buildingPlanApprovalNo', e.target.value)}
-                        placeholder="e.g. BP/554/2020"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1396,7 +1464,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.sanctionedPlanProvided || ''}
                         onChange={(e) => handleChange('sanctionedPlanProvided', e.target.value)}
-                        placeholder="e.g. BRIT-II-340/2011/BRIT"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1406,7 +1473,6 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.planApprovedBy || ''}
                         onChange={(e) => handleChange('planApprovedBy', e.target.value)}
-                        placeholder="e.g. Balasore Regional Improvement Trust (BRIT)"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -1416,31 +1482,44 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.deedProvided || ''}
                         onChange={(e) => handleChange('deedProvided', e.target.value)}
-                        placeholder="e.g. NA / Sale Deed No. 1081609995"
                         disabled={isReadOnly}
                       />
                     </Field>
-                    <Field label="[Comments, if any:">
+                    <Field label="Comments, if any:">
                       <input
                         type="text"
                         className={inputCls}
                         value={fields.comments || ''}
                         onChange={(e) => handleChange('comments', e.target.value)}
-                        placeholder="e.g. ROR, Sale Deed, Approved Plan"
                         disabled={isReadOnly}
                       />
                     </Field>
-                    <div className="sm:col-span-2">
-                      <Field label="Construction details:">
-                        <input
-                          type="text"
-                          className={inputCls}
-                          value={fields.constructionDetails || 'RCC Framed structure'}
-                          onChange={(e) => handleChange('constructionDetails', e.target.value)}
-                          placeholder="e.g. RCC Framed structure"
-                          disabled={isReadOnly}
-                        />
-                      </Field>
+                    <div className="sm:col-span-2 space-y-1">
+                      <div className="flex flex-wrap items-center justify-between gap-1">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Construction details:
+                        </label>
+                        <div className="flex items-center gap-1.5 text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 rounded-md">
+                          <span>⚡ Auto-derived from <strong>Pt 21: Type of Structure ({fields.typeOfStructure || 'RCC'})</strong></span>
+                          {!isReadOnly && fields.constructionDetails && fields.constructionDetails !== getConstructionDetailsForStructure(fields.typeOfStructure) && (
+                            <button
+                              type="button"
+                              onClick={() => handleChange('constructionDetails', getConstructionDetailsForStructure(fields.typeOfStructure))}
+                              className="ml-1 text-indigo-600 hover:text-indigo-900 underline font-medium cursor-pointer"
+                              title="Sync with Point 21"
+                            >
+                              ↺ Sync with Pt 21
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.constructionDetails || getConstructionDetailsForStructure(fields.typeOfStructure)}
+                        onChange={(e) => handleChange('constructionDetails', e.target.value)}
+                        disabled={isReadOnly}
+                      />
                     </div>
                   </div>
                 </div>
@@ -2138,7 +2217,7 @@ export default function BandhanHLLAP({
                       disabled={isReadOnly}
                     />
                   </Field>
-                  <Field label="RCC Work:">
+                  <Field label={`${getWorkProgressStructureLabel(fields.typeOfStructure)}: (⚡ Auto-labeled from Pt 21)`}>
                     <input
                       type="text"
                       className={inputCls}
@@ -2510,16 +2589,33 @@ export default function BandhanHLLAP({
                         />
                       </td>
                       <td className="w-1/4 p-2.5 bg-slate-50/90 font-medium text-slate-800 align-middle">
-                        Type of Structure
+                        <div className="space-y-0.5">
+                          <div>Type of Structure</div>
+                          <div className="text-[10px] text-indigo-600 font-normal">
+                            (⚡ Auto-derived from Pt 21: {fields.typeOfStructure || 'RCC'})
+                          </div>
+                        </div>
                       </td>
                       <td className="w-1/4 p-2 align-middle">
-                        <input
-                          type="text"
-                          className={inputCls}
-                          value={fields.ndmaStructureType || 'RCC Framed Structure'}
-                          onChange={(e) => handleChange('ndmaStructureType', e.target.value)}
-                          disabled={isReadOnly}
-                        />
+                        <div className="space-y-1">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={fields.ndmaStructureType || getNdmaStructureTypeForStructure(fields.typeOfStructure)}
+                            onChange={(e) => handleChange('ndmaStructureType', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                          {!isReadOnly && fields.ndmaStructureType && fields.ndmaStructureType !== getNdmaStructureTypeForStructure(fields.typeOfStructure) && (
+                            <button
+                              type="button"
+                              onClick={() => handleChange('ndmaStructureType', getNdmaStructureTypeForStructure(fields.typeOfStructure))}
+                              className="text-[10px] text-indigo-600 hover:text-indigo-900 underline font-medium cursor-pointer"
+                              title="Sync with Point 21"
+                            >
+                              ↺ Sync with Pt 21 ({getNdmaStructureTypeForStructure(fields.typeOfStructure)})
+                            </button>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   </tbody>

@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage } from '@/app/actions/project';
 import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { generateIncomeTaxPDF } from '@/lib/pdf-it-renderer';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
-import { BasePhotographsSection, BaseDateInput, formatReportDate } from './banks/BaseBankReportComponents';
+import { BasePhotographsSection, BaseDateInput, formatReportDate, getEarliestFieldVisit, EarliestFieldVisitBadge } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
 
@@ -859,9 +859,14 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
   const reportRef = useRef<HTMLDivElement>(null);
 
+  const firstFieldAgentVisit = useMemo(() => {
+    return getEarliestFieldVisit(bucketImages, prefill);
+  }, [bucketImages, prefill]);
+
   const merged: IncomeTaxFields = {
     ...DEFAULT_FIELDS,
     ...(typeof initialFields === 'object' && initialFields !== null ? initialFields : {}),
+    inspectionDate: initialFields?.inspectionDate || firstFieldAgentVisit?.dateStr || DEFAULT_FIELDS.inspectionDate || formatReportDate(new Date()),
     propertyType: initialFields?.propertyType
       ? (PROPERTY_TYPES.includes(initialFields.propertyType.toUpperCase()) ? initialFields.propertyType.toUpperCase() : 'RESIDENTIAL LAND & BUILDING')
       : (prefill?.propertyType && PROPERTY_TYPES.includes(prefill.propertyType.toUpperCase()) ? prefill.propertyType.toUpperCase() : DEFAULT_FIELDS.propertyType),
@@ -1630,12 +1635,20 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                       <span>(VALUATION AT THAT TIME BY REVERSE CALCULATION METHOD)</span>
                     </label>
                   </div>
-                  <BaseDateInput
-                    label="Part B — Date of Inspection"
-                    value={fields.inspectionDate || ''}
-                    onChange={val => handleChange('inspectionDate', val)}
-                    disabled={isReadOnly}
-                  />
+                  <div>
+                    <BaseDateInput
+                      label="Part B — Date of Inspection"
+                      value={fields.inspectionDate || ''}
+                      onChange={val => handleChange('inspectionDate', val)}
+                      disabled={isReadOnly}
+                    />
+                    <EarliestFieldVisitBadge
+                      visitInfo={firstFieldAgentVisit}
+                      currentValue={fields.inspectionDate}
+                      onApply={(d) => handleChange('inspectionDate', d)}
+                      className="mt-1"
+                    />
+                  </div>
                   <BaseDateInput
                     label="Part C — Date of Valuation Report"
                     value={fields.reportDate || ''}

@@ -710,7 +710,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
   /**
    * Safe image embed helper (tries PNG then JPG)
    */
-  private async embedImgSafe(bytes: Uint8Array | null): Promise<any | null> {
+  public override async embedImgSafe(bytes: Uint8Array | null): Promise<any | null> {
     if (!bytes || bytes.length === 0) return null;
     try {
       return await this.doc.embedPng(bytes);

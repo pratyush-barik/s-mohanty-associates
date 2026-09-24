@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage } from '@/app/actions/project';
 import { SERVICES_LIST } from './constants';
@@ -9,7 +9,18 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFGeneralRenderer } from '@/lib/pdf-general-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
-import { getFloorName, BasePhotographsSection, formatReportDate, BaseDateInput } from './banks/BaseBankReportComponents';
+import {
+  getFloorName,
+  BasePhotographsSection,
+  formatReportDate,
+  BaseDateInput,
+  getEarliestFieldVisit,
+  EarliestFieldVisitBadge,
+  getConstructionDetailsForStructure,
+  getNdmaStructureTypeForStructure,
+  getWorkProgressStructureLabel,
+  StructureDerivationBadge,
+} from './banks/BaseBankReportComponents';
 import { reorderAndLabelAnnexures, type AnnexureItem } from '@/lib/bank-fields';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 // @ts-ignore
@@ -707,6 +718,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const finalValuationLayout = initialFields?.valuationLayout ||
     (/apartment|flat/i.test(finalSubjectType || '') ? 'apartment' : 'land_building');
 
+  const firstFieldAgentVisit = useMemo(() => {
+    return getEarliestFieldVisit(bucketImages, prefill);
+  }, [bucketImages, prefill]);
+
   const merged = {
     ...DEFAULT_FIELDS,
     ...(typeof initialFields === 'object' && initialFields !== null ? initialFields : {}),
@@ -716,6 +731,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     pincode: initialFields?.pincode || DEFAULT_FIELDS.pincode,
     serviceType: finalServiceType,
     subjectType: finalSubjectType,
+    dateOfInspection: initialFields?.dateOfInspection ? formatReportDate(initialFields.dateOfInspection) : (firstFieldAgentVisit.dateStr || DEFAULT_FIELDS.dateOfInspection),
+    dateOfValuation: initialFields?.dateOfValuation ? formatReportDate(initialFields.dateOfValuation) : (firstFieldAgentVisit.dateStr || DEFAULT_FIELDS.dateOfValuation),
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
     propertyImages: Array.isArray(initialFields?.propertyImages) ? initialFields.propertyImages : (typeof initialFields?.propertyImages === 'string' && initialFields.propertyImages ? [initialFields.propertyImages] : DEFAULT_FIELDS.propertyImages),
@@ -2554,12 +2571,20 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 </div>
               )}
             </div>
-            <BaseDateInput
-              label="Date of Inspection"
-              value={fields.dateOfInspection || ''}
-              onChange={val => handleChange('dateOfInspection', val)}
-              disabled={isReadOnly}
-            />
+            <div>
+              <BaseDateInput
+                label="Date of Inspection"
+                value={fields.dateOfInspection || ''}
+                onChange={val => handleChange('dateOfInspection', val)}
+                disabled={isReadOnly}
+              />
+              <EarliestFieldVisitBadge
+                fieldVisit={firstFieldAgentVisit}
+                currentValue={fields.dateOfInspection}
+                onSync={(d) => handleChange('dateOfInspection', d)}
+                isReadOnly={isReadOnly}
+              />
+            </div>
           </div>
         </div>
       </Section>

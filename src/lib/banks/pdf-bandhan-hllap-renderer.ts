@@ -47,6 +47,29 @@ export interface BandhanHLLAPFloor {
   approvedUsage: string;
 }
 
+export function getConstructionDetailsForStructure(structureType?: string): string {
+  const st = (structureType || 'RCC').trim().toLowerCase();
+  if (st.includes('aluform') || st.includes('mivan')) return 'Aluform (Mivan) RCC shuttering structure';
+  if (st.includes('load bearing') || st.includes('loadbearing')) return 'Load bearing wall structure';
+  if (st.includes('steel')) return 'Steel framed structure';
+  if (st.includes('rcc')) return 'RCC Framed structure';
+  return `${structureType || 'RCC'} structure`;
+}
+
+export function getNdmaStructureTypeForStructure(structureType?: string): string {
+  const st = (structureType || 'RCC').trim().toLowerCase();
+  if (st.includes('aluform') || st.includes('mivan')) return 'Aluform Shuttering Structure';
+  if (st.includes('load bearing') || st.includes('loadbearing')) return 'Load Bearing Structure';
+  if (st.includes('steel')) return 'Steel Structure';
+  if (st.includes('rcc')) return 'RCC Framed Structure';
+  return `${structureType || 'RCC'} Structure`;
+}
+
+export function getWorkProgressStructureLabel(structureType?: string): string {
+  const st = (structureType || 'RCC').trim();
+  return `${st} work`;
+}
+
 export interface BandhanHLLAPDRCFloor {
   particulars: string;
   area: string;
@@ -593,12 +616,13 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
    * Row 25: Copy of sanctioned plan provided & deed info
    */
   private drawSanctionPlanDeedSection(fields: BandhanHLLAPReportFields): void {
+    const defaultConstDetails = getConstructionDetailsForStructure(fields.typeOfStructure);
     const items = [
       { sl: '25.', pts: 'Copy of sanctioned plan provided. Plan No:', rem: fields.sanctionedPlanProvided || '' },
       { sl: '', pts: 'And approved by', rem: fields.planApprovedBy || fields.approvalAuthority || '' },
       { sl: '', pts: 'Copy of deed provided. Deed No:', rem: fields.deedProvided || 'NA' },
-      { sl: '', pts: '[Comments, if any:', rem: fields.comments || '' },
-      { sl: '', pts: 'Construction details:', rem: fields.constructionDetails || 'RCC Framed structure' },
+      { sl: '', pts: 'Comments, if any:', rem: fields.comments || '' },
+      { sl: '', pts: 'Construction details:', rem: fields.constructionDetails || defaultConstDetails },
     ];
 
     for (const item of items) {
@@ -781,9 +805,10 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawCell(MARGIN_L + colSl + colPts, this.cursorY, colRem, headerH, fields.progressStructureHeader || '', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
     this.cursorY += headerH;
 
+    const structWorkLabel = getWorkProgressStructureLabel(fields.typeOfStructure);
     const items = [
       { label: 'Foundation', val: fields.progressFoundation || '' },
-      { label: 'RCC work', val: fields.progressRCC || '' },
+      { label: structWorkLabel, val: fields.progressRCC || '' },
       { label: 'BR work', val: fields.progressBR || '' },
       { label: 'Plastering -', val: fields.progressPlastering || '' },
       { label: 'Flooring', val: fields.progressFlooring || '' },
@@ -831,6 +856,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const col3 = 125;
     const col4 = CONTENT_W - col1 - col2 - col3; // ~119.28 pt
 
+    const defaultNdmaStructure = getNdmaStructureTypeForStructure(fields.typeOfStructure);
     const ndmaRows = [
       { l1: 'Concrete Grade', v1: fields.ndmaConcreteGrade || 'M25', l2: 'Horizontal floor type', v2: fields.ndmaHorizontalFloorType || 'Beams and Slabs' },
       { l1: 'Seismic Zone', v1: fields.ndmaSeismicZone || 'Zone-III', l2: 'Steel Grade', v2: fields.ndmaSteelGrade || 'FE - 450' },
@@ -839,7 +865,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       { l1: 'Wind / Cyclones', v1: fields.ndmaWindCyclones || 'Low Damage Risk Zone', l2: 'Tsunami', v2: fields.ndmaTsunami || 'NO' },
       { l1: 'Height of building above\nground level', v1: fields.ndmaHeightAboveGround || 'Less Than 15m Tall', l2: 'Coastal Regulatory Zone\n(CRZ)', v2: fields.ndmaCRZ || 'NA' },
       { l1: 'Nature of Building\n/Wing/Tower', v1: fields.ndmaNatureOfBuilding || 'Standalone Structure', l2: 'Function of use', v2: fields.ndmaFunctionOfUse || 'Residential' },
-      { l1: 'Type of Foundation', v1: fields.ndmaFoundationType || 'Open Footing column', l2: 'Type of Structure', v2: fields.ndmaStructureType || 'RCC Framed Structure' },
+      { l1: 'Type of Foundation', v1: fields.ndmaFoundationType || 'Open Footing column', l2: 'Type of Structure', v2: fields.ndmaStructureType || defaultNdmaStructure },
     ];
 
     for (const r of ndmaRows) {
@@ -892,11 +918,20 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     // Relevant Data / Information Points
     this.drawHeadingText('RELEVANT DATA/ INFORMATION IN RESPECT OF THE PROPERTY UNDER REFERENCE:', TABLE_FONT_SIZE, 'left');
 
+    const structName = (fields.typeOfStructure || 'RCC').trim();
+    const structPhrase = structName.toLowerCase().includes('load')
+      ? 'a load bearing structure'
+      : structName.toLowerCase().includes('aluform')
+      ? 'an Aluform (Mivan) shuttering structure'
+      : structName.toLowerCase().includes('steel')
+      ? 'a steel framed structure'
+      : `an ${structName} framed structure`;
+
     const relPoints = [
       { prefix: 'i) PURPOSE OF VALUATION: ', text: fields.annexurePurpose || 'Mortgage and Bank finance.' },
       { prefix: 'ii) Govt. guideline value of land: ', text: fields.annexureGovtGuideline || `Rs.${fields.valuationGovtRate ? fields.valuationGovtRate.split('*')[0].trim() : '286/- per sqft'} (As per IGR, Odisha Govt. Website)` },
       { prefix: 'iii) ', text: fields.annexureMarketEnquiry || `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. 1700per sqft to @ Rs. 1900per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.` },
-      { prefix: 'iv) ', text: fields.annexureCpwdBaseRate || `The base rate of construction has been considered at ₹1,300 per sq. ft. for an RCC framed structure for the location. An additional ₹500 per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹${fields.rateOfCostOfConstruction || '1,800'} per sq. ft. of Super built-up area (SBUA).` },
+      { prefix: 'iv) ', text: fields.annexureCpwdBaseRate || `The base rate of construction has been considered at ₹1,300 per sq. ft. for ${structPhrase} for the location. An additional ₹500 per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹${fields.rateOfCostOfConstruction || '1,800'} per sq. ft. of Super built-up area (SBUA).` },
       { prefix: 'v) ', text: 'Considering the above CPWD rate, CPWD specification and the specification of the house under consideration, cost of construction for the above building may reasonably be taken as under: -' },
     ];
 
@@ -917,7 +952,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
 
     const adopted = (fields.annexureAdoptedStructures && fields.annexureAdoptedStructures.length > 0)
       ? fields.annexureAdoptedStructures
-      : [{ structure: 'RCC Roofing Ground Floor', cost: fields.rateOfCostOfConstruction ? `GF- Rs.${fields.rateOfCostOfConstruction}/-` : 'GF- Rs.1,600/- & FF- Rs.1,800/-' }];
+      : [{ structure: `${structName} Roofing Ground Floor`, cost: fields.rateOfCostOfConstruction ? `GF- Rs.${fields.rateOfCostOfConstruction}/-` : 'GF- Rs.1,600/- & FF- Rs.1,800/-' }];
 
     for (const a of adopted) {
       this.checkPageBreak(TABLE_MIN_ROW_H);
@@ -1063,7 +1098,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       'A. THE INFORMATION FURNISHED ABOVE IS TRUE TO THE BEST OF MY / OUR KNOWLEDGE AND BELIEF.',
       'B. NEITHER ME/WE NOR MY/ OUR ASSOCIATE HAVE ANY DIRECT OR INDIRECT INTEREST IN THE ADVANCE OR ASSETS VALUED.',
       'C. I/WE ARE NEITHER RELATED TO THE OWNER OF THE PROPERTY WHICH IS BEING VALUED NOR THE OFFICIALS OF THE BRANCH FROM WHICH THE BORROWER PROPOSES TO MORTGAGE THE PROPERTY BEING VALUED / ALREADY MORTGAGED TO THE BRANCH.',
-      `D. THE PROPERTY WAS PHYSICALLY INSPECTED BY ME/US ON ${fields.dateOfVisit || '22/07/2026'} ALONG WITH CUSTOMER.`,
+      `D. THE PROPERTY WAS PHYSICALLY INSPECTED BY ME/US ON ${fields.dateOfVisit || fields.reportDate || ''} ALONG WITH CUSTOMER.`,
       'E. THE TITLE DEED (S) OF THE PROPERTY UNDER VALUATION IS AVAILABLE WITH THE BANK.',
       'F. THE PROPERTY IS IDENTIFIED BY THE REPERESNTIVE OF THE BANK.',
       'G. THIS VALUATION IS PREPARED WITHOUT ANY PREJUDICE OR BIAS TO ANY PERSON OR INSTITUTION.',

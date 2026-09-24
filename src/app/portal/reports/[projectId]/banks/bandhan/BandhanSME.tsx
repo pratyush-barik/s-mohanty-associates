@@ -115,6 +115,33 @@ export default function BandhanSME({
     return id ? (id.toLowerCase().startsWith('bandhan/') ? id : `Bandhan/${id}`) : '';
   }, [projectCode, projectId]);
 
+  // ── Find First Field Engineer Visit Date (Earliest Visit Date) ──
+  const firstFieldAgentVisit = useMemo(() => {
+    if (bucketImages && bucketImages.length > 0) {
+      const validImages = [...bucketImages]
+        .filter(img => img.createdAt)
+        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+      if (validImages.length > 0) {
+        return {
+          dateStr: formatReportDate(validImages[0].createdAt),
+          rawDate: validImages[0].createdAt,
+          agentName: validImages[0].employee?.name || prefill?.firstFieldAgentName || '',
+          agentId: validImages[0].employee?.employeeId || '',
+        };
+      }
+    }
+    const fallbackDate = prefill?.fieldVisitDate || prefill?.inspectionDate;
+    if (fallbackDate) {
+      return {
+        dateStr: formatReportDate(fallbackDate),
+        rawDate: fallbackDate,
+        agentName: prefill?.firstFieldAgentName || prefill?.fieldEmployees?.[0]?.name || '',
+        agentId: prefill?.fieldEmployees?.[0]?.employeeId || '',
+      };
+    }
+    return null;
+  }, [bucketImages, prefill]);
+
   // State initialization with clean defaults and project prefill
   const [fields, setFields] = useState<BandhanSMEReportFields>(() => {
     const raw = typeof initialFields === 'object' && initialFields !== null ? initialFields : (initialData?.reportFields || initialData || {});
@@ -178,7 +205,9 @@ export default function BandhanSME({
       valuationType: raw.valuationType || 'Fresh Valuation',
       dateOfEarlierValuation: raw.dateOfEarlierValuation || 'No',
       previousValuerName: raw.previousValuerName || 'Not Applicable',
-      dateOfVisit: raw.dateOfVisit ? formatReportDate(raw.dateOfVisit) : (prefill?.inspectionDate ? formatReportDate(prefill.inspectionDate) : formatReportDate(new Date())),
+      dateOfVisit: raw.dateOfVisit
+        ? formatReportDate(raw.dateOfVisit)
+        : (firstFieldAgentVisit?.dateStr || (prefill?.fieldVisitDate ? formatReportDate(prefill.fieldVisitDate) : (prefill?.inspectionDate ? formatReportDate(prefill.inspectionDate) : formatReportDate(new Date())))),
       dateOfValuation: raw.dateOfValuation ? formatReportDate(raw.dateOfValuation) : formatReportDate(new Date()),
       personsPresent: raw.personsPresent || (prefill?.contactName ? `${prefill.contactName}, Mob-${prefill?.serviceRequest?.guestPhone || ''}` : ''),
       documentsProduced: raw.documentsProduced || 'Xerox copy of Sale Deed, Patta, Sketch Map, Assessment of Holding',
@@ -1127,11 +1156,30 @@ export default function BandhanSME({
                   />
                 </Field>
                 <Field label="H. Date of Visit to the Property:">
-                  <BaseDateInput
-                    value={fields.dateOfVisit || ''}
-                    onChange={(val) => handleChange('dateOfVisit', val)}
-                    disabled={isReadOnly}
-                  />
+                  <div className="space-y-1">
+                    <BaseDateInput
+                      value={fields.dateOfVisit || ''}
+                      onChange={(val) => handleChange('dateOfVisit', val)}
+                      disabled={isReadOnly}
+                    />
+                    {firstFieldAgentVisit?.dateStr && (
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-0.5">
+                        <span className="truncate">
+                          Earliest Field Visit: <span className="font-semibold text-slate-700">{firstFieldAgentVisit.dateStr}</span>
+                          {firstFieldAgentVisit.agentName ? ` (${firstFieldAgentVisit.agentName})` : ''}
+                        </span>
+                        {!isReadOnly && fields.dateOfVisit !== firstFieldAgentVisit.dateStr && (
+                          <button
+                            type="button"
+                            onClick={() => handleChange('dateOfVisit', firstFieldAgentVisit.dateStr)}
+                            className="text-blue-600 hover:text-blue-800 font-semibold underline text-[11px] shrink-0 ml-2 cursor-pointer"
+                          >
+                            Use Field Date
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </Field>
                 <Field label="I. Date on which Valuation is Made:">
                   <BaseDateInput

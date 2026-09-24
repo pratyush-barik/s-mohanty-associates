@@ -14,7 +14,7 @@
  *   - No wizard flow — this builder is directly for IBBI organisation clients
  */
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage } from '@/app/actions/project';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -22,7 +22,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFIBBIRenderer } from '@/lib/pdf-ibbi-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
-import { BasePhotographsSection, BaseDateInput, formatReportDate } from './banks/BaseBankReportComponents';
+import { BasePhotographsSection, BaseDateInput, formatReportDate, getEarliestFieldVisit, EarliestFieldVisitBadge } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 // @ts-ignore
 import * as XLSX from 'xlsx';
@@ -984,6 +984,9 @@ const getIBBILocationAddress = (fields: IBBIFields): string => {
 export default function IBBIReportBuilder({ projectId, projectCode, initialFields, status, userRole = 'REPORT_EMPLOYEE', bucketImages = [], prefill, onReset }: IBBIReportBuilderProps) {
   const router = useRouter();
 
+  const firstFieldAgentVisit = useMemo(() => {
+    return getEarliestFieldVisit(bucketImages, prefill);
+  }, [bucketImages, prefill]);
 
   const merged: IBBIFields = {
     ...DEFAULT_FIELDS,
@@ -991,6 +994,7 @@ export default function IBBIReportBuilder({ projectId, projectCode, initialField
     refNo: initialFields?.refNo || projectCode || DEFAULT_FIELDS.refNo,
     ownerName: initialFields?.ownerName || prefill?.contactName || DEFAULT_FIELDS.ownerName,
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
+    dateOfInspection: initialFields?.dateOfInspection || firstFieldAgentVisit?.dateStr || DEFAULT_FIELDS.dateOfInspection || formatReportDate(new Date()),
     propertyImages: Array.isArray(initialFields?.propertyImages) ? initialFields.propertyImages : DEFAULT_FIELDS.propertyImages,
     propertyImageNames: Array.isArray(initialFields?.propertyImageNames) ? initialFields.propertyImageNames : DEFAULT_FIELDS.propertyImageNames,
     sketchMapImages: Array.isArray(initialFields?.sketchMapImages) 
@@ -3310,12 +3314,20 @@ Our valuation is based on information obtained from the client and on data gathe
                 onChange={val => handleChange('dateOfValuation', val)}
                 disabled={isReadOnly}
               />
-              <BaseDateInput
-                label="Date of Inspection"
-                value={fields.dateOfInspection || ''}
-                onChange={val => handleChange('dateOfInspection', val)}
-                disabled={isReadOnly}
-              />
+              <div>
+                <BaseDateInput
+                  label="Date of Inspection"
+                  value={fields.dateOfInspection || ''}
+                  onChange={val => handleChange('dateOfInspection', val)}
+                  disabled={isReadOnly}
+                />
+                <EarliestFieldVisitBadge
+                  visitInfo={firstFieldAgentVisit}
+                  currentValue={fields.dateOfInspection}
+                  onApply={(d) => handleChange('dateOfInspection', d)}
+                  className="mt-1"
+                />
+              </div>
               <Field label="Place">
                 <input type="text" value={fields.conclusionPlace || ''} onChange={e => handleChange('conclusionPlace', e.target.value)} className={inputCls} disabled={isReadOnly} />
               </Field>
@@ -5034,12 +5046,20 @@ Our valuation is based on information obtained from the client and on data gathe
                 <Field label="Valuer's Father's Name">
                   <input type="text" value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} className={inputCls} disabled={isReadOnly} />
                 </Field>
-                <BaseDateInput
-                  label="Date of Inspection"
-                  value={fields.dateOfInspection || ''}
-                  onChange={() => {}}
-                  disabled
-                />
+                <div>
+                  <BaseDateInput
+                    label="Date of Inspection"
+                    value={fields.dateOfInspection || ''}
+                    onChange={() => {}}
+                    disabled
+                  />
+                  <EarliestFieldVisitBadge
+                    visitInfo={firstFieldAgentVisit}
+                    currentValue={fields.dateOfInspection}
+                    onApply={(d) => handleChange('dateOfInspection', d)}
+                    className="mt-1"
+                  />
+                </div>
                 <BaseDateInput
                   label="Date of Valuation Report"
                   value={fields.dateOfValuation || ''}

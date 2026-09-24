@@ -28,6 +28,8 @@ import {
   BasePhotoBucketModal,
   BaseAnnexureSection,
   fetchBytes,
+  getEarliestFieldVisit,
+  EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
 import { reorderAndLabelAnnexures, AnnexureItem, normalizeMapImages, BankConfig } from '@/lib/bank-fields';
 import { decodeHtmlEntitiesDeep } from '@/lib/html-entities';
@@ -73,6 +75,10 @@ export default function AnnapurnaMicroFinance({
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
 
+  const firstFieldAgentVisit = useMemo(() => {
+    return getEarliestFieldVisit(bucketImages, prefill?.fieldVisitDate || prefill?.inspectionDate || prefill?.dateOfInspection);
+  }, [bucketImages, prefill]);
+
   // ── Clean Initial State (ZERO dummy prefills) ──
   const initialData: AnnapurnaMicroFinanceReportFields = useMemo(() => {
     const raw = (typeof initialFields === 'object' && initialFields !== null) ? initialFields : {};
@@ -87,7 +93,7 @@ export default function AnnapurnaMicroFinance({
       refNo: raw.refNo || projectCode || projectId || '',
       reportDate: formatReportDate(raw.reportDate || raw.dateOfValuation || new Date()),
       fileNo: raw.fileNo || '',
-      dateOfVisit: formatReportDate(raw.dateOfVisit || raw.dateOfInspection || prefill?.inspectionDate || ''),
+      dateOfVisit: formatReportDate(raw.dateOfVisit || raw.dateOfInspection || firstFieldAgentVisit?.date || prefill?.fieldVisitDate || prefill?.inspectionDate || ''),
       applicantName: raw.applicantName || prefill?.contactName || '',
       contactPerson: raw.contactPerson || prefill?.contactName || '',
       loanType: raw.loanType || 'LAP',
@@ -269,9 +275,6 @@ export default function AnnapurnaMicroFinance({
       annexureRefShowAlso: Boolean(raw.annexureRefShowAlso),
 
       // Organisation metadata
-      clientType: raw.clientType || 'organisation',
-      organisationTemplate: raw.organisationTemplate || raw.bankName || 'ANNAPURNA MICRO FINANCE LTD',
-      organisationSubTemplate: raw.organisationSubTemplate || '',
       institutionCategory: raw.institutionCategory || 'Bank & FIS',
       serviceType: raw.serviceType || prefill?.purpose || '',
       subjectType: raw.subjectType || prefill?.propertyType || '',
@@ -878,12 +881,20 @@ export default function AnnapurnaMicroFinance({
             <Field label="File No. / LAN No. / Lead No.">
               <input className={inputCls} value={fields.fileNo || ''} onChange={e => handleChange('fileNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20159644" />
             </Field>
-            <BaseDateInput
-              label="Date of Visit"
-              value={fields.dateOfVisit || ''}
-              onChange={val => handleChange('dateOfVisit', val)}
-              disabled={isReadOnly}
-            />
+            <div>
+              <BaseDateInput
+                label="Date of Visit"
+                value={fields.dateOfVisit || ''}
+                onChange={val => handleChange('dateOfVisit', val)}
+                disabled={isReadOnly}
+              />
+              <EarliestFieldVisitBadge
+                visitInfo={firstFieldAgentVisit}
+                currentValue={fields.dateOfVisit}
+                onApply={(d) => handleChange('dateOfVisit', d)}
+                className="mt-1"
+              />
+            </div>
             <Field label="Name of Applicant & No.">
               <input className={inputCls} value={fields.applicantName || ''} onChange={e => handleChange('applicantName', e.target.value)} disabled={isReadOnly} placeholder="Applicant name & contact" />
             </Field>

@@ -74,6 +74,164 @@ export function formatAssignedEngineers(fieldEmployees?: Array<any>): string {
   return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
 }
 
+// ─── Universal Field Engineer Visit Derivation ───────────────────────
+export interface FieldVisitInfo {
+  dateStr: string;
+  date?: string; // alias for backwards compat
+  rawDate?: Date;
+  engineerName?: string;
+  source: 'first_photo' | 'prefill' | 'today';
+}
+
+export function getEarliestFieldVisit(bucketImages?: any[], prefill?: any): FieldVisitInfo {
+  if (Array.isArray(bucketImages) && bucketImages.length > 0) {
+    const valid = bucketImages
+      .map(img => {
+        const d = img?.createdAt ? new Date(img.createdAt) : null;
+        return {
+          img,
+          date: d && !isNaN(d.getTime()) ? d : null,
+          name: img?.employee?.name || img?.employeeId || ''
+        };
+      })
+      .filter(item => item.date !== null)
+      .sort((a, b) => a.date!.getTime() - b.date!.getTime());
+
+    if (valid.length > 0) {
+      const dateFormatted = formatReportDate(valid[0].date!);
+      return {
+        dateStr: dateFormatted,
+        date: dateFormatted,
+        rawDate: valid[0].date!,
+        engineerName: valid[0].name,
+        source: 'first_photo'
+      };
+    }
+  }
+
+  const preDate = prefill?.fieldVisitDate || prefill?.inspectionDate || prefill?.dateOfInspection || prefill?.dateOfVisit;
+  if (preDate) {
+    const dateFormatted = formatReportDate(preDate);
+    return {
+      dateStr: dateFormatted,
+      date: dateFormatted,
+      engineerName: prefill?.assignedEngineerName || prefill?.visitingEngineer || prefill?.engineerName || '',
+      source: 'prefill'
+    };
+  }
+
+  const todayFormatted = formatReportDate(new Date());
+  return {
+    dateStr: todayFormatted,
+    date: todayFormatted,
+    source: 'today'
+  };
+}
+
+export function EarliestFieldVisitBadge({
+  fieldVisit,
+  visitInfo,
+  currentValue,
+  onSync,
+  onApply,
+  isReadOnly = false,
+  className = '',
+}: {
+  fieldVisit?: FieldVisitInfo | null;
+  visitInfo?: FieldVisitInfo | null;
+  currentValue?: string;
+  onSync?: (dateStr: string) => void;
+  onApply?: (dateStr: string) => void;
+  isReadOnly?: boolean;
+  className?: string;
+}) {
+  const visit = fieldVisit || visitInfo;
+  if (!visit || (!visit.dateStr && !visit.date)) return null;
+  const targetDate = visit.dateStr || visit.date || '';
+  const isDifferent = currentValue && currentValue.trim() !== targetDate.trim();
+  const syncFn = onSync || onApply;
+
+  return (
+    <div className={`flex flex-wrap items-center gap-1.5 text-[11px] text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-md font-medium ${className || 'mt-1'}`}>
+      <span>
+        ⚡ Earliest Field Visit: <strong>{targetDate}</strong>
+        {visit.engineerName ? ` (${visit.engineerName})` : ''}
+      </span>
+      {!isReadOnly && isDifferent && syncFn && (
+        <button
+          type="button"
+          onClick={() => syncFn(targetDate)}
+          className="ml-1 text-blue-800 hover:text-blue-950 underline font-semibold cursor-pointer"
+          title="Restore field engineer visit date"
+        >
+          ↺ Use Field Date
+        </button>
+      )}
+    </div>
+  );
+}
+
+// ─── Universal Dynamic Structure Derivation Utilities ────────────────
+export function getConstructionDetailsForStructure(structureType?: string): string {
+  const st = (structureType || 'RCC').trim().toLowerCase();
+  if (st.includes('aluform') || st.includes('mivan')) return 'Aluform (Mivan) RCC shuttering structure';
+  if (st.includes('load bearing') || st.includes('loadbearing')) return 'Load bearing wall structure';
+  if (st.includes('steel')) return 'Steel framed structure';
+  if (st.includes('rcc')) return 'RCC Framed structure';
+  return `${structureType || 'RCC'} structure`;
+}
+
+export function getNdmaStructureTypeForStructure(structureType?: string): string {
+  const st = (structureType || 'RCC').trim().toLowerCase();
+  if (st.includes('aluform') || st.includes('mivan')) return 'Aluform Shuttering Structure';
+  if (st.includes('load bearing') || st.includes('loadbearing')) return 'Load Bearing Structure';
+  if (st.includes('steel')) return 'Steel Structure';
+  if (st.includes('rcc')) return 'RCC Framed Structure';
+  return `${structureType || 'RCC'} Structure`;
+}
+
+export function getWorkProgressStructureLabel(structureType?: string): string {
+  const st = (structureType || 'RCC').trim();
+  return `${st} Work`;
+}
+
+export function StructureDerivationBadge({
+  sourceLabel = 'Pt 21: Type of Structure',
+  currentStructure = 'RCC',
+  currentValue,
+  derivedValue,
+  onSync,
+  isReadOnly = false,
+}: {
+  sourceLabel?: string;
+  currentStructure?: string;
+  currentValue?: string;
+  derivedValue?: string;
+  onSync?: (val: string) => void;
+  isReadOnly?: boolean;
+}) {
+  const targetDerived = derivedValue || getConstructionDetailsForStructure(currentStructure);
+  const isDifferent = currentValue && currentValue.trim() !== targetDerived.trim();
+
+  return (
+    <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 rounded-md font-medium">
+      <span>
+        ⚡ Auto-derived from <strong>{sourceLabel} ({currentStructure || 'RCC'})</strong>
+      </span>
+      {!isReadOnly && isDifferent && onSync && (
+        <button
+          type="button"
+          onClick={() => onSync(targetDerived)}
+          className="ml-1 text-indigo-800 hover:text-indigo-950 underline font-semibold cursor-pointer"
+          title={`Sync with ${sourceLabel}`}
+        >
+          ↺ Sync with {sourceLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ─── Standard Input & Select Classes ─────────────────────────────────
 export const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 disabled:bg-[#f1f3f5] disabled:text-[#6c757d] transition-all";
 export const selectCls = inputCls;

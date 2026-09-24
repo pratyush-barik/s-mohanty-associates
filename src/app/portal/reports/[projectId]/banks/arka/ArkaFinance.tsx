@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRef, useEffect } from 'react';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
@@ -19,11 +19,14 @@ import {
   BaseDateInput,
   BasePhotographsSection,
   BaseMapsSection,
-  BasePhotoBucketModal
+  BasePhotoBucketModal,
+  getEarliestFieldVisit,
+  EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
 
 export default function ArkaFinance({
   projectId,
+  projectCode,
   initialFields,
   status,
   userRole,
@@ -33,7 +36,12 @@ export default function ArkaFinance({
 }: any) {
   const router = useRouter();
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
-  const [fields, setFields] = useState<any>({
+
+  const firstFieldAgentVisit = useMemo(() => {
+    return getEarliestFieldVisit(bucketImages, prefill?.fieldVisitDate || prefill?.inspectionDate || prefill?.dateOfInspection);
+  }, [bucketImages, prefill]);
+
+  const [fields, setFields] = useState<any>(() => ({
     // Section 1: Cover Page
     propertyOwners: [{ name: '', fatherName: '' }],
     arkaAddressOfTheProperty: '',
@@ -147,7 +155,7 @@ export default function ArkaFinance({
     percentWorkCompleted: '',
     percentDisbursementRecommended: '',
     currentValueOfTheProperty: '',
-    dateOfPropertyVisit: '',
+    dateOfPropertyVisit: initialFields?.dateOfPropertyVisit || firstFieldAgentVisit?.date || prefill?.fieldVisitDate || prefill?.inspectionDate || '',
     valuationAsPerGovernmentReckoner: '',
     distressedValuation: '',
     rentalValuePerMonth: '',
@@ -174,7 +182,7 @@ export default function ArkaFinance({
     organisationSubTemplate: initialFields?.organisationSubTemplate || '',
     bankName: initialFields?.bankName || 'ARKA FINANCE',
     documentsProvided: initialFields?.documentsProvided || 'Multiple'
-  });
+  }));
 
   const [loading, setLoading] = useState(false);
   const [bucketPickerOpen, setBucketPickerOpen] = useState(false);
@@ -1469,13 +1477,20 @@ export default function ArkaFinance({
               >
                 <input className={`${inputCls} font-bold ${!fields.enableEditCurrentValue ? 'bg-gray-50' : ''}`} value={fields.currentValueOfTheProperty || ''} onChange={e => handleChange('currentValueOfTheProperty', e.target.value)} disabled={isReadOnly || !fields.enableEditCurrentValue} placeholder="&#8377;" />
               </Field>
-              <BaseDateInput
-                span={2}
-                label="Date of Property Visit"
-                value={fields.dateOfPropertyVisit || ''}
-                onChange={val => handleChange('dateOfPropertyVisit', val)}
-                disabled={isReadOnly}
-              />
+              <div className="col-span-2">
+                <BaseDateInput
+                  label="Date of Property Visit"
+                  value={fields.dateOfPropertyVisit || ''}
+                  onChange={val => handleChange('dateOfPropertyVisit', val)}
+                  disabled={isReadOnly}
+                />
+                <EarliestFieldVisitBadge
+                  visitInfo={firstFieldAgentVisit}
+                  currentValue={fields.dateOfPropertyVisit}
+                  onApply={(d) => handleChange('dateOfPropertyVisit', d)}
+                  className="mt-1"
+                />
+              </div>
             </div>
           </div>
           {/* Container: Additional Valuations - light lime */}

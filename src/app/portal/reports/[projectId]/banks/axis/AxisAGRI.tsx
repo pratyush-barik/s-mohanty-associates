@@ -19,6 +19,8 @@ import {
   BasePhotoBucketModal,
   fetchBytes,
   getFloorName,
+  getEarliestFieldVisit,
+  EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
@@ -119,29 +121,7 @@ export default function AxisAGRI({
 
   // ── Find First Field Engineer Visit Date (Earliest Initiation) ──
   const firstFieldAgentVisit = useMemo(() => {
-    if (bucketImages && bucketImages.length > 0) {
-      const validImages = [...bucketImages]
-        .filter(img => img.createdAt)
-        .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-      if (validImages.length > 0) {
-        return {
-          dateStr: formatReportDate(validImages[0].createdAt),
-          rawDate: validImages[0].createdAt,
-          agentName: validImages[0].employee?.name || prefill?.firstFieldAgentName || '',
-          agentId: validImages[0].employee?.employeeId || '',
-        };
-      }
-    }
-    const fallbackDate = prefill?.fieldVisitDate || prefill?.inspectionDate;
-    if (fallbackDate) {
-      return {
-        dateStr: formatReportDate(fallbackDate),
-        rawDate: fallbackDate,
-        agentName: prefill?.firstFieldAgentName || prefill?.fieldEmployees?.[0]?.name || '',
-        agentId: prefill?.fieldEmployees?.[0]?.employeeId || '',
-      };
-    }
-    return null;
+    return getEarliestFieldVisit(bucketImages, prefill?.fieldVisitDate || prefill?.inspectionDate || prefill?.dateOfInspection);
   }, [bucketImages, prefill]);
 
   // ── Initial State Pre-fill ──
@@ -160,7 +140,7 @@ export default function AxisAGRI({
       reportTitle: raw.reportTitle || 'VALUATION REPORT FORMAT (NON-AGRI)',
       dateOfVisit: raw.dateOfVisit
         ? formatReportDate(raw.dateOfVisit)
-        : (firstFieldAgentVisit?.dateStr || formatReportDate(raw.dateOfInspection || prefill?.inspectionDate || new Date())),
+        : (firstFieldAgentVisit?.date || formatReportDate(raw.dateOfInspection || prefill?.inspectionDate || new Date())),
       reportInitiatedByArea: raw.reportInitiatedByArea || prefill?.serviceRequest?.branch || prefill?.branch || '',
       nameOfArea: raw.nameOfArea || '',
       ownerNameAndAddress: raw.ownerNameAndAddress || prefill?.contactName || '',
@@ -1179,22 +1159,12 @@ export default function AxisAGRI({
                   disabled={isReadOnly}
                 />
               </Field>
-              {firstFieldAgentVisit && (
-                <div className="flex items-center justify-between text-[11px] bg-blue-100/70 border border-blue-200 text-blue-800 px-2 py-0.5 rounded">
-                  <span>
-                    Visited: <strong>{firstFieldAgentVisit.agentName}</strong> ({firstFieldAgentVisit.dateStr})
-                  </span>
-                  {!isReadOnly && fields.dateOfVisit !== firstFieldAgentVisit.dateStr && (
-                    <button
-                      type="button"
-                      onClick={() => handleChange('dateOfVisit', firstFieldAgentVisit.dateStr)}
-                      className="text-[10px] underline font-bold hover:text-blue-900 cursor-pointer ml-1"
-                    >
-                      Reset to Visit
-                    </button>
-                  )}
-                </div>
-              )}
+              <EarliestFieldVisitBadge
+                visitInfo={firstFieldAgentVisit}
+                currentValue={fields.dateOfVisit}
+                onApply={(d) => handleChange('dateOfVisit', d)}
+                className="mt-1"
+              />
             </div>
           </div>
         </div>

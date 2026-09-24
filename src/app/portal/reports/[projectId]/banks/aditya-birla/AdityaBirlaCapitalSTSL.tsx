@@ -28,6 +28,8 @@ import {
   AnnexureRefSelector,
   BaseAnnexureSection,
   fetchBytes,
+  getEarliestFieldVisit,
+  EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
 import { reorderAndLabelAnnexures, AnnexureItem, decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/bank-fields';
 
@@ -259,6 +261,10 @@ export default function AdityaBirlaCapitalSTSL({
   const router = useRouter();
   const isReadOnly = status === 'submitted' || status === 'verified' || status === 'completed' || userRole === 'client';
 
+  const firstFieldAgentVisit = useMemo(() => {
+    return getEarliestFieldVisit(bucketImages, prefill?.fieldVisitDate || prefill?.inspectionDate || prefill?.dateOfInspection);
+  }, [bucketImages, prefill]);
+
   const [fields, setFields] = useState<STSLReportFields>(() => decodeHtmlEntitiesDeep<STSLReportFields>({
     ...initialFields,
     clientType: initialFields?.clientType || 'organisation',
@@ -272,7 +278,7 @@ export default function AdityaBirlaCapitalSTSL({
     ownerName: initialFields?.ownerName || prefill?.contactName || '',
     initiationDate: initialFields?.initiationDate ? formatReportDate(initialFields.initiationDate) : (prefill?.initiationDate ? formatReportDate(prefill.initiationDate) : formatReportDate(new Date())),
     vertical: 'STSL',
-    dateOfInspection: initialFields?.dateOfInspection ? formatReportDate(initialFields.dateOfInspection) : (prefill?.inspectionDate ? formatReportDate(prefill.inspectionDate) : formatReportDate(new Date())),
+    dateOfInspection: initialFields?.dateOfInspection ? formatReportDate(initialFields.dateOfInspection) : (firstFieldAgentVisit?.date || (prefill?.inspectionDate ? formatReportDate(prefill.inspectionDate) : formatReportDate(new Date()))),
     caseReferenceNumber: initialFields?.caseReferenceNumber || initialFields?.loanApplicationNo || '',
     dateOfValuation: initialFields?.dateOfValuation ? formatReportDate(initialFields.dateOfValuation) : formatReportDate(new Date()),
     propertyOwnerName: initialFields?.propertyOwnerName || prefill?.contactName || '',
@@ -442,8 +448,6 @@ export default function AdityaBirlaCapitalSTSL({
     finalizedBy: initialFields?.finalizedBy || prefill?.reportEmployeeName || '',
 
     // Organisation metadata (for ActiveConfigBanner)
-    organisationTemplate: initialFields?.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD',
-    organisationSubTemplate: initialFields?.organisationSubTemplate || 'STSL',
     institutionCategory: initialFields?.institutionCategory || 'Bank & FIS',
     serviceType: initialFields?.serviceType || '',
     subjectType: initialFields?.subjectType || '',
@@ -1360,12 +1364,20 @@ export default function AdityaBirlaCapitalSTSL({
             <Field label="Vertical">
               <input type="text" value="STSL" disabled className={`${inputCls} bg-neutral-100 font-bold text-[#0f2038]`} />
             </Field>
-            <BaseDateInput
-              label="Visit Date (Inspection Date)"
-              value={fields.dateOfInspection || ''}
-              onChange={val => handleChange('dateOfInspection', val)}
-              disabled={isReadOnly}
-            />
+            <div>
+              <BaseDateInput
+                label="Visit Date (Inspection Date)"
+                value={fields.dateOfInspection || ''}
+                onChange={val => handleChange('dateOfInspection', val)}
+                disabled={isReadOnly}
+              />
+              <EarliestFieldVisitBadge
+                visitInfo={firstFieldAgentVisit}
+                currentValue={fields.dateOfInspection}
+                onApply={(d) => handleChange('dateOfInspection', d)}
+                className="mt-1"
+              />
+            </div>
             <Field label="Case Reference Number">
               <input type="text" value={fields.caseReferenceNumber || ''} onChange={e => handleChange('caseReferenceNumber', e.target.value)} disabled={isReadOnly} className={inputCls} />
             </Field>

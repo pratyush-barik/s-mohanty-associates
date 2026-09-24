@@ -38,6 +38,8 @@ import {
   BaseMapsSection,
   BasePhotoBucketModal,
   fetchBytes,
+  getEarliestFieldVisit,
+  EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
 import { normalizeMapImages, BankConfig } from '@/lib/bank-fields';
 import { decodeHtmlEntitiesDeep } from '@/lib/html-entities';
@@ -79,6 +81,10 @@ export default function ArthanFinance({
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
   const isManagerOrOwner = userRole === 'MANAGER' || userRole === 'OWNER';
 
+  const firstFieldAgentVisit = useMemo(() => {
+    return getEarliestFieldVisit(bucketImages, prefill?.fieldVisitDate || prefill?.inspectionDate || prefill?.dateOfInspection);
+  }, [bucketImages, prefill]);
+
   // ── Initial State ──
   const initialData: ArthanFinanceReportFields = useMemo(() => {
     const raw = (typeof initialFields === 'object' && initialFields !== null) ? initialFields : {};
@@ -95,7 +101,7 @@ export default function ArthanFinance({
       // Section 1 — Technical Initiation Request Form Data
       proposalNo: raw.proposalNo || projectCode || projectId || '',
       caseType: raw.caseType || 'SBL',
-      dateOfInspection: formatReportDate(raw.dateOfInspection || prefill?.inspectionDate || ''),
+      dateOfInspection: formatReportDate(raw.dateOfInspection || firstFieldAgentVisit?.date || prefill?.fieldVisitDate || prefill?.inspectionDate || ''),
       nearestLandmark: raw.nearestLandmark || '',
       customerName: raw.customerName || prefill?.contactName || '',
       ownerName: raw.ownerName || prefill?.contactName || '',
@@ -111,7 +117,7 @@ export default function ArthanFinance({
       developedBy: raw.developedBy || 'NA',
       typeOfProperty: raw.typeOfProperty === 'SORP' ? '' : (raw.typeOfProperty || ''),
       typeOfLocality: raw.typeOfLocality || '',
-      dateOfInspectionSite: formatReportDate(raw.dateOfInspectionSite || raw.dateOfInspection || prefill?.inspectionDate || ''),
+      dateOfInspectionSite: formatReportDate(raw.dateOfInspectionSite || raw.dateOfInspection || firstFieldAgentVisit?.date || prefill?.fieldVisitDate || prefill?.inspectionDate || ''),
       occupationStatus: raw.occupationStatus || '',
       locationZoningMasterPlan: raw.locationZoningMasterPlan || 'NA',
       propertyUsage: raw.propertyUsage || '',
@@ -313,9 +319,6 @@ export default function ArthanFinance({
       cadastralMapImages: normalizeMapImages(raw.cadastralMapImages),
 
       // Organisation metadata
-      clientType: raw.clientType || 'organisation',
-      organisationTemplate: raw.organisationTemplate || raw.bankName || 'ARTHAN FINANCE',
-      organisationSubTemplate: raw.organisationSubTemplate || '',
       institutionCategory: raw.institutionCategory || 'Bank & FIS',
       serviceType: raw.serviceType || prefill?.purpose || '',
       subjectType: raw.subjectType || prefill?.propertyType || '',
@@ -915,12 +918,20 @@ export default function ArthanFinance({
             <Field label="Case Type">
               <input className={inputCls} value={fields.caseType || ''} onChange={e => handleChange('caseType', e.target.value)} disabled={isReadOnly} placeholder="e.g. SBL" />
             </Field>
-            <BaseDateInput
-              label="Date of Inspection / Site visit"
-              value={fields.dateOfInspection || ''}
-              onChange={val => handleChange('dateOfInspection', val)}
-              disabled={isReadOnly}
-            />
+            <div>
+              <BaseDateInput
+                label="Date of Inspection / Site visit"
+                value={fields.dateOfInspection || ''}
+                onChange={val => handleChange('dateOfInspection', val)}
+                disabled={isReadOnly}
+              />
+              <EarliestFieldVisitBadge
+                visitInfo={firstFieldAgentVisit}
+                currentValue={fields.dateOfInspection}
+                onApply={(d) => handleChange('dateOfInspection', d)}
+                className="mt-1"
+              />
+            </div>
             <Field label="Nearest Landmark" span={2}>
               <input className={inputCls} value={fields.nearestLandmark || ''} onChange={e => handleChange('nearestLandmark', e.target.value)} disabled={isReadOnly} placeholder="e.g. Near Ishkon Temple, Antara" />
             </Field>

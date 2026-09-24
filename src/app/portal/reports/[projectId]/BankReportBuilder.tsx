@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect, ReactNode } from 'react';
+import { useState, useMemo, useRef, useCallback, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage } from '@/app/actions/project';
 import { SERVICES_LIST } from './constants';
@@ -11,7 +11,22 @@ import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldConfig } from '@/lib/bank-fields';
 import { reorderAndLabelAnnexures, normalizeMapImages } from '@/lib/bank-fields';
-import { getFloorName, BasePhotographsSection, BaseMapsSection, BaseAnnexureSection, AnnexureRefSelector, ActiveConfigBanner, BasePhotoBucketModal, BaseDateInput } from './banks/BaseBankReportComponents';
+import {
+  getFloorName,
+  BasePhotographsSection,
+  BaseMapsSection,
+  BaseAnnexureSection,
+  AnnexureRefSelector,
+  ActiveConfigBanner,
+  BasePhotoBucketModal,
+  BaseDateInput,
+  getEarliestFieldVisit,
+  EarliestFieldVisitBadge,
+  getConstructionDetailsForStructure,
+  getNdmaStructureTypeForStructure,
+  getWorkProgressStructureLabel,
+  StructureDerivationBadge,
+} from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
 
@@ -423,6 +438,10 @@ export default function BankReportBuilder({
   const finalValuationLayout = initialFields?.valuationLayout ||
     (/apartment|flat/i.test(finalSubjectType || '') ? 'apartment' : 'land_building');
 
+  const firstFieldAgentVisit = useMemo(() => {
+    return getEarliestFieldVisit(bucketImages, prefill);
+  }, [bucketImages, prefill]);
+
   const defaultBank = config?.bankId || initialFields?.bankName || initialFields?.organisationTemplate || '';
   const defaultSub = config?.subTemplateId || initialFields?.organisationSubTemplate || '';
 
@@ -443,6 +462,8 @@ export default function BankReportBuilder({
     organisationSubTemplate: initialFields?.organisationSubTemplate || defaultSub,
     clientType: 'organisation',
     institutionCategory: initialFields?.institutionCategory || 'Bank & FIS',
+    dateOfInspection: initialFields?.dateOfInspection ? formatReportDate(initialFields.dateOfInspection) : (firstFieldAgentVisit.dateStr || DEFAULT_BASE_FIELDS.dateOfInspection),
+    dateOfValuation: initialFields?.dateOfValuation ? formatReportDate(initialFields.dateOfValuation) : (firstFieldAgentVisit.dateStr || DEFAULT_BASE_FIELDS.dateOfValuation),
     nameOfEngineerVisitingProperty: initialFields?.nameOfEngineerVisitingProperty || (prefill?.fieldEmployees || []).map((e: any) => e.name).filter(Boolean).join(', ') || '',
     propertyImages: Array.isArray(initialFields?.propertyImages) ? initialFields.propertyImages : (typeof initialFields?.propertyImages === 'string' && initialFields.propertyImages ? [initialFields.propertyImages] : DEFAULT_BASE_FIELDS.propertyImages),
     propertyImageNames: Array.isArray(initialFields?.propertyImageNames) ? initialFields.propertyImageNames : DEFAULT_BASE_FIELDS.propertyImageNames,
@@ -613,7 +634,27 @@ export default function BankReportBuilder({
   };
 
   const handleChange = useCallback((field: string, value: any) => {
-    setFields(prev => ({ ...prev, [field]: value }));
+    setFields(prev => {
+      const next = { ...prev, [field]: value };
+      if (field === 'structureType') {
+        const prevConst = getConstructionDetailsForStructure(prev.structureType);
+        if (!prev.exteriors || prev.exteriors === prevConst) {
+          next.exteriors = getConstructionDetailsForStructure(value);
+        }
+        const valLower = String(value || '').toLowerCase();
+        if (valLower.includes('load')) {
+          if (!prev.foundation || prev.foundation === 'RCC') next.foundation = 'Brick/Stone Masonry';
+          if (!prev.roofType || prev.roofType === 'RCC Roofing') next.roofType = 'Load Bearing Slab/Roof';
+        } else if (valLower.includes('aluform')) {
+          if (!prev.foundation || prev.foundation === 'RCC') next.foundation = 'RCC Raft/Piles';
+          if (!prev.roofType || prev.roofType === 'RCC Roofing') next.roofType = 'Aluform Monolithic Slab';
+        } else if (valLower.includes('rcc')) {
+          if (!prev.foundation || prev.foundation === 'Brick/Stone Masonry') next.foundation = 'RCC';
+          if (!prev.roofType || prev.roofType === 'Load Bearing Slab/Roof') next.roofType = 'RCC Roofing';
+        }
+      }
+      return next;
+    });
   }, []);
 
   const getFullAddress = useCallback(() => {
@@ -1998,12 +2039,20 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                     </Field>
                   )}
                   {!isFieldHidden('dateOfValuation') && (
-                    <BaseDateInput
-                      label={getLabel('dateOfValuation', 'Date of Valuation Report')}
-                      value={fields.dateOfValuation || ''}
-                      onChange={val => handleChange('dateOfValuation', val)}
-                      disabled={isReadOnly}
-                    />
+                    <div>
+                      <BaseDateInput
+                        label={getLabel('dateOfValuation', 'Date of Valuation Report')}
+                        value={fields.dateOfValuation || ''}
+                        onChange={val => handleChange('dateOfValuation', val)}
+                        disabled={isReadOnly}
+                      />
+                      <EarliestFieldVisitBadge
+                        fieldVisit={firstFieldAgentVisit}
+                        currentValue={fields.dateOfValuation}
+                        onSync={(d) => handleChange('dateOfValuation', d)}
+                        isReadOnly={isReadOnly}
+                      />
+                    </div>
                   )}
                   {!isFieldHidden('refNo') && (
                     <Field label="Ref No. (Locked)">
@@ -2191,12 +2240,20 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                   </Field>
                 )}
                 {!isFieldHidden('dateOfInspection') && (
-                  <BaseDateInput
-                    label={getLabel('dateOfInspection', 'Date of Inspection')}
-                    value={fields.dateOfInspection || ''}
-                    onChange={val => handleChange('dateOfInspection', val)}
-                    disabled={isReadOnly}
-                  />
+                  <div>
+                    <BaseDateInput
+                      label={getLabel('dateOfInspection', 'Date of Inspection')}
+                      value={fields.dateOfInspection || ''}
+                      onChange={val => handleChange('dateOfInspection', val)}
+                      disabled={isReadOnly}
+                    />
+                    <EarliestFieldVisitBadge
+                      fieldVisit={firstFieldAgentVisit}
+                      currentValue={fields.dateOfInspection}
+                      onSync={(d) => handleChange('dateOfInspection', d)}
+                      isReadOnly={isReadOnly}
+                    />
+                  </div>
                 )}
               </div>
               {renderExtraFields('section-1')}
@@ -2336,15 +2393,20 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
           <Section id="section-5" title={getSectionTitle("section-5", "Structural Details")} number={getSectionNumber("section-5", 5)}>
             <div className="grid md:grid-cols-2 gap-4">
               {!isFieldHidden('structureType') && (
-                <Field label="Type of Structure">
-                  <select className={selectCls} value={fields.structureType} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly}>
-                    <option value="RCC">RCC</option>
-                    <option value="Load Bearing">Load Bearing</option>
-                    <option value="Steel Structure">Steel Structure</option>
-                    <option value="Composite Structure">Composite Structure</option>
-                    <option value="Industrial Shed">Industrial Shed</option>
-                  </select>
-                </Field>
+                <div>
+                  <Field label="Type of Structure">
+                    <select className={selectCls} value={fields.structureType || 'RCC'} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly}>
+                      <option value="RCC">RCC</option>
+                      <option value="Load Bearing">Load Bearing</option>
+                      <option value="Steel Structure">Steel Structure</option>
+                      <option value="Composite Structure">Composite Structure</option>
+                      <option value="Industrial Shed">Industrial Shed</option>
+                    </select>
+                  </Field>
+                  <p className="text-[11px] text-indigo-700/80 mt-1 font-medium">
+                    ⚡ Automatically sets default foundation, roofing, and construction details
+                  </p>
+                </div>
               )}
               {!isFieldHidden('numberOfFloors') && (
                 <Field label="No. of Floors">

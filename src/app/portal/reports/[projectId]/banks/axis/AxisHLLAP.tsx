@@ -20,6 +20,8 @@ import {
   BasePhotoBucketModal,
   fetchBytes,
   DEFAULT_PHOTO_LABEL,
+  getEarliestFieldVisit,
+  EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { formatIndianCurrency } from '@/lib/numberToWords';
@@ -74,6 +76,10 @@ export default function AxisHLLAP({
 }: AxisHLLAPProps) {
   const router = useRouter();
   const isReadOnly = status === 'COMPLETED' || (status === 'MANAGER_REVIEW' && userRole === 'REPORT_EMPLOYEE');
+
+  const firstFieldAgentVisit = useMemo(() => {
+    return getEarliestFieldVisit(bucketImages, prefill?.fieldVisitDate || prefill?.inspectionDate || prefill?.dateOfInspection);
+  }, [bucketImages, prefill]);
 
   // Helper to generate default ref no
   const defaultRefNo = useMemo(() => {
@@ -209,7 +215,7 @@ export default function AxisHLLAP({
       percentDisbursementRecommended: raw.percentDisbursementRecommended || '',
       currentValueOfProperty: raw.currentValueOfProperty || '',
       currentValueAsOnDate: raw.currentValueAsOnDate || '',
-      dateOfPropertyVisit: formatReportDate(raw.dateOfPropertyVisit || raw.reportDate || prefill?.fieldVisitDate || new Date()),
+      dateOfPropertyVisit: formatReportDate(raw.dateOfPropertyVisit || raw.reportDate || firstFieldAgentVisit?.date || prefill?.fieldVisitDate || prefill?.inspectionDate || new Date()),
 
       // 8 - 12
       valuationGovtReckonerRate: raw.valuationGovtReckonerRate || '',
@@ -2115,12 +2121,20 @@ export default function AxisHLLAP({
                       />
                     </Field>
 
-                    <BaseDateInput
-                      label="i. Date of Property Visit"
-                      value={fields.dateOfPropertyVisit || ''}
-                      onChange={val => handleChange('dateOfPropertyVisit', val)}
-                      disabled={isReadOnly}
-                    />
+                    <div>
+                      <BaseDateInput
+                        label="i. Date of Property Visit"
+                        value={fields.dateOfPropertyVisit || ''}
+                        onChange={val => handleChange('dateOfPropertyVisit', val)}
+                        disabled={isReadOnly}
+                      />
+                      <EarliestFieldVisitBadge
+                        visitInfo={firstFieldAgentVisit}
+                        currentValue={fields.dateOfPropertyVisit}
+                        onApply={(d) => handleChange('dateOfPropertyVisit', d)}
+                        className="mt-1"
+                      />
+                    </div>
                   </div>
 
                   {isUnderConst && (

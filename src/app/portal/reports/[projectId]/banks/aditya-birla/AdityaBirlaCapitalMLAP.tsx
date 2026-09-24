@@ -26,6 +26,8 @@ import {
   AnnexureRefSelector,
   BaseAnnexureSection,
   fetchBytes,
+  getEarliestFieldVisit,
+  EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
 import { reorderAndLabelAnnexures, AnnexureItem, decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/bank-fields';
 
@@ -93,6 +95,10 @@ export default function AdityaBirlaCapitalMLAP({
 }: AdityaBirlaCapitalMLAPProps) {
   const router = useRouter();
 
+  const firstFieldAgentVisit = useMemo(() => {
+    return getEarliestFieldVisit(bucketImages, prefill?.fieldVisitDate || prefill?.inspectionDate || prefill?.dateOfInspection);
+  }, [bucketImages, prefill]);
+
   // Initialize fields cleanly: dynamic prefill from project, standard dropdown defaults, blank case inputs
   const [fields, setFields] = useState<MLAPReportFields>(() => decodeHtmlEntitiesDeep<MLAPReportFields>({
     ...initialFields,
@@ -106,7 +112,7 @@ export default function AdityaBirlaCapitalMLAP({
     ownerName: initialFields?.ownerName || initialFields?.clientName || prefill?.contactName || '',
     initiationDate: initialFields?.initiationDate ? formatReportDate(initialFields.initiationDate) : (prefill?.initiationDate ? formatReportDate(prefill.initiationDate) : formatReportDate(new Date())),
     valuerName: initialFields?.valuerName || 'Er. Satyajit Mohanty',
-    dateOfInspection: initialFields?.dateOfInspection ? formatReportDate(initialFields.dateOfInspection) : (prefill?.inspectionDate ? formatReportDate(prefill.inspectionDate) : formatReportDate(new Date())),
+    dateOfInspection: initialFields?.dateOfInspection ? formatReportDate(initialFields.dateOfInspection) : (firstFieldAgentVisit?.date || (prefill?.inspectionDate ? formatReportDate(prefill.inspectionDate) : formatReportDate(new Date()))),
     dateOfValuation: initialFields?.dateOfValuation ? formatReportDate(initialFields.dateOfValuation) : formatReportDate(new Date()),
     loanApplicationNo: initialFields?.loanApplicationNo || initialFields?.caseReferenceNumber || '',
     propertyOwnerName: initialFields?.propertyOwnerName || prefill?.contactName || '',
@@ -215,9 +221,6 @@ export default function AdityaBirlaCapitalMLAP({
     annexures: Array.isArray(initialFields?.annexures) ? initialFields.annexures : [],
 
     reworkNotes: initialFields?.reworkNotes || '',
-    clientType: initialFields?.clientType || 'organisation',
-    organisationTemplate: initialFields?.organisationTemplate || 'ADITYA BIRLA CAPITAL LTD',
-    organisationSubTemplate: initialFields?.organisationSubTemplate || 'MLAP',
     institutionCategory: initialFields?.institutionCategory || 'Bank & FIS',
     serviceType: initialFields?.serviceType || prefill?.purpose || '',
     subjectType: initialFields?.subjectType || prefill?.propertyType || '',
@@ -974,12 +977,20 @@ export default function AdityaBirlaCapitalMLAP({
                 onChange={val => handleChange('initiationDate', val)}
                 disabled={isReadOnly}
               />
-              <BaseDateInput
-                label="Visit Date (Date of Inspection)"
-                value={fields.dateOfInspection || ''}
-                onChange={val => handleChange('dateOfInspection', val)}
-                disabled={isReadOnly}
-              />
+              <div>
+                <BaseDateInput
+                  label="Visit Date (Date of Inspection)"
+                  value={fields.dateOfInspection || ''}
+                  onChange={val => handleChange('dateOfInspection', val)}
+                  disabled={isReadOnly}
+                />
+                <EarliestFieldVisitBadge
+                  visitInfo={firstFieldAgentVisit}
+                  currentValue={fields.dateOfInspection}
+                  onApply={(d) => handleChange('dateOfInspection', d)}
+                  className="mt-1"
+                />
+              </div>
               <Field label="Application No. (Case Ref No)">
                 <input type="text" value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
