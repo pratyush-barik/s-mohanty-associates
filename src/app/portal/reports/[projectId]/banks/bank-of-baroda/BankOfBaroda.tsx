@@ -671,27 +671,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const presentMarketValue = Math.round(calcTotalMarket / 1000) * 1000;
         const realizableValue = Math.round(calcTotalRealizable / 1000) * 1000;
         const forcedSaleValue = Math.round(calcTotalDistress / 1000) * 1000;
-        const govtValue = Math.round(calcTotalGovt / 1000) * 1000;
-
-        const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
-
-        const marketValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobPresentMarketValue || '0') || 0) : orSayMarket;
-        const realizableValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobRealizableValue || '0') || 0) : orSayRealizable;
-        const distressValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobForcedSaleValue || '0') || 0) : orSayDistress;
-        const govtValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobGovtValue || '0') || 0) : orSayGovt;
-
-        const buildingType = fields.bobBuildingType || '';
-        const areaSftFormatted = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(areaSft);
-        const calcLandExtent = minArea > 0
-          ? `(AC.${minArea} DEC i.e. ${areaSftFormatted} SFT)`
-          : '(AC.0.00 DEC i.e. 0.00 SFT)';
-        const landExtentStr = fields.bobLandTotalExtentEditOn ? (fields.bobLandTotalExtent || '') : calcLandExtent;
-
-        const defaultRemarks = `SUBJECT PROPERTY IS A ${buildingType}, LAND EXTENT OF ${landExtentStr}.\n\nAs a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only). The Realizable Value of the above Property is Rs.${fmtINR(realizableValNum)}/- (Rupees ${rupeesInWords(realizableValNum)} only). The book value of the above property as of Land is Rs.${fmtINR(govtValNum)}/- (Rupees ${rupeesInWords(govtValNum)} only) and the distress value Rs.${fmtINR(distressValNum)}/- (Rupees ${rupeesInWords(distressValNum)} only)`;
-        const currentRemarks = fields.bobValuerRemarks || defaultRemarks;
-
-        const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ________. We are satisfied that the fair and reasonable market value of the property is Rs. ${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only).`;
-        const currentEndorsement = fields.bobBankEndorsement || defaultEndorsement;
+        const govtValue = Math.round(calcTotalGovt / 1000) * 1000;
 
 
         return (
@@ -2682,6 +2662,26 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const orSayRealizable = Math.round(calcTotalRealizable / 1000) * 1000;
         const orSayDistress = Math.round(calcTotalDistress / 1000) * 1000;
 
+        const marketValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobPresentMarketValue || '0') || 0) : orSayMarket;
+        const realizableValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobRealizableValue || '0') || 0) : orSayRealizable;
+        const distressValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobForcedSaleValue || '0') || 0) : orSayDistress;
+        const govtValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobGovtValue || '0') || 0) : orSayGovt;
+
+        const buildingType = fields.bobBuildingType || '';
+        const areaSftFormatted = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(areaSft);
+        const calcLandExtent = minArea > 0
+          ? `(AC.${minArea} DEC i.e. ${areaSftFormatted} SFT)`
+          : '(AC.0.00 DEC i.e. 0.00 SFT)';
+        const landExtentStr = fields.bobLandTotalExtentEditOn ? (fields.bobLandTotalExtent || '') : calcLandExtent;
+
+        const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
+
+        const defaultRemarks = `SUBJECT PROPERTY IS A ${buildingType}, LAND EXTENT OF ${landExtentStr}.\n\nAs a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only). The Realizable Value of the above Property is Rs.${fmtINR(realizableValNum)}/- (Rupees ${rupeesInWords(realizableValNum)} only). The book value of the above property as of Land is Rs.${fmtINR(govtValNum)}/- (Rupees ${rupeesInWords(govtValNum)} only) and the distress value Rs.${fmtINR(distressValNum)}/- (Rupees ${rupeesInWords(distressValNum)} only)`;
+        const currentRemarks = fields.bobValuerRemarks || defaultRemarks;
+
+        const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ________. We are satisfied that the fair and reasonable market value of the property is Rs. ${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only).`;
+        const currentEndorsement = fields.bobBankEndorsement || defaultEndorsement;
+
         const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
 
         const ReadOnlyCell = ({ val, hoverTitle }: { val: number; hoverTitle: string }) => (
@@ -3216,17 +3216,6 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const realizableValue = Math.round(calcTotalRealizable / 1000) * 1000;
         const forcedSaleValue = Math.round(calcTotalDistress / 1000) * 1000;
         const govtValue = Math.round(calcTotalGovt / 1000) * 1000;
-
-        const marketValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobPresentMarketValue || '0') || 0) : presentMarketValue;
-        const realizableValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobRealizableValue || '0') || 0) : realizableValue;
-        const distressValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobForcedSaleValue || '0') || 0) : forcedSaleValue;
-        const govtValNum = fields.bobEnableCoverPageValueEdit ? (parseFloat(fields.bobGovtValue || '0') || 0) : govtValue;
-
-        const defaultRemarks = `SUBJECT PROPERTY IS A ${buildingType}, LAND EXTENT OF ${landExtentStr}.\n\nAs a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmt(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only). The Realizable Value of the above Property is Rs.${fmt(realizableValNum)}/- (Rupees ${rupeesInWords(realizableValNum)} only). The book value of the above property as of Land is Rs.${fmt(govtValNum)}/- (Rupees ${rupeesInWords(govtValNum)} only) and the distress value Rs.${fmt(distressValNum)}/- (Rupees ${rupeesInWords(distressValNum)} only)`;
-        const currentRemarks = fields.bobValuerRemarks || defaultRemarks;
-
-        const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ________. We are satisfied that the fair and reasonable market value of the property is Rs. ${fmt(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only).`;
-        const currentEndorsement = fields.bobBankEndorsement || defaultEndorsement;
 
         return (
           <div className="animate-fade-in space-y-6">
