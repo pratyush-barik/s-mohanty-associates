@@ -361,6 +361,11 @@ export default function BandhanHLLAP({
       constructionDetails: raw.constructionDetails || getConstructionDetailsForStructure(raw.typeOfStructure || 'RCC'),
 
       // 6. Area & Floor Details (26 - 29)
+      propertyAreaUnit: raw.propertyAreaUnit || (raw.areaOfLandUnit || 'ACRE_DEC'),
+      propertyAreaValue: raw.propertyAreaValue || (raw.propertyArea ? String(raw.propertyArea).replace(/[^0-9.]/g, '') : ''),
+      propertyAreaLocked: raw.propertyAreaLocked !== undefined ? raw.propertyAreaLocked : true,
+      propertyAreaAcres: raw.propertyAreaAcres || '',
+      propertyAreaDecimals: raw.propertyAreaDecimals || '',
       propertyArea: raw.propertyArea || '',
       floors: defaultFloors,
       carpetAreaTotal: raw.carpetAreaTotal || '',
@@ -1547,7 +1552,7 @@ export default function BandhanHLLAP({
                     </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <Field label="25. Copy of sanctioned plan provided. Plan No:">
+                    <Field label="Copy of sanctioned plan provided. Plan No:">
                       <input
                         type="text"
                         className={inputCls}
@@ -1618,16 +1623,161 @@ export default function BandhanHLLAP({
             {/* 6. Floor Areas & Setbacks */}
             <Section number={6} id="sec-floors" title="Area, Floor Breakdown & Setbacks (Points 26–29)">
               <div className="space-y-4">
-                <Field label="26. Total Land / Property Area:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.propertyArea || ''}
-                    onChange={(e) => handleChange('propertyArea', e.target.value)}
-                    placeholder="e.g. 1500.00 sq.ft"
-                    disabled={isReadOnly}
-                  />
-                </Field>
+                {/* 26. Total Land / Property Area */}
+                <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-4 sm:p-5 shadow-xs space-y-3.5">
+                  <div className="flex flex-wrap items-center justify-between pb-2 border-b border-indigo-200/60 gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="font-sans font-semibold text-indigo-900 text-xs sm:text-sm">
+                        26. Total Land / Property Area
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {fields.areaOfLand && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFields(prev => ({
+                              ...prev,
+                              propertyArea: prev.areaOfLand || prev.propertyArea,
+                              propertyAreaLocked: false,
+                            }));
+                          }}
+                          className="text-[11px] text-sky-700 hover:text-sky-900 font-medium flex items-center gap-1 bg-sky-100/70 hover:bg-sky-100 px-2 py-0.5 rounded border border-sky-200 transition-colors cursor-pointer"
+                          title="Sync from Pt 39 Area of Land"
+                        >
+                          ↺ Sync Pt 39: {fields.areaOfLand}
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const nextLocked = fields.propertyAreaLocked === false;
+                          if (nextLocked) {
+                            const unit = fields.propertyAreaUnit || 'ACRE_DEC';
+                            const val = fields.propertyAreaValue || '';
+                            const formatted = formatAreaOfLandStatement(unit, val, fields.propertyAreaAcres, fields.propertyAreaDecimals, fields.propertyArea);
+                            setFields(prev => ({
+                              ...prev,
+                              propertyAreaLocked: true,
+                              propertyArea: formatted.statement || prev.propertyArea,
+                            }));
+                          } else {
+                            setFields(prev => ({ ...prev, propertyAreaLocked: false }));
+                          }
+                        }}
+                        className={`text-[11px] px-2.5 py-0.5 rounded-full font-semibold flex items-center gap-1 border transition-colors cursor-pointer ${
+                          fields.propertyAreaLocked !== false
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                            : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
+                        }`}
+                        title={fields.propertyAreaLocked !== false ? 'Constrained & auto-converted to sqft. Click to unlock for manual custom text.' : 'Unlocked for custom entry. Click to lock back to auto-conversion.'}
+                      >
+                        {fields.propertyAreaLocked !== false ? '🔒 Locked (Auto-convert)' : '🔓 Unlocked (Manual)'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <Field label="Choose Area Unit:">
+                      <select
+                        className={selectCls}
+                        value={fields.propertyAreaUnit || 'ACRE_DEC'}
+                        onChange={(e) => {
+                          const unit = e.target.value as any;
+                          const val = fields.propertyAreaValue || '';
+                          const formatted = formatAreaOfLandStatement(unit, val, fields.propertyAreaAcres, fields.propertyAreaDecimals, fields.propertyArea);
+                          setFields(prev => ({
+                            ...prev,
+                            propertyAreaUnit: unit,
+                            propertyArea: prev.propertyAreaLocked !== false ? formatted.statement : prev.propertyArea,
+                          }));
+                        }}
+                        disabled={isReadOnly}
+                      >
+                        <option value="ACRE_DEC">Acres &amp; Decimals (e.g. AC.0.250Decs)</option>
+                        <option value="DECIMAL">Decimals / Cents (1 Dec = 435.6 sqft)</option>
+                        <option value="SQFT">Square Feet (sqft - Direct / No conversion)</option>
+                        <option value="SQYD">Square Yards / Gaj (1 Sq.Yd = 9 sqft)</option>
+                        <option value="SQMT">Square Meters (1 Sq.M = 10.7639 sqft)</option>
+                        <option value="GUNTHA">Guntha (1 Guntha = 1089 sqft)</option>
+                      </select>
+                    </Field>
+
+                    {/* Float-only Numeric Input */}
+                    <Field
+                      label={
+                        fields.propertyAreaUnit === 'ACRE_DEC'
+                          ? 'Land Area in Acres (e.g. 0.250 or 0.25):'
+                          : fields.propertyAreaUnit === 'DECIMAL'
+                          ? 'Land Area in Decimals (e.g. 25):'
+                          : fields.propertyAreaUnit === 'SQFT'
+                          ? 'Land Area in Sq. Feet (e.g. 10890):'
+                          : fields.propertyAreaUnit === 'SQYD'
+                          ? 'Land Area in Sq. Yards (e.g. 200):'
+                          : fields.propertyAreaUnit === 'SQMT'
+                          ? 'Land Area in Sq. Meters (e.g. 100):'
+                          : 'Land Area in Guntha (e.g. 10):'
+                      }
+                    >
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.propertyAreaValue || ''}
+                        onChange={(e) => {
+                          const val = sanitizePositiveFloat(e.target.value);
+                          const unit = fields.propertyAreaUnit || 'ACRE_DEC';
+                          const formatted = formatAreaOfLandStatement(unit, val, fields.propertyAreaAcres, fields.propertyAreaDecimals, fields.propertyArea);
+                          setFields(prev => ({
+                            ...prev,
+                            propertyAreaValue: val,
+                            propertyArea: prev.propertyAreaLocked !== false ? formatted.statement : prev.propertyArea,
+                          }));
+                        }}
+                        placeholder={
+                          fields.propertyAreaUnit === 'ACRE_DEC' ? '0.250' :
+                          fields.propertyAreaUnit === 'DECIMAL' ? '25' :
+                          fields.propertyAreaUnit === 'SQFT' ? '10890' : '100'
+                        }
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+
+                    {/* Result statement */}
+                    <div className="sm:col-span-2 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          Resulting Total Land / Property Area Statement (Report &amp; PDF):
+                        </label>
+                        {fields.propertyAreaLocked === false && (
+                          <span className="text-[10.5px] text-amber-700 font-semibold">
+                            Manual Custom Text
+                          </span>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        className={`${inputCls} ${
+                          fields.propertyAreaLocked !== false
+                            ? 'bg-indigo-50/60 font-bold text-indigo-950 border-indigo-300'
+                            : 'bg-white text-slate-900 border-amber-300'
+                        }`}
+                        value={fields.propertyArea || ''}
+                        onChange={(e) => handleChange('propertyArea', e.target.value)}
+                        readOnly={fields.propertyAreaLocked !== false}
+                        disabled={isReadOnly}
+                      />
+                      <p className="text-[11px] text-slate-500">
+                        {fields.propertyAreaLocked !== false
+                          ? fields.propertyAreaUnit === 'ACRE_DEC'
+                            ? 'Auto-converted using standard 1 Acre = 43,560 sqft. Formatted as (AC.0.250Decs) i.e. 10,890sqft.'
+                            : fields.propertyAreaUnit === 'SQFT'
+                            ? 'Direct Sq.Ft. input without conversion.'
+                            : 'Auto-converted to equivalent square feet.'
+                          : 'Unlocked: Type any custom property area statement directly.'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
                 <div className="overflow-x-auto border border-slate-200 rounded-lg">
                   <table className="w-full text-xs">

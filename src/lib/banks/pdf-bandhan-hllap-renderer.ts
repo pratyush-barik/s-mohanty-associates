@@ -291,6 +291,11 @@ export interface BandhanHLLAPReportFields {
 
   // Area & Floor-wise Specifications (26 - 29)
   propertyArea?: string;
+  propertyAreaUnit?: string;
+  propertyAreaValue?: string;
+  propertyAreaAcres?: string;
+  propertyAreaDecimals?: string;
+  propertyAreaLocked?: boolean;
   floors?: BandhanHLLAPFloor[];
   carpetAreaTotal?: string;
   builtUpAreaTotal?: string;
@@ -797,7 +802,20 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const remW = CONTENT_W - colSl;
 
     // Row 26 main title
-    this.drawBandhanRow('26.', 'Area of the property:', fields.propertyArea || '');
+    let val26 = fields.propertyArea || '';
+    if (fields.propertyAreaUnit && fields.propertyAreaValue && fields.propertyAreaLocked !== false) {
+      const formatted26 = formatAreaOfLandStatement(
+        fields.propertyAreaUnit,
+        fields.propertyAreaValue,
+        fields.propertyAreaAcres,
+        fields.propertyAreaDecimals,
+        fields.propertyArea
+      );
+      if (formatted26.statement) {
+        val26 = formatted26.statement;
+      }
+    }
+    this.drawBandhanRow('26.', 'Area of the property:', val26);
 
     // 6-column floor breakdown table
     const colW1 = 74;  // Floor level
