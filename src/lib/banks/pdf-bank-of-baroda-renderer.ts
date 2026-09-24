@@ -1161,16 +1161,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   private drawBobSection7() {
     this.drawSectionHeader('TOTAL ABSTRACT');
 
-    if (this.fields.bobAbstractMode === 'annexure') {
-      const parsedData = this.fields.bobAbstractMode_parsedData;
-      if (parsedData && parsedData.headers && parsedData.rows) {
-        this.cursorY += 5;
-        this.drawDataTable(parsedData.headers, parsedData.rows);
-        this.cursorY += 5;
-      } else {
-        this.drawSimpleRow('Total Abstract', 'No data uploaded.');
-      }
-    } else {
     // Compute prefill values
     const dimensions = this.fields.bobDimensions || {};
     const deedArea = (parseFloat(dimensions.deedEast || '0') || 0) + (parseFloat(dimensions.deedWest || '0') || 0) + (parseFloat(dimensions.deedNorth || '0') || 0) + (parseFloat(dimensions.deedSouth || '0') || 0);
@@ -1264,27 +1254,46 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       `Rs. ${fmtINR(orSayDistress)}`,
     ]);
 
-    this.drawTable(
-      ['PARTICULARS', 'GOVT. VALUE IN RS.', 'MARKET VALUE IN RS.', 'REALIZABLE VALUE (95%)', 'DISTRESS VALUE (85%)'],
-      tableRows,
-      [CONTENT_W * 0.22, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195],
-      [], [0], [],
-      // Bold the TOTAL and OR SAY rows
-      [
-        { r: tableRows.length - 2, c: 0 }, { r: tableRows.length - 2, c: 1 }, { r: tableRows.length - 2, c: 2 }, { r: tableRows.length - 2, c: 3 }, { r: tableRows.length - 2, c: 4 },
-        { r: tableRows.length - 1, c: 0 },
-      ],
-      [
-        { r: tableRows.length - 2, c: 0 }, { r: tableRows.length - 2, c: 1 }, { r: tableRows.length - 2, c: 2 }, { r: tableRows.length - 2, c: 3 }, { r: tableRows.length - 2, c: 4 },
-      ]
-    );
+    if (this.fields.bobAbstractMode === 'annexure') {
+      const parsedData = this.fields.bobAbstractMode_parsedData;
+      if (parsedData && parsedData.headers && parsedData.rows) {
+        this.cursorY += 5;
+        this.drawDataTable(parsedData.headers, parsedData.rows);
+        this.cursorY += 5;
+      } else {
+        this.drawSimpleRow('Total Abstract', 'No data uploaded.');
+      }
+    } else {
+      this.drawTable(
+        ['PARTICULARS', 'GOVT. VALUE IN RS.', 'MARKET VALUE IN RS.', 'REALIZABLE VALUE (95%)', 'DISTRESS VALUE (85%)'],
+        tableRows,
+        [CONTENT_W * 0.22, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195],
+        [], [0], [],
+        // Bold the TOTAL and OR SAY rows
+        [
+          { r: tableRows.length - 2, c: 0 }, { r: tableRows.length - 2, c: 1 }, { r: tableRows.length - 2, c: 2 }, { r: tableRows.length - 2, c: 3 }, { r: tableRows.length - 2, c: 4 },
+          { r: tableRows.length - 1, c: 0 },
+        ],
+        [
+          { r: tableRows.length - 2, c: 0 }, { r: tableRows.length - 2, c: 1 }, { r: tableRows.length - 2, c: 2 }, { r: tableRows.length - 2, c: 3 }, { r: tableRows.length - 2, c: 4 },
+        ]
+      );
     }
 
     // Remarks
+    this.cursorY += 10;
+    this.checkPageBreak(50);
+    this.setFont(this.fonts.bold, 9);
+    this.drawTextAt('REMARKS', MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
+    const tw = this.fontBold.widthOfTextAtSize('REMARKS', 9);
+    this.drawHLine(MARGIN_L, MARGIN_L + tw, this.cursorY + 2);
+    this.cursorY += 15;
+
     const propLegal = this.fv('bobPropertyLegalRemarks');
     if (propLegal) {
-      this.drawRemarksBox('PROPERTY & LEGAL REMARKS', propLegal);
-      this.cursorY += 5;
+      this.setFont(this.fonts.regular, 9);
+      const h = this.drawWrappedTextAt(propLegal, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: 9 });
+      this.cursorY += h + 10;
     }
     
     const marketValNum = this.fields.bobEnableCoverPageValueEdit ? (parseFloat(this.fv('bobPresentMarketValue', '0')) || 0) : orSayMarket;
@@ -1292,19 +1301,44 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const distressValNum = this.fields.bobEnableCoverPageValueEdit ? (parseFloat(this.fv('bobForcedSaleValue', '0')) || 0) : orSayDistress;
     const govtValNum = this.fields.bobEnableCoverPageValueEdit ? (parseFloat(this.fv('bobGovtValue', '0')) || 0) : orSayGovt;
 
-    const defaultValuationConclusion = `As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only). The Realizable Value of the above Property is Rs.${fmtINR(realizableValNum)}/- (Rupees ${rupeesInWords(realizableValNum)} only). The book value of the above property as of Land is Rs.${fmtINR(govtValNum)}/- (Rupees ${rupeesInWords(govtValNum)} only) and the distress value Rs.${fmtINR(distressValNum)}/- (Rupees ${rupeesInWords(distressValNum)} only)`;
+    const defaultValuationConclusion = `As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmtINR(marketValNum)}/- (${rupeesInWords(marketValNum)}). The Realizable Value of the above Property is Rs.${fmtINR(realizableValNum)}/- (${rupeesInWords(realizableValNum)}). The book value of the above property as of Land is Rs.${fmtINR(govtValNum)}/- (${rupeesInWords(govtValNum)}) and the distress value Rs.${fmtINR(distressValNum)}/- (${rupeesInWords(distressValNum)})`;
     const valConclusion = this.fields.bobValuationConclusionEditOn ? this.fv('bobValuationConclusion', '') : defaultValuationConclusion;
 
-    this.drawRemarksBox('VALUATION CONCLUSION', valConclusion);
+    this.checkPageBreak(40);
+    this.setFont(this.fonts.regular, 9);
+    const h2 = this.drawWrappedTextAt(`• ${valConclusion}`, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: 9 });
+    this.cursorY += h2 + 30;
 
     // Sign-off
-    this.cursorY += 10;
-    this.drawKeyValueRow([
-      { label: 'Place:', value: this.fv('bobSignOffPlace'), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
-      { label: 'Date:', value: formatReportDate(this.fv('bobDateOfValuationMade')), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
-    ]);
-    this.cursorY += 5;
-    this.drawSimpleRow('Signature of Approved Valuer', '(Signature & Official seal)');
+    const place = this.fv('bobSignOffPlace') || 'Bhubaneswar';
+    const date = formatReportDate(this.fv('bobDateOfValuationMade'));
+    
+    this.checkPageBreak(80);
+    
+    const sigBlockW = 220;
+    const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
+
+    this.setFont(this.fonts.bold, 9);
+    this.drawTextAt(`Place: ${place}`, MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
+    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
+    this.cursorY += 12;
+    this.drawTextAt(`Date: ${date}`, MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
+    this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
+    
+    this.cursorY += 40;
+
+    const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ${date}. We are satisfied that the fair and reasonable market value of the property is Rs.${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only).`;
+    const endorsement = this.fields.bobBankEndorsementEditOn ? this.fv('bobBankEndorsement', '') : defaultEndorsement;
+
+    this.setFont(this.fonts.regular, 9);
+    const h3 = this.drawWrappedTextAt(endorsement, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: 9 });
+    this.cursorY += h3 + 30;
+
+    this.setFont(this.fonts.bold, 9);
+    this.drawTextAt(`Date:`, MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
+    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
+    this.cursorY += 12;
+    this.drawTextAt(`(Name of the Branch Manager with Official seal)`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
   }
 
   // ═══════════════════════════════════════════════════════════════════════
