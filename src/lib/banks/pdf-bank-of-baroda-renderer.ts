@@ -98,7 +98,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       this.drawBobSection8();
       this.drawBobSection9();
       this.drawBobSection10();
-      this.drawBobSection11();
       this.isBobDrawing = false;
       return;
     }
@@ -1626,50 +1625,5 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     this.cursorY += 12;
     this.drawTextAt(`Signature of the Approved Valuer and Seal`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
-    this.cursorY += 10;
-  }
-  // ═══════════════════════════════════════════════════════════════════════
-  // SECTION 11: VALUER SIGN-OFF & BANK ENDORSEMENT
-  // ═══════════════════════════════════════════════════════════════════════
-  private drawBobSection11() {
-    this.drawSectionHeader('VALUER SIGN-OFF & BANK ENDORSEMENT');
-
-    const remarks = this.fv('bobValuerRemarks');
-    if (remarks) {
-      this.cursorY += 5;
-      const remarksLines = this.wrapText(this.sanitizeText(remarks), CONTENT_W, FONT_SIZE);
-      this.checkPageBreak(remarksLines.length * FONT_SIZE * LINE_HEIGHT);
-      for (const line of remarksLines) {
-        this.page.drawText(line, { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
-        this.cursorY += FONT_SIZE * LINE_HEIGHT;
-      }
-    }
-
-    this.cursorY += 10;
-    this.drawKeyValueRow([
-      { label: 'Date:', value: formatReportDate(this.fv('bobDateOfValuationMade')), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
-      { label: 'Place:', value: this.fv('bobSignoffPlace') || 'Bhubaneswar', labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
-    ]);
-    this.cursorY += 5;
-    this.drawSimpleRow('Signature (Name and Official Seal of the Approved Valuer)', '(Signature & Official seal)');
-
-    const endorsement = this.fv('bobBankEndorsement');
-    if (endorsement) {
-      this.cursorY += 15;
-      const endLines = this.wrapText(this.sanitizeText(endorsement), CONTENT_W, FONT_SIZE);
-      this.checkPageBreak(endLines.length * FONT_SIZE * LINE_HEIGHT);
-      for (const line of endLines) {
-        this.page.drawText(line, { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
-        this.cursorY += FONT_SIZE * LINE_HEIGHT;
-      }
-    }
-
-    this.cursorY += 10;
-    this.drawKeyValueRow([
-      { label: 'Date:', value: formatReportDate(this.fv('bobEndorsementDate')), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
-      { label: '', value: '', labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
-    ]);
-    this.cursorY += 5;
-    this.drawSimpleRow('Signature (Branch Manager)', '(Signature & Official seal)');
   }
 }
