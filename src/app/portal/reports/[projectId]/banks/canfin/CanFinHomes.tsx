@@ -18,6 +18,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     purpose: 'Housing Loan / Composite Loan',
     
     // Section 2 Variables
+    canfinHomesEnableDocHolderEdit: false,
     canfinHomesPurposeOfLoan: 'Home Loan',
     canfinHomesCustomerName: '',
     canfinHomesDocHolderName: '',
@@ -285,6 +286,8 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
       number: 2,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const prefilledDocHolder = fields.canfinHomesPropertyOwners?.map((o: any) => o.name).filter(Boolean).join(', ') || '';
+
         return (
           <div className="animate-fade-in space-y-6">
             <div className="border border-blue-200 bg-[#e3f2fd] rounded-md p-4 mb-4">
@@ -308,7 +311,24 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.canfinHomesCustomerName || ''} onChange={e => handleChange('canfinHomesCustomerName', e.target.value)} disabled={isReadOnly} />
                 </Field>
                 <Field label="Name of Document holder as per legal docs">
-                  <input className={inputCls} value={fields.canfinHomesDocHolderName || ''} onChange={e => handleChange('canfinHomesDocHolderName', e.target.value)} disabled={isReadOnly} />
+                  <div className="relative">
+                    <input 
+                      className={`${inputCls} pr-10 ${!fields.canfinHomesEnableDocHolderEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`} 
+                      value={fields.canfinHomesEnableDocHolderEdit ? (fields.canfinHomesDocHolderName || '') : prefilledDocHolder} 
+                      onChange={e => handleChange('canfinHomesDocHolderName', e.target.value)} 
+                      disabled={isReadOnly || !fields.canfinHomesEnableDocHolderEdit} 
+                      title='>>Prefill from section 1, field "PROPERTY OWNER"<<'
+                    />
+                    <button
+                      type="button"
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700"
+                      onClick={() => handleChange('canfinHomesEnableDocHolderEdit', !fields.canfinHomesEnableDocHolderEdit)}
+                      disabled={isReadOnly}
+                      title='>>Prefill from section 1, field "PROPERTY OWNER"<<'
+                    >
+                      <Lock className={`w-4 h-4 ${!fields.canfinHomesEnableDocHolderEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
+                    </button>
+                  </div>
                 </Field>
                 <Field label="Date of Technical Visit">
                   <BaseDateInput
