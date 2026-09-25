@@ -26,6 +26,57 @@ import {
 } from '@/lib/banks/pdf-bandhan-sme-renderer';
 import { formatReportDate } from '@/lib/pdf-bank-renderer';
 import { formatIndianCurrency } from '@/lib/numberToWords';
+import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
+
+const compressImageFile = (
+  file: File,
+  maxWidth = 1280,
+  maxHeight = 1280,
+  quality = 0.8
+): Promise<{ dataUrl: string; blob: Blob }> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          return reject(new Error('Canvas 2D context not available'));
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve({ dataUrl, blob });
+            } else {
+              resolve({ dataUrl, blob: file });
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+};
 
 const formatCurrencyINR = (val: number): string => {
   return new Intl.NumberFormat('en-IN', {
@@ -936,35 +987,55 @@ export default function BandhanSME({
 
   const propertyImageNames: string[] = useMemo(() => {
     if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
-      return fields.propertyPhotos.map((p: any, i: number) => (typeof p === 'string' ? `Photograph ${i + 1}` : (p.caption || `Photograph ${i + 1}`)));
+      return fields.propertyPhotos.map((p: any) => (typeof p === 'string' ? DEFAULT_PHOTO_LABEL : (p.caption || DEFAULT_PHOTO_LABEL)));
     }
     return [];
   }, [fields.propertyPhotos]);
 
   // Handle Multiple Photo Upload
-  const handleUploadMultiplePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUploadMultiplePhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    const newPhotos: BandhanSMEPhoto[] = [];
-    let processed = 0;
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        newPhotos.push({
-          url: dataUrl,
-          caption: file.name.replace(/\.[^/.]+$/, '') || `Photograph ${(fields.propertyPhotos?.length || 0) + newPhotos.length + 1}`,
-        });
-        processed++;
-        if (processed === files.length) {
-          setFields((prev) => ({
-            ...prev,
-            propertyPhotos: [...(prev.propertyPhotos || []), ...newPhotos],
-          }));
+    try {
+      const newPhotos: BandhanSMEPhoto[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const caption = DEFAULT_PHOTO_LABEL;
+        const { dataUrl, blob } = await compressImageFile(file, 1280, 1280, 0.8);
+        let uploadedUrl = dataUrl;
+        try {
+          const ext = 'jpg';
+          const fileName = `${projectId}-photo-${Date.now()}-${i}.${ext}`;
+          const filePath = `temp-photos/${projectId}/${fileName}`;
+          const { error: uploadErr } = await supabaseBrowser.storage
+            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+            .upload(filePath, blob, { contentType: 'image/jpeg', upsert: true });
+
+          if (!uploadErr) {
+            const { data: publicUrlData } = supabaseBrowser.storage
+              .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+              .getPublicUrl(filePath);
+            if (publicUrlData?.publicUrl) {
+              uploadedUrl = publicUrlData.publicUrl;
+            }
+          }
+        } catch (storageErr) {
+          console.warn('Supabase storage upload fallback to compressed base64:', storageErr);
         }
-      };
-      reader.readAsDataURL(file);
-    });
+
+        newPhotos.push({ url: uploadedUrl, caption });
+      }
+
+      setFields((prev) => ({
+        ...prev,
+        propertyPhotos: [...(prev.propertyPhotos || []), ...newPhotos],
+      }));
+    } catch (err: any) {
+      console.error('Photo upload error:', err);
+      alert(`Photo upload failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      e.target.value = '';
+    }
   };
 
   const handlePhotoRemove = (idx: number) => {
@@ -989,7 +1060,7 @@ export default function BandhanSME({
   const handlePhotoReorder = (newImages: string[], newNames: string[]) => {
     const newPhotos: BandhanSMEPhoto[] = newImages.map((url, idx) => ({
       url,
-      caption: newNames[idx] || `Photograph ${idx + 1}`,
+      caption: newNames[idx] || DEFAULT_PHOTO_LABEL,
     }));
     setFields((prev) => ({
       ...prev,
@@ -998,16 +1069,37 @@ export default function BandhanSME({
   };
 
   // Local image uploader helper
-  const handleLocalImageUpload = (fieldKey: keyof BandhanSMEReportFields, e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLocalImageUpload = async (fieldKey: keyof BandhanSMEReportFields, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (ev.target?.result) {
-          handleChange(fieldKey, ev.target.result as string);
+      try {
+        const { dataUrl, blob } = await compressImageFile(file, 1600, 1600, 0.85);
+        let uploadedUrl = dataUrl;
+        try {
+          const ext = 'jpg';
+          const fileName = `${projectId}-${String(fieldKey)}-${Date.now()}.${ext}`;
+          const filePath = `temp-photos/${projectId}/${fileName}`;
+          const { error: uploadErr } = await supabaseBrowser.storage
+            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+            .upload(filePath, blob, { contentType: 'image/jpeg', upsert: true });
+
+          if (!uploadErr) {
+            const { data: publicUrlData } = supabaseBrowser.storage
+              .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+              .getPublicUrl(filePath);
+            if (publicUrlData?.publicUrl) {
+              uploadedUrl = publicUrlData.publicUrl;
+            }
+          }
+        } catch (storageErr) {
+          console.warn('Storage fallback to compressed base64:', storageErr);
         }
-      };
-      reader.readAsDataURL(file);
+        handleChange(fieldKey, uploadedUrl);
+      } catch (err) {
+        console.error('Local image upload error:', err);
+      } finally {
+        e.target.value = '';
+      }
     }
   };
 

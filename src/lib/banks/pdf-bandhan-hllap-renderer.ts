@@ -1768,10 +1768,19 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
 
     const drcFloors = (fields.drcFloors && fields.drcFloors.length > 0)
       ? fields.drcFloors
-      : [
-          { particulars: 'GF', area: '1225 Sqft.', yearOfConst: '2016', lifeInYrs: '10', costOfConst: 'Rs.1600/-', gcrc: 'No', depreciation: '50', value: 'Rs.19,60,000/-' },
-          { particulars: 'FF & SF', area: '2450sqft', yearOfConst: '2016', lifeInYrs: '10', costOfConst: 'Rs.1800/-', gcrc: 'No', depreciation: '50', value: 'Rs.44,10,000/-' },
-        ];
+      : (fields.floors && fields.floors.length > 0
+          ? fields.floors.map(f => ({
+              particulars: f.floor || '',
+              area: f.sanctionedArea || '',
+              yearOfConst: '',
+              lifeInYrs: '',
+              costOfConst: fields.rateOfCostOfConstruction || '',
+              gcrc: '',
+              depreciation: '',
+              value: '',
+            }))
+          : [{ particulars: 'Ground Floor', area: '', yearOfConst: '', lifeInYrs: '', costOfConst: fields.rateOfCostOfConstruction || '', gcrc: '', depreciation: '', value: '' }]
+        );
 
     for (const df of drcFloors) {
       const rh1 = this.cellHeight(df.particulars || '', drcW1, { fontSize: FONT_SIZE_SMALL });
@@ -1851,6 +1860,15 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawParagraph('I /WE HEREBY DECLARE THAT:');
     this.cursorY += 4;
 
+    const photoCount = (fields.propertyImages?.length || fields.propertyPhotos?.length || 0);
+    const photoPages = photoCount > 0 ? Math.ceil(photoCount / 2) : 1;
+    const rorPages = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : 1;
+    const locPages = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : 1;
+    const bhuPages = (fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : 1;
+    const guidePages = (fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : 1;
+    const computedPages = String(7 + photoPages + rorPages + locPages + bhuPages + guidePages);
+    const reportPagesCount = fields.valuerReportPagesCount || computedPages;
+
     const defaultDeclarations = [
       'A. THE INFORMATION FURNISHED ABOVE IS TRUE TO THE BEST OF MY / OUR KNOWLEDGE AND BELIEF.',
       'B. NEITHER ME/WE NOR MY/ OUR ASSOCIATE HAVE ANY DIRECT OR INDIRECT INTEREST IN THE ADVANCE OR ASSETS VALUED.',
@@ -1866,7 +1884,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       'L. WE ARE NEITHER THE AUDITORS TO THE OWNER OF THE PROPERTY (IES) NOR THEIR FIRMS, ASSOCIATES NOR ARE WE THE STATUTORY AUDITORS TO THE BRANCH FROM WHICH THE LOAN IS PROPOSED TO BE AVAILED / ALREADY AVAILED.',
       `M. IT IS HEREBY CERTIFIED THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IS, IN MY OPINION/OUR OPINION ${finalMktValStr} AND THE ESTIMATED REALIZABLE VALUE ${finalRealVal} UNDER DISTRESS SALE WILL BE ${finalDistVal} -VALUE VARIES WITH THE PURPOSE AND DATE. THIS REPORT IS NOT TO BE REFERRED FOR THE PURPOSE IS DIFFERENT OTHER THAN VALUATION OF THE MORTGAGED PROPERTY.`,
       'N. I HAVE NOT BEEN DISMISSED OR REMOVED FROM GOVT, SERVICE OR CONVICTED OF AN OFFENCE CONNECTED WITH ANY PROCEEDINGS OF INCOME TAX ACT, WEALTH TAX ACT OR GIFT TAX ACT OR HAVE BEEN BLACKLISTED BY ANY BANK/FINANCIAL INSTITUTION/ GOVT. DEPARTMENT/PUBLIC SECTORE ENTEREPRISE/BODY CORPORATE ETC.',
-      `O. THIS VALUATION REPORT CONTAINS ${fields.valuerReportPagesCount || '12'} PAGES ONLY.`,
+      `O. THIS VALUATION REPORT CONTAINS ${reportPagesCount} PAGES ONLY.`,
       'P. PHOTOGRAPHS OF THE ASSET VALUED ENCLOSED.',
     ];
 

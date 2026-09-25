@@ -19,7 +19,58 @@ import {
   BaseMapsSection,
   DEFAULT_PHOTO_LABEL,
 } from '../BaseBankReportComponents';
+import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { formatIndianCurrency } from '@/lib/numberToWords';
+
+const compressImageFile = (
+  file: File,
+  maxWidth = 1280,
+  maxHeight = 1280,
+  quality = 0.8
+): Promise<{ dataUrl: string; blob: Blob }> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          return reject(new Error('Canvas 2D context not available'));
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve({ dataUrl, blob });
+            } else {
+              resolve({ dataUrl, blob: file });
+            }
+          },
+          'image/jpeg',
+          quality
+        );
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
+};
 import { BankConfig } from '@/lib/bank-fields';
 import {
   PDFBandhanHLLAPRenderer,
@@ -270,12 +321,25 @@ export default function BandhanHLLAP({
           { floor: 'First Floor', measuredArea: '', sanctionedArea: '', deedArea: '', currentUsage: 'Residential', approvedUsage: 'Residential' },
         ];
 
+    const refCost = raw.rateOfCostOfConstruction || '';
     const defaultDRCFloors: BandhanHLLAPDRCFloor[] = Array.isArray(raw.drcFloors) && raw.drcFloors.length > 0
       ? raw.drcFloors
-      : [
-          { particulars: 'GF', area: '', yearOfConst: '', lifeInYrs: '10', costOfConst: '', gcrc: 'No', depreciation: '50', value: '' },
-          { particulars: 'FF', area: '', yearOfConst: '', lifeInYrs: '10', costOfConst: '', gcrc: 'No', depreciation: '50', value: '' },
-        ];
+      : (Array.isArray(raw.floors) && raw.floors.length > 0
+          ? raw.floors.map((f: any) => ({
+              particulars: f.floor || '',
+              area: f.sanctionedArea || '',
+              yearOfConst: '',
+              lifeInYrs: '',
+              costOfConst: refCost,
+              gcrc: '',
+              depreciation: '',
+              value: '',
+            }))
+          : [
+              { particulars: 'Ground Floor', area: '', yearOfConst: '', lifeInYrs: '', costOfConst: refCost, gcrc: '', depreciation: '', value: '' },
+              { particulars: 'First Floor', area: '', yearOfConst: '', lifeInYrs: '', costOfConst: refCost, gcrc: '', depreciation: '', value: '' },
+            ]
+        );
 
     // Parse branch details from raw data if branchDetails not explicitly stored
     let branchDetails = raw.branchDetails || '';
@@ -626,6 +690,52 @@ export default function BandhanHLLAP({
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [projectId, fields, isReadOnly]);
 
+  // Photos state derivation
+  const propertyImages: string[] = useMemo(() => {
+    if (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0) {
+      return fields.propertyImages;
+    }
+    if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
+      return fields.propertyPhotos.map((p: any) => (typeof p === 'string' ? p : p.url)).filter(Boolean);
+    }
+    return [];
+  }, [fields.propertyImages, fields.propertyPhotos]);
+
+  const propertyImageNames: string[] = useMemo(() => {
+    if (Array.isArray(fields.propertyImageNames) && fields.propertyImageNames.length > 0) {
+      return fields.propertyImageNames;
+    }
+    if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
+      return fields.propertyPhotos.map((p: any) => (typeof p === 'string' ? DEFAULT_PHOTO_LABEL : (p.caption || DEFAULT_PHOTO_LABEL)));
+    }
+    if (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0) {
+      return fields.propertyImages.map(() => DEFAULT_PHOTO_LABEL);
+    }
+    return [];
+  }, [fields.propertyImageNames, fields.propertyPhotos, fields.propertyImages]);
+
+  // Dynamic Total Pages Calculation:
+  // Base 7 pages (5 questionnaire + 2 Annexure-A & Declarations)
+  // + Photo pages (2 photos per page)
+  // + Enclosure document pages (ROR, Location Plan, Bhu Naksha, Guideline Rate Proof)
+  const dynamicTotalPages = useMemo(() => {
+    const basePages = 7;
+    const photoCount = propertyImages.length;
+    const photoPages = photoCount > 0 ? Math.ceil(photoCount / 2) : 1;
+    const rorPages = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : 1;
+    const locPages = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : 1;
+    const bhuPages = (fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : 1;
+    const guidePages = (fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : 1;
+
+    return String(basePages + photoPages + rorPages + locPages + bhuPages + guidePages);
+  }, [
+    propertyImages.length,
+    fields.mouzaMapImages,
+    fields.locationMapImages,
+    fields.bhuNakshaImages,
+    fields.guidelineRateImages,
+  ]);
+
   // Auto Calculations & Dynamic Synchronization of all related valuation fields
   useEffect(() => {
     // 1. Calculate Land Value: area in sqft * land rate
@@ -636,14 +746,23 @@ export default function BandhanHLLAP({
     // 2. Calculate DRC Building Total
     let totalBldgVal = 0;
     (fields.drcFloors || []).forEach(df => {
-      const a = parseNum(df.area);
-      const c = parseNum(df.costOfConst);
-      let v = 0;
-      if (a && c) {
-        v = a * c;
+      const v = parseNum(df.value);
+      if (v > 0) {
+        totalBldgVal += v;
+      } else {
+        const a = parseNum(df.area);
+        const c = parseNum(df.costOfConst);
+        if (a > 0 && c > 0) {
+          const dep = parseNum(df.depreciation);
+          const factor = (dep > 0 && dep <= 100) ? (1 - dep / 100) : 1;
+          totalBldgVal += Math.round(a * c * factor);
+        }
       }
-      totalBldgVal += (parseNum(df.value) || v);
     });
+    const servicesVal = parseNum(fields.drcServicesCost || fields.drcServicesValue);
+    if (servicesVal > 0) {
+      totalBldgVal += servicesVal;
+    }
 
     // 3. Calculate Floor BUA
     const totalFloorSanctioned = (fields.floors || []).reduce((acc, f) => acc + parseNum(f.sanctionedArea), 0);
@@ -658,7 +777,7 @@ export default function BandhanHLLAP({
       {
         ...fields,
         netValueLand: calculatedLandVal > 0 ? String(calculatedLandVal) : fields.netValueLand,
-        netValueBuilding: totalBldgVal > 0 ? String(totalBldgVal) : fields.netValueBuilding,
+        netValueBuilding: totalBldgVal > 0 ? String(totalBldgVal) : '0',
       },
       calculatedLandVal,
       totalBldgVal
@@ -693,19 +812,17 @@ export default function BandhanHLLAP({
         }
       }
 
-      // Building Value
-      if (totalBldgVal > 0) {
-        const bldgStr = String(totalBldgVal);
-        const bldgFmt = formatCurrencyINR(totalBldgVal);
-        if (prev.netValueBuilding !== bldgStr) {
-          next.netValueBuilding = bldgStr;
-          changed = true;
-        }
-        if (prev.drcTotalBuildingValue !== bldgFmt) {
-          next.drcTotalBuildingValue = bldgFmt;
-          next.summaryBuildingValue = bldgFmt;
-          changed = true;
-        }
+      // Building Value (B)
+      const bldgStr = String(totalBldgVal);
+      const bldgFmt = totalBldgVal > 0 ? formatCurrencyINR(totalBldgVal) : '0';
+      if (prev.netValueBuilding !== bldgStr) {
+        next.netValueBuilding = bldgStr;
+        changed = true;
+      }
+      if (prev.drcTotalBuildingValue !== bldgFmt) {
+        next.drcTotalBuildingValue = bldgFmt;
+        next.summaryBuildingValue = bldgFmt;
+        changed = true;
       }
 
       const validNamedFloors = (fields.floors || []).filter(f => f.floor && f.floor.trim().length > 0);
@@ -806,6 +923,11 @@ export default function BandhanHLLAP({
         changed = true;
       }
 
+      if (!prev.valuerReportPagesCountLocked && prev.valuerReportPagesCount !== dynamicTotalPages) {
+        next.valuerReportPagesCount = dynamicTotalPages;
+        changed = true;
+      }
+
       return changed ? next : prev;
     });
   }, [
@@ -825,6 +947,10 @@ export default function BandhanHLLAP({
     fields.govtRateLand,
     fields.valuationGovtRateLocked,
     fields.areaOfLandLocked,
+    fields.drcServicesCost,
+    fields.drcServicesValue,
+    fields.valuerReportPagesCountLocked,
+    dynamicTotalPages,
   ]);
 
   // Handler for standard input changes
@@ -892,7 +1018,7 @@ export default function BandhanHLLAP({
       ...prev,
       drcFloors: [
         ...(prev.drcFloors || []),
-        { particulars: '', area: '', yearOfConst: '', lifeInYrs: '10', costOfConst: '', gcrc: 'No', depreciation: '50', value: '' },
+        { particulars: '', area: '', yearOfConst: '', lifeInYrs: '', costOfConst: prev.rateOfCostOfConstruction || '', gcrc: '', depreciation: '', value: '' },
       ],
     }));
   };
@@ -904,58 +1030,66 @@ export default function BandhanHLLAP({
     }));
   };
 
-  // Photos state derivation
-  const propertyImages: string[] = useMemo(() => {
-    if (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0) {
-      return fields.propertyImages;
-    }
-    if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
-      return fields.propertyPhotos.map((p: any) => (typeof p === 'string' ? p : p.url)).filter(Boolean);
-    }
-    return [];
-  }, [fields.propertyImages, fields.propertyPhotos]);
-
-  const propertyImageNames: string[] = useMemo(() => {
-    if (Array.isArray(fields.propertyImageNames) && fields.propertyImageNames.length > 0) {
-      return fields.propertyImageNames;
-    }
-    if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
-      return fields.propertyPhotos.map((p: any, i: number) => (typeof p === 'string' ? `Photograph ${i + 1}` : (p.caption || `Photograph ${i + 1}`)));
-    }
-    return [];
-  }, [fields.propertyImageNames, fields.propertyPhotos]);
-
   // Handle Multiple Photo Upload
-  const handleUploadMultiplePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleUploadMultiplePhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    const newImgs: string[] = [];
-    const newNames: string[] = [];
-    let processed = 0;
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        newImgs.push(dataUrl);
-        newNames.push(file.name.replace(/\.[^/.]+$/, '') || `Photograph ${propertyImages.length + newImgs.length}`);
-        processed++;
-        if (processed === files.length) {
-          const mergedImgs = [...propertyImages, ...newImgs];
-          const mergedNames = [...propertyImageNames, ...newNames];
-          const mergedPhotos = mergedImgs.map((url, idx) => ({
-            url,
-            caption: mergedNames[idx] || `Photograph ${idx + 1}`,
-          }));
-          setFields((prev) => ({
-            ...prev,
-            propertyImages: mergedImgs,
-            propertyImageNames: mergedNames,
-            propertyPhotos: mergedPhotos,
-          }));
+    try {
+      const newImgs: string[] = [];
+      const newNames: string[] = [];
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const baseName = DEFAULT_PHOTO_LABEL;
+        newNames.push(baseName);
+
+        // 1. Compress image to prevent massive base64 payloads
+        const { dataUrl, blob } = await compressImageFile(file, 1280, 1280, 0.8);
+
+        // 2. Try Supabase storage upload for lightweight URL
+        let uploadedUrl = dataUrl;
+        try {
+          const ext = 'jpg';
+          const fileName = `${projectId}-photo-${Date.now()}-${i}.${ext}`;
+          const filePath = `temp-photos/${projectId}/${fileName}`;
+          const { error: uploadErr } = await supabaseBrowser.storage
+            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+            .upload(filePath, blob, { contentType: 'image/jpeg', upsert: true });
+
+          if (!uploadErr) {
+            const { data: publicUrlData } = supabaseBrowser.storage
+              .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+              .getPublicUrl(filePath);
+            if (publicUrlData?.publicUrl) {
+              uploadedUrl = publicUrlData.publicUrl;
+            }
+          }
+        } catch (storageErr) {
+          console.warn('Supabase storage upload fallback to compressed base64:', storageErr);
         }
-      };
-      reader.readAsDataURL(file);
-    });
+
+        newImgs.push(uploadedUrl);
+      }
+
+      const mergedImgs = [...propertyImages, ...newImgs];
+      const mergedNames = [...propertyImageNames, ...newNames];
+      const mergedPhotos = mergedImgs.map((url, idx) => ({
+        url,
+        caption: mergedNames[idx] || DEFAULT_PHOTO_LABEL,
+      }));
+
+      setFields((prev) => ({
+        ...prev,
+        propertyImages: mergedImgs,
+        propertyImageNames: mergedNames,
+        propertyPhotos: mergedPhotos,
+      }));
+    } catch (err: any) {
+      console.error('Photo upload error:', err);
+      alert(`Photo upload failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      e.target.value = '';
+    }
   };
 
   const handlePhotoRemove = (idx: number) => {
@@ -966,14 +1100,14 @@ export default function BandhanHLLAP({
       ...prev,
       propertyImages: updatedImgs,
       propertyImageNames: updatedNames,
-      propertyPhotos: updatedPhotos.length > 0 ? updatedPhotos : updatedImgs.map((url, i) => ({ url, caption: updatedNames[i] || `Photograph ${i + 1}` })),
+      propertyPhotos: updatedPhotos.length > 0 ? updatedPhotos : updatedImgs.map((url, i) => ({ url, caption: updatedNames[i] || DEFAULT_PHOTO_LABEL })),
     }));
   };
 
   const handlePhotoRename = (idx: number, name: string) => {
     const updatedNames = [...propertyImageNames];
     while (updatedNames.length <= idx) {
-      updatedNames.push(`Photograph ${updatedNames.length + 1}`);
+      updatedNames.push(DEFAULT_PHOTO_LABEL);
     }
     updatedNames[idx] = name;
     const updatedPhotos = [...(fields.propertyPhotos || [])];
@@ -992,7 +1126,7 @@ export default function BandhanHLLAP({
   const handlePhotoReorder = (newImages: string[], newNames: string[]) => {
     const newPhotos = newImages.map((url, idx) => ({
       url,
-      caption: newNames[idx] || `Photograph ${idx + 1}`,
+      caption: newNames[idx] || DEFAULT_PHOTO_LABEL,
     }));
     setFields((prev) => ({
       ...prev,
@@ -1003,23 +1137,48 @@ export default function BandhanHLLAP({
   };
 
   // Map Handlers for BaseMapsSection
-  const handleMapUpload = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMapUpload = async (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const dataUrl = ev.target?.result as string;
-        setFields(prev => {
-          const curr = Array.isArray(prev[fieldKey]) ? prev[fieldKey] : (prev[fieldKey] ? [prev[fieldKey]] : []);
-          return {
-            ...prev,
-            [fieldKey]: [...curr, dataUrl],
-          };
-        });
-      };
-      reader.readAsDataURL(file);
-    });
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const { dataUrl, blob } = await compressImageFile(file, 1600, 1600, 0.85);
+        let uploadedUrl = dataUrl;
+        try {
+          const ext = 'jpg';
+          const fileName = `${projectId}-${fieldKey}-${Date.now()}-${i}.${ext}`;
+          const filePath = `temp-photos/${projectId}/${fileName}`;
+          const { error: uploadErr } = await supabaseBrowser.storage
+            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+            .upload(filePath, blob, { contentType: 'image/jpeg', upsert: true });
+
+          if (!uploadErr) {
+            const { data: publicUrlData } = supabaseBrowser.storage
+              .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+              .getPublicUrl(filePath);
+            if (publicUrlData?.publicUrl) {
+              uploadedUrl = publicUrlData.publicUrl;
+            }
+          }
+        } catch (storageErr) {
+          console.warn('Map upload storage fallback to base64:', storageErr);
+        }
+        uploadedUrls.push(uploadedUrl);
+      }
+      setFields(prev => {
+        const curr = Array.isArray(prev[fieldKey]) ? prev[fieldKey] : (prev[fieldKey] ? [prev[fieldKey]] : []);
+        return {
+          ...prev,
+          [fieldKey]: [...curr, ...uploadedUrls],
+        };
+      });
+    } catch (err: any) {
+      console.error('Map upload error:', err);
+    } finally {
+      e.target.value = '';
+    }
   };
 
   const handleMapRemove = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', idx?: number) => {
@@ -4608,7 +4767,7 @@ export default function BandhanHLLAP({
                           (B) Depreciated Replacement Cost (D.R.C.) of Existing Building:
                         </span>
                         <span className="text-[10.5px] font-semibold bg-sky-50 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
-                          ⚡ Referenced from: Pt 26 (Floor Areas), Pt 29 (Building Life), Pt 32 (Cost of Construction) &amp; Pt 33 (Depreciation)
+                          ⚡ Area referenced from: Pt 26 (Sanctioned BUA) &amp; Cost referenced from: Pt 32
                         </span>
                       </div>
 
@@ -4628,101 +4787,107 @@ export default function BandhanHLLAP({
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-200">
-                            {(fields.drcFloors || []).map((df, idx) => (
-                              <tr key={idx}>
-                                <td className="p-1.5">
-                                  <input
-                                    type="text"
-                                    className={inputCls}
-                                    value={df.particulars || ''}
-                                    onChange={(e) => handleDRCFloorChange(idx, 'particulars', e.target.value)}
-                                    placeholder="e.g. Ground Floor"
-                                    disabled={isReadOnly}
-                                  />
-                                </td>
-                                <td className="p-1.5">
-                                  <input
-                                    type="text"
-                                    className={inputCls}
-                                    value={df.area || ''}
-                                    onChange={(e) => handleDRCFloorChange(idx, 'area', sanitizePositiveFloat(e.target.value))}
-                                    placeholder="e.g. 850"
-                                    disabled={isReadOnly}
-                                  />
-                                </td>
-                                <td className="p-1.5">
-                                  <input
-                                    type="text"
-                                    className={inputCls}
-                                    value={df.yearOfConst || ''}
-                                    onChange={(e) => handleDRCFloorChange(idx, 'yearOfConst', sanitizePositiveInt(e.target.value, 4))}
-                                    placeholder="e.g. 2020"
-                                    disabled={isReadOnly}
-                                  />
-                                </td>
-                                <td className="p-1.5">
-                                  <input
-                                    type="text"
-                                    className={inputCls}
-                                    value={df.lifeInYrs || '10'}
-                                    onChange={(e) => handleDRCFloorChange(idx, 'lifeInYrs', sanitizePositiveInt(e.target.value, 3))}
-                                    placeholder="e.g. 10"
-                                    disabled={isReadOnly}
-                                  />
-                                </td>
-                                <td className="p-1.5">
-                                  <input
-                                    type="text"
-                                    className={inputCls}
-                                    value={df.costOfConst || ''}
-                                    onChange={(e) => handleDRCFloorChange(idx, 'costOfConst', sanitizePositiveFloat(e.target.value))}
-                                    placeholder="e.g. 1800"
-                                    disabled={isReadOnly}
-                                  />
-                                </td>
-                                <td className="p-1.5">
-                                  <input
-                                    type="text"
-                                    className={inputCls}
-                                    value={df.gcrc || 'No'}
-                                    onChange={(e) => handleDRCFloorChange(idx, 'gcrc', e.target.value)}
-                                    placeholder="e.g. No"
-                                    disabled={isReadOnly}
-                                  />
-                                </td>
-                                <td className="p-1.5">
-                                  <input
-                                    type="text"
-                                    className={inputCls}
-                                    value={df.depreciation || '50'}
-                                    onChange={(e) => handleDRCFloorChange(idx, 'depreciation', sanitizePercentage(e.target.value))}
-                                    placeholder="e.g. 50"
-                                    disabled={isReadOnly}
-                                  />
-                                </td>
-                                <td className="p-1.5">
-                                  <input
-                                    type="text"
-                                    className={inputCls}
-                                    value={df.value || ''}
-                                    onChange={(e) => handleDRCFloorChange(idx, 'value', sanitizePositiveFloat(e.target.value))}
-                                    placeholder="Net Value"
-                                    disabled={isReadOnly}
-                                  />
-                                </td>
-                                {!isReadOnly && (
-                                  <td className="p-1.5 text-center">
-                                    <button
-                                      type="button"
-                                      onClick={() => removeDRCRow(idx)}
-                                      className="text-red-500 hover:text-red-700 font-bold px-2 py-1 cursor-pointer"
-                                    >
-                                      ×
-                                    </button>
+                            {(fields.drcFloors || []).map((df, idx) => {
+                              const refSanctionedArea = fields.floors?.[idx]?.sanctionedArea || '';
+                              const refFloorName = fields.floors?.[idx]?.floor || '';
+                              const refCost = fields.rateOfCostOfConstruction || '';
+
+                              return (
+                                <tr key={idx}>
+                                  <td className="p-1.5">
+                                    <input
+                                      type="text"
+                                      className={inputCls}
+                                      value={df.particulars !== undefined && df.particulars !== '' ? df.particulars : refFloorName}
+                                      onChange={(e) => handleDRCFloorChange(idx, 'particulars', e.target.value)}
+                                      placeholder={refFloorName || "e.g. Ground Floor"}
+                                      disabled={isReadOnly}
+                                    />
                                   </td>
-                                )}
-                              </tr>
-                            ))}
+                                  <td className="p-1.5">
+                                    <input
+                                      type="text"
+                                      className={inputCls}
+                                      value={df.area !== undefined && df.area !== '' ? df.area : refSanctionedArea}
+                                      onChange={(e) => handleDRCFloorChange(idx, 'area', sanitizePositiveFloat(e.target.value))}
+                                      placeholder={refSanctionedArea || "0.00"}
+                                      disabled={isReadOnly}
+                                    />
+                                  </td>
+                                  <td className="p-1.5">
+                                    <input
+                                      type="text"
+                                      className={inputCls}
+                                      value={df.yearOfConst || ''}
+                                      onChange={(e) => handleDRCFloorChange(idx, 'yearOfConst', sanitizePositiveInt(e.target.value, 4))}
+                                      placeholder="Year"
+                                      disabled={isReadOnly}
+                                    />
+                                  </td>
+                                  <td className="p-1.5">
+                                    <input
+                                      type="text"
+                                      className={inputCls}
+                                      value={df.lifeInYrs || ''}
+                                      onChange={(e) => handleDRCFloorChange(idx, 'lifeInYrs', sanitizePositiveInt(e.target.value, 3))}
+                                      placeholder="Life"
+                                      disabled={isReadOnly}
+                                    />
+                                  </td>
+                                  <td className="p-1.5">
+                                    <input
+                                      type="text"
+                                      className={inputCls}
+                                      value={df.costOfConst !== undefined && df.costOfConst !== '' ? df.costOfConst : refCost}
+                                      onChange={(e) => handleDRCFloorChange(idx, 'costOfConst', sanitizePositiveFloat(e.target.value))}
+                                      placeholder={refCost || "Cost"}
+                                      disabled={isReadOnly}
+                                    />
+                                  </td>
+                                  <td className="p-1.5">
+                                    <input
+                                      type="text"
+                                      className={inputCls}
+                                      value={df.gcrc || ''}
+                                      onChange={(e) => handleDRCFloorChange(idx, 'gcrc', e.target.value)}
+                                      placeholder="GCRC"
+                                      disabled={isReadOnly}
+                                    />
+                                  </td>
+                                  <td className="p-1.5">
+                                    <input
+                                      type="text"
+                                      className={inputCls}
+                                      value={df.depreciation || ''}
+                                      onChange={(e) => handleDRCFloorChange(idx, 'depreciation', sanitizePercentage(e.target.value))}
+                                      placeholder="Dep. %"
+                                      disabled={isReadOnly}
+                                    />
+                                  </td>
+                                  <td className="p-1.5">
+                                    <input
+                                      type="text"
+                                      className={inputCls}
+                                      value={df.value || ''}
+                                      onChange={(e) => handleDRCFloorChange(idx, 'value', sanitizePositiveFloat(e.target.value))}
+                                      placeholder="Net Value"
+                                      disabled={isReadOnly}
+                                    />
+                                  </td>
+                                  {!isReadOnly && (
+                                    <td className="p-1.5 text-center">
+                                      <button
+                                        type="button"
+                                        onClick={() => removeDRCRow(idx)}
+                                        className="text-red-500 hover:text-red-700 font-bold px-2 py-1 cursor-pointer"
+                                      >
+                                        ×
+                                      </button>
+                                    </td>
+                                  )}
+                                </tr>
+                              );
+                            })}
                           </tbody>
                         </table>
                       </div>
@@ -4743,18 +4908,27 @@ export default function BandhanHLLAP({
                           <input
                             type="text"
                             className={inputCls}
-                            value={fields.drcServicesCost || 'Rs.0/-'}
-                            onChange={(e) => handleChange('drcServicesCost', e.target.value)}
+                            value={fields.drcServicesCost || ''}
+                            onChange={(e) => {
+                              const val = sanitizePositiveFloat(e.target.value);
+                              const valNum = parseNum(val);
+                              setFields(prev => ({
+                                ...prev,
+                                drcServicesCost: val,
+                                drcServicesValue: valNum > 0 ? `Rs.${formatCurrencyINR(valNum)}/-` : 'Rs.0/-',
+                              }));
+                            }}
+                            placeholder="0.00"
                             disabled={isReadOnly}
                           />
                         </Field>
                         <Field label="DRC Services Net Value (Rs.):">
                           <input
                             type="text"
-                            className={inputCls}
-                            value={fields.drcServicesValue || 'Rs.0/-'}
-                            onChange={(e) => handleChange('drcServicesValue', e.target.value)}
-                            disabled={isReadOnly}
+                            className={`${inputCls} bg-slate-100 text-slate-600 font-bold cursor-not-allowed`}
+                            value={fields.drcServicesValue || (parseNum(fields.drcServicesCost) > 0 ? `Rs.${formatCurrencyINR(parseNum(fields.drcServicesCost))}/-` : 'Rs.0/-')}
+                            readOnly
+                            disabled
                           />
                         </Field>
                       </div>
@@ -4765,7 +4939,7 @@ export default function BandhanHLLAP({
                           TOTAL Depreciated Replacement Cost of Building (B):
                         </span>
                         <span className="text-sm font-extrabold text-sky-950 font-mono">
-                          Rs.{fields.drcTotalBuildingValue || formatCurrencyINR(parseNum(fields.netValueBuilding))}/-
+                          Rs.{fields.drcTotalBuildingValue || '0'}/-
                         </span>
                       </div>
                     </div>
@@ -4870,7 +5044,7 @@ export default function BandhanHLLAP({
                       'L. WE ARE NEITHER THE AUDITORS TO THE OWNER OF THE PROPERTY (IES) NOR THEIR FIRMS, ASSOCIATES NOR ARE WE THE STATUTORY AUDITORS TO THE BRANCH FROM WHICH THE LOAN IS PROPOSED TO BE AVAILED / ALREADY AVAILED.',
                       `M. IT IS HEREBY CERTIFIED THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IS, IN MY OPINION/OUR OPINION Rs.${formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/- AND THE ESTIMATED REALIZABLE VALUE ${fields.realisableValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * ((fields.realisableValuePct !== undefined && fields.realisableValuePct !== null && fields.realisableValuePct !== '') ? parseNum(fields.realisableValuePct) : 100) / 100))}/-`} UNDER DISTRESS SALE WILL BE ${fields.distressSaleValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * ((fields.distressSalePct !== undefined && fields.distressSalePct !== null && fields.distressSalePct !== '') ? parseNum(fields.distressSalePct) : 100) / 100))}/-`} -VALUE VARIES WITH THE PURPOSE AND DATE. THIS REPORT IS NOT TO BE REFERRED FOR THE PURPOSE IS DIFFERENT OTHER THAN VALUATION OF THE MORTGAGED PROPERTY.`,
                       'N. I HAVE NOT BEEN DISMISSED OR REMOVED FROM GOVT, SERVICE OR CONVICTED OF AN OFFENCE CONNECTED WITH ANY PROCEEDINGS OF INCOME TAX ACT, WEALTH TAX ACT OR GIFT TAX ACT OR HAVE BEEN BLACKLISTED BY ANY BANK/FINANCIAL INSTITUTION/ GOVT. DEPARTMENT/PUBLIC SECTORE ENTEREPRISE/BODY CORPORATE ETC.',
-                      `O. THIS VALUATION REPORT CONTAINS ${fields.valuerReportPagesCount || '12'} PAGES ONLY.`,
+                      `O. THIS VALUATION REPORT CONTAINS ${fields.valuerReportPagesCount || dynamicTotalPages} PAGES ONLY.`,
                       'P. PHOTOGRAPHS OF THE ASSET VALUED ENCLOSED.',
                     ].map((item, idx) => (
                       <div key={idx} className="p-2 rounded bg-slate-50 border border-slate-150 leading-relaxed font-sans">
@@ -4889,22 +5063,47 @@ export default function BandhanHLLAP({
                       />
                     </Field>
                     <Field label="Total Report Pages Count:">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.valuerReportPagesCount || '12'}
-                        onChange={(e) => handleChange('valuerReportPagesCount', e.target.value)}
-                        disabled={isReadOnly}
-                      />
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.valuerReportPagesCount || dynamicTotalPages}
+                          onChange={(e) => {
+                            const val = sanitizePositiveInt(e.target.value, 3);
+                            handleChange('valuerReportPagesCount', val);
+                            handleChange('valuerReportPagesCountLocked', true);
+                          }}
+                          placeholder={dynamicTotalPages}
+                          disabled={isReadOnly}
+                        />
+                        {fields.valuerReportPagesCountLocked && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleChange('valuerReportPagesCountLocked', false);
+                              handleChange('valuerReportPagesCount', dynamicTotalPages);
+                            }}
+                            className="text-[11px] font-semibold text-sky-600 hover:text-sky-800 bg-sky-50 border border-sky-200 px-2 py-1.5 rounded cursor-pointer shrink-0"
+                            title="Reset to Dynamic Auto Count"
+                          >
+                            ↺ Auto ({dynamicTotalPages})
+                          </button>
+                        )}
+                      </div>
                     </Field>
                   </div>
                 </div>
 
                 {/* 10. Valuer Credentials & Sign-off */}
                 <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3">
-                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wide block border-b border-slate-100 pb-2">
-                    Valuer Credentials &amp; Sign-off:
-                  </span>
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                      Valuer Credentials &amp; Sign-off:
+                    </span>
+                    <span className="text-[10.5px] font-semibold bg-sky-50 text-sky-800 px-2.5 py-0.5 rounded border border-sky-200">
+                      ⚡ Referenced from Firm Front Page Credentials
+                    </span>
+                  </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="Valuer Name:">
                       <input
@@ -4912,6 +5111,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.valuerSignatureName || 'S. MOHANTY & ASSOCIATES'}
                         onChange={(e) => handleChange('valuerSignatureName', e.target.value)}
+                        placeholder="S. MOHANTY & ASSOCIATES"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -4921,6 +5121,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.valuerQualification || 'B.Tech (Civil), M.Val (RE)'}
                         onChange={(e) => handleChange('valuerQualification', e.target.value)}
+                        placeholder="B.Tech (Civil), M.Val (RE)"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -4930,6 +5131,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.valuerIovRegNo || '107/2016-17, CAT-1'}
                         onChange={(e) => handleChange('valuerIovRegNo', e.target.value)}
+                        placeholder="107/2016-17, CAT-1"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -4939,6 +5141,7 @@ export default function BandhanHLLAP({
                         className={inputCls}
                         value={fields.valuerWealthTaxRegNo || 'CCIT/BBSR/Tech-10/2017-18'}
                         onChange={(e) => handleChange('valuerWealthTaxRegNo', e.target.value)}
+                        placeholder="CCIT/BBSR/Tech-10/2017-18"
                         disabled={isReadOnly}
                       />
                     </Field>

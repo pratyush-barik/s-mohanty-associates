@@ -747,7 +747,7 @@ export function BasePhotographsSection({
     const reorderedNames = [...(propertyImageNames || [])];
 
     while (reorderedNames.length < reorderedImgs.length) {
-      reorderedNames.push(`Photograph ${reorderedNames.length + 1}`);
+      reorderedNames.push(DEFAULT_PHOTO_LABEL);
     }
 
     const [movedImg] = reorderedImgs.splice(fromIdx, 1);
@@ -816,7 +816,7 @@ export function BasePhotographsSection({
       {propertyImages.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {propertyImages.map((url, idx) => {
-            const currentLabel = propertyImageNames?.[idx] || `Photograph ${idx + 1}`;
+            const currentLabel = propertyImageNames?.[idx] || DEFAULT_PHOTO_LABEL;
             const isDragging = draggedIdx === idx;
             const isDragOver = dragOverIdx === idx;
             const canDrag = !isReadOnly && propertyImages.length > 1;
@@ -856,7 +856,7 @@ export function BasePhotographsSection({
                       className="w-full text-xs font-semibold text-[#0f2038] bg-transparent border-b border-transparent hover:border-slate-300 focus:border-accent-500 focus:bg-slate-50 rounded px-1 py-0.5 outline-none truncate transition-colors"
                       value={currentLabel}
                       onChange={(e) => onImageNameChange?.(idx, e.target.value)}
-                      placeholder={`Photograph ${idx + 1}`}
+                      placeholder={DEFAULT_PHOTO_LABEL}
                       disabled={isReadOnly}
                     />
                   </div>
