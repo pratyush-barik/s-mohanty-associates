@@ -21,20 +21,26 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     // Section 3 Variables
     canfinHomesEnablePlotNoEdit: false,
     canfinHomesFlatHousePlotNo: '',
+    canfinHomesTypeOfPropertyDropdown: 'Commercial',
     canfinHomesTypeOfProperty: 'Commercial',
     canfinHomesNoOfStories: '',
     canfinHomesTotalNoOfUnits: '',
+    canfinHomesTotalNoOfUnitsNA: false,
     canfinHomesNoOfUnitsOnEachFloor: '',
+    canfinHomesNoOfUnitsOnEachFloorNA: false,
     canfinHomesDetailsOfUnit: '',
+    canfinHomesDetailsOfUnitNA: false,
     canfinHomesAgeOfTheProperty: '',
     canfinHomesEstimatedTotalLifespan: '60',
     canfinHomesEnableResidualAgeEdit: false,
     canfinHomesResidualAgeOfTheProperty: '',
     canfinHomesOccupancyDetails: 'Self occupied',
     canfinHomesVacantOrTenantedDetails: '',
+    canfinHomesVacantOrTenantedDetailsNA: false,
     canfinHomesEnableTechnicalAddressEdit: false,
     canfinHomesTechnicalAddress: '',
     canfinHomesSameAsTechnicalAddress: false,
+    canfinHomesEnableLegalAddressEdit: false,
     canfinHomesLegalAddress: '',
     canfinHomesEnablePinCodeEdit: false,
     canfinHomesPinCode: '',
@@ -478,36 +484,72 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
             <div className="border border-green-200 bg-[#e8f5e9] rounded-md p-4 mb-4">
               <h3 className="font-bold text-gray-700 mb-4">Property Specifications</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Flat/House/Plot No.">
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Flat/House/Plot No.</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <button
+                        type="button"
+                        onClick={() => handleChange('canfinHomesEnablePlotNoEdit', !fields.canfinHomesEnablePlotNoEdit)}
+                        disabled={isReadOnly}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnablePlotNoEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnablePlotNoEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                      </button>
+                    </div>
+                  </div>
+                }>
                   <div className="relative">
                     <input 
-                      className={`${inputCls} pr-10 ${!fields.canfinHomesEnablePlotNoEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`} 
+                      className={`${inputCls} pr-10 ${fields.canfinHomesEnablePlotNoEdit ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`} 
                       value={fields.canfinHomesEnablePlotNoEdit ? (fields.canfinHomesFlatHousePlotNo || '') : prefilledPlotNo} 
                       onChange={e => handleChange('canfinHomesFlatHousePlotNo', e.target.value)} 
                       disabled={isReadOnly || !fields.canfinHomesEnablePlotNoEdit} 
                       title='>>Prefill from section 1, field "PLOT NUMBER"<<'
                     />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700"
-                      onClick={() => handleChange('canfinHomesEnablePlotNoEdit', !fields.canfinHomesEnablePlotNoEdit)}
-                      disabled={isReadOnly}
+                    <div
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
                       title='>>Prefill from section 1, field "PLOT NUMBER"<<'
                     >
-                      <Lock className={`w-4 h-4 ${!fields.canfinHomesEnablePlotNoEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </button>
+                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnablePlotNoEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
+                    </div>
                   </div>
                 </Field>
-                <Field label="Type of Property">
-                  <select className={inputCls} value={fields.canfinHomesTypeOfProperty || ''} onChange={e => handleChange('canfinHomesTypeOfProperty', e.target.value)} disabled={isReadOnly}>
-                    <option value="Commercial">Commercial</option>
-                    <option value="Godown">Godown</option>
-                    <option value="Industrial">Industrial</option>
-                    <option value="Specialized property">Specialized property</option>
-                    <option value="Vacant Plot">Vacant Plot</option>
-                    <option value="Hotel">Hotel</option>
-                  </select>
-                </Field>
+                <div className="flex flex-col gap-2">
+                  <Field label="Type of Property">
+                    <select 
+                      className={inputCls} 
+                      value={fields.canfinHomesTypeOfPropertyDropdown || ''} 
+                      onChange={e => {
+                        handleChange('canfinHomesTypeOfPropertyDropdown', e.target.value);
+                        if (e.target.value !== 'Custom') {
+                          handleChange('canfinHomesTypeOfProperty', e.target.value);
+                        } else {
+                          handleChange('canfinHomesTypeOfProperty', '');
+                        }
+                      }} 
+                      disabled={isReadOnly}
+                    >
+                      <option value="Commercial">Commercial</option>
+                      <option value="Godown">Godown</option>
+                      <option value="Industrial">Industrial</option>
+                      <option value="Specialized property">Specialized property</option>
+                      <option value="Vacant Plot">Vacant Plot</option>
+                      <option value="Hotel">Hotel</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesTypeOfPropertyDropdown === 'Custom' && (
+                    <input 
+                      className={inputCls} 
+                      placeholder="Enter custom property type..."
+                      value={fields.canfinHomesTypeOfProperty || ''} 
+                      onChange={e => handleChange('canfinHomesTypeOfProperty', e.target.value)} 
+                      disabled={isReadOnly} 
+                    />
+                  )}
+                </div>
                 <Field label="No. of Stories">
                   <input type="number" className={inputCls} value={fields.canfinHomesNoOfStories || ''} onChange={e => handleChange('canfinHomesNoOfStories', e.target.value)} disabled={isReadOnly} />
                 </Field>
@@ -517,14 +559,85 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
             <div className="border border-green-200 bg-[#e8f5e9] rounded-md p-4 mb-4">
               <h3 className="font-bold text-gray-700 mb-4">Multi-Storey Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="For Multi storey building: Total no of units">
-                  <input type="number" className={inputCls} value={fields.canfinHomesTotalNoOfUnits || ''} onChange={e => handleChange('canfinHomesTotalNoOfUnits', e.target.value)} disabled={isReadOnly} />
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>For Multi storey building: Total no of units</span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesTotalNoOfUnitsNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesTotalNoOfUnitsNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesTotalNoOfUnits', 'NA');
+                          else handleChange('canfinHomesTotalNoOfUnits', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                }>
+                  <input 
+                    type={fields.canfinHomesTotalNoOfUnitsNA ? 'text' : 'number'}
+                    className={`${inputCls} ${fields.canfinHomesTotalNoOfUnitsNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    value={fields.canfinHomesTotalNoOfUnitsNA ? 'NA' : (fields.canfinHomesTotalNoOfUnits || '')} 
+                    onChange={e => handleChange('canfinHomesTotalNoOfUnits', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesTotalNoOfUnitsNA} 
+                  />
                 </Field>
-                <Field label="No of Units on each floor">
-                  <input type="number" className={inputCls} value={fields.canfinHomesNoOfUnitsOnEachFloor || ''} onChange={e => handleChange('canfinHomesNoOfUnitsOnEachFloor', e.target.value)} disabled={isReadOnly} />
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>No of Units on each floor</span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesNoOfUnitsOnEachFloorNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesNoOfUnitsOnEachFloorNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesNoOfUnitsOnEachFloor', 'NA');
+                          else handleChange('canfinHomesNoOfUnitsOnEachFloor', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                }>
+                  <input 
+                    type={fields.canfinHomesNoOfUnitsOnEachFloorNA ? 'text' : 'number'}
+                    className={`${inputCls} ${fields.canfinHomesNoOfUnitsOnEachFloorNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    value={fields.canfinHomesNoOfUnitsOnEachFloorNA ? 'NA' : (fields.canfinHomesNoOfUnitsOnEachFloor || '')} 
+                    onChange={e => handleChange('canfinHomesNoOfUnitsOnEachFloor', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesNoOfUnitsOnEachFloorNA} 
+                  />
                 </Field>
-                <Field label="Details of unit" className="md:col-span-2">
-                  <input className={inputCls} value={fields.canfinHomesDetailsOfUnit || ''} onChange={e => handleChange('canfinHomesDetailsOfUnit', e.target.value)} disabled={isReadOnly} />
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Details of unit</span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesDetailsOfUnitNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesDetailsOfUnitNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesDetailsOfUnit', 'NA');
+                          else handleChange('canfinHomesDetailsOfUnit', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                } className="md:col-span-2">
+                  <input 
+                    className={`${inputCls} ${fields.canfinHomesDetailsOfUnitNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    value={fields.canfinHomesDetailsOfUnitNA ? 'NA' : (fields.canfinHomesDetailsOfUnit || '')} 
+                    onChange={e => handleChange('canfinHomesDetailsOfUnit', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesDetailsOfUnitNA} 
+                  />
                 </Field>
               </div>
             </div>
@@ -535,24 +648,36 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label="Age Of The property">
                   <input type="number" className={inputCls} value={fields.canfinHomesAgeOfTheProperty || ''} onChange={e => handleChange('canfinHomesAgeOfTheProperty', e.target.value)} disabled={isReadOnly} />
                 </Field>
-                <Field label="Residual age of the Property">
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Residual age of the Property</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <button
+                        type="button"
+                        onClick={() => handleChange('canfinHomesEnableResidualAgeEdit', !fields.canfinHomesEnableResidualAgeEdit)}
+                        disabled={isReadOnly}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableResidualAgeEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableResidualAgeEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                      </button>
+                    </div>
+                  </div>
+                }>
                   <div className="relative">
                     <input 
-                      className={`${inputCls} pr-10 ${!fields.canfinHomesEnableResidualAgeEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`} 
+                      className={`${inputCls} pr-10 ${fields.canfinHomesEnableResidualAgeEdit ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`} 
                       value={fields.canfinHomesEnableResidualAgeEdit ? (fields.canfinHomesResidualAgeOfTheProperty || '') : autoResidualAge} 
                       onChange={e => handleChange('canfinHomesResidualAgeOfTheProperty', e.target.value)} 
                       disabled={isReadOnly || !fields.canfinHomesEnableResidualAgeEdit} 
                       title='>>Auto calculates values from [Estimated Total Lifespan - Age Of The property]<<'
                     />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700"
-                      onClick={() => handleChange('canfinHomesEnableResidualAgeEdit', !fields.canfinHomesEnableResidualAgeEdit)}
-                      disabled={isReadOnly}
+                    <div
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
                       title='>>Auto calculates values from [Estimated Total Lifespan - Age Of The property]<<'
                     >
-                      <Lock className={`w-4 h-4 ${!fields.canfinHomesEnableResidualAgeEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </button>
+                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnableResidualAgeEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
+                    </div>
                   </div>
                 </Field>
                 <Field label="Occupancy details" className="md:col-span-2">
@@ -574,8 +699,31 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   </div>
                 </Field>
                 {(fields.canfinHomesOccupancyDetails === 'Vacant' || fields.canfinHomesOccupancyDetails === 'Tenanted') && (
-                  <Field label="IF Vacant then from how long/ If tenanted then Name/List of Tenants" className="md:col-span-2">
-                    <input className={inputCls} value={fields.canfinHomesVacantOrTenantedDetails || ''} onChange={e => handleChange('canfinHomesVacantOrTenantedDetails', e.target.value)} disabled={isReadOnly} />
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>IF Vacant then from how long/ If tenanted then Name/List of Tenants</span>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={fields.canfinHomesVacantOrTenantedDetailsNA} 
+                          onChange={e => {
+                            handleChange('canfinHomesVacantOrTenantedDetailsNA', e.target.checked);
+                            if (e.target.checked) handleChange('canfinHomesVacantOrTenantedDetails', 'NA');
+                            else handleChange('canfinHomesVacantOrTenantedDetails', '');
+                          }} 
+                          className="rounded text-emerald-600 focus:ring-emerald-500" 
+                          disabled={isReadOnly} 
+                        />
+                        <span className="text-xs font-medium text-gray-500">NA</span>
+                      </label>
+                    </div>
+                  } className="md:col-span-2">
+                    <input 
+                      className={`${inputCls} ${fields.canfinHomesVacantOrTenantedDetailsNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                      value={fields.canfinHomesVacantOrTenantedDetailsNA ? 'NA' : (fields.canfinHomesVacantOrTenantedDetails || '')} 
+                      onChange={e => handleChange('canfinHomesVacantOrTenantedDetails', e.target.value)} 
+                      disabled={isReadOnly || fields.canfinHomesVacantOrTenantedDetailsNA} 
+                    />
                   </Field>
                 )}
               </div>
@@ -584,44 +732,73 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
             <div className="border border-green-200 bg-[#e8f5e9] rounded-md p-4 mb-4">
               <h3 className="font-bold text-gray-700 mb-4">Address Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Technical Address of property (Survey No./Plot no/House no/Flat No.) Location/District/State">
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Technical Address of property (Survey No./Plot no/House no/Flat No.) Location/District/State</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <button
+                        type="button"
+                        onClick={() => handleChange('canfinHomesEnableTechnicalAddressEdit', !fields.canfinHomesEnableTechnicalAddressEdit)}
+                        disabled={isReadOnly}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableTechnicalAddressEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableTechnicalAddressEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                      </button>
+                    </div>
+                  </div>
+                }>
                   <div className="relative">
                     <textarea 
-                      className={`${inputCls} pr-10 ${!fields.canfinHomesEnableTechnicalAddressEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`} 
+                      className={`${inputCls} pr-10 ${fields.canfinHomesEnableTechnicalAddressEdit ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`} 
                       rows={3}
                       value={fields.canfinHomesEnableTechnicalAddressEdit ? (fields.canfinHomesTechnicalAddress || '') : prefilledTechnicalAddress} 
                       onChange={e => handleChange('canfinHomesTechnicalAddress', e.target.value)} 
                       disabled={isReadOnly || !fields.canfinHomesEnableTechnicalAddressEdit} 
                       title='>>Prefill from section 1, field "ADDRESS OF THE PROPERTY"<<'
                     />
-                    <button
-                      type="button"
-                      className="absolute top-2 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700"
-                      onClick={() => handleChange('canfinHomesEnableTechnicalAddressEdit', !fields.canfinHomesEnableTechnicalAddressEdit)}
-                      disabled={isReadOnly}
+                    <div
+                      className="absolute top-2 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
                       title='>>Prefill from section 1, field "ADDRESS OF THE PROPERTY"<<'
                     >
-                      <Lock className={`w-4 h-4 ${!fields.canfinHomesEnableTechnicalAddressEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </button>
+                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnableTechnicalAddressEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
+                    </div>
                   </div>
                 </Field>
                 <div className="flex flex-col gap-2">
-                  <Field label="Legal Address of property (Survey No./Plot no/House no/Flat No.) Location/District/State Pls mention as per deed">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Legal Address of property (Survey No./Plot no/House no/Flat No.) Location/District/State Pls mention as per deed</span>
+                      {fields.canfinHomesSameAsTechnicalAddress && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-gray-500">Edit</span>
+                          <button
+                            type="button"
+                            onClick={() => handleChange('canfinHomesEnableLegalAddressEdit', !fields.canfinHomesEnableLegalAddressEdit)}
+                            disabled={isReadOnly}
+                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableLegalAddressEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableLegalAddressEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  }>
                     <div className="relative">
                       <textarea 
-                        className={`${inputCls} pr-10 ${fields.canfinHomesSameAsTechnicalAddress ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`} 
+                        className={`${inputCls} pr-10 ${fields.canfinHomesSameAsTechnicalAddress && !fields.canfinHomesEnableLegalAddressEdit ? 'bg-white text-gray-700' : (fields.canfinHomesSameAsTechnicalAddress && fields.canfinHomesEnableLegalAddressEdit ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : '')}`} 
                         rows={3}
-                        value={fields.canfinHomesSameAsTechnicalAddress ? (fields.canfinHomesEnableTechnicalAddressEdit ? (fields.canfinHomesTechnicalAddress || '') : prefilledTechnicalAddress) : (fields.canfinHomesLegalAddress || '')} 
+                        value={fields.canfinHomesSameAsTechnicalAddress ? (fields.canfinHomesEnableLegalAddressEdit ? (fields.canfinHomesLegalAddress || '') : (fields.canfinHomesEnableTechnicalAddressEdit ? (fields.canfinHomesTechnicalAddress || '') : prefilledTechnicalAddress)) : (fields.canfinHomesLegalAddress || '')} 
                         onChange={e => handleChange('canfinHomesLegalAddress', e.target.value)} 
-                        disabled={isReadOnly || fields.canfinHomesSameAsTechnicalAddress} 
+                        disabled={isReadOnly || (fields.canfinHomesSameAsTechnicalAddress && !fields.canfinHomesEnableLegalAddressEdit)} 
                         title={fields.canfinHomesSameAsTechnicalAddress ? '>>Prefill from section 3, field "Technical Address of property"<<' : ''}
                       />
                       {fields.canfinHomesSameAsTechnicalAddress && (
                         <div
-                          className="absolute top-2 right-0 flex items-center pr-3 group text-emerald-700"
+                          className="absolute top-2 right-0 flex items-center pr-3 group text-gray-400 pointer-events-none"
                           title='>>Prefill from section 3, field "Technical Address of property"<<'
                         >
-                          <Lock className="w-4 h-4" />
+                          <Lock className={`w-4 h-4 ${fields.canfinHomesEnableLegalAddressEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
                         </div>
                       )}
                     </div>
@@ -637,25 +814,37 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                     <span className="text-sm font-medium text-gray-700">Same as Technical Address</span>
                   </label>
                 </div>
-                <Field label="Pin Code">
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Pin Code</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <button
+                        type="button"
+                        onClick={() => handleChange('canfinHomesEnablePinCodeEdit', !fields.canfinHomesEnablePinCodeEdit)}
+                        disabled={isReadOnly}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnablePinCodeEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnablePinCodeEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                      </button>
+                    </div>
+                  </div>
+                }>
                   <div className="relative">
                     <input 
                       type="number"
-                      className={`${inputCls} pr-10 ${!fields.canfinHomesEnablePinCodeEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`} 
+                      className={`${inputCls} pr-10 ${fields.canfinHomesEnablePinCodeEdit ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`} 
                       value={fields.canfinHomesEnablePinCodeEdit ? (fields.canfinHomesPinCode || '') : prefilledPinCode} 
                       onChange={e => handleChange('canfinHomesPinCode', e.target.value)} 
                       disabled={isReadOnly || !fields.canfinHomesEnablePinCodeEdit} 
                       title='>>Prefill from section 1, field "PIN CODE"<<'
                     />
-                    <button
-                      type="button"
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700"
-                      onClick={() => handleChange('canfinHomesEnablePinCodeEdit', !fields.canfinHomesEnablePinCodeEdit)}
-                      disabled={isReadOnly}
+                    <div
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
                       title='>>Prefill from section 1, field "PIN CODE"<<'
                     >
-                      <Lock className={`w-4 h-4 ${!fields.canfinHomesEnablePinCodeEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </button>
+                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnablePinCodeEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
+                    </div>
                   </div>
                 </Field>
                 <Field label="Date of Valuation">
