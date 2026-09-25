@@ -2324,7 +2324,7 @@ export default function BandhanHLLAP({
                           const landArea = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
                           const rateNum = parseNum(newRate);
                           const calcVal = (landArea > 0 && rateNum > 0) ? Math.round(((landArea * rateNum) + Number.EPSILON) * 100) / 100 : 0;
-                          const calcFormula = (areaStr && rateNum > 0)
+                          const calcFormula = (areaStr && rateNum > 0 && calcVal > 0)
                             ? `${areaStr} * Rs.${newRate}/- = Rs.${formatCurrencyINR(calcVal)}/-`
                             : '';
                           setFields(prev => ({
@@ -2338,6 +2338,55 @@ export default function BandhanHLLAP({
                         disabled={isReadOnly}
                       />
                     </Field>
+
+                    <div className="sm:col-span-2">
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-xs font-semibold text-slate-700">
+                          30. Recommended Valuation Statement / Final Value:
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const isLocked = fields.recommendedValuationFormulaLocked !== false;
+                              if (!isLocked) {
+                                const areaStr = fields.propertyArea || fields.areaOfLand || '';
+                                const landArea = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
+                                const rateNum = parseNum(fields.plotRate);
+                                const calcVal = (landArea > 0 && rateNum > 0) ? Math.round(((landArea * rateNum) + Number.EPSILON) * 100) / 100 : 0;
+                                const calcFormula = (areaStr && rateNum > 0 && calcVal > 0)
+                                  ? `${areaStr} * Rs.${fields.plotRate}/- = Rs.${formatCurrencyINR(calcVal)}/-`
+                                  : '';
+                                setFields(prev => ({
+                                  ...prev,
+                                  recommendedValuationFormulaLocked: true,
+                                  recommendedValuationFormula: calcFormula,
+                                }));
+                              } else {
+                                handleChange('recommendedValuationFormulaLocked', false);
+                              }
+                            }}
+                            className="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 hover:bg-indigo-100 transition-colors"
+                          >
+                            {fields.recommendedValuationFormulaLocked !== false ? '🔒 Auto-calculated' : '🔓 Custom Mode'}
+                          </button>
+                        </div>
+                      </div>
+                      <textarea
+                        rows={2}
+                        className={`${inputCls} ${fields.recommendedValuationFormulaLocked !== false ? 'bg-slate-50 font-medium' : ''}`}
+                        value={fields.recommendedValuationFormula || ''}
+                        onChange={(e) => {
+                          handleChange('recommendedValuationFormula', e.target.value);
+                          handleChange('recommendedValuationFormulaLocked', false);
+                        }}
+                        placeholder="e.g. (AC.0.300Decs) i.e. 13,068 sqft. * Rs.1800/- = Rs.2,35,22,400/-"
+                        disabled={isReadOnly}
+                      />
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        This statement appears in Point 30 of the report. It automatically synchronizes from Land Area and Rate of the Plot.
+                      </p>
+                    </div>
                   </div>
                 </div>
 

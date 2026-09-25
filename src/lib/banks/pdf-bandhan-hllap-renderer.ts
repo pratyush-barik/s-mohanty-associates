@@ -800,14 +800,20 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const lifeStr = (presentStr && residualStr)
       ? `${presentStr}, ${residualStr}`
       : (presentStr || residualStr || '');
-    this.drawBandhanRow('29.', 'Present life &residual life', lifeStr);
-    let val30 = fields.recommendedValuationFormula || '';
-    if (!val30 && (fields.propertyArea || fields.areaOfLand) && fields.plotRate) {
-      const landArea = parseNum(fields.propertyArea || fields.areaOfLand);
-      const rate = parseNum(fields.plotRate);
-      const calcVal = (landArea > 0 && rate > 0) ? landArea * rate : 0;
-      if (calcVal > 0) {
-        val30 = `${fields.propertyArea || fields.areaOfLand} * Rs.${fields.plotRate}/- = Rs.${formatCurrencyINR(calcVal)}/-`;
+    let val30 = (fields.recommendedValuationFormula || '').trim();
+    const areaStr30 = fields.propertyArea || fields.areaOfLand || '';
+    const landArea30 = parseSqftFromArea(areaStr30, fields.propertyAreaUnit, fields.propertyAreaValue);
+    const rate30 = parseNum(fields.plotRate);
+    const calcVal30 = (landArea30 > 0 && rate30 > 0) ? Math.round(((landArea30 * rate30) + Number.EPSILON) * 100) / 100 : 0;
+
+    if (fields.recommendedValuationFormulaLocked !== false || !val30) {
+      if (areaStr30 && rate30 > 0 && calcVal30 > 0) {
+        val30 = `${areaStr30} * Rs.${fields.plotRate}/- = Rs.${formatCurrencyINR(calcVal30)}/-`;
+      } else if (calcVal30 > 0) {
+        val30 = `Rs.${formatCurrencyINR(calcVal30)}/-`;
+      } else if (fields.recommendedValueOfProperty) {
+        const recNum = parseNum(fields.recommendedValueOfProperty);
+        if (recNum > 0) val30 = `Rs.${formatCurrencyINR(recNum)}/-`;
       }
     }
     this.drawBandhanRow('30.', 'Recommended valuation of the property', val30);
