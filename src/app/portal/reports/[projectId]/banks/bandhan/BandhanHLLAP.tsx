@@ -718,20 +718,21 @@ export default function BandhanHLLAP({
     return [];
   }, [fields.propertyImageNames, fields.propertyPhotos, fields.propertyImages]);
 
-  // Dynamic Total Pages Calculation:
-  // Base 9 pages (5 questionnaire + 1 NDMA + 3 Annexure-A & Declarations)
-  // + Photo pages (2 photos per page)
-  // + Actual Enclosure document pages (ROR, Location Plan, Bhu Naksha, Guideline Rate Proof)
+  // Dynamic Total Pages Calculation (Baseline formula accounting for 2 maps per page):
   const dynamicTotalPages = useMemo(() => {
-    const basePages = 9;
+    const basePages = 8;
     const photoCount = propertyImages.length;
     const photoPages = photoCount > 0 ? Math.ceil(photoCount / 2) : 0;
-    const rorPages = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : (fields.rorImageUrl ? 1 : 0);
-    const locPages = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : (fields.locationMapImageUrl ? 1 : 0);
-    const bhuPages = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0) ? fields.cadastralMapImages.length : ((fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : (fields.bhuNakshaImageUrl ? 1 : 0));
-    const guidePages = (fields.sketchMapImages && fields.sketchMapImages.length > 0) ? fields.sketchMapImages.length : ((fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : (fields.guidelineValueImageUrl ? 1 : 0));
+    const rorCount = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : (fields.rorImageUrl ? 1 : 0);
+    const locCount = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : (fields.locationMapImageUrl ? 1 : 0);
+    const bhuCount = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0) ? fields.cadastralMapImages.length : ((fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : (fields.bhuNakshaImageUrl ? 1 : 0));
+    const guideCount = (fields.sketchMapImages && fields.sketchMapImages.length > 0) ? fields.sketchMapImages.length : ((fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : (fields.guidelineValueImageUrl ? 1 : 0));
+    const bdaCount = fields.bdaMapImages?.length || 0;
+    const benchCount = fields.benchmarkMapImages?.length || 0;
+    const totalMaps = rorCount + locCount + bhuCount + guideCount + bdaCount + benchCount;
+    const mapPages = totalMaps > 0 ? Math.ceil(totalMaps / 2) : 0;
 
-    return String(basePages + photoPages + rorPages + locPages + bhuPages + guidePages);
+    return String(basePages + photoPages + mapPages);
   }, [
     propertyImages.length,
     fields.mouzaMapImages,
@@ -744,6 +745,50 @@ export default function BandhanHLLAP({
     fields.sketchMapImages,
     fields.guidelineRateImages,
     fields.guidelineValueImageUrl,
+    fields.bdaMapImages,
+    fields.benchmarkMapImages,
+  ]);
+
+  // Continuously measure exact PDF page count in the background to reference the exact last page number utilised
+  useEffect(() => {
+    let cancelled = false;
+    const calculateExactPages = async () => {
+      try {
+        const renderer = new PDFBandhanHLLAPRenderer();
+        const { pageCount } = await renderer.generateBandhanHLLAPReportWithCount(fields);
+        if (!cancelled && pageCount > 0) {
+          setPreviewedPageCount(pageCount);
+        }
+      } catch {
+        // graceful fallback to dynamicTotalPages
+      }
+    };
+    const timer = setTimeout(calculateExactPages, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [
+    fields.propertyImages,
+    fields.propertyPhotos,
+    fields.mouzaMapImages,
+    fields.rorImageUrl,
+    fields.locationMapImages,
+    fields.locationMapImageUrl,
+    fields.cadastralMapImages,
+    fields.bhuNakshaImages,
+    fields.bhuNakshaImageUrl,
+    fields.sketchMapImages,
+    fields.guidelineRateImages,
+    fields.guidelineValueImageUrl,
+    fields.bdaMapImages,
+    fields.benchmarkMapImages,
+    fields.floors,
+    fields.drcFloors,
+    fields.propertyAddress,
+    fields.legalAddress,
+    fields.annexureBasisOfValuation,
+    fields.plotValueBreakdown,
   ]);
 
   // Auto Calculations & Dynamic Synchronization of all related valuation fields

@@ -641,16 +641,19 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     }
 
     // Auto Mode: Two-Pass Rendering
-    // Pass 1: Render with initial dynamic estimate
     const photoCount = (fields.propertyPhotos && fields.propertyPhotos.length > 0)
       ? fields.propertyPhotos.length
       : (fields.propertyImages?.length || 0);
     const photoPages = photoCount > 0 ? Math.ceil(photoCount / 2) : 0;
-    const rorPages = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : (fields.rorImageUrl ? 1 : 0);
-    const locPages = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : (fields.locationMapImageUrl ? 1 : 0);
-    const bhuPages = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0) ? fields.cadastralMapImages.length : ((fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : (fields.bhuNakshaImageUrl ? 1 : 0));
-    const guidePages = (fields.sketchMapImages && fields.sketchMapImages.length > 0) ? fields.sketchMapImages.length : ((fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : (fields.guidelineValueImageUrl ? 1 : 0));
-    const initialEstimate = String(9 + photoPages + rorPages + locPages + bhuPages + guidePages);
+    const rorCount = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : (fields.rorImageUrl ? 1 : 0);
+    const locCount = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : (fields.locationMapImageUrl ? 1 : 0);
+    const bhuCount = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0) ? fields.cadastralMapImages.length : ((fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : (fields.bhuNakshaImageUrl ? 1 : 0));
+    const guideCount = (fields.sketchMapImages && fields.sketchMapImages.length > 0) ? fields.sketchMapImages.length : ((fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : (fields.guidelineValueImageUrl ? 1 : 0));
+    const bdaCount = fields.bdaMapImages?.length || 0;
+    const benchCount = fields.benchmarkMapImages?.length || 0;
+    const totalMaps = rorCount + locCount + bhuCount + guideCount + bdaCount + benchCount;
+    const mapPages = totalMaps > 0 ? Math.ceil(totalMaps / 2) : 0;
+    const initialEstimate = String(8 + photoPages + mapPages);
 
     await this.init();
     await this.renderAllSections(fields, initialEstimate);
