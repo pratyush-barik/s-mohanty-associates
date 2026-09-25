@@ -108,11 +108,23 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
         ? 'VALUATION REPORT FOR BANK OF BARODA'
         : title;
       super.drawCenteredTitle(finalTitle, fontSize, isValuationReport ? true : underline);
+    } else {
+      const u = title.toUpperCase();
+      if (u.includes('ANNEXURE')) {
+        super.drawCenteredTitle(title, fontSize, underline);
+      }
     }
   }
 
   override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
-    if (!this.isBobDrawing) return;
+    if (!this.isBobDrawing) {
+      const u = title.toUpperCase();
+      if (u.includes('PHOTOGRAPH') || u.includes('MAP') || u.includes('BENCHMARK') || u.includes('ANNEXURE')) {
+        super.drawSectionHeader(title, addSpaceBefore, preserveCase);
+      }
+      return;
+    }
+    
     if (title.toUpperCase() === 'CASE DETAILS & REPORT METADATA') {
       if (this.doc.getPages().length === 1) {
         this.newPage();
