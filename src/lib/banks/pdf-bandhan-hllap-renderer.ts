@@ -646,11 +646,74 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
+   * Draws a multi-row question where all sub-rows share a single unified Sl. No cell.
+   */
+  private drawMultiRowQuestion(
+    sl: string,
+    items: {
+      pts: string;
+      rem: string;
+      isBoldPts?: boolean;
+      isBoldRem?: boolean;
+      fontSize?: number;
+    }[]
+  ): void {
+    if (!items || items.length === 0) return;
+
+    const rowHeights: number[] = [];
+    let totalH = 0;
+
+    for (const item of items) {
+      const fs = item.fontSize || TABLE_FONT_SIZE;
+      const isBoldPts = item.isBoldPts ?? true;
+      const isBoldRem = item.isBoldRem ?? false;
+      const hPts = this.cellHeight(item.pts, this.colPts, { bold: isBoldPts, fontSize: fs });
+      const hRem = this.cellHeight(item.rem ?? '', this.colRem, { bold: isBoldRem, fontSize: fs });
+      const rowH = Math.max(TABLE_MIN_ROW_H, hPts, hRem);
+      rowHeights.push(rowH);
+      totalH += rowH;
+    }
+
+    this.checkPageBreak(totalH);
+
+    // 1. Single unified Sl. No cell spanning all items
+    this.drawCell(MARGIN_L, this.cursorY, this.colSl, totalH, sl, {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'center',
+      vAlign: 'middle',
+    });
+
+    // 2. Sub-rows (POINTS and REMARKS only, starting at MARGIN_L + colSl)
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const rowH = rowHeights[i];
+      const fs = item.fontSize || TABLE_FONT_SIZE;
+      const isBoldPts = item.isBoldPts ?? true;
+      const isBoldRem = item.isBoldRem ?? false;
+
+      this.drawCell(MARGIN_L + this.colSl, this.cursorY, this.colPts, rowH, item.pts, {
+        bold: isBoldPts,
+        fontSize: fs,
+        align: 'left',
+        vAlign: 'middle',
+      });
+      this.drawCell(MARGIN_L + this.colSl + this.colPts, this.cursorY, this.colRem, rowH, item.rem ?? '', {
+        bold: isBoldRem,
+        fontSize: fs,
+        align: 'left',
+        vAlign: 'middle',
+      });
+      this.cursorY += rowH;
+    }
+  }
+
+  /**
    * Draws the main 41-Point statutory questionnaire
    */
   private drawMainQuestionnaire(fields: BandhanHLLAPReportFields): void {
     // Table Header
-    const rowH = TABLE_MIN_ROW_H;
+    const rowH = Math.max(24, this.cellHeight('Sl.\nNo.', this.colSl, { bold: true, fontSize: TABLE_FONT_SIZE }));
     this.checkPageBreak(rowH);
 
     this.drawCell(MARGIN_L, this.cursorY, this.colSl, rowH, 'Sl.\nNo.', {
@@ -705,7 +768,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawBandhanRow('13.', 'Date of Visit/Date of which valuation is made', fields.dateOfVisit || '');
     this.drawBandhanRow('14.', 'Quality of infrastructure in the vicinity', fields.qualityOfInfrastructure || 'Good');
 
-    // 15. Boundaries subtable
+    // 15. Boundaries subtable (unified Sl. No.)
     this.drawBoundariesSection(fields);
 
     // 16 to 23
@@ -718,19 +781,19 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawBandhanRow('22.', 'Occupancy details:\nSelf-occupied / rented/vacant', fields.occupancyDetails || 'Self-occupied');
     this.drawBandhanRow('23.', 'Unit details: (no. of rooms, hall, pantry & toilet)', fields.unitDetails || '');
 
-    // 24. Approval Details subtable
+    // 24. Approval Details subtable (unified Sl. No.)
     this.drawApprovalDetailsSection(fields);
 
-    // 25. Sanction Plan provided & Deed info
+    // 25. Sanction Plan provided & Deed info (unified Sl. No.)
     this.drawSanctionPlanDeedSection(fields);
 
-    // 26. Area & Floor-wise details table
+    // 26. Area & Floor-wise details table (unified Sl. No.)
     this.drawFloorwiseAreaSection(fields);
 
-    // 27. Setback subtable
+    // 27. Setback subtable (unified Sl. No.)
     this.drawSetbackSection(fields);
 
-    // 28 to 33
+    // 28 to 30
     this.drawBandhanRow('28.', 'Maintenance of the property', fields.maintenanceOfProperty || '');
     const presentStr = fields.presentLife ? `${fields.presentLife} - Years` : '';
     const residualStr = fields.residualLife ? `${fields.residualLife} – Years` : '';
@@ -748,8 +811,14 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       }
     }
     this.drawBandhanRow('30.', 'Recommended valuation of the property', val30);
-    this.drawBandhanRow('31.', 'Recommended rate of the plot', fields.plotRate ? `Rs.${fields.plotRate}/-` : '');
-    this.drawBandhanRow('', 'Recommended value of the plot', fields.plotValueBreakdown || '');
+
+    // 31. Recommended rate & value of plot (unified Sl. No.)
+    this.drawMultiRowQuestion('31.', [
+      { pts: 'Recommended rate of the plot', rem: fields.plotRate ? `Rs.${fields.plotRate}/-` : '' },
+      { pts: 'Recommended value of the plot', rem: fields.plotValueBreakdown || '' },
+    ]);
+
+    // 32
     let val32 = (fields.rateOfCostOfConstruction || '').trim();
     if (!val32 && (fields.rateOfCostOfConstructionMin || fields.rateOfCostOfConstructionMax)) {
       const minNum = parseNum(fields.rateOfCostOfConstructionMin);
@@ -761,6 +830,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       }
     }
     this.drawBandhanRow('32.', 'Recommended rate of cost of construction', val32);
+
+    // 33. Depreciation & Flat/Property Value Breakdown (unified Sl. No.)
     let val33 = (fields.depreciationOfConstruction || '').trim();
     if (val33) {
       if (val33.startsWith('Rs.') || val33.startsWith('₹') || val33.toLowerCase() === 'nil') {
@@ -774,10 +845,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
         }
       }
     }
-    this.drawBandhanRow('33.', 'Depreciation of the construction', val33);
-    this.drawBandhanRow('', 'Net value of the property (Land + Building)', fields.netValueOfProperty || '');
-    this.drawBandhanRow('', 'Recommended rate of the flat', fields.rateOfFlat || '');
-    this.drawBandhanRow('', 'Area of the flat', fields.areaOfFlat || '');
+
     let valRec = (fields.recommendedValueOfProperty || '').trim();
     if (valRec) {
       if (valRec.startsWith('Rs.') || valRec.startsWith('₹')) {
@@ -787,7 +855,6 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
         if (num > 0) valRec = `Rs.${formatCurrencyINR(num)}/-`;
       }
     }
-    this.drawBandhanRow('', 'Recommended value of the property', valRec);
 
     let valMkt = (fields.totalMarketValue || '').trim();
     if (valMkt) {
@@ -798,12 +865,20 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
         if (num > 0) valMkt = `Rs.${formatCurrencyINR(num)}/-`;
       }
     }
-    this.drawBandhanRow('', 'Total Market Value of existing property', valMkt);
 
-    // 34. Progress of work checklist
+    this.drawMultiRowQuestion('33.', [
+      { pts: 'Depreciation of the construction', rem: val33 },
+      { pts: 'Net value of the property (Land + Building)', rem: fields.netValueOfProperty || '' },
+      { pts: 'Recommended rate of the flat', rem: fields.rateOfFlat || '' },
+      { pts: 'Area of the flat', rem: fields.areaOfFlat || '' },
+      { pts: 'Recommended value of the property', rem: valRec },
+      { pts: 'Total Market Value of existing property', rem: valMkt },
+    ]);
+
+    // 34. Progress of work checklist (unified Sl. No.)
     this.drawProgressOfWorkSection(fields);
 
-    // 35 to 40
+    // 35 to 36
     let val35 = (fields.valuationAsOnDate || '').trim();
     if (val35) {
       if (val35.startsWith('Rs.') || val35.startsWith('₹')) {
@@ -828,6 +903,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     }
     this.drawBandhanRow('36.', 'Valuation according to Govt. rate', val36 || '');
 
+    // 37. Distress & Realisable Values (unified Sl. No.)
     let val37 = (fields.distressSaleValue || '').trim();
     if (!val37 || fields.distressSaleLocked !== false) {
       const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
@@ -838,7 +914,6 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
         val37 = amt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(amt)}/-`;
       }
     }
-    this.drawBandhanRow('37.', 'Distress sale value', val37 || '');
 
     let valRealisable = (fields.realisableValue || '').trim();
     if (!valRealisable || fields.realisableValueLocked !== false) {
@@ -850,7 +925,13 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
         valRealisable = amt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(amt)}/-`;
       }
     }
-    this.drawBandhanRow('', 'Realisable Value', valRealisable || '');
+
+    this.drawMultiRowQuestion('37.', [
+      { pts: 'Distress sale value', rem: val37 || '' },
+      { pts: 'Realisable Value', rem: valRealisable || '' },
+    ]);
+
+    // 38 to 40
     const val38 = formatCommencementCompletion(fields.projectCommencementDate, fields.expectedCompletionDate, fields.dateCommencementCompletion);
     this.drawBandhanRow('38.', 'Date of project commencement & date of expected project completion', val38);
     let val39 = fields.areaOfLand;
@@ -884,27 +965,22 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Row 15: Boundaries sub-table (Actual vs As per previous sale deed)
+   * Row 15: Boundaries sub-table (Actual vs As per previous sale deed) with unified Sl. No.
    */
   private drawBoundariesSection(fields: BandhanHLLAPReportFields): void {
     const colSl = this.colSl;
     const colDir = 50;
     const colHalf = (CONTENT_W - colSl - colDir) / 2; // ~202.64 pt
 
-    // Header row for Boundaries
-    const headerH = TABLE_MIN_ROW_H;
-    this.checkPageBreak(headerH * 3);
+    // 1. Title row height
+    const hTitle = Math.max(TABLE_MIN_ROW_H, this.cellHeight('Boundaries  of the property:', CONTENT_W - colSl, { bold: true, fontSize: TABLE_FONT_SIZE }));
 
-    this.drawCell(MARGIN_L, this.cursorY, colSl, headerH, '15.', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colSl, this.cursorY, CONTENT_W - colSl, headerH, 'Boundaries  of the property:', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left' });
-    this.cursorY += headerH;
+    // 2. Subheader row height (dynamic height to avoid "AS PER\n(Previous Sale Deed)" overlap)
+    const hSub1 = this.cellHeight('ACTUAL', colHalf, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const hSub2 = this.cellHeight('AS PER\n(Previous Sale Deed)', colHalf, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const hSubHeader = Math.max(TABLE_MIN_ROW_H, hSub1, hSub2);
 
-    // Subheader row
-    this.drawCell(MARGIN_L, this.cursorY, colSl + colDir, headerH, '', { align: 'center' });
-    this.drawCell(MARGIN_L + colSl + colDir, this.cursorY, colHalf, headerH, 'ACTUAL', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colSl + colDir + colHalf, this.cursorY, colHalf, headerH, 'AS PER\n(Previous Sale Deed)', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.cursorY += headerH;
-
+    // 3. Direction rows heights
     const directions = [
       { dir: 'North', act: fields.boundaryNorthActual, deed: fields.boundaryNorthDeed },
       { dir: 'South', act: fields.boundarySouthActual, deed: fields.boundarySouthDeed },
@@ -912,35 +988,89 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       { dir: 'West', act: fields.boundaryWestActual, deed: fields.boundaryWestDeed },
     ];
 
+    const dirHeights: number[] = [];
+    let totalDirH = 0;
     for (const d of directions) {
       const hAct = this.cellHeight(d.act || '', colHalf, { fontSize: TABLE_FONT_SIZE });
       const hDeed = this.cellHeight(d.deed || '', colHalf, { fontSize: TABLE_FONT_SIZE });
       const rowH = Math.max(TABLE_MIN_ROW_H, hAct, hDeed);
+      dirHeights.push(rowH);
+      totalDirH += rowH;
+    }
 
-      this.checkPageBreak(rowH);
-      this.drawCell(MARGIN_L, this.cursorY, colSl, rowH, '', { align: 'center' });
-      this.drawCell(MARGIN_L + colSl, this.cursorY, colDir, rowH, `${d.dir}   :`, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'right' });
-      this.drawCell(MARGIN_L + colSl + colDir, this.cursorY, colHalf, rowH, d.act || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'left' });
-      this.drawCell(MARGIN_L + colSl + colDir + colHalf, this.cursorY, colHalf, rowH, d.deed || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'left' });
+    const totalH = hTitle + hSubHeader + totalDirH;
+    this.checkPageBreak(totalH);
+
+    // Draw single unified Sl. No cell spanning all rows of 15.
+    this.drawCell(MARGIN_L, this.cursorY, colSl, totalH, '15.', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'center',
+      vAlign: 'middle',
+    });
+
+    // Row 1: Header title
+    this.drawCell(MARGIN_L + colSl, this.cursorY, CONTENT_W - colSl, hTitle, 'Boundaries  of the property:', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'left',
+      vAlign: 'middle',
+    });
+    this.cursorY += hTitle;
+
+    // Row 2: Subheader
+    this.drawCell(MARGIN_L + colSl, this.cursorY, colDir, hSubHeader, '', { align: 'center' });
+    this.drawCell(MARGIN_L + colSl + colDir, this.cursorY, colHalf, hSubHeader, 'ACTUAL', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'center',
+      vAlign: 'middle',
+    });
+    this.drawCell(MARGIN_L + colSl + colDir + colHalf, this.cursorY, colHalf, hSubHeader, 'AS PER\n(Previous Sale Deed)', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'center',
+      vAlign: 'middle',
+    });
+    this.cursorY += hSubHeader;
+
+    // Rows 3-6: 4 directions
+    for (let i = 0; i < directions.length; i++) {
+      const d = directions[i];
+      const rowH = dirHeights[i];
+      this.drawCell(MARGIN_L + colSl, this.cursorY, colDir, rowH, `${d.dir}   :`, {
+        bold: false,
+        fontSize: TABLE_FONT_SIZE,
+        align: 'right',
+        vAlign: 'middle',
+      });
+      this.drawCell(MARGIN_L + colSl + colDir, this.cursorY, colHalf, rowH, d.act || '', {
+        bold: false,
+        fontSize: TABLE_FONT_SIZE,
+        align: 'left',
+        vAlign: 'middle',
+      });
+      this.drawCell(MARGIN_L + colSl + colDir + colHalf, this.cursorY, colHalf, rowH, d.deed || '', {
+        bold: false,
+        fontSize: TABLE_FONT_SIZE,
+        align: 'left',
+        vAlign: 'middle',
+      });
       this.cursorY += rowH;
     }
   }
 
   /**
-   * Row 24: Approval Details sub-table (Layout vs Building Plan)
+   * Row 24: Approval Details sub-table (Layout vs Building Plan) with unified Sl. No.
    */
   private drawApprovalDetailsSection(fields: BandhanHLLAPReportFields): void {
     const colSl = this.colSl;
     const remW = CONTENT_W - colSl;
 
-    // Header row
-    const headerH = TABLE_MIN_ROW_H;
-    this.checkPageBreak(headerH * 4);
-
-    this.drawCell(MARGIN_L, this.cursorY, colSl, headerH, '24.', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colSl, this.cursorY, this.colPts, headerH, 'Approval details:', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left' });
-    this.drawCell(MARGIN_L + colSl + this.colPts, this.cursorY, this.colRem, headerH, fields.approvalAuthority || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'left' });
-    this.cursorY += headerH;
+    // Header row height
+    const hHeaderPts = this.cellHeight('Approval details:', this.colPts, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const hHeaderRem = this.cellHeight(fields.approvalAuthority || '', this.colRem, { bold: false, fontSize: TABLE_FONT_SIZE });
+    const headerH = Math.max(TABLE_MIN_ROW_H, hHeaderPts, hHeaderRem);
 
     // 4-column layout
     const colW1 = 130;
@@ -954,43 +1084,74 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       { l1: 'Expiry date', v1: fields.layoutExpiryDate || 'NA', l2: 'Expiry date', v2: fields.buildingPlanExpiryDate || 'NA' },
     ];
 
+    const rowHeights: number[] = [];
+    let totalSubH = 0;
     for (const r of rows) {
       const h1 = this.cellHeight(r.l1, colW1, { bold: true, fontSize: TABLE_FONT_SIZE });
       const h2 = this.cellHeight(r.v1, colW2, { fontSize: TABLE_FONT_SIZE });
       const h3 = this.cellHeight(r.l2, colW3, { bold: true, fontSize: TABLE_FONT_SIZE });
       const h4 = this.cellHeight(r.v2, colW4, { fontSize: TABLE_FONT_SIZE });
       const rowH = Math.max(TABLE_MIN_ROW_H, h1, h2, h3, h4);
+      rowHeights.push(rowH);
+      totalSubH += rowH;
+    }
 
-      this.checkPageBreak(rowH);
-      this.drawCell(MARGIN_L, this.cursorY, colSl, rowH, '', { align: 'center' });
-      this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, rowH, r.l1, { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left' });
-      this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, rowH, r.v1, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center' });
-      this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, rowH, r.l2, { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left' });
-      this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, rowH, r.v2, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center' });
+    const totalH = headerH + totalSubH;
+    this.checkPageBreak(totalH);
+
+    // Draw single unified Sl. No cell for 24.
+    this.drawCell(MARGIN_L, this.cursorY, colSl, totalH, '24.', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'center',
+      vAlign: 'middle',
+    });
+
+    // Header row
+    this.drawCell(MARGIN_L + colSl, this.cursorY, this.colPts, headerH, 'Approval details:', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'left',
+      vAlign: 'middle',
+    });
+    this.drawCell(MARGIN_L + colSl + this.colPts, this.cursorY, this.colRem, headerH, fields.approvalAuthority || '', {
+      bold: false,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'left',
+      vAlign: 'middle',
+    });
+    this.cursorY += headerH;
+
+    // 3 sub-rows
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      const rowH = rowHeights[i];
+      this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, rowH, r.l1, { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, rowH, r.v1, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, rowH, r.l2, { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, rowH, r.v2, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
       this.cursorY += rowH;
     }
   }
 
   /**
-   * Row 25: Copy of sanctioned plan provided & deed info
+   * Row 25: Copy of sanctioned plan provided & deed info with unified Sl. No.
    */
   private drawSanctionPlanDeedSection(fields: BandhanHLLAPReportFields): void {
     const defaultConstDetails = getConstructionDetailsForStructure(fields.typeOfStructure);
     const items = [
-      { sl: '25.', pts: 'Copy of sanctioned plan provided. Plan No:', rem: fields.sanctionedPlanProvided || '' },
-      { sl: '', pts: 'And approved by', rem: fields.planApprovedBy || fields.approvalAuthority || '' },
-      { sl: '', pts: 'Copy of deed provided. Deed No:', rem: fields.deedProvided || 'NA' },
-      { sl: '', pts: 'Comments, if any:', rem: fields.comments || '' },
-      { sl: '', pts: 'Construction details:', rem: fields.constructionDetails || defaultConstDetails },
+      { pts: 'Copy of sanctioned plan provided. Plan No:', rem: fields.sanctionedPlanProvided || '' },
+      { pts: 'And approved by', rem: fields.planApprovedBy || fields.approvalAuthority || '' },
+      { pts: 'Copy of deed provided. Deed No:', rem: fields.deedProvided || 'NA' },
+      { pts: 'Comments, if any:', rem: fields.comments || '' },
+      { pts: 'Construction details:', rem: fields.constructionDetails || defaultConstDetails },
     ];
 
-    for (const item of items) {
-      this.drawBandhanRow(item.sl, item.pts, item.rem);
-    }
+    this.drawMultiRowQuestion('25.', items);
   }
 
   /**
-   * Row 26: Floor-wise Area Details (6 Columns)
+   * Row 26: Floor-wise Area Details (6 Columns) with unified Sl. No.
    */
   private drawFloorwiseAreaSection(fields: BandhanHLLAPReportFields): void {
     const colSl = this.colSl;
@@ -1010,7 +1171,10 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
         val26 = formatted26.statement;
       }
     }
-    this.drawBandhanRow('26.', 'Area of the property:', val26);
+
+    const hTitlePts = this.cellHeight('Area of the property:', this.colPts, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const hTitleRem = this.cellHeight(val26, this.colRem, { bold: false, fontSize: TABLE_FONT_SIZE });
+    const titleH = Math.max(TABLE_MIN_ROW_H, hTitlePts, hTitleRem);
 
     // 6-column floor breakdown table
     const colW1 = 74;  // Floor level
@@ -1029,17 +1193,6 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const h6 = this.cellHeight('Approved\nusage', colW6, { bold: true, fontSize: FONT_SIZE_SMALL });
     const headerH = Math.max(34, h1, h2, h3, h4, h5, h6);
 
-    this.checkPageBreak(headerH + TABLE_MIN_ROW_H * 2);
-
-    this.drawCell(MARGIN_L, this.cursorY, colSl, headerH, '', { align: 'center' });
-    this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, headerH, 'Floor level', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, headerH, 'As measured\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, headerH, 'Built-up area\nAs per sanctioned\nplan (in sqft)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, headerH, 'Built-up area\nAs per sale deed\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, headerH, 'Current\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, headerH, 'Approved\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.cursorY += headerH;
-
     const rawFloors = fields.floors || [];
     const floors = rawFloors.length > 0
       ? rawFloors.filter(f => {
@@ -1052,6 +1205,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
           { floor: 'Ground Floor', measuredArea: '', sanctionedArea: '', deedArea: '', currentUsage: 'Residential', approvedUsage: 'Residential' },
         ];
 
+    const floorHeights: number[] = [];
+    let totalFloorH = 0;
     for (const f of floors) {
       const rh1 = this.cellHeight(f.floor || '', colW1, { fontSize: FONT_SIZE_SMALL });
       const rh2 = this.cellHeight(f.measuredArea || '', colW2, { fontSize: FONT_SIZE_SMALL });
@@ -1060,17 +1215,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       const rh5 = this.cellHeight(f.currentUsage || '', colW5, { fontSize: FONT_SIZE_SMALL });
       const rh6 = this.cellHeight(f.approvedUsage || '', colW6, { fontSize: FONT_SIZE_SMALL });
       const rowH = Math.max(TABLE_MIN_ROW_H, rh1, rh2, rh3, rh4, rh5, rh6);
-
-      this.checkPageBreak(rowH);
-
-      this.drawCell(MARGIN_L, this.cursorY, colSl, rowH, '', { align: 'center' });
-      this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, rowH, f.floor || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'left', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, rowH, f.measuredArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, rowH, f.sanctionedArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, rowH, f.deedArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, rowH, f.currentUsage || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, rowH, f.approvedUsage || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.cursorY += rowH;
+      floorHeights.push(rowH);
+      totalFloorH += rowH;
     }
 
     // Supplementary summary rows under floor table
@@ -1096,13 +1242,68 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       { l: 'Construction has been made as per Plan', v: fields.constructionAsPerPlan || 'NA' },
     ];
 
+    const suppHeights: number[] = [];
+    let totalSuppH = 0;
     for (const r of suppRows) {
       const sh1 = this.cellHeight(r.l, colHalf, { bold: true, fontSize: TABLE_FONT_SIZE });
       const sh2 = this.cellHeight(r.v, colHalf, { fontSize: TABLE_FONT_SIZE });
       const rowH = Math.max(TABLE_MIN_ROW_H, sh1, sh2);
+      suppHeights.push(rowH);
+      totalSuppH += rowH;
+    }
 
-      this.checkPageBreak(rowH);
-      this.drawCell(MARGIN_L, this.cursorY, colSl, rowH, '', { align: 'center' });
+    const totalH = titleH + headerH + totalFloorH + totalSuppH;
+    this.checkPageBreak(totalH);
+
+    // Unified Sl. No. cell for 26.
+    this.drawCell(MARGIN_L, this.cursorY, colSl, totalH, '26.', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'center',
+      vAlign: 'middle',
+    });
+
+    // Row 26 title
+    this.drawCell(MARGIN_L + colSl, this.cursorY, this.colPts, titleH, 'Area of the property:', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'left',
+      vAlign: 'middle',
+    });
+    this.drawCell(MARGIN_L + colSl + this.colPts, this.cursorY, this.colRem, titleH, val26, {
+      bold: false,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'left',
+      vAlign: 'middle',
+    });
+    this.cursorY += titleH;
+
+    // 6-col header
+    this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, headerH, 'Floor level', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, headerH, 'As measured\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, headerH, 'Built-up area\nAs per sanctioned\nplan (in sqft)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, headerH, 'Built-up area\nAs per sale deed\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, headerH, 'Current\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, headerH, 'Approved\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.cursorY += headerH;
+
+    // Floor rows
+    for (let i = 0; i < floors.length; i++) {
+      const f = floors[i];
+      const rowH = floorHeights[i];
+      this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, rowH, f.floor || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'left', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, rowH, f.measuredArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, rowH, f.sanctionedArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, rowH, f.deedArea || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, rowH, f.currentUsage || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, rowH, f.approvedUsage || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.cursorY += rowH;
+    }
+
+    // Supplementary summary rows
+    for (let i = 0; i < suppRows.length; i++) {
+      const r = suppRows[i];
+      const rowH = suppHeights[i];
       this.drawCell(MARGIN_L + colSl, this.cursorY, colHalf, rowH, r.l, { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left', vAlign: 'middle' });
       this.drawCell(MARGIN_L + colSl + colHalf, this.cursorY, colHalf, rowH, r.v, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'left', vAlign: 'middle' });
       this.cursorY += rowH;
@@ -1110,19 +1311,14 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Row 27: Setback around the property
+   * Row 27: Setback around the property with unified Sl. No.
    */
   private drawSetbackSection(fields: BandhanHLLAPReportFields): void {
     const colSl = this.colSl;
     const remW = CONTENT_W - colSl;
 
-    // Header row
-    const h = TABLE_MIN_ROW_H;
-    this.checkPageBreak(h * 3);
-
-    this.drawCell(MARGIN_L, this.cursorY, colSl, h, '27.', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colSl, this.cursorY, remW, h, 'Setback around the property', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left' });
-    this.cursorY += h;
+    // Header row height
+    const hHeader = Math.max(TABLE_MIN_ROW_H, this.cellHeight('Setback around the property', remW, { bold: true, fontSize: TABLE_FONT_SIZE }));
 
     // 5 column sub-table aligned with colSl
     const colW1 = 78;
@@ -1134,15 +1330,6 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const h5 = this.cellHeight('No. of Flat at each floor', colW5, { bold: true, fontSize: TABLE_FONT_SIZE });
     const subHeaderH = Math.max(TABLE_MIN_ROW_H, h5);
 
-    this.checkPageBreak(subHeaderH + TABLE_MIN_ROW_H);
-    this.drawCell(MARGIN_L, this.cursorY, colSl, subHeaderH, '', { align: 'center' });
-    this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, subHeaderH, 'Front', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, subHeaderH, 'Back-Side', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 * 2, this.cursorY, colW3, subHeaderH, 'Side1', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 * 3, this.cursorY, colW4, subHeaderH, 'Side2', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 * 4, this.cursorY, colW5, subHeaderH, 'No. of Flat at each floor', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
-    this.cursorY += subHeaderH;
-
     const valH1 = this.cellHeight(fields.setbackFront || '', colW1, { fontSize: TABLE_FONT_SIZE });
     const valH2 = this.cellHeight(fields.setbackBack || '', colW2, { fontSize: TABLE_FONT_SIZE });
     const valH3 = this.cellHeight(fields.setbackSide1 || '', colW3, { fontSize: TABLE_FONT_SIZE });
@@ -1150,8 +1337,35 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const valH5 = this.cellHeight(fields.noOfFlatsPerFloor || 'NA', colW5, { fontSize: TABLE_FONT_SIZE });
     const dataRowH = Math.max(TABLE_MIN_ROW_H, valH1, valH2, valH3, valH4, valH5);
 
-    this.checkPageBreak(dataRowH);
-    this.drawCell(MARGIN_L, this.cursorY, colSl, dataRowH, '', { align: 'center' });
+    const totalH = hHeader + subHeaderH + dataRowH;
+    this.checkPageBreak(totalH);
+
+    // Draw single unified Sl. No. cell for 27.
+    this.drawCell(MARGIN_L, this.cursorY, colSl, totalH, '27.', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'center',
+      vAlign: 'middle',
+    });
+
+    // Row 1: Header
+    this.drawCell(MARGIN_L + colSl, this.cursorY, remW, hHeader, 'Setback around the property', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'left',
+      vAlign: 'middle',
+    });
+    this.cursorY += hHeader;
+
+    // Row 2: Subheader
+    this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, subHeaderH, 'Front', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, subHeaderH, 'Back-Side', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 * 2, this.cursorY, colW3, subHeaderH, 'Side1', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 * 3, this.cursorY, colW4, subHeaderH, 'Side2', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 * 4, this.cursorY, colW5, subHeaderH, 'No. of Flat at each floor', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+    this.cursorY += subHeaderH;
+
+    // Row 3: Data row
     this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, dataRowH, fields.setbackFront || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
     this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, dataRowH, fields.setbackBack || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
     this.drawCell(MARGIN_L + colSl + colW1 * 2, this.cursorY, colW3, dataRowH, fields.setbackSide1 || '', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
@@ -1161,21 +1375,16 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Row 34: Progress of work checklist table
+   * Row 34: Progress of work checklist table with unified Sl. No.
    */
   private drawProgressOfWorkSection(fields: BandhanHLLAPReportFields): void {
     const colSl = this.colSl;
     const colPts = this.colPts;
     const colRem = this.colRem;
 
-    const headerH = TABLE_MIN_ROW_H;
-    this.checkPageBreak(headerH * 10);
-
-    // Main header row
-    this.drawCell(MARGIN_L, this.cursorY, colSl, headerH, '34.', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.drawCell(MARGIN_L + colSl, this.cursorY, colPts, headerH, 'Progress of work:', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'left' });
-    this.drawCell(MARGIN_L + colSl + colPts, this.cursorY, colRem, headerH, fields.progressStructureHeader || '', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center' });
-    this.cursorY += headerH;
+    const hHdrPts = this.cellHeight('Progress of work:', colPts, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const hHdrRem = this.cellHeight(fields.progressStructureHeader || '', colRem, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const headerH = Math.max(TABLE_MIN_ROW_H, hHdrPts, hHdrRem);
 
     const structWorkLabel = getWorkProgressStructureLabel(fields.typeOfStructure);
     const items = [
@@ -1194,15 +1403,64 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const colColon = 30;
     const colWorkName = colPts - colColon;
 
+    const rowHeights: number[] = [];
+    let totalSubH = 0;
     for (const item of items) {
-      const h = this.cellHeight(item.label, colWorkName, { fontSize: TABLE_FONT_SIZE });
-      const rowH = Math.max(TABLE_MIN_ROW_H, h);
-      this.checkPageBreak(rowH);
+      const hL = this.cellHeight(item.label, colWorkName, { fontSize: TABLE_FONT_SIZE });
+      const hV = this.cellHeight(item.val || '', colRem, { fontSize: TABLE_FONT_SIZE });
+      const rowH = Math.max(TABLE_MIN_ROW_H, hL, hV);
+      rowHeights.push(rowH);
+      totalSubH += rowH;
+    }
 
-      this.drawCell(MARGIN_L, this.cursorY, colSl, rowH, '', { align: 'center' });
-      this.drawCell(MARGIN_L + colSl, this.cursorY, colWorkName, rowH, item.label, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'left' });
-      this.drawCell(MARGIN_L + colSl + colWorkName, this.cursorY, colColon, rowH, ':', { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center' });
-      this.drawCell(MARGIN_L + colSl + colPts, this.cursorY, colRem, rowH, item.val, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center' });
+    const totalH = headerH + totalSubH;
+    this.checkPageBreak(totalH);
+
+    // Draw single unified Sl. No. cell for 34.
+    this.drawCell(MARGIN_L, this.cursorY, colSl, totalH, '34.', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'center',
+      vAlign: 'middle',
+    });
+
+    // Main header row
+    this.drawCell(MARGIN_L + colSl, this.cursorY, colPts, headerH, 'Progress of work:', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'left',
+      vAlign: 'middle',
+    });
+    this.drawCell(MARGIN_L + colSl + colPts, this.cursorY, colRem, headerH, fields.progressStructureHeader || '', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'center',
+      vAlign: 'middle',
+    });
+    this.cursorY += headerH;
+
+    // 10 checklist sub-rows
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      const rowH = rowHeights[i];
+      this.drawCell(MARGIN_L + colSl, this.cursorY, colWorkName, rowH, item.label, {
+        bold: false,
+        fontSize: TABLE_FONT_SIZE,
+        align: 'left',
+        vAlign: 'middle',
+      });
+      this.drawCell(MARGIN_L + colSl + colWorkName, this.cursorY, colColon, rowH, ':', {
+        bold: false,
+        fontSize: TABLE_FONT_SIZE,
+        align: 'center',
+        vAlign: 'middle',
+      });
+      this.drawCell(MARGIN_L + colSl + colPts, this.cursorY, colRem, rowH, item.val, {
+        bold: false,
+        fontSize: TABLE_FONT_SIZE,
+        align: 'center',
+        vAlign: 'middle',
+      });
       this.cursorY += rowH;
     }
   }
