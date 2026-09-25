@@ -1,15 +1,15 @@
-import { PDFGeneralRenderer } from '../pdf-general-renderer';
+import { PDFBankRenderer } from '../pdf-bank-renderer';
 
-export class PDFCanFinHomesRenderer extends PDFGeneralRenderer {
-  // Use the existing base bank report draft ui and pdf render of it.
-  // This class currently inherits the exact default layout of PDFGeneralRenderer.
+export class PDFCanFinHomesRenderer extends PDFBankRenderer {
+  private fields: any;
+  private projectCode: string;
+
+  constructor(fields?: any, projectCode?: string) {
+    super();
+    this.fields = fields || {};
+    this.projectCode = projectCode || '';
+  }
+
+  // Inherits default rendering logic from PDFBankRenderer.
+  // We can override specific sections here if needed in the future.
 }
-
-export const generateCanFinHomesReport = async (
-  data: any,
-  projectCode: string = 'SMA-XXX',
-  isReadOnly: boolean = false
-) => {
-  const renderer = new PDFCanFinHomesRenderer(data, projectCode, isReadOnly);
-  return await renderer.generatePDF();
-};
