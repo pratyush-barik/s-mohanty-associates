@@ -9,7 +9,15 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
   bankId: 'CANFIN HOMES LTD',
   subTemplateId: '',
   displayName: 'CanFin Homes Ltd',
-  hiddenSections: ['section-1', 'section-1a', 'section-2', 'section-3'],
+  hiddenSections: [
+    'section-1', 'section-1a', 'section-2', 'section-3', 
+    'section-4', 'section-5', 'section-6', 'section-7', 'section-7b', 'section-7c', 
+    'section-8', 'section-9', 'section-10', 'section-13', 'section-14', 'section-15'
+  ],
+  fieldLabels: {
+    'section-11-title': '10. Photographs',
+    'section-12-title': '11. Maps & Documents',
+  },
   navSections: [
     { id: 'section-cover', title: '1. Cover Page Details' },
     { id: 'canfin-section-2', title: '2. General' },
@@ -20,6 +28,8 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     { id: 'canfin-section-7', title: '7. Valuation Report' },
     { id: 'canfin-section-8', title: '8. The Condition of Structure' },
     { id: 'canfin-section-9', title: '9. Concluding Declarations' },
+    { id: 'section-11', title: 'Photos' },
+    { id: 'section-12', title: 'Maps' },
   ],
   defaultValues: {
     purpose: 'Housing Loan / Composite Loan',
