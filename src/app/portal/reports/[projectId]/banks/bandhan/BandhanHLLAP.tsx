@@ -162,15 +162,15 @@ export const computeBandhanValuation = (
         ? parseNum(fields.recommendedValueOfProperty)
         : recommendedValue);
 
-  // Decimal percentage handling
+  // Decimal percentage handling (If null / empty, consider 100 percent)
   const distressPct = (fields.distressSalePct !== undefined && fields.distressSalePct !== null && String(fields.distressSalePct).trim() !== '')
     ? parseNum(fields.distressSalePct)
-    : 90;
+    : 100;
   const distressValue = Math.round((baseMarketValue * distressPct) / 100);
 
   const realisablePct = (fields.realisableValuePct !== undefined && fields.realisableValuePct !== null && String(fields.realisableValuePct).trim() !== '')
     ? parseNum(fields.realisableValuePct)
-    : 95;
+    : 100;
   const realisableValue = Math.round((baseMarketValue * realisablePct) / 100);
 
   return {
@@ -418,16 +418,16 @@ export default function BandhanHLLAP({
       plotRate: raw.plotRate || '',
       plotValueBreakdown: raw.plotValueBreakdown || '',
       rateOfCostOfConstruction: raw.rateOfCostOfConstruction || '',
-      rateOfCostOfConstructionMin: raw.rateOfCostOfConstructionMin !== undefined ? raw.rateOfCostOfConstructionMin : (() => {
-        if (!raw.rateOfCostOfConstruction) return '';
+      rateOfCostOfConstructionMin: raw.rateOfCostOfConstructionMin !== undefined ? raw.rateOfCostOfConstructionMin : (raw.annexureMarketEnquiryMinRate || (() => {
+        if (!raw.rateOfCostOfConstruction) return '1700';
         const match = String(raw.rateOfCostOfConstruction).match(/(\d+(?:\.\d+)?)/g);
-        return match && match[0] ? match[0] : '';
-      })(),
-      rateOfCostOfConstructionMax: raw.rateOfCostOfConstructionMax !== undefined ? raw.rateOfCostOfConstructionMax : (() => {
-        if (!raw.rateOfCostOfConstruction) return '';
+        return match && match[0] ? match[0] : '1700';
+      })()),
+      rateOfCostOfConstructionMax: raw.rateOfCostOfConstructionMax !== undefined ? raw.rateOfCostOfConstructionMax : (raw.annexureMarketEnquiryMaxRate || (() => {
+        if (!raw.rateOfCostOfConstruction) return '1900';
         const match = String(raw.rateOfCostOfConstruction).match(/(\d+(?:\.\d+)?)/g);
-        return match && match[1] ? match[1] : (match && match[0] ? match[0] : '');
-      })(),
+        return match && match[1] ? match[1] : (match && match[0] ? match[0] : '1900');
+      })()),
       depreciationOfConstruction: raw.depreciationOfConstruction || '',
       netValueLand: raw.netValueLand || '',
       netValueBuilding: raw.netValueBuilding || '',
@@ -454,9 +454,9 @@ export default function BandhanHLLAP({
       valuationGovtRate: raw.valuationGovtRate || '',
       valuationGovtRateLocked: raw.valuationGovtRateLocked !== undefined ? raw.valuationGovtRateLocked : true,
       distressSaleValue: raw.distressSaleValue || '',
-      distressSalePct: (raw.distressSalePct !== undefined && raw.distressSalePct !== null && String(raw.distressSalePct).trim() !== '') ? String(raw.distressSalePct) : '90',
+      distressSalePct: (raw.distressSalePct !== undefined && raw.distressSalePct !== null) ? String(raw.distressSalePct) : '90',
       realisableValue: raw.realisableValue || '',
-      realisableValuePct: (raw.realisableValuePct !== undefined && raw.realisableValuePct !== null && String(raw.realisableValuePct).trim() !== '') ? String(raw.realisableValuePct) : '95',
+      realisableValuePct: (raw.realisableValuePct !== undefined && raw.realisableValuePct !== null) ? String(raw.realisableValuePct) : '95',
       projectCommencementDate: raw.projectCommencementDate || '',
       expectedCompletionDate: raw.expectedCompletionDate || '',
       areaOfLand: raw.areaOfLand || '',
@@ -531,9 +531,18 @@ export default function BandhanHLLAP({
         { structure: 'RCC Roofing', cost: '' },
       ],
       annexureBasisOfValuation: raw.annexureBasisOfValuation || '',
-      annexureMethodClassification: Array.isArray(raw.annexureMethodClassification) ? raw.annexureMethodClassification : [
-        { description: 'Residential building', classification: 'Residential', ingredients: '', elements: '', approach: 'Market Approach', method: '' },
-      ],
+      annexureMethodClassification: (Array.isArray(raw.annexureMethodClassification) && raw.annexureMethodClassification.length > 0)
+        ? raw.annexureMethodClassification
+        : [
+          {
+            description: `${raw.propertyType || raw.actualUsage || 'Residential'} building`,
+            classification: raw.propertyType || raw.actualUsage || 'Residential',
+            ingredients: 'Land & Building',
+            elements: 'Land & Structure',
+            approach: 'Market Approach',
+            method: 'Land & Building Method',
+          },
+        ],
       annexureAdoptedLandRate: raw.annexureAdoptedLandRate || '',
       annexureLandArea: raw.annexureLandArea || '',
       annexureLandValue: raw.annexureLandValue || '',
@@ -545,6 +554,7 @@ export default function BandhanHLLAP({
       summaryBuildingValue: raw.summaryBuildingValue || '',
       summaryMarketValue: raw.summaryMarketValue || '',
       summaryMarketValueWords: raw.summaryMarketValueWords || '',
+      opinionMarketValue: raw.opinionMarketValue || '',
       opinionStatement: raw.opinionStatement || '',
       declarationItems: raw.declarationItems || [],
 
@@ -754,15 +764,6 @@ export default function BandhanHLLAP({
           next.realizableValue = formatCurrencyINR(valCalc.realisableValue);
           changed = true;
         }
-      }
-
-      if (!prev.distressSalePct && prev.distressSalePct !== '0') {
-        next.distressSalePct = '90';
-        changed = true;
-      }
-      if (!prev.realisableValuePct && prev.realisableValuePct !== '0') {
-        next.realisableValuePct = '95';
-        changed = true;
       }
 
       // Govt Rate Valuation final value (Pt 36)
@@ -2485,6 +2486,7 @@ export default function BandhanHLLAP({
                             rateOfCostOfConstruction: formattedRange,
                           }));
                         }}
+                        placeholder="1700"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -2511,6 +2513,7 @@ export default function BandhanHLLAP({
                             rateOfCostOfConstruction: formattedRange,
                           }));
                         }}
+                        placeholder="1900"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -3212,13 +3215,14 @@ export default function BandhanHLLAP({
                           <input
                             type="text"
                             className={inputCls}
-                            value={fields.distressSalePct !== undefined && fields.distressSalePct !== null ? fields.distressSalePct : '90'}
+                            placeholder="100"
+                            value={fields.distressSalePct ?? ''}
                             onChange={(e) => {
                               const cleanPct = sanitizePercentage(e.target.value);
-                              const numPct = cleanPct !== '' ? parseNum(cleanPct) : null;
+                              const numPct = cleanPct !== '' ? parseNum(cleanPct) : 100;
                               const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
                               let amt = '';
-                              if (baseNum > 0 && numPct !== null) {
+                              if (baseNum > 0) {
                                 const calcAmt = Math.round((baseNum * numPct) / 100);
                                 amt = calcAmt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(calcAmt)}/-`;
                               }
@@ -3243,13 +3247,11 @@ export default function BandhanHLLAP({
                               const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
                               const pctStr = (fields.distressSalePct !== undefined && fields.distressSalePct !== null && fields.distressSalePct !== '')
                                 ? String(fields.distressSalePct)
-                                : '90';
-                              if (pctStr !== '' && baseNum > 0) {
-                                const p = parseNum(pctStr);
+                                : '';
+                              if (baseNum > 0) {
+                                const p = pctStr !== '' ? parseNum(pctStr) : 100;
                                 const calcAmt = Math.round((baseNum * p) / 100);
                                 return calcAmt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(calcAmt)}/-`;
-                              } else if (pctStr === '0') {
-                                return 'Rs.0/-';
                               }
                               return fields.distressSaleValue || 'Rs.0/-';
                             })()}
@@ -3272,13 +3274,14 @@ export default function BandhanHLLAP({
                           <input
                             type="text"
                             className={inputCls}
-                            value={fields.realisableValuePct !== undefined && fields.realisableValuePct !== null ? fields.realisableValuePct : '95'}
+                            placeholder="100"
+                            value={fields.realisableValuePct ?? ''}
                             onChange={(e) => {
                               const cleanPct = sanitizePercentage(e.target.value);
-                              const numPct = cleanPct !== '' ? parseNum(cleanPct) : null;
+                              const numPct = cleanPct !== '' ? parseNum(cleanPct) : 100;
                               const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
                               let amt = '';
-                              if (baseNum > 0 && numPct !== null) {
+                              if (baseNum > 0) {
                                 const calcAmt = Math.round((baseNum * numPct) / 100);
                                 amt = calcAmt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(calcAmt)}/-`;
                               }
@@ -3303,13 +3306,11 @@ export default function BandhanHLLAP({
                               const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
                               const pctStr = (fields.realisableValuePct !== undefined && fields.realisableValuePct !== null && fields.realisableValuePct !== '')
                                 ? String(fields.realisableValuePct)
-                                : '95';
-                              if (pctStr !== '' && baseNum > 0) {
-                                const p = parseNum(pctStr);
+                                : '';
+                              if (baseNum > 0) {
+                                const p = pctStr !== '' ? parseNum(pctStr) : 100;
                                 const calcAmt = Math.round((baseNum * p) / 100);
                                 return calcAmt === 0 ? 'Rs.0/-' : `Rs.${formatCurrencyINR(calcAmt)}/-`;
-                              } else if (pctStr === '0') {
-                                return 'Rs.0/-';
                               }
                               return fields.realisableValue || 'Rs.0/-';
                             })()}
@@ -4139,8 +4140,8 @@ export default function BandhanHLLAP({
                       : `an ${structName} framed structure`;
 
                     const gRate = fields.annexureGovtGuidelineRate !== undefined && fields.annexureGovtGuidelineRate !== '' ? fields.annexureGovtGuidelineRate : (fields.govtRateLand || '286');
-                    const minMkt = fields.annexureMarketEnquiryMinRate !== undefined ? fields.annexureMarketEnquiryMinRate : '1700';
-                    const maxMkt = fields.annexureMarketEnquiryMaxRate !== undefined ? fields.annexureMarketEnquiryMaxRate : '1900';
+                    const minMkt = fields.annexureMarketEnquiryMinRate !== undefined && fields.annexureMarketEnquiryMinRate !== '' ? fields.annexureMarketEnquiryMinRate : (fields.rateOfCostOfConstructionMin || '1700');
+                    const maxMkt = fields.annexureMarketEnquiryMaxRate !== undefined && fields.annexureMarketEnquiryMaxRate !== '' ? fields.annexureMarketEnquiryMaxRate : (fields.rateOfCostOfConstructionMax || '1900');
                     const cpwdBase = fields.annexureCpwdBaseRateNum !== undefined ? fields.annexureCpwdBaseRateNum : '1,300';
                     const locCity = fields.annexureLocationCity !== undefined ? fields.annexureLocationCity : 'Bhubaneswar';
                     const extraAmenities = fields.annexureExtraAmenitiesRate !== undefined ? fields.annexureExtraAmenitiesRate : '500';
@@ -4148,30 +4149,41 @@ export default function BandhanHLLAP({
                     return (
                       <div className="space-y-3.5">
                         {/* Clause i */}
-                        <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 space-y-1.5 shadow-2xs">
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-800 leading-relaxed font-medium">
-                            <span className="font-bold text-slate-900 text-sm">i) PURPOSE OF VALUATION:</span>
+                        <div className="rounded-xl border border-slate-200/90 bg-white p-3.5 sm:p-4 shadow-2xs space-y-2.5">
+                          <div className="flex flex-wrap items-center justify-between pb-1.5 border-b border-slate-100 gap-2">
+                            <span className="font-sans font-bold text-slate-900 text-xs sm:text-sm">
+                              i) Purpose of Valuation
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 shadow-2xs">
+                              ⚡ Referenced from: Project Subject / Purpose
+                            </span>
+                          </div>
+                          <div>
                             <input
                               type="text"
-                              className="px-2.5 py-1 bg-white border border-slate-300 rounded text-xs font-semibold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 min-w-[240px]"
+                              className={inputCls}
                               value={fields.annexurePurpose !== undefined && fields.annexurePurpose !== '' ? fields.annexurePurpose : (fields.purpose || 'Mortgage and Bank finance.')}
                               onChange={(e) => handleChange('annexurePurpose', e.target.value)}
                               disabled={isReadOnly}
                             />
-                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 shadow-2xs">
-                              ⚡ Referenced from: Project Subject / Purpose of Valuation
-                            </span>
                           </div>
                         </div>
 
                         {/* Clause ii */}
-                        <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 space-y-1.5 shadow-2xs">
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-800 leading-relaxed font-medium">
-                            <span className="font-bold text-slate-900 text-sm">ii) Govt. guideline value of land:</span>
+                        <div className="rounded-xl border border-slate-200/90 bg-white p-3.5 sm:p-4 shadow-2xs space-y-2.5">
+                          <div className="flex flex-wrap items-center justify-between pb-1.5 border-b border-slate-100 gap-2">
+                            <span className="font-sans font-bold text-slate-900 text-xs sm:text-sm">
+                              ii) Govt. Guideline Value of Land
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 shadow-2xs">
+                              ⚡ Referenced from: Pt 36 (Govt. Rate: Rs.{gRate}/- per sqft)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-xs text-slate-800 font-medium">
                             <span>Rs.</span>
                             <input
                               type="text"
-                              className="w-20 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-24 px-2 py-1 text-center bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                               value={gRate}
                               onChange={(e) => {
                                 const val = sanitizePositiveFloat(e.target.value);
@@ -4182,63 +4194,87 @@ export default function BandhanHLLAP({
                               disabled={isReadOnly}
                             />
                             <span>/- per sqft (As per IGR, Odisha Govt. Website)</span>
-                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 shadow-2xs">
-                              ⚡ Referenced from: Pt 36 (Valuation according to Govt. rate - Land Rate)
-                            </span>
                           </div>
                         </div>
 
                         {/* Clause iii */}
-                        <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 space-y-2 shadow-2xs">
-                          <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-800 leading-relaxed font-medium">
-                            <span className="font-bold text-slate-900 text-sm">iii)</span>
-                            <span>From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs.</span>
+                        <div className="rounded-xl border border-slate-200/90 bg-white p-3.5 sm:p-4 shadow-2xs space-y-2.5">
+                          <div className="flex flex-wrap items-center justify-between pb-1.5 border-b border-slate-100 gap-2">
+                            <span className="font-sans font-bold text-slate-900 text-xs sm:text-sm">
+                              iii) Local Enquiry &amp; Market Investigation
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200 shadow-2xs">
+                                ⚡ Pt 32 (Min/Max Range: Rs.{minMkt} – Rs.{maxMkt})
+                              </span>
+                              <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 shadow-2xs">
+                                ⚡ Pt 30 / Pt 31 (Plot Rate: Rs.{fields.plotRate || '1800'}/-)
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-xs text-slate-800 leading-relaxed font-normal">
+                            From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs.{' '}
                             <input
                               type="text"
-                              className="w-20 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-20 px-2 py-0.5 text-center bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 inline-block align-middle mx-0.5"
                               value={minMkt}
                               onChange={(e) => {
                                 const newMin = sanitizePositiveFloat(e.target.value);
-                                handleChange('annexureMarketEnquiryMinRate', newMin);
-                                const newText = `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. ${newMin}per sqft to @ Rs. ${maxMkt}per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.`;
-                                handleChange('annexureMarketEnquiry', newText);
+                                const newText = `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. ${newMin} per sqft to @ Rs. ${maxMkt} per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.`;
+                                setFields(prev => ({
+                                  ...prev,
+                                  annexureMarketEnquiryMinRate: newMin,
+                                  annexureMarketEnquiry: newText,
+                                }));
                               }}
                               placeholder="1700"
                               disabled={isReadOnly}
-                            />
-                            <span>per sqft to @ Rs.</span>
+                            />{' '}
+                            per sqft to @ Rs.{' '}
                             <input
                               type="text"
-                              className="w-20 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-20 px-2 py-0.5 text-center bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 inline-block align-middle mx-0.5"
                               value={maxMkt}
                               onChange={(e) => {
                                 const newMax = sanitizePositiveFloat(e.target.value);
-                                handleChange('annexureMarketEnquiryMaxRate', newMax);
-                                const newText = `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. ${minMkt}per sqft to @ Rs. ${newMax}per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.`;
-                                handleChange('annexureMarketEnquiry', newText);
+                                const newText = `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. ${minMkt} per sqft to @ Rs. ${newMax} per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.`;
+                                setFields(prev => ({
+                                  ...prev,
+                                  annexureMarketEnquiryMaxRate: newMax,
+                                  annexureMarketEnquiry: newText,
+                                }));
                               }}
                               placeholder="1900"
                               disabled={isReadOnly}
-                            />
-                            <span>per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs.</span>
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-blue-100 text-blue-950 font-bold border border-blue-300 shadow-2xs">
+                            />{' '}
+                            per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs.{' '}
+                            <span className="inline-flex items-center px-2 py-0.5 rounded bg-blue-100 text-blue-950 font-bold border border-blue-300 shadow-2xs align-middle mx-0.5">
                               {fields.plotRate || '1800'}
-                            </span>
-                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 shadow-2xs">
-                              ⚡ Referenced from: Pt 30 &amp; Pt 31 (Rate of the Plot)
-                            </span>
-                            <span>per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.</span>
+                            </span>{' '}
+                            per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.
                           </div>
                         </div>
 
                         {/* Clause iv */}
-                        <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 space-y-2 shadow-2xs">
-                          <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-800 leading-relaxed font-medium">
-                            <span className="font-bold text-slate-900 text-sm">iv)</span>
-                            <span>The base rate of construction has been considered at ₹</span>
+                        <div className="rounded-xl border border-slate-200/90 bg-white p-3.5 sm:p-4 shadow-2xs space-y-2.5">
+                          <div className="flex flex-wrap items-center justify-between pb-1.5 border-b border-slate-100 gap-2">
+                            <span className="font-sans font-bold text-slate-900 text-xs sm:text-sm">
+                              iv) Base Rate of Construction &amp; Building Cost Assessment
+                            </span>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200 shadow-2xs">
+                                ⚡ Pt 21: {fields.typeOfStructure || 'RCC'}
+                              </span>
+                              <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200 shadow-2xs">
+                                ⚡ Pt 32: {fields.rateOfCostOfConstruction || 'Rs.1,800/- per sqft'}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="text-xs text-slate-800 leading-relaxed font-normal">
+                            The base rate of construction has been considered at ₹{' '}
                             <input
                               type="text"
-                              className="w-20 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-20 px-2 py-0.5 text-center bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 inline-block align-middle mx-0.5"
                               value={cpwdBase}
                               onChange={(e) => {
                                 const newBase = e.target.value;
@@ -4248,18 +4284,11 @@ export default function BandhanHLLAP({
                               }}
                               placeholder="1,300"
                               disabled={isReadOnly}
-                            />
-                            <span>per sq. ft. for</span>
-                            <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-200 text-slate-900 font-bold border border-slate-300 shadow-2xs">
-                              {structPhrase}
-                            </span>
-                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-200 shadow-2xs">
-                              ⚡ Derived from Pt 21: Type of Structure
-                            </span>
-                            <span>for the</span>
+                            />{' '}
+                            per sq. ft. for <span className="font-semibold text-slate-900 underline decoration-slate-300 underline-offset-2">{structPhrase}</span> for the{' '}
                             <input
                               type="text"
-                              className="w-32 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-32 px-2 py-0.5 text-center bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 inline-block align-middle mx-0.5"
                               value={locCity}
                               onChange={(e) => {
                                 const newCity = e.target.value;
@@ -4269,11 +4298,11 @@ export default function BandhanHLLAP({
                               }}
                               placeholder="Bhubaneswar"
                               disabled={isReadOnly}
-                            />
-                            <span>location. An additional ₹</span>
+                            />{' '}
+                            location. An additional ₹{' '}
                             <input
                               type="text"
-                              className="w-20 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-16 px-2 py-0.5 text-center bg-slate-50 border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 inline-block align-middle mx-0.5"
                               value={extraAmenities}
                               onChange={(e) => {
                                 const newExt = sanitizePositiveFloat(e.target.value);
@@ -4283,22 +4312,27 @@ export default function BandhanHLLAP({
                               }}
                               placeholder="500"
                               disabled={isReadOnly}
-                            />
-                            <span>per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹</span>
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-amber-100 text-amber-950 font-extrabold border border-amber-300 shadow-2xs">
-                              {fields.rateOfCostOfConstruction || '1,800'}
-                            </span>
-                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200 shadow-2xs">
-                              ⚡ Referenced from Pt 32: Recommended Rate of Cost of Construction
-                            </span>
-                            <span>per sq. ft. of Super built-up area (SBUA).</span>
+                            />{' '}
+                            per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at{' '}
+                            <span className="inline-flex items-center px-2 py-0.5 rounded bg-amber-100 text-amber-950 font-bold border border-amber-300 shadow-2xs align-middle mx-0.5">
+                              {(() => {
+                                const raw = (fields.rateOfCostOfConstruction || '1,800').trim();
+                                if (raw.includes('sqft') || raw.includes('sq. ft') || raw.includes('per')) return raw;
+                                return `₹${raw} per sq. ft.`;
+                              })()}
+                            </span>{' '}
+                            of Super built-up area (SBUA).
                           </div>
                         </div>
 
                         {/* Clause v */}
-                        <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 shadow-2xs">
-                          <div className="text-xs text-slate-700 leading-relaxed italic">
-                            <strong className="font-bold text-slate-900 not-italic text-sm">v) </strong>
+                        <div className="rounded-xl border border-slate-200/90 bg-white p-3.5 sm:p-4 shadow-2xs space-y-1.5">
+                          <div className="flex flex-wrap items-center justify-between pb-1.5 border-b border-slate-100 gap-2">
+                            <span className="font-sans font-bold text-slate-900 text-xs sm:text-sm">
+                              v) Adopted Cost Assessment
+                            </span>
+                          </div>
+                          <div className="text-xs text-slate-700 leading-relaxed font-normal">
                             Considering the above CPWD rate, CPWD specification and the specification of the house under consideration, cost of construction for the above building may reasonably be taken as under: -
                           </div>
                         </div>
@@ -4364,9 +4398,6 @@ export default function BandhanHLLAP({
                       <span className="text-xs font-bold text-slate-900 uppercase tracking-wide">
                         Method of Valuation: -
                       </span>
-                      <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                        ⚡ Referenced from: Pt 18 (Property Type: {fields.propertyType || 'Residential'}), Pt 20 (Actual Usage: {fields.actualUsage || fields.approvedUsage || 'Residential'})
-                      </span>
                     </div>
                     <p className="text-[11px] font-semibold text-slate-600 uppercase">
                       Classification of Properties, Value Ingredients, Value Elements, Approach and Method of Valuation: -
@@ -4375,23 +4406,117 @@ export default function BandhanHLLAP({
                       <table className="w-full text-xs">
                         <thead className="bg-slate-100 text-slate-700 font-semibold text-center">
                           <tr>
-                            <th className="p-2">DESCRIPTION OF PROPERTY</th>
-                            <th className="p-2">PROPERTY CLASSIFICATION</th>
-                            <th className="p-2">VALUE INGREDIENTS</th>
-                            <th className="p-2">VALUE ELEMENTS</th>
-                            <th className="p-2">APPROACH TO VALUATION</th>
-                            <th className="p-2">METHOD OF VALUATION</th>
+                            <th className="p-2 min-w-[150px]">DESCRIPTION OF PROPERTY</th>
+                            <th className="p-2 min-w-[140px]">PROPERTY CLASSIFICATION</th>
+                            <th className="p-2 min-w-[130px]">VALUE INGREDIENTS</th>
+                            <th className="p-2 min-w-[130px]">VALUE ELEMENTS</th>
+                            <th className="p-2 min-w-[140px]">APPROACH TO VALUATION</th>
+                            <th className="p-2 min-w-[150px]">METHOD OF VALUATION</th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr className="text-center bg-slate-50">
-                            <td className="p-2 font-medium">{fields.propertyType || 'Residential'} building</td>
-                            <td className="p-2">{fields.propertyType || 'Residential'}</td>
-                            <td className="p-2">Land &amp; Building</td>
-                            <td className="p-2">Land &amp; Structure</td>
-                            <td className="p-2 font-semibold text-sky-900">Market Approach</td>
-                            <td className="p-2">Land &amp; Building Method</td>
-                          </tr>
+                          {(() => {
+                            const defaultPropType = fields.propertyType || fields.actualUsage || 'Residential';
+                            const rows = (fields.annexureMethodClassification && fields.annexureMethodClassification.length > 0)
+                              ? fields.annexureMethodClassification
+                              : [{
+                                  description: `${defaultPropType} building`,
+                                  classification: defaultPropType,
+                                  ingredients: 'Land & Building',
+                                  elements: 'Land & Structure',
+                                  approach: 'Market Approach',
+                                  method: 'Land & Building Method',
+                                }];
+
+                            return rows.map((row, idx) => (
+                              <tr key={idx} className="bg-slate-50/70 divide-x divide-slate-200">
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className="w-full px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-medium text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    value={row.description !== undefined ? row.description : `${defaultPropType} building`}
+                                    onChange={(e) => {
+                                      const next = [...rows];
+                                      next[idx] = { ...next[idx], description: e.target.value };
+                                      handleChange('annexureMethodClassification', next);
+                                    }}
+                                    placeholder={`${defaultPropType} building`}
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className="w-full px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-medium text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    value={row.classification !== undefined ? row.classification : defaultPropType}
+                                    onChange={(e) => {
+                                      const next = [...rows];
+                                      next[idx] = { ...next[idx], classification: e.target.value };
+                                      handleChange('annexureMethodClassification', next);
+                                    }}
+                                    placeholder={defaultPropType}
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className="w-full px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-medium text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    value={row.ingredients !== undefined && row.ingredients !== '' ? row.ingredients : 'Land & Building'}
+                                    onChange={(e) => {
+                                      const next = [...rows];
+                                      next[idx] = { ...next[idx], ingredients: e.target.value };
+                                      handleChange('annexureMethodClassification', next);
+                                    }}
+                                    placeholder="Land & Building"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className="w-full px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-medium text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    value={row.elements !== undefined && row.elements !== '' ? row.elements : 'Land & Structure'}
+                                    onChange={(e) => {
+                                      const next = [...rows];
+                                      next[idx] = { ...next[idx], elements: e.target.value };
+                                      handleChange('annexureMethodClassification', next);
+                                    }}
+                                    placeholder="Land & Structure"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className="w-full px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-semibold text-sky-950 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    value={row.approach !== undefined && row.approach !== '' ? row.approach : 'Market Approach'}
+                                    onChange={(e) => {
+                                      const next = [...rows];
+                                      next[idx] = { ...next[idx], approach: e.target.value };
+                                      handleChange('annexureMethodClassification', next);
+                                    }}
+                                    placeholder="Market Approach"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className="w-full px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-medium text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    value={row.method !== undefined && row.method !== '' ? row.method : 'Land & Building Method'}
+                                    onChange={(e) => {
+                                      const next = [...rows];
+                                      next[idx] = { ...next[idx], method: e.target.value };
+                                      handleChange('annexureMethodClassification', next);
+                                    }}
+                                    placeholder="Land & Building Method"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                              </tr>
+                            ));
+                          })()}
                         </tbody>
                       </table>
                     </div>
@@ -4418,13 +4543,26 @@ export default function BandhanHLLAP({
                           ⚡ Formula: Area (Pt 26) × Land Rate (Pt 30/31) = Land Value (Pt 30/31)
                         </span>
                       </div>
-                      <div className="p-3 bg-white rounded-lg border border-slate-200 text-xs font-mono space-y-1">
-                        <div>Adopted land rate as on date = <strong>Rs.{fields.plotRate || '1800'}/-</strong></div>
-                        <div>Multiplying by area of land Component: <strong>{fields.propertyArea || '10,890 sqft.'}</strong> × <strong>Rs.{fields.plotRate || '1800'}/-</strong> = <strong className="text-sky-950">Rs.{formatCurrencyINR(parseNum(fields.netValueLand))}/-</strong></div>
-                        <div className="text-sm font-bold text-sky-950 pt-1 border-t border-slate-200">
-                          Value of the land component as on date (A) = Rs.{formatCurrencyINR(parseNum(fields.netValueLand))}/-
-                        </div>
-                      </div>
+                      {(() => {
+                        const landSqft = parseSqftFromArea(fields.propertyArea || fields.areaOfLand, fields.propertyAreaUnit, fields.propertyAreaValue);
+                        const cleanAreaStr = landSqft > 0
+                          ? `${formatCurrencyINR(landSqft)} sqft.`
+                          : (fields.propertyArea ? (fields.propertyArea.includes('i.e.') ? fields.propertyArea.split('i.e.')[1].trim() : fields.propertyArea) : '10,890 sqft.');
+                        const rateStr = fields.plotRate || '1800';
+                        const rateNum = parseNum(rateStr);
+                        const landVal = (landSqft > 0 && rateNum > 0) ? landSqft * rateNum : parseNum(fields.netValueLand);
+                        const landValStr = landVal > 0 ? `Rs.${formatCurrencyINR(landVal)}/-` : 'Rs.0/-';
+
+                        return (
+                          <div className="p-3 bg-white rounded-lg border border-slate-200 text-xs font-mono space-y-1">
+                            <div>Adopted land rate as on date = <strong>Rs.{rateStr}/-</strong></div>
+                            <div>Multiplying by the area of the land Component: <strong>{cleanAreaStr}</strong> (x) <strong>Rs.{rateStr}/-</strong> = <strong className="text-sky-950">{landValStr}</strong></div>
+                            <div className="text-sm font-bold text-sky-950 pt-1 border-t border-slate-200">
+                              Value of the land component as on date (A) = {landValStr}
+                            </div>
+                          </div>
+                        );
+                      })()}
                     </div>
 
                     {/* (B) DRC Table of Existing Building */}
@@ -4629,40 +4767,45 @@ export default function BandhanHLLAP({
                             (Rupees {formatIndianCurrency(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))} Only)
                           </span>
                         </div>
-                        <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
-                          <span className="text-slate-500 font-semibold block">Realizable Value (95%):</span>
-                          <span className="font-bold text-slate-900 font-mono">
-                            {fields.realisableValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.95))}/-`}
-                          </span>
-                        </div>
-                        <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
-                          <span className="text-slate-500 font-semibold block">Distress Sale Value (90%):</span>
-                          <span className="font-bold text-slate-900 font-mono">
-                            {fields.distressSaleValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.90))}/-`}
-                          </span>
-                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* 8. Opinion Statement */}
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
                     <label className="text-xs font-bold text-slate-800 uppercase tracking-wide">
                       Opinion Statement:
                     </label>
-                    <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                      ⚡ Referenced from: Pt 35 (Market Value: Rs.{formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate))}/-)
-                    </span>
                   </div>
-                  <textarea
-                    rows={3}
-                    className={inputCls}
-                    value={fields.opinionStatement || `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS Rs.${formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/- AND INSURABLE VALUE OF THE PROPERTY IS NOT IN OUR SCOPE.`}
-                    onChange={(e) => handleChange('opinionStatement', e.target.value)}
-                    disabled={isReadOnly}
-                  />
+                  {(() => {
+                    const defaultValStr = `Rs.${formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate))}/-`;
+                    const currentVal = fields.opinionMarketValue !== undefined && fields.opinionMarketValue !== '' ? fields.opinionMarketValue : defaultValStr;
+
+                    return (
+                      <div className="text-xs text-slate-800 leading-relaxed font-sans p-3.5 bg-slate-50/70 rounded-lg border border-slate-200">
+                        <span>AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS </span>
+                        <input
+                          type="text"
+                          className="px-2.5 py-0.5 text-center bg-white border border-slate-300 rounded text-xs font-bold text-sky-950 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 min-w-[170px] inline-block align-middle mx-1"
+                          value={currentVal}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            const fullText = `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS ${val} AND INSURABLE VALUE OF THE PROPERTY IS NOT IN OUR SCOPE.`;
+                            setFields(prev => ({
+                              ...prev,
+                              opinionMarketValue: val,
+                              opinionStatement: fullText,
+                            }));
+                          }}
+                          placeholder={defaultValStr}
+                          disabled={isReadOnly}
+                        />
+                        <span> AND INSURABLE VALUE OF THE PROPERTY IS NOT IN OUR SCOPE.</span>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* 9. Declaration (Clauses A through P) */}
@@ -4689,7 +4832,7 @@ export default function BandhanHLLAP({
                       'J. THE VALUE OF LAND IS TAKEN INTO ACCOUNT BY MAKING DUE ENQUIRES IN THE LOCALITY AND ASCERTAINING THE SALES VALUE OF THE PROPERTIES IN THE LOCALITY.',
                       'K. ANY ADDITIONS / ALTERATIONS MADE TO THE PROPERTY AFTER THE DATE OF VALUATIONS SHALL NOT FALL UNDER THE SCOPE OF THIS REPORT.',
                       'L. WE ARE NEITHER THE AUDITORS TO THE OWNER OF THE PROPERTY (IES) NOR THEIR FIRMS, ASSOCIATES NOR ARE WE THE STATUTORY AUDITORS TO THE BRANCH FROM WHICH THE LOAN IS PROPOSED TO BE AVAILED / ALREADY AVAILED.',
-                      `M. IT IS HEREBY CERTIFIED THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IS, IN MY OPINION/OUR OPINION Rs.${formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/- AND THE ESTIMATED REALIZABLE VALUE ${fields.realisableValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.95))}/-`} UNDER DISTRESS SALE WILL BE ${fields.distressSaleValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.90))}/-`} -VALUE VARIES WITH THE PURPOSE AND DATE. THIS REPORT IS NOT TO BE REFERRED FOR THE PURPOSE IS DIFFERENT OTHER THAN VALUATION OF THE MORTGAGED PROPERTY.`,
+                      `M. IT IS HEREBY CERTIFIED THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IS, IN MY OPINION/OUR OPINION Rs.${formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/- AND THE ESTIMATED REALIZABLE VALUE ${fields.realisableValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * ((fields.realisableValuePct !== undefined && fields.realisableValuePct !== null && fields.realisableValuePct !== '') ? parseNum(fields.realisableValuePct) : 100) / 100))}/-`} UNDER DISTRESS SALE WILL BE ${fields.distressSaleValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * ((fields.distressSalePct !== undefined && fields.distressSalePct !== null && fields.distressSalePct !== '') ? parseNum(fields.distressSalePct) : 100) / 100))}/-`} -VALUE VARIES WITH THE PURPOSE AND DATE. THIS REPORT IS NOT TO BE REFERRED FOR THE PURPOSE IS DIFFERENT OTHER THAN VALUATION OF THE MORTGAGED PROPERTY.`,
                       'N. I HAVE NOT BEEN DISMISSED OR REMOVED FROM GOVT, SERVICE OR CONVICTED OF AN OFFENCE CONNECTED WITH ANY PROCEEDINGS OF INCOME TAX ACT, WEALTH TAX ACT OR GIFT TAX ACT OR HAVE BEEN BLACKLISTED BY ANY BANK/FINANCIAL INSTITUTION/ GOVT. DEPARTMENT/PUBLIC SECTORE ENTEREPRISE/BODY CORPORATE ETC.',
                       `O. THIS VALUATION REPORT CONTAINS ${fields.valuerReportPagesCount || '12'} PAGES ONLY.`,
                       'P. PHOTOGRAPHS OF THE ASSET VALUED ENCLOSED.',

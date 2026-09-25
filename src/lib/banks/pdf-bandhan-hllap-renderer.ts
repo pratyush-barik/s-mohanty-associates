@@ -836,9 +836,9 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
 
     // 32
     let val32 = (fields.rateOfCostOfConstruction || '').trim();
-    if (!val32 && (fields.rateOfCostOfConstructionMin || fields.rateOfCostOfConstructionMax)) {
-      const minNum = parseNum(fields.rateOfCostOfConstructionMin);
-      const maxNum = parseNum(fields.rateOfCostOfConstructionMax);
+    if (!val32 || fields.rateOfCostOfConstructionLocked !== false) {
+      const minNum = parseNum(fields.rateOfCostOfConstructionMin || fields.annexureMarketEnquiryMinRate || '1700');
+      const maxNum = parseNum(fields.rateOfCostOfConstructionMax || fields.annexureMarketEnquiryMaxRate || '1900');
       if (minNum > 0 && maxNum > 0 && minNum !== maxNum) {
         val32 = `Rs.${formatCurrencyINR(minNum)}/- to Rs.${formatCurrencyINR(maxNum)}/- per sqft`;
       } else if (minNum > 0 || maxNum > 0) {
@@ -923,7 +923,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     let val37 = (fields.distressSaleValue || '').trim();
     if (!val37 || fields.distressSaleLocked !== false) {
       const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
-      const pctStr = fields.distressSalePct !== undefined && fields.distressSalePct !== '' ? fields.distressSalePct : '90';
+      const pctStr = fields.distressSalePct !== undefined && fields.distressSalePct !== '' ? fields.distressSalePct : '100';
       const pctNum = parseFloat(pctStr);
       if (baseNum > 0 && !isNaN(pctNum)) {
         const amt = Math.round((baseNum * pctNum) / 100);
@@ -934,7 +934,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     let valRealisable = (fields.realisableValue || '').trim();
     if (!valRealisable || fields.realisableValueLocked !== false) {
       const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
-      const pctStr = fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '95';
+      const pctStr = fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '100';
       const pctNum = parseFloat(pctStr);
       if (baseNum > 0 && !isNaN(pctNum)) {
         const amt = Math.round((baseNum * pctNum) / 100);
@@ -1575,8 +1575,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       : `an ${structName} framed structure`;
 
     const gRate = fields.annexureGovtGuidelineRate || fields.govtRateLand || '286';
-    const minMkt = fields.annexureMarketEnquiryMinRate || '1700';
-    const maxMkt = fields.annexureMarketEnquiryMaxRate || '1900';
+    const minMkt = fields.annexureMarketEnquiryMinRate || fields.rateOfCostOfConstructionMin || '1700';
+    const maxMkt = fields.annexureMarketEnquiryMaxRate || fields.rateOfCostOfConstructionMax || '1900';
     const cpwdBase = fields.annexureCpwdBaseRateNum || '1,300';
     const locCity = fields.annexureLocationCity || 'Bhubaneswar';
     const extraAmenities = fields.annexureExtraAmenitiesRate || '500';
@@ -1584,7 +1584,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const relPoints = [
       { prefix: 'i) PURPOSE OF VALUATION: ', text: fields.annexurePurpose || fields.purpose || 'Mortgage and Bank finance.' },
       { prefix: 'ii) Govt. guideline value of land: ', text: fields.annexureGovtGuideline || `Rs.${gRate}/- per sqft (As per IGR, Odisha Govt. Website)` },
-      { prefix: 'iii) ', text: fields.annexureMarketEnquiry || `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. ${minMkt}per sqft to @ Rs. ${maxMkt}per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.` },
+      { prefix: 'iii) ', text: fields.annexureMarketEnquiry || `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. ${minMkt} per sqft to @ Rs. ${maxMkt} per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.` },
       { prefix: 'iv) ', text: fields.annexureCpwdBaseRate || `The base rate of construction has been considered at ₹${cpwdBase} per sq. ft. for ${structPhrase} for the ${locCity} location. An additional ₹${extraAmenities} per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹${fields.rateOfCostOfConstruction || '1,800'} per sq. ft. of Super built-up area (SBUA).` },
       { prefix: 'v) ', text: 'Considering the above CPWD rate, CPWD specification and the specification of the house under consideration, cost of construction for the above building may reasonably be taken as under: -' },
     ];
@@ -1653,25 +1653,40 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawCell(MARGIN_L + mcW * 5, this.cursorY, mcW, mcHeaderH, 'METHOD OF\nVALUATION', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
     this.cursorY += mcHeaderH;
 
+    const defaultPropType = fields.propertyType || fields.actualUsage || 'Residential';
     const methodRows = (fields.annexureMethodClassification && fields.annexureMethodClassification.length > 0)
       ? fields.annexureMethodClassification
-      : [{ description: 'Residential building', classification: 'Residential', ingredients: '', elements: '', approach: 'Market Approach', method: '' }];
+      : [{
+          description: `${defaultPropType} building`,
+          classification: defaultPropType,
+          ingredients: 'Land & Building',
+          elements: 'Land & Structure',
+          approach: 'Market Approach',
+          method: 'Land & Building Method',
+        }];
 
     for (const mr of methodRows) {
-      const rh1 = this.cellHeight(mr.description || '', mcW, { fontSize: FONT_SIZE_SMALL });
-      const rh2 = this.cellHeight(mr.classification || '', mcW, { fontSize: FONT_SIZE_SMALL });
-      const rh3 = this.cellHeight(mr.ingredients || '', mcW, { fontSize: FONT_SIZE_SMALL });
-      const rh4 = this.cellHeight(mr.elements || '', mcW, { fontSize: FONT_SIZE_SMALL });
-      const rh5 = this.cellHeight(mr.approach || '', mcW, { fontSize: FONT_SIZE_SMALL });
-      const rh6 = this.cellHeight(mr.method || '', mcW, { fontSize: FONT_SIZE_SMALL });
+      const desc = mr.description || `${defaultPropType} building`;
+      const clas = mr.classification || defaultPropType;
+      const ingr = mr.ingredients || 'Land & Building';
+      const elem = mr.elements || 'Land & Structure';
+      const appr = mr.approach || 'Market Approach';
+      const meth = mr.method || 'Land & Building Method';
+
+      const rh1 = this.cellHeight(desc, mcW, { fontSize: FONT_SIZE_SMALL });
+      const rh2 = this.cellHeight(clas, mcW, { fontSize: FONT_SIZE_SMALL });
+      const rh3 = this.cellHeight(ingr, mcW, { fontSize: FONT_SIZE_SMALL });
+      const rh4 = this.cellHeight(elem, mcW, { fontSize: FONT_SIZE_SMALL });
+      const rh5 = this.cellHeight(appr, mcW, { fontSize: FONT_SIZE_SMALL });
+      const rh6 = this.cellHeight(meth, mcW, { fontSize: FONT_SIZE_SMALL });
       const rowH = Math.max(TABLE_MIN_ROW_H, rh1, rh2, rh3, rh4, rh5, rh6);
       this.checkPageBreak(rowH);
-      this.drawCell(MARGIN_L, this.cursorY, mcW, rowH, mr.description || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + mcW, this.cursorY, mcW, rowH, mr.classification || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + mcW * 2, this.cursorY, mcW, rowH, mr.ingredients || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + mcW * 3, this.cursorY, mcW, rowH, mr.elements || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + mcW * 4, this.cursorY, mcW, rowH, mr.approach || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + mcW * 5, this.cursorY, mcW, rowH, mr.method || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L, this.cursorY, mcW, rowH, desc, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + mcW, this.cursorY, mcW, rowH, clas, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + mcW * 2, this.cursorY, mcW, rowH, ingr, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + mcW * 3, this.cursorY, mcW, rowH, elem, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + mcW * 4, this.cursorY, mcW, rowH, appr, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + mcW * 5, this.cursorY, mcW, rowH, meth, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
       this.cursorY += rowH;
     }
     this.cursorY += 10;
@@ -1681,14 +1696,25 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
 
     // (A) Land Component
     this.drawHeadingText('(A) VALUATION OF LAND COMPONENT: -', TABLE_FONT_SIZE, 'left');
-    this.drawParagraph(`Adopted land rate for this case as on date                              = Rs.${fields.annexureAdoptedLandRate || fields.plotRate || '1800'}/-`);
+    const adoptedRate = fields.annexureAdoptedLandRate || fields.plotRate || '1800';
+    this.drawParagraph(`Adopted land rate for this case as on date                              = Rs.${adoptedRate}/-`);
     this.cursorY += 3;
 
-    const landCalc = `Multiplying by the area of the land Component ${fields.annexureLandArea || fields.propertyArea || '10,890 sqft.'} (x) Rs.${fields.annexureAdoptedLandRate || fields.plotRate || '1800'}/- = Rs.${fields.annexureLandValue || '1,96,02,000'}/-`;
+    const rawLandArea = fields.annexureLandArea || fields.propertyArea || fields.areaOfLand || '';
+    const parsedSqft = parseSqftFromArea(rawLandArea, fields.propertyAreaUnit, fields.propertyAreaValue);
+    const cleanAreaStr = parsedSqft > 0
+      ? `${formatCurrencyINR(parsedSqft)} sqft.`
+      : (rawLandArea ? (rawLandArea.includes('i.e.') ? rawLandArea.split('i.e.')[1].trim() : rawLandArea) : '10,890 sqft.');
+
+    const rateNum = parseNum(adoptedRate);
+    const calcValNum = (parsedSqft > 0 && rateNum > 0) ? Math.round(parsedSqft * rateNum) : parseNum(fields.annexureLandValue || fields.netValueLand);
+    const cleanLandVal = calcValNum > 0 ? formatCurrencyINR(calcValNum) : (fields.annexureLandValue || '1,96,02,000');
+
+    const landCalc = `Multiplying by the area of the land Component ${cleanAreaStr} (x) Rs.${adoptedRate}/- = Rs.${cleanLandVal}/-`;
     this.drawParagraph(landCalc, { bold: true });
     this.cursorY += 3;
 
-    this.drawParagraph(`Value of the land component as on date          =   Rs.${fields.annexureLandValue || '1,96,02,000'} /- ...............(A)`, { bold: true });
+    this.drawParagraph(`Value of the land component as on date          =   Rs.${cleanLandVal} /- ...............(A)`, { bold: true });
     this.cursorY += 8;
 
     // (B) DRC Building Table
@@ -1782,8 +1808,10 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const rawMktVal = fields.summaryMarketValue || (fields.totalMarketValue ? fields.totalMarketValue.replace(/^Rs\./i, '').replace(/\/-$/i, '') : '') || (fields.recommendedValueOfProperty ? fields.recommendedValueOfProperty.replace(/^Rs\./i, '').replace(/\/-$/i, '') : '') || '2,59,72,000';
     const mktNum = parseNum(rawMktVal);
     const finalMktValStr = mktNum > 0 ? `Rs.${formatCurrencyINR(mktNum)}/-` : `Rs.${rawMktVal}/-`;
-    const finalRealVal = fields.realisableValue || (mktNum > 0 ? `Rs.${formatCurrencyINR(Math.round(mktNum * 0.95))}/-` : 'Rs.2,46,73,400/-');
-    const finalDistVal = fields.distressSaleValue || (mktNum > 0 ? `Rs.${formatCurrencyINR(Math.round(mktNum * 0.90))}/-` : 'Rs.2,33,74,800/-');
+    const realPct = (fields.realisableValuePct !== undefined && fields.realisableValuePct !== '') ? parseFloat(fields.realisableValuePct) : 100;
+    const distPct = (fields.distressSalePct !== undefined && fields.distressSalePct !== '') ? parseFloat(fields.distressSalePct) : 100;
+    const finalRealVal = fields.realisableValue || (mktNum > 0 ? `Rs.${formatCurrencyINR(Math.round((mktNum * (!isNaN(realPct) ? realPct : 100)) / 100))}/-` : 'Rs.2,46,73,400/-');
+    const finalDistVal = fields.distressSaleValue || (mktNum > 0 ? `Rs.${formatCurrencyINR(Math.round((mktNum * (!isNaN(distPct) ? distPct : 100)) / 100))}/-` : 'Rs.2,33,74,800/-');
 
     this.drawParagraph(`Land Value:                                                          Rs.${fields.summaryLandValue || fields.annexureLandValue || '1,96,02,000'} /- ......(A)`, { bold: true });
     this.drawParagraph(`Value of the Building:                                                Rs.${fields.summaryBuildingValue || fields.drcTotalBuildingValue || '63,70,000'}/-.........(B)`, { bold: true });
@@ -1798,7 +1826,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
 
     // Opinion Statement
     this.checkPageBreak(50);
-    const opinion = fields.opinionStatement || `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS ${finalMktValStr} AND INSURABLE VALUE OF THE PROPERTY IS NOT IN OUR SCOPE.`;
+    const opinionVal = fields.opinionMarketValue || finalMktValStr;
+    const opinion = fields.opinionStatement || `AS A RESULT OF MY / OUR APPRAISAL AND ANALYSIS IT IS MY/OUR CONSIDERED OPINION THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IN THE PREVAILING CONDITION WITH AFORESAID SPECIFICATIONS IS ${opinionVal} AND INSURABLE VALUE OF THE PROPERTY IS NOT IN OUR SCOPE.`;
     this.drawParagraph(opinion, { bold: true, fontSize: TABLE_FONT_SIZE });
     this.cursorY += 10;
 
