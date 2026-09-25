@@ -1516,17 +1516,17 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     ];
 
     for (const r of ndmaRows) {
-      const h1 = this.cellHeight(r.l1, col1, { fontSize: FONT_SIZE_SMALL });
-      const h2 = this.cellHeight(r.v1, col2, { bold: true, fontSize: FONT_SIZE_SMALL });
-      const h3 = this.cellHeight(r.l2, col3, { fontSize: FONT_SIZE_SMALL });
-      const h4 = this.cellHeight(r.v2, col4, { bold: true, fontSize: FONT_SIZE_SMALL });
+      const h1 = this.cellHeight(r.l1, col1, { bold: true, fontSize: FONT_SIZE_SMALL });
+      const h2 = this.cellHeight(r.v1, col2, { bold: false, fontSize: FONT_SIZE_SMALL });
+      const h3 = this.cellHeight(r.l2, col3, { bold: true, fontSize: FONT_SIZE_SMALL });
+      const h4 = this.cellHeight(r.v2, col4, { bold: false, fontSize: FONT_SIZE_SMALL });
       const rowH = Math.max(TABLE_MIN_ROW_H, h1, h2, h3, h4);
 
       this.checkPageBreak(rowH);
-      this.drawCell(MARGIN_L, this.cursorY, col1, rowH, r.l1, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'left', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + col1, this.cursorY, col2, rowH, r.v1, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + col1 + col2, this.cursorY, col3, rowH, r.l2, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'left', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + col1 + col2 + col3, this.cursorY, col4, rowH, r.v2, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L, this.cursorY, col1, rowH, r.l1, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'left', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + col1, this.cursorY, col2, rowH, r.v1, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + col1 + col2, this.cursorY, col3, rowH, r.l2, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'left', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + col1 + col2 + col3, this.cursorY, col4, rowH, r.v2, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
       this.cursorY += rowH;
     }
 
