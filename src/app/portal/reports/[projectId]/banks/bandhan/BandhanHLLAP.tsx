@@ -672,9 +672,9 @@ export default function BandhanHLLAP({
           next.summaryLandValue = landFmt;
           changed = true;
         }
-        const areaStr = fields.propertyArea || fields.areaOfLand || '';
-        const calcFormula = areaStr && pRate > 0
-          ? `${areaStr} * Rs.${fields.plotRate || pRate}/- = Rs.${landFmt}/-`
+        const landSqft = parseSqftFromArea(fields.propertyArea || fields.areaOfLand, fields.propertyAreaUnit, fields.propertyAreaValue);
+        const calcFormula = landSqft > 0 && pRate > 0
+          ? `Rs.${fields.plotRate || pRate}/- * ${formatCurrencyINR(landSqft)} sqft = Rs.${landFmt}/-`
           : '';
         if (calcFormula && prev.plotValueBreakdown !== calcFormula) {
           next.plotValueBreakdown = calcFormula;
@@ -2289,111 +2289,96 @@ export default function BandhanHLLAP({
             <Section number={7} id="sec-valuation" title="Valuation Computations (Points 30–33)">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* 30. Recommended Valuation of the Property */}
-                <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex items-center justify-between pb-2 border-b border-indigo-200/60">
-                    <div className="flex items-center gap-2">
-                      <span className="font-sans font-semibold text-indigo-900 text-xs sm:text-sm">
-                        30. Recommended Valuation of the Property
-                      </span>
-                    </div>
-                    {(() => {
-                      const landArea = parseSqftFromArea(fields.propertyArea || fields.areaOfLand, fields.propertyAreaUnit, fields.propertyAreaValue);
-                      const rate = parseNum(fields.plotRate);
-                      const calcVal = (landArea > 0 && rate > 0) ? Math.round(((landArea * rate) + Number.EPSILON) * 100) / 100 : 0;
-                      return calcVal > 0 ? (
-                        <span className="text-[11px] font-semibold text-indigo-900 bg-white/90 px-2.5 py-0.5 rounded border border-indigo-200 shadow-2xs">
-                          ₹{formatCurrencyINR(calcVal)} ({formatIndianCurrency(calcVal)})
-                        </span>
-                      ) : null;
-                    })()}
+                <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-4 sm:p-5 shadow-xs space-y-3 sm:col-span-2">
+                  <div className="flex flex-wrap items-center justify-between pb-2 border-b border-indigo-200/60 gap-2">
+                    <span className="font-sans font-semibold text-indigo-900 text-xs sm:text-sm">
+                      30. Recommended Valuation of the Property
+                    </span>
+                    <span className="text-[10.5px] font-medium bg-white/90 text-indigo-800 px-2.5 py-0.5 rounded border border-indigo-200">
+                      ⚡ Rate × Land Area (sqft) = Final Value
+                    </span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                    <Field label="Area (Referenced from Pt 26 Total Land Area):">
-                      <input
-                        type="text"
-                        className={`${inputCls} bg-slate-100/90 text-slate-700 font-semibold cursor-not-allowed border-slate-300`}
-                        value={fields.propertyArea || fields.areaOfLand || 'NA'}
-                        readOnly
-                        disabled
-                      />
-                    </Field>
+                  {(() => {
+                    const landSqft = parseSqftFromArea(fields.propertyArea || fields.areaOfLand, fields.propertyAreaUnit, fields.propertyAreaValue);
+                    const rateNum = parseNum(fields.plotRate);
+                    const calcVal = (landSqft > 0 && rateNum > 0) ? Math.round(((landSqft * rateNum) + Number.EPSILON) * 100) / 100 : 0;
 
-                    <Field label="Rate of the Plot (Rs./sqft):">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.plotRate || ''}
-                        onChange={(e) => {
-                          const newRate = sanitizePositiveFloat(e.target.value);
-                          const areaStr = fields.propertyArea || fields.areaOfLand || '';
-                          const landArea = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
-                          const rateNum = parseNum(newRate);
-                          const calcVal = (landArea > 0 && rateNum > 0) ? Math.round(((landArea * rateNum) + Number.EPSILON) * 100) / 100 : 0;
-                          const calcFormula = (areaStr && rateNum > 0 && calcVal > 0)
-                            ? `${areaStr} * Rs.${newRate}/- = Rs.${formatCurrencyINR(calcVal)}/-`
-                            : '';
-                          setFields(prev => ({
-                            ...prev,
-                            plotRate: newRate,
-                            recommendedValuationFormula: calcFormula || prev.recommendedValuationFormula,
-                            netValueLand: calcVal > 0 ? String(calcVal) : prev.netValueLand,
-                            plotValueBreakdown: calcFormula || prev.plotValueBreakdown,
-                          }));
-                        }}
-                        disabled={isReadOnly}
-                      />
-                    </Field>
-
-                    <div className="sm:col-span-2">
-                      <div className="flex items-center justify-between mb-1.5">
-                        <label className="block text-xs font-semibold text-slate-700">
-                          30. Recommended Valuation Statement / Final Value:
-                        </label>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const isLocked = fields.recommendedValuationFormulaLocked !== false;
-                              if (!isLocked) {
-                                const areaStr = fields.propertyArea || fields.areaOfLand || '';
-                                const landArea = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
-                                const rateNum = parseNum(fields.plotRate);
-                                const calcVal = (landArea > 0 && rateNum > 0) ? Math.round(((landArea * rateNum) + Number.EPSILON) * 100) / 100 : 0;
-                                const calcFormula = (areaStr && rateNum > 0 && calcVal > 0)
-                                  ? `${areaStr} * Rs.${fields.plotRate}/- = Rs.${formatCurrencyINR(calcVal)}/-`
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr_auto_1.2fr] items-center gap-3 pt-1">
+                        {/* 1. Input Rate */}
+                        <div className="space-y-1">
+                          <label className="block text-xs font-semibold text-slate-700">
+                            Rate of Plot (₹ / sqft):
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-medium">₹</span>
+                            <input
+                              type="text"
+                              className={`${inputCls} pl-7 font-mono font-medium`}
+                              placeholder="e.g. 1800"
+                              value={fields.plotRate || ''}
+                              onChange={(e) => {
+                                const newRate = sanitizePositiveFloat(e.target.value);
+                                const newRateNum = parseNum(newRate);
+                                const newCalcVal = (landSqft > 0 && newRateNum > 0) ? Math.round(((landSqft * newRateNum) + Number.EPSILON) * 100) / 100 : 0;
+                                const cleanFormula = (newRateNum > 0 && landSqft > 0 && newCalcVal > 0)
+                                  ? `Rs.${newRate}/- * ${formatCurrencyINR(landSqft)} sqft = Rs.${formatCurrencyINR(newCalcVal)}/-`
                                   : '';
                                 setFields(prev => ({
                                   ...prev,
-                                  recommendedValuationFormulaLocked: true,
-                                  recommendedValuationFormula: calcFormula,
+                                  plotRate: newRate,
+                                  recommendedValuationFormula: cleanFormula,
+                                  netValueLand: newCalcVal > 0 ? String(newCalcVal) : prev.netValueLand,
+                                  plotValueBreakdown: cleanFormula || prev.plotValueBreakdown,
                                 }));
-                              } else {
-                                handleChange('recommendedValuationFormulaLocked', false);
-                              }
-                            }}
-                            className="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200 hover:bg-indigo-100 transition-colors"
-                          >
-                            {fields.recommendedValuationFormulaLocked !== false ? '🔒 Auto-calculated' : '🔓 Custom Mode'}
-                          </button>
+                              }}
+                              disabled={isReadOnly}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Multiplier symbol */}
+                        <div className="text-slate-400 font-bold text-xl text-center hidden md:block pt-5">×</div>
+
+                        {/* 2. Area Referenced (sqft only) */}
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-semibold text-slate-700">
+                              Land Area (sqft):
+                            </label>
+                            <span className="text-[10px] text-slate-500 font-medium">
+                              (Referenced from Pt 26)
+                            </span>
+                          </div>
+                          <input
+                            type="text"
+                            className={`${inputCls} bg-slate-100/90 text-slate-800 font-semibold font-mono cursor-not-allowed border-slate-300`}
+                            value={landSqft > 0 ? `${formatCurrencyINR(landSqft)} sqft` : (fields.propertyArea || fields.areaOfLand || '0 sqft')}
+                            readOnly
+                            disabled
+                          />
+                        </div>
+
+                        {/* Equals symbol */}
+                        <div className="text-slate-400 font-bold text-xl text-center hidden md:block pt-5">=</div>
+
+                        {/* 3. Calculated Final Value (Read Only) */}
+                        <div className="space-y-1">
+                          <label className="block text-xs font-semibold text-slate-700">
+                            Recommended Valuation (Final Value):
+                          </label>
+                          <input
+                            type="text"
+                            className={`${inputCls} bg-indigo-100/70 text-indigo-950 font-bold font-mono text-sm cursor-not-allowed border-indigo-300 shadow-2xs`}
+                            value={calcVal > 0 ? `Rs.${formatCurrencyINR(calcVal)}/-` : 'Rs.0/-'}
+                            readOnly
+                            disabled
+                          />
                         </div>
                       </div>
-                      <textarea
-                        rows={2}
-                        className={`${inputCls} ${fields.recommendedValuationFormulaLocked !== false ? 'bg-slate-50 font-medium' : ''}`}
-                        value={fields.recommendedValuationFormula || ''}
-                        onChange={(e) => {
-                          handleChange('recommendedValuationFormula', e.target.value);
-                          handleChange('recommendedValuationFormulaLocked', false);
-                        }}
-                        placeholder="e.g. (AC.0.300Decs) i.e. 13,068 sqft. * Rs.1800/- = Rs.2,35,22,400/-"
-                        disabled={isReadOnly}
-                      />
-                      <p className="text-[11px] text-slate-500 mt-1">
-                        This statement appears in Point 30 of the report. It automatically synchronizes from Land Area and Rate of the Plot.
-                      </p>
-                    </div>
-                  </div>
+                    );
+                  })()}
                 </div>
 
                 {/* 31. Recommended Rate & Value of Plot */}

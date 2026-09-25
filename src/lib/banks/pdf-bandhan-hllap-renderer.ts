@@ -813,8 +813,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const calcVal30 = (landArea30 > 0 && rate30 > 0) ? Math.round(((landArea30 * rate30) + Number.EPSILON) * 100) / 100 : 0;
 
     if (fields.recommendedValuationFormulaLocked !== false || !val30) {
-      if (areaStr30 && rate30 > 0 && calcVal30 > 0) {
-        val30 = `${areaStr30} * Rs.${fields.plotRate}/- = Rs.${formatCurrencyINR(calcVal30)}/-`;
+      if (landArea30 > 0 && rate30 > 0 && calcVal30 > 0) {
+        val30 = `Rs.${fields.plotRate || rate30}/- * ${formatCurrencyINR(landArea30)} sqft = Rs.${formatCurrencyINR(calcVal30)}/-`;
       } else if (calcVal30 > 0) {
         val30 = `Rs.${formatCurrencyINR(calcVal30)}/-`;
       } else if (fields.recommendedValueOfProperty) {
@@ -825,9 +825,13 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawBandhanRow('30.', 'Recommended valuation of the property', val30);
 
     // 31. Recommended rate & value of plot (unified Sl. No.)
+    const cleanPlotValue31 = (landArea30 > 0 && rate30 > 0 && calcVal30 > 0)
+      ? `Rs.${fields.plotRate || rate30}/- * ${formatCurrencyINR(landArea30)} sqft = Rs.${formatCurrencyINR(calcVal30)}/-`
+      : (fields.plotValueBreakdown || '');
+
     this.drawMultiRowQuestion('31.', [
       { pts: 'Recommended rate of the plot', rem: fields.plotRate ? `Rs.${fields.plotRate}/-` : '' },
-      { pts: 'Recommended value of the plot', rem: fields.plotValueBreakdown || '' },
+      { pts: 'Recommended value of the plot', rem: cleanPlotValue31 },
     ]);
 
     // 32
