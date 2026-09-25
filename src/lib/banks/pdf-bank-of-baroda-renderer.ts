@@ -1515,7 +1515,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       return;
     }
 
-    this.drawSectionHeader('MODEL CODE OF CONDUCT FOR VALUERS');
+    this.drawSectionHeader('MODEL CODE OF CONDUCT FOR VALUERS\n{Adopted in line with Companies (Registered Valuers and Valuation Rules, 2017)}', true, true);
 
     // Render as text paragraphs with headings
     const fontSize = FONT_SIZE_SMALL;
@@ -1525,22 +1525,23 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       const font = isBold || isHeading ? this.fontBold : this.fontRegular;
       const size = isHeading ? FONT_SIZE_HEADER : fontSize;
       const lines = this.wrapText(this.sanitizeText(text), CONTENT_W - pad * 2, size, isBold || isHeading);
-      const needed = lines.length * size * LINE_HEIGHT + (isHeading ? 10 : 4);
+      const needed = lines.length * size * LINE_HEIGHT + (isHeading ? 10 : 8);
       this.checkPageBreak(needed);
 
-      if (isHeading) this.cursorY += 6;
+      if (isHeading) this.cursorY += 8;
+      else this.cursorY += 6; // Add top padding before paragraph
 
       for (const line of lines) {
+        // Move cursor down by line height BEFORE drawing, so baseline is at the bottom of the line
+        this.cursorY += size * LINE_HEIGHT;
         const y = this.pdfY(this.cursorY);
         this.page.drawText(line, { x: MARGIN_L + pad, y, size, font, color: rgb(0, 0, 0) });
-        this.cursorY += size * LINE_HEIGHT;
       }
 
       if (isHeading) this.cursorY += 4;
-      else this.cursorY += 2;
+      else this.cursorY += 4; // Add bottom padding after paragraph
     };
 
-    renderParagraph('Adopted in line with Companies (Registered Valuers and Valuation Rules, 2017)', true);
     renderParagraph('All Valuers empanelled with bank shall strictly adhere to the following code of conduct:');
 
     const sections: { heading: string; items: { num: number; text: string }[] }[] = [
