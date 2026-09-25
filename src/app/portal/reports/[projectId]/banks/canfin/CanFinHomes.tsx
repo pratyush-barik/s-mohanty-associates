@@ -15,10 +15,34 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     { id: 'canfin-section-2', title: '2. General' },
     { id: 'canfin-section-3', title: '3. Details of the Property' },
     { id: 'canfin-section-4', title: '4. Surroundings, Accesibility & Proximity to Civil Ameneties' },
+    { id: 'canfin-section-5', title: '5. Survey of Construction' },
   ],
   defaultValues: {
     purpose: 'Housing Loan / Composite Loan',
     
+    // Section 5 Variables
+    canfinHomesNatureOfSoil: '',
+    canfinHomesNatureOfSoilNA: false,
+    canfinHomesTypeOfConstructionDropdown: 'RCC construction',
+    canfinHomesTypeOfConstruction: 'RCC construction',
+    canfinHomesQualityOfConstructionDropdown: 'Good',
+    canfinHomesQualityOfConstruction: 'Good',
+    canfinHomesExteriorsDropdown: 'Good',
+    canfinHomesExteriors: 'Good',
+    canfinHomesInteriorsDropdown: 'Good',
+    canfinHomesInteriors: 'Good',
+    canfinHomesTypeOfFinishing: '',
+    canfinHomesTypeOfFinishingNA: false,
+    canfinHomesTypeOfSpecificationUsed: '',
+    canfinHomesTypeOfSpecificationUsedNA: false,
+    canfinHomesAmenitiesProvided: '',
+    canfinHomesAmenitiesProvidedNA: false,
+    canfinHomesConstructionProgressUpTo: '',
+    canfinHomesConstructionProgressUpToNA: false,
+    canfinHomesStageOfConstruction: '',
+    canfinHomesEnableProjectedResidualLifeEdit: false,
+    canfinHomesProjectedResidualLife: '',
+
     // Section 4 Variables
     canfinHomesNearestRailwayStation: '',
     canfinHomesNearestBusStand: '',
@@ -1197,6 +1221,329 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                     />
                   </Field>
                 )}
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'canfin-section-5',
+      title: '5. SURVEY OF CONSTRUCTION',
+      number: 5,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        // Compute prefilled fields
+        const autoResidualAge = fields.canfinHomesResidualAgeOfTheProperty || '';
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-purple-200 bg-[#f3e5f5] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Materials & Finishing</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Nature of Soil</span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesNatureOfSoilNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesNatureOfSoilNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesNatureOfSoil', 'NA');
+                          else handleChange('canfinHomesNatureOfSoil', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                }>
+                  <input 
+                    className={`${inputCls} ${fields.canfinHomesNatureOfSoilNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    value={fields.canfinHomesNatureOfSoilNA ? 'NA' : (fields.canfinHomesNatureOfSoil || '')} 
+                    onChange={e => handleChange('canfinHomesNatureOfSoil', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesNatureOfSoilNA} 
+                  />
+                </Field>
+                <div className="flex flex-col gap-2">
+                  <Field label="Type of Construction">
+                    <select 
+                      className={inputCls} 
+                      value={fields.canfinHomesTypeOfConstructionDropdown || ''} 
+                      onChange={e => {
+                        handleChange('canfinHomesTypeOfConstructionDropdown', e.target.value);
+                        if (e.target.value !== 'Custom') {
+                          handleChange('canfinHomesTypeOfConstruction', e.target.value);
+                        } else {
+                          handleChange('canfinHomesTypeOfConstruction', '');
+                        }
+                      }} 
+                      disabled={isReadOnly}
+                    >
+                      <option value="RCC construction">RCC construction</option>
+                      <option value="GCI Sheet">GCI Sheet</option>
+                      <option value="Load bearing structure">Load bearing structure</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesTypeOfConstructionDropdown === 'Custom' && (
+                    <input 
+                      className={inputCls} 
+                      placeholder="Enter custom type..."
+                      value={fields.canfinHomesTypeOfConstruction || ''} 
+                      onChange={e => handleChange('canfinHomesTypeOfConstruction', e.target.value)} 
+                      disabled={isReadOnly} 
+                    />
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Field label="Quality of The Construction">
+                    <select 
+                      className={inputCls} 
+                      value={fields.canfinHomesQualityOfConstructionDropdown || ''} 
+                      onChange={e => {
+                        handleChange('canfinHomesQualityOfConstructionDropdown', e.target.value);
+                        if (e.target.value !== 'Custom') {
+                          handleChange('canfinHomesQualityOfConstruction', e.target.value);
+                        } else {
+                          handleChange('canfinHomesQualityOfConstruction', '');
+                        }
+                      }} 
+                      disabled={isReadOnly}
+                    >
+                      <option value="Good">Good</option>
+                      <option value="Fair">Fair</option>
+                      <option value="Poor">Poor</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesQualityOfConstructionDropdown === 'Custom' && (
+                    <input 
+                      className={inputCls} 
+                      placeholder="Enter custom quality..."
+                      value={fields.canfinHomesQualityOfConstruction || ''} 
+                      onChange={e => handleChange('canfinHomesQualityOfConstruction', e.target.value)} 
+                      disabled={isReadOnly} 
+                    />
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Field label="Exteriors">
+                    <select 
+                      className={inputCls} 
+                      value={fields.canfinHomesExteriorsDropdown || ''} 
+                      onChange={e => {
+                        handleChange('canfinHomesExteriorsDropdown', e.target.value);
+                        if (e.target.value !== 'Custom') {
+                          handleChange('canfinHomesExteriors', e.target.value);
+                        } else {
+                          handleChange('canfinHomesExteriors', '');
+                        }
+                      }} 
+                      disabled={isReadOnly}
+                    >
+                      <option value="Good">Good</option>
+                      <option value="Fair">Fair</option>
+                      <option value="Poor">Poor</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesExteriorsDropdown === 'Custom' && (
+                    <input 
+                      className={inputCls} 
+                      placeholder="Enter custom exteriors..."
+                      value={fields.canfinHomesExteriors || ''} 
+                      onChange={e => handleChange('canfinHomesExteriors', e.target.value)} 
+                      disabled={isReadOnly} 
+                    />
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Field label="Interiors">
+                    <select 
+                      className={inputCls} 
+                      value={fields.canfinHomesInteriorsDropdown || ''} 
+                      onChange={e => {
+                        handleChange('canfinHomesInteriorsDropdown', e.target.value);
+                        if (e.target.value !== 'Custom') {
+                          handleChange('canfinHomesInteriors', e.target.value);
+                        } else {
+                          handleChange('canfinHomesInteriors', '');
+                        }
+                      }} 
+                      disabled={isReadOnly}
+                    >
+                      <option value="Good">Good</option>
+                      <option value="Fair">Fair</option>
+                      <option value="Poor">Poor</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesInteriorsDropdown === 'Custom' && (
+                    <input 
+                      className={inputCls} 
+                      placeholder="Enter custom interiors..."
+                      value={fields.canfinHomesInteriors || ''} 
+                      onChange={e => handleChange('canfinHomesInteriors', e.target.value)} 
+                      disabled={isReadOnly} 
+                    />
+                  )}
+                </div>
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Type of finishing (Paint)</span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesTypeOfFinishingNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesTypeOfFinishingNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesTypeOfFinishing', 'NA');
+                          else handleChange('canfinHomesTypeOfFinishing', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                }>
+                  <input 
+                    className={`${inputCls} ${fields.canfinHomesTypeOfFinishingNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    value={fields.canfinHomesTypeOfFinishingNA ? 'NA' : (fields.canfinHomesTypeOfFinishing || '')} 
+                    onChange={e => handleChange('canfinHomesTypeOfFinishing', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesTypeOfFinishingNA} 
+                  />
+                </Field>
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Type of specification used</span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesTypeOfSpecificationUsedNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesTypeOfSpecificationUsedNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesTypeOfSpecificationUsed', 'NA');
+                          else handleChange('canfinHomesTypeOfSpecificationUsed', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                } className="md:col-span-2">
+                  <textarea 
+                    className={`${inputCls} ${fields.canfinHomesTypeOfSpecificationUsedNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    rows={3}
+                    value={fields.canfinHomesTypeOfSpecificationUsedNA ? 'NA' : (fields.canfinHomesTypeOfSpecificationUsed || '')} 
+                    onChange={e => handleChange('canfinHomesTypeOfSpecificationUsed', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesTypeOfSpecificationUsedNA} 
+                  />
+                </Field>
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Amenities provided in building/society</span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesAmenitiesProvidedNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesAmenitiesProvidedNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesAmenitiesProvided', 'NA');
+                          else handleChange('canfinHomesAmenitiesProvided', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                } className="md:col-span-2">
+                  <input 
+                    className={`${inputCls} ${fields.canfinHomesAmenitiesProvidedNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    value={fields.canfinHomesAmenitiesProvidedNA ? 'NA' : (fields.canfinHomesAmenitiesProvided || '')} 
+                    onChange={e => handleChange('canfinHomesAmenitiesProvided', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesAmenitiesProvidedNA} 
+                  />
+                </Field>
+              </div>
+            </div>
+
+            <div className="border border-purple-200 bg-[#f3e5f5] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Lifecycle & Progress</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Construction progress up to</span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesConstructionProgressUpToNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesConstructionProgressUpToNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesConstructionProgressUpTo', 'NA');
+                          else handleChange('canfinHomesConstructionProgressUpTo', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                }>
+                  <input 
+                    className={`${inputCls} ${fields.canfinHomesConstructionProgressUpToNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    value={fields.canfinHomesConstructionProgressUpToNA ? 'NA' : (fields.canfinHomesConstructionProgressUpTo || '')} 
+                    onChange={e => handleChange('canfinHomesConstructionProgressUpTo', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesConstructionProgressUpToNA} 
+                  />
+                </Field>
+                <Field label="Stage of construction in %">
+                  <input 
+                    type="number"
+                    className={inputCls} 
+                    value={fields.canfinHomesStageOfConstruction || ''} 
+                    onChange={e => handleChange('canfinHomesStageOfConstruction', e.target.value)} 
+                    disabled={isReadOnly} 
+                  />
+                </Field>
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>The Projected Residual Life of The Structure (in Years)</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <button
+                        type="button"
+                        onClick={() => handleChange('canfinHomesEnableProjectedResidualLifeEdit', !fields.canfinHomesEnableProjectedResidualLifeEdit)}
+                        disabled={isReadOnly}
+                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableProjectedResidualLifeEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableProjectedResidualLifeEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                      </button>
+                    </div>
+                  </div>
+                }>
+                  <div className="relative">
+                    <input 
+                      type="number"
+                      className={`${inputCls} pr-10 ${fields.canfinHomesEnableProjectedResidualLifeEdit ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`} 
+                      value={fields.canfinHomesEnableProjectedResidualLifeEdit ? (fields.canfinHomesProjectedResidualLife || '') : autoResidualAge} 
+                      onChange={e => handleChange('canfinHomesProjectedResidualLife', e.target.value)} 
+                      disabled={isReadOnly || !fields.canfinHomesEnableProjectedResidualLifeEdit} 
+                      title='>>Prefill from section 3, field "Residual age of the Property"<<'
+                    />
+                    <div
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
+                      title='>>Prefill from section 3, field "Residual age of the Property"<<'
+                    >
+                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnableProjectedResidualLifeEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
+                    </div>
+                  </div>
+                </Field>
               </div>
             </div>
           </div>
