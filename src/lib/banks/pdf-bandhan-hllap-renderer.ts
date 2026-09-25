@@ -1620,7 +1620,11 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
 
     // Basis & Method of Valuation
     this.drawHeadingText('BASIS OF VALUATION:', TABLE_FONT_SIZE, 'left');
-    this.drawParagraph(fields.annexureBasisOfValuation || 'HERE THE APPROVED VALUER SHOULD DISCUSS IN DETAIL HIS APPROACH TO VALUATION OF PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATIONS. ALSO, SUCH ASPECTS AS I.) SALE ABILITY. II.) LIKELY RENTAL VALUES IN FUTURE AND. ii.) ANY LIKELY INCOME IT MAY GENERATE MAY BE DISCUSSED.');
+    this.drawParagraph(
+      fields.annexureBasisOfValuation?.trim()
+        ? fields.annexureBasisOfValuation
+        : 'Here, the approved valuer should discuss in detail the approach to valuation of the property and indicate how the value has been arrived at, supported by necessary calculations. Also, such aspects as: (i) Saleability, (ii) Likely rental values in future, and (iii) Any likely income it may generate may be discussed.'
+    );
     this.cursorY += 8;
 
     this.drawHeadingText('METHOD OF VALUATION: -', TABLE_FONT_SIZE, 'left');
