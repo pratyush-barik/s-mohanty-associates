@@ -14,6 +14,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     'section-4', 'section-5', 'section-6', 'section-7', 'section-7b', 'section-7c', 
     'section-8', 'section-9', 'section-10', 'section-13', 'section-14', 'section-15'
   ],
+  hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   fieldLabels: {
     'section-11-title': '10. Photographs',
     'section-12-title': '11. Maps & Documents',
