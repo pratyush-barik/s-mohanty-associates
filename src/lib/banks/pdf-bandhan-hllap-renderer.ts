@@ -1482,14 +1482,14 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Section 41: NDMA Parameters Matrix (4-column table)
+   * Section 41: NDMA Disaster Management Parameters (4-column table)
    */
   private drawNDMAParameters(fields: BandhanHLLAPReportFields): void {
     const h = TABLE_MIN_ROW_H;
     this.checkPageBreak(h * 10);
 
     // Section Title
-    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, h + 2, '41. NDMA Parameters', {
+    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, h + 2, '41. NDMA Disaster Management Parameters', {
       bold: true,
       fontSize: TABLE_FONT_SIZE,
       align: 'center',
@@ -1502,16 +1502,16 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const col3 = 125;
     const col4 = CONTENT_W - col1 - col2 - col3; // ~119.28 pt
 
-    const defaultNdmaStructure = getNdmaStructureTypeForStructure(fields.typeOfStructure);
+    const defaultNdmaStructure = fields.typeOfStructure ? getNdmaStructureTypeForStructure(fields.typeOfStructure) : 'NA';
     const ndmaRows = [
-      { l1: 'Concrete Grade', v1: fields.ndmaConcreteGrade ?? 'M25', l2: 'Horizontal floor type', v2: fields.ndmaHorizontalFloorType ?? 'Beams and Slabs' },
-      { l1: 'Seismic Zone', v1: fields.ndmaSeismicZone ?? 'Zone-III', l2: 'Steel Grade', v2: fields.ndmaSteelGrade ?? 'FE - 450' },
-      { l1: 'Flood Prone Area', v1: fields.ndmaFloodProne ?? 'NO', l2: 'Urban Floods', v2: fields.ndmaUrbanFloods ?? 'NO' },
-      { l1: 'Environment Exposure\nCondition', v1: fields.ndmaEnvironmentExposure ?? 'Mild', l2: 'Soil Slope vulnerable to\nlandslide', v2: fields.ndmaSoilSlopeLandslide ?? 'Low Hazard Zone' },
-      { l1: 'Wind / Cyclones', v1: fields.ndmaWindCyclones ?? 'Low Damage Risk Zone', l2: 'Tsunami', v2: fields.ndmaTsunami ?? 'NO' },
-      { l1: 'Height of building above\nground level', v1: fields.ndmaHeightAboveGround ?? 'Less Than 15m Tall', l2: 'Coastal Regulatory Zone\n(CRZ)', v2: fields.ndmaCRZ ?? 'NA' },
-      { l1: 'Nature of Building\n/Wing/Tower', v1: fields.ndmaNatureOfBuilding ?? 'Standalone Structure', l2: 'Function of use', v2: fields.ndmaFunctionOfUse ?? 'Residential' },
-      { l1: 'Type of Foundation', v1: fields.ndmaFoundationType ?? 'Open Footing column', l2: 'Type of Structure', v2: fields.ndmaStructureType ?? defaultNdmaStructure },
+      { l1: 'Concrete Grade', v1: fields.ndmaConcreteGrade || 'NA', l2: 'Horizontal floor type', v2: fields.ndmaHorizontalFloorType || 'NA' },
+      { l1: 'Seismic Zone', v1: fields.ndmaSeismicZone || 'NA', l2: 'Steel Grade', v2: fields.ndmaSteelGrade || 'NA' },
+      { l1: 'Flood Prone Area', v1: fields.ndmaFloodProne || 'NA', l2: 'Urban Floods', v2: fields.ndmaUrbanFloods || 'NA' },
+      { l1: 'Environment Exposure\nCondition', v1: fields.ndmaEnvironmentExposure || 'NA', l2: 'Soil Slope vulnerable to\nlandslide', v2: fields.ndmaSoilSlopeLandslide || 'NA' },
+      { l1: 'Wind / Cyclones', v1: fields.ndmaWindCyclones || 'NA', l2: 'Tsunami', v2: fields.ndmaTsunami || 'NA' },
+      { l1: 'Height of building above\nground level', v1: fields.ndmaHeightAboveGround || 'NA', l2: 'Coastal Regulatory Zone\n(CRZ)', v2: fields.ndmaCRZ || 'NA' },
+      { l1: 'Nature of Building\n/Wing/Tower', v1: fields.ndmaNatureOfBuilding || 'NA', l2: 'Function of use', v2: fields.ndmaFunctionOfUse || fields.actualUsage || fields.approvedUsage || 'Residential' },
+      { l1: 'Type of Foundation', v1: fields.ndmaFoundationType || 'NA', l2: 'Type of Structure', v2: fields.ndmaStructureType || defaultNdmaStructure },
     ];
 
     for (const r of ndmaRows) {

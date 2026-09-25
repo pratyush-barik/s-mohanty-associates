@@ -496,22 +496,22 @@ export default function BandhanHLLAP({
       progressRecommendationPct: raw.progressRecommendationPct || '100%',
 
       // 9. NDMA Parameters (41)
-      ndmaConcreteGrade: raw.ndmaConcreteGrade !== undefined ? raw.ndmaConcreteGrade : 'M25',
-      ndmaHorizontalFloorType: raw.ndmaHorizontalFloorType !== undefined ? raw.ndmaHorizontalFloorType : 'Beams and Slabs',
-      ndmaSeismicZone: raw.ndmaSeismicZone !== undefined ? raw.ndmaSeismicZone : 'Zone-III',
-      ndmaSteelGrade: raw.ndmaSteelGrade !== undefined ? raw.ndmaSteelGrade : 'FE - 450',
-      ndmaFloodProne: raw.ndmaFloodProne !== undefined ? raw.ndmaFloodProne : 'NO',
-      ndmaUrbanFloods: raw.ndmaUrbanFloods !== undefined ? raw.ndmaUrbanFloods : 'NO',
-      ndmaEnvironmentExposure: raw.ndmaEnvironmentExposure !== undefined ? raw.ndmaEnvironmentExposure : 'Mild',
-      ndmaSoilSlopeLandslide: raw.ndmaSoilSlopeLandslide !== undefined ? raw.ndmaSoilSlopeLandslide : 'Low Hazard Zone',
-      ndmaWindCyclones: raw.ndmaWindCyclones !== undefined ? raw.ndmaWindCyclones : 'Low Damage Risk Zone',
-      ndmaTsunami: raw.ndmaTsunami !== undefined ? raw.ndmaTsunami : 'NO',
-      ndmaHeightAboveGround: raw.ndmaHeightAboveGround !== undefined ? raw.ndmaHeightAboveGround : 'Less Than 15m Tall',
+      ndmaConcreteGrade: raw.ndmaConcreteGrade !== undefined ? raw.ndmaConcreteGrade : 'NA',
+      ndmaHorizontalFloorType: raw.ndmaHorizontalFloorType !== undefined ? raw.ndmaHorizontalFloorType : 'NA',
+      ndmaSeismicZone: raw.ndmaSeismicZone !== undefined ? raw.ndmaSeismicZone : 'NA',
+      ndmaSteelGrade: raw.ndmaSteelGrade !== undefined ? raw.ndmaSteelGrade : 'NA',
+      ndmaFloodProne: raw.ndmaFloodProne !== undefined ? raw.ndmaFloodProne : 'NA',
+      ndmaUrbanFloods: raw.ndmaUrbanFloods !== undefined ? raw.ndmaUrbanFloods : 'NA',
+      ndmaEnvironmentExposure: raw.ndmaEnvironmentExposure !== undefined ? raw.ndmaEnvironmentExposure : 'NA',
+      ndmaSoilSlopeLandslide: raw.ndmaSoilSlopeLandslide !== undefined ? raw.ndmaSoilSlopeLandslide : 'NA',
+      ndmaWindCyclones: raw.ndmaWindCyclones !== undefined ? raw.ndmaWindCyclones : 'NA',
+      ndmaTsunami: raw.ndmaTsunami !== undefined ? raw.ndmaTsunami : 'NA',
+      ndmaHeightAboveGround: raw.ndmaHeightAboveGround !== undefined ? raw.ndmaHeightAboveGround : 'NA',
       ndmaCRZ: raw.ndmaCRZ !== undefined ? raw.ndmaCRZ : 'NA',
-      ndmaNatureOfBuilding: raw.ndmaNatureOfBuilding !== undefined ? raw.ndmaNatureOfBuilding : 'Standalone Structure',
-      ndmaFunctionOfUse: raw.ndmaFunctionOfUse !== undefined ? raw.ndmaFunctionOfUse : (raw.propertyType || raw.approvedUsage || 'Residential'),
-      ndmaFoundationType: raw.ndmaFoundationType !== undefined ? raw.ndmaFoundationType : 'Open Footing column',
-      ndmaStructureType: raw.ndmaStructureType !== undefined ? raw.ndmaStructureType : getNdmaStructureTypeForStructure(raw.typeOfStructure || 'RCC'),
+      ndmaNatureOfBuilding: raw.ndmaNatureOfBuilding !== undefined ? raw.ndmaNatureOfBuilding : 'NA',
+      ndmaFunctionOfUse: raw.ndmaFunctionOfUse !== undefined ? raw.ndmaFunctionOfUse : (raw.actualUsage || raw.approvedUsage || 'Residential'),
+      ndmaFoundationType: raw.ndmaFoundationType !== undefined ? raw.ndmaFoundationType : 'NA',
+      ndmaStructureType: raw.ndmaStructureType !== undefined ? raw.ndmaStructureType : (raw.typeOfStructure ? getNdmaStructureTypeForStructure(raw.typeOfStructure) : 'RCC Framed Structure'),
 
       // 10. Annexure-A
       annexureIntro: raw.annexureIntro || '',
@@ -3421,16 +3421,16 @@ export default function BandhanHLLAP({
             </Section>
 
             {/* 10. NDMA Parameters */}
-            <Section number={10} id="sec-ndma" title="NDMA Disaster Management Parameters (Point 41)">
+            <Section number={10} id="sec-ndma" title="41. NDMA Disaster Management Parameters">
               <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/35 p-4 sm:p-5 shadow-xs space-y-4">
                 {/* Header action buttons */}
                 <div className="flex flex-wrap items-center justify-between pb-3 border-b border-indigo-200/70 gap-2">
                   <div>
                     <span className="font-sans font-semibold text-indigo-950 text-xs sm:text-sm">
-                      41. NDMA Disaster Management Parameters (Matrix of 16 Parameters)
+                      41. NDMA Disaster Management Parameters
                     </span>
                     <p className="text-[11px] text-slate-500 pt-0.5">
-                      Click any option chip, sync from earlier sections, or type freely. Fields can also be left blank.
+                      Non-referenced fields default to NA. Only Pt 20 (Actual Usage) &amp; Pt 21 (Type of Structure) are referenced.
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -3439,28 +3439,28 @@ export default function BandhanHLLAP({
                       onClick={() => {
                         setFields(prev => ({
                           ...prev,
-                          ndmaConcreteGrade: 'M25',
-                          ndmaHorizontalFloorType: 'Beams and Slabs',
-                          ndmaSeismicZone: 'Zone-III',
-                          ndmaSteelGrade: 'FE - 450',
-                          ndmaFloodProne: 'NO',
-                          ndmaUrbanFloods: 'NO',
-                          ndmaEnvironmentExposure: 'Mild',
-                          ndmaSoilSlopeLandslide: 'Low Hazard Zone',
-                          ndmaWindCyclones: 'Low Damage Risk Zone',
-                          ndmaTsunami: 'NO',
-                          ndmaHeightAboveGround: 'Less Than 15m Tall',
+                          ndmaConcreteGrade: 'NA',
+                          ndmaHorizontalFloorType: 'NA',
+                          ndmaSeismicZone: 'NA',
+                          ndmaSteelGrade: 'NA',
+                          ndmaFloodProne: 'NA',
+                          ndmaUrbanFloods: 'NA',
+                          ndmaEnvironmentExposure: 'NA',
+                          ndmaSoilSlopeLandslide: 'NA',
+                          ndmaWindCyclones: 'NA',
+                          ndmaTsunami: 'NA',
+                          ndmaHeightAboveGround: 'NA',
                           ndmaCRZ: 'NA',
-                          ndmaNatureOfBuilding: 'Standalone Structure',
-                          ndmaFunctionOfUse: prev.propertyType || prev.approvedUsage || 'Residential',
-                          ndmaFoundationType: 'Open Footing column',
-                          ndmaStructureType: getNdmaStructureTypeForStructure(prev.typeOfStructure),
+                          ndmaNatureOfBuilding: 'NA',
+                          ndmaFunctionOfUse: prev.actualUsage || prev.approvedUsage || 'NA',
+                          ndmaFoundationType: 'NA',
+                          ndmaStructureType: prev.typeOfStructure ? getNdmaStructureTypeForStructure(prev.typeOfStructure) : 'NA',
                         }));
                       }}
                       className="text-xs text-indigo-700 hover:text-indigo-900 font-medium flex items-center gap-1 bg-white hover:bg-indigo-100/70 px-2.5 py-1 rounded-lg border border-indigo-200 shadow-2xs transition-colors cursor-pointer"
-                      title="Set all NDMA parameters to recommended defaults"
+                      title="Set non-referenced fields to NA and sync Pt 20 & Pt 21"
                     >
-                      ⚡ Set Recommended Defaults
+                      ⚡ Set All to NA
                     </button>
                     <button
                       type="button"
@@ -3500,14 +3500,14 @@ export default function BandhanHLLAP({
                       Concrete Grade
                     </label>
                     <div className="flex flex-wrap gap-1">
-                      {['M20', 'M25', 'M30', 'M15', 'NA'].map((opt) => (
+                      {['NA', 'M20', 'M25', 'M30', 'M15'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaConcreteGrade', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaConcreteGrade || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaConcreteGrade || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3521,40 +3521,25 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaConcreteGrade || ''}
                       onChange={(e) => handleChange('ndmaConcreteGrade', e.target.value)}
-                      placeholder="e.g. M25"
+                      placeholder="e.g. NA or M25"
                       disabled={isReadOnly}
                     />
                   </div>
 
                   {/* 2. Horizontal floor type */}
                   <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
-                    <div className="flex flex-wrap items-center justify-between gap-1">
-                      <label className="block text-xs font-semibold text-slate-800">
-                        Horizontal floor type
-                      </label>
-                      <div className="flex items-center gap-1.5 text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 rounded-md">
-                        <span>⚡ Ref: <strong>Pt 21 ({fields.typeOfStructure || 'RCC'})</strong></span>
-                        {!isReadOnly && fields.ndmaHorizontalFloorType !== 'Beams and Slabs' && (
-                          <button
-                            type="button"
-                            onClick={() => handleChange('ndmaHorizontalFloorType', 'Beams and Slabs')}
-                            className="ml-1 text-indigo-600 hover:text-indigo-900 underline font-medium cursor-pointer"
-                            title="Reset to Beams and Slabs"
-                          >
-                            ↺ Sync (Referenced from Pt 21)
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                    <label className="block text-xs font-semibold text-slate-800">
+                      Horizontal floor type
+                    </label>
                     <div className="flex flex-wrap gap-1">
-                      {['Beams and Slabs', 'Flat Slab', 'Precast Slab', 'Slab on Wall', 'NA'].map((opt) => (
+                      {['NA', 'Beams and Slabs', 'Flat Slab', 'Precast Slab', 'Slab on Wall'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaHorizontalFloorType', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaHorizontalFloorType || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaHorizontalFloorType || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3568,7 +3553,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaHorizontalFloorType || ''}
                       onChange={(e) => handleChange('ndmaHorizontalFloorType', e.target.value)}
-                      placeholder="e.g. Beams and Slabs"
+                      placeholder="e.g. NA or Beams and Slabs"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -3579,14 +3564,14 @@ export default function BandhanHLLAP({
                       Seismic Zone
                     </label>
                     <div className="flex flex-wrap gap-1">
-                      {['Zone-II', 'Zone-III', 'Zone-IV', 'Zone-V', 'NA'].map((opt) => (
+                      {['NA', 'Zone-II', 'Zone-III', 'Zone-IV', 'Zone-V'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaSeismicZone', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaSeismicZone || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaSeismicZone || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3600,7 +3585,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaSeismicZone || ''}
                       onChange={(e) => handleChange('ndmaSeismicZone', e.target.value)}
-                      placeholder="e.g. Zone-III"
+                      placeholder="e.g. NA or Zone-III"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -3611,14 +3596,14 @@ export default function BandhanHLLAP({
                       Steel Grade
                     </label>
                     <div className="flex flex-wrap gap-1">
-                      {['FE - 415', 'FE - 450', 'FE - 500', 'FE - 550', 'NA'].map((opt) => (
+                      {['NA', 'FE - 415', 'FE - 450', 'FE - 500', 'FE - 550'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaSteelGrade', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaSteelGrade || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaSteelGrade || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3632,7 +3617,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaSteelGrade || ''}
                       onChange={(e) => handleChange('ndmaSteelGrade', e.target.value)}
-                      placeholder="e.g. FE - 450"
+                      placeholder="e.g. NA or FE - 450"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -3643,14 +3628,14 @@ export default function BandhanHLLAP({
                       Flood Prone Area
                     </label>
                     <div className="flex flex-wrap gap-1">
-                      {['NO', 'YES', 'Low Risk', 'NA'].map((opt) => (
+                      {['NA', 'NO', 'YES', 'Low Risk'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaFloodProne', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaFloodProne || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaFloodProne || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3664,7 +3649,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaFloodProne || ''}
                       onChange={(e) => handleChange('ndmaFloodProne', e.target.value)}
-                      placeholder="e.g. NO"
+                      placeholder="e.g. NA or NO"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -3675,14 +3660,14 @@ export default function BandhanHLLAP({
                       Urban Floods
                     </label>
                     <div className="flex flex-wrap gap-1">
-                      {['NO', 'YES', 'Low Risk', 'NA'].map((opt) => (
+                      {['NA', 'NO', 'YES', 'Low Risk'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaUrbanFloods', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaUrbanFloods || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaUrbanFloods || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3696,7 +3681,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaUrbanFloods || ''}
                       onChange={(e) => handleChange('ndmaUrbanFloods', e.target.value)}
-                      placeholder="e.g. NO"
+                      placeholder="e.g. NA or NO"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -3707,14 +3692,14 @@ export default function BandhanHLLAP({
                       Environment Exposure Condition
                     </label>
                     <div className="flex flex-wrap gap-1">
-                      {['Mild', 'Moderate', 'Severe', 'Very Severe', 'Extreme'].map((opt) => (
+                      {['NA', 'Mild', 'Moderate', 'Severe', 'Very Severe', 'Extreme'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaEnvironmentExposure', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaEnvironmentExposure || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaEnvironmentExposure || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3728,7 +3713,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaEnvironmentExposure || ''}
                       onChange={(e) => handleChange('ndmaEnvironmentExposure', e.target.value)}
-                      placeholder="e.g. Mild"
+                      placeholder="e.g. NA or Mild"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -3739,14 +3724,14 @@ export default function BandhanHLLAP({
                       Soil Slope vulnerable to landslide
                     </label>
                     <div className="flex flex-wrap gap-1">
-                      {['Low Hazard Zone', 'Moderate Hazard', 'High Hazard', 'NA'].map((opt) => (
+                      {['NA', 'Low Hazard Zone', 'Moderate Hazard', 'High Hazard'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaSoilSlopeLandslide', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaSoilSlopeLandslide || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaSoilSlopeLandslide || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3760,7 +3745,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaSoilSlopeLandslide || ''}
                       onChange={(e) => handleChange('ndmaSoilSlopeLandslide', e.target.value)}
-                      placeholder="e.g. Low Hazard Zone"
+                      placeholder="e.g. NA or Low Hazard Zone"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -3771,14 +3756,14 @@ export default function BandhanHLLAP({
                       Wind / Cyclones
                     </label>
                     <div className="flex flex-wrap gap-1">
-                      {['Low Damage Risk Zone', 'Moderate Risk', 'High Damage Risk', 'NA'].map((opt) => (
+                      {['NA', 'Low Damage Risk Zone', 'Moderate Risk', 'High Damage Risk'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaWindCyclones', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaWindCyclones || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaWindCyclones || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3792,7 +3777,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaWindCyclones || ''}
                       onChange={(e) => handleChange('ndmaWindCyclones', e.target.value)}
-                      placeholder="e.g. Low Damage Risk Zone"
+                      placeholder="e.g. NA or Low Damage Risk Zone"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -3803,14 +3788,14 @@ export default function BandhanHLLAP({
                       Tsunami
                     </label>
                     <div className="flex flex-wrap gap-1">
-                      {['NO', 'YES', 'NA'].map((opt) => (
+                      {['NA', 'NO', 'YES'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaTsunami', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaTsunami || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaTsunami || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3824,40 +3809,25 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaTsunami || ''}
                       onChange={(e) => handleChange('ndmaTsunami', e.target.value)}
-                      placeholder="e.g. NO"
+                      placeholder="e.g. NA or NO"
                       disabled={isReadOnly}
                     />
                   </div>
 
                   {/* 11. Height of building above ground level */}
                   <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
-                    <div className="flex flex-wrap items-center justify-between gap-1">
-                      <label className="block text-xs font-semibold text-slate-800">
-                        Height of building above ground level
-                      </label>
-                      <div className="flex items-center gap-1.5 text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 rounded-md">
-                        <span>⚡ Ref: <strong>Pt 26 Floor Levels</strong></span>
-                        {!isReadOnly && (
-                          <button
-                            type="button"
-                            onClick={() => handleChange('ndmaHeightAboveGround', (fields.floors && fields.floors.length > 4) ? '15m - 30m' : 'Less Than 15m Tall')}
-                            className="ml-1 text-indigo-600 hover:text-indigo-900 underline font-medium cursor-pointer"
-                            title="Sync with Pt 26"
-                          >
-                            ↺ Sync (Referenced from Pt 26 Floor Levels)
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                    <label className="block text-xs font-semibold text-slate-800">
+                      Height of building above ground level
+                    </label>
                     <div className="flex flex-wrap gap-1">
-                      {['Less Than 15m Tall', '15m - 30m', 'Above 30m', 'NA'].map((opt) => (
+                      {['NA', 'Less Than 15m Tall', '15m - 30m', 'Above 30m'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaHeightAboveGround', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaHeightAboveGround || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaHeightAboveGround || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3871,7 +3841,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaHeightAboveGround || ''}
                       onChange={(e) => handleChange('ndmaHeightAboveGround', e.target.value)}
-                      placeholder="e.g. Less Than 15m Tall"
+                      placeholder="e.g. NA or Less Than 15m Tall"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -3889,7 +3859,7 @@ export default function BandhanHLLAP({
                           onClick={() => handleChange('ndmaCRZ', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaCRZ || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaCRZ || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3914,14 +3884,14 @@ export default function BandhanHLLAP({
                       Nature of Building /Wing/Tower
                     </label>
                     <div className="flex flex-wrap gap-1">
-                      {['Standalone Structure', 'Multi-Unit Building', 'Row House', 'Commercial Complex', 'NA'].map((opt) => (
+                      {['NA', 'Standalone Structure', 'Multi-Unit Building', 'Row House', 'Commercial Complex'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaNatureOfBuilding', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaNatureOfBuilding || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaNatureOfBuilding || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -3935,7 +3905,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaNatureOfBuilding || ''}
                       onChange={(e) => handleChange('ndmaNatureOfBuilding', e.target.value)}
-                      placeholder="e.g. Standalone Structure"
+                      placeholder="e.g. NA or Standalone Structure"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -3947,15 +3917,15 @@ export default function BandhanHLLAP({
                         Function of use
                       </label>
                       <div className="flex items-center gap-1.5 text-[11px] text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 rounded-md">
-                        <span>⚡ Ref: <strong>Pt 1 ({fields.propertyType || fields.approvedUsage || 'Residential'})</strong></span>
+                        <span>⚡ Ref: <strong>Pt 20 Actual Usage ({fields.actualUsage || fields.approvedUsage || 'Residential'})</strong></span>
                         {!isReadOnly && (
                           <button
                             type="button"
-                            onClick={() => handleChange('ndmaFunctionOfUse', fields.propertyType || fields.approvedUsage || 'Residential')}
+                            onClick={() => handleChange('ndmaFunctionOfUse', fields.actualUsage || fields.approvedUsage || 'Residential')}
                             className="ml-1 text-indigo-600 hover:text-indigo-900 underline font-medium cursor-pointer"
-                            title="Sync with Pt 1"
+                            title="Sync with Pt 20 Actual Usage"
                           >
-                            ↺ Sync (Referenced from Pt 1)
+                            ↺ Sync (From Pt 20)
                           </button>
                         )}
                       </div>
@@ -3993,14 +3963,14 @@ export default function BandhanHLLAP({
                       Type of Foundation
                     </label>
                     <div className="flex flex-wrap gap-1">
-                      {['Open Footing column', 'Isolated Footing', 'Raft Foundation', 'Pile Foundation', 'Strip Foundation', 'NA'].map((opt) => (
+                      {['NA', 'Open Footing column', 'Isolated Footing', 'Raft Foundation', 'Pile Foundation', 'Strip Foundation'].map((opt) => (
                         <button
                           key={opt}
                           type="button"
                           onClick={() => handleChange('ndmaFoundationType', opt)}
                           disabled={isReadOnly}
                           className={`text-[11px] px-2 py-0.5 rounded font-medium transition-colors ${
-                            (fields.ndmaFoundationType || '').toLowerCase() === opt.toLowerCase()
+                            (fields.ndmaFoundationType || 'NA').toLowerCase() === opt.toLowerCase()
                               ? 'bg-blue-600 text-white font-bold'
                               : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
                           }`}
@@ -4014,7 +3984,7 @@ export default function BandhanHLLAP({
                       className={inputCls}
                       value={fields.ndmaFoundationType || ''}
                       onChange={(e) => handleChange('ndmaFoundationType', e.target.value)}
-                      placeholder="e.g. Open Footing column"
+                      placeholder="e.g. NA or Open Footing column"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -4032,9 +4002,9 @@ export default function BandhanHLLAP({
                             type="button"
                             onClick={() => handleChange('ndmaStructureType', getNdmaStructureTypeForStructure(fields.typeOfStructure))}
                             className="ml-1 text-indigo-600 hover:text-indigo-900 underline font-medium cursor-pointer"
-                            title="Sync with Pt 21"
+                            title="Sync with Pt 21 Type of Structure"
                           >
-                            ↺ Sync (Referenced from Pt 21)
+                            ↺ Sync (From Pt 21)
                           </button>
                         )}
                       </div>
@@ -4369,36 +4339,38 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* 6. Basis & Method of Valuation */}
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3">
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <label className="text-xs font-bold text-slate-800 uppercase tracking-wide block">
-                        Basis of Valuation:
-                      </label>
-                      <span className="text-[10.5px] font-medium bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
-                        Optional / Custom Remarks
-                      </span>
-                    </div>
-                    <textarea
-                      rows={3}
-                      className={inputCls}
-                      value={fields.annexureBasisOfValuation || ''}
-                      placeholder="Here, the approved valuer should discuss in detail the approach to valuation of the property and indicate how the value has been arrived at, supported by necessary calculations. Also, such aspects as: (i) Saleability, (ii) Likely rental values in future, and (iii) Any likely income it may generate may be discussed."
-                      onChange={(e) => handleChange('annexureBasisOfValuation', e.target.value)}
-                      disabled={isReadOnly}
-                    />
+                {/* 6. Basis of Valuation (Parent Container enclosing Method of Valuation and Valuation Computation) */}
+                <div className="rounded-xl border border-sky-300/80 bg-sky-50/25 p-4 sm:p-5 shadow-xs space-y-4">
+                  {/* Basis of Valuation Header */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-sky-200/80 pb-2.5">
+                    <span className="text-xs sm:text-sm font-bold text-sky-950 uppercase tracking-wide">
+                      Basis of Valuation:
+                    </span>
+                    <span className="text-[10.5px] font-semibold bg-sky-100/80 text-sky-900 px-2.5 py-0.5 rounded border border-sky-200">
+                      Standard Statutory Valuation Framework
+                    </span>
                   </div>
 
-                  <div className="space-y-2 pt-2 border-t border-slate-100">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                        Method of Valuation (Classification, Ingredients &amp; Approach):
+                  {/* Read-Only Guidance Text Container */}
+                  <div className="p-3.5 bg-white rounded-xl border border-sky-200/70 text-xs text-slate-700 leading-relaxed shadow-2xs">
+                    <p className="italic text-slate-700">
+                      Here, the approved valuer should discuss in detail the approach to valuation of the property and indicate how the value has been arrived at, supported by necessary calculations. Also, such aspects as: (i) Saleability, (ii) Likely rental values in future, and (iii) Any likely income it may generate may be discussed.
+                    </p>
+                  </div>
+
+                  {/* Sub-Sub Container 1: METHOD OF VALUATION */}
+                  <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                      <span className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                        Method of Valuation: -
                       </span>
                       <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                        ⚡ Referenced from: Pt 18 (Property Type: {fields.propertyType || 'Residential'}), Pt 19/20 (Usage: {fields.approvedUsage || 'Residential'}) &amp; Pt 41 (Building Nature)
+                        ⚡ Referenced from: Pt 18 (Property Type: {fields.propertyType || 'Residential'}), Pt 20 (Actual Usage: {fields.actualUsage || fields.approvedUsage || 'Residential'})
                       </span>
                     </div>
+                    <p className="text-[11px] font-semibold text-slate-600 uppercase">
+                      Classification of Properties, Value Ingredients, Value Elements, Approach and Method of Valuation: -
+                    </p>
                     <div className="overflow-x-auto border border-slate-200 rounded-lg">
                       <table className="w-full text-xs">
                         <thead className="bg-slate-100 text-slate-700 font-semibold text-center">
@@ -4424,246 +4396,251 @@ export default function BandhanHLLAP({
                       </table>
                     </div>
                   </div>
-                </div>
 
-                {/* 7. Valuation Computation */}
-                <div className="rounded-xl border border-sky-200 bg-sky-50/30 p-4 shadow-2xs space-y-4">
-                  <span className="text-xs font-bold text-sky-950 uppercase tracking-wider block border-b border-sky-200/80 pb-2">
-                    Valuation Computation:
-                  </span>
-
-                  {/* (A) Land Component */}
-                  <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-slate-800">
-                        (A) Valuation of Land Component:
-                      </span>
-                      <span className="text-[10.5px] font-semibold bg-sky-50 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
-                        ⚡ Formula: Area (Pt 26) × Land Rate (Pt 30/31) = Land Value (Pt 30/31)
-                      </span>
-                    </div>
-                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs font-mono space-y-1">
-                      <div>Adopted land rate as on date = <strong>Rs.{fields.plotRate || '1800'}/-</strong></div>
-                      <div>Multiplying by area of land Component: <strong>{fields.propertyArea || '10,890 sqft.'}</strong> × <strong>Rs.{fields.plotRate || '1800'}/-</strong> = <strong className="text-sky-950">Rs.{formatCurrencyINR(parseNum(fields.netValueLand))}/-</strong></div>
-                      <div className="text-sm font-bold text-sky-950 pt-1 border-t border-slate-200">
-                        Value of the land component as on date (A) = Rs.{formatCurrencyINR(parseNum(fields.netValueLand))}/-
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* (B) DRC Table of Existing Building */}
-                  <div className="rounded-xl border border-slate-200 bg-white p-3.5 space-y-2.5">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-xs font-bold text-slate-800">
-                        (B) Depreciated Replacement Cost (D.R.C.) of Existing Building:
-                      </span>
-                      <span className="text-[10.5px] font-semibold bg-sky-50 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
-                        ⚡ Referenced from: Pt 26 (Floor Areas), Pt 29 (Building Life), Pt 32 (Cost of Construction) &amp; Pt 33 (Depreciation)
-                      </span>
-                    </div>
-
-                    <div className="overflow-x-auto border border-slate-200 rounded-lg">
-                      <table className="w-full text-xs">
-                        <thead className="bg-slate-100 text-slate-700">
-                          <tr>
-                            <th className="p-2 text-left">Particulars</th>
-                            <th className="p-2 text-left">Area (sqft)</th>
-                            <th className="p-2 text-left">Year</th>
-                            <th className="p-2 text-left">Life (Yrs)</th>
-                            <th className="p-2 text-left">Cost (Rs.)</th>
-                            <th className="p-2 text-left">GCRC</th>
-                            <th className="p-2 text-left">Dep. %</th>
-                            <th className="p-2 text-left">Value (Rs.)</th>
-                            {!isReadOnly && <th className="p-2 w-10 text-center">Action</th>}
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-200">
-                          {(fields.drcFloors || []).map((df, idx) => (
-                            <tr key={idx}>
-                              <td className="p-1.5">
-                                <input
-                                  type="text"
-                                  className={inputCls}
-                                  value={df.particulars || ''}
-                                  onChange={(e) => handleDRCFloorChange(idx, 'particulars', e.target.value)}
-                                  placeholder="e.g. Ground Floor"
-                                  disabled={isReadOnly}
-                                />
-                              </td>
-                              <td className="p-1.5">
-                                <input
-                                  type="text"
-                                  className={inputCls}
-                                  value={df.area || ''}
-                                  onChange={(e) => handleDRCFloorChange(idx, 'area', sanitizePositiveFloat(e.target.value))}
-                                  placeholder="e.g. 850"
-                                  disabled={isReadOnly}
-                                />
-                              </td>
-                              <td className="p-1.5">
-                                <input
-                                  type="text"
-                                  className={inputCls}
-                                  value={df.yearOfConst || ''}
-                                  onChange={(e) => handleDRCFloorChange(idx, 'yearOfConst', sanitizePositiveInt(e.target.value, 4))}
-                                  placeholder="e.g. 2020"
-                                  disabled={isReadOnly}
-                                />
-                              </td>
-                              <td className="p-1.5">
-                                <input
-                                  type="text"
-                                  className={inputCls}
-                                  value={df.lifeInYrs || '10'}
-                                  onChange={(e) => handleDRCFloorChange(idx, 'lifeInYrs', sanitizePositiveInt(e.target.value, 3))}
-                                  placeholder="e.g. 10"
-                                  disabled={isReadOnly}
-                                />
-                              </td>
-                              <td className="p-1.5">
-                                <input
-                                  type="text"
-                                  className={inputCls}
-                                  value={df.costOfConst || ''}
-                                  onChange={(e) => handleDRCFloorChange(idx, 'costOfConst', sanitizePositiveFloat(e.target.value))}
-                                  placeholder="e.g. 1800"
-                                  disabled={isReadOnly}
-                                />
-                              </td>
-                              <td className="p-1.5">
-                                <input
-                                  type="text"
-                                  className={inputCls}
-                                  value={df.gcrc || 'No'}
-                                  onChange={(e) => handleDRCFloorChange(idx, 'gcrc', e.target.value)}
-                                  placeholder="e.g. No"
-                                  disabled={isReadOnly}
-                                />
-                              </td>
-                              <td className="p-1.5">
-                                <input
-                                  type="text"
-                                  className={inputCls}
-                                  value={df.depreciation || '50'}
-                                  onChange={(e) => handleDRCFloorChange(idx, 'depreciation', sanitizePercentage(e.target.value))}
-                                  placeholder="e.g. 50"
-                                  disabled={isReadOnly}
-                                />
-                              </td>
-                              <td className="p-1.5">
-                                <input
-                                  type="text"
-                                  className={inputCls}
-                                  value={df.value || ''}
-                                  onChange={(e) => handleDRCFloorChange(idx, 'value', sanitizePositiveFloat(e.target.value))}
-                                  placeholder="Net Value"
-                                  disabled={isReadOnly}
-                                />
-                              </td>
-                              {!isReadOnly && (
-                                <td className="p-1.5 text-center">
-                                  <button
-                                    type="button"
-                                    onClick={() => removeDRCRow(idx)}
-                                    className="text-red-500 hover:text-red-700 font-bold px-2 py-1 cursor-pointer"
-                                  >
-                                    ×
-                                  </button>
-                                </td>
-                              )}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {!isReadOnly && (
-                      <button
-                        type="button"
-                        onClick={addDRCRow}
-                        className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded border border-slate-300 cursor-pointer"
-                      >
-                        + Add DRC Row
-                      </button>
-                    )}
-
-                    {/* Building Services Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
-                      <Field label="DRC of Water, Electrification & Building Services (Cost in Rs.):">
-                        <input
-                          type="text"
-                          className={inputCls}
-                          value={fields.drcServicesCost || 'Rs.0/-'}
-                          onChange={(e) => handleChange('drcServicesCost', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </Field>
-                      <Field label="DRC Services Net Value (Rs.):">
-                        <input
-                          type="text"
-                          className={inputCls}
-                          value={fields.drcServicesValue || 'Rs.0/-'}
-                          onChange={(e) => handleChange('drcServicesValue', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </Field>
-                    </div>
-
-                    {/* Total Building Value (B) */}
-                    <div className="p-3 bg-sky-50 rounded-lg border border-sky-200 flex items-center justify-between">
-                      <span className="text-xs font-bold text-sky-950">
-                        TOTAL Depreciated Replacement Cost of Building (B):
-                      </span>
-                      <span className="text-sm font-extrabold text-sky-950 font-mono">
-                        Rs.{fields.drcTotalBuildingValue || formatCurrencyINR(parseNum(fields.netValueBuilding))}/-
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Summary (Land + Building = Market Value) */}
-                  <div className="rounded-xl border border-sky-300 bg-white p-4 shadow-xs space-y-2.5">
+                  {/* Sub-Sub Container 2: VALUATION COMPUTATION */}
+                  <div className="rounded-xl border border-sky-200 bg-white p-4 shadow-2xs space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
-                      <span className="text-xs font-bold text-slate-900 uppercase">
-                        Market Value Summary (Land + Building):
+                      <span className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                        Valuation Computation: -
                       </span>
                       <span className="text-[10.5px] font-semibold bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded border border-emerald-200">
-                        ⚡ Synchronized with Pt 30/31 (Land), Pt 33 (Building), Pt 35 (Market Value) &amp; Pt 37 (Distress/Realizable)
+                        ⚡ Synchronized with Pt 30/31 (Land Rate &amp; Area), Pt 32 (DRC Rate) &amp; Pt 33 (Depreciation)
                       </span>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
-                        <span className="text-slate-500 font-semibold block">Land Value (A):</span>
-                        <span className="font-bold text-slate-900 font-mono text-sm">
-                          Rs.{formatCurrencyINR(parseNum(fields.netValueLand))}/-
+                    {/* (A) Land Component */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 space-y-2">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-slate-800">
+                          (A) Valuation of Land Component:
+                        </span>
+                        <span className="text-[10.5px] font-semibold bg-sky-50 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
+                          ⚡ Formula: Area (Pt 26) × Land Rate (Pt 30/31) = Land Value (Pt 30/31)
                         </span>
                       </div>
-                      <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
-                        <span className="text-slate-500 font-semibold block">Building Value (B):</span>
-                        <span className="font-bold text-slate-900 font-mono text-sm">
-                          Rs.{formatCurrencyINR(parseNum(fields.netValueBuilding))}/-
+                      <div className="p-3 bg-white rounded-lg border border-slate-200 text-xs font-mono space-y-1">
+                        <div>Adopted land rate as on date = <strong>Rs.{fields.plotRate || '1800'}/-</strong></div>
+                        <div>Multiplying by area of land Component: <strong>{fields.propertyArea || '10,890 sqft.'}</strong> × <strong>Rs.{fields.plotRate || '1800'}/-</strong> = <strong className="text-sky-950">Rs.{formatCurrencyINR(parseNum(fields.netValueLand))}/-</strong></div>
+                        <div className="text-sm font-bold text-sky-950 pt-1 border-t border-slate-200">
+                          Value of the land component as on date (A) = Rs.{formatCurrencyINR(parseNum(fields.netValueLand))}/-
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* (B) DRC Table of Existing Building */}
+                    <div className="rounded-xl border border-slate-200 bg-slate-50/60 p-3.5 space-y-2.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-xs font-bold text-slate-800">
+                          (B) Depreciated Replacement Cost (D.R.C.) of Existing Building:
+                        </span>
+                        <span className="text-[10.5px] font-semibold bg-sky-50 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
+                          ⚡ Referenced from: Pt 26 (Floor Areas), Pt 29 (Building Life), Pt 32 (Cost of Construction) &amp; Pt 33 (Depreciation)
                         </span>
                       </div>
-                      <div className="p-2.5 bg-sky-50 rounded border border-sky-200 sm:col-span-2 space-y-1">
-                        <span className="text-sky-900 font-bold block">Market Value (M.V.) as on date (A + B):</span>
-                        <span className="font-extrabold text-sky-950 font-mono text-base block">
-                          Rs.{formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/-
+
+                      <div className="overflow-x-auto border border-slate-200 rounded-lg bg-white">
+                        <table className="w-full text-xs">
+                          <thead className="bg-slate-100 text-slate-700">
+                            <tr>
+                              <th className="p-2 text-left">Particulars</th>
+                              <th className="p-2 text-left">Area (sqft)</th>
+                              <th className="p-2 text-left">Year</th>
+                              <th className="p-2 text-left">Life (Yrs)</th>
+                              <th className="p-2 text-left">Cost (Rs.)</th>
+                              <th className="p-2 text-left">GCRC</th>
+                              <th className="p-2 text-left">Dep. %</th>
+                              <th className="p-2 text-left">Value (Rs.)</th>
+                              {!isReadOnly && <th className="p-2 w-10 text-center">Action</th>}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-200">
+                            {(fields.drcFloors || []).map((df, idx) => (
+                              <tr key={idx}>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className={inputCls}
+                                    value={df.particulars || ''}
+                                    onChange={(e) => handleDRCFloorChange(idx, 'particulars', e.target.value)}
+                                    placeholder="e.g. Ground Floor"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className={inputCls}
+                                    value={df.area || ''}
+                                    onChange={(e) => handleDRCFloorChange(idx, 'area', sanitizePositiveFloat(e.target.value))}
+                                    placeholder="e.g. 850"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className={inputCls}
+                                    value={df.yearOfConst || ''}
+                                    onChange={(e) => handleDRCFloorChange(idx, 'yearOfConst', sanitizePositiveInt(e.target.value, 4))}
+                                    placeholder="e.g. 2020"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className={inputCls}
+                                    value={df.lifeInYrs || '10'}
+                                    onChange={(e) => handleDRCFloorChange(idx, 'lifeInYrs', sanitizePositiveInt(e.target.value, 3))}
+                                    placeholder="e.g. 10"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className={inputCls}
+                                    value={df.costOfConst || ''}
+                                    onChange={(e) => handleDRCFloorChange(idx, 'costOfConst', sanitizePositiveFloat(e.target.value))}
+                                    placeholder="e.g. 1800"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className={inputCls}
+                                    value={df.gcrc || 'No'}
+                                    onChange={(e) => handleDRCFloorChange(idx, 'gcrc', e.target.value)}
+                                    placeholder="e.g. No"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className={inputCls}
+                                    value={df.depreciation || '50'}
+                                    onChange={(e) => handleDRCFloorChange(idx, 'depreciation', sanitizePercentage(e.target.value))}
+                                    placeholder="e.g. 50"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                <td className="p-1.5">
+                                  <input
+                                    type="text"
+                                    className={inputCls}
+                                    value={df.value || ''}
+                                    onChange={(e) => handleDRCFloorChange(idx, 'value', sanitizePositiveFloat(e.target.value))}
+                                    placeholder="Net Value"
+                                    disabled={isReadOnly}
+                                  />
+                                </td>
+                                {!isReadOnly && (
+                                  <td className="p-1.5 text-center">
+                                    <button
+                                      type="button"
+                                      onClick={() => removeDRCRow(idx)}
+                                      className="text-red-500 hover:text-red-700 font-bold px-2 py-1 cursor-pointer"
+                                    >
+                                      ×
+                                    </button>
+                                  </td>
+                                )}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      {!isReadOnly && (
+                        <button
+                          type="button"
+                          onClick={addDRCRow}
+                          className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded border border-slate-300 cursor-pointer"
+                        >
+                          + Add DRC Row
+                        </button>
+                      )}
+
+                      {/* Building Services Row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200">
+                        <Field label="DRC of Water, Electrification & Building Services (Cost in Rs.):">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={fields.drcServicesCost || 'Rs.0/-'}
+                            onChange={(e) => handleChange('drcServicesCost', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </Field>
+                        <Field label="DRC Services Net Value (Rs.):">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={fields.drcServicesValue || 'Rs.0/-'}
+                            onChange={(e) => handleChange('drcServicesValue', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </Field>
+                      </div>
+
+                      {/* Total Building Value (B) */}
+                      <div className="p-3 bg-sky-50 rounded-lg border border-sky-200 flex items-center justify-between">
+                        <span className="text-xs font-bold text-sky-950">
+                          TOTAL Depreciated Replacement Cost of Building (B):
                         </span>
-                        <span className="text-slate-600 text-[11px] font-medium italic block">
-                          (Rupees {formatIndianCurrency(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))} Only)
+                        <span className="text-sm font-extrabold text-sky-950 font-mono">
+                          Rs.{fields.drcTotalBuildingValue || formatCurrencyINR(parseNum(fields.netValueBuilding))}/-
                         </span>
                       </div>
-                      <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
-                        <span className="text-slate-500 font-semibold block">Realizable Value (95%):</span>
-                        <span className="font-bold text-slate-900 font-mono">
-                          {fields.realisableValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.95))}/-`}
+                    </div>
+
+                    {/* Summary (Land + Building = Market Value) */}
+                    <div className="rounded-xl border border-sky-300 bg-white p-4 shadow-xs space-y-2.5">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                        <span className="text-xs font-bold text-slate-900 uppercase">
+                          Market Value Summary (Land + Building):
+                        </span>
+                        <span className="text-[10.5px] font-semibold bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded border border-emerald-200">
+                          ⚡ Synchronized with Pt 30/31 (Land), Pt 33 (Building), Pt 35 (Market Value) &amp; Pt 37 (Distress/Realizable)
                         </span>
                       </div>
-                      <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
-                        <span className="text-slate-500 font-semibold block">Distress Sale Value (90%):</span>
-                        <span className="font-bold text-slate-900 font-mono">
-                          {fields.distressSaleValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.90))}/-`}
-                        </span>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
+                          <span className="text-slate-500 font-semibold block">Land Value (A):</span>
+                          <span className="font-bold text-slate-900 font-mono text-sm">
+                            Rs.{formatCurrencyINR(parseNum(fields.netValueLand))}/-
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
+                          <span className="text-slate-500 font-semibold block">Building Value (B):</span>
+                          <span className="font-bold text-slate-900 font-mono text-sm">
+                            Rs.{formatCurrencyINR(parseNum(fields.netValueBuilding))}/-
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-sky-50 rounded border border-sky-200 sm:col-span-2 space-y-1">
+                          <span className="text-sky-900 font-bold block">Market Value (M.V.) as on date (A + B):</span>
+                          <span className="font-extrabold text-sky-950 font-mono text-base block">
+                            Rs.{formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/-
+                          </span>
+                          <span className="text-slate-600 text-[11px] font-medium italic block">
+                            (Rupees {formatIndianCurrency(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))} Only)
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
+                          <span className="text-slate-500 font-semibold block">Realizable Value (95%):</span>
+                          <span className="font-bold text-slate-900 font-mono">
+                            {fields.realisableValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.95))}/-`}
+                          </span>
+                        </div>
+                        <div className="p-2.5 bg-slate-50 rounded border border-slate-200 space-y-1">
+                          <span className="text-slate-500 font-semibold block">Distress Sale Value (90%):</span>
+                          <span className="font-bold text-slate-900 font-mono">
+                            {fields.distressSaleValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * 0.90))}/-`}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
