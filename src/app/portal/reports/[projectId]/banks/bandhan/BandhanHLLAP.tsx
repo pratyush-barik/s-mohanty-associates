@@ -4326,7 +4326,7 @@ export default function BandhanHLLAP({
                         </div>
 
                         {/* Clause v */}
-                        <div className="rounded-xl border border-slate-200/90 bg-white p-3.5 sm:p-4 shadow-2xs space-y-1.5">
+                        <div className="rounded-xl border border-slate-200/90 bg-white p-3.5 sm:p-4 shadow-2xs space-y-3">
                           <div className="flex flex-wrap items-center justify-between pb-1.5 border-b border-slate-100 gap-2">
                             <span className="font-sans font-bold text-slate-900 text-xs sm:text-sm">
                               v) Adopted Cost Assessment
@@ -4335,42 +4335,78 @@ export default function BandhanHLLAP({
                           <div className="text-xs text-slate-700 leading-relaxed font-normal">
                             Considering the above CPWD rate, CPWD specification and the specification of the house under consideration, cost of construction for the above building may reasonably be taken as under: -
                           </div>
+
+                          {/* Table inside Clause v */}
+                          {(() => {
+                            const structDefault = `${fields.typeOfStructure || 'RCC'} Roofing ${fields.floors && fields.floors.length > 1 ? 'All Floors' : 'Ground Floor'}`;
+                            const rawRate = (fields.rateOfCostOfConstruction || '').trim();
+                            let defaultCost = 'GF- Rs.1,600/- & FF- Rs.1,800/-';
+                            if (rawRate) {
+                              if (/^Rs\./i.test(rawRate) || rawRate.includes('per sqft') || rawRate.includes('/-')) {
+                                defaultCost = rawRate;
+                              } else {
+                                defaultCost = `Rs.${rawRate}/- per sqft.`;
+                              }
+                            }
+                            const rows = (fields.annexureAdoptedStructures && fields.annexureAdoptedStructures.length > 0)
+                              ? fields.annexureAdoptedStructures
+                              : [{ structure: structDefault, cost: defaultCost }];
+
+                            return (
+                              <div className="overflow-x-auto border border-slate-200 rounded-lg bg-white mt-1">
+                                <table className="w-full text-xs">
+                                  <thead className="bg-slate-100 text-slate-700 font-semibold">
+                                    <tr>
+                                      <th className="p-2 text-left w-1/2">Structures</th>
+                                      <th className="p-2 text-left w-1/2">Adopted Cost of Construction Rs. /Sqft. of BUA</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-slate-200">
+                                    {rows.map((row, idx) => {
+                                      const structVal = row.structure !== undefined && row.structure !== '' ? row.structure : structDefault;
+                                      const costVal = row.cost !== undefined && row.cost !== '' ? row.cost : defaultCost;
+                                      return (
+                                        <tr key={idx} className="bg-slate-50/60">
+                                          <td className="p-1.5">
+                                            <input
+                                              type="text"
+                                              className="w-full px-2 py-1 bg-white border border-slate-300 rounded text-xs font-medium text-slate-800 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                              value={structVal}
+                                              onChange={(e) => {
+                                                const next = [...rows];
+                                                next[idx] = { ...next[idx], structure: e.target.value };
+                                                handleChange('annexureAdoptedStructures', next);
+                                              }}
+                                              placeholder={structDefault}
+                                              disabled={isReadOnly}
+                                            />
+                                          </td>
+                                          <td className="p-1.5">
+                                            <input
+                                              type="text"
+                                              className="w-full px-2 py-1 bg-white border border-slate-300 rounded text-xs font-bold text-sky-950 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                              value={costVal}
+                                              onChange={(e) => {
+                                                const next = [...rows];
+                                                next[idx] = { ...next[idx], cost: e.target.value };
+                                                handleChange('annexureAdoptedStructures', next);
+                                              }}
+                                              placeholder={defaultCost}
+                                              disabled={isReadOnly}
+                                            />
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            );
+                          })()}
                         </div>
                       </div>
                     );
                   })()}
-                </div>
-
-                {/* 5. Adopted Cost of Construction Table */}
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-2">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
-                      Adopted Cost of Construction Table:
-                    </span>
-                    <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                      ⚡ Referenced from: Pt 21 (Type of Structure) &amp; Pt 32 (Adopted Rate of Construction)
-                    </span>
-                  </div>
-                  <div className="overflow-x-auto border border-slate-200 rounded-lg">
-                    <table className="w-full text-xs">
-                      <thead className="bg-slate-100 text-slate-700 font-semibold">
-                        <tr>
-                          <th className="p-2 text-left w-1/2">Structures</th>
-                          <th className="p-2 text-left w-1/2">Adopted Cost of Construction Rs. /Sqft. of BUA</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className="p-2 font-medium text-slate-800 bg-slate-50">
-                            {fields.typeOfStructure || 'RCC'} Roofing {fields.floors && fields.floors.length > 1 ? 'All Floors' : 'Ground Floor'}
-                          </td>
-                          <td className="p-2 font-bold text-sky-950 bg-slate-50">
-                            {fields.rateOfCostOfConstruction ? `Rs.${fields.rateOfCostOfConstruction}/- per sqft.` : 'GF- Rs.1,600/- & FF- Rs.1,800/-'}
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
                 </div>
 
                 {/* 6. Basis of Valuation (Parent Container enclosing Method of Valuation and Valuation Computation) */}

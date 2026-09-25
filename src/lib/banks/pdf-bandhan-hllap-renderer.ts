@@ -1607,17 +1607,32 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawCell(MARGIN_L + colStruc, this.cursorY, colCost, headerH, 'Adopted Cost of Construction Rs. /Sqft. of BUA', { bold: true, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
     this.cursorY += headerH;
 
+    const rawRate = (fields.rateOfCostOfConstruction || '').trim();
+    let defaultCost = 'GF- Rs.1,600/- & FF- Rs.1,800/-';
+    if (rawRate) {
+      if (/^Rs\./i.test(rawRate) || rawRate.includes('per sqft') || rawRate.includes('/-')) {
+        defaultCost = rawRate;
+      } else {
+        defaultCost = `Rs.${rawRate}/- per sqft.`;
+      }
+    }
+    const defaultStruct = `${structName} Roofing ${fields.floors && fields.floors.length > 1 ? 'All Floors' : 'Ground Floor'}`;
+
     const adopted = (fields.annexureAdoptedStructures && fields.annexureAdoptedStructures.length > 0)
       ? fields.annexureAdoptedStructures
-      : [{ structure: `${structName} Roofing Ground Floor`, cost: fields.rateOfCostOfConstruction ? `GF- Rs.${fields.rateOfCostOfConstruction}/-` : 'GF- Rs.1,600/- & FF- Rs.1,800/-' }];
+      : [{ structure: defaultStruct, cost: defaultCost }];
 
     for (const a of adopted) {
-      const rh1 = this.cellHeight(a.structure, colStruc, { fontSize: TABLE_FONT_SIZE });
-      const rh2 = this.cellHeight(a.cost, colCost, { fontSize: TABLE_FONT_SIZE });
+      const sText = a.structure || defaultStruct;
+      let cText = a.cost || defaultCost;
+      cText = cText.replace(/^Rs\.Rs\./i, 'Rs.').replace(/\/-\s*per\s*sqft\/?-\s*per\s*sqft\.?/i, '/- per sqft.');
+
+      const rh1 = this.cellHeight(sText, colStruc, { fontSize: TABLE_FONT_SIZE });
+      const rh2 = this.cellHeight(cText, colCost, { fontSize: TABLE_FONT_SIZE });
       const rowH = Math.max(TABLE_MIN_ROW_H, rh1, rh2);
       this.checkPageBreak(rowH);
-      this.drawCell(MARGIN_L, this.cursorY, colStruc, rowH, a.structure, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + colStruc, this.cursorY, colCost, rowH, a.cost, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L, this.cursorY, colStruc, rowH, sText, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + colStruc, this.cursorY, colCost, rowH, cText, { bold: false, fontSize: TABLE_FONT_SIZE, align: 'center', vAlign: 'middle' });
       this.cursorY += rowH;
     }
     this.cursorY += 10;
