@@ -1285,7 +1285,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.checkPageBreak(50);
     this.drawTextAt('REMARKS', MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     const tw = this.fontBold.widthOfTextAtSize('REMARKS', FONT_SIZE);
-    this.drawHLine(MARGIN_L, MARGIN_L + tw, this.cursorY + 2);
+    this.drawHLine(MARGIN_L, MARGIN_L + tw, this.cursorY + FONT_SIZE + 2);
     this.cursorY += 15;
 
     const propLegal = this.fv('bobPropertyLegalRemarks');
@@ -1346,6 +1346,9 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
     this.cursorY += 12;
     this.drawTextAt(`(Name of the Branch Manager with Official seal)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
+    
+    // Add padding before Section 8
+    this.cursorY += 40;
   }
 
   // ═══════════════════════════════════════════════════════════════════════
