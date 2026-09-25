@@ -2966,10 +2966,10 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white rounded-lg p-4 border border-gray-100">
                 <Field label="I Mr.">
-                  <input className={inputCls} value={fields.bobAffirmationName || 'Satyajit Mohanty'} onChange={e => handleChange('bobAffirmationName', e.target.value)} disabled={isReadOnly} placeholder="Full Name" />
+                  <input className={inputCls} value={fields.bobAffirmationName ?? 'Satyajit Mohanty'} onChange={e => handleChange('bobAffirmationName', e.target.value)} disabled={isReadOnly} placeholder="Full Name" />
                 </Field>
                 <Field label="S/o: Mr">
-                  <input className={inputCls} value={fields.bobAffirmationFatherName || 'Nityananda Mohanty'} onChange={e => handleChange('bobAffirmationFatherName', e.target.value)} disabled={isReadOnly} placeholder="Father's Name" />
+                  <input className={inputCls} value={fields.bobAffirmationFatherName ?? 'Nityananda Mohanty'} onChange={e => handleChange('bobAffirmationFatherName', e.target.value)} disabled={isReadOnly} placeholder="Father's Name" />
                 </Field>
               </div>
 
@@ -3014,7 +3014,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <PrefillField label="Date:" value={fields.bobAsOnDate || ''} hoverText='Prefill from section 2, field "As On Date"' />
                 <Field label="Place:">
-                  <input className={inputCls} value={fields.bobAffirmationPlace || 'Bhubaneswar'} onChange={e => handleChange('bobAffirmationPlace', e.target.value)} disabled={isReadOnly} />
+                  <input className={inputCls} value={fields.bobAffirmationPlace ?? 'Bhubaneswar'} onChange={e => handleChange('bobAffirmationPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
               <Field label="Signature (Name and Official seal of the Approved Valuer)">
@@ -3077,7 +3077,9 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
         const qAnswers: string[] = fields.bobDeclarationQuestionnaire || new Array(11).fill('');
 
         const getDisplayValue = (idx: number) => {
-          if (qAnswers[idx]) return qAnswers[idx];
+          const val = qAnswers[idx];
+          if (val === '__CLEARED__') return '';
+          if (val && val !== '') return val;
           if (idx === 0) return generatedBackground;
           if (idx === 1) return generatedPurpose;
           if (idx === 4) return generatedDates;
@@ -3117,7 +3119,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                             value={getDisplayValue(idx)}
                             onChange={e => {
                               const arr = [...qAnswers];
-                              arr[idx] = e.target.value;
+                              arr[idx] = e.target.value === '' ? '__CLEARED__' : e.target.value;
                               handleChange('bobDeclarationQuestionnaire', arr);
                             }}
                             disabled={isReadOnly}

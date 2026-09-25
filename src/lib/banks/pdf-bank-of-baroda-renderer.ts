@@ -1394,7 +1394,9 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const qAnswers: string[] = this.fields.bobDeclarationQuestionnaire || [];
     
     const getDisplayValue = (idx: number) => {
-      if (qAnswers[idx]) return qAnswers[idx];
+      const val = qAnswers[idx];
+      if (val === '__CLEARED__') return '';
+      if (val && val !== '') return val;
       if (idx === 0) return generatedBackground;
       if (idx === 1) return generatedPurpose;
       if (idx === 4) return generatedDates;
@@ -1421,8 +1423,8 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   private drawBobSection8() {
     this.drawSectionHeader('DECLARATION FROM VALUERS (AFFIRMATIONS)');
 
-    const name = this.fv('bobAffirmationName') || 'Satyajit Mohanty';
-    const father = this.fv('bobAffirmationFatherName') || 'Nityananda Mohanty';
+    const name = this.fields.bobAffirmationName ?? (this.fv('bobAffirmationName') || 'Satyajit Mohanty');
+    const father = this.fields.bobAffirmationFatherName ?? (this.fv('bobAffirmationFatherName') || 'Nityananda Mohanty');
     this.cursorY += 2;
     const introText = `I Mr. ${name}, S/o: Mr. ${father} do hereby solemnly affirm and state that:`;
     const introH = this.drawWrappedTextAt(introText, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
@@ -1492,7 +1494,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.cursorY += 10;
     this.checkPageBreak(60);
     const affirmDate = formatReportDate(this.fv('bobAsOnDate'));
-    const affirmPlace = this.fv('bobAffirmationPlace') || 'Bhubaneswar';
+    const affirmPlace = this.fields.bobAffirmationPlace ?? (this.fv('bobAffirmationPlace') || 'Bhubaneswar');
     
     const sigBlockW = 200;
     const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
