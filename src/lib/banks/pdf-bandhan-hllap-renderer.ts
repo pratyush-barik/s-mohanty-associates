@@ -508,6 +508,7 @@ export interface BandhanHLLAPReportFields {
   valuerIovRegNo?: string;
   valuerWealthTaxRegNo?: string;
   valuerReportPagesCount?: string;
+  valuerReportPagesCountLocked?: boolean;
   declarationDate?: string;
 
   // Documents & Enclosures
@@ -1867,7 +1868,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const bhuPages = (fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : 1;
     const guidePages = (fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : 1;
     const computedPages = String(7 + photoPages + rorPages + locPages + bhuPages + guidePages);
-    const reportPagesCount = fields.valuerReportPagesCount || computedPages;
+    const reportPagesCount = fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount || computedPages) : computedPages;
 
     const defaultDeclarations = [
       'A. THE INFORMATION FURNISHED ABOVE IS TRUE TO THE BEST OF MY / OUR KNOWLEDGE AND BELIEF.',

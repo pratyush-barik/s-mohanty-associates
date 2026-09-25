@@ -627,7 +627,8 @@ export default function BandhanHLLAP({
       valuerQualification: raw.valuerQualification || 'B.Tech (Civil), M.Val (RE)',
       valuerIovRegNo: raw.valuerIovRegNo || '107/2016-17, CAT-1',
       valuerWealthTaxRegNo: raw.valuerWealthTaxRegNo || 'CCIT/BBSR/Tech-10/2017-18',
-      valuerReportPagesCount: raw.valuerReportPagesCount || '12',
+      valuerReportPagesCount: raw.valuerReportPagesCountLocked ? (raw.valuerReportPagesCount || '') : '',
+      valuerReportPagesCountLocked: Boolean(raw.valuerReportPagesCountLocked),
       declarationDate: raw.declarationDate || formatReportDate(new Date()),
 
       // Images / Enclosures
@@ -5044,7 +5045,7 @@ export default function BandhanHLLAP({
                       'L. WE ARE NEITHER THE AUDITORS TO THE OWNER OF THE PROPERTY (IES) NOR THEIR FIRMS, ASSOCIATES NOR ARE WE THE STATUTORY AUDITORS TO THE BRANCH FROM WHICH THE LOAN IS PROPOSED TO BE AVAILED / ALREADY AVAILED.',
                       `M. IT IS HEREBY CERTIFIED THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IS, IN MY OPINION/OUR OPINION Rs.${formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/- AND THE ESTIMATED REALIZABLE VALUE ${fields.realisableValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * ((fields.realisableValuePct !== undefined && fields.realisableValuePct !== null && fields.realisableValuePct !== '') ? parseNum(fields.realisableValuePct) : 100) / 100))}/-`} UNDER DISTRESS SALE WILL BE ${fields.distressSaleValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * ((fields.distressSalePct !== undefined && fields.distressSalePct !== null && fields.distressSalePct !== '') ? parseNum(fields.distressSalePct) : 100) / 100))}/-`} -VALUE VARIES WITH THE PURPOSE AND DATE. THIS REPORT IS NOT TO BE REFERRED FOR THE PURPOSE IS DIFFERENT OTHER THAN VALUATION OF THE MORTGAGED PROPERTY.`,
                       'N. I HAVE NOT BEEN DISMISSED OR REMOVED FROM GOVT, SERVICE OR CONVICTED OF AN OFFENCE CONNECTED WITH ANY PROCEEDINGS OF INCOME TAX ACT, WEALTH TAX ACT OR GIFT TAX ACT OR HAVE BEEN BLACKLISTED BY ANY BANK/FINANCIAL INSTITUTION/ GOVT. DEPARTMENT/PUBLIC SECTORE ENTEREPRISE/BODY CORPORATE ETC.',
-                      `O. THIS VALUATION REPORT CONTAINS ${fields.valuerReportPagesCount || dynamicTotalPages} PAGES ONLY.`,
+                      `O. THIS VALUATION REPORT CONTAINS ${fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount || dynamicTotalPages) : dynamicTotalPages} PAGES ONLY.`,
                       'P. PHOTOGRAPHS OF THE ASSET VALUED ENCLOSED.',
                     ].map((item, idx) => (
                       <div key={idx} className="p-2 rounded bg-slate-50 border border-slate-150 leading-relaxed font-sans">
@@ -5067,7 +5068,7 @@ export default function BandhanHLLAP({
                         <input
                           type="text"
                           className={inputCls}
-                          value={fields.valuerReportPagesCount || dynamicTotalPages}
+                          value={fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount ?? '') : dynamicTotalPages}
                           onChange={(e) => {
                             const val = sanitizePositiveInt(e.target.value, 3);
                             handleChange('valuerReportPagesCount', val);
@@ -5076,18 +5077,22 @@ export default function BandhanHLLAP({
                           placeholder={dynamicTotalPages}
                           disabled={isReadOnly}
                         />
-                        {fields.valuerReportPagesCountLocked && (
+                        {fields.valuerReportPagesCountLocked ? (
                           <button
                             type="button"
                             onClick={() => {
                               handleChange('valuerReportPagesCountLocked', false);
-                              handleChange('valuerReportPagesCount', dynamicTotalPages);
+                              handleChange('valuerReportPagesCount', '');
                             }}
-                            className="text-[11px] font-semibold text-sky-600 hover:text-sky-800 bg-sky-50 border border-sky-200 px-2 py-1.5 rounded cursor-pointer shrink-0"
-                            title="Reset to Dynamic Auto Count"
+                            className="text-[11px] font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 border border-amber-300 px-2 py-1.5 rounded cursor-pointer shrink-0 flex items-center gap-1"
+                            title="Custom count entered. Click to reset to Auto Dynamic Count"
                           >
-                            ↺ Auto ({dynamicTotalPages})
+                            🔓 Custom (Reset to Auto: {dynamicTotalPages})
                           </button>
+                        ) : (
+                          <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded shrink-0 flex items-center gap-1">
+                            ⚡ Auto: {dynamicTotalPages} Pages
+                          </span>
                         )}
                       </div>
                     </Field>
