@@ -1371,11 +1371,41 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       'Caveats, limitations and disclaimers to the extent they explain or elucidate the limitations faced by valuers.',
     ];
 
+    const vName = this.fv('bobTSNoVillage') || '[Village]';
+    const pOffice = this.fv('bobWardTaluka') || '[Post Office]';
+    const dName = this.fv('bobMandalDistrict') || '[District]';
+    const generatedBackground = `The property is situated in a good developed Residential area of ${vName}, ${pOffice},${dName}`;
+
+    const bobPurpose = this.fv('bobPurposeOfValuation');
+    const generatedPurpose = bobPurpose ? `${bobPurpose}. The Manager of above said bank is the Appointing authority.` : 'The Manager of above said bank is the Appointing authority.';
+    
+    const fDate = (dStr: string) => {
+      if (!dStr) return '';
+      const parts = dStr.split('-');
+      if (parts.length === 3 && parts[0].length === 4) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      if (dStr.includes('/')) return dStr;
+      return dStr;
+    };
+
+    const appDateStr = fDate(this.fv('bobQuestionnaireAppointmentDate'));
+    const valDateStr = fDate(this.fv('bobDateOfInspection'));
+    const repDateStr = fDate(this.fv('bobAsOnDate'));
+    const generatedDates = `Date of Appointment: ${appDateStr}\nValuation Date: ${valDateStr}\nDate of Report: ${repDateStr}`;
+
     const qAnswers: string[] = this.fields.bobDeclarationQuestionnaire || [];
+    
+    const getDisplayValue = (idx: number) => {
+      if (qAnswers[idx]) return qAnswers[idx];
+      if (idx === 0) return generatedBackground;
+      if (idx === 1) return generatedPurpose;
+      if (idx === 4) return generatedDates;
+      return '';
+    };
+
     const tableRows: string[][] = questionnaireItems.map((item, idx) => [
       String(idx + 1),
       item,
-      qAnswers[idx] || '',
+      getDisplayValue(idx),
     ]);
 
     this.drawTable(
@@ -1482,6 +1512,10 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   // SECTION 10: MODEL CODE OF CONDUCT FOR VALUERS
   // ═══════════════════════════════════════════════════════════════════════
   private drawBobSection10() {
+    if (this.fields.bobCodeOfConductAcknowledged === false) {
+      return;
+    }
+
     this.drawSectionHeader('MODEL CODE OF CONDUCT FOR VALUERS');
 
     // Render as text paragraphs with headings
@@ -1567,17 +1601,32 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       }
     }
 
-    // Acknowledgment
-    this.cursorY += 10;
-    const acknowledged = this.fields.bobCodeOfConductAcknowledged ? 'Yes' : 'No';
-    this.drawSimpleRow('Acknowledged (Items 1-30)', acknowledged);
+    // Custom sign-off block matching @image5
+    this.cursorY += 20;
+    this.checkPageBreak(60);
 
-    this.drawKeyValueRow([
-      { label: 'Date:', value: formatReportDate(this.fv('bobDateOfValuationMade')), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
-      { label: 'Place:', value: this.fv('bobCodeOfConductPlace'), labelWidth: CONTENT_W * 0.15, valueWidth: CONTENT_W * 0.35 },
-    ]);
-    this.cursorY += 5;
-    this.drawSimpleRow('Signature of Approved Valuer', '(Signature & Official seal)');
+    const fDate = (dStr: string) => {
+      if (!dStr) return '';
+      const parts = dStr.split('-');
+      if (parts.length === 3 && parts[0].length === 4) return `${parts[2]}.${parts[1]}.${parts[0]}`;
+      if (dStr.includes('/')) return dStr.replace(/\//g, '.');
+      return dStr.replace(/-/g, '.');
+    };
+
+    const cDate = fDate(this.fv('bobAsOnDate'));
+    const cPlace = this.fv('bobCodeOfConductPlace') || 'Bhubaneswar';
+    const sigBlockW = 200;
+    const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
+
+    this.drawTextAt(`Date: ${cDate}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    
+    this.cursorY += 12;
+    this.drawTextAt(`Place: ${cPlace}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+
+    this.cursorY += 12;
+    this.drawTextAt(`Signature of the Approved Valuer and Seal`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+    this.cursorY += 10;
   }
   // ═══════════════════════════════════════════════════════════════════════
   // SECTION 11: VALUER SIGN-OFF & BANK ENDORSEMENT
