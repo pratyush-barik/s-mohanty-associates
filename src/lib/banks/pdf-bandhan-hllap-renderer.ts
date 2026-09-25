@@ -1329,28 +1329,30 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       vAlign: 'middle',
     });
 
-    // Row 26 title
+    // Row 26 title with distinct section styling (LBL_BG with opacity)
     this.drawCell(MARGIN_L + colSl, this.cursorY, this.colPts, titleH, 'Area of the property:', {
       bold: true,
       fontSize: TABLE_FONT_SIZE,
+      fillColor: LBL_BG,
+      bgOpacity: 0.5,
       align: 'left',
       vAlign: 'middle',
     });
     this.drawCell(MARGIN_L + colSl + this.colPts, this.cursorY, this.colRem, titleH, val26, {
-      bold: false,
+      bold: true,
       fontSize: TABLE_FONT_SIZE,
       align: 'left',
       vAlign: 'middle',
     });
     this.cursorY += titleH;
 
-    // 6-col header
-    this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, headerH, 'Floor level', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, headerH, 'As measured\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, headerH, 'Built-up area\nAs per sanctioned\nplan (in sqft)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, headerH, 'Built-up area\nAs per sale deed\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, headerH, 'Current\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, headerH, 'Approved\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    // 6-col header with distinct OPT_BG styling
+    this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, headerH, 'Floor level', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, headerH, 'As measured\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, headerH, 'Built-up area\nAs per sanctioned\nplan (in sqft)', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, headerH, 'Built-up area\nAs per sale deed\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, headerH, 'Current\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, headerH, 'Approved\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
     this.cursorY += headerH;
 
     // Floor rows
@@ -1988,56 +1990,59 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
 
   /**
    * Enclosures: Section 12 (Maps & Documents in chronological order) followed by Section 13 (Property Photographs)
+   * Formatted strictly using base PDFBankRenderer standard map gallery and photograph grid format.
    */
   private async drawEnclosures(fields: BandhanHLLAPReportFields): Promise<void> {
     // ── 1. Section 12: Maps & Documents (Chronological Order matching Web UI) ──
-    const mapCategories: { title: string; list: string[] }[] = [
+    const mapCategories: { title: string; urls: string[] }[] = [
       {
         title: 'Google Satellite Map',
-        list: (fields.locationMapImages && fields.locationMapImages.length > 0)
+        urls: (fields.locationMapImages && fields.locationMapImages.length > 0)
           ? fields.locationMapImages
           : (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : []),
       },
       {
         title: 'Mouza Map (Bhulekh / Revenue Map)',
-        list: (fields.mouzaMapImages && fields.mouzaMapImages.length > 0)
+        urls: (fields.mouzaMapImages && fields.mouzaMapImages.length > 0)
           ? fields.mouzaMapImages
           : (fields.rorImageUrl ? [fields.rorImageUrl] : []),
       },
       {
         title: 'Sketch Map (Demarcation / Hand-Drawn)',
-        list: (fields.sketchMapImages && fields.sketchMapImages.length > 0)
+        urls: (fields.sketchMapImages && fields.sketchMapImages.length > 0)
           ? fields.sketchMapImages
           : (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : []),
       },
       {
         title: 'Cadastral Map',
-        list: (fields.cadastralMapImages && fields.cadastralMapImages.length > 0)
+        urls: (fields.cadastralMapImages && fields.cadastralMapImages.length > 0)
           ? fields.cadastralMapImages
           : (fields.bhuNakshaImageUrl ? [fields.bhuNakshaImageUrl] : []),
       },
       {
         title: 'BDA MAP',
-        list: fields.bdaMapImages || [],
+        urls: fields.bdaMapImages || [],
       },
       {
         title: 'BENCHMARK VALUATION',
-        list: fields.benchmarkMapImages || [],
+        urls: fields.benchmarkMapImages || [],
       },
     ];
 
-    const hasAnyMaps = mapCategories.some(cat => cat.list.some(img => Boolean(img)));
-    if (hasAnyMaps) {
-      this.addPage();
-      for (const cat of mapCategories) {
-        for (const imgUrl of cat.list) {
-          if (!imgUrl) continue;
-          // Allocate space for header (~22pt) + map image (~240pt) + spacing (~10pt)
-          // Allows at least 2 maps per page with line break
-          this.checkPageBreak(272);
-          this.drawHeadingText(cat.title, FONT_SIZE_HEADER, 'left');
-          await this.drawDocImage(imgUrl, CONTENT_W, 240);
+    for (const cat of mapCategories) {
+      const validUrls = cat.urls.filter(u => Boolean(u && u.trim()));
+      if (validUrls.length === 0) continue;
+
+      const imgBytesList: { bytes: Uint8Array; caption?: string }[] = [];
+      for (const u of validUrls) {
+        const b = await fetchBytes(u);
+        if (b && b.length > 0) {
+          imgBytesList.push({ bytes: b });
         }
+      }
+
+      if (imgBytesList.length > 0) {
+        await this.drawMapGallery(imgBytesList, cat.title, 240, false);
       }
     }
 
@@ -2049,11 +2054,19 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
           caption: fields.propertyImageNames?.[i] || `Photograph ${i + 1}`,
         }));
 
-    if (photos.length > 0) {
-      this.addPage();
-      this.drawHeadingText('PROPERTY PHOTOGRAPHS', FONT_SIZE_HEADER, 'left');
-      this.cursorY += 6;
-      await this.drawBandhanPhotoGrid(photos);
+    const validPhotos = photos.filter(p => Boolean(p.url && p.url.trim()));
+    if (validPhotos.length > 0) {
+      const photoBytesList: { bytes: Uint8Array; label?: string }[] = [];
+      for (const p of validPhotos) {
+        const b = await fetchBytes(p.url);
+        if (b && b.length > 0) {
+          photoBytesList.push({ bytes: b, label: p.caption || 'Property Photograph' });
+        }
+      }
+
+      if (photoBytesList.length > 0) {
+        await this.drawPhotoGrid(photoBytesList, 'PROPERTY PHOTOGRAPHS');
+      }
     }
   }
 
