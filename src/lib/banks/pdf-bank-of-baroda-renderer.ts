@@ -1307,8 +1307,15 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.cursorY += h2 + 30;
 
     // Sign-off
-    const place = this.fv('bobSignOffPlace') || 'Bhubaneswar';
-    const date = formatReportDate(this.fv('bobDateOfValuationMade'));
+    const place = this.fv('bobSignoffPlace') || 'Bhubaneswar';
+    
+    let parsedEndorsementDate = '';
+    const asOnDate = this.fv('bobAsOnDate');
+    if (asOnDate) {
+      const m = asOnDate.match(/(\d{4})-(\d{2})-(\d{2})/);
+      parsedEndorsementDate = m ? `${m[3]}-${m[2]}-${m[1]}` : asOnDate;
+    }
+    const date = parsedEndorsementDate || '________';
     
     const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ${date}. We are satisfied that the fair and reasonable market value of the property is Rs.${fmtINR(marketValNum)}/- (${rupeesInWords(marketValNum)}).`;
     const endorsement = this.fields.bobBankEndorsementEditOn ? this.fv('bobBankEndorsement', '') : defaultEndorsement;
@@ -1326,9 +1333,16 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     
     this.cursorY += 40;
 
+    let parsedManagerDate = '';
+    const endDate = this.fv('bobEndorsementDate');
+    if (endDate) {
+      const m = endDate.match(/(\d{4})-(\d{2})-(\d{2})/);
+      parsedManagerDate = m ? `${m[3]}-${m[2]}-${m[1]}` : endDate;
+    }
+
     this.drawWrappedTextAt(endorsement, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
     this.cursorY += h3 + 30;
-    this.drawTextAt(`Date:`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`Date: ${parsedManagerDate}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
     this.cursorY += 12;
     this.drawTextAt(`(Name of the Branch Manager with Official seal)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
