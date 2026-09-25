@@ -1783,25 +1783,41 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
           : [{ particulars: 'Ground Floor', area: '', yearOfConst: '', lifeInYrs: '', costOfConst: fields.rateOfCostOfConstruction || '', gcrc: '', depreciation: '', value: '' }]
         );
 
-    for (const df of drcFloors) {
-      const rh1 = this.cellHeight(df.particulars || '', drcW1, { fontSize: FONT_SIZE_SMALL });
-      const rh2 = this.cellHeight(df.area || '', drcW2, { fontSize: FONT_SIZE_SMALL });
+    for (let idx = 0; idx < drcFloors.length; idx++) {
+      const df = drcFloors[idx];
+      const pText = df.particulars || fields.floors?.[idx]?.floor || (idx === 0 ? 'Ground Floor' : `Floor ${idx}`);
+      const aText = df.area || fields.floors?.[idx]?.sanctionedArea || '';
+      const cText = df.costOfConst || fields.rateOfCostOfConstruction || '';
+      
+      const aNum = parseNum(aText);
+      const cNum = parseNum(cText);
+      const autoGcrc = (aNum > 0 && cNum > 0) ? Math.round(aNum * cNum) : 0;
+      const gcrcText = df.gcrc ? (parseNum(df.gcrc) > 0 ? formatCurrencyINR(parseNum(df.gcrc)) : df.gcrc) : (autoGcrc > 0 ? formatCurrencyINR(autoGcrc) : '');
+      
+      const depNum = parseNum(df.depreciation);
+      const factor = (depNum > 0 && depNum <= 100) ? (1 - depNum / 100) : 1;
+      const baseGcrcNum = parseNum(df.gcrc) || autoGcrc;
+      const autoNetVal = baseGcrcNum > 0 ? Math.round(baseGcrcNum * factor) : 0;
+      const vText = df.value ? (parseNum(df.value) > 0 ? formatCurrencyINR(parseNum(df.value)) : df.value) : (autoNetVal > 0 ? formatCurrencyINR(autoNetVal) : '');
+
+      const rh1 = this.cellHeight(pText, drcW1, { fontSize: FONT_SIZE_SMALL });
+      const rh2 = this.cellHeight(aText, drcW2, { fontSize: FONT_SIZE_SMALL });
       const rh3 = this.cellHeight(df.yearOfConst || '', drcW3, { fontSize: FONT_SIZE_SMALL });
       const rh4 = this.cellHeight(df.lifeInYrs || '', drcW4, { fontSize: FONT_SIZE_SMALL });
-      const rh5 = this.cellHeight(df.costOfConst || '', drcW5, { fontSize: FONT_SIZE_SMALL });
-      const rh6 = this.cellHeight(df.gcrc || '', drcW6, { fontSize: FONT_SIZE_SMALL });
+      const rh5 = this.cellHeight(cText, drcW5, { fontSize: FONT_SIZE_SMALL });
+      const rh6 = this.cellHeight(gcrcText, drcW6, { fontSize: FONT_SIZE_SMALL });
       const rh7 = this.cellHeight(df.depreciation || '', drcW7, { fontSize: FONT_SIZE_SMALL });
-      const rh8 = this.cellHeight(df.value || '', drcW8, { fontSize: FONT_SIZE_SMALL });
+      const rh8 = this.cellHeight(vText, drcW8, { fontSize: FONT_SIZE_SMALL });
       const rowH = Math.max(TABLE_MIN_ROW_H, rh1, rh2, rh3, rh4, rh5, rh6, rh7, rh8);
       this.checkPageBreak(rowH);
-      this.drawCell(MARGIN_L, this.cursorY, drcW1, rowH, df.particulars || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + drcW1, this.cursorY, drcW2, rowH, df.area || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L, this.cursorY, drcW1, rowH, pText, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + drcW1, this.cursorY, drcW2, rowH, aText, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
       this.drawCell(MARGIN_L + drcW1 + drcW2, this.cursorY, drcW3, rowH, df.yearOfConst || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
       this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3, this.cursorY, drcW4, rowH, df.lifeInYrs || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4, this.cursorY, drcW5, rowH, df.costOfConst || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5, this.cursorY, drcW6, rowH, df.gcrc || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4, this.cursorY, drcW5, rowH, cText, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5, this.cursorY, drcW6, rowH, gcrcText, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
       this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5 + drcW6, this.cursorY, drcW7, rowH, df.depreciation || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
-      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5 + drcW6 + drcW7, this.cursorY, drcW8, rowH, df.value || '', { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+      this.drawCell(MARGIN_L + drcW1 + drcW2 + drcW3 + drcW4 + drcW5 + drcW6 + drcW7, this.cursorY, drcW8, rowH, vText, { bold: false, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
       this.cursorY += rowH;
     }
 
@@ -1861,12 +1877,14 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawParagraph('I /WE HEREBY DECLARE THAT:');
     this.cursorY += 4;
 
-    const photoCount = (fields.propertyImages?.length || fields.propertyPhotos?.length || 0);
-    const photoPages = photoCount > 0 ? Math.ceil(photoCount / 2) : 1;
-    const rorPages = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : 1;
-    const locPages = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : 1;
-    const bhuPages = (fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : 1;
-    const guidePages = (fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : 1;
+    const photoCount = (fields.propertyPhotos && fields.propertyPhotos.length > 0)
+      ? fields.propertyPhotos.length
+      : (fields.propertyImages?.length || 0);
+    const photoPages = photoCount > 0 ? Math.ceil(photoCount / 2) : 0;
+    const rorPages = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : (fields.rorImageUrl ? 1 : 0);
+    const locPages = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : (fields.locationMapImageUrl ? 1 : 0);
+    const bhuPages = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0) ? fields.cadastralMapImages.length : ((fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : (fields.bhuNakshaImageUrl ? 1 : 0));
+    const guidePages = (fields.sketchMapImages && fields.sketchMapImages.length > 0) ? fields.sketchMapImages.length : ((fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : (fields.guidelineValueImageUrl ? 1 : 0));
     const computedPages = String(9 + photoPages + rorPages + locPages + bhuPages + guidePages);
     const reportPagesCount = fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount || computedPages) : computedPages;
 

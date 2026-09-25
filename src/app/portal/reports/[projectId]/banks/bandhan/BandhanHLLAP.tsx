@@ -718,25 +718,31 @@ export default function BandhanHLLAP({
   }, [fields.propertyImageNames, fields.propertyPhotos, fields.propertyImages]);
 
   // Dynamic Total Pages Calculation:
-  // Base 9 pages (6 questionnaire + NDMA + 3 Annexure-A & Declarations)
+  // Base 9 pages (5 questionnaire + 1 NDMA + 3 Annexure-A & Declarations)
   // + Photo pages (2 photos per page)
-  // + Enclosure document pages (ROR, Location Plan, Bhu Naksha, Guideline Rate Proof)
+  // + Actual Enclosure document pages (ROR, Location Plan, Bhu Naksha, Guideline Rate Proof)
   const dynamicTotalPages = useMemo(() => {
     const basePages = 9;
     const photoCount = propertyImages.length;
-    const photoPages = photoCount > 0 ? Math.ceil(photoCount / 2) : 1;
-    const rorPages = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : 1;
-    const locPages = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : 1;
-    const bhuPages = (fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : 1;
-    const guidePages = (fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : 1;
+    const photoPages = photoCount > 0 ? Math.ceil(photoCount / 2) : 0;
+    const rorPages = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : (fields.rorImageUrl ? 1 : 0);
+    const locPages = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : (fields.locationMapImageUrl ? 1 : 0);
+    const bhuPages = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0) ? fields.cadastralMapImages.length : ((fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : (fields.bhuNakshaImageUrl ? 1 : 0));
+    const guidePages = (fields.sketchMapImages && fields.sketchMapImages.length > 0) ? fields.sketchMapImages.length : ((fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : (fields.guidelineValueImageUrl ? 1 : 0));
 
     return String(basePages + photoPages + rorPages + locPages + bhuPages + guidePages);
   }, [
     propertyImages.length,
     fields.mouzaMapImages,
+    fields.rorImageUrl,
     fields.locationMapImages,
+    fields.locationMapImageUrl,
+    fields.cadastralMapImages,
     fields.bhuNakshaImages,
+    fields.bhuNakshaImageUrl,
+    fields.sketchMapImages,
     fields.guidelineRateImages,
+    fields.guidelineValueImageUrl,
   ]);
 
   // Auto Calculations & Dynamic Synchronization of all related valuation fields
@@ -748,18 +754,30 @@ export default function BandhanHLLAP({
 
     // 2. Calculate DRC Building Total
     let totalBldgVal = 0;
-    (fields.drcFloors || []).forEach(df => {
+    const drcList = (fields.drcFloors && fields.drcFloors.length > 0)
+      ? fields.drcFloors
+      : (fields.floors && fields.floors.length > 0
+          ? fields.floors.map(f => ({
+              particulars: f.floor || '',
+              area: f.sanctionedArea || '',
+              costOfConst: fields.rateOfCostOfConstruction || '',
+              depreciation: '',
+              value: '',
+            }))
+          : []);
+
+    drcList.forEach((df, idx) => {
+      const area = parseNum(df.area !== undefined && df.area !== '' ? df.area : fields.floors?.[idx]?.sanctionedArea);
+      const cost = parseNum(df.costOfConst !== undefined && df.costOfConst !== '' ? df.costOfConst : fields.rateOfCostOfConstruction);
+      const gcrc = parseNum(df.gcrc) || ((area > 0 && cost > 0) ? Math.round(area * cost) : 0);
+      const dep = parseNum(df.depreciation);
+      const factor = (dep > 0 && dep <= 100) ? (1 - dep / 100) : 1;
+      
       const v = parseNum(df.value);
       if (v > 0) {
         totalBldgVal += v;
-      } else {
-        const a = parseNum(df.area);
-        const c = parseNum(df.costOfConst);
-        if (a > 0 && c > 0) {
-          const dep = parseNum(df.depreciation);
-          const factor = (dep > 0 && dep <= 100) ? (1 - dep / 100) : 1;
-          totalBldgVal += Math.round(a * c * factor);
-        }
+      } else if (gcrc > 0) {
+        totalBldgVal += Math.round(gcrc * factor);
       }
     });
     const servicesVal = parseNum(fields.drcServicesCost || fields.drcServicesValue);
@@ -1012,7 +1030,32 @@ export default function BandhanHLLAP({
   // Handler for DRC floor rows (Section 10)
   const handleDRCFloorChange = (index: number, key: keyof BandhanHLLAPDRCFloor, val: string) => {
     const nextDRC = [...(fields.drcFloors || [])];
-    nextDRC[index] = { ...nextDRC[index], [key]: val };
+    const currentRow = nextDRC[index] || {};
+    const updatedRow = { ...currentRow, [key]: val };
+
+    const refSanctionedArea = fields.floors?.[index]?.sanctionedArea || '';
+    const refCost = fields.rateOfCostOfConstruction || '';
+
+    const areaVal = updatedRow.area !== undefined && updatedRow.area !== '' ? updatedRow.area : refSanctionedArea;
+    const costVal = updatedRow.costOfConst !== undefined && updatedRow.costOfConst !== '' ? updatedRow.costOfConst : refCost;
+    const areaNum = parseNum(areaVal);
+    const costNum = parseNum(costVal);
+    const gcrcNum = (areaNum > 0 && costNum > 0) ? Math.round(areaNum * costNum) : 0;
+
+    if (key === 'area' || key === 'costOfConst' || !updatedRow.gcrc) {
+      updatedRow.gcrc = gcrcNum > 0 ? String(gcrcNum) : '';
+    }
+
+    const depNum = parseNum(updatedRow.depreciation);
+    const baseGcrc = parseNum(updatedRow.gcrc) || gcrcNum;
+    const factor = (depNum > 0 && depNum <= 100) ? (1 - depNum / 100) : 1;
+    const netValNum = baseGcrc > 0 ? Math.round(baseGcrc * factor) : 0;
+
+    if (key === 'area' || key === 'costOfConst' || key === 'depreciation' || !updatedRow.value) {
+      updatedRow.value = netValNum > 0 ? String(netValNum) : '';
+    }
+
+    nextDRC[index] = updatedRow;
     setFields(prev => ({ ...prev, drcFloors: nextDRC }));
   };
 
@@ -4500,7 +4543,7 @@ export default function BandhanHLLAP({
 
                           {/* Table inside Clause v */}
                           {(() => {
-                            const structDefault = `${fields.typeOfStructure || 'RCC'} Roofing ${fields.floors && fields.floors.length > 1 ? 'All Floors' : 'Ground Floor'}`;
+                            const structDefault = `${fields.typeOfStructure || 'RCC'} Roofing`;
                             const rawRate = (fields.rateOfCostOfConstruction || '').trim();
                             let defaultCost = 'GF- Rs.1,600/- & FF- Rs.1,800/-';
                             if (rawRate) {
@@ -4792,8 +4835,19 @@ export default function BandhanHLLAP({
                           <tbody className="divide-y divide-slate-200">
                             {(fields.drcFloors || []).map((df, idx) => {
                               const refSanctionedArea = fields.floors?.[idx]?.sanctionedArea || '';
-                              const refFloorName = fields.floors?.[idx]?.floor || '';
+                              const refFloorName = fields.floors?.[idx]?.floor || (idx === 0 ? 'Ground Floor' : `Floor ${idx}`);
                               const refCost = fields.rateOfCostOfConstruction || '';
+
+                              const areaVal = df.area !== undefined && df.area !== '' ? df.area : refSanctionedArea;
+                              const costVal = df.costOfConst !== undefined && df.costOfConst !== '' ? df.costOfConst : refCost;
+                              const areaNum = parseNum(areaVal);
+                              const costNum = parseNum(costVal);
+                              const autoGcrcNum = (areaNum > 0 && costNum > 0) ? Math.round(areaNum * costNum) : 0;
+                              const currentGcrcNum = parseNum(df.gcrc) || autoGcrcNum;
+
+                              const depNum = parseNum(df.depreciation);
+                              const factor = (depNum > 0 && depNum <= 100) ? (1 - depNum / 100) : 1;
+                              const autoNetValNum = currentGcrcNum > 0 ? Math.round(currentGcrcNum * factor) : 0;
 
                               return (
                                 <tr key={idx}>
@@ -4850,10 +4904,10 @@ export default function BandhanHLLAP({
                                   <td className="p-1.5">
                                     <input
                                       type="text"
-                                      className={inputCls}
-                                      value={df.gcrc || ''}
-                                      onChange={(e) => handleDRCFloorChange(idx, 'gcrc', e.target.value)}
-                                      placeholder="GCRC"
+                                      className={`${inputCls} bg-slate-50 font-semibold text-slate-800`}
+                                      value={df.gcrc ? formatCurrencyINR(parseNum(df.gcrc)) : (autoGcrcNum > 0 ? formatCurrencyINR(autoGcrcNum) : '')}
+                                      onChange={(e) => handleDRCFloorChange(idx, 'gcrc', sanitizePositiveFloat(e.target.value))}
+                                      placeholder={autoGcrcNum > 0 ? formatCurrencyINR(autoGcrcNum) : "GCRC"}
                                       disabled={isReadOnly}
                                     />
                                   </td>
@@ -4870,10 +4924,10 @@ export default function BandhanHLLAP({
                                   <td className="p-1.5">
                                     <input
                                       type="text"
-                                      className={inputCls}
-                                      value={df.value || ''}
+                                      className={`${inputCls} bg-slate-50 font-bold text-slate-900`}
+                                      value={df.value ? formatCurrencyINR(parseNum(df.value)) : (autoNetValNum > 0 ? formatCurrencyINR(autoNetValNum) : '')}
                                       onChange={(e) => handleDRCFloorChange(idx, 'value', sanitizePositiveFloat(e.target.value))}
-                                      placeholder="Net Value"
+                                      placeholder={autoNetValNum > 0 ? formatCurrencyINR(autoNetValNum) : "Net Value"}
                                       disabled={isReadOnly}
                                     />
                                   </td>
