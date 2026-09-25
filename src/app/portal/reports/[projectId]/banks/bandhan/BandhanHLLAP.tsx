@@ -3285,7 +3285,7 @@ export default function BandhanHLLAP({
                             }`}
                             title={fields.valuationGovtRateLocked !== false ? 'Locked & auto-computed. Click to unlock for custom manual text.' : 'Unlocked for custom entry. Click to lock back to auto-calculation.'}
                           >
-                            {fields.valuationGovtRateLocked !== false ? '🔒 Locked' : '🔓 Unlocked'}
+                            {fields.valuationGovtRateLocked !== false ? 'Auto-Calculated' : 'Custom Entry'}
                           </button>
                         </div>
                         <input
@@ -5087,7 +5087,7 @@ export default function BandhanHLLAP({
                             className="text-[11px] font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 border border-amber-300 px-2 py-1.5 rounded cursor-pointer shrink-0 flex items-center gap-1"
                             title="Custom count entered. Click to reset to Auto Dynamic Count"
                           >
-                            🔓 Custom (Reset to Auto: {dynamicTotalPages})
+                            Reset to Auto ({dynamicTotalPages})
                           </button>
                         ) : (
                           <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded shrink-0 flex items-center gap-1">
@@ -5108,16 +5108,13 @@ export default function BandhanHLLAP({
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="Valuer Name:">
-                      <div className="relative">
-                        <input
-                          type="text"
-                          className={`${inputCls} bg-slate-50 font-bold text-slate-800 cursor-not-allowed select-none pr-8`}
-                          value="SATYAJIT MOHANTY"
-                          readOnly
-                          disabled
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 select-none" title="Locked (Default Valuer)">🔒</span>
-                      </div>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value="SATYAJIT MOHANTY"
+                        readOnly
+                        disabled
+                      />
                     </Field>
                     <Field label="Qualifications:">
                       <input
