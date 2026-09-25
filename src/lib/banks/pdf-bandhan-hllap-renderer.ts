@@ -470,8 +470,14 @@ export interface BandhanHLLAPReportFields {
   annexureDocsVerified?: string;
   annexurePurpose?: string;
   annexureGovtGuideline?: string;
+  annexureGovtGuidelineRate?: string;
   annexureMarketEnquiry?: string;
+  annexureMarketEnquiryMinRate?: string;
+  annexureMarketEnquiryMaxRate?: string;
   annexureCpwdBaseRate?: string;
+  annexureCpwdBaseRateNum?: string;
+  annexureExtraAmenitiesRate?: string;
+  annexureLocationCity?: string;
   annexureAdoptedStructures?: { structure: string; cost: string }[];
   annexureBasisOfValuation?: string;
   annexureMethodClassification?: {
@@ -1564,11 +1570,18 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       ? 'a steel framed structure'
       : `an ${structName} framed structure`;
 
+    const gRate = fields.annexureGovtGuidelineRate || fields.govtRateLand || '286';
+    const minMkt = fields.annexureMarketEnquiryMinRate || '1700';
+    const maxMkt = fields.annexureMarketEnquiryMaxRate || '1900';
+    const cpwdBase = fields.annexureCpwdBaseRateNum || '1,300';
+    const locCity = fields.annexureLocationCity || 'Bhubaneswar';
+    const extraAmenities = fields.annexureExtraAmenitiesRate || '500';
+
     const relPoints = [
       { prefix: 'i) PURPOSE OF VALUATION: ', text: fields.annexurePurpose || fields.purpose || 'Mortgage and Bank finance.' },
-      { prefix: 'ii) Govt. guideline value of land: ', text: fields.annexureGovtGuideline || (fields.govtRateLand ? `Rs.${fields.govtRateLand}/- per sqft (As per IGR, Odisha Govt. Website)` : (fields.valuationGovtRate ? `Rs.${fields.valuationGovtRate.split('*')[0].trim()} (As per IGR, Odisha Govt. Website)` : 'Rs.286/- per sqft (As per IGR, Odisha Govt. Website)')) },
-      { prefix: 'iii) ', text: fields.annexureMarketEnquiry || `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. 1700per sqft to @ Rs. 1900per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.` },
-      { prefix: 'iv) ', text: fields.annexureCpwdBaseRate || `The base rate of construction has been considered at ₹1,300 per sq. ft. for ${structPhrase} for the location. An additional ₹500 per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹${fields.rateOfCostOfConstruction || '1,800'} per sq. ft. of Super built-up area (SBUA).` },
+      { prefix: 'ii) Govt. guideline value of land: ', text: fields.annexureGovtGuideline || `Rs.${gRate}/- per sqft (As per IGR, Odisha Govt. Website)` },
+      { prefix: 'iii) ', text: fields.annexureMarketEnquiry || `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. ${minMkt}per sqft to @ Rs. ${maxMkt}per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.` },
+      { prefix: 'iv) ', text: fields.annexureCpwdBaseRate || `The base rate of construction has been considered at ₹${cpwdBase} per sq. ft. for ${structPhrase} for the ${locCity} location. An additional ₹${extraAmenities} per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹${fields.rateOfCostOfConstruction || '1,800'} per sq. ft. of Super built-up area (SBUA).` },
       { prefix: 'v) ', text: 'Considering the above CPWD rate, CPWD specification and the specification of the house under consideration, cost of construction for the above building may reasonably be taken as under: -' },
     ];
 

@@ -519,8 +519,14 @@ export default function BandhanHLLAP({
       annexureDocsVerified: raw.annexureDocsVerified || '',
       annexurePurpose: raw.annexurePurpose || 'Mortgage and Bank finance.',
       annexureGovtGuideline: raw.annexureGovtGuideline || '',
+      annexureGovtGuidelineRate: raw.annexureGovtGuidelineRate !== undefined ? raw.annexureGovtGuidelineRate : (raw.govtRateLand || '286'),
       annexureMarketEnquiry: raw.annexureMarketEnquiry || '',
+      annexureMarketEnquiryMinRate: raw.annexureMarketEnquiryMinRate !== undefined ? raw.annexureMarketEnquiryMinRate : '1700',
+      annexureMarketEnquiryMaxRate: raw.annexureMarketEnquiryMaxRate !== undefined ? raw.annexureMarketEnquiryMaxRate : '1900',
       annexureCpwdBaseRate: raw.annexureCpwdBaseRate || '',
+      annexureCpwdBaseRateNum: raw.annexureCpwdBaseRateNum !== undefined ? raw.annexureCpwdBaseRateNum : '1,300',
+      annexureExtraAmenitiesRate: raw.annexureExtraAmenitiesRate !== undefined ? raw.annexureExtraAmenitiesRate : '500',
+      annexureLocationCity: raw.annexureLocationCity || 'Bhubaneswar',
       annexureAdoptedStructures: Array.isArray(raw.annexureAdoptedStructures) ? raw.annexureAdoptedStructures : [
         { structure: 'RCC Roofing', cost: '' },
       ],
@@ -4157,102 +4163,193 @@ export default function BandhanHLLAP({
                 </div>
 
                 {/* 4. Relevant Data / Information (Clauses i–v) */}
-                <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-3.5">
-                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wide block border-b border-slate-100 pb-1.5">
-                    Relevant Data / Information in Respect of the Property Under Reference:
-                  </span>
-                  
-                  <div className="space-y-3">
-                    {/* Clause i */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-slate-700">
-                          i) Purpose of Valuation:
-                        </label>
-                        <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                          ⚡ Referenced from: Project Purpose / Loan Subject
-                        </span>
-                      </div>
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.annexurePurpose !== undefined && fields.annexurePurpose !== '' ? fields.annexurePurpose : (fields.purpose || 'Mortgage and Bank finance.')}
-                        onChange={(e) => handleChange('annexurePurpose', e.target.value)}
-                        disabled={isReadOnly}
-                      />
-                    </div>
-
-                    {/* Clause ii */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-slate-700">
-                          ii) Govt. Guideline Value of Land:
-                        </label>
-                        <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                          ⚡ Referenced from: Pt 36 (Govt. Rate: Rs.{fields.govtRateLand || '286'}/- per sqft)
-                        </span>
-                      </div>
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.annexureGovtGuideline !== undefined && fields.annexureGovtGuideline !== '' ? fields.annexureGovtGuideline : (fields.govtRateLand ? `Rs.${fields.govtRateLand}/- per sqft (As per IGR, Odisha Govt. Website)` : (fields.valuationGovtRate ? `Rs.${fields.valuationGovtRate.split('*')[0].trim()} (As per IGR, Odisha Govt. Website)` : 'Rs.286/- per sqft (As per IGR, Odisha Govt. Website)'))}
-                        onChange={(e) => handleChange('annexureGovtGuideline', e.target.value)}
-                        disabled={isReadOnly}
-                      />
-                    </div>
-
-                    {/* Clause iii */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-slate-700">
-                          iii) Local Market Investigation &amp; Land Rate:
-                        </label>
-                        <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                          ⚡ Referenced from: Pt 30 &amp; Pt 31 (Plot Rate: Rs.{fields.plotRate || '1800'}/- per sqft)
-                        </span>
-                      </div>
-                      <textarea
-                        rows={2}
-                        className={inputCls}
-                        value={fields.annexureMarketEnquiry || `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. 1700per sqft to @ Rs. 1900per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.`}
-                        onChange={(e) => handleChange('annexureMarketEnquiry', e.target.value)}
-                        disabled={isReadOnly}
-                      />
-                    </div>
-
-                    {/* Clause iv */}
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <label className="text-xs font-semibold text-slate-700">
-                          iv) CPWD Construction Rate &amp; Extra Amenities:
-                        </label>
-                        <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                          ⚡ Referenced from: Pt 21 (Type of Structure: {fields.typeOfStructure || 'RCC'}) &amp; Pt 32 (Cost of Construction: Rs.{fields.rateOfCostOfConstruction || '1,800'}/-)
-                        </span>
-                      </div>
-                      <textarea
-                        rows={2}
-                        className={inputCls}
-                        value={fields.annexureCpwdBaseRate || `The base rate of construction has been considered at ₹1,300 per sq. ft. for ${(() => {
-                          const structName = (fields.typeOfStructure || 'RCC').trim();
-                          return structName.toLowerCase().includes('load')
-                            ? 'a load bearing structure'
-                            : structName.toLowerCase().includes('aluform')
-                            ? 'an Aluform (Mivan) shuttering structure'
-                            : structName.toLowerCase().includes('steel')
-                            ? 'a steel framed structure'
-                            : `an ${structName} framed structure`;
-                        })()} for the location. An additional ₹500 per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹${fields.rateOfCostOfConstruction || '1,800'} per sq. ft. of Super built-up area (SBUA).`}
-                        onChange={(e) => handleChange('annexureCpwdBaseRate', e.target.value)}
-                        disabled={isReadOnly}
-                      />
-                    </div>
-
-                    {/* Clause v */}
-                    <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600 italic">
-                      v) Considering the above CPWD rate, CPWD specification and the specification of the house under consideration, cost of construction for the above building may reasonably be taken as under: -
-                    </div>
+                <div className="rounded-xl border border-indigo-200/80 bg-white p-4 shadow-2xs space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-100 pb-2">
+                    <span className="text-xs font-bold text-indigo-950 uppercase tracking-wide">
+                      Relevant Data / Information in Respect of the Property Under Reference:
+                    </span>
+                    <span className="text-[10.5px] font-semibold bg-indigo-50 text-indigo-800 px-2.5 py-0.5 rounded border border-indigo-200">
+                      Clauses (i) to (v) with Variable Inputs &amp; Reference Citations
+                    </span>
                   </div>
+                  
+                  {(() => {
+                    const structName = (fields.typeOfStructure || 'RCC').trim();
+                    const structPhrase = structName.toLowerCase().includes('load')
+                      ? 'a load bearing structure'
+                      : structName.toLowerCase().includes('aluform')
+                      ? 'an Aluform (Mivan) shuttering structure'
+                      : structName.toLowerCase().includes('steel')
+                      ? 'a steel framed structure'
+                      : `an ${structName} framed structure`;
+
+                    const gRate = fields.annexureGovtGuidelineRate !== undefined && fields.annexureGovtGuidelineRate !== '' ? fields.annexureGovtGuidelineRate : (fields.govtRateLand || '286');
+                    const minMkt = fields.annexureMarketEnquiryMinRate !== undefined ? fields.annexureMarketEnquiryMinRate : '1700';
+                    const maxMkt = fields.annexureMarketEnquiryMaxRate !== undefined ? fields.annexureMarketEnquiryMaxRate : '1900';
+                    const cpwdBase = fields.annexureCpwdBaseRateNum !== undefined ? fields.annexureCpwdBaseRateNum : '1,300';
+                    const locCity = fields.annexureLocationCity !== undefined ? fields.annexureLocationCity : 'Bhubaneswar';
+                    const extraAmenities = fields.annexureExtraAmenitiesRate !== undefined ? fields.annexureExtraAmenitiesRate : '500';
+
+                    return (
+                      <div className="space-y-3.5">
+                        {/* Clause i */}
+                        <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 space-y-1.5 shadow-2xs">
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-800 leading-relaxed font-medium">
+                            <span className="font-bold text-slate-900 text-sm">i) PURPOSE OF VALUATION:</span>
+                            <input
+                              type="text"
+                              className="px-2.5 py-1 bg-white border border-slate-300 rounded text-xs font-semibold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500 min-w-[240px]"
+                              value={fields.annexurePurpose !== undefined && fields.annexurePurpose !== '' ? fields.annexurePurpose : (fields.purpose || 'Mortgage and Bank finance.')}
+                              onChange={(e) => handleChange('annexurePurpose', e.target.value)}
+                              disabled={isReadOnly}
+                            />
+                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 shadow-2xs">
+                              ⚡ Referenced from: Project Subject / Purpose of Valuation
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Clause ii */}
+                        <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 space-y-1.5 shadow-2xs">
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-800 leading-relaxed font-medium">
+                            <span className="font-bold text-slate-900 text-sm">ii) Govt. guideline value of land:</span>
+                            <span>Rs.</span>
+                            <input
+                              type="text"
+                              className="w-20 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              value={gRate}
+                              onChange={(e) => {
+                                const val = sanitizePositiveFloat(e.target.value);
+                                handleChange('annexureGovtGuidelineRate', val);
+                                handleChange('annexureGovtGuideline', `Rs.${val}/- per sqft (As per IGR, Odisha Govt. Website)`);
+                              }}
+                              placeholder="286"
+                              disabled={isReadOnly}
+                            />
+                            <span>/- per sqft (As per IGR, Odisha Govt. Website)</span>
+                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 shadow-2xs">
+                              ⚡ Referenced from: Pt 36 (Valuation according to Govt. rate - Land Rate)
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Clause iii */}
+                        <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 space-y-2 shadow-2xs">
+                          <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-800 leading-relaxed font-medium">
+                            <span className="font-bold text-slate-900 text-sm">iii)</span>
+                            <span>From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs.</span>
+                            <input
+                              type="text"
+                              className="w-20 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              value={minMkt}
+                              onChange={(e) => {
+                                const newMin = sanitizePositiveFloat(e.target.value);
+                                handleChange('annexureMarketEnquiryMinRate', newMin);
+                                const newText = `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. ${newMin}per sqft to @ Rs. ${maxMkt}per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.`;
+                                handleChange('annexureMarketEnquiry', newText);
+                              }}
+                              placeholder="1700"
+                              disabled={isReadOnly}
+                            />
+                            <span>per sqft to @ Rs.</span>
+                            <input
+                              type="text"
+                              className="w-20 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              value={maxMkt}
+                              onChange={(e) => {
+                                const newMax = sanitizePositiveFloat(e.target.value);
+                                handleChange('annexureMarketEnquiryMaxRate', newMax);
+                                const newText = `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. ${minMkt}per sqft to @ Rs. ${newMax}per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.`;
+                                handleChange('annexureMarketEnquiry', newText);
+                              }}
+                              placeholder="1900"
+                              disabled={isReadOnly}
+                            />
+                            <span>per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs.</span>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-blue-100 text-blue-950 font-bold border border-blue-300 shadow-2xs">
+                              {fields.plotRate || '1800'}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-blue-50 text-blue-800 px-2 py-0.5 rounded border border-blue-200 shadow-2xs">
+                              ⚡ Referenced from: Pt 30 &amp; Pt 31 (Rate of the Plot)
+                            </span>
+                            <span>per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.</span>
+                          </div>
+                        </div>
+
+                        {/* Clause iv */}
+                        <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 space-y-2 shadow-2xs">
+                          <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-800 leading-relaxed font-medium">
+                            <span className="font-bold text-slate-900 text-sm">iv)</span>
+                            <span>The base rate of construction has been considered at ₹</span>
+                            <input
+                              type="text"
+                              className="w-20 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              value={cpwdBase}
+                              onChange={(e) => {
+                                const newBase = e.target.value;
+                                handleChange('annexureCpwdBaseRateNum', newBase);
+                                const newText = `The base rate of construction has been considered at ₹${newBase} per sq. ft. for ${structPhrase} for the ${locCity} location. An additional ₹${extraAmenities} per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹${fields.rateOfCostOfConstruction || '1,800'} per sq. ft. of Super built-up area (SBUA).`;
+                                handleChange('annexureCpwdBaseRate', newText);
+                              }}
+                              placeholder="1,300"
+                              disabled={isReadOnly}
+                            />
+                            <span>per sq. ft. for</span>
+                            <span className="inline-flex items-center px-2 py-0.5 rounded bg-slate-200 text-slate-900 font-bold border border-slate-300 shadow-2xs">
+                              {structPhrase}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-200 shadow-2xs">
+                              ⚡ Derived from Pt 21: Type of Structure
+                            </span>
+                            <span>for the</span>
+                            <input
+                              type="text"
+                              className="w-32 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              value={locCity}
+                              onChange={(e) => {
+                                const newCity = e.target.value;
+                                handleChange('annexureLocationCity', newCity);
+                                const newText = `The base rate of construction has been considered at ₹${cpwdBase} per sq. ft. for ${structPhrase} for the ${newCity} location. An additional ₹${extraAmenities} per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹${fields.rateOfCostOfConstruction || '1,800'} per sq. ft. of Super built-up area (SBUA).`;
+                                handleChange('annexureCpwdBaseRate', newText);
+                              }}
+                              placeholder="Bhubaneswar"
+                              disabled={isReadOnly}
+                            />
+                            <span>location. An additional ₹</span>
+                            <input
+                              type="text"
+                              className="w-20 px-2 py-1 text-center bg-white border border-slate-300 rounded text-xs font-bold text-slate-900 shadow-2xs focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                              value={extraAmenities}
+                              onChange={(e) => {
+                                const newExt = sanitizePositiveFloat(e.target.value);
+                                handleChange('annexureExtraAmenitiesRate', newExt);
+                                const newText = `The base rate of construction has been considered at ₹${cpwdBase} per sq. ft. for ${structPhrase} for the ${locCity} location. An additional ₹${newExt} per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹${fields.rateOfCostOfConstruction || '1,800'} per sq. ft. of Super built-up area (SBUA).`;
+                                handleChange('annexureCpwdBaseRate', newText);
+                              }}
+                              placeholder="500"
+                              disabled={isReadOnly}
+                            />
+                            <span>per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹</span>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-amber-100 text-amber-950 font-extrabold border border-amber-300 shadow-2xs">
+                              {fields.rateOfCostOfConstruction || '1,800'}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200 shadow-2xs">
+                              ⚡ Referenced from Pt 32: Recommended Rate of Cost of Construction
+                            </span>
+                            <span>per sq. ft. of Super built-up area (SBUA).</span>
+                          </div>
+                        </div>
+
+                        {/* Clause v */}
+                        <div className="rounded-xl border border-slate-200/90 bg-slate-50/60 p-3.5 shadow-2xs">
+                          <div className="text-xs text-slate-700 leading-relaxed italic">
+                            <strong className="font-bold text-slate-900 not-italic text-sm">v) </strong>
+                            Considering the above CPWD rate, CPWD specification and the specification of the house under consideration, cost of construction for the above building may reasonably be taken as under: -
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* 5. Adopted Cost of Construction Table */}
