@@ -14,9 +14,41 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     { id: 'section-cover', title: '1. Cover Page Details' },
     { id: 'canfin-section-2', title: '2. General' },
     { id: 'canfin-section-3', title: '3. Details of the Property' },
+    { id: 'canfin-section-4', title: '4. Surroundings, Accesibility & Proximity to Civil Ameneties' },
   ],
   defaultValues: {
     purpose: 'Housing Loan / Composite Loan',
+    
+    // Section 4 Variables
+    canfinHomesNearestRailwayStation: '',
+    canfinHomesNearestBusStand: '',
+    canfinHomesNearestHospital: '',
+    canfinHomesConditionsOfApproachRoadDropdown: 'Good',
+    canfinHomesConditionsOfApproachRoad: 'Good',
+    canfinHomesAccessToPropertyDropdown: 'Easy',
+    canfinHomesAccessToProperty: 'Easy',
+    canfinHomesNearbyLandMark: '',
+    canfinHomesNearbyLandMarkNA: false,
+    canfinHomesConditionOfTheLocalityDropdown: 'Good',
+    canfinHomesConditionOfTheLocality: 'Good',
+    canfinHomesDevelopmentOfSurroundingAreasDropdown: 'Developing',
+    canfinHomesDevelopmentOfSurroundingAreas: 'Developing',
+    canfinHomesAnyBoardIndicatingMortgage: 'No',
+    canfinHomesNameOfBankFinanceCo: '',
+    canfinHomesPhotoOfBoard: null,
+    canfinHomesPlotPropertyDemarcated: 'Yes',
+    canfinHomesPropertyIdentifiedThrough: '',
+    canfinHomesSurroundingsAsPerSiteNorth: '',
+    canfinHomesSurroundingsAsPerSiteSouth: '',
+    canfinHomesSurroundingsAsPerSiteEast: '',
+    canfinHomesSurroundingsAsPerSiteWest: '',
+    canfinHomesSurroundingsAsPerDeedNorth: '',
+    canfinHomesSurroundingsAsPerDeedSouth: '',
+    canfinHomesSurroundingsAsPerDeedEast: '',
+    canfinHomesSurroundingsAsPerDeedWest: '',
+    canfinHomesWhetherBoundariesMatching: 'Yes',
+    canfinHomesDiscrepancyFoundInBoundaries: '',
+    canfinHomesDiscrepancyFoundInBoundariesNA: false,
     
     // Section 3 Variables
     canfinHomesEnablePlotNoEdit: false,
@@ -854,6 +886,317 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                     disabled={isReadOnly}
                   />
                 </Field>
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'canfin-section-4',
+      title: '4. SURROUNDINGS, ACCESIBILITY & PROXIMITY TO CIVIL AMENETIES',
+      number: 4,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-yellow-200 bg-[#fffde7] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Proximity</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Nearest Railway Station">
+                  <input className={inputCls} value={fields.canfinHomesNearestRailwayStation || ''} onChange={e => handleChange('canfinHomesNearestRailwayStation', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Nearest Bus Stand">
+                  <input className={inputCls} value={fields.canfinHomesNearestBusStand || ''} onChange={e => handleChange('canfinHomesNearestBusStand', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Nearest Hospital">
+                  <input className={inputCls} value={fields.canfinHomesNearestHospital || ''} onChange={e => handleChange('canfinHomesNearestHospital', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+            </div>
+
+            <div className="border border-yellow-200 bg-[#fffde7] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Approach & Locality</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <Field label="Conditions of Approach Road">
+                    <select 
+                      className={inputCls} 
+                      value={fields.canfinHomesConditionsOfApproachRoadDropdown || ''} 
+                      onChange={e => {
+                        handleChange('canfinHomesConditionsOfApproachRoadDropdown', e.target.value);
+                        if (e.target.value !== 'Custom') {
+                          handleChange('canfinHomesConditionsOfApproachRoad', e.target.value);
+                        } else {
+                          handleChange('canfinHomesConditionsOfApproachRoad', '');
+                        }
+                      }} 
+                      disabled={isReadOnly}
+                    >
+                      <option value="Good">Good</option>
+                      <option value="Fair">Fair</option>
+                      <option value="Poor">Poor</option>
+                      <option value="Kachi sadak">Kachi sadak</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesConditionsOfApproachRoadDropdown === 'Custom' && (
+                    <input 
+                      className={inputCls} 
+                      placeholder="Enter custom road condition..."
+                      value={fields.canfinHomesConditionsOfApproachRoad || ''} 
+                      onChange={e => handleChange('canfinHomesConditionsOfApproachRoad', e.target.value)} 
+                      disabled={isReadOnly} 
+                    />
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Field label="Access to property">
+                    <select 
+                      className={inputCls} 
+                      value={fields.canfinHomesAccessToPropertyDropdown || ''} 
+                      onChange={e => {
+                        handleChange('canfinHomesAccessToPropertyDropdown', e.target.value);
+                        if (e.target.value !== 'Custom') {
+                          handleChange('canfinHomesAccessToProperty', e.target.value);
+                        } else {
+                          handleChange('canfinHomesAccessToProperty', '');
+                        }
+                      }} 
+                      disabled={isReadOnly}
+                    >
+                      <option value="Easy">Easy</option>
+                      <option value="Restricted">Restricted</option>
+                      <option value="Difficult">Difficult</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesAccessToPropertyDropdown === 'Custom' && (
+                    <input 
+                      className={inputCls} 
+                      placeholder="Enter custom access..."
+                      value={fields.canfinHomesAccessToProperty || ''} 
+                      onChange={e => handleChange('canfinHomesAccessToProperty', e.target.value)} 
+                      disabled={isReadOnly} 
+                    />
+                  )}
+                </div>
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Nearby Land Mark</span>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesNearbyLandMarkNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesNearbyLandMarkNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesNearbyLandMark', 'NA');
+                          else handleChange('canfinHomesNearbyLandMark', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                }>
+                  <input 
+                    className={`${inputCls} ${fields.canfinHomesNearbyLandMarkNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    value={fields.canfinHomesNearbyLandMarkNA ? 'NA' : (fields.canfinHomesNearbyLandMark || '')} 
+                    onChange={e => handleChange('canfinHomesNearbyLandMark', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesNearbyLandMarkNA} 
+                  />
+                </Field>
+                <div className="flex flex-col gap-2">
+                  <Field label="Condition of The Locality">
+                    <select 
+                      className={inputCls} 
+                      value={fields.canfinHomesConditionOfTheLocalityDropdown || ''} 
+                      onChange={e => {
+                        handleChange('canfinHomesConditionOfTheLocalityDropdown', e.target.value);
+                        if (e.target.value !== 'Custom') {
+                          handleChange('canfinHomesConditionOfTheLocality', e.target.value);
+                        } else {
+                          handleChange('canfinHomesConditionOfTheLocality', '');
+                        }
+                      }} 
+                      disabled={isReadOnly}
+                    >
+                      <option value="Good">Good</option>
+                      <option value="Fair">Fair</option>
+                      <option value="Bad">Bad</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesConditionOfTheLocalityDropdown === 'Custom' && (
+                    <input 
+                      className={inputCls} 
+                      placeholder="Enter custom locality condition..."
+                      value={fields.canfinHomesConditionOfTheLocality || ''} 
+                      onChange={e => handleChange('canfinHomesConditionOfTheLocality', e.target.value)} 
+                      disabled={isReadOnly} 
+                    />
+                  )}
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Field label="Development of surrounding areas">
+                    <select 
+                      className={inputCls} 
+                      value={fields.canfinHomesDevelopmentOfSurroundingAreasDropdown || ''} 
+                      onChange={e => {
+                        handleChange('canfinHomesDevelopmentOfSurroundingAreasDropdown', e.target.value);
+                        if (e.target.value !== 'Custom') {
+                          handleChange('canfinHomesDevelopmentOfSurroundingAreas', e.target.value);
+                        } else {
+                          handleChange('canfinHomesDevelopmentOfSurroundingAreas', '');
+                        }
+                      }} 
+                      disabled={isReadOnly}
+                    >
+                      <option value="Under-developed">Under-developed</option>
+                      <option value="Developing">Developing</option>
+                      <option value="Developed">Developed</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesDevelopmentOfSurroundingAreasDropdown === 'Custom' && (
+                    <input 
+                      className={inputCls} 
+                      placeholder="Enter custom development status..."
+                      value={fields.canfinHomesDevelopmentOfSurroundingAreas || ''} 
+                      onChange={e => handleChange('canfinHomesDevelopmentOfSurroundingAreas', e.target.value)} 
+                      disabled={isReadOnly} 
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="border border-yellow-200 bg-[#fffde7] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Site Identification</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Any board of other bank or finance co. indicating mortgage found on site" className="md:col-span-2">
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    {['Yes', 'No'].map(opt => (
+                      <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="canfinHomesAnyBoardIndicatingMortgage"
+                          value={opt}
+                          checked={fields.canfinHomesAnyBoardIndicatingMortgage === opt}
+                          onChange={(e) => handleChange('canfinHomesAnyBoardIndicatingMortgage', e.target.value)}
+                          disabled={isReadOnly}
+                          className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                        />
+                        <span className="text-gray-700 text-sm">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </Field>
+                {fields.canfinHomesAnyBoardIndicatingMortgage === 'Yes' && (
+                  <>
+                    <Field label="Name of Bank/Finance Co.">
+                      <input className={inputCls} value={fields.canfinHomesNameOfBankFinanceCo || ''} onChange={e => handleChange('canfinHomesNameOfBankFinanceCo', e.target.value)} disabled={isReadOnly} />
+                    </Field>
+                    <Field label="Photo of Board">
+                      <div className="border border-dashed border-gray-300 rounded p-4 text-center bg-white">
+                        <input type="file" onChange={e => {
+                           if (e.target.files && e.target.files.length > 0) {
+                             handleChange('canfinHomesPhotoOfBoard', e.target.files[0]);
+                           }
+                        }} disabled={isReadOnly} className="text-sm" />
+                      </div>
+                    </Field>
+                  </>
+                )}
+                <Field label="Plot/Property Demarcated at Site Mandatory" className="md:col-span-2">
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    {['Yes', 'No'].map(opt => (
+                      <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="canfinHomesPlotPropertyDemarcated"
+                          value={opt}
+                          checked={fields.canfinHomesPlotPropertyDemarcated === opt}
+                          onChange={(e) => handleChange('canfinHomesPlotPropertyDemarcated', e.target.value)}
+                          disabled={isReadOnly}
+                          className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                        />
+                        <span className="text-gray-700 text-sm">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </Field>
+                <Field label="Property Identified through">
+                  <input className={inputCls} value={fields.canfinHomesPropertyIdentifiedThrough || ''} onChange={e => handleChange('canfinHomesPropertyIdentifiedThrough', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+            </div>
+
+            <div className="border border-yellow-200 bg-[#fffde7] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Boundary Verification</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-gray-600 text-sm">Surroundings as per site visit</h4>
+                  <Field label="North"><input className={inputCls} value={fields.canfinHomesSurroundingsAsPerSiteNorth || ''} onChange={e => handleChange('canfinHomesSurroundingsAsPerSiteNorth', e.target.value)} disabled={isReadOnly} /></Field>
+                  <Field label="South"><input className={inputCls} value={fields.canfinHomesSurroundingsAsPerSiteSouth || ''} onChange={e => handleChange('canfinHomesSurroundingsAsPerSiteSouth', e.target.value)} disabled={isReadOnly} /></Field>
+                  <Field label="East"><input className={inputCls} value={fields.canfinHomesSurroundingsAsPerSiteEast || ''} onChange={e => handleChange('canfinHomesSurroundingsAsPerSiteEast', e.target.value)} disabled={isReadOnly} /></Field>
+                  <Field label="West"><input className={inputCls} value={fields.canfinHomesSurroundingsAsPerSiteWest || ''} onChange={e => handleChange('canfinHomesSurroundingsAsPerSiteWest', e.target.value)} disabled={isReadOnly} /></Field>
+                </div>
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-gray-600 text-sm">Surroundings as per Sale deed</h4>
+                  <Field label="North"><input className={inputCls} value={fields.canfinHomesSurroundingsAsPerDeedNorth || ''} onChange={e => handleChange('canfinHomesSurroundingsAsPerDeedNorth', e.target.value)} disabled={isReadOnly} /></Field>
+                  <Field label="South"><input className={inputCls} value={fields.canfinHomesSurroundingsAsPerDeedSouth || ''} onChange={e => handleChange('canfinHomesSurroundingsAsPerDeedSouth', e.target.value)} disabled={isReadOnly} /></Field>
+                  <Field label="East"><input className={inputCls} value={fields.canfinHomesSurroundingsAsPerDeedEast || ''} onChange={e => handleChange('canfinHomesSurroundingsAsPerDeedEast', e.target.value)} disabled={isReadOnly} /></Field>
+                  <Field label="West"><input className={inputCls} value={fields.canfinHomesSurroundingsAsPerDeedWest || ''} onChange={e => handleChange('canfinHomesSurroundingsAsPerDeedWest', e.target.value)} disabled={isReadOnly} /></Field>
+                </div>
+                <Field label="Whether Boundaries matching (actual site verification with Legal docs)" className="md:col-span-2">
+                  <div className="flex flex-wrap gap-4 mt-2">
+                    {['Yes', 'No'].map(opt => (
+                      <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="canfinHomesWhetherBoundariesMatching"
+                          value={opt}
+                          checked={fields.canfinHomesWhetherBoundariesMatching === opt}
+                          onChange={(e) => handleChange('canfinHomesWhetherBoundariesMatching', e.target.value)}
+                          disabled={isReadOnly}
+                          className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                        />
+                        <span className="text-gray-700 text-sm">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </Field>
+                {fields.canfinHomesWhetherBoundariesMatching === 'No' && (
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Discrepancy found in Boundaries, If any plz specify</span>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          checked={fields.canfinHomesDiscrepancyFoundInBoundariesNA} 
+                          onChange={e => {
+                            handleChange('canfinHomesDiscrepancyFoundInBoundariesNA', e.target.checked);
+                            if (e.target.checked) handleChange('canfinHomesDiscrepancyFoundInBoundaries', 'NA');
+                            else handleChange('canfinHomesDiscrepancyFoundInBoundaries', '');
+                          }} 
+                          className="rounded text-emerald-600 focus:ring-emerald-500" 
+                          disabled={isReadOnly} 
+                        />
+                        <span className="text-xs font-medium text-gray-500">NA</span>
+                      </label>
+                    </div>
+                  } className="md:col-span-2">
+                    <textarea 
+                      className={`${inputCls} ${fields.canfinHomesDiscrepancyFoundInBoundariesNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                      rows={3}
+                      value={fields.canfinHomesDiscrepancyFoundInBoundariesNA ? 'NA' : (fields.canfinHomesDiscrepancyFoundInBoundaries || '')} 
+                      onChange={e => handleChange('canfinHomesDiscrepancyFoundInBoundaries', e.target.value)} 
+                      disabled={isReadOnly || fields.canfinHomesDiscrepancyFoundInBoundariesNA} 
+                    />
+                  </Field>
+                )}
               </div>
             </div>
           </div>
