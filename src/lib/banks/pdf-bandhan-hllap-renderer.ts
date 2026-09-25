@@ -813,14 +813,21 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
         if (num > 0) val35 = `Rs.${formatCurrencyINR(num)}/-`;
       }
     }
+    this.drawBandhanRow('35.', 'Valuation as on date', val35 || '');
+
     let val36 = (fields.valuationGovtRate || '').trim();
-    if (!val36 && fields.govtRateLand) {
-      const area = parseNum(fields.govtLandArea || fields.propertyArea || fields.areaOfLand);
-      const rate = parseNum(fields.govtRateLand);
-      if (area > 0 && rate > 0) {
-        val36 = `${fields.govtLandArea || fields.propertyArea || fields.areaOfLand} * Rs.${fields.govtRateLand}/- = Rs.${formatCurrencyINR(area * rate)}/-`;
+    const areaGovtStr = fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '');
+    const areaGovtNum = parseSqftFromArea(areaGovtStr, fields.propertyAreaUnit, fields.propertyAreaValue);
+    const rateGovtNum = parseNum(fields.govtRateLand);
+    const calcGovtVal = (areaGovtNum > 0 && rateGovtNum > 0) ? Math.round(((areaGovtNum * rateGovtNum) + Number.EPSILON) * 100) / 100 : 0;
+
+    if (fields.valuationGovtRateLocked !== false || !val36) {
+      if (rateGovtNum > 0 && areaGovtNum > 0 && calcGovtVal > 0) {
+        val36 = `Rs.${formatCurrencyINR(rateGovtNum)}/- Per sqft * ${formatCurrencyINR(areaGovtNum)}sqft. = Rs.${formatCurrencyINR(calcGovtVal)}/-`;
       }
     }
+    this.drawBandhanRow('36.', 'Valuation according to Govt. rate', val36 || '');
+
     let val37 = (fields.distressSaleValue || '').trim();
     if (!val37 || fields.distressSaleLocked !== false) {
       const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
@@ -1294,8 +1301,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       : `an ${structName} framed structure`;
 
     const relPoints = [
-      { prefix: 'i) PURPOSE OF VALUATION: ', text: fields.annexurePurpose || 'Mortgage and Bank finance.' },
-      { prefix: 'ii) Govt. guideline value of land: ', text: fields.annexureGovtGuideline || `Rs.${fields.valuationGovtRate ? fields.valuationGovtRate.split('*')[0].trim() : '286/- per sqft'} (As per IGR, Odisha Govt. Website)` },
+      { prefix: 'i) PURPOSE OF VALUATION: ', text: fields.annexurePurpose || fields.purpose || 'Mortgage and Bank finance.' },
+      { prefix: 'ii) Govt. guideline value of land: ', text: fields.annexureGovtGuideline || (fields.govtRateLand ? `Rs.${fields.govtRateLand}/- per sqft (As per IGR, Odisha Govt. Website)` : (fields.valuationGovtRate ? `Rs.${fields.valuationGovtRate.split('*')[0].trim()} (As per IGR, Odisha Govt. Website)` : 'Rs.286/- per sqft (As per IGR, Odisha Govt. Website)')) },
       { prefix: 'iii) ', text: fields.annexureMarketEnquiry || `From local enquiry and market investigation it reveals that the rate for vacant, developed BASTU land in-and-around the site varies between @Rs. 1700per sqft to @ Rs. 1900per sqft, depending upon, location, sites, width of the abutting road, shape, size, neighbourhood area and other factors. Thus @Rs. ${fields.plotRate || '1800'} per sqft decimal reasonably be taken as land value for the above stated case for the purpose of valuation.` },
       { prefix: 'iv) ', text: fields.annexureCpwdBaseRate || `The base rate of construction has been considered at ₹1,300 per sq. ft. for ${structPhrase} for the location. An additional ₹500 per sq. ft. has been accounted for towards extra amenities such as interior improvement works, fixed furniture, false ceiling, cupboards, modular kitchen, and premium quality electrical, sanitary fittings, and fixtures. Accordingly, the overall cost of the building is assessed at ₹${fields.rateOfCostOfConstruction || '1,800'} per sq. ft. of Super built-up area (SBUA).` },
       { prefix: 'v) ', text: 'Considering the above CPWD rate, CPWD specification and the specification of the house under consideration, cost of construction for the above building may reasonably be taken as under: -' },

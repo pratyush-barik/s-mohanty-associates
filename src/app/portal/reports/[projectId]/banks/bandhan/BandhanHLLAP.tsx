@@ -2977,37 +2977,10 @@ export default function BandhanHLLAP({
                     })()}
                   </div>
 
-                  {/* Horizontal Formula Row: _______ * ________ = ________ */}
+                  {/* Horizontal Formula Row: [Rate] * [Referenced Area] = [Govt Valuation] */}
                   <div className="rounded-lg border border-sky-200/90 bg-white/80 p-3.5 sm:p-4 space-y-3">
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-3 items-center">
-                      {/* Box 1: Land Area for Govt. Valuation (sqft) - Referenced from Pt 26 */}
-                      <div className="sm:col-span-4 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <label className="block text-[11px] font-semibold text-slate-700">
-                            Land Area for Govt. Valuation (sqft):
-                          </label>
-                          <span className="text-[9.5px] font-semibold bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded border border-sky-200">
-                            ⚡ Referenced from Pt 26
-                          </span>
-                        </div>
-                        <input
-                          type="text"
-                          className={`${inputCls} bg-slate-100/90 text-slate-700 font-semibold cursor-not-allowed border-slate-300`}
-                          value={fields.propertyArea || fields.areaOfLand || fields.govtLandArea || 'NA'}
-                          readOnly
-                          disabled
-                        />
-                        <p className="text-[10.5px] text-slate-500">
-                          Automatically populated from Point 26 Total Land / Property Area.
-                        </p>
-                      </div>
-
-                      {/* Multiply sign * */}
-                      <div className="sm:col-span-1 flex items-center justify-center text-xl font-black text-sky-700 pt-1 sm:pt-4">
-                        *
-                      </div>
-
-                      {/* Box 2: Govt. Land Rate (Rs./sqft) */}
+                      {/* Box 1: Govt. Land Rate (Rs./sqft) */}
                       <div className="sm:col-span-3 space-y-1">
                         <label className="block text-[11px] font-semibold text-slate-700">
                           Govt. Land Rate (Rs./sqft):
@@ -3029,11 +3002,45 @@ export default function BandhanHLLAP({
                               valuationGovtRate: prev.valuationGovtRateLocked !== false ? calcValStr : prev.valuationGovtRate,
                             }));
                           }}
-                          placeholder="e.g. 1800"
+                          placeholder="e.g. 286"
                           disabled={isReadOnly}
                         />
                         <p className="text-[10.5px] text-slate-500">
                           Govt. benchmark / guideline rate per sqft.
+                        </p>
+                      </div>
+
+                      {/* Multiply sign * */}
+                      <div className="sm:col-span-1 flex items-center justify-center text-xl font-black text-sky-700 pt-1 sm:pt-4">
+                        *
+                      </div>
+
+                      {/* Box 2: Referenced Land Area (in sqft) - Referenced from Pt 26 */}
+                      <div className="sm:col-span-4 space-y-1">
+                        <div className="flex items-center justify-between">
+                          <label className="block text-[11px] font-semibold text-slate-700">
+                            Referenced Land Area (sqft):
+                          </label>
+                          <span className="text-[9.5px] font-semibold bg-sky-100 text-sky-800 px-1.5 py-0.5 rounded border border-sky-200">
+                            ⚡ Referenced from Pt 26
+                          </span>
+                        </div>
+                        <input
+                          type="text"
+                          className={`${inputCls} bg-slate-100/90 text-slate-700 font-semibold cursor-not-allowed border-slate-300`}
+                          value={(() => {
+                            const areaStr = fields.propertyArea || fields.areaOfLand || fields.govtLandArea || '';
+                            const areaNum = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
+                            if (areaNum > 0) {
+                              return `${formatCurrencyINR(areaNum)} sqft.`;
+                            }
+                            return areaStr || 'NA';
+                          })()}
+                          readOnly
+                          disabled
+                        />
+                        <p className="text-[10.5px] text-slate-500">
+                          Automatically populated from Point 26 Total Land / Property Area.
                         </p>
                       </div>
 
@@ -3042,11 +3049,11 @@ export default function BandhanHLLAP({
                         =
                       </div>
 
-                      {/* Box 3: Valuation as per Govt. Rates (Locked Read-only) */}
+                      {/* Box 3: Auto calculated readonly value / Govt. Valuation */}
                       <div className="sm:col-span-3 space-y-1">
                         <div className="flex items-center justify-between">
                           <label className="block text-[11px] font-semibold text-sky-950">
-                            Govt. Valuation (Locked Read-only):
+                            Govt. Valuation (Calculated):
                           </label>
                           <button
                             type="button"
@@ -3106,24 +3113,27 @@ export default function BandhanHLLAP({
                           disabled={isReadOnly}
                           placeholder="Rs.0/-"
                         />
+                        <p className="text-[10.5px] text-slate-500">
+                          {fields.valuationGovtRateLocked !== false ? 'Auto-calculated readonly value.' : 'Manual override enabled.'}
+                        </p>
                       </div>
                     </div>
 
                     {/* Formula helper message */}
-                    <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-sky-100">
+                    <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-sky-100 gap-2">
                       <span>
                         {fields.valuationGovtRateLocked !== false
-                          ? 'Auto-computed formula: Land Area (Referenced from Pt 26) * Govt. Rate (Rs./sqft) = Resulting Valuation'
+                          ? 'Auto-computed formula: Govt. Land Rate (Rs./sqft) * Referenced Area (sqft) = Govt. Valuation'
                           : 'Unlocked: Type any custom govt. valuation statement directly.'}
                       </span>
                       {(() => {
                         const areaStr = fields.govtLandArea !== undefined ? fields.govtLandArea : (fields.propertyArea || fields.areaOfLand || '');
-                        const areaNum = parseNum(areaStr);
+                        const areaNum = parseSqftFromArea(areaStr, fields.propertyAreaUnit, fields.propertyAreaValue);
                         const rateNum = parseNum(fields.govtRateLand);
-                        const calcVal = (areaNum > 0 && rateNum > 0) ? areaNum * rateNum : 0;
+                        const calcVal = (areaNum > 0 && rateNum > 0) ? Math.round(((areaNum * rateNum) + Number.EPSILON) * 100) / 100 : 0;
                         return calcVal > 0 ? (
-                          <span className="font-semibold text-sky-900 font-sans">
-                            {areaStr} sqft. × Rs.{fields.govtRateLand}/- = Rs.${formatCurrencyINR(calcVal)}/-
+                          <span className="font-semibold text-sky-900 font-sans bg-sky-100/70 px-2.5 py-0.5 rounded border border-sky-200">
+                            Rs.{fields.govtRateLand}/- Per sqft * {formatCurrencyINR(areaNum)}sqft. = Rs.${formatCurrencyINR(calcVal)}/-
                           </span>
                         ) : null;
                       })()}
@@ -3131,19 +3141,19 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* 37. Distress Sale Value & Realizable Value (Efficient compact one-liner layout) */}
-                <div className="rounded-xl border border-sky-200/80 bg-sky-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex flex-wrap items-center justify-between pb-2 border-b border-sky-200/60 gap-2">
+                {/* 37. Distress Sale Value & Realizable Value (Alternating Soft Indigo) */}
+                <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/35 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex flex-wrap items-center justify-between pb-2 border-b border-indigo-200/60 gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-sans font-semibold text-sky-900 text-xs sm:text-sm">
+                      <span className="font-sans font-semibold text-indigo-950 text-xs sm:text-sm">
                         37. Distress Sale Value &amp; Realizable Value
                       </span>
                     </div>
                     {(() => {
                       const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
                       return baseNum > 0 ? (
-                        <span className="text-[11px] font-medium text-slate-700 bg-white/90 px-2.5 py-0.5 rounded border border-sky-200 shadow-2xs">
-                          Base Market Value: <strong className="text-sky-950 font-mono">Rs.{formatCurrencyINR(baseNum)}/-</strong>
+                        <span className="text-[11px] font-medium text-slate-700 bg-white/90 px-2.5 py-0.5 rounded border border-indigo-200/80 shadow-2xs">
+                          Base Market Value: <strong className="text-indigo-950 font-mono">Rs.{formatCurrencyINR(baseNum)}/-</strong>
                         </span>
                       ) : null;
                     })()}
@@ -3151,7 +3161,7 @@ export default function BandhanHLLAP({
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {/* Distress Sale Value Compact One-Liner */}
-                    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-2">
+                    <div className="rounded-xl border border-indigo-100/90 bg-white p-3.5 shadow-2xs space-y-2">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-bold text-slate-800">
                           Distress Sale Value:
@@ -3188,7 +3198,7 @@ export default function BandhanHLLAP({
                         <div className="col-span-8">
                           <input
                             type="text"
-                            className={`${inputCls} bg-sky-50/70 font-bold text-sky-950 border-sky-300 cursor-not-allowed`}
+                            className={`${inputCls} bg-indigo-50/60 font-bold text-indigo-950 border-indigo-200 cursor-not-allowed`}
                             value={(() => {
                               const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
                               const pctStr = (fields.distressSalePct !== undefined && fields.distressSalePct !== null && fields.distressSalePct !== '')
@@ -3211,7 +3221,7 @@ export default function BandhanHLLAP({
                     </div>
 
                     {/* Realizable Value Compact One-Liner */}
-                    <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-2xs space-y-2">
+                    <div className="rounded-xl border border-indigo-100/90 bg-white p-3.5 shadow-2xs space-y-2">
                       <div className="flex items-center justify-between">
                         <label className="text-xs font-bold text-slate-800">
                           Realizable Value:
@@ -3248,7 +3258,7 @@ export default function BandhanHLLAP({
                         <div className="col-span-8">
                           <input
                             type="text"
-                            className={`${inputCls} bg-sky-50/70 font-bold text-sky-950 border-sky-300 cursor-not-allowed`}
+                            className={`${inputCls} bg-indigo-50/60 font-bold text-indigo-950 border-indigo-200 cursor-not-allowed`}
                             value={(() => {
                               const baseNum = parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate);
                               const pctStr = (fields.realisableValuePct !== undefined && fields.realisableValuePct !== null && fields.realisableValuePct !== '')
@@ -3272,11 +3282,11 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
 
-                {/* 38. Date of project commencement & date of expected project completion */}
-                <div className="rounded-xl border border-sky-200/80 bg-sky-50/40 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
-                  <div className="flex flex-wrap items-center justify-between pb-2 border-b border-sky-200/60 gap-2">
+                {/* 38. Date of project commencement & date of expected project completion (Alternating Soft Emerald) */}
+                <div className="rounded-xl border border-emerald-200/80 bg-emerald-50/35 p-4 sm:p-5 shadow-xs space-y-3.5 sm:col-span-2">
+                  <div className="flex flex-wrap items-center justify-between pb-2 border-b border-emerald-200/60 gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-sans font-semibold text-sky-900 text-xs sm:text-sm">
+                      <span className="font-sans font-semibold text-emerald-950 text-xs sm:text-sm">
                         38. Date of Project Commencement &amp; Date of Expected Project Completion
                       </span>
                     </div>
@@ -3291,7 +3301,7 @@ export default function BandhanHLLAP({
                             dateCommencementCompletion: 'NA',
                           }));
                         }}
-                        className="text-xs text-slate-500 hover:text-rose-600 font-medium flex items-center gap-1 bg-white hover:bg-rose-50 px-2 py-0.5 rounded border border-slate-200 transition-colors cursor-pointer"
+                        className="text-xs text-slate-500 hover:text-rose-600 font-medium flex items-center gap-1 bg-white hover:bg-rose-50 px-2 py-0.5 rounded border border-emerald-200/80 transition-colors cursor-pointer"
                         title="Reset dates to NA"
                       >
                         ✕ Clear Dates
@@ -3372,12 +3382,17 @@ export default function BandhanHLLAP({
 
             {/* 10. NDMA Parameters */}
             <Section number={10} id="sec-ndma" title="NDMA Disaster Management Parameters (Point 41)">
-              <div className="space-y-4">
+              <div className="rounded-xl border border-indigo-200/80 bg-indigo-50/35 p-4 sm:p-5 shadow-xs space-y-4">
                 {/* Header action buttons */}
-                <div className="flex items-center justify-between pb-1">
-                  <span className="text-xs text-slate-500">
-                    Click any option chip, sync from earlier sections, or type freely. Fields can also be left blank.
-                  </span>
+                <div className="flex flex-wrap items-center justify-between pb-3 border-b border-indigo-200/70 gap-2">
+                  <div>
+                    <span className="font-sans font-semibold text-indigo-950 text-xs sm:text-sm">
+                      41. NDMA Disaster Management Parameters (Matrix of 16 Parameters)
+                    </span>
+                    <p className="text-[11px] text-slate-500 pt-0.5">
+                      Click any option chip, sync from earlier sections, or type freely. Fields can also be left blank.
+                    </p>
+                  </div>
                   <div className="flex items-center gap-2">
                     <button
                       type="button"
@@ -3402,7 +3417,7 @@ export default function BandhanHLLAP({
                           ndmaStructureType: getNdmaStructureTypeForStructure(prev.typeOfStructure),
                         }));
                       }}
-                      className="text-xs text-indigo-700 hover:text-indigo-900 font-medium flex items-center gap-1 bg-indigo-100/70 hover:bg-indigo-100 px-2.5 py-1 rounded border border-indigo-200 transition-colors"
+                      className="text-xs text-indigo-700 hover:text-indigo-900 font-medium flex items-center gap-1 bg-white hover:bg-indigo-100/70 px-2.5 py-1 rounded-lg border border-indigo-200 shadow-2xs transition-colors cursor-pointer"
                       title="Set all NDMA parameters to recommended defaults"
                     >
                       ⚡ Set Recommended Defaults
@@ -3430,7 +3445,7 @@ export default function BandhanHLLAP({
                           ndmaStructureType: '',
                         }));
                       }}
-                      className="text-xs text-slate-500 hover:text-slate-700 font-medium flex items-center gap-1 bg-white hover:bg-slate-100 px-2.5 py-1 rounded border border-slate-200 transition-colors"
+                      className="text-xs text-slate-500 hover:text-slate-700 font-medium flex items-center gap-1 bg-white hover:bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200 shadow-2xs transition-colors cursor-pointer"
                       title="Clear all NDMA fields"
                     >
                       ✕ Clear All
@@ -3440,7 +3455,7 @@ export default function BandhanHLLAP({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   {/* 1. Concrete Grade */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Concrete Grade
                     </label>
@@ -3472,7 +3487,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 2. Horizontal floor type */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <div className="flex flex-wrap items-center justify-between gap-1">
                       <label className="block text-xs font-semibold text-slate-800">
                         Horizontal floor type
@@ -3519,7 +3534,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 3. Seismic Zone */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Seismic Zone
                     </label>
@@ -3551,7 +3566,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 4. Steel Grade */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Steel Grade
                     </label>
@@ -3583,7 +3598,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 5. Flood Prone Area */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Flood Prone Area
                     </label>
@@ -3615,7 +3630,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 6. Urban Floods */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Urban Floods
                     </label>
@@ -3647,7 +3662,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 7. Environment Exposure Condition */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Environment Exposure Condition
                     </label>
@@ -3679,7 +3694,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 8. Soil Slope vulnerable to landslide */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Soil Slope vulnerable to landslide
                     </label>
@@ -3711,7 +3726,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 9. Wind / Cyclones */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Wind / Cyclones
                     </label>
@@ -3743,7 +3758,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 10. Tsunami */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Tsunami
                     </label>
@@ -3775,7 +3790,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 11. Height of building above ground level */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <div className="flex flex-wrap items-center justify-between gap-1">
                       <label className="block text-xs font-semibold text-slate-800">
                         Height of building above ground level
@@ -3822,7 +3837,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 12. Coastal Regulatory Zone (CRZ) */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Coastal Regulatory Zone (CRZ)
                     </label>
@@ -3854,7 +3869,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 13. Nature of Building / Wing / Tower */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Nature of Building /Wing/Tower
                     </label>
@@ -3886,7 +3901,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 14. Function of use */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <div className="flex flex-wrap items-center justify-between gap-1">
                       <label className="block text-xs font-semibold text-slate-800">
                         Function of use
@@ -3933,7 +3948,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 15. Type of Foundation */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <label className="block text-xs font-semibold text-slate-800">
                       Type of Foundation
                     </label>
@@ -3965,7 +3980,7 @@ export default function BandhanHLLAP({
                   </div>
 
                   {/* 16. Type of Structure */}
-                  <div className="rounded-lg border border-slate-200/80 bg-slate-50/50 p-3 space-y-2">
+                  <div className="rounded-lg border border-indigo-100/90 bg-white p-3 space-y-2 shadow-2xs">
                     <div className="flex flex-wrap items-center justify-between gap-1">
                       <label className="block text-xs font-semibold text-slate-800">
                         Type of Structure
@@ -4039,7 +4054,7 @@ export default function BandhanHLLAP({
                       Introduction:
                     </label>
                     <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                      ⚡ Referenced from: Bank Branch, Pt 1 (Customer Name), Pt 14 (Date of Visit)
+                      ⚡ Referenced from: Pt 1 (Bank Branch), Pt 3 (Customer Name), Pt 13 (Date of Visit)
                     </span>
                   </div>
                   <textarea
@@ -4059,7 +4074,7 @@ export default function BandhanHLLAP({
                       Description of the Property:
                     </label>
                     <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                      ⚡ Referenced from: Pt 8 (Property Address)
+                      ⚡ Referenced from: Pt 6 (Postal Address) / Pt 8 (Legal Address)
                     </span>
                   </div>
                   <textarea
@@ -4079,7 +4094,7 @@ export default function BandhanHLLAP({
                       List of Documents for Verification:
                     </label>
                     <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                      ⚡ Referenced from: Pt 24 (Documents Verified)
+                      ⚡ Referenced from: Pt 25 (Deed &amp; Sanctioned Plan Particulars)
                     </span>
                   </div>
                   <input
@@ -4106,13 +4121,13 @@ export default function BandhanHLLAP({
                           i) Purpose of Valuation:
                         </label>
                         <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                          ⚡ Referenced from: Pt 5 (Purpose)
+                          ⚡ Referenced from: Project Purpose / Loan Subject
                         </span>
                       </div>
                       <input
                         type="text"
                         className={inputCls}
-                        value={fields.annexurePurpose || 'Mortgage and Bank finance.'}
+                        value={fields.annexurePurpose !== undefined && fields.annexurePurpose !== '' ? fields.annexurePurpose : (fields.purpose || 'Mortgage and Bank finance.')}
                         onChange={(e) => handleChange('annexurePurpose', e.target.value)}
                         disabled={isReadOnly}
                       />
@@ -4125,13 +4140,13 @@ export default function BandhanHLLAP({
                           ii) Govt. Guideline Value of Land:
                         </label>
                         <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                          ⚡ Referenced from: Pt 36 (Govt Rate)
+                          ⚡ Referenced from: Pt 36 (Govt. Rate: Rs.{fields.govtRateLand || '286'}/- per sqft)
                         </span>
                       </div>
                       <input
                         type="text"
                         className={inputCls}
-                        value={fields.annexureGovtGuideline || `Rs.${fields.valuationGovtRate ? fields.valuationGovtRate.split('*')[0].trim() : (fields.govtRateLand ? `${fields.govtRateLand}/- per sqft` : '286/- per sqft')} (As per IGR, Odisha Govt. Website)`}
+                        value={fields.annexureGovtGuideline !== undefined && fields.annexureGovtGuideline !== '' ? fields.annexureGovtGuideline : (fields.govtRateLand ? `Rs.${fields.govtRateLand}/- per sqft (As per IGR, Odisha Govt. Website)` : (fields.valuationGovtRate ? `Rs.${fields.valuationGovtRate.split('*')[0].trim()} (As per IGR, Odisha Govt. Website)` : 'Rs.286/- per sqft (As per IGR, Odisha Govt. Website)'))}
                         onChange={(e) => handleChange('annexureGovtGuideline', e.target.value)}
                         disabled={isReadOnly}
                       />
@@ -4144,7 +4159,7 @@ export default function BandhanHLLAP({
                           iii) Local Market Investigation &amp; Land Rate:
                         </label>
                         <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                          ⚡ Referenced from: Pt 30 (Market Land Rate: Rs.{fields.plotRate || '1800'}/-)
+                          ⚡ Referenced from: Pt 30 &amp; Pt 31 (Plot Rate: Rs.{fields.plotRate || '1800'}/- per sqft)
                         </span>
                       </div>
                       <textarea
@@ -4163,7 +4178,7 @@ export default function BandhanHLLAP({
                           iv) CPWD Construction Rate &amp; Extra Amenities:
                         </label>
                         <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                          ⚡ Referenced from: Pt 22 (${fields.typeOfStructure || 'RCC'}) &amp; Pt 31 (Rate: Rs.{fields.rateOfCostOfConstruction || '1800'}/-)
+                          ⚡ Referenced from: Pt 21 (Type of Structure: {fields.typeOfStructure || 'RCC'}) &amp; Pt 32 (Cost of Construction: Rs.{fields.rateOfCostOfConstruction || '1,800'}/-)
                         </span>
                       </div>
                       <textarea
@@ -4198,7 +4213,7 @@ export default function BandhanHLLAP({
                       Adopted Cost of Construction Table:
                     </span>
                     <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                      ⚡ Referenced from: Pt 22 (Structure) &amp; Pt 31 (Rate: Rs.{fields.rateOfCostOfConstruction || '1800'}/-)
+                      ⚡ Referenced from: Pt 21 (Type of Structure) &amp; Pt 32 (Adopted Rate of Construction)
                     </span>
                   </div>
                   <div className="overflow-x-auto border border-slate-200 rounded-lg">
@@ -4244,7 +4259,7 @@ export default function BandhanHLLAP({
                         Method of Valuation (Classification, Ingredients &amp; Approach):
                       </span>
                       <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                        ⚡ Referenced from: Pt 18 ({fields.propertyType || 'Residential'}) &amp; Pt 23 ({fields.natureOfBuilding || 'Standalone Structure'})
+                        ⚡ Referenced from: Pt 18 (Property Type: {fields.propertyType || 'Residential'}), Pt 19/20 (Usage: {fields.approvedUsage || 'Residential'}) &amp; Pt 41 (Building Nature)
                       </span>
                     </div>
                     <div className="overflow-x-auto border border-slate-200 rounded-lg">
@@ -4287,7 +4302,7 @@ export default function BandhanHLLAP({
                         (A) Valuation of Land Component:
                       </span>
                       <span className="text-[10.5px] font-semibold bg-sky-50 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
-                        ⚡ Formula: Area (Pt 26) × Land Rate (Pt 30) = Land Value (Pt 30)
+                        ⚡ Formula: Area (Pt 26) × Land Rate (Pt 30/31) = Land Value (Pt 30/31)
                       </span>
                     </div>
                     <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs font-mono space-y-1">
@@ -4306,7 +4321,7 @@ export default function BandhanHLLAP({
                         (B) Depreciated Replacement Cost (D.R.C.) of Existing Building:
                       </span>
                       <span className="text-[10.5px] font-semibold bg-sky-50 text-sky-800 px-2 py-0.5 rounded border border-sky-200">
-                        ⚡ Referenced from Pt 26 / Pt 31
+                        ⚡ Referenced from: Pt 26 (Floor Areas), Pt 29 (Building Life), Pt 32 (Cost of Construction) &amp; Pt 33 (Depreciation)
                       </span>
                     </div>
 
@@ -4475,7 +4490,7 @@ export default function BandhanHLLAP({
                         Market Value Summary (Land + Building):
                       </span>
                       <span className="text-[10.5px] font-semibold bg-emerald-50 text-emerald-800 px-2.5 py-0.5 rounded border border-emerald-200">
-                        ⚡ Dynamically Synchronized
+                        ⚡ Synchronized with Pt 30/31 (Land), Pt 33 (Building), Pt 35 (Market Value) &amp; Pt 37 (Distress/Realizable)
                       </span>
                     </div>
 
@@ -4524,7 +4539,7 @@ export default function BandhanHLLAP({
                       Opinion Statement:
                     </label>
                     <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                      ⚡ Dynamically includes Market Value (Rs.{formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/-)
+                      ⚡ Referenced from: Pt 35 (Market Value: Rs.{formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty || fields.valuationAsOnDate))}/-)
                     </span>
                   </div>
                   <textarea
@@ -4543,7 +4558,7 @@ export default function BandhanHLLAP({
                       Declaration (Clauses A to P):
                     </label>
                     <span className="text-[10.5px] font-medium bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
-                      ⚡ Dynamically includes Visit Date, Market Value, Realizable &amp; Distress Values
+                      ⚡ Referenced from: Pt 13 (Date of Visit), Pt 35 (Market Value) &amp; Pt 37 (Distress/Realizable Values)
                     </span>
                   </div>
                   <div className="space-y-2 text-xs text-slate-700 max-h-80 overflow-y-auto pr-1">
@@ -4652,8 +4667,7 @@ export default function BandhanHLLAP({
               longitude={fields.longitude}
               technicalAddress={fields.legalAddress || ''}
               propertyAddress={fields.propertyAddress || ''}
-              hasExternalCoordinatesField={true}
-              coordinatesSectionName="Section 2: Location & Address"
+              hasExternalCoordinatesField={false}
               isReadOnly={isReadOnly}
               uploading={saving}
               onLatitudeChange={val => handleChange('latitude', val)}
