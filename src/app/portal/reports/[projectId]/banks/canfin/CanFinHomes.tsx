@@ -19,10 +19,18 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     { id: 'canfin-section-6', title: '6. Documents Verified' },
     { id: 'canfin-section-7', title: '7. Valuation Report' },
     { id: 'canfin-section-8', title: '8. The Condition of Structure' },
+    { id: 'canfin-section-9', title: '9. Concluding Declarations' },
   ],
   defaultValues: {
     purpose: 'Housing Loan / Composite Loan',
     
+    // Section 9 Variables
+    canfinHomesRemarks: '',
+    canfinHomesDeclarations: { pt1: false, pt2: false, pt3: false, pt4: false, pt5: false },
+    canfinHomesEnableDeclarationDateEdit: false,
+    canfinHomesDeclarationDateManual: '',
+    canfinHomesSealSignatureFile: null,
+
     // Section 8 Variables
     canfinHomesStructuralIrregularities: 'No',
     canfinHomesStructuralIrregularitiesDetails: '',
@@ -2392,6 +2400,145 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                     </div>
                   </div>
                 </Field>
+
+              </div>
+            </div>
+            
+          </div>
+        );
+      }
+    },
+    {
+      id: 'canfin-section-9',
+      title: '9. CONCLUDING DECLARATIONS',
+      number: 9,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        // System date for prefill
+        const systemDate = new Date().toISOString().split('T')[0];
+        
+        return (
+          <div className="animate-fade-in space-y-6">
+            
+            {/* Remarks & Declarations */}
+            <div className="border border-green-200 bg-[#f1f8e9] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Remarks & Declarations</h3>
+              
+              <div className="space-y-6">
+                
+                {/* Remarks / Note */}
+                <Field label="Remarks / Note">
+                  <textarea 
+                    className={inputCls} 
+                    rows={4}
+                    placeholder="Enter final remarks or notes here..."
+                    value={fields.canfinHomesRemarks || ''} 
+                    onChange={e => handleChange('canfinHomesRemarks', e.target.value)} 
+                    disabled={isReadOnly} 
+                  />
+                </Field>
+
+                {/* DECLARATION (Points I to V) */}
+                <div className="space-y-3 bg-white/60 p-4 rounded border border-green-100 text-sm text-gray-700">
+                  <p className="font-semibold text-gray-800">DECLARATION</p>
+                  
+                  {[
+                    { key: 'pt1', text: 'I. I hereby declare that the information furnished above is true and correct to the best of my knowledge and belief.' },
+                    { key: 'pt2', text: 'II. I have no direct or indirect interest in the property valued.' },
+                    { key: 'pt3', text: 'III. I have personally inspected the property on the date mentioned above.' },
+                    { key: 'pt4', text: 'IV. I have not been convicted of any offence and no criminal proceedings are pending against me.' },
+                    { key: 'pt5', text: 'V. The valuation report has been prepared by me strictly in accordance with the guidelines issued by the Bank.' },
+                  ].map((decl) => (
+                    <label key={decl.key} className="flex items-start gap-3 cursor-pointer group">
+                      <div className="pt-0.5">
+                        <input
+                          type="checkbox"
+                          checked={fields.canfinHomesDeclarations?.[decl.key] || false}
+                          onChange={(e) => {
+                            const currentDecls = fields.canfinHomesDeclarations || { pt1: false, pt2: false, pt3: false, pt4: false, pt5: false };
+                            handleChange('canfinHomesDeclarations', {
+                              ...currentDecls,
+                              [decl.key]: e.target.checked
+                            });
+                          }}
+                          disabled={isReadOnly}
+                          className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300 shadow-sm"
+                        />
+                      </div>
+                      <span className="flex-1 group-hover:text-gray-900 transition-colors">{decl.text}</span>
+                    </label>
+                  ))}
+                  <p className="text-xs text-red-500 italic mt-2">* All declarations must be accepted for final submission.</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+                  
+                  {/* Date */}
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Date</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-gray-500">Edit</span>
+                        <button
+                          type="button"
+                          onClick={() => handleChange('canfinHomesEnableDeclarationDateEdit', !fields.canfinHomesEnableDeclarationDateEdit)}
+                          disabled={isReadOnly}
+                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableDeclarationDateEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        >
+                          <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableDeclarationDateEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        </button>
+                      </div>
+                    </div>
+                  }>
+                    <div className="relative">
+                      {fields.canfinHomesEnableDeclarationDateEdit ? (
+                        <BaseDateInput
+                          value={fields.canfinHomesDeclarationDateManual || ''}
+                          onChange={(val) => handleChange('canfinHomesDeclarationDateManual', val)}
+                          disabled={isReadOnly}
+                        />
+                      ) : (
+                        <input 
+                          className={`${inputCls} pr-10 bg-white text-gray-700`} 
+                          value={systemDate} 
+                          readOnly 
+                          disabled={isReadOnly}
+                          title='>>Prefill from system current date<<'
+                        />
+                      )}
+                      {!fields.canfinHomesEnableDeclarationDateEdit && (
+                        <div
+                          className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
+                          title='>>Prefill from system current date<<'
+                        >
+                          <Lock className={`w-4 h-4 text-gray-400`} />
+                        </div>
+                      )}
+                    </div>
+                  </Field>
+
+                  {/* Seal Signature of the Panel Valuer */}
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+                      Seal Signature of the Panel Valuer
+                    </label>
+                    <div className="border-2 border-dashed border-green-300 bg-white rounded-lg p-6 flex flex-col items-center justify-center text-center hover:bg-green-50 transition-colors">
+                      <span className="block text-sm text-gray-500 mb-3">Upload signature / seal image</span>
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        onChange={e => {
+                          if (e.target.files && e.target.files[0]) {
+                            handleChange('canfinHomesSealSignatureFile', Array.from(e.target.files));
+                          }
+                        }} 
+                        disabled={isReadOnly}
+                        className="text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer w-full"
+                      />
+                    </div>
+                  </div>
+
+                </div>
 
               </div>
             </div>
