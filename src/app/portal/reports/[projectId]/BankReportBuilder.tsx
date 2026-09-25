@@ -1149,8 +1149,8 @@ export default function BankReportBuilder({
 
       const normMouzaImages = fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage);
       const normCadastralImages = fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage);
-      const normBdaImages = fields.bdaMapImages || [];
-      const normBenchmarkImages = fields.benchmarkMapImages || [];
+      const normBdaImages = normalizeMapImages(fields.bdaMapImages);
+      const normBenchmarkImages = normalizeMapImages(fields.benchmarkMapImages);
 
       const imageResults = await Promise.all([
         ...propertyImgs.map(url => fetchBytes(url)),
