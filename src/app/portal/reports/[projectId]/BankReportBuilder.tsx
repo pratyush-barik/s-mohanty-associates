@@ -1072,7 +1072,7 @@ export default function BankReportBuilder({
     }
   };
 
-  const removeMapImage = (field: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', index?: number) => {
+  const removeMapImage = (field: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages' | 'benchmarkMapImages', index?: number) => {
     const currentList = normalizeMapImages((fields as any)[field] || (fields as any)[field.replace(/s$/, '')]);
     const updated = typeof index === 'number' ? currentList.filter((_, i) => i !== index) : [];
     handleChange(field as any, updated);
@@ -1081,7 +1081,7 @@ export default function BankReportBuilder({
     if (field === 'cadastralMapImages') handleChange('cadastralMapImage', updated[0] || '');
   };
 
-  const reorderMapImage = (field: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', newImages: string[]) => {
+  const reorderMapImage = (field: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages' | 'benchmarkMapImages', newImages: string[]) => {
     handleChange(field as any, newImages);
     if (field === 'locationMapImages') handleChange('locationMapImage', newImages[0] || '');
     if (field === 'mouzaMapImages') handleChange('mouzaMapImage', newImages[0] || '');

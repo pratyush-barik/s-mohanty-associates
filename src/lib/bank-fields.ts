@@ -340,12 +340,16 @@ export interface ValidationRule {
  */
 export interface BankConfig {
   // ── Identity (always required) ──
+  /** Internal ID for specific overrides (e.g., 'bank-of-baroda') */
+  id?: string;
   /** Bank name key — matches organisationTemplate value (e.g. 'ADITYA BIRLA CAPITAL LTD') */
   bankId: string;
   /** Sub-template key — matches organisationSubTemplate value (e.g. 'STSL') */
   subTemplateId: string;
   /** Human-readable display name (e.g. 'Aditya Birla Capital – STSL') */
   displayName: string;
+  /** Custom map order */
+  mapOrder?: ("mouza" | "location" | "sketch" | "cadastral" | "bda" | "benchmark")[];
 
   // ── Form Delta (all optional) ──
   /** Label overrides: base field key → new label text */
