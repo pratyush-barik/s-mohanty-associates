@@ -1283,14 +1283,14 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     // Remarks
     this.cursorY += 10;
     this.checkPageBreak(50);
-    this.drawTextAt('REMARKS', MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
-    const tw = this.fontBold.widthOfTextAtSize('REMARKS', 9);
+    this.drawTextAt('REMARKS', MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    const tw = this.fontBold.widthOfTextAtSize('REMARKS', FONT_SIZE);
     this.drawHLine(MARGIN_L, MARGIN_L + tw, this.cursorY + 2);
     this.cursorY += 15;
 
     const propLegal = this.fv('bobPropertyLegalRemarks');
     if (propLegal) {
-      const h = this.drawWrappedTextAt(propLegal, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: 9 });
+      const h = this.drawWrappedTextAt(propLegal, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
       this.cursorY += h + 10;
     }
     
@@ -1303,33 +1303,35 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const valConclusion = this.fields.bobValuationConclusionEditOn ? this.fv('bobValuationConclusion', '') : defaultValuationConclusion;
 
     this.checkPageBreak(40);
-    const h2 = this.drawWrappedTextAt(`• ${valConclusion}`, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: 9 });
+    const h2 = this.drawWrappedTextAt(`• ${valConclusion}`, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
     this.cursorY += h2 + 30;
 
     // Sign-off
     const place = this.fv('bobSignOffPlace') || 'Bhubaneswar';
     const date = formatReportDate(this.fv('bobDateOfValuationMade'));
     
-    this.checkPageBreak(80);
+    const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ${date}. We are satisfied that the fair and reasonable market value of the property is Rs.${fmtINR(marketValNum)}/- (${rupeesInWords(marketValNum)}).`;
+    const endorsement = this.fields.bobBankEndorsementEditOn ? this.fv('bobBankEndorsement', '') : defaultEndorsement;
+    
+    const h3 = this.measureTextHeight(endorsement, CONTENT_W, FONT_SIZE);
+    this.checkPageBreak(120 + h3);
     
     const sigBlockW = 220;
     const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
-    this.drawTextAt(`Place: ${place}`, MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
-    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
+    this.drawTextAt(`Place: ${place}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
     this.cursorY += 12;
-    this.drawTextAt(`Date: ${date}`, MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
-    this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
+    this.drawTextAt(`Date: ${date}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
     
     this.cursorY += 40;
 
-    const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ${date}. We are satisfied that the fair and reasonable market value of the property is Rs.${fmtINR(marketValNum)}/- (Rupees ${rupeesInWords(marketValNum)} only).`;
-    const endorsement = this.fields.bobBankEndorsementEditOn ? this.fv('bobBankEndorsement', '') : defaultEndorsement;
-    const h3 = this.drawWrappedTextAt(endorsement, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: 9 });
+    this.drawWrappedTextAt(endorsement, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
     this.cursorY += h3 + 30;
-    this.drawTextAt(`Date:`, MARGIN_L, this.cursorY, { bold: true, fontSize: 9 });
-    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
+    this.drawTextAt(`Date:`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
     this.cursorY += 12;
-    this.drawTextAt(`(Name of the Branch Manager with Official seal)`, sigBlockX, this.cursorY, { bold: true, fontSize: 9, align: 'center', maxWidth: sigBlockW });
+    this.drawTextAt(`(Name of the Branch Manager with Official seal)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
   }
 
   // ═══════════════════════════════════════════════════════════════════════
