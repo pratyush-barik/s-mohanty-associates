@@ -1469,17 +1469,12 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
 
     this.drawTextAt(`Date: ${affirmDate}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
-    this.drawTextAt(`Place: ${affirmPlace}`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
     
-    this.cursorY += 40;
-
-    const valuerSig = this.fields.bobAffirmationSignature;
-    if (valuerSig && valuerSig.length > 50) {
-      // Future image rendering can go here if needed
-    }
-
-    this.drawTextAt(`Signature of Approved Valuer`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
-    this.drawTextAt(`(Signature & Official seal)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+    this.cursorY += 12;
+    this.drawTextAt(`Place: ${affirmPlace}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+    
     this.cursorY += 10;
   }
 
