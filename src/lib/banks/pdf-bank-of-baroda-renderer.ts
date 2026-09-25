@@ -1506,7 +1506,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawTextAt(`Place: ${affirmPlace}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
     
-    this.cursorY += 10;
+    this.cursorY += 40;
   }
 
   // ═══════════════════════════════════════════════════════════════════════
