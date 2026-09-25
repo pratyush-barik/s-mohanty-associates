@@ -2,19 +2,29 @@
 import React from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
-import { Field, inputCls } from '../BaseBankReportComponents';
+import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
 import { Lock } from 'lucide-react';
 
 export const CANFIN_HOMES_CONFIG: BankConfig = {
   bankId: 'CANFIN HOMES LTD',
   subTemplateId: '',
   displayName: 'CanFin Homes Ltd',
-  hiddenSections: ['section-1', 'section-1a'],
+  hiddenSections: ['section-1', 'section-1a', 'section-2'],
   navSections: [
     { id: 'section-cover', title: '1. Cover Page Details' },
+    { id: 'canfin-section-2', title: '2. General' },
   ],
   defaultValues: {
     purpose: 'Housing Loan / Composite Loan',
+    
+    // Section 2 Variables
+    canfinHomesPurposeOfLoan: 'Home Loan',
+    canfinHomesCustomerName: '',
+    canfinHomesDocHolderName: '',
+    canfinHomesDateOfTechnicalVisit: '',
+    canfinHomesBuildingSocietyName: '',
+    canfinHomesBuilderSellerName: '',
+    canfinHomesPersonsMet: '',
     
     // Cover Page Variables
     canfinHomesPropertyOwners: [{ name: '', relationship: 'S/O', relativeName: '' }],
@@ -266,6 +276,59 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
             </div>
           </div>
         </div>
+        );
+      }
+    },
+    {
+      id: 'canfin-section-2',
+      title: '2. GENERAL',
+      number: 2,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-blue-200 bg-[#e3f2fd] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Loan & Customer Details</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Purpose Of Loan">
+                  <select className={inputCls} value={fields.canfinHomesPurposeOfLoan || ''} onChange={e => handleChange('canfinHomesPurposeOfLoan', e.target.value)} disabled={isReadOnly}>
+                    <option value="Home Loan">Home Loan</option>
+                    <option value="Loan Against Property">Loan Against Property</option>
+                    <option value="Working Capital">Working Capital</option>
+                    <option value="Priority Banking">Priority Banking</option>
+                    <option value="Agri">Agri</option>
+                    <option value="CC">CC</option>
+                    <option value="BT">BT</option>
+                    <option value="TL">TL</option>
+                    <option value="LAP DOD">LAP DOD</option>
+                  </select>
+                </Field>
+                <Field label="Name of the Customer">
+                  <input className={inputCls} value={fields.canfinHomesCustomerName || ''} onChange={e => handleChange('canfinHomesCustomerName', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Name of Document holder as per legal docs">
+                  <input className={inputCls} value={fields.canfinHomesDocHolderName || ''} onChange={e => handleChange('canfinHomesDocHolderName', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Date of Technical Visit">
+                  <BaseDateInput
+                    value={fields.canfinHomesDateOfTechnicalVisit || ''}
+                    onChange={(val) => handleChange('canfinHomesDateOfTechnicalVisit', val)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Name of The Building/Society">
+                  <input className={inputCls} value={fields.canfinHomesBuildingSocietyName || ''} onChange={e => handleChange('canfinHomesBuildingSocietyName', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Name of the Builder/Seller">
+                  <input className={inputCls} value={fields.canfinHomesBuilderSellerName || ''} onChange={e => handleChange('canfinHomesBuilderSellerName', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Person(s) Met [Name & Designation]">
+                  <input className={inputCls} value={fields.canfinHomesPersonsMet || ''} onChange={e => handleChange('canfinHomesPersonsMet', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+            </div>
+          </div>
         );
       }
     }
