@@ -1329,30 +1329,28 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       vAlign: 'middle',
     });
 
-    // Row 26 title with distinct section styling (LBL_BG with opacity)
+    // Row 26 title
     this.drawCell(MARGIN_L + colSl, this.cursorY, this.colPts, titleH, 'Area of the property:', {
       bold: true,
       fontSize: TABLE_FONT_SIZE,
-      fillColor: LBL_BG,
-      bgOpacity: 0.5,
       align: 'left',
       vAlign: 'middle',
     });
     this.drawCell(MARGIN_L + colSl + this.colPts, this.cursorY, this.colRem, titleH, val26, {
-      bold: true,
+      bold: false,
       fontSize: TABLE_FONT_SIZE,
       align: 'left',
       vAlign: 'middle',
     });
     this.cursorY += titleH;
 
-    // 6-col header with distinct OPT_BG styling
-    this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, headerH, 'Floor level', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, headerH, 'As measured\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, headerH, 'Built-up area\nAs per sanctioned\nplan (in sqft)', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, headerH, 'Built-up area\nAs per sale deed\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, headerH, 'Current\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
-    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, headerH, 'Approved\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle' });
+    // 6-col header
+    this.drawCell(MARGIN_L + colSl, this.cursorY, colW1, headerH, 'Floor level', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1, this.cursorY, colW2, headerH, 'As measured\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2, this.cursorY, colW3, headerH, 'Built-up area\nAs per sanctioned\nplan (in sqft)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3, this.cursorY, colW4, headerH, 'Built-up area\nAs per sale deed\n(In sqft.)', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4, this.cursorY, colW5, headerH, 'Current\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
+    this.drawCell(MARGIN_L + colSl + colW1 + colW2 + colW3 + colW4 + colW5, this.cursorY, colW6, headerH, 'Approved\nusage', { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', vAlign: 'middle' });
     this.cursorY += headerH;
 
     // Floor rows
