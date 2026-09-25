@@ -1867,7 +1867,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const locPages = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : 1;
     const bhuPages = (fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : 1;
     const guidePages = (fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : 1;
-    const computedPages = String(7 + photoPages + rorPages + locPages + bhuPages + guidePages);
+    const computedPages = String(9 + photoPages + rorPages + locPages + bhuPages + guidePages);
     const reportPagesCount = fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount || computedPages) : computedPages;
 
     const defaultDeclarations = [
@@ -1902,7 +1902,10 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.cursorY += 8;
     this.drawHeadingText('SIGNATURE OF EMPANELLED VALUER', TABLE_FONT_SIZE, 'left');
     this.drawHeadingText(`NAME OF THE EMPANELLED VALUER: ${fields.valuerSignatureName || 'SATYAJIT MOHANTY'}`, TABLE_FONT_SIZE, 'left');
-    this.drawHeadingText(`EDUCATIONAL/ PROFESSIONAL QUALIFICATION: ${fields.valuerQualification || 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'}`, TABLE_FONT_SIZE, 'left');
+    const displayQual = (!fields.valuerQualification || fields.valuerQualification === 'B.Tech (Civil), M.Val (RE)' || fields.valuerQualification.includes('B.Tech (Civil)'))
+      ? 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'
+      : fields.valuerQualification;
+    this.drawHeadingText(`EDUCATIONAL/ PROFESSIONAL QUALIFICATION: ${displayQual}`, TABLE_FONT_SIZE, 'left');
     this.drawHeadingText(`REGD. VALUER OF INSTITUTION OF VALUERS (No- ${fields.valuerIovRegNo || '107/2016-17, CAT-1'})`, TABLE_FONT_SIZE, 'left');
     this.drawHeadingText(`REGD. VALUER UNDER SECTION 34AB OF WEALTH TAX ACT (No. ${fields.valuerWealthTaxRegNo || 'CCIT/BBSR/Tech-10/2017-18'})`, TABLE_FONT_SIZE, 'left');
     this.drawHeadingText(`DATE: ${fields.declarationDate || fields.reportDate || formatReportDate(new Date())}`, TABLE_FONT_SIZE, 'left');

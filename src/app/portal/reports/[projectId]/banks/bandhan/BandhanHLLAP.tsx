@@ -624,7 +624,9 @@ export default function BandhanHLLAP({
 
       // Valuer Sign-off
       valuerSignatureName: 'SATYAJIT MOHANTY',
-      valuerQualification: raw.valuerQualification || 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)',
+      valuerQualification: (!raw.valuerQualification || raw.valuerQualification === 'B.Tech (Civil), M.Val (RE)' || raw.valuerQualification.includes('B.Tech (Civil)'))
+        ? 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'
+        : raw.valuerQualification,
       valuerIovRegNo: raw.valuerIovRegNo || '107/2016-17, CAT-1',
       valuerWealthTaxRegNo: raw.valuerWealthTaxRegNo || 'CCIT/BBSR/Tech-10/2017-18',
       valuerReportPagesCount: raw.valuerReportPagesCountLocked ? (raw.valuerReportPagesCount || '') : '',
@@ -716,11 +718,11 @@ export default function BandhanHLLAP({
   }, [fields.propertyImageNames, fields.propertyPhotos, fields.propertyImages]);
 
   // Dynamic Total Pages Calculation:
-  // Base 7 pages (5 questionnaire + 2 Annexure-A & Declarations)
+  // Base 9 pages (6 questionnaire + NDMA + 3 Annexure-A & Declarations)
   // + Photo pages (2 photos per page)
   // + Enclosure document pages (ROR, Location Plan, Bhu Naksha, Guideline Rate Proof)
   const dynamicTotalPages = useMemo(() => {
-    const basePages = 7;
+    const basePages = 9;
     const photoCount = propertyImages.length;
     const photoPages = photoCount > 0 ? Math.ceil(photoCount / 2) : 1;
     const rorPages = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : 1;
@@ -5055,11 +5057,9 @@ export default function BandhanHLLAP({
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-100">
                     <Field label="Declaration Date:">
-                      <input
-                        type="text"
-                        className={inputCls}
+                      <BaseDateInput
                         value={fields.declarationDate || fields.reportDate || formatReportDate(new Date())}
-                        onChange={(e) => handleChange('declarationDate', e.target.value)}
+                        onChange={(val) => handleChange('declarationDate', val)}
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -5120,7 +5120,11 @@ export default function BandhanHLLAP({
                       <input
                         type="text"
                         className={inputCls}
-                        value={fields.valuerQualification || 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'}
+                        value={
+                          (!fields.valuerQualification || fields.valuerQualification === 'B.Tech (Civil), M.Val (RE)' || fields.valuerQualification.includes('B.Tech (Civil)'))
+                            ? 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'
+                            : fields.valuerQualification
+                        }
                         onChange={(e) => handleChange('valuerQualification', e.target.value)}
                         placeholder="B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)"
                         disabled={isReadOnly}
