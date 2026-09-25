@@ -103,9 +103,9 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 ---
 
-## ⚠️ Known Issues
+## ⚠️ Known Issues / Implementation Notes
 
-The following banks have similar issues to Bank of Baroda (e.g. prefill fallback bugs, `.map()` crash on empty map arrays, missing section headers for maps/photos in PDF renderer) that need to be fixed when they are implemented or checked:
+The following banks share the EXACT SAME sample file format / valuation template as Bank of Baroda. Their implementation should heavily reuse or directly point to the Bank of Baroda components and PDF renderer:
 1. `BANK OF INDIA-BOI` (src/app/portal/reports/[projectId]/banks/bank-of-india)
 2. `BANK OF MAHARASHTRA-BOM` (src/app/portal/reports/[projectId]/banks/bank-of-maharashtra)
 3. `CANARA BANK` (src/app/portal/reports/[projectId]/banks/canara)

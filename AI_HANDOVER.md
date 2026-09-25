@@ -284,7 +284,7 @@ The core business logic is **100% complete**.
     - **Bank of Baroda (Standard)**: Completed 10-section custom UI and dedicated PDF renderer.
       - Implemented Affirmations and Code of Conduct handling with robust prefill fallbacks.
       - Integrated custom `isBobDrawing` interceptors in the PDF renderer to accurately output BOB layout while preserving standard Map/Photo layouts.
-    - **⚠️ Known Issues for Upcoming Banks**: The following banks have identical prefill fallback, `.map()` empty array, and PDF header bugs that were identified during the Bank of Baroda implementation, and must be addressed when building their respective implementations:
+    - **⚠️ Known Issues / Implementation Notes**: The following banks share the EXACT SAME sample file format / valuation template as Bank of Baroda. Their implementation should heavily reuse or directly point to the Bank of Baroda components and PDF renderer rather than being built from scratch:
       - `BANK OF INDIA-BOI`
       - `BANK OF MAHARASHTRA-BOM`
       - `CANARA BANK`
