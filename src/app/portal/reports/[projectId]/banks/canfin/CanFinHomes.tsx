@@ -16,9 +16,25 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     { id: 'canfin-section-3', title: '3. Details of the Property' },
     { id: 'canfin-section-4', title: '4. Surroundings, Accesibility & Proximity to Civil Ameneties' },
     { id: 'canfin-section-5', title: '5. Survey of Construction' },
+    { id: 'canfin-section-6', title: '6. Documents Verified' },
   ],
   defaultValues: {
     purpose: 'Housing Loan / Composite Loan',
+    
+    // Section 6 Variables
+    canfinHomesApprovedPlansProvided: false,
+    canfinHomesApprovedPlansDetails: '',
+    canfinHomesApprovedPlansDetailsNA: false,
+    canfinHomesCommencementCertificateProvided: false,
+    canfinHomesCommencementCertificateDetails: '',
+    canfinHomesCommencementCertificateDetailsNA: false,
+    canfinHomesOccupationCertificateProvided: false,
+    canfinHomesOccupationCertificateDetails: '',
+    canfinHomesOccupationCertificateDetailsNA: false,
+    canfinHomesOwnershipDocumentsProvided: false,
+    canfinHomesOwnershipDocumentsDetails: '',
+    canfinHomesOwnershipDocumentsDetailsNA: false,
+    canfinHomesOwnershipDocumentsFiles: [],
     
     // Section 5 Variables
     canfinHomesNatureOfSoil: '',
@@ -1544,6 +1560,187 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                     </div>
                   </div>
                 </Field>
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'canfin-section-6',
+      title: '6. DOCUMENTS VERIFIED',
+      number: 6,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-cyan-200 bg-[#e0f7fa] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Legal & Municipal Approvals</h3>
+              <div className="space-y-6">
+                
+                {/* a) Approved plans Details */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesApprovedPlansProvided} 
+                        onChange={e => handleChange('canfinHomesApprovedPlansProvided', e.target.checked)} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="font-semibold text-gray-700">a) Approved plans Details (Provided / Not Provided)</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesApprovedPlansDetailsNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesApprovedPlansDetailsNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesApprovedPlansDetails', 'NA');
+                          else handleChange('canfinHomesApprovedPlansDetails', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                  <input 
+                    className={`${inputCls} ${fields.canfinHomesApprovedPlansDetailsNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    placeholder="Enter details..."
+                    value={fields.canfinHomesApprovedPlansDetailsNA ? 'NA' : (fields.canfinHomesApprovedPlansDetails || '')} 
+                    onChange={e => handleChange('canfinHomesApprovedPlansDetails', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesApprovedPlansDetailsNA} 
+                  />
+                </div>
+
+                {/* b) Commencement Certificate / Building Permit Details */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesCommencementCertificateProvided} 
+                        onChange={e => handleChange('canfinHomesCommencementCertificateProvided', e.target.checked)} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="font-semibold text-gray-700">b) Commencement Certificate / Building Permit Details (Provided / Not Provided)</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesCommencementCertificateDetailsNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesCommencementCertificateDetailsNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesCommencementCertificateDetails', 'NA');
+                          else handleChange('canfinHomesCommencementCertificateDetails', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                  <input 
+                    className={`${inputCls} ${fields.canfinHomesCommencementCertificateDetailsNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    placeholder="Enter details..."
+                    value={fields.canfinHomesCommencementCertificateDetailsNA ? 'NA' : (fields.canfinHomesCommencementCertificateDetails || '')} 
+                    onChange={e => handleChange('canfinHomesCommencementCertificateDetails', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesCommencementCertificateDetailsNA} 
+                  />
+                </div>
+
+                {/* c) Occupation/Completion certificate details */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesOccupationCertificateProvided} 
+                        onChange={e => handleChange('canfinHomesOccupationCertificateProvided', e.target.checked)} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="font-semibold text-gray-700">c) Occupation/Completion certificate details (Provided / Not Provided)</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesOccupationCertificateDetailsNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesOccupationCertificateDetailsNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesOccupationCertificateDetails', 'NA');
+                          else handleChange('canfinHomesOccupationCertificateDetails', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                  <input 
+                    className={`${inputCls} ${fields.canfinHomesOccupationCertificateDetailsNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    placeholder="Enter details..."
+                    value={fields.canfinHomesOccupationCertificateDetailsNA ? 'NA' : (fields.canfinHomesOccupationCertificateDetails || '')} 
+                    onChange={e => handleChange('canfinHomesOccupationCertificateDetails', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesOccupationCertificateDetailsNA} 
+                  />
+                </div>
+
+                {/* d) Ownership Documents */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesOwnershipDocumentsProvided} 
+                        onChange={e => handleChange('canfinHomesOwnershipDocumentsProvided', e.target.checked)} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="font-semibold text-gray-700">d) Ownership Documents (Provided / Not Provided)</span>
+                    </label>
+                    <label className="flex items-center gap-1 cursor-pointer">
+                      <input 
+                        type="checkbox" 
+                        checked={fields.canfinHomesOwnershipDocumentsDetailsNA} 
+                        onChange={e => {
+                          handleChange('canfinHomesOwnershipDocumentsDetailsNA', e.target.checked);
+                          if (e.target.checked) handleChange('canfinHomesOwnershipDocumentsDetails', 'NA');
+                          else handleChange('canfinHomesOwnershipDocumentsDetails', '');
+                        }} 
+                        className="rounded text-emerald-600 focus:ring-emerald-500" 
+                        disabled={isReadOnly} 
+                      />
+                      <span className="text-xs font-medium text-gray-500">NA</span>
+                    </label>
+                  </div>
+                  <input 
+                    className={`${inputCls} ${fields.canfinHomesOwnershipDocumentsDetailsNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
+                    placeholder="Enter details (e.g., Sale deed, ROR, Amin Sketch map)..."
+                    value={fields.canfinHomesOwnershipDocumentsDetailsNA ? 'NA' : (fields.canfinHomesOwnershipDocumentsDetails || '')} 
+                    onChange={e => handleChange('canfinHomesOwnershipDocumentsDetails', e.target.value)} 
+                    disabled={isReadOnly || fields.canfinHomesOwnershipDocumentsDetailsNA} 
+                  />
+                  <div className="mt-2 border border-dashed border-gray-300 bg-white rounded p-4 text-center">
+                    <span className="block text-sm text-gray-500 mb-2">Upload document copies</span>
+                    <input 
+                      type="file" 
+                      multiple 
+                      onChange={e => {
+                        if (e.target.files) {
+                          const fileArray = Array.from(e.target.files);
+                          handleChange('canfinHomesOwnershipDocumentsFiles', fileArray);
+                        }
+                      }} 
+                      disabled={isReadOnly}
+                      className="text-sm text-gray-600"
+                    />
+                  </div>
+                </div>
+
               </div>
             </div>
           </div>
