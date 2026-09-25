@@ -600,11 +600,9 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Main PDF Generation Entrance
+   * Internal pass to render all sections sequentially with optional explicit reportPagesCount
    */
-  public async generateBandhanHLLAPReport(fields: BandhanHLLAPReportFields): Promise<Uint8Array> {
-    await this.init();
-
+  public async renderAllSections(fields: BandhanHLLAPReportFields, explicitPageCount?: string): Promise<void> {
     // 1. Cover Header (Ref No & Date)
     this.drawHeaderBlock(fields);
 
@@ -615,13 +613,61 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.drawNDMAParameters(fields);
 
     // 4. Annexure-A: Details of Valuation & Computation
-    this.drawAnnexureA(fields);
+    this.drawAnnexureA(fields, explicitPageCount);
 
     // 5. Enclosures: ROR, Location Map, Photos, Bhu Naksha, Guideline Value
     await this.drawEnclosures(fields);
+  }
 
-    // Finalize and save
-    return await this.save();
+  /**
+   * Main PDF Generation Entrance with Two-Pass Page Count Guarantee
+   */
+  public async generateBandhanHLLAPReport(fields: BandhanHLLAPReportFields): Promise<Uint8Array> {
+    const res = await this.generateBandhanHLLAPReportWithCount(fields);
+    return res.pdfBytes;
+  }
+
+  /**
+   * Generates PDF with exact Two-Pass Page Count guarantee and returns both bytes & exact page count
+   */
+  public async generateBandhanHLLAPReportWithCount(fields: BandhanHLLAPReportFields): Promise<{ pdfBytes: Uint8Array; pageCount: number }> {
+    // If locked by user, render single pass with user's custom count
+    if (fields.valuerReportPagesCountLocked && fields.valuerReportPagesCount) {
+      await this.init();
+      await this.renderAllSections(fields, fields.valuerReportPagesCount);
+      const exactCount = this.doc.getPageCount();
+      const bytes = await this.save();
+      return { pdfBytes: bytes, pageCount: exactCount };
+    }
+
+    // Auto Mode: Two-Pass Rendering
+    // Pass 1: Render with initial dynamic estimate
+    const photoCount = (fields.propertyPhotos && fields.propertyPhotos.length > 0)
+      ? fields.propertyPhotos.length
+      : (fields.propertyImages?.length || 0);
+    const photoPages = photoCount > 0 ? Math.ceil(photoCount / 2) : 0;
+    const rorPages = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : (fields.rorImageUrl ? 1 : 0);
+    const locPages = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : (fields.locationMapImageUrl ? 1 : 0);
+    const bhuPages = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0) ? fields.cadastralMapImages.length : ((fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : (fields.bhuNakshaImageUrl ? 1 : 0));
+    const guidePages = (fields.sketchMapImages && fields.sketchMapImages.length > 0) ? fields.sketchMapImages.length : ((fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : (fields.guidelineValueImageUrl ? 1 : 0));
+    const initialEstimate = String(9 + photoPages + rorPages + locPages + bhuPages + guidePages);
+
+    await this.init();
+    await this.renderAllSections(fields, initialEstimate);
+    const pass1Count = this.doc.getPageCount();
+
+    if (String(pass1Count) === initialEstimate) {
+      const bytes = await this.save();
+      return { pdfBytes: bytes, pageCount: pass1Count };
+    }
+
+    // Pass 2: Re-render with the exact page count measured from Pass 1
+    const pass2Renderer = new PDFBandhanHLLAPRenderer();
+    await pass2Renderer.init();
+    await pass2Renderer.renderAllSections(fields, String(pass1Count));
+    const finalCount = pass2Renderer.doc.getPageCount();
+    const finalBytes = await pass2Renderer.save();
+    return { pdfBytes: finalBytes, pageCount: finalCount };
   }
 
   /**
@@ -1536,7 +1582,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
   /**
    * Annexure-A: Details of Valuation and Valuation Computation
    */
-  private drawAnnexureA(fields: BandhanHLLAPReportFields): void {
+  private drawAnnexureA(fields: BandhanHLLAPReportFields, explicitPageCount?: string): void {
     this.addPage();
 
     // Titles
@@ -1885,8 +1931,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const locPages = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : (fields.locationMapImageUrl ? 1 : 0);
     const bhuPages = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0) ? fields.cadastralMapImages.length : ((fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : (fields.bhuNakshaImageUrl ? 1 : 0));
     const guidePages = (fields.sketchMapImages && fields.sketchMapImages.length > 0) ? fields.sketchMapImages.length : ((fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : (fields.guidelineValueImageUrl ? 1 : 0));
-    const computedPages = String(9 + photoPages + rorPages + locPages + bhuPages + guidePages);
-    const reportPagesCount = fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount || computedPages) : computedPages;
+    const computedPages = explicitPageCount || String(9 + photoPages + rorPages + locPages + bhuPages + guidePages);
+    const reportPagesCount = fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount || computedPages) : (explicitPageCount || computedPages);
 
     const defaultDeclarations = [
       'A. THE INFORMATION FURNISHED ABOVE IS TRUE TO THE BEST OF MY / OUR KNOWLEDGE AND BELIEF.',

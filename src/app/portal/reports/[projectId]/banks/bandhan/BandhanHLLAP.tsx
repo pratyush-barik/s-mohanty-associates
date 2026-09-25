@@ -647,6 +647,7 @@ export default function BandhanHLLAP({
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
   const [showBucketModal, setShowBucketModal] = useState(false);
+  const [previewedPageCount, setPreviewedPageCount] = useState<number | null>(null);
   const isInitialMount = useRef(true);
   const debouncedTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -1266,7 +1267,8 @@ export default function BandhanHLLAP({
   const handlePreviewPDF = async () => {
     try {
       const renderer = new PDFBandhanHLLAPRenderer();
-      const pdfBytes = await renderer.generateBandhanHLLAPReport(fields);
+      const { pdfBytes, pageCount } = await renderer.generateBandhanHLLAPReportWithCount(fields);
+      setPreviewedPageCount(pageCount);
       const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
       const blobUrl = URL.createObjectURL(blob);
       window.open(blobUrl, '_blank');
@@ -1279,7 +1281,8 @@ export default function BandhanHLLAP({
   const handleDownloadPDF = async () => {
     try {
       const renderer = new PDFBandhanHLLAPRenderer();
-      const pdfBytes = await renderer.generateBandhanHLLAPReport(fields);
+      const { pdfBytes, pageCount } = await renderer.generateBandhanHLLAPReportWithCount(fields);
+      setPreviewedPageCount(pageCount);
       const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -5101,7 +5104,7 @@ export default function BandhanHLLAP({
                       'L. WE ARE NEITHER THE AUDITORS TO THE OWNER OF THE PROPERTY (IES) NOR THEIR FIRMS, ASSOCIATES NOR ARE WE THE STATUTORY AUDITORS TO THE BRANCH FROM WHICH THE LOAN IS PROPOSED TO BE AVAILED / ALREADY AVAILED.',
                       `M. IT IS HEREBY CERTIFIED THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IS, IN MY OPINION/OUR OPINION Rs.${formatCurrencyINR(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty))}/- AND THE ESTIMATED REALIZABLE VALUE ${fields.realisableValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * ((fields.realisableValuePct !== undefined && fields.realisableValuePct !== null && fields.realisableValuePct !== '') ? parseNum(fields.realisableValuePct) : 100) / 100))}/-`} UNDER DISTRESS SALE WILL BE ${fields.distressSaleValue || `Rs.${formatCurrencyINR(Math.round(parseNum(fields.totalMarketValue || fields.recommendedValueOfProperty) * ((fields.distressSalePct !== undefined && fields.distressSalePct !== null && fields.distressSalePct !== '') ? parseNum(fields.distressSalePct) : 100) / 100))}/-`} -VALUE VARIES WITH THE PURPOSE AND DATE. THIS REPORT IS NOT TO BE REFERRED FOR THE PURPOSE IS DIFFERENT OTHER THAN VALUATION OF THE MORTGAGED PROPERTY.`,
                       'N. I HAVE NOT BEEN DISMISSED OR REMOVED FROM GOVT, SERVICE OR CONVICTED OF AN OFFENCE CONNECTED WITH ANY PROCEEDINGS OF INCOME TAX ACT, WEALTH TAX ACT OR GIFT TAX ACT OR HAVE BEEN BLACKLISTED BY ANY BANK/FINANCIAL INSTITUTION/ GOVT. DEPARTMENT/PUBLIC SECTORE ENTEREPRISE/BODY CORPORATE ETC.',
-                      `O. THIS VALUATION REPORT CONTAINS ${fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount || dynamicTotalPages) : dynamicTotalPages} PAGES ONLY.`,
+                      `O. THIS VALUATION REPORT CONTAINS ${fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount || (previewedPageCount !== null ? String(previewedPageCount) : dynamicTotalPages)) : (previewedPageCount !== null ? String(previewedPageCount) : dynamicTotalPages)} PAGES ONLY.`,
                       'P. PHOTOGRAPHS OF THE ASSET VALUED ENCLOSED.',
                     ].map((item, idx) => (
                       <div key={idx} className="p-2 rounded bg-slate-50 border border-slate-150 leading-relaxed font-sans">
@@ -5118,37 +5121,42 @@ export default function BandhanHLLAP({
                       />
                     </Field>
                     <Field label="Total Report Pages Count:">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          className={inputCls}
-                          value={fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount ?? '') : dynamicTotalPages}
-                          onChange={(e) => {
-                            const val = sanitizePositiveInt(e.target.value, 3);
-                            handleChange('valuerReportPagesCount', val);
-                            handleChange('valuerReportPagesCountLocked', true);
-                          }}
-                          placeholder={dynamicTotalPages}
-                          disabled={isReadOnly}
-                        />
-                        {fields.valuerReportPagesCountLocked ? (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              handleChange('valuerReportPagesCountLocked', false);
-                              handleChange('valuerReportPagesCount', '');
-                            }}
-                            className="text-[11px] font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 border border-amber-300 px-2 py-1.5 rounded cursor-pointer shrink-0 flex items-center gap-1"
-                            title="Custom count entered. Click to reset to Auto Dynamic Count"
-                          >
-                            Reset to Auto ({dynamicTotalPages})
-                          </button>
-                        ) : (
-                          <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded shrink-0 flex items-center gap-1">
-                            ⚡ Auto: {dynamicTotalPages} Pages
-                          </span>
-                        )}
-                      </div>
+                      {(() => {
+                        const displayAutoPages = previewedPageCount !== null ? String(previewedPageCount) : dynamicTotalPages;
+                        return (
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              className={inputCls}
+                              value={fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount ?? '') : displayAutoPages}
+                              onChange={(e) => {
+                                const val = sanitizePositiveInt(e.target.value, 3);
+                                handleChange('valuerReportPagesCount', val);
+                                handleChange('valuerReportPagesCountLocked', true);
+                              }}
+                              placeholder={displayAutoPages}
+                              disabled={isReadOnly}
+                            />
+                            {fields.valuerReportPagesCountLocked ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleChange('valuerReportPagesCountLocked', false);
+                                  handleChange('valuerReportPagesCount', '');
+                                }}
+                                className="text-[11px] font-semibold text-amber-700 hover:text-amber-900 bg-amber-50 border border-amber-300 px-2 py-1.5 rounded cursor-pointer shrink-0 flex items-center gap-1"
+                                title="Custom count entered. Click to reset to Auto Dynamic Count"
+                              >
+                                Reset to Auto ({displayAutoPages})
+                              </button>
+                            ) : (
+                              <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1.5 rounded shrink-0 flex items-center gap-1">
+                                ⚡ Auto: {displayAutoPages} Pages
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </Field>
                   </div>
                 </div>
