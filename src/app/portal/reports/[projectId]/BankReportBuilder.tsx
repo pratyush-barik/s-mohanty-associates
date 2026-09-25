@@ -1488,7 +1488,8 @@ export default function BankReportBuilder({
       // ── Property Photographs ──
       if (propImageBytes.length > 0) {
         r.newPage();
-        r.drawSectionHeader('PROPERTY PHOTOGRAPHS');
+        const photoTitle = config?.id === 'bank-of-baroda' ? '11. PROPERTY PHOTOGRAPHS' : 'PROPERTY PHOTOGRAPHS';
+        r.drawSectionHeader(photoTitle);
         r.advanceCursor(8);
 
         for (let i = 0; i < propImageBytes.length; i += 2) {
@@ -1505,13 +1506,27 @@ export default function BankReportBuilder({
         }
       }
 
+      let mapMainHeaderPrinted = false;
+      const drawMapHeader = (subTitle: string) => {
+        if (config?.id === 'bank-of-baroda') {
+          if (!mapMainHeaderPrinted) {
+            r.drawSectionHeader('12. LOCATION & SKECTH MAP OR MAPS');
+            r.advanceCursor(8);
+            mapMainHeaderPrinted = true;
+          }
+          r.drawSectionHeader(subTitle);
+        } else {
+          r.drawSectionHeader(subTitle);
+        }
+      };
+
       // ── Sketch Map ──
       if (sketchBytesList && sketchBytesList.length > 0) {
         for (let i = 0; i < sketchBytesList.length; i++) {
           const sBytes = sketchBytesList[i];
           if (sBytes) {
             r.newPage();
-            r.drawSectionHeader(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            drawMapHeader(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(sBytes, {
               maxWidth: 450, maxHeight: 500, centered: true,
@@ -1526,7 +1541,7 @@ export default function BankReportBuilder({
           const mBytes = mouzaBytesList[i];
           if (mBytes) {
             r.newPage();
-            r.drawSectionHeader(`MOUZA MAP${mouzaBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            drawMapHeader(`MOUZA MAP${mouzaBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(mBytes, {
               maxWidth: 450, maxHeight: 500, centered: true,
@@ -1542,7 +1557,7 @@ export default function BankReportBuilder({
           if (cBytes) {
             r.newPage();
             const mapLabel = config?.cadastralMapLabelOverride?.toUpperCase() || 'CADASTRAL MAP';
-            r.drawSectionHeader(`${mapLabel}${cadastralBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            drawMapHeader(`${mapLabel}${cadastralBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(cBytes, {
               maxWidth: 450, maxHeight: 500, centered: true,
@@ -1557,7 +1572,7 @@ export default function BankReportBuilder({
           const bBytes = bdaBytesList[i];
           if (bBytes) {
             r.newPage();
-            r.drawSectionHeader(`BDA MAP${bdaBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            drawMapHeader(`BDA MAP${bdaBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(bBytes, {
               maxWidth: 450, maxHeight: 500, centered: true,
@@ -1572,7 +1587,7 @@ export default function BankReportBuilder({
           const bmBytes = benchmarkBytesList[i];
           if (bmBytes) {
             r.newPage();
-            r.drawSectionHeader(`BENCHMARK VALUATION${benchmarkBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            drawMapHeader(`BENCHMARK VALUATION${benchmarkBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(bmBytes, {
               maxWidth: 450, maxHeight: 500, centered: true,
@@ -1587,7 +1602,7 @@ export default function BankReportBuilder({
         const latLongStr = (fields.latitude || fields.longitude) 
           ? ` (LAT: ${fields.latitude || 'N/A'}, LONG: ${fields.longitude || 'N/A'})` 
           : '';
-        r.drawSectionHeader(`LOCATION MAP${latLongStr}`);
+        drawMapHeader(`LOCATION MAP${latLongStr}`);
         r.advanceCursor(8);
         await r.drawImageBlock(locationBytes, {
           maxWidth: 450, maxHeight: 500, centered: true,
