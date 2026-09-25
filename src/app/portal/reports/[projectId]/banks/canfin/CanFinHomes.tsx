@@ -9,6 +9,10 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
   defaultValues: {
     purpose: 'Housing Loan / Composite Loan',
   },
+  getPDFRenderer: (data, projectCode) => {
+    const { PDFCanFinHomesRenderer } = require('@/lib/banks/pdf-canfin-homes-renderer');
+    return new PDFCanFinHomesRenderer(data, projectCode, false);
+  },
 };
 
 export default function CanFinHomes(props: BankReportBuilderProps) {

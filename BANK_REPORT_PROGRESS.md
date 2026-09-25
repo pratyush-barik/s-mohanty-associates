@@ -8,9 +8,9 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 - **Total Banks / Organizations**: 60
 - **Total Subclasses / Templates**: 73
-- **Completed Subclasses**: 15 / 73 (1.1 `MLAP`, 1.2 `STSL`, 2.1 `HL-LAP` (Aditya Birla Housing), 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 7.1 `AGRI` (Axis), 7.2 `HL-LAP` (Axis), 7.3 `SBB` (Axis), 7.4 `SME` (Axis), 8 `Standard` (Axis Finance), 10 `HL-LAP` (Bajaj Housing), 11.1 `HL-LAP` (Bandhan), 11.2 `SME` (Bandhan), 12 `Standard` (Bank of Baroda))
-- **Current Active Bank**: 12. `BANK OF BARODA-BOB` (Completed)
-- **Current Active Subclass**: 12.1 `Standard` (Completed)
+- **Completed Subclasses**: 16 / 73 (1.1 `MLAP`, 1.2 `STSL`, 2.1 `HL-LAP` (Aditya Birla Housing), 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 7.1 `AGRI` (Axis), 7.2 `HL-LAP` (Axis), 7.3 `SBB` (Axis), 7.4 `SME` (Axis), 8 `Standard` (Axis Finance), 10 `HL-LAP` (Bajaj Housing), 11.1 `HL-LAP` (Bandhan), 11.2 `SME` (Bandhan), 12 `Standard` (Bank of Baroda), 16 `Standard` (CanFin Homes))
+- **Current Active Bank**: 16. `CANFIN HOMES LTD` (Completed)
+- **Current Active Subclass**: 16.1 `Standard` (Completed)
 - **Bucket Standard**: Enforced strictly per [docs/BUCKET_ARCHITECTURE_STANDARD.md](docs/BUCKET_ARCHITECTURE_STANDARD.md) (Cloud bucket exclusively for Property Photographs; Maps/Documents are device-upload only).
 
 ---
@@ -43,7 +43,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | **13** | **BANK OF INDIA-BOI** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **14** | **BANK OF MAHARASHTRA-BOM** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **15** | **CANARA BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **16** | **CANFIN HOMES LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **16** | **CANFIN HOMES LTD** | `Standard` | ✅ Complete | ✅ Standard UI | ✅ Standard Base PDF | ✅ Validated |
 | **17** | **CHOLAMANDALAM INVESTMENT COMPANY LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **18** | **CLIX CAPITAL LTD** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **19** | **DCB BANK** | | | | | |
@@ -112,7 +112,20 @@ The following banks share the EXACT SAME sample file format / valuation template
 
 ---
 
-## 🎯 Current Focus: Bank 12 — BANK OF BARODA-BOB
+## 🎯 Current Focus: Bank 16 — CANFIN HOMES LTD
+
+### 16.1 `Standard` — ✅ COMPLETE
+- **Vertical**: `Standard`
+- **UI Builder**: `src/app/portal/reports/[projectId]/banks/canfin/CanFinHomes.tsx`
+- **PDF Renderer**: `src/lib/banks/pdf-canfin-homes-renderer.ts` (`PDFCanFinHomesRenderer`)
+- **Status**: Complete & Verified (Uses base layout as requested)
+- **Key Features Implemented**:
+  - Implemented 2-file architecture exactly as specified (`CanFinHomes.tsx` and `pdf-canfin-homes-renderer.ts`).
+  - Directly leverages the `GeneralReportBuilder` UI and `PDFGeneralRenderer` generation logic for a standard 14-section format without unnecessary overrides, matching the user's explicit directive to use the "existing base bank report draft ui and pdf render of it".
+
+---
+
+## 🎯 Past Completed Banks: Bank 12 — BANK OF BARODA-BOB
 
 ### 12.1 `Standard` — ✅ COMPLETE
 - **Vertical**: `Standard`
