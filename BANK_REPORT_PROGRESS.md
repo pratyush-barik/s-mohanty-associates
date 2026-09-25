@@ -8,9 +8,9 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 - **Total Banks / Organizations**: 60
 - **Total Subclasses / Templates**: 73
-- **Completed Subclasses**: 14 / 73 (1.1 `MLAP`, 1.2 `STSL`, 2.1 `HL-LAP` (Aditya Birla Housing), 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 7.1 `AGRI` (Axis), 7.2 `HL-LAP` (Axis), 7.3 `SBB` (Axis), 7.4 `SME` (Axis), 8 `Standard` (Axis Finance), 10 `HL-LAP` (Bajaj Housing), 11.1 `HL-LAP` (Bandhan), 11.2 `SME` (Bandhan))
-- **Current Active Bank**: 11. `BANDHAN BANK` (Completed) / 12. `BANK OF BARODA-BOB`
-- **Current Active Subclass**: 11.2 `SME` (Completed)
+- **Completed Subclasses**: 15 / 73 (1.1 `MLAP`, 1.2 `STSL`, 2.1 `HL-LAP` (Aditya Birla Housing), 3 `Standard` (Annapurna), 4 `Standard` (Arka), 5 `Standard` (Arthan), 7.1 `AGRI` (Axis), 7.2 `HL-LAP` (Axis), 7.3 `SBB` (Axis), 7.4 `SME` (Axis), 8 `Standard` (Axis Finance), 10 `HL-LAP` (Bajaj Housing), 11.1 `HL-LAP` (Bandhan), 11.2 `SME` (Bandhan), 12 `Standard` (Bank of Baroda))
+- **Current Active Bank**: 12. `BANK OF BARODA-BOB` (Completed)
+- **Current Active Subclass**: 12.1 `Standard` (Completed)
 - **Bucket Standard**: Enforced strictly per [docs/BUCKET_ARCHITECTURE_STANDARD.md](docs/BUCKET_ARCHITECTURE_STANDARD.md) (Cloud bucket exclusively for Property Photographs; Maps/Documents are device-upload only).
 
 ---
@@ -39,7 +39,7 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | **11** | **BANDHAN BANK** | | | | | |
 | 11.1 | BANDHAN BANK | `HL-LAP` | ✅ Complete | ✅ 13-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | 11.2 | BANDHAN BANK | `SME` | ✅ Complete | ✅ Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
-| **12** | **BANK OF BARODA-BOB** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **12** | **BANK OF BARODA-BOB** | `Standard` | ✅ Complete | ✅ 10-Section Custom UI | ✅ Dedicated PDF Renderer | ✅ Validated |
 | **13** | **BANK OF INDIA-BOI** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **14** | **BANK OF MAHARASHTRA-BOM** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **15** | **CANARA BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
@@ -103,7 +103,31 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 
 ---
 
-## 🎯 Current Focus: Bank 1 — ADITYA BIRLA CAPITAL LTD
+## ⚠️ Known Issues
+
+The following banks have similar issues to Bank of Baroda (e.g. prefill fallback bugs, `.map()` crash on empty map arrays, missing section headers for maps/photos in PDF renderer) that need to be fixed when they are implemented or checked:
+1. `BANK OF INDIA-BOI` (src/app/portal/reports/[projectId]/banks/bank-of-india)
+2. `BANK OF MAHARASHTRA-BOM` (src/app/portal/reports/[projectId]/banks/bank-of-maharashtra)
+3. `CANARA BANK` (src/app/portal/reports/[projectId]/banks/canara)
+
+---
+
+## 🎯 Current Focus: Bank 12 — BANK OF BARODA-BOB
+
+### 12.1 `Standard` — ✅ COMPLETE
+- **Vertical**: `Standard`
+- **UI Builder**: `src/app/portal/reports/[projectId]/banks/bank-of-baroda/BankOfBaroda.tsx`
+- **PDF Renderer**: `src/lib/banks/pdf-bank-of-baroda-renderer.ts` (`PDFBankOfBarodaRenderer`)
+- **Status**: Complete & Verified (10 sections, Custom PDF overrides, Maps, Annexures, prefill bugs and PDF headers fixed)
+- **Key Features Implemented**:
+  - Full 10-section architecture matching Bank of Baroda's specific layout.
+  - Handled Affirmations and Questionnaire arrays seamlessly with prefill logic and cleared states.
+  - Custom rendering overrides with `isBobDrawing` to strictly follow BOB's PDF format while preserving map and photo headers natively.
+  - Added bottom padding for layout consistency in PDF sign-offs.
+
+---
+
+## 🎯 Past Completed Banks: Bank 1 — ADITYA BIRLA CAPITAL LTD
 
 ### 1.1 `MLAP` (Mortgage Loan Against Property) — ✅ COMPLETE
 - **Vertical**: `MLAP`

@@ -281,6 +281,13 @@ The core business logic is **100% complete**.
       - Exact multi-row Address format, auto-compiled accommodation strings, NDMA parameters with correct naming, detailed Risk & BAU area assessment.
       - Panchayat properties feature extra dynamic inputs, with detailed custom declaration text format.
       - Integrated complex valuation formulas for land, BUA, and parking logic.
+    - **Bank of Baroda (Standard)**: Completed 10-section custom UI and dedicated PDF renderer.
+      - Implemented Affirmations and Code of Conduct handling with robust prefill fallbacks.
+      - Integrated custom `isBobDrawing` interceptors in the PDF renderer to accurately output BOB layout while preserving standard Map/Photo layouts.
+    - **⚠️ Known Issues for Upcoming Banks**: The following banks have identical prefill fallback, `.map()` empty array, and PDF header bugs that were identified during the Bank of Baroda implementation, and must be addressed when building their respective implementations:
+      - `BANK OF INDIA-BOI`
+      - `BANK OF MAHARASHTRA-BOM`
+      - `CANARA BANK`
     - Complete tracking across all 57 banks and 73 subclasses maintained in `BANK_REPORT_PROGRESS.md`.
 
 ## 5. Pending Work (What is next)
