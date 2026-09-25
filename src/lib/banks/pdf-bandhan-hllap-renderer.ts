@@ -1901,8 +1901,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     this.checkPageBreak(120);
     this.cursorY += 8;
     this.drawHeadingText('SIGNATURE OF EMPANELLED VALUER', TABLE_FONT_SIZE, 'left');
-    this.drawHeadingText(`NAME OF THE EMPANELLED VALUER: ${fields.valuerSignatureName || 'S. MOHANTY & ASSOCIATES'}`, TABLE_FONT_SIZE, 'left');
-    this.drawHeadingText(`EDUCATIONAL/ PROFESSIONAL QUALIFICATION: ${fields.valuerQualification || 'B.Tech (Civil), M.Val (RE)'}`, TABLE_FONT_SIZE, 'left');
+    this.drawHeadingText(`NAME OF THE EMPANELLED VALUER: ${fields.valuerSignatureName || 'SATYAJIT MOHANTY'}`, TABLE_FONT_SIZE, 'left');
+    this.drawHeadingText(`EDUCATIONAL/ PROFESSIONAL QUALIFICATION: ${fields.valuerQualification || 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'}`, TABLE_FONT_SIZE, 'left');
     this.drawHeadingText(`REGD. VALUER OF INSTITUTION OF VALUERS (No- ${fields.valuerIovRegNo || '107/2016-17, CAT-1'})`, TABLE_FONT_SIZE, 'left');
     this.drawHeadingText(`REGD. VALUER UNDER SECTION 34AB OF WEALTH TAX ACT (No. ${fields.valuerWealthTaxRegNo || 'CCIT/BBSR/Tech-10/2017-18'})`, TABLE_FONT_SIZE, 'left');
     this.drawHeadingText(`DATE: ${fields.declarationDate || fields.reportDate || formatReportDate(new Date())}`, TABLE_FONT_SIZE, 'left');

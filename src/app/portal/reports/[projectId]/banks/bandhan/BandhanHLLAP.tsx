@@ -623,8 +623,8 @@ export default function BandhanHLLAP({
       declarationItems: raw.declarationItems || [],
 
       // Valuer Sign-off
-      valuerSignatureName: raw.valuerSignatureName || 'S. MOHANTY & ASSOCIATES',
-      valuerQualification: raw.valuerQualification || 'B.Tech (Civil), M.Val (RE)',
+      valuerSignatureName: 'SATYAJIT MOHANTY',
+      valuerQualification: raw.valuerQualification || 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)',
       valuerIovRegNo: raw.valuerIovRegNo || '107/2016-17, CAT-1',
       valuerWealthTaxRegNo: raw.valuerWealthTaxRegNo || 'CCIT/BBSR/Tech-10/2017-18',
       valuerReportPagesCount: raw.valuerReportPagesCountLocked ? (raw.valuerReportPagesCount || '') : '',
@@ -5105,28 +5105,27 @@ export default function BandhanHLLAP({
                     <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
                       Valuer Credentials &amp; Sign-off:
                     </span>
-                    <span className="text-[10.5px] font-semibold bg-sky-50 text-sky-800 px-2.5 py-0.5 rounded border border-sky-200">
-                      ⚡ Referenced from Firm Front Page Credentials
-                    </span>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Field label="Valuer Name:">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={fields.valuerSignatureName || 'S. MOHANTY & ASSOCIATES'}
-                        onChange={(e) => handleChange('valuerSignatureName', e.target.value)}
-                        placeholder="S. MOHANTY & ASSOCIATES"
-                        disabled={isReadOnly}
-                      />
+                      <div className="relative">
+                        <input
+                          type="text"
+                          className={`${inputCls} bg-slate-50 font-bold text-slate-800 cursor-not-allowed select-none pr-8`}
+                          value="SATYAJIT MOHANTY"
+                          readOnly
+                          disabled
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 select-none" title="Locked (Default Valuer)">🔒</span>
+                      </div>
                     </Field>
                     <Field label="Qualifications:">
                       <input
                         type="text"
                         className={inputCls}
-                        value={fields.valuerQualification || 'B.Tech (Civil), M.Val (RE)'}
+                        value={fields.valuerQualification || 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'}
                         onChange={(e) => handleChange('valuerQualification', e.target.value)}
-                        placeholder="B.Tech (Civil), M.Val (RE)"
+                        placeholder="B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)"
                         disabled={isReadOnly}
                       />
                     </Field>
