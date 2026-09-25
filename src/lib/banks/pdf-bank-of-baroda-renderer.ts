@@ -1511,7 +1511,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   // SECTION 10: MODEL CODE OF CONDUCT FOR VALUERS
   // ═══════════════════════════════════════════════════════════════════════
   private drawBobSection10() {
-    if (this.fields.bobCodeOfConductAcknowledged === false) {
+    if (this.fields.bobCodeOfConductAccepted === false) {
       return;
     }
 

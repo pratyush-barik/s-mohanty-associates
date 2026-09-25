@@ -3218,8 +3218,8 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <label className="flex items-center gap-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
-                    checked={fields.bobCodeOfConductAcknowledged ?? true}
-                    onChange={e => handleChange('bobCodeOfConductAcknowledged', e.target.checked)}
+                    checked={fields.bobCodeOfConductAccepted !== false}
+                    onChange={e => handleChange('bobCodeOfConductAccepted', e.target.checked)}
                     disabled={isReadOnly}
                     className="w-5 h-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
                   />
