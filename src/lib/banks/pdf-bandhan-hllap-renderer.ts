@@ -1984,74 +1984,73 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Enclosures: ROR, Location Map, Photos, Bhu Naksha, Guideline Value Proof
+   * Enclosures: Section 12 (Maps & Documents in chronological order) followed by Section 13 (Property Photographs)
    */
   private async drawEnclosures(fields: BandhanHLLAPReportFields): Promise<void> {
-    // 1. ROR / Mouza Document Pages
-    const rorList = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0)
-      ? fields.mouzaMapImages
-      : (fields.rorImageUrl ? [fields.rorImageUrl] : []);
-    for (const imgUrl of rorList) {
-      if (imgUrl) {
-        this.addPage();
-        this.drawHeadingText('ROR / MOUZA MAP', FONT_SIZE_TITLE, 'left');
-        await this.drawDocImage(imgUrl, CONTENT_W, 600);
+    // ── 1. Section 12: Maps & Documents (Chronological Order matching Web UI) ──
+    const mapCategories: { title: string; list: string[] }[] = [
+      {
+        title: 'Google Satellite Map',
+        list: (fields.locationMapImages && fields.locationMapImages.length > 0)
+          ? fields.locationMapImages
+          : (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : []),
+      },
+      {
+        title: 'Mouza Map (Bhulekh / Revenue Map)',
+        list: (fields.mouzaMapImages && fields.mouzaMapImages.length > 0)
+          ? fields.mouzaMapImages
+          : (fields.rorImageUrl ? [fields.rorImageUrl] : []),
+      },
+      {
+        title: 'Sketch Map (Demarcation / Hand-Drawn)',
+        list: (fields.sketchMapImages && fields.sketchMapImages.length > 0)
+          ? fields.sketchMapImages
+          : (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : []),
+      },
+      {
+        title: 'Cadastral Map',
+        list: (fields.cadastralMapImages && fields.cadastralMapImages.length > 0)
+          ? fields.cadastralMapImages
+          : (fields.bhuNakshaImageUrl ? [fields.bhuNakshaImageUrl] : []),
+      },
+      {
+        title: 'BDA MAP',
+        list: fields.bdaMapImages || [],
+      },
+      {
+        title: 'BENCHMARK VALUATION',
+        list: fields.benchmarkMapImages || [],
+      },
+    ];
+
+    const hasAnyMaps = mapCategories.some(cat => cat.list.some(img => Boolean(img)));
+    if (hasAnyMaps) {
+      this.addPage();
+      for (const cat of mapCategories) {
+        for (const imgUrl of cat.list) {
+          if (!imgUrl) continue;
+          // Allocate space for header (~22pt) + map image (~240pt) + spacing (~10pt)
+          // Allows at least 2 maps per page with line break
+          this.checkPageBreak(272);
+          this.drawHeadingText(cat.title, FONT_SIZE_HEADER, 'left');
+          await this.drawDocImage(imgUrl, CONTENT_W, 240);
+        }
       }
     }
 
-    // 2. GPS Location Map Page
-    const locList = (fields.locationMapImages && fields.locationMapImages.length > 0)
-      ? fields.locationMapImages
-      : (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : []);
-    for (const imgUrl of locList) {
-      if (imgUrl) {
-        this.addPage();
-        this.drawHeadingText('GPS LOCATION OF THE PROPERTY:', FONT_SIZE_HEADER, 'left');
-        await this.drawDocImage(imgUrl, CONTENT_W, 260);
-        this.cursorY += 15;
-      }
-    }
-
-    // 3. Property Photographs Grid (with GPS stamps)
-    const photos = (fields.propertyPhotos && fields.propertyPhotos.length > 0)
+    // ── 2. Section 13: Property Photographs (Rendered after all Maps & Documents) ──
+    const photos: BandhanHLLAPPhoto[] = (fields.propertyPhotos && fields.propertyPhotos.length > 0)
       ? fields.propertyPhotos
       : (fields.propertyImages || []).map((url, i) => ({
           url,
-          caption: fields.propertyImageNames?.[i] || 'Property Photograph',
+          caption: fields.propertyImageNames?.[i] || `Photograph ${i + 1}`,
         }));
 
     if (photos.length > 0) {
-      // If we did not create a new page for GPS location or ran out of room, add page
-      if (this.cursorY > 300) {
-        this.addPage();
-      }
-
-      this.drawHeadingText('PROPERTY PHOTO: -', FONT_SIZE_HEADER, 'left');
+      this.addPage();
+      this.drawHeadingText('PROPERTY PHOTOGRAPHS', FONT_SIZE_HEADER, 'left');
+      this.cursorY += 6;
       await this.drawBandhanPhotoGrid(photos);
-    }
-
-    // 4. Bhu Naksha / Cadastral Map
-    const cadastralList = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0)
-      ? fields.cadastralMapImages
-      : (fields.bhuNakshaImageUrl ? [fields.bhuNakshaImageUrl] : []);
-    for (const imgUrl of cadastralList) {
-      if (imgUrl) {
-        this.addPage();
-        this.drawHeadingText('Bhu Naksha / Cadastral Map: -', FONT_SIZE_HEADER, 'left');
-        await this.drawDocImage(imgUrl, CONTENT_W, 580);
-      }
-    }
-
-    // 5. Guideline Value Proof Document / Sketch Map (Annexure-C)
-    const sketchList = (fields.sketchMapImages && fields.sketchMapImages.length > 0)
-      ? fields.sketchMapImages
-      : (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : []);
-    for (const imgUrl of sketchList) {
-      if (imgUrl) {
-        this.addPage();
-        this.drawHeadingText('Annexure-C - Guide line value of the land / Sketch Map', FONT_SIZE_HEADER, 'left');
-        await this.drawDocImage(imgUrl, CONTENT_W, 600);
-      }
     }
   }
 
