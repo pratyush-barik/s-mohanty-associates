@@ -992,10 +992,18 @@ export function BaseMapsSection({
   onReorderMouzaMap,
   onReorderSketchMap,
   onReorderCadastralMap,
+  bdaMapImages,
+  onBdaMapUpload,
+  onBdaMapRemove,
+  onReorderBdaMap,
+  benchmarkMapImages,
+  onBenchmarkMapUpload,
+  onBenchmarkMapRemove,
+  onReorderBenchmarkMap,
   sectionNumber = 10,
   sectionId = 'section-10',
   title = 'Maps & Documents',
-  mapOrder = ['location', 'mouza', 'sketch', 'cadastral'],
+  mapOrder = ['location', 'mouza', 'sketch', 'cadastral', 'bda', 'benchmark'],
   withoutSectionWrapper = false,
   cadastralMapLabelOverride,
 }: {
@@ -1010,6 +1018,8 @@ export function BaseMapsSection({
   mouzaMapImages?: string[];
   cadastralMapImage?: string | string[];
   cadastralMapImages?: string[];
+  bdaMapImages?: string[];
+  benchmarkMapImages?: string[];
   isReadOnly?: boolean;
   uploading?: boolean | string;
   hasExternalCoordinatesField?: boolean;
@@ -1028,10 +1038,16 @@ export function BaseMapsSection({
   onReorderMouzaMap?: (newImages: string[]) => void;
   onReorderSketchMap?: (newImages: string[]) => void;
   onReorderCadastralMap?: (newImages: string[]) => void;
+  onBdaMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBdaMapRemove?: (index?: number) => void;
+  onReorderBdaMap?: (newImages: string[]) => void;
+  onBenchmarkMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBenchmarkMapRemove?: (index?: number) => void;
+  onReorderBenchmarkMap?: (newImages: string[]) => void;
   sectionNumber?: number | string;
   sectionId?: string;
   title?: string;
-  mapOrder?: ('location' | 'mouza' | 'sketch' | 'cadastral')[];
+  mapOrder?: ('location' | 'mouza' | 'sketch' | 'cadastral' | 'bda' | 'benchmark')[];
   withoutSectionWrapper?: boolean;
   cadastralMapLabelOverride?: string;
 }) {
@@ -1088,6 +1104,14 @@ export function BaseMapsSection({
     ? (uploading === 'cadastral' || uploading === 'cadastralMapImages' || uploading === 'cadastralMapImage')
     : Boolean(uploading);
 
+  const isBdaUploading = typeof uploading === 'string'
+    ? (uploading === 'bda' || uploading === 'bdaMapImages')
+    : Boolean(uploading);
+
+  const isBenchmarkUploading = typeof uploading === 'string'
+    ? (uploading === 'benchmark' || uploading === 'benchmarkMapImages')
+    : Boolean(uploading);
+
   // Coordinates override technical address for more accurate pinpointing
   const queryParam = hasCoordinates
     ? `${cleanLat},${cleanLng}`
@@ -1104,6 +1128,8 @@ export function BaseMapsSection({
   const normMouzaImages = normalizeMapImages(mouzaMapImages || mouzaMapImage);
   const normSketchImages = normalizeMapImages(sketchMapImages);
   const normCadastralImages = normalizeMapImages(cadastralMapImages || cadastralMapImage);
+  const normBdaImages = normalizeMapImages(bdaMapImages);
+  const normBenchmarkImages = normalizeMapImages(benchmarkMapImages);
 
   const renderLocationMap = () => (
     <div key="location">
@@ -1339,11 +1365,49 @@ export function BaseMapsSection({
     </div>
   );
 
-  const contentMap: Record<'location' | 'mouza' | 'sketch' | 'cadastral', () => React.ReactNode> = {
+  const renderBdaMap = () => (
+    <div key="bda">
+      <MapImageCategoryCard
+        images={normBdaImages}
+        categoryLabel="BDA MAP"
+        isReadOnly={isReadOnly}
+        uploading={isBdaUploading}
+        icon="🏢"
+        title="BDA MAP"
+        btnLabel="BDA Map"
+        onUpload={onBdaMapUpload}
+        onRemove={onBdaMapRemove}
+        onReorder={onReorderBdaMap}
+        emptyMessage="No BDA MAP uploaded yet. Click '+ Add BDA Map' to upload one or more maps."
+      />
+    </div>
+  );
+
+  const renderBenchmarkMap = () => (
+    <div key="benchmark">
+      <MapImageCategoryCard
+        images={normBenchmarkImages}
+        categoryLabel="BENCHMARK VALUATION"
+        isReadOnly={isReadOnly}
+        uploading={isBenchmarkUploading}
+        icon="📊"
+        title="BENCHMARK VALUATION"
+        btnLabel="BENCHMARK VALUATION"
+        onUpload={onBenchmarkMapUpload}
+        onRemove={onBenchmarkMapRemove}
+        onReorder={onReorderBenchmarkMap}
+        emptyMessage="No BENCHMARK VALUATION uploaded yet. Click '+ Add BENCHMARK VALUATION' to upload one or more maps."
+      />
+    </div>
+  );
+
+  const contentMap: Record<'location' | 'mouza' | 'sketch' | 'cadastral' | 'bda' | 'benchmark', () => React.ReactNode> = {
     location: renderLocationMap,
     mouza: renderMouzaMap,
     sketch: renderSketchMap,
     cadastral: renderCadastralMap,
+    bda: renderBdaMap,
+    benchmark: renderBenchmarkMap,
   };
 
   const content = (

@@ -1149,6 +1149,8 @@ export default function BankReportBuilder({
 
       const normMouzaImages = fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage);
       const normCadastralImages = fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage);
+      const normBdaImages = fields.bdaMapImages || [];
+      const normBenchmarkImages = fields.benchmarkMapImages || [];
 
       const imageResults = await Promise.all([
         ...propertyImgs.map(url => fetchBytes(url)),
@@ -1156,6 +1158,8 @@ export default function BankReportBuilder({
         ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
         ...normMouzaImages.map(url => fetchBytes(url)),
         ...normCadastralImages.map(url => fetchBytes(url)),
+        ...normBdaImages.map(url => fetchBytes(url)),
+        ...normBenchmarkImages.map(url => fetchBytes(url)),
       ]);
 
       const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length).filter(Boolean) as Uint8Array[];
@@ -1169,6 +1173,12 @@ export default function BankReportBuilder({
 
       const cadastralBytesList = normCadastralImages.length > 0 ? imageResults.slice(imgIdx, imgIdx + normCadastralImages.length).filter(Boolean) as Uint8Array[] : null;
       if (normCadastralImages.length) imgIdx += normCadastralImages.length;
+
+      const bdaBytesList = normBdaImages.length > 0 ? imageResults.slice(imgIdx, imgIdx + normBdaImages.length).filter(Boolean) as Uint8Array[] : null;
+      if (normBdaImages.length) imgIdx += normBdaImages.length;
+
+      const benchmarkBytesList = normBenchmarkImages.length > 0 ? imageResults.slice(imgIdx, imgIdx + normBenchmarkImages.length).filter(Boolean) as Uint8Array[] : null;
+      if (normBenchmarkImages.length) imgIdx += normBenchmarkImages.length;
 
       // Date formatter: YYYY-MM-DD → DD/MM/YYYY
       const fmtDate = (d: string) => {
@@ -1535,6 +1545,36 @@ export default function BankReportBuilder({
             r.drawSectionHeader(`${mapLabel}${cadastralBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(cBytes, {
+              maxWidth: 450, maxHeight: 500, centered: true,
+            });
+          }
+        }
+      }
+
+      // ── BDA Map ──
+      if (bdaBytesList && bdaBytesList.length > 0) {
+        for (let i = 0; i < bdaBytesList.length; i++) {
+          const bBytes = bdaBytesList[i];
+          if (bBytes) {
+            r.newPage();
+            r.drawSectionHeader(`BDA MAP${bdaBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            r.advanceCursor(8);
+            await r.drawImageBlock(bBytes, {
+              maxWidth: 450, maxHeight: 500, centered: true,
+            });
+          }
+        }
+      }
+
+      // ── Benchmark Valuation ──
+      if (benchmarkBytesList && benchmarkBytesList.length > 0) {
+        for (let i = 0; i < benchmarkBytesList.length; i++) {
+          const bmBytes = benchmarkBytesList[i];
+          if (bmBytes) {
+            r.newPage();
+            r.drawSectionHeader(`BENCHMARK VALUATION${benchmarkBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            r.advanceCursor(8);
+            await r.drawImageBlock(bmBytes, {
               maxWidth: 450, maxHeight: 500, centered: true,
             });
           }
@@ -2796,6 +2836,8 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
               mouzaMapImages={fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage)}
               sketchMapImages={fields.sketchMapImages || []}
               cadastralMapImages={fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage)}
+              bdaMapImages={fields.bdaMapImages || []}
+              benchmarkMapImages={fields.benchmarkMapImages || []}
               latitude={fields.latitude}
               longitude={fields.longitude}
               technicalAddress={technicalAddress}
@@ -2813,12 +2855,19 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
               onSketchMapRemove={(idx) => removeMapImage('sketchMapImages', idx)}
               onCadastralMapUpload={(e) => handleFileUpload(e, 'cadastralMapImages')}
               onCadastralMapRemove={(idx) => removeMapImage('cadastralMapImages', idx)}
+              onBdaMapUpload={(e) => handleFileUpload(e, 'bdaMapImages')}
+              onBdaMapRemove={(idx) => removeMapImage('bdaMapImages', idx)}
+              onBenchmarkMapUpload={(e) => handleFileUpload(e, 'benchmarkMapImages')}
+              onBenchmarkMapRemove={(idx) => removeMapImage('benchmarkMapImages', idx)}
               onReorderLocationMap={(newImgs) => reorderMapImage('locationMapImages', newImgs)}
               onReorderMouzaMap={(newImgs) => reorderMapImage('mouzaMapImages', newImgs)}
               onReorderSketchMap={(newImgs) => reorderMapImage('sketchMapImages', newImgs)}
               onReorderCadastralMap={(newImgs) => reorderMapImage('cadastralMapImages', newImgs)}
+              onReorderBdaMap={(newImgs) => reorderMapImage('bdaMapImages', newImgs)}
+              onReorderBenchmarkMap={(newImgs) => reorderMapImage('benchmarkMapImages', newImgs)}
               sectionNumber={getSectionNumber('section-12', isApartmentFlat ? 11 : 12)}
               sectionId="section-12"
+              mapOrder={config?.mapOrder || ['location', 'mouza', 'sketch', 'cadastral', 'bda', 'benchmark']}
             />
           );
         })()}
