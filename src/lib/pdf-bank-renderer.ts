@@ -726,7 +726,12 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   /**
    * Draw a 2-column Photograph Grid with dynamic user labels
    */
-  async drawPhotoGrid(photos: (Uint8Array | { bytes: Uint8Array; label?: string })[], title: string = 'PHOTOGRAPHS OF PROPERTY'): Promise<void> {
+  async drawPhotoGrid(
+    photos: (Uint8Array | { bytes: Uint8Array; label?: string })[],
+    title: string = 'PHOTOGRAPHS OF PROPERTY',
+    maxCellH: number = 180,
+    forceNewPage: boolean = true
+  ): Promise<void> {
     if (!photos || photos.length === 0) return;
 
     const normalizedPhotos = photos.map(p => {
@@ -738,12 +743,16 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
     if (normalizedPhotos.length === 0) return;
 
-    this.addPage();
+    if (forceNewPage) {
+      this.addPage();
+    } else {
+      this.checkPageBreak(maxCellH + 40);
+    }
     this.drawSectionHeader(title);
     this.advanceCursor(8);
 
     const cellW = (CONTENT_W - 10) / 2;
-    const cellH = 180;
+    const cellH = maxCellH;
 
     for (let i = 0; i < normalizedPhotos.length; i += 2) {
       this.checkPageBreak(cellH + 20);
@@ -840,6 +849,54 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     for (let i = 0; i < normalized.length; i++) {
       const { bytes, caption } = normalized[i];
       const imgCaption = caption || (normalized.length > 1 ? `${title} — Image ${i + 1} of ${normalized.length}` : '');
+      await this.drawImageSection(bytes, imgCaption, maxImageH, true);
+      this.advanceCursor(10);
+    }
+  }
+
+  /**
+   * Draw unified Documents Gallery (for Section "Documents")
+   * Formats user-uploaded document images with individual user-specified headings/captions.
+   * Default caption is 'Document' (or custom name, or null/empty if omitted).
+   * Fits 2 images per page (maxImageH ~240), with line breaks.
+   * forceNewPage defaults to false (so documents start cleanly).
+   * Does NOT force a trailing page break so maps can continue directly with a line break.
+   */
+  async drawDocumentsGallery(
+    images: (Uint8Array | { bytes: Uint8Array; caption?: string; name?: string })[],
+    title: string = 'DOCUMENTS',
+    maxImageH: number = 240,
+    forceNewPage: boolean = false
+  ): Promise<void> {
+    if (!images || images.length === 0) return;
+
+    const normalized = images.map((item, idx) => {
+      if (item instanceof Uint8Array || (item as any)?.byteLength !== undefined) {
+        return { bytes: item as Uint8Array, caption: '' };
+      }
+      const rawCaption = (item as any)?.caption ?? (item as any)?.name;
+      const caption = rawCaption !== undefined && rawCaption !== null ? String(rawCaption).trim() : '';
+      return { bytes: (item as any)?.bytes as Uint8Array, caption };
+    }).filter(i => i.bytes && i.bytes.length > 0);
+
+    if (normalized.length === 0) return;
+
+    const neededForTitleAndImage = 44 + maxImageH + 20;
+
+    if (forceNewPage || this.cursorY === 0 || this.availableHeight < neededForTitleAndImage) {
+      if (this.cursorY > 0) {
+        this.addPage();
+      }
+    } else {
+      this.advanceCursor(14);
+    }
+
+    this.drawSectionHeader(title, false);
+    this.advanceCursor(8);
+
+    for (let i = 0; i < normalized.length; i++) {
+      const { bytes, caption } = normalized[i];
+      const imgCaption = caption !== undefined && caption !== null ? caption : '';
       await this.drawImageSection(bytes, imgCaption, maxImageH, true);
       this.advanceCursor(10);
     }

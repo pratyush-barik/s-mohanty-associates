@@ -455,6 +455,15 @@ export interface BandhanSMEReportFields {
   bhuNakshaImageUrl?: string;
   guidelineValueImageUrl?: string;
   propertyPhotos?: BandhanSMEPhoto[];
+  documentImages?: string[];
+  documentImageNames?: string[];
+  locationMapImages?: string[];
+  mouzaMapImages?: string[];
+  sketchMapImages?: string[];
+  cadastralMapImages?: string[];
+  bdaMapImages?: string[];
+  benchmarkMapImages?: string[];
+  [key: string]: any;
 }
 
 const TABLE_FONT_SIZE = FONT_SIZE; // 12pt
@@ -1269,41 +1278,97 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
   // ==========================================================================
   // 7. ENCLOSURES ENGINE
+  // Order: Documents -> Maps (line break, no page break) -> Photos (fresh page)
   // ==========================================================================
   private async renderEnclosures(fields: BandhanSMEReportFields): Promise<void> {
-    // A. Record of Rights (ROR) Document
-    if (fields.rorImageUrl) {
-      this.addPage();
-      this.drawSectionSpanner('ENCLOSURE 1: RECORD OF RIGHTS (ROR) DOCUMENT');
-      await this.drawDocImage(fields.rorImageUrl, CONTENT_W, 680);
+    // ── 1. Section: Documents (Unified Document Uploads) ──
+    const docImages: string[] = fields.documentImages || [];
+    const docNames: string[] = fields.documentImageNames || [];
+    const validDocs = docImages.filter(u => Boolean(u && u.trim()));
+
+    if (validDocs.length > 0) {
+      const docBytesList: { bytes: Uint8Array; caption?: string }[] = [];
+      for (let i = 0; i < validDocs.length; i++) {
+        const b = await fetchBytes(validDocs[i]);
+        if (b && b.length > 0) {
+          const rawName = docNames[i];
+          const caption = (rawName !== undefined && rawName !== null && rawName.trim() !== '') ? rawName.trim() : '';
+          docBytesList.push({ bytes: b, caption });
+        }
+      }
+
+      if (docBytesList.length > 0) {
+        await this.drawDocumentsGallery(docBytesList, 'ENCLOSURE: DOCUMENTS', 240, false);
+      }
     }
 
-    // B. GPS Location Map
-    if (fields.locationMapImageUrl) {
-      this.addPage();
-      this.drawSectionSpanner('ENCLOSURE 2: GPS LOCATION MAP');
-      await this.drawDocImage(fields.locationMapImageUrl, CONTENT_W, 680);
+    // ── 2. Section: Maps & Documents (Chronological Order) ──
+    // Continues with line break, no page break after documents
+    const mapCategories: { title: string; urls: string[] }[] = [
+      {
+        title: 'Google Satellite Map',
+        urls: (fields.locationMapImages && fields.locationMapImages.length > 0)
+          ? fields.locationMapImages
+          : (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : []),
+      },
+      {
+        title: 'Mouza Map (Bhulekh / Revenue Map)',
+        urls: (fields.mouzaMapImages && fields.mouzaMapImages.length > 0)
+          ? fields.mouzaMapImages
+          : (fields.rorImageUrl ? [fields.rorImageUrl] : []),
+      },
+      {
+        title: 'Sketch Map (Demarcation / Hand-Drawn)',
+        urls: (fields.sketchMapImages && fields.sketchMapImages.length > 0)
+          ? fields.sketchMapImages
+          : (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : []),
+      },
+      {
+        title: 'Cadastral Map (Bhu Naksha)',
+        urls: (fields.cadastralMapImages && fields.cadastralMapImages.length > 0)
+          ? fields.cadastralMapImages
+          : (fields.bhuNakshaImageUrl ? [fields.bhuNakshaImageUrl] : []),
+      },
+      {
+        title: 'BDA MAP',
+        urls: fields.bdaMapImages || [],
+      },
+      {
+        title: 'BENCHMARK VALUATION',
+        urls: fields.benchmarkMapImages || [],
+      },
+    ];
+
+    for (const cat of mapCategories) {
+      const validUrls = cat.urls.filter(u => Boolean(u && u.trim()));
+      if (validUrls.length === 0) continue;
+
+      const imgBytesList: { bytes: Uint8Array; caption?: string }[] = [];
+      for (const u of validUrls) {
+        const b = await fetchBytes(u);
+        if (b && b.length > 0) {
+          imgBytesList.push({ bytes: b });
+        }
+      }
+
+      if (imgBytesList.length > 0) {
+        await this.drawMapGallery(imgBytesList, cat.title, 240, false);
+      }
     }
 
-    // C. Property Photo Gallery Grid (with GPS/timestamp badges)
-    if (fields.propertyPhotos && fields.propertyPhotos.length > 0) {
-      this.addPage();
-      this.drawSectionSpanner('ENCLOSURE 3: PHOTOGRAPHS OF THE ASSET VALUED');
-      await this.drawBandhanPhotoGrid(fields.propertyPhotos);
-    }
+    // ── 3. Section: Property Photographs (Fresh Page) ──
+    const photos: BandhanSMEPhoto[] = (fields.propertyPhotos && fields.propertyPhotos.length > 0)
+      ? fields.propertyPhotos
+      : (fields.propertyImages || []).map((url: string, i: number) => ({
+          url,
+          caption: fields.propertyImageNames?.[i] || `Photograph ${i + 1}`,
+        }));
 
-    // D. Bhu Naksha Cadastral Map
-    if (fields.bhuNakshaImageUrl) {
+    const validPhotos = photos.filter(p => Boolean(p.url && p.url.trim()));
+    if (validPhotos.length > 0) {
       this.addPage();
-      this.drawSectionSpanner('ENCLOSURE 4: BHU NAKSHA CADASTRAL REVENUE MAP');
-      await this.drawDocImage(fields.bhuNakshaImageUrl, CONTENT_W, 680);
-    }
-
-    // E. Guideline Value / Benchmark Proof
-    if (fields.guidelineValueImageUrl) {
-      this.addPage();
-      this.drawSectionSpanner('ENCLOSURE 5: GOVT. GUIDELINE VALUE / BENCHMARK PROOF');
-      await this.drawDocImage(fields.guidelineValueImageUrl, CONTENT_W, 680);
+      this.drawSectionSpanner('PHOTOGRAPHS OF THE ASSET VALUED');
+      await this.drawBandhanPhotoGrid(validPhotos);
     }
   }
 

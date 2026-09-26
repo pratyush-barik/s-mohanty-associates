@@ -17,6 +17,7 @@ import {
   ActiveConfigBanner,
   NavItem,
   BaseDateInput,
+  BaseDocumentsSection,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -173,9 +174,12 @@ export default function ArkaFinance({
     // Media
     propertyImages: [],
     propertyImageNames: [],
+    documentImages: [],
+    documentImageNames: [],
     locationMapImages: [],
     sketchMapImages: [],
     mouzaMapImages: [],
+    cadastralMapImages: [],
     ...initialFields,
     clientType: initialFields?.clientType || 'organisation',
     organisationTemplate: initialFields?.organisationTemplate || 'ARKA FINANCE',
@@ -369,8 +373,9 @@ export default function ArkaFinance({
     { id: 'arka-sec5', title: '5. Construction & Approvals' },
     { id: 'arka-sec6', title: '6. Valuation Details' },
     { id: 'arka-sec7', title: '7. Remarks & Undertaking' },
-    { id: 'arka-photos', title: '8. Property Photographs' },
+    { id: 'arka-docs', title: '8. Documents' },
     { id: 'arka-maps', title: '9. Location and Sketch Maps' },
+    { id: 'arka-photos', title: '10. Property Photographs' },
   ];
 
   const handleMapUpload = async (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -445,15 +450,58 @@ export default function ArkaFinance({
     handleChange('propertyImages', [...existing, ...selectedUrls]);
   };
 
+  // Document upload / remove handlers
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading(true);
+    try {
+      const uploadedUrls = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split('.').pop() || 'png';
+        const fileName = `document-${Date.now()}-${i}.${ext}`;
+        const path = `documents/${projectId}/${fileName}`;
+        const { error } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(path, file);
+        if (!error) {
+          const { data } = supabaseBrowser.storage
+            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+            .getPublicUrl(path);
+          uploadedUrls.push(data.publicUrl);
+        }
+      }
+      const existing = fields.documentImages || [];
+      handleChange('documentImages', [...existing, ...uploadedUrls]);
+    } catch (err) {
+      alert(`Upload error: ${err instanceof Error ? err.message : String(err)}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDocumentRemove = (idx: number) => {
+    handleChange('documentImages', (fields.documentImages || []).filter((_: any, i: number) => i !== idx));
+    handleChange('documentImageNames', (fields.documentImageNames || []).filter((_: any, i: number) => i !== idx));
+  };
+
   const handleDownloadPDF = async () => {
     setLoading(true);
     try {
       // Convert image URLs to byte arrays for the PDF renderer
+      const docImages = fields.documentImages || [];
+      const docBytesList = await Promise.all(docImages.map(fetchBytes));
+      const documents = docImages.map((url: string, idx: number) => ({
+        bytes: docBytesList[idx] as Uint8Array,
+        caption: fields.documentImageNames?.[idx] !== undefined && fields.documentImageNames?.[idx] !== null ? fields.documentImageNames[idx] : '',
+      })).filter((d: any) => d.bytes && d.bytes.length > 0);
+
       const propImages = fields.propertyImages || [];
       const photoBytesList = await Promise.all(propImages.map(fetchBytes));
       const photos = propImages.map((url: string, idx: number) => ({
         bytes: photoBytesList[idx] as Uint8Array,
-        label: fields.propertyImageNames?.[idx] || 'Site Picture',
+        label: fields.propertyImageNames?.[idx] !== undefined && fields.propertyImageNames?.[idx] !== null ? fields.propertyImageNames[idx] : '',
       })).filter((p: any) => p.bytes && p.bytes.length > 0);
 
       const locImages = fields.locationMapImages || [];
@@ -465,14 +513,19 @@ export default function ArkaFinance({
       const sketchImages = fields.sketchMapImages || [];
       const sketchBytes = (await Promise.all(sketchImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
 
+      const cadastralImages = fields.cadastralMapImages || [];
+      const cadastralBytes = (await Promise.all(cadastralImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
+
       const renderer = new PDFArkaFinanceRenderer();
       await renderer.init();
       const bytes = await renderer.render({
         ...fields,
+        documentImages: documents,
         propertyImages: photos,
         locationMapImages: locBytes,
         mouzaMapImages: mouzaBytes,
         sketchMapImages: sketchBytes,
+        cadastralMapImages: cadastralBytes,
       } as ArkaReportFields);
       const blob = new Blob([bytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
@@ -538,11 +591,18 @@ export default function ArkaFinance({
     setLoading(true);
     try {
       // Convert image URLs to byte arrays for the PDF renderer
+      const docImages = fields.documentImages || [];
+      const docBytesList = await Promise.all(docImages.map(fetchBytes));
+      const documents = docImages.map((url: string, idx: number) => ({
+        bytes: docBytesList[idx] as Uint8Array,
+        caption: fields.documentImageNames?.[idx] !== undefined && fields.documentImageNames?.[idx] !== null ? fields.documentImageNames[idx] : '',
+      })).filter((d: any) => d.bytes && d.bytes.length > 0);
+
       const propImages = fields.propertyImages || [];
       const photoBytesList = await Promise.all(propImages.map(fetchBytes));
       const photos = propImages.map((url: string, idx: number) => ({
         bytes: photoBytesList[idx] as Uint8Array,
-        label: fields.propertyImageNames?.[idx] || 'Site Picture',
+        label: fields.propertyImageNames?.[idx] !== undefined && fields.propertyImageNames?.[idx] !== null ? fields.propertyImageNames[idx] : '',
       })).filter((p: any) => p.bytes && p.bytes.length > 0);
 
       const locImages = fields.locationMapImages || [];
@@ -554,14 +614,19 @@ export default function ArkaFinance({
       const sketchImages = fields.sketchMapImages || [];
       const sketchBytes = (await Promise.all(sketchImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
 
+      const cadastralImages = fields.cadastralMapImages || [];
+      const cadastralBytes = (await Promise.all(cadastralImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
+
       const renderer = new PDFArkaFinanceRenderer();
       await renderer.init();
       const bytes = await renderer.render({
         ...fields,
+        documentImages: documents,
         propertyImages: photos,
         locationMapImages: locBytes,
         mouzaMapImages: mouzaBytes,
         sketchMapImages: sketchBytes,
+        cadastralMapImages: cadastralBytes,
       } as ArkaReportFields);
       const blob = new Blob([bytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
@@ -1624,30 +1689,25 @@ export default function ArkaFinance({
           </div>
         </Section>
 
-        <BasePhotographsSection
-          title="Property Photographs"
-          sectionId="arka-photos"
+        <BaseDocumentsSection
+          title="Documents"
+          sectionId="arka-docs"
           sectionNumber={8}
-          propertyImages={fields.propertyImages || []}
-          propertyImageNames={fields.propertyImageNames || []}
+          documentImages={fields.documentImages || []}
+          documentImageNames={fields.documentImageNames || []}
           isReadOnly={isReadOnly}
           uploading={uploading}
-          bucketCount={bucketImages?.length || 0}
-          onOpenBucketPicker={() => setBucketPickerOpen(true)}
           onImageNameChange={(idx: number, name: string) => {
-            const updated = [...(fields.propertyImageNames || [])];
+            const updated = [...(fields.documentImageNames || [])];
             while (updated.length <= idx) updated.push("");
             updated[idx] = name;
-            handleChange("propertyImageNames", updated);
+            handleChange("documentImageNames", updated);
           }}
-          onRemoveImage={(idx: number) => {
-            handleChange("propertyImages", (fields.propertyImages || []).filter((_: any, i: number) => i !== idx));
-            handleChange("propertyImageNames", (fields.propertyImageNames || []).filter((_: any, i: number) => i !== idx));
-          }}
-          onUploadImages={handlePhotoUpload}
+          onRemoveImage={handleDocumentRemove}
+          onUploadImages={handleDocumentUpload}
           onReorderImages={(newImgs: string[], newNames: string[]) => {
-            handleChange('propertyImages', newImgs);
-            handleChange('propertyImageNames', newNames);
+            handleChange('documentImages', newImgs);
+            handleChange('documentImageNames', newNames);
           }}
           withoutSectionWrapper={false}
         />
@@ -1680,6 +1740,34 @@ export default function ArkaFinance({
           onReorderMouzaMap={newImgs => handleReorderMap('mouzaMapImages', newImgs)}
           onReorderSketchMap={newImgs => handleReorderMap('sketchMapImages', newImgs)}
           onReorderCadastralMap={newImgs => handleReorderMap('cadastralMapImages', newImgs)}
+        />
+
+        <BasePhotographsSection
+          title="Property Photographs"
+          sectionId="arka-photos"
+          sectionNumber={10}
+          propertyImages={fields.propertyImages || []}
+          propertyImageNames={fields.propertyImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          bucketCount={bucketImages?.length || 0}
+          onOpenBucketPicker={() => setBucketPickerOpen(true)}
+          onImageNameChange={(idx: number, name: string) => {
+            const updated = [...(fields.propertyImageNames || [])];
+            while (updated.length <= idx) updated.push("");
+            updated[idx] = name;
+            handleChange("propertyImageNames", updated);
+          }}
+          onRemoveImage={(idx: number) => {
+            handleChange("propertyImages", (fields.propertyImages || []).filter((_: any, i: number) => i !== idx));
+            handleChange("propertyImageNames", (fields.propertyImageNames || []).filter((_: any, i: number) => i !== idx));
+          }}
+          onUploadImages={handlePhotoUpload}
+          onReorderImages={(newImgs: string[], newNames: string[]) => {
+            handleChange('propertyImages', newImgs);
+            handleChange('propertyImageNames', newNames);
+          }}
+          withoutSectionWrapper={false}
         />
 
         {/* STANDARDIZED ACTION BAR */}

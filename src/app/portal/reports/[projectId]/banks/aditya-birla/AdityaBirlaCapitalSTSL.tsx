@@ -22,6 +22,7 @@ import {
   formatAssignedEngineers,
   formatReportDate,
   BaseDateInput,
+  BaseDocumentsSection,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -30,6 +31,8 @@ import {
   fetchBytes,
   getEarliestFieldVisit,
   EarliestFieldVisitBadge,
+  DEFAULT_DOCUMENT_LABEL,
+  DEFAULT_PHOTO_LABEL,
 } from '../BaseBankReportComponents';
 import { reorderAndLabelAnnexures, AnnexureItem, decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/bank-fields';
 
@@ -233,19 +236,20 @@ export function normalizeOption(val: string | undefined, validOptions: string[],
 }
 
 export const NAV_SECTIONS: NavItem[] = [
-  { id: 'section-1', title: 'Basic Details' },
-  { id: 'section-2', title: 'Location Details' },
-  { id: 'section-3', title: 'Property Details' },
-  { id: 'section-4', title: 'Accommodation' },
-  { id: 'section-5', title: 'Documentation & Built-Up Area' },
-  { id: 'section-6', title: 'Valuation' },
-  { id: 'section-7', title: 'Setbacks & Summary' },
-  { id: 'section-8', title: 'Boundaries' },
-  { id: 'section-9', title: 'Remarks' },
-  { id: 'section-10', title: 'Photographs' },
-  { id: 'section-11', title: 'Location Map & Mouza Map' },
-  { id: 'section-12', title: 'Declaration & Sign-off' },
-  { id: 'section-13-annexure', title: 'Annexures' },
+  { id: 'section-1', title: '1. Basic Details' },
+  { id: 'section-2', title: '2. Location Details' },
+  { id: 'section-3', title: '3. Property Details' },
+  { id: 'section-4', title: '4. Accommodation' },
+  { id: 'section-5', title: '5. Documentation & Built-Up Area' },
+  { id: 'section-6', title: '6. Valuation' },
+  { id: 'section-7', title: '7. Setbacks & Summary' },
+  { id: 'section-8', title: '8. Boundaries' },
+  { id: 'section-9', title: '9. Remarks' },
+  { id: 'section-10', title: '10. Documents' },
+  { id: 'section-11', title: '11. Location Map & Mouza Map' },
+  { id: 'section-12', title: '12. Photographs' },
+  { id: 'section-13', title: '13. Declaration & Sign-off' },
+  { id: 'section-14-annexure', title: '14. Annexures' },
 ];
 
 export default function AdityaBirlaCapitalSTSL({
@@ -1192,38 +1196,64 @@ export default function AdityaBirlaCapitalSTSL({
     r.drawRemarksBox('Remarks', fields.remarks || '');
     r.drawKeyValueRow([{ label: 'Name of the Engineer visited', value: fields.engineerVisitedName || '', labelWidth: 180, valueWidth: CONTENT_W - 180 }]);
 
-    // ═══ PAGE 5: PHOTOGRAPHS OF PROPERTY ═══
+    // ═══ 1. DOCUMENTS SECTION ═══
+    const docImages: string[] = fields.documentImages || [];
+    const docNames: string[] = fields.documentImageNames || [];
+    const validDocUrls = docImages.filter(u => Boolean(u && u.trim()));
+    if (validDocUrls.length > 0) {
+      const docBytesList: { bytes: Uint8Array; caption?: string }[] = [];
+      for (let i = 0; i < validDocUrls.length; i++) {
+        const b = await fetchBytes(validDocUrls[i]);
+        if (b && b.length > 0) {
+          const rawName = docNames[i];
+          const caption = (rawName !== undefined && rawName !== null && rawName.trim() !== '') ? rawName.trim() : '';
+          docBytesList.push({ bytes: b, caption });
+        }
+      }
+      if (docBytesList.length > 0) {
+        await r.drawDocumentsGallery(docBytesList, 'DOCUMENTS', 240, false);
+      }
+    }
+
+    // ═══ 2. MAPS SECTION (Continues after documents with line break) ═══
+    if (locMapBytes || mouzaMapBytes || cadMapBytes || (sketchBytesList && sketchBytesList.length > 0)) {
+      if (validDocUrls.length === 0 && (r as any).cursorY === 0) {
+        (r as any).addPage();
+      } else {
+        (r as any).advanceCursor(10);
+      }
+      if (locMapBytes) {
+        await r.drawMapGallery([{ bytes: locMapBytes }], 'Location Map', 240, false);
+      }
+      if (mouzaMapBytes) {
+        await r.drawMapGallery([{ bytes: mouzaMapBytes }], 'Mouza Map', 240, false);
+      }
+      if (cadMapBytes) {
+        await r.drawMapGallery([{ bytes: cadMapBytes }], 'CADASTRAL MAP', 240, false);
+      }
+      if (sketchBytesList && sketchBytesList.length > 0) {
+        for (let i = 0; i < sketchBytesList.length; i++) {
+          if (sketchBytesList[i]) {
+            await r.drawMapGallery([{ bytes: sketchBytesList[i]! }], `Sketch Map ${i + 1}`, 240, false);
+          }
+        }
+      }
+    }
+
+    // ═══ 3. PHOTOGRAPHS OF PROPERTY (Fresh page) ═══
     if (photos.length > 0) {
       await r.drawPhotoGrid(photos);
     }
 
-    // ═══ PAGE 6: LOCATION MAP & BHULEKH MOUZA MAP ═══
-    if (locMapBytes || mouzaMapBytes) {
-      r.newPage();
-      r.drawSectionHeader('Location Map', false);
-      if (locMapBytes && mouzaMapBytes) {
-        await r.drawImageSection(locMapBytes, '', 310);
-        await r.drawImageSection(mouzaMapBytes, '', 310);
-      } else if (locMapBytes) {
-        await r.drawImageSection(locMapBytes, '', 600);
-      } else if (mouzaMapBytes) {
-        await r.drawImageSection(mouzaMapBytes, '', 600);
-      }
-    }
-
-    // ═══ PAGE 7: SUPERIMPOSED CADASTRAL MAP & DECLARATION ═══
+    // ═══ 4. DECLARATION & SIGN-OFF ═══
     r.newPage();
-    if (cadMapBytes) {
-      r.drawSectionHeader('CADASTRAL MAP', false);
-      await r.drawImageSection(cadMapBytes, '', 280);
-    }
     r.drawDeclarationSection(
       fields.appraiserName || 'Er. Satyajit Mohanty',
       fields.preparedBy || '',
       fields.finalizedBy || ''
     );
 
-    // ═══ PAGE 8+: STANDARDIZED ANNEXURES & SCHEDULES ═══
+    // ═══ 5. ANNEXURES & SCHEDULES ═══
     if (fields.annexures && fields.annexures.length > 0) {
       await r.renderAnnexures(fields.annexures);
     }
@@ -2928,35 +2958,61 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 10: PHOTOGRAPHS ═══ */}
-        <BasePhotographsSection
-          propertyImages={fields.propertyImages || []}
-          propertyImageNames={fields.propertyImageNames || []}
-          isReadOnly={isReadOnly}
-          uploading={uploadingTarget === 'photos'}
-          bucketCount={bucketImages?.length || 0}
-          onImageNameChange={(idx, name) => {
-            const updatedNames = [...(fields.propertyImageNames || [])];
-            while (updatedNames.length <= idx) {
-              updatedNames.push('');
-            }
-            updatedNames[idx] = name;
-            handleChange('propertyImageNames', updatedNames);
-          }}
-          onRemoveImage={idx => {
-            const updatedImgs = (fields.propertyImages || []).filter((_, i) => i !== idx);
-            const updatedNames = (fields.propertyImageNames || []).filter((_, i) => i !== idx);
-            handleChange('propertyImages', updatedImgs);
-            handleChange('propertyImageNames', updatedNames);
-          }}
-          onReorderImages={(newImages, newNames) => {
-            handleChange('propertyImages', newImages);
-            handleChange('propertyImageNames', newNames);
-          }}
-          onUploadImages={handleUploadMultiplePhotos}
-          onOpenBucketPicker={() => setBucketPickerOpen(true)}
+        {/* ═══ SECTION 10: DOCUMENTS ═══ */}
+        <BaseDocumentsSection
+          title="Documents"
           sectionNumber={10}
           sectionId="section-10"
+          documentImages={fields.documentImages || []}
+          documentImageNames={fields.documentImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploadingTarget === 'documents'}
+          onImageNameChange={(idx: number, name: string) => {
+            const next = [...(fields.documentImageNames || [])];
+            while (next.length <= idx) next.push('');
+            next[idx] = name;
+            handleChange('documentImageNames', next);
+          }}
+          onRemoveImage={(idx: number) => {
+            const nextUrls = (fields.documentImages || []).filter((_: string, i: number) => i !== idx);
+            const nextNames = (fields.documentImageNames || []).filter((_: string, i: number) => i !== idx);
+            handleChange('documentImages', nextUrls);
+            handleChange('documentImageNames', nextNames);
+          }}
+          onReorderImages={(newUrls: string[], newNames: string[]) => {
+            handleChange('documentImages', newUrls);
+            handleChange('documentImageNames', newNames);
+          }}
+          onUploadImages={async (e) => {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+            setUploadingTarget('documents');
+            try {
+              const uploadPromises = Array.from(files).map(async file => {
+                const ext = file.name.split('.').pop() || 'png';
+                const fileName = `doc_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+                const filePath = `${projectId}/${fileName}`;
+                const { error: uploadError } = await supabaseBrowser.storage
+                  .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+                  .upload(filePath, file);
+                if (uploadError) throw uploadError;
+                const { data: urlData } = supabaseBrowser.storage
+                  .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+                  .getPublicUrl(filePath);
+                return urlData.publicUrl;
+              });
+              const urls = await Promise.all(uploadPromises);
+              handleChange('documentImages', [...(fields.documentImages || []), ...urls]);
+              handleChange('documentImageNames', [
+                ...(fields.documentImageNames || []),
+                ...urls.map(() => ''),
+              ]);
+            } catch (err: any) {
+              alert(`Error uploading documents: ${err.message}`);
+            } finally {
+              setUploadingTarget(null);
+            }
+          }}
         />
 
         {/* ═══ SECTION 11: MAPS & DOCUMENTS ═══ */}
@@ -2990,8 +3046,40 @@ export default function AdityaBirlaCapitalSTSL({
           title="Location Map & Bhulekh Cadastral Map"
         />
 
-        {/* ═══ SECTION 12: DECLARATION & SIGN-OFF ═══ */}
-        <Section title="Declaration & Sign-off" number={12} id="section-12">
+        {/* ═══ SECTION 12: PHOTOGRAPHS OF PROPERTY ═══ */}
+        <BasePhotographsSection
+          title="Photographs of Property"
+          propertyImages={fields.propertyImages || []}
+          propertyImageNames={fields.propertyImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploadingTarget === 'photos'}
+          bucketCount={bucketImages?.length || 0}
+          onImageNameChange={(idx, name) => {
+            const updatedNames = [...(fields.propertyImageNames || [])];
+            while (updatedNames.length <= idx) {
+              updatedNames.push('');
+            }
+            updatedNames[idx] = name;
+            handleChange('propertyImageNames', updatedNames);
+          }}
+          onRemoveImage={(idx) => {
+            const updated = (fields.propertyImages || []).filter((_: any, i: number) => i !== idx);
+            const updatedNames = (fields.propertyImageNames || []).filter((_: any, i: number) => i !== idx);
+            handleChange('propertyImages', updated);
+            handleChange('propertyImageNames', updatedNames);
+          }}
+          onReorderImages={(newImages, newNames) => {
+            handleChange('propertyImages', newImages);
+            handleChange('propertyImageNames', newNames);
+          }}
+          onUploadImages={handleUploadMultiplePhotos}
+          onOpenBucketPicker={() => setBucketPickerOpen(true)}
+          sectionNumber={12}
+          sectionId="section-12"
+        />
+
+        {/* ═══ SECTION 13: DECLARATION & SIGN-OFF ═══ */}
+        <Section title="Declaration & Sign-off" number={13} id="section-13">
           <div className="space-y-6">
             {/* Declaration & Sign-off Fields */}
             <div className="grid md:grid-cols-3 gap-4">
@@ -3028,7 +3116,7 @@ export default function AdityaBirlaCapitalSTSL({
           </div>
         </Section>
 
-        {/* ═══ SECTION 13: ANNEXURES & SCHEDULES ═══ */}
+        {/* ═══ SECTION 14: ANNEXURES & SCHEDULES ═══ */}
         <BaseAnnexureSection
           annexures={fields.annexures || []}
           isReadOnly={isReadOnly}
@@ -3038,8 +3126,8 @@ export default function AdityaBirlaCapitalSTSL({
           onUpdateTitle={updateAnnexureTitle}
           onUploadExcel={handleAnnexureUpload}
           onRemoveFile={removeAnnexureFile}
-          sectionNumber={13}
-          sectionId="section-13-annexure"
+          sectionNumber={14}
+          sectionId="section-14-annexure"
         />
 
         {/* Standard Action Bar */}

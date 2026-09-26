@@ -34,6 +34,7 @@ import {
   formatAssignedEngineers,
   formatReportDate,
   BaseDateInput,
+  BaseDocumentsSection,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -312,9 +313,11 @@ export default function ArthanFinance({
         : (formatAssignedEngineers(prefill?.fieldEmployees || prefill?.assignedFieldEmployees || prefill?.assignedEngineers) || raw.visitingEngineer || ''),
       authorizedSignatory: 'Er. Satyajit Mohanty',
 
-      // Photos & Maps
+      // Photos, Documents & Maps
       propertyImages: Array.isArray(raw.propertyImages) ? raw.propertyImages : [],
       propertyImageNames: Array.isArray(raw.propertyImageNames) ? raw.propertyImageNames : [],
+      documentImages: Array.isArray(raw.documentImages) ? raw.documentImages : [],
+      documentImageNames: Array.isArray(raw.documentImageNames) ? raw.documentImageNames : [],
       locationMapImages: normalizeMapImages(raw.locationMapImages),
       cadastralMapImages: normalizeMapImages(raw.cadastralMapImages),
 
@@ -692,6 +695,43 @@ export default function ArthanFinance({
     }
   };
 
+  // Documents Handlers
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading('documents');
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 10 * 1024 * 1024) continue;
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `temp-photos/${projectId}/document-${Date.now()}-${i}.${ext}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(path, file);
+        if (!error) {
+          const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(path);
+          uploadedUrls.push(data.publicUrl);
+        }
+      }
+      const existing = fields.documentImages || [];
+      handleChange('documentImages', [...existing, ...uploadedUrls]);
+    } catch (err: any) {
+      alert(`Upload error: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDocumentRemove = (idx: number) => {
+    const updated = (fields.documentImages || []).filter((_, i) => i !== idx);
+    const updatedNames = (fields.documentImageNames || []).filter((_, i) => i !== idx);
+    setFields(prev => ({
+      ...prev,
+      documentImages: updated,
+      documentImageNames: updatedNames,
+    }));
+  };
+
   // Save Draft
   const handleSaveDraft = async () => {
     setLoading(true);
@@ -713,12 +753,20 @@ export default function ArthanFinance({
 
   // PDF Generation
   const generatePDFBytes = async (): Promise<Uint8Array> => {
+    // Fetch document images
+    const docImages = fields.documentImages || [];
+    const docBytesList = await Promise.all(docImages.map(fetchBytes));
+    const documents = docImages.map((url, idx) => ({
+      bytes: docBytesList[idx] as Uint8Array,
+      caption: fields.documentImageNames?.[idx] !== undefined && fields.documentImageNames?.[idx] !== null ? fields.documentImageNames[idx] : '',
+    })).filter(d => d.bytes && d.bytes.length > 0);
+
     // Fetch property photos
     const propImages = fields.propertyImages || [];
     const photoBytesList = await Promise.all(propImages.map(fetchBytes));
     const photos = propImages.map((url, idx) => ({
       bytes: photoBytesList[idx] as Uint8Array,
-      label: fields.propertyImageNames?.[idx] || 'Site Picture',
+      label: fields.propertyImageNames?.[idx] !== undefined && fields.propertyImageNames?.[idx] !== null ? fields.propertyImageNames[idx] : '',
     })).filter(p => p.bytes && p.bytes.length > 0);
 
     // Fetch location maps
@@ -733,6 +781,7 @@ export default function ArthanFinance({
     await renderer.init();
 
     return renderer.generateArthanReport(fields, {
+      documents,
       photos,
       locationMaps: locBytes,
       cadastralMaps: cadBytes,
@@ -861,8 +910,9 @@ export default function ArthanFinance({
     { id: 'sec-9', title: 'Valuation of Property' },
     { id: 'sec-10', title: 'Property Specific Remarks & Observation' },
     { id: 'sec-11', title: 'Valuer Certification' },
-    { id: 'sec-12', title: 'Property Photographs' },
+    { id: 'sec-docs', title: 'Documents' },
     { id: 'sec-13', title: 'Location Cum Route Map Showing Property Boundaries' },
+    { id: 'sec-12', title: 'Property Photographs' },
   ];
 
   return (
@@ -2141,167 +2191,34 @@ export default function ArthanFinance({
                   🔒
                 </span>
               </div>
-              <span className="text-[11px] text-black font-medium mt-1 block">
-                Statutory signatory locked
-              </span>
             </Field>
           </div>
         </Section>
 
-        {/* ════ SECTION 12: PROPERTY PHOTOGRAPHS ════ */}
-        <Section title="PROPERTY PHOTOGRAPHS" number={12} id="sec-12">
-          {/* Header Reference Card (Printed Above Photos in Bank Report) */}
-          <div className="bg-slate-50/90 p-4 rounded-xl border border-slate-200/90 shadow-2xs space-y-3 mb-4 text-black [&_label]:!text-black">
-            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
-              <h4 className="text-xs font-bold text-black uppercase tracking-wide flex items-center gap-1.5">
-                <span>📋</span> Header Reference Details (Printed Above Images in Bank Report)
-              </h4>
-              <span className="text-[10px] font-bold text-black bg-slate-200 px-2 py-0.5 rounded-full">
-                Referenced from Sec 1
-              </span>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Field label="Name of the Customer/ Applicant">
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
-                      value={fields.customerName || ''}
-                      disabled
-                      readOnly
-                      placeholder="Referenced from Sec 1"
-                    />
-                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
-                  </div>
-                </Field>
-                <p className="text-[11px] text-black font-medium italic">
-                  Referenced from Sec 1: Name of Customer/Applicant & Contact Details
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <Field label="Proposal No.">
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
-                      value={fields.proposalNo || 'NA'}
-                      disabled
-                      readOnly
-                      placeholder="NA"
-                    />
-                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
-                  </div>
-                </Field>
-                <p className="text-[11px] text-black font-medium italic">
-                  Referenced from Sec 1: Proposal No.
-                </p>
-              </div>
-
-              <div className="md:col-span-2 space-y-1">
-                <Field label="Address of the property being appraised">
-                  <div className="relative flex items-center">
-                    <textarea
-                      rows={2}
-                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed resize-none`}
-                      value={fields.addressAsPerActualSite || fields.addressAsPerDocument || fields.addressAsPerTRF || ''}
-                      disabled
-                      readOnly
-                      placeholder="Referenced from Sec 1"
-                    />
-                    <span className="absolute right-2.5 top-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
-                  </div>
-                </Field>
-                <p className="text-[11px] text-black font-medium italic">
-                  Referenced from Sec 1: Address of the property being appraised
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Photographs Gallery & Upload */}
-          <BasePhotographsSection
-            title="Property Photographs"
-            propertyImages={fields.propertyImages || []}
-            propertyImageNames={fields.propertyImageNames || []}
-            isReadOnly={isReadOnly}
-            uploading={uploading}
-            bucketCount={bucketImages.length}
-            onImageNameChange={(idx, name) => {
-              const updated = [...(fields.propertyImageNames || [])];
-              while (updated.length <= idx) updated.push('');
-              updated[idx] = name;
-              handleChange('propertyImageNames', updated);
-            }}
-            onRemoveImage={handlePhotoRemove}
-            onReorderImages={handleReorderPhotos}
-            onUploadImages={handlePhotoUpload}
-            onOpenBucketPicker={() => setBucketPickerOpen(true)}
-            sectionNumber={12}
-            sectionId="sec-12"
-            withoutSectionWrapper={true}
-          />
-
-          {/* Footer Reference Card (Printed Below Images in Bank Report) */}
-          <div className="bg-slate-50/90 p-4 rounded-xl border border-slate-200/90 shadow-2xs space-y-3 mt-4 text-black [&_label]:!text-black">
-            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
-              <h4 className="text-xs font-bold text-black uppercase tracking-wide flex items-center gap-1.5">
-                <span>✍️</span> Signatory & Inspection Details (Printed Below Images in Bank Report)
-              </h4>
-              <span className="text-[10px] font-bold text-black bg-slate-200 px-2 py-0.5 rounded-full">
-                Referenced from Sec 11 (Valuer Certification)
-              </span>
-            </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Field label="Name of Engineer Visted the property">
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
-                      value={fields.visitingEngineer || ''}
-                      disabled
-                      readOnly
-                      placeholder="Referenced from Sec 11"
-                    />
-                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 11">🔒</span>
-                  </div>
-                </Field>
-                <p className="text-[11px] text-black font-medium italic">
-                  Referenced from Sec 11 (Valuer Certification): Name of Engineer Visited the property
-                </p>
-              </div>
-
-              <div className="space-y-1">
-                <Field label="Authorized Signatory Name & Signature">
-                  <div className="relative flex items-center">
-                    <input
-                      type="text"
-                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
-                      value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
-                      disabled
-                      readOnly
-                      placeholder="Er. Satyajit Mohanty"
-                    />
-                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 11">🔒</span>
-                  </div>
-                </Field>
-                <p className="text-[11px] text-black font-medium italic">
-                  Referenced from Sec 11 (Valuer Certification): Authorized Signatory
-                </p>
-              </div>
-            </div>
-          </div>
-        </Section>
-        {bucketPickerOpen && (
-          <BasePhotoBucketModal
-            isOpen={bucketPickerOpen}
-            bucketImages={bucketImages}
-            onConfirm={handleBucketConfirm}
-            onClose={() => setBucketPickerOpen(false)}
-          />
-        )}
+        {/* ════ SECTION 12: DOCUMENTS ════ */}
+        <BaseDocumentsSection
+          documentImages={fields.documentImages || []}
+          documentImageNames={fields.documentImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploading === 'documents'}
+          onImageNameChange={(idx: number, name: string) => {
+            const updated = [...(fields.documentImageNames || [])];
+            while (updated.length <= idx) updated.push('');
+            updated[idx] = name;
+            handleChange('documentImageNames', updated);
+          }}
+          onRemoveImage={handleDocumentRemove}
+          onReorderImages={(newImgs: string[], newNames: string[]) => {
+            setFields(prev => ({
+              ...prev,
+              documentImages: newImgs,
+              documentImageNames: newNames,
+            }));
+          }}
+          onUploadImages={handleDocumentUpload}
+          sectionNumber={12}
+          sectionId="sec-docs"
+        />
 
         {/* ════ SECTION 13: MAPS ════ */}
         <Section title="LOCATION CUM ROUTE MAP SHOWING PROPERTY BOUNDARIES" number={13} id="sec-13">
@@ -2444,6 +2361,153 @@ export default function ArthanFinance({
                     <span className="absolute right-2.5 text-xs text-black" title="Locked: Authorized Signatory">
                   🔒
                     </span>
+                  </div>
+                </Field>
+                <p className="text-[11px] text-black font-medium italic">
+                  Referenced from Sec 11 (Valuer Certification): Authorized Signatory
+                </p>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* ════ SECTION 14: PROPERTY PHOTOGRAPHS ════ */}
+        <Section title="PROPERTY PHOTOGRAPHS" number={14} id="sec-12">
+          {/* Header Reference Card (Printed Above Images in Bank Report) */}
+          <div className="bg-slate-50/90 p-4 rounded-xl border border-slate-200/90 shadow-2xs space-y-3 mb-4 text-black [&_label]:!text-black">
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+              <h4 className="text-xs font-bold text-black uppercase tracking-wide flex items-center gap-1.5">
+                <span>📋</span> Header Reference Details (Printed Above Images in Bank Report)
+              </h4>
+              <span className="text-[10px] font-bold text-black bg-slate-200 px-2 py-0.5 rounded-full">
+                Referenced from Sec 1
+              </span>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Field label="Name of the Customer/ Applicant">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
+                      value={fields.customerName || ''}
+                      disabled
+                      readOnly
+                      placeholder="Referenced from Sec 1"
+                    />
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[11px] text-black font-medium italic">
+                  Referenced from Sec 1: Name of Customer/Applicant & Contact Details
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Field label="Proposal No.">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
+                      value={fields.proposalNo || 'NA'}
+                      disabled
+                      readOnly
+                      placeholder="NA"
+                    />
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[11px] text-black font-medium italic">
+                  Referenced from Sec 1: Proposal No.
+                </p>
+              </div>
+
+              <div className="md:col-span-2 space-y-1">
+                <Field label="Address of the property being appraised">
+                  <div className="relative flex items-center">
+                    <textarea
+                      rows={2}
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed resize-none`}
+                      value={fields.addressAsPerActualSite || fields.addressAsPerDocument || fields.addressAsPerTRF || ''}
+                      disabled
+                      readOnly
+                      placeholder="Referenced from Sec 1"
+                    />
+                    <span className="absolute right-2.5 top-2.5 text-xs text-black" title="Locked: Referenced from Section 1">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[11px] text-black font-medium italic">
+                  Referenced from Sec 1: Address of the property being appraised
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Photographs Gallery & Upload */}
+          <BasePhotographsSection
+            title="Property Photographs"
+            propertyImages={fields.propertyImages || []}
+            propertyImageNames={fields.propertyImageNames || []}
+            isReadOnly={isReadOnly}
+            uploading={uploading}
+            bucketCount={bucketImages.length}
+            onImageNameChange={(idx, name) => {
+              const updated = [...(fields.propertyImageNames || [])];
+              while (updated.length <= idx) updated.push('');
+              updated[idx] = name;
+              handleChange('propertyImageNames', updated);
+            }}
+            onRemoveImage={handlePhotoRemove}
+            onReorderImages={handleReorderPhotos}
+            onUploadImages={handlePhotoUpload}
+            onOpenBucketPicker={() => setBucketPickerOpen(true)}
+            sectionNumber={14}
+            sectionId="sec-12"
+            withoutSectionWrapper={true}
+          />
+
+          {/* Footer Reference Card (Printed Below Images in Bank Report) */}
+          <div className="bg-slate-50/90 p-4 rounded-xl border border-slate-200/90 shadow-2xs space-y-3 mt-4 text-black [&_label]:!text-black">
+            <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
+              <h4 className="text-xs font-bold text-black uppercase tracking-wide flex items-center gap-1.5">
+                <span>✍️</span> Signatory & Inspection Details (Printed Below Images in Bank Report)
+              </h4>
+              <span className="text-[10px] font-bold text-black bg-slate-200 px-2 py-0.5 rounded-full">
+                Referenced from Sec 11 (Valuer Certification)
+              </span>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Field label="Name of Engineer Visted the property">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
+                      value={fields.visitingEngineer || ''}
+                      disabled
+                      readOnly
+                      placeholder="Referenced from Sec 11"
+                    />
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 11">🔒</span>
+                  </div>
+                </Field>
+                <p className="text-[11px] text-black font-medium italic">
+                  Referenced from Sec 11 (Valuer Certification): Name of Engineer Visited the property
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Field label="Authorized Signatory Name & Signature">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
+                      value={fields.authorizedSignatory || 'Er. Satyajit Mohanty'}
+                      disabled
+                      readOnly
+                      placeholder="Er. Satyajit Mohanty"
+                    />
+                    <span className="absolute right-2.5 text-xs text-black" title="Locked: Referenced from Section 11">🔒</span>
                   </div>
                 </Field>
                 <p className="text-[11px] text-black font-medium italic">

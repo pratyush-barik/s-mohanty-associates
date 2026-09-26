@@ -149,6 +149,17 @@ export interface AxisHLLAPReportFields extends Partial<BaseReportFields> {
   // Signatory
   valuerName?: string;
   valuerTitle?: string;
+
+  // Documents & Enclosures
+  documentImages?: string[];
+  documentImageNames?: string[];
+  locationMapImages?: string[];
+  mouzaMapImages?: string[];
+  sketchMapImages?: string[];
+  cadastralMapImages?: string[];
+  propertyImages?: string[];
+  propertyImageNames?: string[];
+  [key: string]: any;
 }
 
 /**
@@ -730,6 +741,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     fields: AxisHLLAPReportFields,
     images: {
       photos: { bytes: Uint8Array; label?: string }[];
+      documents?: { bytes: Uint8Array; caption?: string }[];
       locationMaps: Uint8Array[];
       mouzaMaps: Uint8Array[];
       sketchMaps?: Uint8Array[];
@@ -1161,34 +1173,43 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       this.cursorY += s.fontSize * 1.25;
     }
 
-    // --- Photographs & Maps Annexures (using predefined standard methods) ---
-    const validPhotos = (images.photos || []).filter(p => p.bytes && p.bytes.length > 0);
-    if (validPhotos.length > 0) {
-      await this.drawPhotoGrid(validPhotos, 'PHOTOGRAPHS');
+    // --- Enclosures: Order = Documents -> Maps (line break, no page break) -> Photographs (fresh page) ---
+
+    // 1. Documents Section
+    const validDocs = (images.documents || []).filter(d => d.bytes && d.bytes.length > 0);
+    if (validDocs.length > 0) {
+      await this.drawDocumentsGallery(validDocs, 'DOCUMENTS', 240, false);
     }
 
+    // 2. Maps Section (continues after documents with line break, no page break)
     const latLongStr = (fields.latitude || fields.longitude)
       ? ` (LAT: ${fields.latitude || ''}, LONG: ${fields.longitude || ''})`
       : '';
     const locTitle = `LOCATION MAP${latLongStr}`;
     const validLocMaps = (images.locationMaps || []).filter(m => (m as any)?.bytes ? (m as any).bytes.length > 0 : (m && (m as Uint8Array).length > 0));
     if (validLocMaps.length > 0) {
-      await this.drawMapGallery(validLocMaps, locTitle, 260);
+      await this.drawMapGallery(validLocMaps, locTitle, 260, false);
     }
 
     const allMouzaMaps = [...(images.mouzaMaps || [])].filter(m => (m as any)?.bytes ? (m as any).bytes.length > 0 : (m && (m as Uint8Array).length > 0));
     if (allMouzaMaps.length > 0) {
-      await this.drawMapGallery(allMouzaMaps, 'MOUZA MAP', 260);
+      await this.drawMapGallery(allMouzaMaps, 'MOUZA MAP', 260, false);
     }
 
     const validSketchMaps = (images.sketchMaps || []).filter(s => (s as any)?.bytes ? (s as any).bytes.length > 0 : (s && (s as Uint8Array).length > 0));
     if (validSketchMaps.length > 0) {
-      await this.drawMapGallery(validSketchMaps, 'SKETCH MAP', 260);
+      await this.drawMapGallery(validSketchMaps, 'SKETCH MAP', 260, false);
     }
 
     const validCadastralMaps = (images.cadastralMaps || []).filter(c => (c as any)?.bytes ? (c as any).bytes.length > 0 : (c && (c as Uint8Array).length > 0));
     if (validCadastralMaps.length > 0) {
-      await this.drawMapGallery(validCadastralMaps, 'CADASTRAL MAP', 260);
+      await this.drawMapGallery(validCadastralMaps, 'CADASTRAL MAP', 260, false);
+    }
+
+    // 3. Photographs Section (starts on a fresh page)
+    const validPhotos = (images.photos || []).filter(p => p.bytes && p.bytes.length > 0);
+    if (validPhotos.length > 0) {
+      await this.drawPhotoGrid(validPhotos, 'PHOTOGRAPHS');
     }
 
     return await this.save();

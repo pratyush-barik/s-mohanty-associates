@@ -214,9 +214,11 @@ export interface AnnapurnaMicroFinanceReportFields {
   place?: string;
   assignedEngineers?: { name: string; designation?: string; role?: string }[];
 
-  // Photos & Maps
+  // Photos, Documents & Maps
   propertyImages?: string[];
   propertyImageNames?: string[];
+  documentImages?: string[];
+  documentImageNames?: string[];
   locationMapImage?: string;
   locationMapImages?: string[];
   mouzaMapImage?: string;
@@ -393,6 +395,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
   async generateAnnapurnaReport(
     fields: AnnapurnaMicroReportFields,
     images: {
+      documents?: { bytes: Uint8Array; caption?: string }[];
       photos: { bytes: Uint8Array; label?: string }[];
       locationMaps: Uint8Array[];
       mouzaMaps: Uint8Array[];
@@ -1246,24 +1249,21 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     this.cursorY += FONT_SIZE + 24;
 
     // ══════════════════════════════════════════════════════════════════════
-    // PAGES 6+: Photographs -> Maps -> Annexures
+    // ENCLOSURES: Documents -> Maps (line break) -> Photographs (fresh page) -> Annexures
     // Strictly in requested sequence:
-    // 1. Photographs of the Property
-    // 2. Google Satellite Map
-    // 3. Mouza Map
-    // 4. Sketch Map
-    // 5. Cadastral Map
-    // 6. Annexures
+    // 1. Documents
+    // 2. Maps (Google Satellite, Mouza, Sketch, Cadastral)
+    // 3. Photographs of the Property (Fresh Page)
+    // 4. Annexures
     // ══════════════════════════════════════════════════════════════════════
 
-    // 1. Photographs of the Property
-    if (images.photos && images.photos.length > 0) {
-      await this.drawPhotoGrid(images.photos, 'PHOTOGRAPHS OF PROPERTY');
+    // 1. Documents Section (continues after report tables with line break, no page break)
+    const validDocs = (images.documents || []).filter(d => d.bytes && d.bytes.length > 0);
+    if (validDocs.length > 0) {
+      await this.drawDocumentsGallery(validDocs, 'DOCUMENTS', 240, false);
     }
 
-    // 2. Maps (Google Satellite, Mouza, Sketch, Cadastral)
-    // Flow dynamically so maps can render directly below photographs if space permits,
-    // and multiple maps can share pages to eliminate space wastage.
+    // 2. Maps (Google Satellite, Mouza, Sketch, Cadastral) (continues with line break, no page break)
     const renderMap = async (mapImages: Uint8Array[] | undefined, title: string) => {
       if (mapImages && mapImages.length > 0) {
         await this.drawMapGallery(mapImages, title, 220, false);
@@ -1275,7 +1275,12 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     await renderMap(images.sketchMaps, 'SKETCH MAP');
     await renderMap(images.cadastralMaps, 'CADASTRAL MAP');
 
-    // 6. Annexures
+    // 3. Photographs of the Property (strictly starts on a fresh page)
+    if (images.photos && images.photos.length > 0) {
+      await this.drawPhotoGrid(images.photos, 'PHOTOGRAPHS OF PROPERTY', 240, true);
+    }
+
+    // 4. Annexures
     if (fields.annexures && fields.annexures.length > 0) {
       this.renderAnnexures(fields.annexures);
     }

@@ -28,14 +28,16 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     { id: 'axis-sbb-section-8', title: '8. Floor Break Up' },
     { id: 'axis-sbb-section-9', title: '9. Valuation Engine' },
     { id: 'axis-sbb-section-10', title: '10. Remarks & Undertaking' },
-    { id: 'section-11', title: 'Photos' },
-    { id: 'section-12', title: 'Maps' },
-    { id: 'annexures', title: 'Annextures' },
+    { id: 'section-documents', title: '11. Documents' },
+    { id: 'section-12', title: '12. Location & Sketch Map or Maps' },
+    { id: 'section-11', title: '13. Property Photographs' },
+    { id: 'annexures', title: '14. Annexures' },
   ],
   fieldLabels: {
-    'section-11-title': '11. PROPERTY PHOTOGRAPHS',
-    'section-12-title': '12. LOCATION & SKECTH MAP OR MAPS',
-    'annexures-title': '13. DOCUMENTS AND ANNEXTURE'
+    'documents-title': '11. DOCUMENTS',
+    'section-12-title': '12. LOCATION & SKETCH MAP OR MAPS',
+    'section-11-title': '13. PROPERTY PHOTOGRAPHS',
+    'annexures-title': '14. ANNEXURES'
   },
   cadastralMapLabelOverride: 'Benchmark',
   defaultValues: {

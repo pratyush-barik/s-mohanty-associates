@@ -23,6 +23,7 @@ import {
   formatAssignedEngineers,
   formatReportDate,
   BaseDateInput,
+  BaseDocumentsSection,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -257,9 +258,11 @@ export default function AnnapurnaMicroFinance({
         : (formatAssignedEngineers(prefill?.fieldEmployees || prefill?.assignedFieldEmployees || prefill?.assignedEngineers) || raw.visitingEngineer || ''),
       place: raw.place || 'Bhubaneswar',
 
-      // Photos & Maps
+      // Photos, Documents & Maps
       propertyImages: Array.isArray(raw.propertyImages) ? raw.propertyImages : [],
       propertyImageNames: Array.isArray(raw.propertyImageNames) ? raw.propertyImageNames : [],
+      documentImages: Array.isArray(raw.documentImages) ? raw.documentImages : [],
+      documentImageNames: Array.isArray(raw.documentImageNames) ? raw.documentImageNames : [],
       locationMapImages: normalizeMapImages(raw.locationMapImages || raw.locationMapImage),
       locationMapImage: raw.locationMapImage || '',
       mouzaMapImages: normalizeMapImages(raw.mouzaMapImages || raw.mouzaMapImage),
@@ -545,6 +548,46 @@ export default function AnnapurnaMicroFinance({
     handleChange('propertyImageNames', updatedNames);
   };
 
+  // Documents Handlers
+  const handleDocumentsUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 10 * 1024 * 1024) continue;
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `temp-photos/${projectId}/document-${Date.now()}-${i}.${ext}`;
+        const { error } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(path, file);
+        if (!error) {
+          const { data } = supabaseBrowser.storage
+            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+            .getPublicUrl(path);
+          uploadedUrls.push(data.publicUrl);
+        }
+      }
+      const existing = fields.documentImages || [];
+      const updated = [...existing, ...uploadedUrls];
+      handleChange('documentImages', updated);
+    } catch (err: any) {
+      alert(`Upload error: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDocumentRemove = (idx: number) => {
+    const updated = (fields.documentImages || []).filter((_, i) => i !== idx);
+    const updatedNames = (fields.documentImageNames || []).filter((_, i) => i !== idx);
+    handleChange('documentImages', updated);
+    handleChange('documentImageNames', updatedNames);
+  };
+
   const handleBucketConfirm = (selectedUrls: string[]) => {
     const existing = fields.propertyImages || [];
     const updated = [...existing, ...selectedUrls];
@@ -589,12 +632,20 @@ export default function AnnapurnaMicroFinance({
 
   // ── PDF Generation ──
   const generatePDFBytes = async (): Promise<Uint8Array> => {
+    // 0. Fetch document images
+    const docImages = fields.documentImages || [];
+    const docBytesList = await Promise.all(docImages.map(fetchBytes));
+    const documents = docImages.map((url, idx) => ({
+      bytes: docBytesList[idx] as Uint8Array,
+      caption: fields.documentImageNames?.[idx] !== undefined && fields.documentImageNames?.[idx] !== null ? fields.documentImageNames[idx] : '',
+    })).filter(d => d.bytes && d.bytes.length > 0);
+
     // 1. Fetch property photographs
     const propImages = fields.propertyImages || [];
     const photoBytesList = await Promise.all(propImages.map(fetchBytes));
     const photos = propImages.map((url, idx) => ({
       bytes: photoBytesList[idx] as Uint8Array,
-      label: fields.propertyImageNames?.[idx] || 'Site Picture',
+      label: fields.propertyImageNames?.[idx] !== undefined && fields.propertyImageNames?.[idx] !== null ? fields.propertyImageNames[idx] : '',
     })).filter(p => p.bytes && p.bytes.length > 0);
 
     // 2. Fetch Google Satellite maps
@@ -648,6 +699,7 @@ export default function AnnapurnaMicroFinance({
     };
 
     return renderer.generateAnnapurnaReport(renderFields, {
+      documents,
       photos,
       locationMaps: locBytes,
       mouzaMaps: mouzaBytes,
@@ -822,9 +874,10 @@ export default function AnnapurnaMicroFinance({
     { id: 'sec-6', title: 'Valuation' },
     { id: 'sec-7', title: 'Additional Checks' },
     { id: 'sec-8', title: 'Declaration' },
-    { id: 'sec-9', title: 'Photographs' },
-    { id: 'sec-10', title: 'Maps & Documents' },
-    { id: 'sec-11', title: 'Annexures' },
+    { id: 'sec-docs', title: 'Documents' },
+    { id: 'sec-maps', title: 'Maps' },
+    { id: 'sec-photos', title: 'Photographs' },
+    { id: 'sec-annexures', title: 'Annexures' },
   ];
 
   return (
@@ -1769,31 +1822,29 @@ export default function AnnapurnaMicroFinance({
           </div>
         </Section>
 
-        {/* ════ SECTION 9: PHOTOGRAPHS OF THE PROPERTY ════ */}
-        <BasePhotographsSection
-          propertyImages={fields.propertyImages || []}
-          propertyImageNames={fields.propertyImageNames || []}
+        {/* ════ SECTION 9: DOCUMENTS (MULTI-PHOTO) ════ */}
+        <BaseDocumentsSection
+          documentImages={fields.documentImages || []}
+          documentImageNames={fields.documentImageNames || []}
           isReadOnly={isReadOnly}
           uploading={uploading}
-          bucketCount={bucketImages.length}
-          onImageNameChange={(idx, name) => {
-            const updated = [...(fields.propertyImageNames || [])];
+          onImageNameChange={(idx: number, name: string) => {
+            const updated = [...(fields.documentImageNames || [])];
             while (updated.length <= idx) updated.push('');
             updated[idx] = name;
-            handleChange('propertyImageNames', updated);
+            handleChange('documentImageNames', updated);
           }}
-          onRemoveImage={handlePhotoRemove}
-          onReorderImages={(newImgs, newNames) => {
-            handleChange('propertyImages', newImgs);
-            handleChange('propertyImageNames', newNames);
+          onRemoveImage={handleDocumentRemove}
+          onReorderImages={(newImgs: string[], newNames: string[]) => {
+            handleChange('documentImages', newImgs);
+            handleChange('documentImageNames', newNames);
           }}
-          onUploadImages={handlePhotosUpload}
-          onOpenBucketPicker={() => setBucketPickerOpen(true)}
+          onUploadImages={handleDocumentsUpload}
           sectionNumber={9}
-          sectionId="sec-9"
+          sectionId="sec-docs"
         />
 
-        {/* ════ SECTION 10: MAPS & DOCUMENTS (MULTI-PHOTO) ════ */}
+        {/* ════ SECTION 10: MAPS (MULTI-PHOTO) ════ */}
         {/* Strictly in the requested order: Google Satellite Map, Mouza Map, Sketch Map, Cadastral Map */}
         <BaseMapsSection
           locationMapImages={fields.locationMapImages || []}
@@ -1822,10 +1873,34 @@ export default function AnnapurnaMicroFinance({
           onReorderCadastralMap={newImgs => handleReorderMap('cadastralMapImages', newImgs)}
           mapOrder={['location', 'mouza', 'sketch', 'cadastral']}
           sectionNumber={10}
-          sectionId="sec-10"
+          sectionId="sec-maps"
         />
 
-        {/* ════ SECTION 11: ANNEXURES ════ */}
+        {/* ════ SECTION 11: PHOTOGRAPHS OF THE PROPERTY ════ */}
+        <BasePhotographsSection
+          propertyImages={fields.propertyImages || []}
+          propertyImageNames={fields.propertyImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          bucketCount={bucketImages.length}
+          onImageNameChange={(idx, name) => {
+            const updated = [...(fields.propertyImageNames || [])];
+            while (updated.length <= idx) updated.push('');
+            updated[idx] = name;
+            handleChange('propertyImageNames', updated);
+          }}
+          onRemoveImage={handlePhotoRemove}
+          onReorderImages={(newImgs, newNames) => {
+            handleChange('propertyImages', newImgs);
+            handleChange('propertyImageNames', newNames);
+          }}
+          onUploadImages={handlePhotosUpload}
+          onOpenBucketPicker={() => setBucketPickerOpen(true)}
+          sectionNumber={11}
+          sectionId="sec-photos"
+        />
+
+        {/* ════ SECTION 12: ANNEXURES ════ */}
         <BaseAnnexureSection
           annexures={fields.annexures || []}
           isReadOnly={isReadOnly}
@@ -1844,8 +1919,8 @@ export default function AnnapurnaMicroFinance({
           }}
           onUploadExcel={handleAnnexureUpload}
           onRemoveFile={removeAnnexureFile}
-          sectionNumber={11}
-          sectionId="sec-11"
+          sectionNumber={12}
+          sectionId="sec-annexures"
         />
 
         {/* ═══ STANDARDIZED ACTION BAR ═══ */}

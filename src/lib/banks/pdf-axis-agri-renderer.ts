@@ -943,6 +943,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     fields: AxisAgriReportFields,
     images: {
       photos?: { bytes: Uint8Array; label?: string }[];
+      documents?: { bytes: Uint8Array; caption?: string }[];
       locationMaps?: Uint8Array[];
       cadastralMaps?: Uint8Array[];
       sketchMaps?: Uint8Array[];
@@ -2121,8 +2122,59 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     }
 
     // =========================================================================
-    // PROPERTY PHOTOGRAPHS (2 cols × 3 rows = 6 per page)
+    // ENCLOSURES: DOCUMENTS -> MAPS (line break, no page break) -> PHOTOS (fresh page)
     // =========================================================================
+
+    // 1. Documents Section
+    const validDocs = (images.documents || []).filter(d => d.bytes && d.bytes.length > 0);
+    if (validDocs.length > 0) {
+      await this.drawDocumentsGallery(validDocs, 'DOCUMENTS', 240, false);
+    }
+
+    // 2. Maps Section — flow-based: continues on same page after documents with line break
+    const CONTENT_H = PAGE_H - MARGIN_T - MARGIN_B; // 653.89pt
+    const MAP_MAX_H = Math.floor(CONTENT_H * 0.45);  // ~294pt cap per image
+
+    const mapGroups: { label: string; bytes: Uint8Array }[] = [
+      ...(images.locationMaps  || []).filter(b => b && b.length > 0).map(b => ({ label: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', bytes: b })),
+      ...(images.cadastralMaps || []).filter(b => b && b.length > 0).map(b => ({ label: 'CADASTRAL MAP',         bytes: b })),
+      ...(images.sketchMaps    || []).filter(b => b && b.length > 0).map(b => ({ label: 'SKETCH MAP',            bytes: b })),
+      ...(images.benchmarkImages || []).filter(b => b && b.length > 0).map(b => ({ label: 'BENCHMARK VALUATION', bytes: b })),
+    ];
+
+    if (mapGroups.length > 0) {
+      if (validDocs.length === 0 && this.cursorY === 0) {
+        this.addPage();
+      } else {
+        this.addSectionBreak(10);
+      }
+
+      for (const mapItem of mapGroups) {
+        const mapImg = await this.embedImgSafe(mapItem.bytes);
+        if (!mapImg) continue;
+
+        // Scale image to fit within content width AND the per-image height cap
+        const scale = Math.min(1, W / mapImg.width, MAP_MAX_H / mapImg.height);
+        const iW = mapImg.width * scale;
+        const iH = mapImg.height * scale;
+
+        // Total vertical block: label header (~26pt) + 10pt gap + image + 14pt gap
+        const blockH = 26 + 10 + iH + 14;
+
+        // Only add a new page if this block won't fit; otherwise continue on current page
+        this.checkPageBreak(blockH);
+
+        this.drawRow([{ text: mapItem.label, width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
+        this.cursorY += 10;
+
+        const imgX = MARGIN_L + (W - iW) / 2;
+        const imgY = this.pdfY(this.cursorY) - iH;
+        this.page.drawImage(mapImg, { x: imgX, y: imgY, width: iW, height: iH });
+        this.cursorY += iH + 14;
+      }
+    }
+
+    // 3. Property Photographs (Starts on fresh page)
     const photoList = (images.photos || []).filter(p => p && p.bytes && p.bytes.length > 0);
     const cellW = (W - 10) / 2;
     const cellH = 170;       // 3 rows fit in page: 3*170 + 2*8 gap + header ≈ 542pt
@@ -2188,54 +2240,6 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
           }
           this.cursorY += cellH + rowGap;
         }
-      }
-    }
-
-
-    // =========================================================================
-    // MAPS SECTION — flow-based: pack Location Diagram / Cadastral / Sketch /
-    // Benchmark onto the same page whenever they fit; only break when needed.
-    // Images are capped at ~45% of content height so ≥2 can share a page.
-    // =========================================================================
-    const CONTENT_H = PAGE_H - MARGIN_T - MARGIN_B; // 653.89pt
-    const MAP_MAX_H = Math.floor(CONTENT_H * 0.45);  // ~294pt cap per image
-
-    const mapGroups: { label: string; bytes: Uint8Array }[] = [
-      ...(images.locationMaps  || []).filter(b => b && b.length > 0).map(b => ({ label: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', bytes: b })),
-      ...(images.cadastralMaps || []).filter(b => b && b.length > 0).map(b => ({ label: 'CADASTRAL MAP',         bytes: b })),
-      ...(images.sketchMaps    || []).filter(b => b && b.length > 0).map(b => ({ label: 'SKETCH MAP',            bytes: b })),
-      ...(images.benchmarkImages || []).filter(b => b && b.length > 0).map(b => ({ label: 'BENCHMARK VALUATION', bytes: b })),
-    ];
-
-    if (mapGroups.length > 0) {
-      if (photoList.length === 0) {
-        this.addPage();
-      } else {
-        this.addSectionBreak(10);
-      }
-
-      for (const mapItem of mapGroups) {
-        const mapImg = await this.embedImgSafe(mapItem.bytes);
-        if (!mapImg) continue;
-
-        // Scale image to fit within content width AND the per-image height cap
-        const scale = Math.min(1, W / mapImg.width, MAP_MAX_H / mapImg.height);
-        const iW = mapImg.width * scale;
-        const iH = mapImg.height * scale;
-
-        // Total vertical block: label header (~26pt) + 10pt gap + image + 14pt gap
-        const blockH = 26 + 10 + iH + 14;
-
-        // Only add a new page if this block won't fit; otherwise continue on current page
-        this.checkPageBreak(blockH);
-
-        this.drawRow([{ text: mapItem.label, width: W, isHeader: true, bold: true, fontSize: FONT_SIZE_TITLE }], 22, 4);
-        this.cursorY += 10;
-
-        const imgX = MARGIN_L + (W - iW) / 2;
-        const imgY = this.pdfY(this.cursorY) - iH;
-        this.page.drawImage(mapImg, { x: imgX, y: imgY, width: iW, height: iH });
-        this.cursorY += iH + 14;
       }
     }
 

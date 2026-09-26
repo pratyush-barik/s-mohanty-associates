@@ -14,6 +14,7 @@ import {
   NavItem,
   formatReportDate,
   BaseDateInput,
+  BaseDocumentsSection,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -21,6 +22,8 @@ import {
   getFloorName,
   getEarliestFieldVisit,
   EarliestFieldVisitBadge,
+  DEFAULT_DOCUMENT_LABEL,
+  DEFAULT_PHOTO_LABEL,
 } from '../BaseBankReportComponents';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
@@ -803,7 +806,7 @@ export default function AxisSME({
     handleChange,
   ]);
 
-  // Photo upload & bucket handlers (Sec 13)
+  // Photo upload & bucket handlers (Sec 18)
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -824,7 +827,7 @@ export default function AxisSME({
       const existing = fields.propertyImages || [];
       const newImages = [...existing, ...uploadedUrls];
       const existingNames = fields.propertyImageNames || [];
-      const newNames = [...existingNames, ...uploadedUrls.map(() => 'Site Picture')];
+      const newNames = [...existingNames, ...uploadedUrls.map(() => '')];
       handleChange('propertyImages', newImages);
       handleChange('propertyImageNames', newNames);
     } catch (err: any) {
@@ -850,10 +853,63 @@ export default function AxisSME({
     const existing = fields.propertyImages || [];
     const newImages = [...existing, ...selectedUrls];
     const existingNames = fields.propertyImageNames || [];
-    const newNames = [...existingNames, ...selectedUrls.map(() => 'Site Picture')];
+    const newNames = [...existingNames, ...selectedUrls.map(() => '')];
     handleChange('propertyImages', newImages);
     handleChange('propertyImageNames', newNames);
     setBucketPickerOpen(false);
+  };
+
+  // Document upload handlers (Sec 16)
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading('documents');
+    try {
+      const uploadPromises = Array.from(files).map(async file => {
+        const ext = file.name.split('.').pop() || 'png';
+        const fileName = `doc_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+        const filePath = `${projectId}/${fileName}`;
+        const { error: uploadError } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(filePath, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .getPublicUrl(filePath);
+        return urlData.publicUrl;
+      });
+      const urls = await Promise.all(uploadPromises);
+      handleChange('documentImages', [...(fields.documentImages || []), ...urls]);
+      handleChange('documentImageNames', [
+        ...(fields.documentImageNames || []),
+        ...urls.map(() => ''),
+      ]);
+    } catch (err: any) {
+      alert(`Error uploading documents: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDocumentRemove = (idx: number) => {
+    const nextUrls = (fields.documentImages || []).filter((_, i) => i !== idx);
+    const nextNames = (fields.documentImageNames || []).filter((_, i) => i !== idx);
+    handleChange('documentImages', nextUrls);
+    handleChange('documentImageNames', nextNames);
+  };
+
+  const handleDocumentRename = (idx: number, name: string) => {
+    const arr = [...(fields.documentImageNames || [])];
+    while (arr.length <= idx) {
+      arr.push('');
+    }
+    arr[idx] = name;
+    handleChange('documentImageNames', arr);
+  };
+
+  const handleDocumentReorder = (newImages: string[], newNames: string[]) => {
+    handleChange('documentImages', newImages);
+    handleChange('documentImageNames', newNames);
   };
 
   // Local map upload handlers (Sec 14 — device upload only)
@@ -1000,11 +1056,27 @@ export default function AxisSME({
       : (fields.benchmarkImage ? [fields.benchmarkImage] : (fields.benchmarkValuationImage ? [fields.benchmarkValuationImage] : []));
     const benchBytes = (await Promise.all(benchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
 
+    // Fetch documents
+    const docImages = (fields.documentImages && fields.documentImages.length > 0)
+      ? fields.documentImages
+      : [];
+    const docNames = fields.documentImageNames || [];
+    const docBytesList: { bytes: Uint8Array; caption?: string }[] = [];
+    for (let i = 0; i < docImages.length; i++) {
+      const b = await fetchBytes(docImages[i]);
+      if (b && b.length > 0) {
+        const rawName = docNames[i];
+        const caption = (rawName !== undefined && rawName !== null && rawName.trim() !== '') ? rawName.trim() : '';
+        docBytesList.push({ bytes: b, caption });
+      }
+    }
+
     const renderer = new PDFAxisSmeRenderer();
     await renderer.init();
 
     return renderer.generateAxisSmeReport(fields, {
       photos,
+      documents: docBytesList,
       locationMaps: locBytes,
       cadastralMaps: cadBytes,
       sketchMaps: sketchBytes,
@@ -1078,7 +1150,7 @@ export default function AxisSME({
     }
   };
 
-  // ── Navigation Sections (All 17 Sections) ──
+  // ── Navigation Sections (All 18 Sections) ──
   const navSections: NavItem[] = [
     { id: 'sec-1', title: '1. Header & Initiation' },
     { id: 'sec-2', title: '2. Property Location & Details' },
@@ -1095,8 +1167,9 @@ export default function AxisSME({
     { id: 'sec-13', title: '13. Valuer Declaration & Undertaking' },
     { id: 'sec-14', title: '14. Annexure "A"' },
     { id: 'sec-15', title: '15. Valuation Report Checklist' },
-    { id: 'sec-16', title: '16. Property Photographs' },
+    { id: 'sec-16', title: '16. Documents' },
     { id: 'sec-17', title: '17. Maps & Cadastral Plans' },
+    { id: 'sec-18', title: '18. Property Photographs' },
   ];
 
   return (
@@ -3747,26 +3820,20 @@ export default function AxisSME({
         </Section>
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 16: PROPERTY PHOTOGRAPHS (DUAL MODALITY: DEVICE + BUCKET)
+            SECTION 16: DOCUMENTS
         ═══════════════════════════════════════════════════════════════ */}
-        <BasePhotographsSection
-          title="Property Photographs"
+        <BaseDocumentsSection
+          title="Documents"
           sectionNumber={16}
           sectionId="sec-16"
-          propertyImages={fields.propertyImages || []}
-          propertyImageNames={fields.propertyImageNames || []}
+          documentImages={fields.documentImages || []}
+          documentImageNames={fields.documentImageNames || []}
           isReadOnly={isReadOnly}
-          uploading={uploading}
-          bucketCount={bucketImages?.length || 0}
-          onImageNameChange={(idx, name) => {
-            const next = [...(fields.propertyImageNames || [])];
-            next[idx] = name;
-            handleChange('propertyImageNames', next);
-          }}
-          onRemoveImage={handlePhotoRemove}
-          onReorderImages={handleReorderPhotos}
-          onUploadImages={handlePhotoUpload}
-          onOpenBucketPicker={() => setBucketPickerOpen(true)}
+          uploading={uploading === 'documents'}
+          onImageNameChange={handleDocumentRename}
+          onRemoveImage={handleDocumentRemove}
+          onReorderImages={handleDocumentReorder}
+          onUploadImages={handleDocumentUpload}
         />
 
         {/* ═══════════════════════════════════════════════════════════════
@@ -3798,43 +3865,29 @@ export default function AxisSME({
           onReorderSketchMap={(imgs) => handleChange('sketchMapImages', imgs)}
         />
 
-        {/* Benchmark Screenshot Upload inside Sec 16 */}
-        <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-amber-800 text-sm tracking-wide uppercase">
-              📊 Benchmark Valuation Screenshot (Page 8)
-            </h3>
-            {!isReadOnly && (
-              <label className="px-3 py-1.5 rounded-lg border border-amber-600 text-amber-700 bg-white text-xs font-semibold hover:bg-amber-100/50 cursor-pointer transition-colors shadow-xs">
-                {uploading ? 'Uploading...' : '+ Upload Benchmark Screenshot'}
-                <input
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  className="hidden"
-                  onChange={(e) => handleMultiMapUpload(e, 'benchmarkImages')}
-                  disabled={!!uploading}
-                />
-              </label>
-            )}
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {(fields.benchmarkImages || []).map((img, idx) => (
-              <div key={idx} className="relative group rounded-xl overflow-hidden border border-amber-200 aspect-video bg-white shadow-xs">
-                <img src={img} alt={`Benchmark ${idx + 1}`} className="w-full h-full object-cover" />
-                {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={() => handleMapRemove('benchmarkImages', idx)}
-                    className="absolute top-1.5 right-1.5 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* ═══════════════════════════════════════════════════════════════
+            SECTION 18: PROPERTY PHOTOGRAPHS (DUAL MODALITY: DEVICE + BUCKET)
+        ═══════════════════════════════════════════════════════════════ */}
+        <BasePhotographsSection
+          title="Property Photographs"
+          sectionNumber={18}
+          sectionId="sec-18"
+          propertyImages={fields.propertyImages || []}
+          propertyImageNames={fields.propertyImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploading === 'photos'}
+          bucketCount={bucketImages?.length || 0}
+          onImageNameChange={(idx, name) => {
+            const next = [...(fields.propertyImageNames || [])];
+            while (next.length <= idx) next.push('');
+            next[idx] = name;
+            handleChange('propertyImageNames', next);
+          }}
+          onRemoveImage={handlePhotoRemove}
+          onReorderImages={handleReorderPhotos}
+          onUploadImages={handlePhotoUpload}
+          onOpenBucketPicker={() => setBucketPickerOpen(true)}
+        />
 
         {/* Global Action Bar (Sticky Bottom) */}
         <ReportActionBar

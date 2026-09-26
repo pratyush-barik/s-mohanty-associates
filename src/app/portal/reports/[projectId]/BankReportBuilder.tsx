@@ -13,6 +13,7 @@ import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldCo
 import { reorderAndLabelAnnexures, normalizeMapImages } from '@/lib/bank-fields';
 import {
   getFloorName,
+  BaseDocumentsSection,
   BasePhotographsSection,
   BaseMapsSection,
   BaseAnnexureSection,
@@ -26,6 +27,8 @@ import {
   getNdmaStructureTypeForStructure,
   getWorkProgressStructureLabel,
   StructureDerivationBadge,
+  DEFAULT_DOCUMENT_LABEL,
+  DEFAULT_PHOTO_LABEL,
 } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
@@ -1088,6 +1091,54 @@ export default function BankReportBuilder({
     if (field === 'cadastralMapImages') handleChange('cadastralMapImage', newImages[0] || '');
   };
 
+  // ── Documents Handlers ──
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading('documentImages');
+    try {
+      const urls: string[] = [];
+      const names: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.size > 10 * 1024 * 1024) continue;
+        const ext = file.name.split('.').pop() || 'jpg';
+        const fileName = `${projectId}-doc-${Date.now()}-${i}.${ext}`;
+        const filePath = `temp-photos/${projectId}/${fileName}`;
+        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+        if (error) throw error;
+        const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+        urls.push(data.publicUrl);
+        names.push('');
+      }
+      handleChange('documentImages' as any, [...(fields.documentImages || []), ...urls]);
+      handleChange('documentImageNames' as any, [...(fields.documentImageNames || []), ...names]);
+    } catch (err: any) {
+      alert(`Upload error: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDocumentRemove = (idx: number) => {
+    const nextUrls = (fields.documentImages || []).filter((_: string, i: number) => i !== idx);
+    const nextNames = (fields.documentImageNames || []).filter((_: string, i: number) => i !== idx);
+    handleChange('documentImages' as any, nextUrls);
+    handleChange('documentImageNames' as any, nextNames);
+  };
+
+  const handleDocumentRename = (idx: number, name: string) => {
+    const arr = [...(fields.documentImageNames || [])];
+    while (arr.length <= idx) arr.push('');
+    arr[idx] = name;
+    handleChange('documentImageNames' as any, arr);
+  };
+
+  const handleDocumentReorder = (newImages: string[], newNames: string[]) => {
+    handleChange('documentImages' as any, newImages);
+    handleChange('documentImageNames' as any, newNames);
+  };
+
   const removeSketchMap = (index: number) => {
     removeMapImage('sketchMapImages', index);
   };
@@ -1485,27 +1536,27 @@ export default function BankReportBuilder({
         ]);
       }
 
-      // ── Property Photographs ──
-      if (propImageBytes.length > 0) {
-        r.newPage();
-        const photoTitle = config?.id === 'bank-of-baroda' ? '11. PROPERTY PHOTOGRAPHS' : 'PROPERTY PHOTOGRAPHS';
-        r.drawSectionHeader(photoTitle);
-        r.advanceCursor(8);
-
-        for (let i = 0; i < propImageBytes.length; i += 2) {
-          const caption1 = fields.propertyImageNames?.[i] !== undefined
-            ? fields.propertyImageNames[i]
-            : 'Site Picture';
-          const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
-          const caption2 = (i + 1 < propImageBytes.length)
-            ? (fields.propertyImageNames?.[i + 1] !== undefined ? fields.propertyImageNames[i + 1] : 'Site Picture')
-            : '';
-
-          await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
-          r.advanceCursor(4);
+      // ── 1. Documents Section (User-Uploaded Document Images) ──
+      const docImages: string[] = fields.documentImages || [];
+      const docNames: string[] = fields.documentImageNames || [];
+      const validDocUrls = docImages.filter(u => Boolean(u && u.trim()));
+      if (validDocUrls.length > 0) {
+        const docBytesList: { bytes: Uint8Array; caption?: string }[] = [];
+        for (let i = 0; i < validDocUrls.length; i++) {
+          const b = await fetchBytes(validDocUrls[i]);
+          if (b && b.length > 0) {
+            const rawName = docNames[i];
+            const caption = (rawName !== undefined && rawName !== null && rawName.trim() !== '') ? rawName.trim() : '';
+            docBytesList.push({ bytes: b, caption });
+          }
+        }
+        if (docBytesList.length > 0) {
+          // No page break forced after documents; maps follow with line break
+          await r.drawDocumentsGallery(docBytesList, 'DOCUMENTS', 240, false);
         }
       }
 
+      // ── 2. Maps & Spatial Documents (Flows after documents without page break) ──
       let mapMainHeaderPrinted = false;
       const drawMapHeader = (subTitle: string) => {
         if (config?.id === 'bank-of-baroda') {
@@ -1525,12 +1576,12 @@ export default function BankReportBuilder({
         for (let i = 0; i < sketchBytesList.length; i++) {
           const sBytes = sketchBytesList[i];
           if (sBytes) {
-            r.newPage();
             drawMapHeader(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(sBytes, {
-              maxWidth: 450, maxHeight: 500, centered: true,
+              maxWidth: 450, maxHeight: 300, centered: true,
             });
+            r.advanceCursor(10);
           }
         }
       }
@@ -1540,12 +1591,12 @@ export default function BankReportBuilder({
         for (let i = 0; i < mouzaBytesList.length; i++) {
           const mBytes = mouzaBytesList[i];
           if (mBytes) {
-            r.newPage();
             drawMapHeader(`MOUZA MAP${mouzaBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(mBytes, {
-              maxWidth: 450, maxHeight: 500, centered: true,
+              maxWidth: 450, maxHeight: 300, centered: true,
             });
+            r.advanceCursor(10);
           }
         }
       }
@@ -1555,13 +1606,13 @@ export default function BankReportBuilder({
         for (let i = 0; i < cadastralBytesList.length; i++) {
           const cBytes = cadastralBytesList[i];
           if (cBytes) {
-            r.newPage();
             const mapLabel = config?.cadastralMapLabelOverride?.toUpperCase() || 'CADASTRAL MAP';
             drawMapHeader(`${mapLabel}${cadastralBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(cBytes, {
-              maxWidth: 450, maxHeight: 500, centered: true,
+              maxWidth: 450, maxHeight: 300, centered: true,
             });
+            r.advanceCursor(10);
           }
         }
       }
@@ -1571,12 +1622,12 @@ export default function BankReportBuilder({
         for (let i = 0; i < bdaBytesList.length; i++) {
           const bBytes = bdaBytesList[i];
           if (bBytes) {
-            r.newPage();
             drawMapHeader(`BDA MAP${bdaBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(bBytes, {
-              maxWidth: 450, maxHeight: 500, centered: true,
+              maxWidth: 450, maxHeight: 300, centered: true,
             });
+            r.advanceCursor(10);
           }
         }
       }
@@ -1586,27 +1637,48 @@ export default function BankReportBuilder({
         for (let i = 0; i < benchmarkBytesList.length; i++) {
           const bmBytes = benchmarkBytesList[i];
           if (bmBytes) {
-            r.newPage();
             drawMapHeader(`BENCHMARK VALUATION${benchmarkBytesList.length > 1 ? ` ${i + 1}` : ''}`);
             r.advanceCursor(8);
             await r.drawImageBlock(bmBytes, {
-              maxWidth: 450, maxHeight: 500, centered: true,
+              maxWidth: 450, maxHeight: 300, centered: true,
             });
+            r.advanceCursor(10);
           }
         }
       }
 
       // ── Location Map ──
       if (locationBytes && locationBytes.length > 0) {
-        r.newPage();
         const latLongStr = (fields.latitude || fields.longitude) 
           ? ` (LAT: ${fields.latitude || 'N/A'}, LONG: ${fields.longitude || 'N/A'})` 
           : '';
         drawMapHeader(`LOCATION MAP${latLongStr}`);
         r.advanceCursor(8);
         await r.drawImageBlock(locationBytes, {
-          maxWidth: 450, maxHeight: 500, centered: true,
+          maxWidth: 450, maxHeight: 300, centered: true,
         });
+        r.advanceCursor(10);
+      }
+
+      // ── 3. Property Photographs (Starts on fresh page) ──
+      if (propImageBytes.length > 0) {
+        r.newPage();
+        const photoTitle = config?.id === 'bank-of-baroda' ? '11. PROPERTY PHOTOGRAPHS' : 'PROPERTY PHOTOGRAPHS';
+        r.drawSectionHeader(photoTitle);
+        r.advanceCursor(8);
+
+        for (let i = 0; i < propImageBytes.length; i += 2) {
+          const caption1 = (fields.propertyImageNames?.[i] !== undefined && fields.propertyImageNames?.[i] !== null)
+            ? fields.propertyImageNames[i]
+            : 'Site Picture';
+          const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
+          const caption2 = (i + 1 < propImageBytes.length)
+            ? ((fields.propertyImageNames?.[i + 1] !== undefined && fields.propertyImageNames?.[i + 1] !== null) ? fields.propertyImageNames[i + 1] : 'Site Picture')
+            : '';
+
+          await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
+          r.advanceCursor(4);
+        }
       }
 
       // ── Annexure Sections ──
@@ -2806,37 +2878,25 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
           </Section>
         ))}
 
-        {/* ── Section 11: Photographs ── */}
-        {!isSectionHidden('section-11') && (
-          <BasePhotographsSection
-            title={config?.fieldLabels?.['section-11-title'] || 'Photographs'}
-            propertyImages={fields.propertyImages || []}
-            propertyImageNames={fields.propertyImageNames || []}
+        {/* ── Section Documents ── */}
+        {!isSectionHidden('documents') && (
+          <BaseDocumentsSection
+            title={config?.fieldLabels?.['documents-title'] || 'Documents'}
+            documentImages={fields.documentImages || []}
+            documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
-            uploading={uploading}
-            bucketCount={bucketImages?.length || 0}
-            onImageNameChange={(idx, name) => {
-              const updatedNames = [...(fields.propertyImageNames || [])];
-              while (updatedNames.length <= idx) {
-                updatedNames.push('');
-              }
-              updatedNames[idx] = name;
-              handleChange('propertyImageNames', updatedNames);
-            }}
-            onRemoveImage={removeImage}
-            onReorderImages={(newImages, newNames) => {
-              handleChange('propertyImages', newImages);
-              handleChange('propertyImageNames', newNames);
-            }}
-            onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
-            onOpenBucketPicker={openBucketPicker}
-            sectionNumber={getSectionNumber('section-11', isApartmentFlat ? 10 : 11)}
-            sectionId="section-11"
+            uploading={uploading === 'documentImages'}
+            onImageNameChange={handleDocumentRename}
+            onRemoveImage={handleDocumentRemove}
+            onReorderImages={handleDocumentReorder}
+            onUploadImages={handleDocumentUpload}
+            sectionNumber={getSectionNumber('documents', isApartmentFlat ? 10 : 11)}
+            sectionId="section-documents"
           />
         )}
 
-        {/* ── Section 12: Maps & Sketches (Multi-Photo Supported) ── */}
-        {!isSectionHidden('section-12') && (() => {
+        {/* ── Section Maps & Sketches (Multi-Photo Supported) ── */}
+        {!isSectionHidden('section-12') && !isSectionHidden('maps') && (() => {
           const hasCoordsInConfig = Boolean(
             config?.extraFields &&
             Object.values(config.extraFields).some((fieldList) =>
@@ -2886,6 +2946,35 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
             />
           );
         })()}
+
+        {/* ── Section Photographs ── */}
+        {!isSectionHidden('section-11') && !isSectionHidden('photographs') && (
+          <BasePhotographsSection
+            title={config?.fieldLabels?.['section-11-title'] || 'Photographs'}
+            propertyImages={fields.propertyImages || []}
+            propertyImageNames={fields.propertyImageNames || []}
+            isReadOnly={isReadOnly}
+            uploading={uploading === 'propertyImages'}
+            bucketCount={bucketImages?.length || 0}
+            onImageNameChange={(idx, name) => {
+              const updatedNames = [...(fields.propertyImageNames || [])];
+              while (updatedNames.length <= idx) {
+                updatedNames.push('');
+              }
+              updatedNames[idx] = name;
+              handleChange('propertyImageNames', updatedNames);
+            }}
+            onRemoveImage={removeImage}
+            onReorderImages={(newImages, newNames) => {
+              handleChange('propertyImages', newImages);
+              handleChange('propertyImageNames', newNames);
+            }}
+            onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
+            onOpenBucketPicker={openBucketPicker}
+            sectionNumber={getSectionNumber('section-11', isApartmentFlat ? 12 : 13)}
+            sectionId="section-11"
+          />
+        )}
 
         {/* ── Extra Bank-Specific Sections (End) ── */}
         {config?.extraSectionsEnd?.map(sec => (
@@ -3066,13 +3155,10 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
             { id: `section-${isApartmentFlat ? 9 : 10}`, title: 'Remarks' },
             { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
             ...(config?.extraSections || []).map((es, idx) => ({ id: es.id || `extra-section-${idx}`, title: es.title })),
-            { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Photographs' },
-            { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
-            { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
+            { id: 'section-documents', title: 'Documents' },
+            { id: 'section-12', title: 'Maps & Documents' },
+            { id: 'section-11', title: 'Photographs' },
             ...(config?.extraSectionsEnd || []).map((es, idx) => ({ id: es.id || `extra-section-end-${idx}`, title: es.title })),
-            { id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexures' },
-            { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
-            { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
             { id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexures' },
           ]
         }

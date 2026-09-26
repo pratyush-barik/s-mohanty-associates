@@ -17,7 +17,9 @@ import {
   BasePhotoBucketModal,
   BasePhotographsSection,
   BaseMapsSection,
+  BaseDocumentsSection,
   DEFAULT_PHOTO_LABEL,
+  DEFAULT_DOCUMENT_LABEL,
 } from '../BaseBankReportComponents';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { formatIndianCurrency } from '@/lib/numberToWords';
@@ -258,8 +260,9 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-final-valuation', title: '9. Final Valuation Summary & Project Details (Points 35–40)' },
   { id: 'sec-ndma', title: '10. NDMA Disaster Management Parameters (Point 41)' },
   { id: 'sec-annexure-a', title: '11. Annexure-A' },
-  { id: 'sec-docs', title: '12. Maps & Documents' },
-  { id: 'sec-photos', title: '13. Property Photographs' },
+  { id: 'sec-documents', title: '12. Documents' },
+  { id: 'sec-docs', title: '13. Maps & Documents' },
+  { id: 'sec-photos', title: '14. Property Photographs' },
 ];
 
 export default function BandhanHLLAP({
@@ -815,7 +818,7 @@ export default function BandhanHLLAP({
     drcList.forEach((df, idx) => {
       const area = parseNum(df.area !== undefined && df.area !== '' ? df.area : fields.floors?.[idx]?.sanctionedArea);
       const cost = parseNum(df.costOfConst !== undefined && df.costOfConst !== '' ? df.costOfConst : fields.rateOfCostOfConstruction);
-      const gcrc = parseNum(df.gcrc) || ((area > 0 && cost > 0) ? Math.round(area * cost) : 0);
+      const gcrc = parseNum((df as any).gcrc) || ((area > 0 && cost > 0) ? Math.round(area * cost) : 0);
       const dep = parseNum(df.depreciation);
       const factor = (dep > 0 && dep <= 100) ? (1 - dep / 100) : 1;
       
@@ -976,7 +979,7 @@ export default function BandhanHLLAP({
             ''
           );
           if (prev.areaOfLand !== formatted.statement) {
-            next.areaOfLandUnit = fields.propertyAreaUnit;
+            next.areaOfLandUnit = fields.propertyAreaUnit as any;
             next.areaOfLandValue = fields.propertyAreaValue;
             next.areaOfLand = formatted.statement;
             next.areaOfLandSqft = formatted.sqftStr;
@@ -1289,6 +1292,81 @@ export default function BandhanHLLAP({
 
   const handleMapReorder = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', newImgs: string[]) => {
     setFields(prev => ({ ...prev, [fieldKey]: newImgs }));
+  };
+
+  // Document Handlers for BaseDocumentsSection
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const { dataUrl, blob } = await compressImageFile(file, 1600, 1600, 0.85);
+        let uploadedUrl = dataUrl;
+        try {
+          const ext = 'jpg';
+          const fileName = `${projectId}-document-${Date.now()}-${i}.${ext}`;
+          const filePath = `temp-photos/${projectId}/${fileName}`;
+          const { error: uploadErr } = await supabaseBrowser.storage
+            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+            .upload(filePath, blob, { contentType: 'image/jpeg', upsert: true });
+
+          if (!uploadErr) {
+            const { data: publicUrlData } = supabaseBrowser.storage
+              .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+              .getPublicUrl(filePath);
+            if (publicUrlData?.publicUrl) {
+              uploadedUrl = publicUrlData.publicUrl;
+            }
+          }
+        } catch (storageErr) {
+          console.warn('Document upload storage fallback to base64:', storageErr);
+        }
+        uploadedUrls.push(uploadedUrl);
+      }
+      setFields(prev => {
+        const currImgs = Array.isArray(prev.documentImages) ? prev.documentImages : [];
+        const currNames = Array.isArray(prev.documentImageNames) ? prev.documentImageNames : [];
+        const newNames = uploadedUrls.map(() => DEFAULT_DOCUMENT_LABEL);
+        return {
+          ...prev,
+          documentImages: [...currImgs, ...uploadedUrls],
+          documentImageNames: [...currNames, ...newNames],
+        };
+      });
+    } catch (err: any) {
+      console.error('Document upload error:', err);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  const handleDocumentRemove = (idx: number) => {
+    setFields(prev => {
+      const currImgs = Array.isArray(prev.documentImages) ? [...prev.documentImages] : [];
+      const currNames = Array.isArray(prev.documentImageNames) ? [...prev.documentImageNames] : [];
+      currImgs.splice(idx, 1);
+      currNames.splice(idx, 1);
+      return { ...prev, documentImages: currImgs, documentImageNames: currNames };
+    });
+  };
+
+  const handleDocumentRename = (idx: number, name: string) => {
+    setFields(prev => {
+      const currNames = Array.isArray(prev.documentImageNames) ? [...prev.documentImageNames] : [];
+      while (currNames.length <= idx) currNames.push(DEFAULT_DOCUMENT_LABEL);
+      currNames[idx] = name;
+      return { ...prev, documentImageNames: currNames };
+    });
+  };
+
+  const handleDocumentReorder = (newImages: string[], newNames: string[]) => {
+    setFields(prev => ({
+      ...prev,
+      documentImages: newImages,
+      documentImageNames: newNames,
+    }));
   };
 
   // Save Draft
@@ -5262,11 +5340,27 @@ export default function BandhanHLLAP({
               </div>
             </Section>
 
-            {/* 12. Maps & Documents */}
+            {/* 12. Documents */}
+            <BaseDocumentsSection
+              title="Documents"
+              sectionId="sec-documents"
+              sectionNumber={12}
+              documentImages={fields.documentImages || []}
+              documentImageNames={fields.documentImageNames || []}
+              isReadOnly={isReadOnly}
+              uploading={saving}
+              onUploadDocument={handleDocumentUpload}
+              onRemoveDocument={handleDocumentRemove}
+              onDocumentNameChange={handleDocumentRename}
+              onReorderDocuments={handleDocumentReorder}
+              defaultOpen={false}
+            />
+
+            {/* 13. Maps & Documents */}
             <BaseMapsSection
               title="Maps & Documents"
               sectionId="sec-docs"
-              sectionNumber={12}
+              sectionNumber={13}
               locationMapImages={fields.locationMapImages || (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : [])}
               mouzaMapImages={fields.mouzaMapImages || (fields.rorImageUrl ? [fields.rorImageUrl] : [])}
               sketchMapImages={fields.sketchMapImages || (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : [])}
@@ -5294,10 +5388,10 @@ export default function BandhanHLLAP({
               onReorderCadastralMap={newImgs => handleMapReorder('cadastralMapImages', newImgs)}
             />
 
-            {/* 13. Property Photographs */}
+            {/* 14. Property Photographs */}
             <BasePhotographsSection
               title="Property Photographs"
-              sectionNumber={13}
+              sectionNumber={14}
               sectionId="sec-photos"
               propertyImages={propertyImages}
               propertyImageNames={propertyImageNames}

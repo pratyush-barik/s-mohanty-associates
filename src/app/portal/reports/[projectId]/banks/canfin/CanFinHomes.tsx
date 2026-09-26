@@ -15,10 +15,6 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     'section-8', 'section-9', 'section-10', 'section-13', 'section-14', 'section-15'
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
-  fieldLabels: {
-    'section-11-title': '10. Photographs',
-    'section-12-title': '11. Maps & Documents',
-  },
   navSections: [
     { id: 'section-cover', title: '1. Cover Page Details' },
     { id: 'canfin-section-2', title: '2. General' },
@@ -29,9 +25,16 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     { id: 'canfin-section-7', title: '7. Valuation Report' },
     { id: 'canfin-section-8', title: '8. The Condition of Structure' },
     { id: 'canfin-section-9', title: '9. Concluding Declarations' },
-    { id: 'section-11', title: 'Photos' },
-    { id: 'section-12', title: 'Maps' },
+    { id: 'section-documents', title: '10. Documents' },
+    { id: 'section-12', title: '11. Maps' },
+    { id: 'section-11', title: '12. Photographs' },
   ],
+  fieldLabels: {
+    'documents-title': '10. Documents',
+    'section-documents-title': '10. Documents',
+    'section-12-title': '11. Location & Sketch Maps',
+    'section-11-title': '12. Property Photographs',
+  },
   defaultValues: {
     purpose: 'Housing Loan / Composite Loan',
     

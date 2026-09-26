@@ -11,6 +11,10 @@ import {
   BaseDateInput,
   BasePhotoBucketModal,
   BasePhotographsSection,
+  BaseMapsSection,
+  BaseDocumentsSection,
+  DEFAULT_PHOTO_LABEL,
+  DEFAULT_DOCUMENT_LABEL,
   ReportActionBar,
   inputCls,
   selectCls,
@@ -111,8 +115,9 @@ const NAV_SECTIONS = [
   { id: 'sec-bldg-valuation-schedules', title: '11. Building Valuation & Schedules' },
   { id: 'sec-abstract-opinion', title: '12. Abstract & Opinion' },
   { id: 'sec-declaration', title: '13. Declaration & Checklist' },
-  { id: 'sec-docs', title: '14. Document Enclosures' },
-  { id: 'sec-photos', title: '15. Property Photographs' },
+  { id: 'sec-documents', title: '14. Documents' },
+  { id: 'sec-docs', title: '15. Maps & Documents' },
+  { id: 'sec-photos', title: '16. Property Photographs' },
 ];
 
 function parseNum(val: string | number | undefined | null): number {
@@ -982,15 +987,21 @@ export default function BandhanSME({
     if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
       return fields.propertyPhotos.map((p: any) => (typeof p === 'string' ? p : p.url)).filter(Boolean);
     }
-    return [];
-  }, [fields.propertyPhotos]);
-
-  const propertyImageNames: string[] = useMemo(() => {
-    if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
-      return fields.propertyPhotos.map((p: any) => (typeof p === 'string' ? DEFAULT_PHOTO_LABEL : (p.caption || DEFAULT_PHOTO_LABEL)));
+    if (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0) {
+      return fields.propertyImages;
     }
     return [];
-  }, [fields.propertyPhotos]);
+  }, [fields.propertyPhotos, fields.propertyImages]);
+
+  const propertyImageNames: string[] = useMemo(() => {
+    if (Array.isArray(fields.propertyImageNames) && fields.propertyImageNames.length > 0) {
+      return fields.propertyImageNames;
+    }
+    if (Array.isArray(fields.propertyPhotos) && fields.propertyPhotos.length > 0) {
+      return fields.propertyPhotos.map((p: any) => (typeof p === 'string' ? '' : (p.caption ?? '')));
+    }
+    return [];
+  }, [fields.propertyImageNames, fields.propertyPhotos]);
 
   // Handle Multiple Photo Upload
   const handleUploadMultiplePhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1000,7 +1011,7 @@ export default function BandhanSME({
       const newPhotos: BandhanSMEPhoto[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const caption = DEFAULT_PHOTO_LABEL;
+        const caption = '';
         const { dataUrl, blob } = await compressImageFile(file, 1280, 1280, 0.8);
         let uploadedUrl = dataUrl;
         try {
@@ -1043,6 +1054,8 @@ export default function BandhanSME({
     setFields((prev) => ({
       ...prev,
       propertyPhotos: updatedPhotos,
+      propertyImages: Array.isArray(prev.propertyImages) ? prev.propertyImages.filter((_: any, i: number) => i !== idx) : undefined,
+      propertyImageNames: Array.isArray(prev.propertyImageNames) ? prev.propertyImageNames.filter((_: any, i: number) => i !== idx) : undefined,
     }));
   };
 
@@ -1050,21 +1063,175 @@ export default function BandhanSME({
     const updatedPhotos = [...(fields.propertyPhotos || [])];
     if (updatedPhotos[idx]) {
       updatedPhotos[idx] = { ...updatedPhotos[idx], caption: name };
+    } else if (propertyImages[idx]) {
+      updatedPhotos[idx] = { url: propertyImages[idx], caption: name };
     }
+    const updatedNames = [...(Array.isArray(fields.propertyImageNames) ? fields.propertyImageNames : [])];
+    while (updatedNames.length <= idx) {
+      updatedNames.push('');
+    }
+    updatedNames[idx] = name;
     setFields((prev) => ({
       ...prev,
       propertyPhotos: updatedPhotos,
+      propertyImageNames: updatedNames,
     }));
   };
 
   const handlePhotoReorder = (newImages: string[], newNames: string[]) => {
     const newPhotos: BandhanSMEPhoto[] = newImages.map((url, idx) => ({
       url,
-      caption: newNames[idx] || DEFAULT_PHOTO_LABEL,
+      caption: newNames[idx] ?? '',
     }));
     setFields((prev) => ({
       ...prev,
       propertyPhotos: newPhotos,
+      propertyImages: newImages,
+      propertyImageNames: newNames,
+    }));
+  };
+
+  // Map Handlers for BaseMapsSection
+  const handleMapUpload = async (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const { dataUrl, blob } = await compressImageFile(file, 1600, 1600, 0.85);
+        let uploadedUrl = dataUrl;
+        try {
+          const ext = 'jpg';
+          const fileName = `${projectId}-${fieldKey}-${Date.now()}-${i}.${ext}`;
+          const filePath = `temp-photos/${projectId}/${fileName}`;
+          const { error: uploadErr } = await supabaseBrowser.storage
+            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+            .upload(filePath, blob, { contentType: 'image/jpeg', upsert: true });
+
+          if (!uploadErr) {
+            const { data: publicUrlData } = supabaseBrowser.storage
+              .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+              .getPublicUrl(filePath);
+            if (publicUrlData?.publicUrl) {
+              uploadedUrl = publicUrlData.publicUrl;
+            }
+          }
+        } catch (storageErr) {
+          console.warn('Map upload storage fallback to base64:', storageErr);
+        }
+        uploadedUrls.push(uploadedUrl);
+      }
+      setFields(prev => {
+        const curr = Array.isArray(prev[fieldKey]) ? prev[fieldKey] : (prev[fieldKey] ? [prev[fieldKey]] : []);
+        return {
+          ...prev,
+          [fieldKey]: [...curr, ...uploadedUrls],
+        };
+      });
+    } catch (err: any) {
+      console.error('Map upload error:', err);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  const handleMapRemove = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', idx?: number) => {
+    if (idx === undefined) {
+      setFields(prev => ({ ...prev, [fieldKey]: [] }));
+      return;
+    }
+    setFields(prev => {
+      const curr = Array.isArray(prev[fieldKey]) ? prev[fieldKey] : (prev[fieldKey] ? [prev[fieldKey]] : []);
+      return {
+        ...prev,
+        [fieldKey]: curr.filter((_, i) => i !== idx),
+      };
+    });
+  };
+
+  const handleMapReorder = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', newImgs: string[]) => {
+    setFields(prev => ({ ...prev, [fieldKey]: newImgs }));
+  };
+
+  // Document Handlers for BaseDocumentsSection
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    try {
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const { dataUrl, blob } = await compressImageFile(file, 1600, 1600, 0.85);
+        let uploadedUrl = dataUrl;
+        try {
+          const ext = 'jpg';
+          const fileName = `${projectId}-document-${Date.now()}-${i}.${ext}`;
+          const filePath = `temp-photos/${projectId}/${fileName}`;
+          const { error: uploadErr } = await supabaseBrowser.storage
+            .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+            .upload(filePath, blob, { contentType: 'image/jpeg', upsert: true });
+
+          if (!uploadErr) {
+            const { data: publicUrlData } = supabaseBrowser.storage
+              .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+              .getPublicUrl(filePath);
+            if (publicUrlData?.publicUrl) {
+              uploadedUrl = publicUrlData.publicUrl;
+            }
+          }
+        } catch (storageErr) {
+          console.warn('Document upload storage fallback to base64:', storageErr);
+        }
+        uploadedUrls.push(uploadedUrl);
+      }
+      setFields(prev => {
+        const currImgs = Array.isArray(prev.documentImages) ? prev.documentImages : [];
+        const currNames = Array.isArray(prev.documentImageNames) ? prev.documentImageNames : [];
+        return {
+          ...prev,
+          documentImages: [...currImgs, ...uploadedUrls],
+          documentImageNames: [...currNames, ...uploadedUrls.map(() => '')],
+        };
+      });
+    } catch (err: any) {
+      console.error('Document upload error:', err);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  const handleDocumentRemove = (idx: number) => {
+    setFields(prev => {
+      const currImgs = Array.isArray(prev.documentImages) ? prev.documentImages : [];
+      const currNames = Array.isArray(prev.documentImageNames) ? prev.documentImageNames : [];
+      return {
+        ...prev,
+        documentImages: currImgs.filter((_, i) => i !== idx),
+        documentImageNames: currNames.filter((_, i) => i !== idx),
+      };
+    });
+  };
+
+  const handleDocumentRename = (idx: number, name: string) => {
+    setFields(prev => {
+      const currNames = [...(Array.isArray(prev.documentImageNames) ? prev.documentImageNames : [])];
+      while (currNames.length <= idx) {
+        currNames.push('');
+      }
+      currNames[idx] = name;
+      return {
+        ...prev,
+        documentImageNames: currNames,
+      };
+    });
+  };
+
+  const handleDocumentReorder = (newImages: string[], newNames: string[]) => {
+    setFields(prev => ({
+      ...prev,
+      documentImages: newImages,
+      documentImageNames: newNames,
     }));
   };
 
@@ -2815,331 +2982,55 @@ export default function BandhanSME({
               </div>
             </Section>
 
-            {/* 14. MAPS & DOCUMENT ENCLOSURES */}
-            <Section number={14} id="sec-docs" title="Maps & Document Enclosures">
-              <div className="space-y-6">
-                {/* Enclosure 1: ROR Document */}
-                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">📄</span>
-                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
-                        Enclosure 1: ROR Document (Record of Rights) {fields.rorImageUrl ? '(Uploaded)' : ''}
-                      </h4>
-                    </div>
-                    {!isReadOnly && (
-                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
-                        {fields.rorImageUrl ? '🔄 Replace ROR' : '+ Add ROR Document'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleLocalImageUpload('rorImageUrl', e)}
-                          disabled={isReadOnly}
-                        />
-                      </label>
-                    )}
-                  </div>
+            {/* 14. Documents */}
+            <BaseDocumentsSection
+              title="Documents"
+              sectionId="sec-documents"
+              sectionNumber={14}
+              documentImages={fields.documentImages || []}
+              documentImageNames={fields.documentImageNames || []}
+              isReadOnly={isReadOnly}
+              uploading={saving}
+              onUploadDocument={handleDocumentUpload}
+              onRemoveDocument={handleDocumentRemove}
+              onDocumentNameChange={handleDocumentRename}
+              onReorderDocuments={handleDocumentReorder}
+              defaultOpen={true}
+            />
 
-                  {fields.rorImageUrl ? (
-                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
-                      <img
-                        src={fields.rorImageUrl}
-                        alt="ROR Document"
-                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
-                      />
-                      {!isReadOnly && (
-                        <div className="flex justify-end w-full pt-2">
-                          <button
-                            type="button"
-                            onClick={() => handleChange('rorImageUrl', '')}
-                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
-                          >
-                            ✕ Remove ROR
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
-                      <span className="text-2xl mb-1">📄</span>
-                      <span className="text-xs font-semibold text-slate-700">No ROR document uploaded</span>
-                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleLocalImageUpload('rorImageUrl', e)}
-                        disabled={isReadOnly}
-                      />
-                    </label>
-                  )}
-                </div>
+            {/* 15. Maps & Documents */}
+            <BaseMapsSection
+              title="Maps & Documents"
+              sectionId="sec-docs"
+              sectionNumber={15}
+              locationMapImages={fields.locationMapImages || (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : [])}
+              mouzaMapImages={fields.mouzaMapImages || (fields.rorImageUrl ? [fields.rorImageUrl] : [])}
+              sketchMapImages={fields.sketchMapImages || (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : [])}
+              cadastralMapImages={fields.cadastralMapImages || (fields.bhuNakshaImageUrl ? [fields.bhuNakshaImageUrl] : [])}
+              latitude={fields.latitude || ''}
+              longitude={fields.longitude || ''}
+              propertyAddress={fields.propAt || ''}
+              isReadOnly={isReadOnly}
+              uploading={saving}
+              onLocationMapUpload={(e) => handleMapUpload('locationMapImages', e)}
+              onLocationMapRemove={(idx) => handleMapRemove('locationMapImages', idx)}
+              onReorderLocationMap={(imgs) => handleMapReorder('locationMapImages', imgs)}
+              onMouzaMapUpload={(e) => handleMapUpload('mouzaMapImages', e)}
+              onMouzaMapRemove={(idx) => handleMapRemove('mouzaMapImages', idx)}
+              onReorderMouzaMap={(imgs) => handleMapReorder('mouzaMapImages', imgs)}
+              onSketchMapUpload={(e) => handleMapUpload('sketchMapImages', e)}
+              onSketchMapRemove={(idx) => handleMapRemove('sketchMapImages', idx)}
+              onReorderSketchMap={(imgs) => handleMapReorder('sketchMapImages', imgs)}
+              onCadastralMapUpload={(e) => handleMapUpload('cadastralMapImages', e)}
+              onCadastralMapRemove={(idx) => handleMapRemove('cadastralMapImages', idx)}
+              onReorderCadastralMap={(imgs) => handleMapReorder('cadastralMapImages', imgs)}
+              defaultOpen={true}
+            />
 
-                {/* Enclosure 2: GPS Location Map */}
-                <div className="space-y-4 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🛰️</span>
-                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
-                        Enclosure 2: GPS Location Map &amp; Satellite View
-                      </h4>
-                    </div>
-                    {!isReadOnly && (
-                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
-                        {fields.locationMapImageUrl ? '🔄 Replace Map Screenshot' : '+ Upload Map Screenshot'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleLocalImageUpload('locationMapImageUrl', e)}
-                          disabled={isReadOnly}
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  {/* Live Interactive Google Map Preview */}
-                  <div className="space-y-2">
-                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                      Live Satellite Map View (Google Maps Embed)
-                    </div>
-                    {(() => {
-                      let query = '';
-                      if (fields.latitudeLongitude) {
-                        const cleanCoords = fields.latitudeLongitude.replace(/Latitude:?/i, '').replace(/Longitude:?/i, '').trim();
-                        query = cleanCoords;
-                      } else {
-                        query = [fields.propAt, fields.propDist, fields.state].filter(Boolean).join(', ');
-                      }
-
-                      const encodedQuery = encodeURIComponent(query);
-                      const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodedQuery}`;
-
-                      return query ? (
-                        <div className="rounded-xl overflow-hidden border border-slate-200 bg-white shadow-xs">
-                          <div className="px-3.5 py-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-[#0f2038]">
-                                Interactive Live Satellite Map Preview
-                              </span>
-                              <span className="text-[11px] text-slate-500">
-                                ({query})
-                              </span>
-                            </div>
-                            <a
-                              href={googleMapsUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs font-semibold text-accent-500 hover:underline"
-                            >
-                              Open in Google Maps ↗
-                            </a>
-                          </div>
-                          <iframe
-                            src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
-                            width="100%"
-                            height="260"
-                            style={{ border: 0 }}
-                            allowFullScreen
-                            loading="lazy"
-                            referrerPolicy="no-referrer-when-downgrade"
-                            title="Property Location Map"
-                          />
-                        </div>
-                      ) : (
-                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
-                          Enter property address or input GPS coordinates to view live satellite map preview.
-                        </div>
-                      );
-                    })()}
-
-                    {/* Coordinates input block */}
-                    <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 space-y-2 mt-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-bold text-[#0f2038] flex items-center gap-1.5">
-                          🧭 GPS Coordinates Entry
-                        </span>
-                        <span className="text-[11px] text-slate-500 font-medium">
-                          Input coordinates to set precise map pin
-                        </span>
-                      </div>
-                      <Field label="Latitude / Longitude Coordinates:">
-                        <input
-                          type="text"
-                          className={inputCls}
-                          placeholder="e.g. Latitude: 20.3128, Longitude: 85.8569"
-                          value={fields.latitudeLongitude || ''}
-                          onChange={(e) => handleChange('latitudeLongitude', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </Field>
-                    </div>
-                  </div>
-
-                  {/* Uploaded Satellite Screenshot for PDF */}
-                  <div className="pt-2 border-t border-slate-100">
-                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">
-                      Screenshot for PDF Report
-                    </div>
-                    {fields.locationMapImageUrl ? (
-                      <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
-                        <img
-                          src={fields.locationMapImageUrl}
-                          alt="GPS Location Map Screenshot"
-                          className="max-h-72 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
-                        />
-                        {!isReadOnly && (
-                          <div className="flex justify-end w-full pt-2">
-                            <button
-                              type="button"
-                              onClick={() => handleChange('locationMapImageUrl', '')}
-                              className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
-                            >
-                              ✕ Remove Screenshot
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <label className="flex flex-col items-center justify-center p-5 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
-                        <span className="text-xl mb-1">🛰️</span>
-                        <span className="text-xs font-semibold text-slate-700">No static location map screenshot uploaded</span>
-                        <span className="text-[11px] text-slate-400 mt-0.5">Capture or upload screenshot of Google Satellite Map for PDF</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleLocalImageUpload('locationMapImageUrl', e)}
-                          disabled={isReadOnly}
-                        />
-                      </label>
-                    )}
-                  </div>
-                </div>
-
-                {/* Enclosure 4: Bhu Naksha / Cadastral Map */}
-                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">🗺️</span>
-                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
-                        Enclosure 4: Bhu Naksha / Cadastral Map {fields.bhuNakshaImageUrl ? '(Uploaded)' : ''}
-                      </h4>
-                    </div>
-                    {!isReadOnly && (
-                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
-                        {fields.bhuNakshaImageUrl ? '🔄 Replace Bhu Naksha' : '+ Add Bhu Naksha Map'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleLocalImageUpload('bhuNakshaImageUrl', e)}
-                          disabled={isReadOnly}
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  {fields.bhuNakshaImageUrl ? (
-                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
-                      <img
-                        src={fields.bhuNakshaImageUrl}
-                        alt="Bhu Naksha Map"
-                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
-                      />
-                      {!isReadOnly && (
-                        <div className="flex justify-end w-full pt-2">
-                          <button
-                            type="button"
-                            onClick={() => handleChange('bhuNakshaImageUrl', '')}
-                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
-                          >
-                            ✕ Remove Bhu Naksha
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
-                      <span className="text-2xl mb-1">🗺️</span>
-                      <span className="text-xs font-semibold text-slate-700">No Bhu Naksha cadastral map uploaded</span>
-                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleLocalImageUpload('bhuNakshaImageUrl', e)}
-                        disabled={isReadOnly}
-                      />
-                    </label>
-                  )}
-                </div>
-
-                {/* Enclosure 5: Guideline Value Proof (Annexure-C) */}
-                <div className="space-y-3 p-4 border border-[#dee2e6] rounded-2xl bg-white shadow-xs">
-                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">📑</span>
-                      <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-sans">
-                        Enclosure 5 / Annexure-C: Guideline Value Proof {fields.guidelineValueImageUrl ? '(Uploaded)' : ''}
-                      </h4>
-                    </div>
-                    {!isReadOnly && (
-                      <label className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-accent-500 text-accent-500 text-xs font-semibold cursor-pointer hover:bg-accent-500/10 transition-all shadow-2xs">
-                        {fields.guidelineValueImageUrl ? '🔄 Replace Guideline Proof' : '+ Add Guideline Proof'}
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => handleLocalImageUpload('guidelineValueImageUrl', e)}
-                          disabled={isReadOnly}
-                        />
-                      </label>
-                    )}
-                  </div>
-
-                  {fields.guidelineValueImageUrl ? (
-                    <div className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 p-2 flex flex-col items-center">
-                      <img
-                        src={fields.guidelineValueImageUrl}
-                        alt="Guideline Value Proof"
-                        className="max-h-80 w-auto object-contain rounded-lg border border-slate-200 shadow-xs"
-                      />
-                      {!isReadOnly && (
-                        <div className="flex justify-end w-full pt-2">
-                          <button
-                            type="button"
-                            onClick={() => handleChange('guidelineValueImageUrl', '')}
-                            className="px-3 py-1 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
-                          >
-                            ✕ Remove Guideline Proof
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-slate-200 hover:border-accent-500/50 rounded-xl bg-slate-50/50 cursor-pointer transition-colors">
-                      <span className="text-2xl mb-1">📑</span>
-                      <span className="text-xs font-semibold text-slate-700">No guideline value proof uploaded</span>
-                      <span className="text-[11px] text-slate-400 mt-0.5">Click to browse or drag and drop image</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleLocalImageUpload('guidelineValueImageUrl', e)}
-                        disabled={isReadOnly}
-                      />
-                    </label>
-                  )}
-                </div>
-              </div>
-            </Section>
-
-            {/* 15. Property Photographs */}
+            {/* 16. Property Photographs */}
             <BasePhotographsSection
               title="Property Photographs"
-              sectionNumber={15}
+              sectionNumber={16}
               sectionId="sec-photos"
               propertyImages={propertyImages}
               propertyImageNames={propertyImageNames}

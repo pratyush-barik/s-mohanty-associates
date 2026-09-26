@@ -527,19 +527,31 @@ async function generateHLLAPPDF(
 
 
 
-  // ====== PROPERTY PHOTOGRAPHS & MAPS ======
+  // ====== DOCUMENTS, MAPS & PROPERTY PHOTOGRAPHS ======
+  // 1. Documents
+  const docImages: string[] = fields.documentImages || [];
+  const docNames: string[] = fields.documentImageNames || [];
+  const validDocUrls = docImages.filter((u: string) => Boolean(u && u.trim()));
+  if (validDocUrls.length > 0) {
+    const docBytesList: { bytes: Uint8Array; caption?: string }[] = [];
+    for (let i = 0; i < validDocUrls.length; i++) {
+      const b = await fetchBytes(validDocUrls[i]);
+      if (b && b.length > 0) {
+        const rawName = docNames[i];
+        const caption = (rawName !== undefined && rawName !== null && rawName.trim() !== '') ? rawName.trim() : '';
+        docBytesList.push({ bytes: b, caption });
+      }
+    }
+    if (docBytesList.length > 0) {
+      await r.drawDocumentsGallery(docBytesList, 'DOCUMENTS', 240, false);
+    }
+  }
+
+  // 2. Maps (Continues after documents with line break)
   if (imageResults && imageResults.length > 0) {
     const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages.filter((img: any) => typeof img === 'string' && img.length > 0) : [];
     const propCount = propertyImgs.length;
     
-    const validPhotos = imageResults.slice(0, propCount)
-      .map((bytes, idx) => ({ bytes: bytes!, label: (fields.propertyImageNames && fields.propertyImageNames[idx]) || '' }))
-      .filter(p => p.bytes && p.bytes.length > 0);
-      
-    if (validPhotos.length > 0) {
-      await r.drawPhotoGrid(validPhotos, 'Property Photographs');
-    }
-
     let imgIdx = propCount;
     const sketchCount = fields.sketchMapImages?.length || 0;
     const sketchBytesList = sketchCount > 0 ? imageResults.slice(imgIdx, imgIdx + sketchCount).map(b => ({ bytes: b!, caption: '' })).filter(p => p.bytes) : [];
@@ -559,53 +571,28 @@ async function generateHLLAPPDF(
     imgIdx += cadastralCount;
 
     if (mouzaBytesList.length > 0) {
-      await r.drawMapGallery(mouzaBytesList, 'Mouza Map (Bhulekh / Revenue Map) (1)');
+      await r.drawMapGallery(mouzaBytesList, 'Mouza Map (Bhulekh / Revenue Map) (1)', 240, false);
     }
     if (sketchBytesList.length > 0) {
-      await r.drawMapGallery(sketchBytesList, 'Sketch Map (Demarcation / Hand-Drawn) (1)');
+      await r.drawMapGallery(sketchBytesList, 'Sketch Map (Demarcation / Hand-Drawn) (1)', 240, false);
     }
     if (cadastralBytesList.length > 0) {
-      await r.drawMapGallery(cadastralBytesList, 'Cadastral Map (1)');
+      await r.drawMapGallery(cadastralBytesList, 'Cadastral Map (1)', 240, false);
     }
 
     if (locationBytes) {
-      (r as any).addPage();
       const lat = fields.latitude || '';
       const lng = fields.longitude || '';
-      r.drawSectionHeader(`Location Map(Latitude-${lat}, Longitude-${lng})`, false);
-      r.advanceCursor(8);
+      await r.drawMapGallery([{ bytes: locationBytes }], `Location Map(Latitude-${lat}, Longitude-${lng})`, 240, false);
+    }
 
-      const maxH = 400;
+    // 3. Photographs (Fresh page)
+    const validPhotos = imageResults.slice(0, propCount)
+      .map((bytes, idx) => ({ bytes: bytes!, label: (fields.propertyImageNames && fields.propertyImageNames[idx]) || '' }))
+      .filter(p => p.bytes && p.bytes.length > 0);
       
-      let img = null;
-      try { img = await (r as any).doc.embedPng(locationBytes); } catch { /* ignore */ }
-      if (!img) {
-        try { img = await (r as any).doc.embedJpg(locationBytes); } catch { /* ignore */ }
-      }
-      
-      if (img) {
-        const scale = Math.min(CONTENT_W / img.width, maxH / img.height, 1);
-        const w = img.width * scale;
-        const h = img.height * scale;
-        const x = MARGIN_L + (CONTENT_W - w) / 2;
-        const y = (r as any).pdfY((r as any).cursorY) - h;
-
-        (r as any).page.drawRectangle({
-          x: MARGIN_L,
-          y: (r as any).pdfY((r as any).cursorY) - h,
-          width: CONTENT_W,
-          height: h,
-          borderColor: rgb(0, 0, 0),
-          borderWidth: 1,
-        });
-
-        (r as any).page.drawImage(img, { x, y, width: w, height: h });
-
-        (r as any).page.drawText(`Latitude:- ${lat}`, { x: x + w - 170, y: y + 30, size: 14, font: (r as any).fontBold, color: rgb(1, 1, 0) });
-        (r as any).page.drawText(`Longitude:- ${lng}`, { x: x + w - 170, y: y + 10, size: 14, font: (r as any).fontBold, color: rgb(1, 1, 0) });
-
-        (r as any).cursorY += h + 20;
-      }
+    if (validPhotos.length > 0) {
+      await r.drawPhotoGrid(validPhotos, 'Property Photographs');
     }
   }
 
@@ -668,9 +655,10 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'section-6', title: 'Valuation Details' },
     { id: 'section-7', title: 'Boundaries' },
     { id: 'section-8', title: 'Remarks & Declaration' },
-    { id: 'section-11', title: '9. Photographs' },
+    { id: 'section-documents', title: '9. Documents' },
     { id: 'section-12', title: '10. Maps & Documents' },
-    { id: 'section-deviations', title: '11. DEVIATIONS / OBSERVATIONS' },
+    { id: 'section-11', title: '11. Photographs' },
+    { id: 'section-deviations', title: '12. DEVIATIONS / OBSERVATIONS' },
   ],
   fieldLabels: {
     loanApplicationNo: 'Deal Number',

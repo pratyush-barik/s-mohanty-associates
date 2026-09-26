@@ -17,9 +17,11 @@ import {
   getFloorName,
   BasePhotographsSection,
   BaseMapsSection,
+  BaseDocumentsSection,
   BasePhotoBucketModal,
   fetchBytes,
   DEFAULT_PHOTO_LABEL,
+  DEFAULT_DOCUMENT_LABEL,
   getEarliestFieldVisit,
   EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
@@ -563,7 +565,7 @@ export default function AxisHLLAP({
         propertyImages: [...(p.propertyImages || []), ...urls],
         propertyImageNames: [
           ...(p.propertyImageNames || []),
-          ...urls.map(() => DEFAULT_PHOTO_LABEL),
+          ...urls.map(() => ''),
         ],
       }));
     } catch (err: any) {
@@ -583,12 +585,71 @@ export default function AxisHLLAP({
 
   const handlePhotoRename = (idx: number, name: string) => {
     const arr = [...(fields.propertyImageNames || [])];
+    while (arr.length <= idx) {
+      arr.push('');
+    }
     arr[idx] = name;
     setFields(p => ({ ...p, propertyImageNames: arr }));
   };
 
   const handlePhotoReorder = (newImages: string[], newNames: string[]) => {
     setFields(p => ({ ...p, propertyImages: newImages, propertyImageNames: newNames }));
+  };
+
+  // Document Handlers for BaseDocumentsSection
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploading('documents');
+    try {
+      const uploadPromises = Array.from(files).map(async file => {
+        const ext = file.name.split('.').pop() || 'png';
+        const fileName = `doc_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+        const filePath = `${projectId}/${fileName}`;
+        const { error: uploadError } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(filePath, file);
+        if (uploadError) throw uploadError;
+        const { data: urlData } = supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .getPublicUrl(filePath);
+        return urlData.publicUrl;
+      });
+      const urls = await Promise.all(uploadPromises);
+      setFields(p => ({
+        ...p,
+        documentImages: [...(p.documentImages || []), ...urls],
+        documentImageNames: [
+          ...(p.documentImageNames || []),
+          ...urls.map(() => ''),
+        ],
+      }));
+    } catch (err: any) {
+      alert(`Error uploading documents: ${err.message}`);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDocumentRemove = (idx: number) => {
+    setFields(p => ({
+      ...p,
+      documentImages: (p.documentImages || []).filter((_, i) => i !== idx),
+      documentImageNames: (p.documentImageNames || []).filter((_, i) => i !== idx),
+    }));
+  };
+
+  const handleDocumentRename = (idx: number, name: string) => {
+    const arr = [...(fields.documentImageNames || [])];
+    while (arr.length <= idx) {
+      arr.push('');
+    }
+    arr[idx] = name;
+    setFields(p => ({ ...p, documentImageNames: arr }));
+  };
+
+  const handleDocumentReorder = (newImages: string[], newNames: string[]) => {
+    setFields(p => ({ ...p, documentImages: newImages, documentImageNames: newNames }));
   };
 
   const handleSaveDraft = async () => {
@@ -620,13 +681,23 @@ export default function AxisHLLAP({
 
   // PDF Generator helper
   const buildPDF = async (): Promise<Uint8Array> => {
+    const docImages = fields.documentImages || [];
+    const docNames = fields.documentImageNames || [];
+    const docBytesList: { bytes: Uint8Array; caption?: string }[] = [];
+    for (let i = 0; i < docImages.length; i++) {
+      const b = await fetchBytes(docImages[i]);
+      if (b) {
+        docBytesList.push({ bytes: b, caption: docNames[i] || '' });
+      }
+    }
+
     const propImages = fields.propertyImages || [];
     const photoNames = fields.propertyImageNames || [];
     const photoBytesList: { bytes: Uint8Array; label?: string }[] = [];
     for (let i = 0; i < propImages.length; i++) {
       const b = await fetchBytes(propImages[i]);
       if (b) {
-        photoBytesList.push({ bytes: b, label: photoNames[i] || DEFAULT_PHOTO_LABEL });
+        photoBytesList.push({ bytes: b, label: photoNames[i] || '' });
       }
     }
 
@@ -639,6 +710,7 @@ export default function AxisHLLAP({
     return await renderer.generateAxisHLLAPReport(
       fields,
       {
+        documents: docBytesList,
         photos: photoBytesList,
         locationMaps: locMapBytes,
         mouzaMaps: mouzaMapBytes,
@@ -721,8 +793,9 @@ export default function AxisHLLAP({
     { id: 'axis-sec5', title: 'Recommended Valuation (7–10)' },
     { id: 'axis-sec6', title: 'Attachments & Remarks (11–12)' },
     { id: 'axis-sec7', title: 'Undertaking & Valuer Signatory' },
-    { id: 'axis-photos', title: 'Property Photographs' },
-    { id: 'axis-maps', title: 'Location & Sketch Maps' },
+    { id: 'axis-documents', title: 'Documents (8)' },
+    { id: 'axis-maps', title: 'Location & Sketch Maps (9)' },
+    { id: 'axis-photos', title: 'Property Photographs (10)' },
   ];
 
   return (
@@ -2325,21 +2398,19 @@ export default function AxisHLLAP({
           </div>
         </Section>
 
-        {/* SECTION 8: Property Photographs */}
-        <BasePhotographsSection
-          title="Property Photographs"
-          sectionId="axis-photos"
+        {/* SECTION 8: Documents */}
+        <BaseDocumentsSection
+          title="Documents"
+          sectionId="axis-documents"
           sectionNumber={8}
-          propertyImages={fields.propertyImages || []}
-          propertyImageNames={fields.propertyImageNames || []}
+          documentImages={fields.documentImages || []}
+          documentImageNames={fields.documentImageNames || []}
           isReadOnly={isReadOnly}
           uploading={uploading}
-          bucketCount={bucketImages?.length || 0}
-          onOpenBucketPicker={() => setShowBucketModal(true)}
-          onUploadImages={handlePhotoUpload}
-          onRemoveImage={handlePhotoRemove}
-          onImageNameChange={handlePhotoRename}
-          onReorderImages={handlePhotoReorder}
+          onUploadDocument={handleDocumentUpload}
+          onRemoveDocument={handleDocumentRemove}
+          onDocumentNameChange={handleDocumentRename}
+          onReorderDocuments={handleDocumentReorder}
         />
 
         {/* SECTION 9: Location and Sketch Maps */}
@@ -2375,6 +2446,23 @@ export default function AxisHLLAP({
           onReorderMouzaMap={newImgs => handleMapReorder('mouzaMapImages', newImgs)}
           onReorderSketchMap={newImgs => handleMapReorder('sketchMapImages', newImgs)}
           onReorderCadastralMap={newImgs => handleMapReorder('cadastralMapImages', newImgs)}
+        />
+
+        {/* SECTION 10: Property Photographs */}
+        <BasePhotographsSection
+          title="Property Photographs"
+          sectionId="axis-photos"
+          sectionNumber={10}
+          propertyImages={fields.propertyImages || []}
+          propertyImageNames={fields.propertyImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          bucketCount={bucketImages?.length || 0}
+          onOpenBucketPicker={() => setShowBucketModal(true)}
+          onUploadImages={handlePhotoUpload}
+          onRemoveImage={handlePhotoRemove}
+          onImageNameChange={handlePhotoRename}
+          onReorderImages={handlePhotoReorder}
         />
 
         {/* STANDARDIZED ACTION BAR (DOCKED AT BOTTOM OF MAIN CONTENT) */}

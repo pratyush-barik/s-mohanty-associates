@@ -120,10 +120,12 @@ export interface ArkaReportFields extends BaseReportFields {
 
   propertyImages: any[];
   propertyImageNames: string[];
+  documentImages?: any[];
+  documentImageNames?: string[];
   locationMapImages: any[];
   mouzaMapImages: any[];
   sketchMapImages: any[];
-  cadastralMapImages: any[];
+  cadastralMapImages?: any[];
 }
 
 export class PDFArkaFinanceRenderer extends PDFBankRenderer {
@@ -504,21 +506,43 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     this.cursorY += 16;
     this.page.drawText(this.sanitizeText(fields.designation || 'Approved Panel Valuer'), { x: MARGIN_L, y: this.pdfY(this.cursorY), size: FONT_SIZE, font: this.fontRegular, color: rgb(0,0,0) });
 
-    // PHOTOGRAPHS — drawPhotoGrid handles its own page break & section header
-    const imgs = Array.isArray(fields.propertyImages) ? fields.propertyImages : [];
-    if (imgs.length > 0) {
-      await this.drawPhotoGrid(imgs, 'PHOTOGRAPHS OF PROPERTY');
+    // --- Enclosures: Order = Documents -> Maps (line break, no page break) -> Photographs (fresh page) ---
+
+    // 1. Documents Section (continues after report tables with line break, no page break)
+    const rawDocs = Array.isArray(fields.documentImages) ? fields.documentImages : [];
+    const validDocs = rawDocs.filter((d: any) => d && ((d as any).bytes ? (d as any).bytes.length > 0 : (d as Uint8Array).length > 0));
+    if (validDocs.length > 0) {
+      await this.drawDocumentsGallery(validDocs, 'DOCUMENTS', 240, false);
     }
 
-    // MAPS — drawMapGallery handles page breaks & bordered centered section headers
+    // 2. Maps (continues after documents with line break, no page break)
     const locationMaps = Array.isArray(fields.locationMapImages) ? fields.locationMapImages : (fields as any).locationMapImage ? [(fields as any).locationMapImage] : [];
     const mouzaMaps = Array.isArray(fields.mouzaMapImages) ? fields.mouzaMapImages : (fields as any).mouzaMapImage ? [(fields as any).mouzaMapImage] : [];
     const sketchMaps = Array.isArray(fields.sketchMapImages) ? fields.sketchMapImages : (fields as any).sketchMapImage ? [(fields as any).sketchMapImage] : [];
+    const cadastralMaps = Array.isArray(fields.cadastralMapImages) ? fields.cadastralMapImages : (fields as any).cadastralMapImage ? [(fields as any).cadastralMapImage] : [];
 
-    const locTitle = `LOCATION MAP (LAT: ${fv('latitude')}, LONG: ${fv('longitude')})`;
-    await this.drawMapGallery(locationMaps, locTitle, 230, true);
-    await this.drawMapGallery(mouzaMaps, 'MOUZA MAP', 230, false);
-    await this.drawMapGallery(sketchMaps, 'SKETCH MAP', 230, true);
+    const latLongStr = (fields.latitude || fields.longitude)
+      ? ` (LAT: ${fv('latitude')}, LONG: ${fv('longitude')})`
+      : '';
+    const locTitle = `LOCATION MAP${latLongStr}`;
+    if (locationMaps.length > 0) {
+      await this.drawMapGallery(locationMaps, locTitle, 230, false);
+    }
+    if (mouzaMaps.length > 0) {
+      await this.drawMapGallery(mouzaMaps, 'MOUZA MAP', 230, false);
+    }
+    if (sketchMaps.length > 0) {
+      await this.drawMapGallery(sketchMaps, 'SKETCH MAP', 230, false);
+    }
+    if (cadastralMaps.length > 0) {
+      await this.drawMapGallery(cadastralMaps, 'CADASTRAL MAP', 230, false);
+    }
+
+    // 3. Photographs of the Property (strictly starts on a fresh page)
+    const imgs = Array.isArray(fields.propertyImages) ? fields.propertyImages : [];
+    if (imgs.length > 0) {
+      await this.drawPhotoGrid(imgs, 'PHOTOGRAPHS OF PROPERTY', 240, true);
+    }
 
     return await this.save();
   }

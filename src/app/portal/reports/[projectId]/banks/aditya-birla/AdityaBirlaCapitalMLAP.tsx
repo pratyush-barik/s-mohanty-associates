@@ -20,6 +20,7 @@ import {
   formatAssignedEngineers,
   formatReportDate,
   BaseDateInput,
+  BaseDocumentsSection,
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
@@ -28,6 +29,8 @@ import {
   fetchBytes,
   getEarliestFieldVisit,
   EarliestFieldVisitBadge,
+  DEFAULT_DOCUMENT_LABEL,
+  DEFAULT_PHOTO_LABEL,
 } from '../BaseBankReportComponents';
 import { reorderAndLabelAnnexures, AnnexureItem, decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/bank-fields';
 
@@ -67,20 +70,21 @@ const DEFAULT_BUA_ROWS: BuaRow[] = [
   { floor: 'Ground Floor', asPerSite: '', asPerPlan: 'NA', percentageDeviation: 'NA' },
 ];
 
-// ── Bank Specific Nav Sections (12 exact sections) ──
+// ── Bank Specific Nav Sections (13 exact sections) ──
 const NAV_SECTIONS: NavItem[] = [
-  { id: 'section-1', title: 'Basic Details' },
-  { id: 'section-2', title: 'Location Details' },
-  { id: 'section-3', title: 'Property Detailings' },
-  { id: 'section-4', title: 'Documentation' },
-  { id: 'section-5', title: 'Accommodation' },
-  { id: 'section-6', title: 'Build Up Details' },
-  { id: 'section-7', title: 'Valuation Analysis' },
-  { id: 'section-8', title: 'Boundary Details' },
-  { id: 'section-9', title: 'Remarks' },
-  { id: 'section-10', title: 'Maps & Documents' },
-  { id: 'section-11', title: 'Photographs' },
-  { id: 'section-12-annexure', title: 'Annexures' },
+  { id: 'section-1', title: '1. Basic Details' },
+  { id: 'section-2', title: '2. Location Details' },
+  { id: 'section-3', title: '3. Property Detailings' },
+  { id: 'section-4', title: '4. Documentation' },
+  { id: 'section-5', title: '5. Accommodation' },
+  { id: 'section-6', title: '6. Build Up Details' },
+  { id: 'section-7', title: '7. Valuation Analysis' },
+  { id: 'section-8', title: '8. Boundary Details' },
+  { id: 'section-9', title: '9. Remarks' },
+  { id: 'section-10', title: '10. Documents' },
+  { id: 'section-11', title: '11. Maps & Documents' },
+  { id: 'section-12', title: '12. Photographs' },
+  { id: 'section-13-annexure', title: '13. Annexures' },
 ];
 
 export default function AdityaBirlaCapitalMLAP({
@@ -790,7 +794,26 @@ export default function AdityaBirlaCapitalMLAP({
     r.drawRemarksBox('Remarks', fields.remarks || 'N/A');
     r.drawKeyValueRow([{ label: 'Name of the Engineer Visited', value: fields.engineerVisitedName || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
 
-    // 11. Location Map
+    // 11. Documents Section
+    const docImages: string[] = fields.documentImages || [];
+    const docNames: string[] = fields.documentImageNames || [];
+    const validDocUrls = docImages.filter(u => Boolean(u && u.trim()));
+    if (validDocUrls.length > 0) {
+      const docBytesList: { bytes: Uint8Array; caption?: string }[] = [];
+      for (let i = 0; i < validDocUrls.length; i++) {
+        const b = await fetchBytes(validDocUrls[i]);
+        if (b && b.length > 0) {
+          const rawName = docNames[i];
+          const caption = (rawName !== undefined && rawName !== null && rawName.trim() !== '') ? rawName.trim() : '';
+          docBytesList.push({ bytes: b, caption });
+        }
+      }
+      if (docBytesList.length > 0) {
+        await r.drawDocumentsGallery(docBytesList, 'DOCUMENTS', 240, false);
+      }
+    }
+
+    // 12. Maps (Continues after documents with line break)
     let imgPointer = (fields.propertyImages || []).length;
     const sketchImgs = fields.sketchMapImages || [];
     const sketchBytes = imageResults.slice(imgPointer, imgPointer + sketchImgs.length);
@@ -799,47 +822,42 @@ export default function AdityaBirlaCapitalMLAP({
     const mouzaMapBytes = fields.mouzaMapImage ? imageResults[imgPointer++] : null;
     const cadastralMapBytes = fields.cadastralMapImage ? imageResults[imgPointer++] : null;
 
-    if (locMapBytes) {
-      r.checkPageBreak(300);
-      r.drawSectionHeader('Location Map', false);
-      await r.drawImageSection(locMapBytes, '');
+    if (locMapBytes || mouzaMapBytes || cadastralMapBytes || (sketchBytes && sketchBytes.length > 0)) {
+      if (validDocUrls.length === 0 && (r as any).cursorY === 0) {
+        (r as any).addPage();
+      } else {
+        (r as any).advanceCursor(10);
+      }
+      if (locMapBytes) {
+        await r.drawMapGallery([{ bytes: locMapBytes }], 'Location Map', 240, false);
+      }
+      if (mouzaMapBytes) {
+        await r.drawMapGallery([{ bytes: mouzaMapBytes }], 'MOUZA MAP', 240, false);
+      }
+      if (cadastralMapBytes) {
+        await r.drawMapGallery([{ bytes: cadastralMapBytes }], 'CADASTRAL MAP', 240, false);
+      }
+      if (sketchBytes && sketchBytes.length > 0) {
+        for (let i = 0; i < sketchBytes.length; i++) {
+          const sb = sketchBytes[i];
+          if (sb) {
+            await r.drawMapGallery([{ bytes: sb }], i === 0 ? 'AMIN HAND-DRAWN SKETCH MAP' : `SKETCH MAP ${i + 1}`, 240, false);
+          }
+        }
+      }
     }
 
-    // 12. Photographs Grid
+    // 13. Photographs Grid (Fresh page)
     const propImgs = fields.propertyImages || [];
     if (propImgs.length > 0) {
       const photos = propImgs.map((imgUrl: string, idx: number) => ({
         bytes: imageResults[idx],
-        label: fields.propertyImageNames?.[idx] !== undefined
+        label: (fields.propertyImageNames?.[idx] !== undefined && fields.propertyImageNames?.[idx] !== null)
           ? fields.propertyImageNames[idx]
           : 'Site Picture',
       })).filter((p): p is { bytes: Uint8Array; label: string } => !!p.bytes && p.bytes.length > 0);
 
       await r.drawPhotoGrid(photos);
-    }
-
-    // 13. Maps
-    if (mouzaMapBytes) {
-      r.checkPageBreak(300);
-      r.drawSectionHeader('MOUZA MAP', false);
-      await r.drawImageSection(mouzaMapBytes, '');
-    }
-
-    if (cadastralMapBytes) {
-      r.checkPageBreak(300);
-      r.drawSectionHeader('CADASTRAL MAP', false);
-      await r.drawImageSection(cadastralMapBytes, '');
-    }
-
-    if (sketchBytes && sketchBytes.length > 0) {
-      for (let i = 0; i < sketchBytes.length; i++) {
-        const sb = sketchBytes[i];
-        if (sb) {
-          r.checkPageBreak(300);
-          r.drawSectionHeader(i === 0 ? 'AMIN HAND-DRAWN SKETCH MAP' : `SKETCH MAP ${i + 1}`);
-          await r.drawImageSection(sb, `Hand-Drawn Sketch Map ${i + 1}`);
-        }
-      }
     }
 
     // 14. Annexures & Schedules
@@ -1857,7 +1875,64 @@ export default function AdityaBirlaCapitalMLAP({
           </div>
         </Section>
 
-        {/* ═══ SECTION 10: MAPS & ATTACHMENTS ═══ */}
+        {/* ═══ SECTION 10: DOCUMENTS ═══ */}
+        <BaseDocumentsSection
+          title="Documents"
+          sectionNumber={10}
+          sectionId="section-10"
+          documentImages={fields.documentImages || []}
+          documentImageNames={fields.documentImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploadingTarget === 'documents'}
+          onImageNameChange={(idx: number, name: string) => {
+            const next = [...(fields.documentImageNames || [])];
+            while (next.length <= idx) next.push('');
+            next[idx] = name;
+            handleChange('documentImageNames', next);
+          }}
+          onRemoveImage={(idx: number) => {
+            const nextUrls = (fields.documentImages || []).filter((_: string, i: number) => i !== idx);
+            const nextNames = (fields.documentImageNames || []).filter((_: string, i: number) => i !== idx);
+            handleChange('documentImages', nextUrls);
+            handleChange('documentImageNames', nextNames);
+          }}
+          onReorderImages={(newUrls: string[], newNames: string[]) => {
+            handleChange('documentImages', newUrls);
+            handleChange('documentImageNames', newNames);
+          }}
+          onUploadImages={async (e) => {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+            setUploadingTarget('documents');
+            try {
+              const uploadPromises = Array.from(files).map(async file => {
+                const ext = file.name.split('.').pop() || 'png';
+                const fileName = `doc_${Date.now()}_${Math.random().toString(36).substring(7)}.${ext}`;
+                const filePath = `${projectId}/${fileName}`;
+                const { error: uploadError } = await supabaseBrowser.storage
+                  .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+                  .upload(filePath, file);
+                if (uploadError) throw uploadError;
+                const { data: urlData } = supabaseBrowser.storage
+                  .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+                  .getPublicUrl(filePath);
+                return urlData.publicUrl;
+              });
+              const urls = await Promise.all(uploadPromises);
+              handleChange('documentImages', [...(fields.documentImages || []), ...urls]);
+              handleChange('documentImageNames', [
+                ...(fields.documentImageNames || []),
+                ...urls.map(() => ''),
+              ]);
+            } catch (err: any) {
+              alert(`Error uploading documents: ${err.message}`);
+            } finally {
+              setUploadingTarget(null);
+            }
+          }}
+        />
+
+        {/* ═══ SECTION 11: MAPS & ATTACHMENTS ═══ */}
         <BaseMapsSection
           locationMapImages={fields.locationMapImages || (fields.locationMapImage ? [fields.locationMapImage] : [])}
           mouzaMapImages={fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : [])}
@@ -1883,11 +1958,11 @@ export default function AdityaBirlaCapitalMLAP({
           onReorderMouzaMap={(newImgs) => handleReorderMap('mouzaMapImages', newImgs)}
           onReorderSketchMap={(newImgs) => handleReorderMap('sketchMapImages', newImgs)}
           onReorderCadastralMap={(newImgs) => handleReorderMap('cadastralMapImages', newImgs)}
-          sectionNumber={10}
-          sectionId="section-10"
+          sectionNumber={11}
+          sectionId="section-11"
         />
 
-        {/* ═══ SECTION 11: PHOTOGRAPHS ═══ */}
+        {/* ═══ SECTION 12: PHOTOGRAPHS ═══ */}
         <BasePhotographsSection
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
@@ -1914,11 +1989,11 @@ export default function AdityaBirlaCapitalMLAP({
           }}
           onUploadImages={handleUploadMultiplePhotos}
           onOpenBucketPicker={() => setBucketPickerOpen(true)}
-          sectionNumber={11}
-          sectionId="section-11"
+          sectionNumber={12}
+          sectionId="section-12"
         />
 
-        {/* ═══ SECTION 12: ANNEXURES (Always available) ═══ */}
+        {/* ═══ SECTION 13: ANNEXURES (Always available) ═══ */}
         <BaseAnnexureSection
           annexures={fields.annexures || []}
           isReadOnly={isReadOnly}
@@ -1928,8 +2003,8 @@ export default function AdityaBirlaCapitalMLAP({
           onUpdateTitle={updateAnnexureTitle}
           onUploadExcel={handleAnnexureUpload}
           onRemoveFile={removeAnnexureFile}
-          sectionNumber={12}
-          sectionId="section-12-annexure"
+          sectionNumber={13}
+          sectionId="section-13-annexure"
         />
 
         {/* ═══ STANDARDIZED ACTION BAR ═══ */}

@@ -403,9 +403,11 @@ export interface ArthanFinanceReportFields {
   visitingEngineer?: string;
   authorizedSignatory?: string;
 
-  // Photos & Maps
+  // Photos, Documents & Maps
   propertyImages?: string[];
   propertyImageNames?: string[];
+  documentImages?: string[];
+  documentImageNames?: string[];
   locationMapImages?: string[];
   cadastralMapImages?: string[];
 
@@ -912,6 +914,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
   async generateArthanReport(
     fields: ArthanFinanceReportFields,
     images: {
+      documents?: { bytes: Uint8Array; caption?: string }[];
       photos: { bytes: Uint8Array; label?: string }[];
       locationMaps: Uint8Array[];
       cadastralMaps: Uint8Array[];
@@ -1576,58 +1579,11 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     ], 24, 4);
 
     // ══════════════════════════════════════════════════════════════════
-    // SECTION 12 — Property Photographs
+    // SECTION 12 — Documents (Order: Documents -> Maps -> Photographs)
     // ══════════════════════════════════════════════════════════════════
-    if (images.photos && images.photos.length > 0) {
-      const phW1 = 115; // Uniform column width matching Engineer (115 pt)
-      const phV = CONTENT_W / 2 - phW1; // 128.64 pt
-      const phW2 = 115; // Uniform column width matching Authorized Signatory (115 pt)
-      const phV2 = CONTENT_W / 2 - phW2; // 128.64 pt
-
-      // Address row height calculation
-      const phAddrText = fields.addressAsPerActualSite || fields.addressAsPerDocument || '';
-      const phAddrLines = this.wrapText(phAddrText, CONTENT_W - phW1 - 8, FONT_SIZE);
-      const phAddrH = Math.max(26, phAddrLines.length * FONT_SIZE * LINE_HEIGHT + 10);
-
-      // Section header + customer row + address row + at least 1 row of photos MUST start together
-      // to prevent orphaned headers or address alone on a page:
-      const neededForSection12 = 25 + 24 + phAddrH + 180;
-      if (this.availableHeight < neededForSection12) {
-        this.addPage();
-      }
-
-      this.drawSectionBanner('PROPERTY PHOTOGRAPHS');
-
-      // Customer & Proposal row
-      this.drawRow([
-        { text: 'Name of the\nCustomer/Applicant', width: phW1, isLabel: true, bold: false },
-        { text: fields.customerName || '', width: phV },
-        { text: 'Proposal No.', width: phW2, isLabel: true, bold: false },
-        { text: fields.proposalNo || '', width: phV2 },
-      ], 24, 4);
-
-      // Address row
-      curY = this.pdfY(this.cursorY);
-      this.drawCell(MARGIN_L, curY, phW1, phAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', bold: false });
-      this.drawCell(MARGIN_L + phW1, curY, CONTENT_W - phW1, phAddrH, phAddrText, { align: 'justify', vAlign: 'middle' });
-      this.cursorY += phAddrH + 6;
-
-      // Photo grid — renders immediately continuing below address row without empty page gaps or empty headers
-      await this.drawArthanPhotoGrid(images.photos);
-
-      // Engineer row after photos
-      const engW1 = 135;
-      const engV1 = CONTENT_W / 2 - engW1;
-      const engW2 = 135;
-      const engV2 = CONTENT_W / 2 - engW2;
-
-      this.checkPageBreak(26);
-      this.drawRow([
-        { text: 'Name of Engineer\nVisted the property', width: engW1, isLabel: true, bold: true },
-        { text: fields.visitingEngineer || '', width: engV1 },
-        { text: 'Authorized Signatory\nName & Signature', width: engW2, isLabel: true, bold: true },
-        { text: fields.authorizedSignatory || 'Er. Satyajit Mohanty', width: engV2 },
-      ], 24, 4);
+    const validDocs = (images.documents || []).filter(d => d.bytes && d.bytes.length > 0);
+    if (validDocs.length > 0) {
+      await this.drawDocumentsGallery(validDocs, 'DOCUMENTS', 240, false);
     }
 
     // ══════════════════════════════════════════════════════════════════
@@ -1648,10 +1604,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       const mpAddrH = Math.max(26, mpAddrLines.length * FONT_SIZE * LINE_HEIGHT + 10);
 
       // Ensure banner + customer row + address row + at least 1 map fit together
-      const neededForSection13 = 25 + 24 + mpAddrH + 190;
-      if (this.availableHeight < neededForSection13) {
-        this.addPage();
-      }
+      this.checkPageBreak(25 + 24 + mpAddrH + 190);
 
       this.drawSectionBanner('LOCATION CUM ROUTE MAP SHOWING PROPERTY BOUNDARIES');
 
@@ -1695,6 +1648,56 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       }
 
       // Engineer row after maps
+      const engW1 = 135;
+      const engV1 = CONTENT_W / 2 - engW1;
+      const engW2 = 135;
+      const engV2 = CONTENT_W / 2 - engW2;
+
+      this.checkPageBreak(26);
+      this.drawRow([
+        { text: 'Name of Engineer\nVisted the property', width: engW1, isLabel: true, bold: true },
+        { text: fields.visitingEngineer || '', width: engV1 },
+        { text: 'Authorized Signatory\nName & Signature', width: engW2, isLabel: true, bold: true },
+        { text: fields.authorizedSignatory || 'Er. Satyajit Mohanty', width: engV2 },
+      ], 24, 4);
+    }
+
+    // ══════════════════════════════════════════════════════════════════
+    // SECTION 14 — Property Photographs (Starts on fresh page)
+    // ══════════════════════════════════════════════════════════════════
+    if (images.photos && images.photos.length > 0) {
+      this.addPage();
+
+      const phW1 = 115; // Uniform column width matching Engineer (115 pt)
+      const phV = CONTENT_W / 2 - phW1; // 128.64 pt
+      const phW2 = 115; // Uniform column width matching Authorized Signatory (115 pt)
+      const phV2 = CONTENT_W / 2 - phW2; // 128.64 pt
+
+      // Address row height calculation
+      const phAddrText = fields.addressAsPerActualSite || fields.addressAsPerDocument || '';
+      const phAddrLines = this.wrapText(phAddrText, CONTENT_W - phW1 - 8, FONT_SIZE);
+      const phAddrH = Math.max(26, phAddrLines.length * FONT_SIZE * LINE_HEIGHT + 10);
+
+      this.drawSectionBanner('PROPERTY PHOTOGRAPHS');
+
+      // Customer & Proposal row
+      this.drawRow([
+        { text: 'Name of the\nCustomer/Applicant', width: phW1, isLabel: true, bold: false },
+        { text: fields.customerName || '', width: phV },
+        { text: 'Proposal No.', width: phW2, isLabel: true, bold: false },
+        { text: fields.proposalNo || '', width: phV2 },
+      ], 24, 4);
+
+      // Address row
+      curY = this.pdfY(this.cursorY);
+      this.drawCell(MARGIN_L, curY, phW1, phAddrH, 'Address of the property\nbeing appraised', { isLabel: true, align: 'center', vAlign: 'middle', bold: false });
+      this.drawCell(MARGIN_L + phW1, curY, CONTENT_W - phW1, phAddrH, phAddrText, { align: 'justify', vAlign: 'middle' });
+      this.cursorY += phAddrH + 6;
+
+      // Photo grid — renders immediately continuing below address row without empty page gaps or empty headers
+      await this.drawArthanPhotoGrid(images.photos);
+
+      // Engineer row after photos
       const engW1 = 135;
       const engV1 = CONTENT_W / 2 - engW1;
       const engW2 = 135;

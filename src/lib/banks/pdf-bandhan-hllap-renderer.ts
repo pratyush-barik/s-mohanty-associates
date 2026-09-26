@@ -1987,11 +1987,34 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Enclosures: Section 12 (Maps & Documents in chronological order) followed by Section 13 (Property Photographs)
+   * Enclosures: Section 12 (Documents), Section 13 (Maps & Documents), Section 14 (Property Photographs)
+   * Order: Documents → Maps (line break, no page break) → Photos (fresh page)
    * Formatted strictly using base PDFBankRenderer standard map gallery and photograph grid format.
    */
   private async drawEnclosures(fields: BandhanHLLAPReportFields): Promise<void> {
-    // ── 1. Section 12: Maps & Documents (Chronological Order matching Web UI) ──
+    // ── 1. Section 12: Documents (User-uploaded document images with titles) ──
+    const docImages: string[] = fields.documentImages || [];
+    const docNames: string[] = fields.documentImageNames || [];
+    const validDocs = docImages.filter(u => Boolean(u && u.trim()));
+
+    if (validDocs.length > 0) {
+      const docBytesList: { bytes: Uint8Array; caption?: string }[] = [];
+      for (let i = 0; i < validDocs.length; i++) {
+        const b = await fetchBytes(validDocs[i]);
+        if (b && b.length > 0) {
+          const rawName = docNames[i];
+          const caption = (rawName !== undefined && rawName !== null && rawName.trim() !== '') ? rawName.trim() : '';
+          docBytesList.push({ bytes: b, caption });
+        }
+      }
+
+      if (docBytesList.length > 0) {
+        await this.drawMapGallery(docBytesList, 'DOCUMENTS', 240, false);
+      }
+    }
+
+    // ── 2. Section 13: Maps & Documents (Chronological Order matching Web UI) ──
+    // After documents: no page break, just line break before maps continue
     const mapCategories: { title: string; urls: string[] }[] = [
       {
         title: 'Google Satellite Map',
@@ -2040,11 +2063,12 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       }
 
       if (imgBytesList.length > 0) {
+        // forceNewPage = false: continues on current page with line break after documents
         await this.drawMapGallery(imgBytesList, cat.title, 240, false);
       }
     }
 
-    // ── 2. Section 13: Property Photographs (Rendered after all Maps & Documents) ──
+    // ── 3. Section 14: Property Photographs (Fresh page after maps) ──
     const photos: BandhanHLLAPPhoto[] = (fields.propertyPhotos && fields.propertyPhotos.length > 0)
       ? fields.propertyPhotos
       : (fields.propertyImages || []).map((url, i) => ({
@@ -2063,6 +2087,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       }
 
       if (photoBytesList.length > 0) {
+        // drawPhotoGrid always starts with addPage() — fresh page for photographs
         await this.drawPhotoGrid(photoBytesList, 'PROPERTY PHOTOGRAPHS');
       }
     }

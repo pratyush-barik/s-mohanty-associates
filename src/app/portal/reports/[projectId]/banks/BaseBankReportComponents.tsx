@@ -747,7 +747,7 @@ export function BasePhotographsSection({
     const reorderedNames = [...(propertyImageNames || [])];
 
     while (reorderedNames.length < reorderedImgs.length) {
-      reorderedNames.push(DEFAULT_PHOTO_LABEL);
+      reorderedNames.push('');
     }
 
     const [movedImg] = reorderedImgs.splice(fromIdx, 1);
@@ -816,7 +816,8 @@ export function BasePhotographsSection({
       {propertyImages.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {propertyImages.map((url, idx) => {
-            const currentLabel = propertyImageNames?.[idx] || DEFAULT_PHOTO_LABEL;
+            const rawLabel = propertyImageNames?.[idx];
+            const currentLabel = (rawLabel !== undefined && rawLabel !== null) ? rawLabel : '';
             const isDragging = draggedIdx === idx;
             const isDragOver = dragOverIdx === idx;
             const canDrag = !isReadOnly && propertyImages.length > 1;
@@ -900,7 +901,7 @@ export function BasePhotographsSection({
 
                 {/* Body: Uploaded Photo Preview */}
                 <div className="relative rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-52 flex items-center justify-center cursor-grab active:cursor-grabbing">
-                  <img src={url} alt={currentLabel} className="w-full h-full object-cover pointer-events-none select-none" />
+                  <img src={url} alt={currentLabel || DEFAULT_PHOTO_LABEL} className="w-full h-full object-cover pointer-events-none select-none" />
                 </div>
               </div>
             );
@@ -944,6 +945,268 @@ export function BasePhotographsSection({
           >
             {validPhotos.length} / 2 minimum uploaded
             {validPhotos.length < 2 && ' — At least 2 photographs are required to submit.'}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  if (withoutSectionWrapper) {
+    return content;
+  }
+
+  return (
+    <Section title={title} number={sectionNumber} id={sectionId} defaultOpen={defaultOpen}>
+      {content}
+    </Section>
+  );
+}
+
+export const DEFAULT_DOCUMENT_LABEL = 'Document';
+
+// ─── Standard Documents Section (Unified Document Image Uploads) ──────
+// Clubs all non-base-map document images (Benchmark Valuation, ROR, Guideline Value,
+// CDP Map, etc.) under a single "Documents" banner. Each document image can be
+// named individually; 2 images per row matching map-style layout.
+export function BaseDocumentsSection({
+  documentImages = [],
+  documentImageNames = [],
+  isReadOnly = false,
+  uploading = false,
+  onUploadDocument,
+  onUploadImages,
+  onUploadDocuments,
+  onRemoveDocument,
+  onRemoveImage,
+  onDocumentNameChange,
+  onImageNameChange,
+  onReorderDocuments,
+  onReorderImages,
+  sectionNumber,
+  sectionId = 'sec-documents',
+  title = 'Documents',
+  withoutSectionWrapper = false,
+  defaultOpen = false,
+}: {
+  documentImages?: string[];
+  documentImageNames?: string[];
+  isReadOnly?: boolean;
+  uploading?: boolean | string;
+  onUploadDocument?: (e: React.ChangeEvent<HTMLInputElement>) => void | Promise<void>;
+  onUploadImages?: (e: React.ChangeEvent<HTMLInputElement>) => void | Promise<void>;
+  onUploadDocuments?: (e: React.ChangeEvent<HTMLInputElement>) => void | Promise<void>;
+  onRemoveDocument?: (idx: number) => void;
+  onRemoveImage?: (idx: number) => void;
+  onDocumentNameChange?: (idx: number, name: string) => void;
+  onImageNameChange?: (idx: number, name: string) => void;
+  onReorderDocuments?: (newImages: string[], newNames: string[]) => void;
+  onReorderImages?: (newImages: string[], newNames: string[]) => void;
+  sectionNumber?: number | string;
+  sectionId?: string;
+  title?: string;
+  withoutSectionWrapper?: boolean;
+  defaultOpen?: boolean;
+}) {
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  const isDocUploading = uploading === true || uploading === 'documents' || uploading === 'documentImages';
+  const handleDocUpload = onUploadDocument || onUploadImages || onUploadDocuments;
+  const handleDocRemove = onRemoveDocument || onRemoveImage;
+  const handleDocNameChange = onDocumentNameChange || onImageNameChange;
+  const handleDocReorder = onReorderDocuments || onReorderImages;
+
+  const moveDoc = (fromIdx: number, toIdx: number) => {
+    if (isReadOnly || !handleDocReorder) return;
+    if (fromIdx < 0 || fromIdx >= documentImages.length) return;
+    if (toIdx < 0 || toIdx >= documentImages.length) return;
+    if (fromIdx === toIdx) return;
+
+    const reorderedImgs = [...documentImages];
+    const reorderedNames = [...(documentImageNames || [])];
+
+    while (reorderedNames.length < reorderedImgs.length) {
+      reorderedNames.push('');
+    }
+
+    const [movedImg] = reorderedImgs.splice(fromIdx, 1);
+    const [movedName] = reorderedNames.splice(fromIdx, 1);
+
+    reorderedImgs.splice(toIdx, 0, movedImg);
+    reorderedNames.splice(toIdx, 0, movedName);
+
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    handleDocReorder(reorderedImgs, reorderedNames);
+  };
+
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    if (isReadOnly) return;
+    try {
+      e.dataTransfer.setData('text/plain', String(idx));
+      e.dataTransfer.effectAllowed = 'move';
+    } catch {
+      /* ignore */
+    }
+    setDraggedIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    try {
+      e.dataTransfer.dropEffect = 'move';
+    } catch {
+      /* ignore */
+    }
+    if (draggedIdx === null || draggedIdx === idx) return;
+    if (dragOverIdx !== idx) {
+      setDragOverIdx(idx);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIdx(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIdx: number) => {
+    e.preventDefault();
+    let fromIdx = draggedIdx;
+    try {
+      const data = e.dataTransfer.getData('text/plain');
+      if (data !== '') {
+        const parsed = parseInt(data, 10);
+        if (!isNaN(parsed)) fromIdx = parsed;
+      }
+    } catch {
+      /* fallback */
+    }
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+
+    if (fromIdx === null || isNaN(fromIdx) || fromIdx === targetIdx) {
+      return;
+    }
+    moveDoc(fromIdx, targetIdx);
+  };
+
+  const content = (
+    <div className="space-y-4">
+      {/* Document Image Grid — 2 per row matching map layout */}
+      {documentImages.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {documentImages.map((url, idx) => {
+            const rawLabel = documentImageNames?.[idx];
+            const currentLabel = (rawLabel !== undefined && rawLabel !== null) ? rawLabel : '';
+            const isDragging = draggedIdx === idx;
+            const isDragOver = dragOverIdx === idx;
+            const canDrag = !isReadOnly && documentImages.length > 1;
+
+            return (
+              <div
+                key={`doc-${url}-${idx}`}
+                draggable={canDrag}
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, idx)}
+                onDragEnd={() => {
+                  setDraggedIdx(null);
+                  setDragOverIdx(null);
+                }}
+                className={`space-y-2 p-3 border rounded-2xl bg-white shadow-xs transition-all duration-200 ${
+                  isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
+                } ${
+                  isDragOver
+                    ? 'border-2 border-dashed border-accent-500 ring-2 ring-accent-500/20 shadow-md bg-amber-50/20'
+                    : 'border-[#dee2e6] hover:border-slate-300'
+                }`}
+              >
+                {/* Header: Badge / Drag Handle + Editable Label + Actions */}
+                <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-slate-100">
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                    <span
+                      className="px-2 py-0.5 rounded bg-[#4a6741] text-white text-[11px] font-bold select-none shrink-0 flex items-center gap-1 shadow-2xs"
+                      title="Drag document card to reposition or use arrow buttons"
+                    >
+                      {canDrag && <span className="cursor-grab active:cursor-grabbing text-slate-300">⠿</span>}
+                      <span>📄 #{idx + 1}</span>
+                    </span>
+                    <input
+                      type="text"
+                      className="w-full text-xs font-semibold text-[#0f2038] bg-transparent border-b border-transparent hover:border-slate-300 focus:border-accent-500 focus:bg-slate-50 rounded px-1 py-0.5 outline-none truncate transition-colors"
+                      value={currentLabel}
+                      onChange={(e) => handleDocNameChange?.(idx, e.target.value)}
+                      placeholder={DEFAULT_DOCUMENT_LABEL}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+
+                  {/* Move Left / Right Buttons + Remove */}
+                  {!isReadOnly && handleDocRemove && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      {handleDocReorder && documentImages.length > 1 && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => moveDoc(idx, idx - 1)}
+                            disabled={idx === 0}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold shadow-2xs cursor-pointer"
+                            title="Move Document Left / Previous"
+                          >
+                            ◀
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => moveDoc(idx, idx + 1)}
+                            disabled={idx === documentImages.length - 1}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold shadow-2xs cursor-pointer"
+                            title="Move Document Right / Next"
+                          >
+                            ▶
+                          </button>
+                        </>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDocRemove(idx)}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shadow-2xs cursor-pointer ml-0.5"
+                        title="Remove Document"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Body: Document Image Preview */}
+                <div className="relative rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-64 flex items-center justify-center cursor-grab active:cursor-grabbing">
+                  <img src={url} alt={currentLabel || `Document ${idx + 1}`} className="w-full h-full object-contain pointer-events-none select-none" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Upload & Actions Bar */}
+      {!isReadOnly && (
+        <div className={`flex flex-wrap items-center justify-between gap-3 ${documentImages.length > 0 ? 'pt-3 border-t border-slate-100' : ''}`}>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#4a6741] text-[#4a6741] text-sm font-semibold cursor-pointer hover:bg-[#4a6741]/10 transition-all shadow-xs">
+              {isDocUploading ? '⏳ Uploading...' : '📄 Add Document Image'}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={handleDocUpload}
+                disabled={isDocUploading}
+              />
+            </label>
+          </div>
+
+          <div className="text-xs font-semibold text-slate-500">
+            {documentImages.filter(Boolean).length} document(s) uploaded
           </div>
         </div>
       )}
@@ -1006,6 +1269,7 @@ export function BaseMapsSection({
   mapOrder = ['location', 'mouza', 'sketch', 'cadastral', 'bda', 'benchmark'],
   withoutSectionWrapper = false,
   cadastralMapLabelOverride,
+  defaultOpen = false,
 }: {
   locationMapImage?: string | string[];
   locationMapImages?: string[];
@@ -1050,6 +1314,7 @@ export function BaseMapsSection({
   mapOrder?: ('location' | 'mouza' | 'sketch' | 'cadastral' | 'bda' | 'benchmark')[];
   withoutSectionWrapper?: boolean;
   cadastralMapLabelOverride?: string;
+  defaultOpen?: boolean;
 }) {
   const [localLat, setLocalLat] = useState(latitude || '');
   const [localLng, setLocalLng] = useState(longitude || '');

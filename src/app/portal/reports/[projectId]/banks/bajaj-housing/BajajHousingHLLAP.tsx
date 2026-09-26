@@ -21,15 +21,18 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'bajaj-section-9', title: 'Valuation' },
     { id: 'bajaj-section-10', title: 'Remarks & Panchayat' },
     { id: 'bajaj-section-11', title: 'Declaration' },
-    { id: 'section-11', title: 'Photos' },
+    { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
+    { id: 'section-11', title: 'Photographs' },
   ],
   hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-7a', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10', 'annexures'],
   hideDefaultDeclarationAndCertificate: true,
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   fieldLabels: {
-    'section-11-title': 'Property Photographs',
+    'section-documents-title': 'Documents',
+    'documents-title': 'Documents',
     'section-12-title': 'Location & Sketch Maps',
+    'section-11-title': 'Property Photographs',
   },
   defaultValues: {
     // Section 1: Application Details
