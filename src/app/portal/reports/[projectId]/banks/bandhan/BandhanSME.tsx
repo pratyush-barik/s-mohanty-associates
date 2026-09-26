@@ -102,22 +102,22 @@ export interface BandhanSMEProps {
 }
 
 const NAV_SECTIONS = [
-  { id: 'sec-basic', title: '1. Basic Information' },
-  { id: 'sec-prop-details', title: '2. Land Details' },
-  { id: 'sec-title-rent', title: '3. Title & Rent' },
-  { id: 'sec-desc-boundaries', title: '4. Description & Boundaries' },
-  { id: 'sec-site-char', title: '5. Site Characteristics' },
-  { id: 'sec-other-issues', title: '6. Other Issues & Sales' },
-  { id: 'sec-land-valuation', title: '7. Land Valuation' },
-  { id: 'sec-bldg-basic', title: '8. Building Basic Info' },
-  { id: 'sec-bldg-checklist', title: '9. Building Checklist' },
-  { id: 'sec-bldg-tech-spec', title: '10. Tech & Specifications' },
-  { id: 'sec-bldg-valuation-schedules', title: '11. Building Valuation & Schedules' },
-  { id: 'sec-abstract-opinion', title: '12. Abstract & Opinion' },
-  { id: 'sec-declaration', title: '13. Declaration & Checklist' },
-  { id: 'sec-documents', title: '14. Documents' },
-  { id: 'sec-maps', title: '15. Maps' },
-  { id: 'sec-photos', title: '16. Property Photographs' },
+  { id: 'sec-basic', title: 'Basic Information' },
+  { id: 'sec-prop-details', title: 'Land Details' },
+  { id: 'sec-title-rent', title: 'Title & Rent' },
+  { id: 'sec-desc-boundaries', title: 'Description & Boundaries' },
+  { id: 'sec-site-char', title: 'Site Characteristics' },
+  { id: 'sec-other-issues', title: 'Other Issues & Sales' },
+  { id: 'sec-land-valuation', title: 'Land Valuation' },
+  { id: 'sec-bldg-basic', title: 'Building Basic Info' },
+  { id: 'sec-bldg-checklist', title: 'Building Checklist' },
+  { id: 'sec-bldg-tech-spec', title: 'Tech & Specifications' },
+  { id: 'sec-bldg-valuation-schedules', title: 'Building Valuation & Schedules' },
+  { id: 'sec-abstract-opinion', title: 'Abstract & Opinion' },
+  { id: 'sec-declaration', title: 'Declaration & Checklist' },
+  { id: 'sec-documents', title: 'Documents' },
+  { id: 'sec-maps', title: 'Maps' },
+  { id: 'sec-photos', title: 'Property Photographs' },
 ];
 
 function parseNum(val: string | number | undefined | null): number {

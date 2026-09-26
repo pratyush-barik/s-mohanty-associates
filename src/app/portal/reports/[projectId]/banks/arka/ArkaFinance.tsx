@@ -366,16 +366,16 @@ export default function ArkaFinance({
   ]);
 
   const navSections: NavItem[] = [
-    { id: 'arka-cover', title: '1. Cover Page Details' },
-    { id: 'arka-sec2', title: '2. Client & Application' },
-    { id: 'arka-sec3', title: '3. Property Overview' },
-    { id: 'arka-sec4', title: '4. Boundaries & Characteristics' },
-    { id: 'arka-sec5', title: '5. Construction & Approvals' },
-    { id: 'arka-sec6', title: '6. Valuation Details' },
-    { id: 'arka-sec7', title: '7. Remarks & Undertaking' },
-    { id: 'arka-docs', title: '8. Documents' },
-    { id: 'arka-maps', title: '9. Maps' },
-    { id: 'arka-photos', title: '10. Property Photographs' },
+    { id: 'arka-cover', title: 'Cover Page Details' },
+    { id: 'arka-sec2', title: 'Client & Application' },
+    { id: 'arka-sec3', title: 'Property Overview' },
+    { id: 'arka-sec4', title: 'Boundaries & Characteristics' },
+    { id: 'arka-sec5', title: 'Construction & Approvals' },
+    { id: 'arka-sec6', title: 'Valuation Details' },
+    { id: 'arka-sec7', title: 'Remarks & Undertaking' },
+    { id: 'arka-docs', title: 'Documents' },
+    { id: 'arka-maps', title: 'Maps' },
+    { id: 'arka-photos', title: 'Property Photographs' },
   ];
 
   const handleMapUpload = async (key: string, e: React.ChangeEvent<HTMLInputElement>) => {

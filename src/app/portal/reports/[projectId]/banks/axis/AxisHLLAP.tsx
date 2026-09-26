@@ -798,9 +798,9 @@ export default function AxisHLLAP({
     { id: 'axis-sec5', title: 'Recommended Valuation (7–10)' },
     { id: 'axis-sec6', title: 'Attachments & Remarks (11–12)' },
     { id: 'axis-sec7', title: 'Undertaking & Valuer Signatory' },
-    { id: 'axis-documents', title: '8. Documents' },
-    { id: 'axis-maps', title: '9. Maps' },
-    { id: 'axis-photos', title: '10. Property Photographs' },
+    { id: 'axis-documents', title: 'Documents' },
+    { id: 'axis-maps', title: 'Maps' },
+    { id: 'axis-photos', title: 'Property Photographs' },
   ];
 
   return (

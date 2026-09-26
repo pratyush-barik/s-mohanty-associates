@@ -72,19 +72,19 @@ const DEFAULT_BUA_ROWS: BuaRow[] = [
 
 // ── Bank Specific Nav Sections (13 exact sections) ──
 const NAV_SECTIONS: NavItem[] = [
-  { id: 'section-1', title: '1. Basic Details' },
-  { id: 'section-2', title: '2. Location Details' },
-  { id: 'section-3', title: '3. Property Detailings' },
-  { id: 'section-4', title: '4. Documentation' },
-  { id: 'section-5', title: '5. Accommodation' },
-  { id: 'section-6', title: '6. Build Up Details' },
-  { id: 'section-7', title: '7. Valuation Analysis' },
-  { id: 'section-8', title: '8. Boundary Details' },
-  { id: 'section-9', title: '9. Remarks' },
-  { id: 'section-10', title: '10. Documents' },
-  { id: 'section-11', title: '11. Maps' },
-  { id: 'section-12', title: '12. Photographs' },
-  { id: 'section-13-annexure', title: '13. Annexures' },
+  { id: 'section-1', title: 'Basic Details' },
+  { id: 'section-2', title: 'Location Details' },
+  { id: 'section-3', title: 'Property Detailings' },
+  { id: 'section-4', title: 'Documentation' },
+  { id: 'section-5', title: 'Accommodation' },
+  { id: 'section-6', title: 'Build Up Details' },
+  { id: 'section-7', title: 'Valuation Analysis' },
+  { id: 'section-8', title: 'Boundary Details' },
+  { id: 'section-9', title: 'Remarks' },
+  { id: 'section-10', title: 'Documents' },
+  { id: 'section-11', title: 'Maps' },
+  { id: 'section-12', title: 'Photographs' },
+  { id: 'section-13-annexure', title: 'Annexures' },
 ];
 
 export default function AdityaBirlaCapitalMLAP({

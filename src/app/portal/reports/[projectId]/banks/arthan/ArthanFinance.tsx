@@ -921,9 +921,9 @@ export default function ArthanFinance({
     { id: 'sec-9', title: 'Valuation of Property' },
     { id: 'sec-10', title: 'Property Specific Remarks & Observation' },
     { id: 'sec-11', title: 'Valuer Certification' },
-    { id: 'sec-docs', title: '12. Documents' },
-    { id: 'sec-13', title: '13. Maps' },
-    { id: 'sec-12', title: '14. Property Photographs' },
+    { id: 'sec-docs', title: 'Documents' },
+    { id: 'sec-13', title: 'Maps' },
+    { id: 'sec-12', title: 'Property Photographs' },
   ];
 
   return (

@@ -742,29 +742,29 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
   const [activeId, setActiveId] = useState<string>('');
 
   const NAV_SECTIONS: { id: string; title: string; sub?: string; indent: boolean }[] = [
-    { id: 'section-1', title: '1. Title & Cover', indent: false },
-    { id: 'section-2', title: '2. Part I – Questionnaire', indent: false },
+    { id: 'section-1', title: 'Title & Cover', indent: false },
+    { id: 'section-2', title: 'Part I – Questionnaire', indent: false },
     { id: 'subsection-general', title: '↳ General', sub: '01–11', indent: true },
     { id: 'subsection-land', title: '↳ Land', sub: '12–20', indent: true },
     { id: 'subsection-improvement', title: '↳ Improvement', sub: '21–24', indent: true },
     { id: 'subsection-rent', title: '↳ Rent', sub: '25–34', indent: true },
     { id: 'subsection-sales', title: '↳ Sales', sub: '35–37', indent: true },
     { id: 'subsection-construction', title: '↳ Construction', sub: '38–42', indent: true },
-    { id: 'section-3', title: '3. Part II – Valuation', indent: false },
+    { id: 'section-3', title: 'Part II – Valuation', indent: false },
     { id: 'subsection-valuation-disc', title: '↳ Valuation Discussion', indent: true },
     
-    { id: 'section-4', title: '4. Part III – Declaration', indent: false },
+    { id: 'section-4', title: 'Part III – Declaration', indent: false },
     { id: 'subsection-declaration', title: '↳ Declaration', indent: true },
 
-    { id: 'section-5', title: '5. Annexures & Appendices', indent: false },
-    ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ i) Technical Details', sub: '(Items 01-20)', indent: true }] : []),
-    { id: 'subsection-calc-table', title: '↳ ii) MODIFICATION', indent: true },
-    { id: 'subsection-extra-items', title: '↳ iii) Extra Items', indent: true },
-    { id: 'subsection-total-abstract', title: '↳ iv) Total Abstract', indent: true },
-    { id: 'subsection-remarks', title: '↳ v) Remarks', indent: true },
-    { id: 'subsection-certificate', title: '↳ vi) Valuation Certificate', sub: '(Preview)', indent: true },
-    { id: 'subsection-photos', title: '↳ vii) Appendices: Photos & Maps', indent: true },
-    { id: 'subsection-land-annexure', title: '↳ viii) Land Annexure', sub: '(Multi-Plot)', indent: true },
+    { id: 'section-5', title: 'Annexures & Appendices', indent: false },
+    ...(!isLandOnly ? [{ id: 'subsection-tech-details', title: '↳ Technical Details', sub: '(Items 01-20)', indent: true }] : []),
+    { id: 'subsection-calc-table', title: '↳ Modification', indent: true },
+    { id: 'subsection-extra-items', title: '↳ Extra Items', indent: true },
+    { id: 'subsection-total-abstract', title: '↳ Total Abstract', indent: true },
+    { id: 'subsection-remarks', title: '↳ Remarks', indent: true },
+    { id: 'subsection-certificate', title: '↳ Valuation Certificate', sub: '(Preview)', indent: true },
+    { id: 'subsection-photos', title: '↳ Appendices: Photos & Maps', indent: true },
+    { id: 'subsection-land-annexure', title: '↳ Land Annexure', sub: '(Multi-Plot)', indent: true },
   ];
 
   useEffect(() => {
@@ -796,6 +796,16 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
       <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">Report Sections</div>
       {NAV_SECTIONS.map((sec) => {
         const isActive = activeId === sec.id;
+        const rawTitle = sec.title || '';
+        let s = rawTitle.trim();
+        const hasSubArrow = s.startsWith('↳');
+        if (hasSubArrow) s = s.replace(/^↳\s*/, '').trim();
+        s = s
+          .replace(/^(?:section|sec|part)\s+[0-9a-zivxlcdm]+[\.\s\-:]*\s*/i, '')
+          .replace(/^(?:\d+|[ivxlcdm]+)[\.\)\s\-:]+\s*/i, '')
+          .replace(/^\([0-9a-zivxlcdm]+\)[\.\s\-:]*\s*/i, '')
+          .trim();
+        const cleanTitle = hasSubArrow ? `↳ ${s}` : s;
         return (
           <button
             key={sec.id}
@@ -812,7 +822,7 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
             }`}
           >
             <span className={`leading-tight ${sec.indent ? 'text-[11px] font-bold' : 'text-[11.5px]'}`}>
-              {sec.title}
+              {cleanTitle}
             </span>
             {sec.sub && (
               <span className={`text-[9px] font-semibold tracking-wider mt-0.5 ${isActive ? 'text-amber-100' : 'text-slate-400'}`}>

@@ -359,7 +359,12 @@ const FloatingNavigator = ({ sections }: { sections: { id: string; title: string
       <div className="flex flex-col gap-1 overflow-y-auto pr-1 custom-scrollbar">
         {sections.map((sec) => {
           const isActive = activeId === sec.id;
-          const cleanTitle = (sec.title || '').replace(/^\d+[\.\s\-:]*\s*/, '');
+          const rawTitle = sec.title || '';
+          const cleanTitle = rawTitle
+            .replace(/^(?:section|sec|part)\s+[0-9a-zivxlcdm]+[\.\s\-:]*\s*/i, '')
+            .replace(/^(?:\d+|[ivxlcdm]+)[\.\)\s\-:]+\s*/i, '')
+            .replace(/^\([0-9a-zivxlcdm]+\)[\.\s\-:]*\s*/i, '')
+            .trim();
           const match = cleanTitle.match(/^(.*?)\s*(\([^\)]+\))$/);
           const mainTitle = match ? match[1] : cleanTitle;
           const badgeRange = match ? match[2] : null;

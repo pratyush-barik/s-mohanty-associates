@@ -638,6 +638,12 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
       {NAV_SECTIONS.map((sec: any) => {
         const isActive = activeId === sec.id;
         const isSpecial = sec.special;
+        const rawTitle = sec.title || '';
+        const cleanTitle = rawTitle
+          .replace(/^(?:section|sec|part)\s+[0-9a-zivxlcdm]+[\.\s\-:]*\s*/i, '')
+          .replace(/^(?:\d+|[ivxlcdm]+)[\.\)\s\-:]+\s*/i, '')
+          .replace(/^\([0-9a-zivxlcdm]+\)[\.\s\-:]*\s*/i, '')
+          .trim();
         return (
           <button
             key={sec.id}
@@ -656,7 +662,7 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
             }`}
           >
             <span className={`leading-tight truncate w-full ${sec.indent ? 'text-[11px] font-bold' : 'text-[11.5px]'}`}>
-              {sec.title}
+              {cleanTitle}
             </span>
             {sec.sub && (
               <span className={`text-[9px] font-semibold tracking-wider mt-0.5 ${isActive && !isSpecial ? 'text-amber-100' : 'text-slate-400'}`}>

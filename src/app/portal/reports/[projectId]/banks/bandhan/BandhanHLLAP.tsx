@@ -249,20 +249,20 @@ export const computeBandhanValuation = (
 };
 
 const NAV_SECTIONS: NavItem[] = [
-  { id: 'sec-basic', title: '1. Basic & Loan Details (Points 1–5)' },
-  { id: 'sec-address', title: '2. Location & Address Details (Points 6–14)' },
-  { id: 'sec-boundaries', title: '3. Boundaries & Physical Verification (Points 15–16)' },
-  { id: 'sec-class', title: '4. Property Classification & Structural Usage (Points 17–23)' },
-  { id: 'sec-approvals', title: '5. Approval & Plan Details (Points 24–25)' },
-  { id: 'sec-floors', title: '6. Area, Floor Breakdown & Setbacks (Points 26–29)' },
-  { id: 'sec-valuation', title: '7. Valuation Computations (Points 30–33)' },
-  { id: 'sec-progress', title: '8. Progress of Work (Point 34)' },
-  { id: 'sec-final-valuation', title: '9. Final Valuation Summary & Project Details (Points 35–40)' },
-  { id: 'sec-ndma', title: '10. NDMA Disaster Management Parameters (Point 41)' },
-  { id: 'sec-annexure-a', title: '11. Annexure-A' },
-  { id: 'sec-documents', title: '12. Documents' },
-  { id: 'sec-maps', title: '13. Maps' },
-  { id: 'sec-photos', title: '14. Property Photographs' },
+  { id: 'sec-basic', title: 'Basic & Loan Details (Points 1–5)' },
+  { id: 'sec-address', title: 'Location & Address Details (Points 6–14)' },
+  { id: 'sec-boundaries', title: 'Boundaries & Physical Verification (Points 15–16)' },
+  { id: 'sec-class', title: 'Property Classification & Structural Usage (Points 17–23)' },
+  { id: 'sec-approvals', title: 'Approval & Plan Details (Points 24–25)' },
+  { id: 'sec-floors', title: 'Area, Floor Breakdown & Setbacks (Points 26–29)' },
+  { id: 'sec-valuation', title: 'Valuation Computations (Points 30–33)' },
+  { id: 'sec-progress', title: 'Progress of Work (Point 34)' },
+  { id: 'sec-final-valuation', title: 'Final Valuation Summary & Project Details (Points 35–40)' },
+  { id: 'sec-ndma', title: 'NDMA Disaster Management Parameters (Point 41)' },
+  { id: 'sec-annexure-a', title: 'Annexure-A' },
+  { id: 'sec-documents', title: 'Documents' },
+  { id: 'sec-maps', title: 'Maps' },
+  { id: 'sec-photos', title: 'Property Photographs' },
 ];
 
 export default function BandhanHLLAP({

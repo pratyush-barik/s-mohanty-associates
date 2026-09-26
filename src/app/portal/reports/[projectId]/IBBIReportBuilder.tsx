@@ -840,21 +840,21 @@ const FloatingNavigator = () => {
   const NAV_SECTIONS = [
     { id: 'section-cover', title: 'Report Cover' },
     { id: 'section-certificate', title: 'Certificate Details' },
-    { id: 'section-1', title: '1. Objective' },
-    { id: 'section-2', title: '2. Scope' },
-    { id: 'section-3', title: '3. Basis-of-Val.' },
-    { id: 'section-4', title: '4. Description' },
-    { id: 'section-5', title: '5. Town Planning' },
-    { id: 'section-6', title: '6. Legal Aspects' },
-    { id: 'section-7', title: '7. Infrastructure' },
-    { id: 'section-8', title: '8. Socio-Cultural' },
-    { id: 'section-9', title: '9. Environmental' },
-    { id: 'section-10', title: '10. Marketability' },
-    { id: 'section-11', title: '11. Architectural' },
-    { id: 'section-12', title: '12. Engineering' },
-    { id: 'section-13', title: '13. Valuation' },
-    { id: 'section-14', title: '14. Photos/Maps' },
-    { id: 'section-15', title: '15. Assumptions' },
+    { id: 'section-1', title: 'Objective' },
+    { id: 'section-2', title: 'Scope' },
+    { id: 'section-3', title: 'Basis-of-Val.' },
+    { id: 'section-4', title: 'Description' },
+    { id: 'section-5', title: 'Town Planning' },
+    { id: 'section-6', title: 'Legal Aspects' },
+    { id: 'section-7', title: 'Infrastructure' },
+    { id: 'section-8', title: 'Socio-Cultural' },
+    { id: 'section-9', title: 'Environmental' },
+    { id: 'section-10', title: 'Marketability' },
+    { id: 'section-11', title: 'Architectural' },
+    { id: 'section-12', title: 'Engineering' },
+    { id: 'section-13', title: 'Valuation' },
+    { id: 'section-14', title: 'Photos/Maps' },
+    { id: 'section-15', title: 'Assumptions' },
     { id: 'section-conclusion', title: 'Conclusion' },
     { id: 'section-declaration', title: 'Declaration' },
     ...[{ id: 'section-annexure1', title: 'Annexure I' }, { id: 'section-annexure2', title: 'Annexure II' }],
@@ -889,6 +889,12 @@ const FloatingNavigator = () => {
       <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">IBBI Sections</div>
       {NAV_SECTIONS.map((sec: any) => {
         const isActive = activeId === sec.id;
+        const rawTitle = sec.title || '';
+        const cleanTitle = rawTitle
+          .replace(/^(?:section|sec|part)\s+[0-9a-zivxlcdm]+[\.\s\-:]*\s*/i, '')
+          .replace(/^(?:\d+|[ivxlcdm]+)[\.\)\s\-:]+\s*/i, '')
+          .replace(/^\([0-9a-zivxlcdm]+\)[\.\s\-:]*\s*/i, '')
+          .trim();
         return (
           <button
             key={sec.id}
@@ -905,7 +911,7 @@ const FloatingNavigator = () => {
             }`}
           >
             <span className={`leading-tight truncate w-full ${sec.indent ? 'text-[11px] font-bold' : 'text-[11.5px]'}`}>
-              {sec.title}
+              {cleanTitle}
             </span>
             {sec.sub && (
               <span className={`text-[9px] font-semibold tracking-wider mt-0.5 ${isActive ? 'text-amber-100' : 'text-slate-400'}`}>
