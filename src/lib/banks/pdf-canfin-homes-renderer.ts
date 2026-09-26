@@ -1,4 +1,5 @@
-import { PDFBankRenderer, CONTENT_W } from '../pdf-bank-renderer';
+import { rgb } from 'pdf-lib';
+import { PDFBankRenderer, CONTENT_W, PAGE_W, PAGE_H, MARGIN_L, FONT_SIZE, FONT_SIZE_HEADER, FONT_SIZE_TITLE, hexToRgb } from '../pdf-bank-renderer';
 
 export class PDFCanFinHomesRenderer extends PDFBankRenderer {
   private fields: any;
@@ -65,19 +66,139 @@ export class PDFCanFinHomesRenderer extends PDFBankRenderer {
   }
 
   private drawCanFinCover() {
-    this.drawMainHeader('VALUATION REPORT');
-    this.drawSectionHeader('1. COVER PAGE DETAILS');
-    this.drawSimpleRow('Bank Name', 'CANFIN HOMES LTD', undefined, true);
-    this.drawSimpleRow('Project Code', this.projectCode || 'NA');
-    this.drawSimpleRow('To', this.fv('to'));
-    this.drawSimpleRow('Date of valuation report', this.fv('dateOfValuation'));
-    this.drawSimpleRow('Ref No.', this.fv('refNo'));
-    this.drawSimpleRow('Property Owner', this.fv('ownerName'));
-    this.drawSimpleRow('Applicant / Borrower Name', this.fv('applicantName'));
-    this.drawSimpleRow('Address of the Property', this.fv('propertyAddress'));
-    this.drawSimpleRow('Pin Code', this.fv('pincode'));
-    this.drawSimpleRow('Plot Number', this.fv('plotNo'));
-    this.advanceCursor(8);
+    const fields = this.fields;
+    
+    // Reset cursor for the cover page
+    this.cursorY = 60;
+
+    const bmx = 30;
+    const bmyTop = 105;
+    const bmyBot = 85;
+    const borderColorHex = hexToRgb('#4a6078');
+
+    // Outer thick border
+    this.page.drawRectangle({
+      x: bmx,
+      y: bmyBot,
+      width: PAGE_W - 2 * bmx,
+      height: PAGE_H - bmyBot - bmyTop,
+      borderColor: borderColorHex,
+      borderWidth: 2.5,
+    });
+    // Inner thin border
+    this.page.drawRectangle({
+      x: bmx + 3,
+      y: bmyBot + 3,
+      width: PAGE_W - 2 * bmx - 6,
+      height: PAGE_H - bmyBot - bmyTop - 6,
+      borderColor: borderColorHex,
+      borderWidth: 0.75,
+    });
+
+    const drawCenteredBold = (text: string, size: number, ySpaceAfter: number, underline: boolean = false) => {
+      const cleanText = text.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
+      const maxWidth = PAGE_W - 2 * bmx - 140;
+      const lines = this.wrapText(cleanText, maxWidth, size, true);
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const tw = this.fontBold.widthOfTextAtSize(line, size);
+        const startX = MARGIN_L + (CONTENT_W - tw) / 2;
+        const startY = this.pdfY(this.cursorY);
+        this.page.drawText(line, { x: startX, y: startY, size, font: this.fontBold, color: rgb(0, 0, 0) });
+        if (underline && i === lines.length - 1) {
+          this.page.drawLine({
+            start: { x: startX, y: startY - 2 },
+            end: { x: startX + tw, y: startY - 2 },
+            thickness: 1,
+            color: rgb(0, 0, 0)
+          });
+        }
+        if (i < lines.length - 1) {
+          this.cursorY += size + 4;
+        } else {
+          this.cursorY += ySpaceAfter;
+        }
+      }
+    };
+
+    drawCenteredBold('VALUATION OF IMMOVABLE PROPERTY', FONT_SIZE_TITLE + 3, 40, true);
+
+    drawCenteredBold('PROPERTY OWNER', FONT_SIZE_HEADER, 16, true);
+    const owners = Array.isArray(fields.canfinHomesPropertyOwners) && fields.canfinHomesPropertyOwners.length > 0
+      ? fields.canfinHomesPropertyOwners
+      : [{ name: '', relationship: 'S/O', relativeName: '' }];
+    const validOwners = owners.filter((o: any) => o.name);
+
+    if (validOwners.length > 0) {
+      const ownerStrings = validOwners.map((owner: any) => {
+        const rel = owner.relationship || 'S/O';
+        const relName = owner.relativeName;
+        if (relName) {
+          return `${owner.name} ${rel} ${relName}`;
+        }
+        return owner.name;
+      });
+
+      let ownersText = '';
+      if (ownerStrings.length === 1) {
+        ownersText = ownerStrings[0];
+      } else if (ownerStrings.length === 2) {
+        ownersText = ownerStrings.join(' & ');
+      } else {
+        const last = ownerStrings.pop();
+        ownersText = ownerStrings.join(', ') + ' & ' + last;
+      }
+      
+      drawCenteredBold(ownersText, FONT_SIZE, 14);
+    } else {
+      drawCenteredBold(this.fv('ownerName', 'NA'), FONT_SIZE, 14);
+    }
+    this.cursorY += 16;
+
+    drawCenteredBold('ADDRESS OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
+    drawCenteredBold(this.fv('propertyAddress', 'NA'), FONT_SIZE, 40);
+
+    drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
+    
+    const marketValue = fields.canfinHomesEnableCoverMarketValueEdit ? this.fv('canfinHomesCoverMarketValueManual', '') : this.fv('canfinHomesTotalFairMarketValueManual', '');
+    const distressValue = fields.canfinHomesEnableCoverDistressValueEdit ? this.fv('canfinHomesCoverDistressValueManual', '') : this.fv('canfinHomesDistressValueManual', '');
+    const realizableValue = fields.canfinHomesEnableCoverRealizableValueEdit ? this.fv('canfinHomesCoverRealizableValueManual', '') : this.fv('canfinHomesRealizableValueManual', '');
+    
+    drawCenteredBold(`PRESENT MARKET VALUE: ${marketValue || '0.00'}`, FONT_SIZE, 14);
+    drawCenteredBold(`DISTRESS SALE VALUE: ${distressValue || '0.00'}`, FONT_SIZE, 14);
+    drawCenteredBold(`REALIZABLE VALUE: ${realizableValue || '0.00'}`, FONT_SIZE, 40);
+
+    drawCenteredBold('PURPOSE OF VALUATION', FONT_SIZE_HEADER, 16, true);
+    drawCenteredBold(this.fv('canfinHomesPurposeOfValuation', 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY'), FONT_SIZE, 40);
+
+    drawCenteredBold('PREPARED BY', FONT_SIZE_HEADER, 16, true);
+    drawCenteredBold(this.fv('canfinHomesPreparedByCompany', 'M/s. S MOHANTY ASSOCIATES'), FONT_SIZE, 14);
+    drawCenteredBold(this.fv('canfinHomesPreparedByDesignation', 'EMPANELLED VALUER & CHARTERED ENGINEER'), FONT_SIZE, 14);
+
+    const plotNo = this.fv('canfinHomesPreparedByPlotNo', 'Plot no-859/2494/3232 & 858/2493/3295');
+    if (plotNo !== 'NA') drawCenteredBold(`${plotNo},`, FONT_SIZE, 14);
+
+    const street = this.fv('canfinHomesPreparedByStreet', 'Shiv Nagar Tankapani Road');
+    if (street !== 'NA') drawCenteredBold(`${street},`, FONT_SIZE, 14);
+
+    const cityStatePin = [
+      this.fv('canfinHomesPreparedByCity', 'Bhubaneswar') !== 'NA' ? this.fv('canfinHomesPreparedByCity', 'Bhubaneswar') : '',
+      this.fv('canfinHomesPreparedByState', 'Odisha') !== 'NA' ? this.fv('canfinHomesPreparedByState', 'Odisha') : '',
+      this.fv('canfinHomesPreparedByPinCode', '751018') !== 'NA' ? `Pin-${this.fv('canfinHomesPreparedByPinCode', '751018')}` : ''
+    ].filter(Boolean).join(', ');
+    if (cityStatePin) drawCenteredBold(cityStatePin, FONT_SIZE, 14);
+
+    const phone = this.fv('canfinHomesPreparedByPhone', '06742381145');
+    if (phone !== 'NA') drawCenteredBold(`PHONE: ${phone}`, FONT_SIZE, 14);
+
+    let rawMobile = this.fv('canfinHomesPreparedByMobile', '9937023855/9437074855');
+    if (rawMobile !== 'NA') {
+      let processedMobile = rawMobile.replace(/[^0-9]+/g, '/').replace(/(^\/|\/$)/g, '');
+      drawCenteredBold(`MOBILE: ${processedMobile}`, FONT_SIZE, 0);
+    }
+
+    this.newPage();
   }
 
   private drawSection2() {

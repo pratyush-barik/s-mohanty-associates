@@ -16,7 +16,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   navSections: [
-    { id: 'section-cover', title: '1. Cover Page Details' },
+    { id: 'section-cover', title: '1. VALUE OF THE PROPERTY (COVER PAGE)' },
     { id: 'canfin-section-2', title: '2. General' },
     { id: 'canfin-section-3', title: '3. Details of the Property' },
     { id: 'canfin-section-4', title: '4. Surroundings, Accesibility & Proximity to Civil Ameneties' },
@@ -37,6 +37,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
   },
   defaultValues: {
     purpose: 'Housing Loan / Composite Loan',
+    
+    // Section 1 Variables
+    canfinHomesEnableCoverMarketValueEdit: false,
+    canfinHomesCoverMarketValueManual: '',
+    canfinHomesEnableCoverDistressValueEdit: false,
+    canfinHomesCoverDistressValueManual: '',
+    canfinHomesEnableCoverRealizableValueEdit: false,
+    canfinHomesCoverRealizableValueManual: '',
     
     // Section 9 Variables
     canfinHomesRemarks: '',
@@ -219,17 +227,139 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
   extraSectionsStart: [
     {
       id: 'section-cover',
-      title: 'Cover Page Details',
+      title: '1. VALUE OF THE PROPERTY (COVER PAGE)',
       number: 1,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
-        // Fallbacks if not edited (for now defaults to 0 as in screenshot when empty)
-        const presentMarketValue = 0;
-        const distressSaleValue = 0;
-        const realizableValue = 0;
-
         return (
         <div className="animate-fade-in space-y-6">
+          
+          {/* FINAL VALUATION SUMMARY */}
+          <div className="border border-slate-200 bg-[#f5f5f5] rounded-xl p-6 shadow-sm space-y-6">
+            <h3 className="font-bold text-gray-700">FINAL VALUATION SUMMARY</h3>
+            <div className="grid md:grid-cols-2 gap-4 items-center">
+              <Field label="PRESENT MARKET VALUE AS ON DATE">
+                <div className="relative">
+                  <input
+                    type="number"
+                    className={`${inputCls} w-full pr-16 bg-green-50 focus:bg-green-100 ${
+                      !fields.canfinHomesEnableCoverMarketValueEdit ? 'opacity-80 cursor-not-allowed bg-white' : ''
+                    }`}
+                    value={
+                      fields.canfinHomesEnableCoverMarketValueEdit
+                        ? fields.canfinHomesCoverMarketValueManual
+                        : fields.canfinHomesTotalFairMarketValueManual
+                    }
+                    onChange={(e) => handleChange('canfinHomesCoverMarketValueManual', e.target.value)}
+                    disabled={isReadOnly || !fields.canfinHomesEnableCoverMarketValueEdit}
+                    placeholder="₹ 0.00"
+                  />
+                  <div 
+                    className="absolute inset-y-0 right-0 flex items-center pr-2"
+                    title="&gt;&gt;Prefill from section 8, field &quot;Total Fair Market Value on 100% complete&quot;&lt;&lt;"
+                  >
+                    <button
+                      type="button"
+                      disabled={isReadOnly}
+                      onClick={() => handleChange('canfinHomesEnableCoverMarketValueEdit', !fields.canfinHomesEnableCoverMarketValueEdit)}
+                      className={`p-1.5 rounded-full transition-colors ${
+                        fields.canfinHomesEnableCoverMarketValueEdit 
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                          : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                      }`}
+                    >
+                      {fields.canfinHomesEnableCoverMarketValueEdit ? (
+                        <span className="text-xs font-bold px-1">ON</span>
+                      ) : (
+                        <Lock className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </Field>
+
+              <Field label="DISTRESS SALE VALUE">
+                <div className="relative">
+                  <input
+                    type="number"
+                    className={`${inputCls} w-full pr-16 bg-green-50 focus:bg-green-100 ${
+                      !fields.canfinHomesEnableCoverDistressValueEdit ? 'opacity-80 cursor-not-allowed bg-white' : ''
+                    }`}
+                    value={
+                      fields.canfinHomesEnableCoverDistressValueEdit
+                        ? fields.canfinHomesCoverDistressValueManual
+                        : fields.canfinHomesDistressValueManual
+                    }
+                    onChange={(e) => handleChange('canfinHomesCoverDistressValueManual', e.target.value)}
+                    disabled={isReadOnly || !fields.canfinHomesEnableCoverDistressValueEdit}
+                    placeholder="₹ 0.00"
+                  />
+                  <div 
+                    className="absolute inset-y-0 right-0 flex items-center pr-2"
+                    title="&gt;&gt;Prefill from section 8, field &quot;Distress Value (80%)&quot;&lt;&lt;"
+                  >
+                    <button
+                      type="button"
+                      disabled={isReadOnly}
+                      onClick={() => handleChange('canfinHomesEnableCoverDistressValueEdit', !fields.canfinHomesEnableCoverDistressValueEdit)}
+                      className={`p-1.5 rounded-full transition-colors ${
+                        fields.canfinHomesEnableCoverDistressValueEdit 
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                          : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                      }`}
+                    >
+                      {fields.canfinHomesEnableCoverDistressValueEdit ? (
+                        <span className="text-xs font-bold px-1">ON</span>
+                      ) : (
+                        <Lock className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </Field>
+
+              <Field label="REALIZABLE VALUE">
+                <div className="relative">
+                  <input
+                    type="number"
+                    className={`${inputCls} w-full pr-16 bg-green-50 focus:bg-green-100 ${
+                      !fields.canfinHomesEnableCoverRealizableValueEdit ? 'opacity-80 cursor-not-allowed bg-white' : ''
+                    }`}
+                    value={
+                      fields.canfinHomesEnableCoverRealizableValueEdit
+                        ? fields.canfinHomesCoverRealizableValueManual
+                        : fields.canfinHomesRealizableValueManual
+                    }
+                    onChange={(e) => handleChange('canfinHomesCoverRealizableValueManual', e.target.value)}
+                    disabled={isReadOnly || !fields.canfinHomesEnableCoverRealizableValueEdit}
+                    placeholder="₹ 0.00"
+                  />
+                  <div 
+                    className="absolute inset-y-0 right-0 flex items-center pr-2"
+                    title="&gt;&gt;Prefill from section 8, field &quot;Realizable Value (90%)&quot;&lt;&lt;"
+                  >
+                    <button
+                      type="button"
+                      disabled={isReadOnly}
+                      onClick={() => handleChange('canfinHomesEnableCoverRealizableValueEdit', !fields.canfinHomesEnableCoverRealizableValueEdit)}
+                      className={`p-1.5 rounded-full transition-colors ${
+                        fields.canfinHomesEnableCoverRealizableValueEdit 
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                          : 'bg-slate-100 text-slate-400 hover:bg-slate-200'
+                      }`}
+                    >
+                      {fields.canfinHomesEnableCoverRealizableValueEdit ? (
+                        <span className="text-xs font-bold px-1">ON</span>
+                      ) : (
+                        <Lock className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </Field>
+            </div>
+          </div>
+
           <div className="border border-blue-200 bg-[#f8fafc] rounded-md p-4 mb-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-gray-700">PROPERTY OWNER</h3>
@@ -312,86 +442,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
               <textarea className={inputCls} rows={3} value={fields.canfinHomesAddressOfTheProperty || ''} onChange={e => handleChange('canfinHomesAddressOfTheProperty', e.target.value)} disabled={isReadOnly} required />
             </Field>
           </div>
-          <div className="border border-red-200 bg-[#fff5f5] rounded-xl p-4 mb-4 relative">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-gray-700">VALUE OF THE PROPERTY</h3>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleChange('canfinHomesEnableCoverPageValueEdit', !fields.canfinHomesEnableCoverPageValueEdit)}
-                  disabled={isReadOnly}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableCoverPageValueEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableCoverPageValueEdit ? 'translate-x-6' : 'translate-x-1'}`} />
-                </button>
-                <span className={`text-xs font-medium ${fields.canfinHomesEnableCoverPageValueEdit ? 'text-emerald-700' : 'text-gray-500'}`}>
-                  {fields.canfinHomesEnableCoverPageValueEdit ? 'Edit On' : 'Edit Off'}
-                </span>
-              </div>
-            </div>
-            <div className="bg-white border border-gray-200 rounded-md shadow-sm">
-              <div className="flex border-b border-gray-200">
-                <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
-                  <span className="text-sm font-medium text-gray-700">PRESENT MARKET VALUE</span>
-                </div>
-                <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1">
-                    <input 
-                      className={`${inputCls} pr-8 ${!fields.canfinHomesEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`} 
-                      value={fields.canfinHomesEnableCoverPageValueEdit ? (fields.canfinHomesPresentMarketValue || '') : presentMarketValue.toFixed(2)} 
-                      onChange={(e) => handleChange('canfinHomesPresentMarketValue', e.target.value)} 
-                      disabled={isReadOnly || !fields.canfinHomesEnableCoverPageValueEdit} 
-                    />
-                    {!fields.canfinHomesEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Locked'>
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="flex border-b border-gray-200">
-                <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
-                  <span className="text-sm font-medium text-gray-700">DISTRESS SALE VALUE</span>
-                </div>
-                <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1">
-                    <input 
-                      className={`${inputCls} pr-8 ${!fields.canfinHomesEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`} 
-                      value={fields.canfinHomesEnableCoverPageValueEdit ? (fields.canfinHomesDistressSaleValue || '') : distressSaleValue.toFixed(2)} 
-                      onChange={(e) => handleChange('canfinHomesDistressSaleValue', e.target.value)} 
-                      disabled={isReadOnly || !fields.canfinHomesEnableCoverPageValueEdit} 
-                    />
-                    {!fields.canfinHomesEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Locked'>
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <div className="flex">
-                <div className="w-1/2 md:w-[40%] p-3 border-r border-gray-200 flex items-center">
-                  <span className="text-sm font-medium text-gray-700">REALIZABLE VALUE</span>
-                </div>
-                <div className="w-1/2 md:w-[60%] p-2 flex flex-col justify-center">
-                  <div className="relative mt-1">
-                    <input 
-                      className={`${inputCls} pr-8 ${!fields.canfinHomesEnableCoverPageValueEdit ? 'bg-[#A7F3D0] cursor-not-allowed font-bold text-emerald-800' : 'bg-white'}`} 
-                      value={fields.canfinHomesEnableCoverPageValueEdit ? (fields.canfinHomesRealizableValue || '') : realizableValue.toFixed(2)} 
-                      onChange={(e) => handleChange('canfinHomesRealizableValue', e.target.value)} 
-                      disabled={isReadOnly || !fields.canfinHomesEnableCoverPageValueEdit} 
-                    />
-                    {!fields.canfinHomesEnableCoverPageValueEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Locked'>
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+
           <div className="mt-4 mb-4">
             <Field label="PURPOSE OF VALUATION">
               <select
