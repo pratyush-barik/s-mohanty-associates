@@ -246,7 +246,7 @@ export const NAV_SECTIONS: NavItem[] = [
   { id: 'section-8', title: '8. Boundaries' },
   { id: 'section-9', title: '9. Remarks' },
   { id: 'section-10', title: '10. Documents' },
-  { id: 'section-11', title: '11. Location Map & Mouza Map' },
+  { id: 'section-11', title: '11. Maps' },
   { id: 'section-12', title: '12. Photographs' },
   { id: 'section-13', title: '13. Declaration & Sign-off' },
   { id: 'section-14-annexure', title: '14. Annexures' },
@@ -783,7 +783,7 @@ export default function AdityaBirlaCapitalSTSL({
 
   // ─── Image Upload Helpers ───
   const handleMapUpload = async (
-    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages',
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const fileList = e.target.files;
@@ -816,7 +816,7 @@ export default function AdityaBirlaCapitalSTSL({
   };
 
   const handleMapRemove = (
-    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages',
     idx?: number
   ) => {
     if (idx === undefined) {
@@ -835,7 +835,7 @@ export default function AdityaBirlaCapitalSTSL({
   };
 
   const handleReorderMap = (
-    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages',
     newImages: string[]
   ) => {
     handleChange(key, newImages);
@@ -883,17 +883,27 @@ export default function AdityaBirlaCapitalSTSL({
   // ─── PDF Generation Pipeline (Exact 7 Pages) ───
   const generatePDFBytes = async (): Promise<Uint8Array> => {
     const propImgs = fields.propertyImages || [];
-    const sketchImgs = fields.sketchMapImages || [];
-    const [locMapBytes, mouzaMapBytes, cadMapBytes, ...restBytes] = await Promise.all([
-      fetchBytes(fields.locationMapImage),
-      fetchBytes(fields.mouzaMapImage),
-      fetchBytes(fields.cadastralMapImage),
-      ...propImgs.map(url => fetchBytes(url)),
-      ...sketchImgs.map(url => fetchBytes(url)),
-    ]);
+    const locMapImages = fields.locationMapImages || (fields.locationMapImage ? [fields.locationMapImage] : []);
+    const mouzaMapImages = fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : []);
+    const sketchMapImages = fields.sketchMapImages || [];
+    const cadastralMapImages = fields.cadastralMapImages || (fields.cadastralMapImage ? [fields.cadastralMapImage] : []);
+    const bdaMapImages = fields.bdaMapImages || [];
 
-    const propImageBytesList = restBytes.slice(0, propImgs.length);
-    const sketchBytesList = restBytes.slice(propImgs.length);
+    const [
+      locBytesList,
+      mouzaBytesList,
+      sketchBytesList,
+      cadBytesList,
+      bdaBytesList,
+      ...propImageBytesList
+    ] = await Promise.all([
+      Promise.all(locMapImages.map(fetchBytes)),
+      Promise.all(mouzaMapImages.map(fetchBytes)),
+      Promise.all(sketchMapImages.map(fetchBytes)),
+      Promise.all(cadastralMapImages.map(fetchBytes)),
+      Promise.all(bdaMapImages.map(fetchBytes)),
+      ...propImgs.map(url => fetchBytes(url)),
+    ]);
 
     const photos = propImgs.map((imgUrl: string, idx: number) => ({
       bytes: propImageBytesList[idx],
@@ -1216,27 +1226,33 @@ export default function AdityaBirlaCapitalSTSL({
     }
 
     // ═══ 2. MAPS SECTION (Continues after documents with line break) ═══
-    if (locMapBytes || mouzaMapBytes || cadMapBytes || (sketchBytesList && sketchBytesList.length > 0)) {
+    const validLocBytes = locBytesList.filter((b): b is Uint8Array => Boolean(b && b.length > 0));
+    const validMouzaBytes = mouzaBytesList.filter((b): b is Uint8Array => Boolean(b && b.length > 0));
+    const validSketchBytes = sketchBytesList.filter((b): b is Uint8Array => Boolean(b && b.length > 0));
+    const validCadBytes = cadBytesList.filter((b): b is Uint8Array => Boolean(b && b.length > 0));
+    const validBdaBytes = bdaBytesList.filter((b): b is Uint8Array => Boolean(b && b.length > 0));
+
+    const hasAnyMaps = validLocBytes.length > 0 || validMouzaBytes.length > 0 || validSketchBytes.length > 0 || validCadBytes.length > 0 || validBdaBytes.length > 0;
+    if (hasAnyMaps) {
       if (validDocUrls.length === 0 && (r as any).cursorY === 0) {
         (r as any).addPage();
       } else {
         (r as any).advanceCursor(10);
       }
-      if (locMapBytes) {
-        await r.drawMapGallery([{ bytes: locMapBytes }], 'Location Map', 240, false);
+      if (validLocBytes.length > 0) {
+        await r.drawMapGallery(validLocBytes.map(b => ({ bytes: b })), 'Google Satellite Map', 240, false);
       }
-      if (mouzaMapBytes) {
-        await r.drawMapGallery([{ bytes: mouzaMapBytes }], 'Mouza Map', 240, false);
+      if (validMouzaBytes.length > 0) {
+        await r.drawMapGallery(validMouzaBytes.map(b => ({ bytes: b })), 'Mouza Map', 240, false);
       }
-      if (cadMapBytes) {
-        await r.drawMapGallery([{ bytes: cadMapBytes }], 'CADASTRAL MAP', 240, false);
+      if (validSketchBytes.length > 0) {
+        await r.drawMapGallery(validSketchBytes.map(b => ({ bytes: b })), 'Sketch Map', 240, false);
       }
-      if (sketchBytesList && sketchBytesList.length > 0) {
-        for (let i = 0; i < sketchBytesList.length; i++) {
-          if (sketchBytesList[i]) {
-            await r.drawMapGallery([{ bytes: sketchBytesList[i]! }], `Sketch Map ${i + 1}`, 240, false);
-          }
-        }
+      if (validCadBytes.length > 0) {
+        await r.drawMapGallery(validCadBytes.map(b => ({ bytes: b })), 'Cadastral Map', 240, false);
+      }
+      if (validBdaBytes.length > 0) {
+        await r.drawMapGallery(validBdaBytes.map(b => ({ bytes: b })), 'BDA Map', 240, false);
       }
     }
 
@@ -3015,12 +3031,14 @@ export default function AdityaBirlaCapitalSTSL({
           }}
         />
 
-        {/* ═══ SECTION 11: MAPS & DOCUMENTS ═══ */}
+        {/* ═══ SECTION 11: MAPS ═══ */}
         <BaseMapsSection
+          title="Maps"
           locationMapImages={fields.locationMapImages || (fields.locationMapImage ? [fields.locationMapImage] : [])}
           mouzaMapImages={fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : [])}
           sketchMapImages={fields.sketchMapImages || []}
           cadastralMapImages={fields.cadastralMapImages || (fields.cadastralMapImage ? [fields.cadastralMapImage] : [])}
+          bdaMapImages={fields.bdaMapImages || []}
           latitude={fields.latitude}
           longitude={fields.longitude}
           technicalAddress={fields.propertyAddressAsVisit || fields.propertyAddressAsDocs || ''}
@@ -3037,13 +3055,15 @@ export default function AdityaBirlaCapitalSTSL({
           onSketchMapRemove={(idx) => handleMapRemove('sketchMapImages', idx)}
           onCadastralMapUpload={(e) => handleMapUpload('cadastralMapImages', e)}
           onCadastralMapRemove={(idx) => handleMapRemove('cadastralMapImages', idx)}
+          onBdaMapUpload={(e) => handleMapUpload('bdaMapImages', e)}
+          onBdaMapRemove={(idx) => handleMapRemove('bdaMapImages', idx)}
           onReorderLocationMap={(newImgs) => handleReorderMap('locationMapImages', newImgs)}
           onReorderMouzaMap={(newImgs) => handleReorderMap('mouzaMapImages', newImgs)}
           onReorderSketchMap={(newImgs) => handleReorderMap('sketchMapImages', newImgs)}
           onReorderCadastralMap={(newImgs) => handleReorderMap('cadastralMapImages', newImgs)}
+          onReorderBdaMap={(newImgs) => handleReorderMap('bdaMapImages', newImgs)}
           sectionNumber={11}
           sectionId="section-11"
-          title="Location Map & Bhulekh Cadastral Map"
         />
 
         {/* ═══ SECTION 12: PHOTOGRAPHS OF PROPERTY ═══ */}

@@ -32,7 +32,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
   fieldLabels: {
     'documents-title': '10. Documents',
     'section-documents-title': '10. Documents',
-    'section-12-title': '11. Location & Sketch Maps',
+    'section-12-title': '11. Maps',
     'section-11-title': '12. Property Photographs',
   },
   defaultValues: {

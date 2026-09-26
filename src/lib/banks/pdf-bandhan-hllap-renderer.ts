@@ -650,8 +650,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
     const bhuCount = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0) ? fields.cadastralMapImages.length : ((fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : (fields.bhuNakshaImageUrl ? 1 : 0));
     const guideCount = (fields.sketchMapImages && fields.sketchMapImages.length > 0) ? fields.sketchMapImages.length : ((fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : (fields.guidelineValueImageUrl ? 1 : 0));
     const bdaCount = fields.bdaMapImages?.length || 0;
-    const benchCount = fields.benchmarkMapImages?.length || 0;
-    const totalMaps = rorCount + locCount + bhuCount + guideCount + bdaCount + benchCount;
+    const totalMaps = rorCount + locCount + bhuCount + guideCount + bdaCount;
     const mapPages = totalMaps > 0 ? Math.ceil(totalMaps / 2) : 0;
     const initialEstimate = String(8 + photoPages + mapPages);
 
@@ -1987,7 +1986,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
   }
 
   /**
-   * Enclosures: Section 12 (Documents), Section 13 (Maps & Documents), Section 14 (Property Photographs)
+   * Enclosures: Section 12 (Documents), Section 13 (Maps), Section 14 (Property Photographs)
    * Order: Documents → Maps (line break, no page break) → Photos (fresh page)
    * Formatted strictly using base PDFBankRenderer standard map gallery and photograph grid format.
    */
@@ -2013,7 +2012,7 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
       }
     }
 
-    // ── 2. Section 13: Maps & Documents (Chronological Order matching Web UI) ──
+    // ── 2. Section 13: Maps (Chronological Order matching Web UI) ──
     // After documents: no page break, just line break before maps continue
     const mapCategories: { title: string; urls: string[] }[] = [
       {
@@ -2023,13 +2022,13 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
           : (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : []),
       },
       {
-        title: 'Mouza Map (Bhulekh / Revenue Map)',
+        title: 'Mouza Map',
         urls: (fields.mouzaMapImages && fields.mouzaMapImages.length > 0)
           ? fields.mouzaMapImages
           : (fields.rorImageUrl ? [fields.rorImageUrl] : []),
       },
       {
-        title: 'Sketch Map (Demarcation / Hand-Drawn)',
+        title: 'Sketch Map',
         urls: (fields.sketchMapImages && fields.sketchMapImages.length > 0)
           ? fields.sketchMapImages
           : (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : []),
@@ -2041,12 +2040,8 @@ export class PDFBandhanHLLAPRenderer extends PDFBankRenderer {
           : (fields.bhuNakshaImageUrl ? [fields.bhuNakshaImageUrl] : []),
       },
       {
-        title: 'BDA MAP',
+        title: 'BDA Map',
         urls: fields.bdaMapImages || [],
-      },
-      {
-        title: 'BENCHMARK VALUATION',
-        urls: fields.benchmarkMapImages || [],
       },
     ];
 

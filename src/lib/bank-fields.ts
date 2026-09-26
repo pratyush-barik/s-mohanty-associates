@@ -213,6 +213,7 @@ export interface BaseReportFields {
   mouzaMapImages?: string[];
   cadastralMapImage?: string;
   cadastralMapImages?: string[];
+  bdaMapImages?: string[];
   latitude: string;
   longitude: string;
 
@@ -349,7 +350,7 @@ export interface BankConfig {
   /** Human-readable display name (e.g. 'Aditya Birla Capital – STSL') */
   displayName: string;
   /** Custom map order */
-  mapOrder?: ("mouza" | "location" | "sketch" | "cadastral" | "bda" | "benchmark")[];
+  mapOrder?: ("location" | "mouza" | "sketch" | "cadastral" | "bda")[];
 
   // ── Form Delta (all optional) ──
   /** Label overrides: base field key → new label text */

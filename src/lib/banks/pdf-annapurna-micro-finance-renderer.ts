@@ -401,6 +401,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
       mouzaMaps: Uint8Array[];
       sketchMaps: Uint8Array[];
       cadastralMaps: Uint8Array[];
+      bdaMaps?: Uint8Array[];
     }
   ): Promise<Uint8Array> {
     const landAreaDisplay = fields.landAreaSqft || fields.landAreaSite || fields.landAreaDocs || '';
@@ -1274,6 +1275,7 @@ export class PDFAnnapurnaMicroFinanceRenderer extends PDFBankRenderer {
     await renderMap(images.mouzaMaps, 'MOUZA MAP');
     await renderMap(images.sketchMaps, 'SKETCH MAP');
     await renderMap(images.cadastralMaps, 'CADASTRAL MAP');
+    await renderMap(images.bdaMaps, 'BDA MAP');
 
     // 3. Photographs of the Property (strictly starts on a fresh page)
     if (images.photos && images.photos.length > 0) {

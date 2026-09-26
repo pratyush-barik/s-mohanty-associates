@@ -1031,7 +1031,7 @@ export default function BankReportBuilder({
     setUploading(fieldName);
     setUploadError(null);
 
-    const arrayFields = ['propertyImages', 'sketchMapImages', 'locationMapImages', 'mouzaMapImages', 'cadastralMapImages'];
+    const arrayFields = ['propertyImages', 'sketchMapImages', 'locationMapImages', 'mouzaMapImages', 'cadastralMapImages', 'bdaMapImages'];
     if (arrayFields.includes(fieldName)) {
       const currentList = Array.isArray((fields as any)[fieldName])
         ? [...(fields as any)[fieldName]]
@@ -1075,7 +1075,7 @@ export default function BankReportBuilder({
     }
   };
 
-  const removeMapImage = (field: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages' | 'benchmarkMapImages', index?: number) => {
+  const removeMapImage = (field: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', index?: number) => {
     const currentList = normalizeMapImages((fields as any)[field] || (fields as any)[field.replace(/s$/, '')]);
     const updated = typeof index === 'number' ? currentList.filter((_, i) => i !== index) : [];
     handleChange(field as any, updated);
@@ -1084,7 +1084,7 @@ export default function BankReportBuilder({
     if (field === 'cadastralMapImages') handleChange('cadastralMapImage', updated[0] || '');
   };
 
-  const reorderMapImage = (field: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages' | 'benchmarkMapImages', newImages: string[]) => {
+  const reorderMapImage = (field: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', newImages: string[]) => {
     handleChange(field as any, newImages);
     if (field === 'locationMapImages') handleChange('locationMapImage', newImages[0] || '');
     if (field === 'mouzaMapImages') handleChange('mouzaMapImage', newImages[0] || '');
@@ -1201,35 +1201,31 @@ export default function BankReportBuilder({
       const normMouzaImages = fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage);
       const normCadastralImages = fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage);
       const normBdaImages = normalizeMapImages(fields.bdaMapImages);
-      const normBenchmarkImages = normalizeMapImages(fields.benchmarkMapImages);
 
       const imageResults = await Promise.all([
         ...propertyImgs.map(url => fetchBytes(url)),
-        ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages.map(u => fetchBytes(u)) : []),
         ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
         ...normMouzaImages.map(url => fetchBytes(url)),
+        ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages.map(u => fetchBytes(u)) : []),
         ...normCadastralImages.map(url => fetchBytes(url)),
         ...normBdaImages.map(url => fetchBytes(url)),
-        ...normBenchmarkImages.map(url => fetchBytes(url)),
       ]);
 
       const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length).filter(Boolean) as Uint8Array[];
       let imgIdx = propertyImgs.length;
-      const sketchBytesList = fields.sketchMapImages?.length ? imageResults.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
-      if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
       const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
 
       const mouzaBytesList = normMouzaImages.length > 0 ? imageResults.slice(imgIdx, imgIdx + normMouzaImages.length).filter(Boolean) as Uint8Array[] : null;
       if (normMouzaImages.length) imgIdx += normMouzaImages.length;
+
+      const sketchBytesList = fields.sketchMapImages?.length ? imageResults.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
+      if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
 
       const cadastralBytesList = normCadastralImages.length > 0 ? imageResults.slice(imgIdx, imgIdx + normCadastralImages.length).filter(Boolean) as Uint8Array[] : null;
       if (normCadastralImages.length) imgIdx += normCadastralImages.length;
 
       const bdaBytesList = normBdaImages.length > 0 ? imageResults.slice(imgIdx, imgIdx + normBdaImages.length).filter(Boolean) as Uint8Array[] : null;
       if (normBdaImages.length) imgIdx += normBdaImages.length;
-
-      const benchmarkBytesList = normBenchmarkImages.length > 0 ? imageResults.slice(imgIdx, imgIdx + normBenchmarkImages.length).filter(Boolean) as Uint8Array[] : null;
-      if (normBenchmarkImages.length) imgIdx += normBenchmarkImages.length;
 
       // Date formatter: YYYY-MM-DD → DD/MM/YYYY
       const fmtDate = (d: string) => {
@@ -1556,7 +1552,7 @@ export default function BankReportBuilder({
         }
       }
 
-      // ── 2. Maps & Spatial Documents (Flows after documents without page break) ──
+      // ── 2. Maps (Flows after documents without page break) ──
       let mapMainHeaderPrinted = false;
       const drawMapHeader = (subTitle: string) => {
         if (config?.id === 'bank-of-baroda') {
@@ -1571,22 +1567,20 @@ export default function BankReportBuilder({
         }
       };
 
-      // ── Sketch Map ──
-      if (sketchBytesList && sketchBytesList.length > 0) {
-        for (let i = 0; i < sketchBytesList.length; i++) {
-          const sBytes = sketchBytesList[i];
-          if (sBytes) {
-            drawMapHeader(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
-            r.advanceCursor(8);
-            await r.drawImageBlock(sBytes, {
-              maxWidth: 450, maxHeight: 300, centered: true,
-            });
-            r.advanceCursor(10);
-          }
-        }
+      // ── 1. Google Satellite Map (Location Map) ──
+      if (locationBytes && locationBytes.length > 0) {
+        const latLongStr = (fields.latitude || fields.longitude) 
+          ? ` (LAT: ${fields.latitude || 'N/A'}, LONG: ${fields.longitude || 'N/A'})` 
+          : '';
+        drawMapHeader(`GOOGLE SATELLITE MAP${latLongStr}`);
+        r.advanceCursor(8);
+        await r.drawImageBlock(locationBytes, {
+          maxWidth: 450, maxHeight: 300, centered: true,
+        });
+        r.advanceCursor(10);
       }
 
-      // ── Mouza Map ──
+      // ── 2. Mouza Map ──
       if (mouzaBytesList && mouzaBytesList.length > 0) {
         for (let i = 0; i < mouzaBytesList.length; i++) {
           const mBytes = mouzaBytesList[i];
@@ -1601,7 +1595,22 @@ export default function BankReportBuilder({
         }
       }
 
-      // ── Cadastral Map ──
+      // ── 3. Sketch Map ──
+      if (sketchBytesList && sketchBytesList.length > 0) {
+        for (let i = 0; i < sketchBytesList.length; i++) {
+          const sBytes = sketchBytesList[i];
+          if (sBytes) {
+            drawMapHeader(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
+            r.advanceCursor(8);
+            await r.drawImageBlock(sBytes, {
+              maxWidth: 450, maxHeight: 300, centered: true,
+            });
+            r.advanceCursor(10);
+          }
+        }
+      }
+
+      // ── 4. Cadastral Map ──
       if (cadastralBytesList && cadastralBytesList.length > 0) {
         for (let i = 0; i < cadastralBytesList.length; i++) {
           const cBytes = cadastralBytesList[i];
@@ -1617,7 +1626,7 @@ export default function BankReportBuilder({
         }
       }
 
-      // ── BDA Map ──
+      // ── 5. BDA Map ──
       if (bdaBytesList && bdaBytesList.length > 0) {
         for (let i = 0; i < bdaBytesList.length; i++) {
           const bBytes = bdaBytesList[i];
@@ -1630,34 +1639,6 @@ export default function BankReportBuilder({
             r.advanceCursor(10);
           }
         }
-      }
-
-      // ── Benchmark Valuation ──
-      if (benchmarkBytesList && benchmarkBytesList.length > 0) {
-        for (let i = 0; i < benchmarkBytesList.length; i++) {
-          const bmBytes = benchmarkBytesList[i];
-          if (bmBytes) {
-            drawMapHeader(`BENCHMARK VALUATION${benchmarkBytesList.length > 1 ? ` ${i + 1}` : ''}`);
-            r.advanceCursor(8);
-            await r.drawImageBlock(bmBytes, {
-              maxWidth: 450, maxHeight: 300, centered: true,
-            });
-            r.advanceCursor(10);
-          }
-        }
-      }
-
-      // ── Location Map ──
-      if (locationBytes && locationBytes.length > 0) {
-        const latLongStr = (fields.latitude || fields.longitude) 
-          ? ` (LAT: ${fields.latitude || 'N/A'}, LONG: ${fields.longitude || 'N/A'})` 
-          : '';
-        drawMapHeader(`LOCATION MAP${latLongStr}`);
-        r.advanceCursor(8);
-        await r.drawImageBlock(locationBytes, {
-          maxWidth: 450, maxHeight: 300, centered: true,
-        });
-        r.advanceCursor(10);
       }
 
       // ── 3. Property Photographs (Starts on fresh page) ──
@@ -2906,13 +2887,12 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
           const technicalAddress = fields.propertyAddressSite || fields.propertyAddressAsVisit || fields.propertyAddress || getFullAddress() || fields.ownerAddress || '';
           return (
             <BaseMapsSection
-              title={config?.fieldLabels?.['section-12-title'] || 'Maps & Documents'}
+              title={config?.fieldLabels?.['section-12-title'] || 'Maps'}
               locationMapImages={fields.locationMapImages || normalizeMapImages(fields.locationMapImage)}
               mouzaMapImages={fields.mouzaMapImages || normalizeMapImages(fields.mouzaMapImage)}
               sketchMapImages={fields.sketchMapImages || []}
               cadastralMapImages={fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage)}
               bdaMapImages={fields.bdaMapImages || []}
-              benchmarkMapImages={fields.benchmarkMapImages || []}
               latitude={fields.latitude}
               longitude={fields.longitude}
               technicalAddress={technicalAddress}
@@ -2932,17 +2912,14 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
               onCadastralMapRemove={(idx) => removeMapImage('cadastralMapImages', idx)}
               onBdaMapUpload={(e) => handleFileUpload(e, 'bdaMapImages')}
               onBdaMapRemove={(idx) => removeMapImage('bdaMapImages', idx)}
-              onBenchmarkMapUpload={(e) => handleFileUpload(e, 'benchmarkMapImages')}
-              onBenchmarkMapRemove={(idx) => removeMapImage('benchmarkMapImages', idx)}
               onReorderLocationMap={(newImgs) => reorderMapImage('locationMapImages', newImgs)}
               onReorderMouzaMap={(newImgs) => reorderMapImage('mouzaMapImages', newImgs)}
               onReorderSketchMap={(newImgs) => reorderMapImage('sketchMapImages', newImgs)}
               onReorderCadastralMap={(newImgs) => reorderMapImage('cadastralMapImages', newImgs)}
               onReorderBdaMap={(newImgs) => reorderMapImage('bdaMapImages', newImgs)}
-              onReorderBenchmarkMap={(newImgs) => reorderMapImage('benchmarkMapImages', newImgs)}
               sectionNumber={getSectionNumber('section-12', isApartmentFlat ? 11 : 12)}
               sectionId="section-12"
-              mapOrder={config?.mapOrder || ['location', 'mouza', 'sketch', 'cadastral', 'bda', 'benchmark']}
+              mapOrder={config?.mapOrder || ['location', 'mouza', 'sketch', 'cadastral', 'bda']}
             />
           );
         })()}
@@ -3156,7 +3133,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
             { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
             ...(config?.extraSections || []).map((es, idx) => ({ id: es.id || `extra-section-${idx}`, title: es.title })),
             { id: 'section-documents', title: 'Documents' },
-            { id: 'section-12', title: 'Maps & Documents' },
+            { id: 'section-12', title: 'Maps' },
             { id: 'section-11', title: 'Photographs' },
             ...(config?.extraSectionsEnd || []).map((es, idx) => ({ id: es.id || `extra-section-end-${idx}`, title: es.title })),
             { id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexures' },

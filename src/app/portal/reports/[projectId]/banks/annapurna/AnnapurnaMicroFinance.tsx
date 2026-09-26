@@ -446,7 +446,7 @@ export default function AnnapurnaMicroFinance({
 
   // Multi-upload handler
   const handleMapUpload = async (
-    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages',
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const files = e.target.files;
@@ -459,7 +459,7 @@ export default function AnnapurnaMicroFinance({
         const file = files[i];
         if (file.size > 10 * 1024 * 1024) continue;
         const ext = file.name.split('.').pop() || 'jpg';
-        const path = `temp-photos/${projectId}/${key}-${Date.now()}-${i}.${ext}`;
+        const path = `temp-photos/${projectId}/map-${key}-${Date.now()}-${i}.${ext}`;
         const { error } = await supabaseBrowser.storage
           .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
           .upload(path, file);
@@ -487,11 +487,11 @@ export default function AnnapurnaMicroFinance({
   };
 
   const handleMapRemove = (
-    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages',
     index?: number
   ) => {
     const existing = fields[key] || [];
-    const updated = typeof index === 'number' ? existing.filter((_, i) => i !== index) : [];
+    const updated = typeof index === 'number' ? existing.filter((_: any, i: number) => i !== index) : [];
     handleChange(key, updated);
     if (key === 'locationMapImages') handleChange('locationMapImage', updated[0] || '');
     if (key === 'mouzaMapImages') handleChange('mouzaMapImage', updated[0] || '');
@@ -499,7 +499,7 @@ export default function AnnapurnaMicroFinance({
   };
 
   const handleReorderMap = (
-    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages',
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages',
     newImages: string[]
   ) => {
     handleChange(key, newImages);
@@ -664,7 +664,11 @@ export default function AnnapurnaMicroFinance({
     const cadastralImages = fields.cadastralMapImages || normalizeMapImages(fields.cadastralMapImage);
     const cadastralBytes = (await Promise.all(cadastralImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
 
-    // 6. Render report (Letterhead is automatically defaulted and embedded by base renderer)
+    // 6. Fetch BDA maps
+    const bdaImages = fields.bdaMapImages || [];
+    const bdaBytes = (await Promise.all(bdaImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+
+    // 7. Render report (Letterhead is automatically defaulted and embedded by base renderer)
     const renderer = new PDFAnnapurnaMicroFinanceRenderer();
     await renderer.init();
 
@@ -705,6 +709,7 @@ export default function AnnapurnaMicroFinance({
       mouzaMaps: mouzaBytes,
       sketchMaps: sketchBytes,
       cadastralMaps: cadastralBytes,
+      bdaMaps: bdaBytes,
     });
   };
 
@@ -1845,12 +1850,15 @@ export default function AnnapurnaMicroFinance({
         />
 
         {/* ════ SECTION 10: MAPS (MULTI-PHOTO) ════ */}
-        {/* Strictly in the requested order: Google Satellite Map, Mouza Map, Sketch Map, Cadastral Map */}
         <BaseMapsSection
+          title="Maps"
+          sectionNumber={10}
+          sectionId="sec-maps"
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
           cadastralMapImages={fields.cadastralMapImages || []}
+          bdaMapImages={fields.bdaMapImages || []}
           latitude={fields.latitude}
           longitude={fields.longitude}
           technicalAddress={fields.propertyAddressSite || fields.addressAsPerSite || ''}
@@ -1867,13 +1875,13 @@ export default function AnnapurnaMicroFinance({
           onSketchMapRemove={idx => handleMapRemove('sketchMapImages', idx)}
           onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
           onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
+          onBdaMapUpload={e => handleMapUpload('bdaMapImages', e)}
+          onBdaMapRemove={idx => handleMapRemove('bdaMapImages', idx)}
           onReorderLocationMap={newImgs => handleReorderMap('locationMapImages', newImgs)}
           onReorderMouzaMap={newImgs => handleReorderMap('mouzaMapImages', newImgs)}
           onReorderSketchMap={newImgs => handleReorderMap('sketchMapImages', newImgs)}
           onReorderCadastralMap={newImgs => handleReorderMap('cadastralMapImages', newImgs)}
-          mapOrder={['location', 'mouza', 'sketch', 'cadastral']}
-          sectionNumber={10}
-          sectionId="sec-maps"
+          onReorderBdaMap={newImgs => handleReorderMap('bdaMapImages', newImgs)}
         />
 
         {/* ════ SECTION 11: PHOTOGRAPHS OF THE PROPERTY ════ */}

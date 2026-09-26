@@ -261,7 +261,7 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-ndma', title: '10. NDMA Disaster Management Parameters (Point 41)' },
   { id: 'sec-annexure-a', title: '11. Annexure-A' },
   { id: 'sec-documents', title: '12. Documents' },
-  { id: 'sec-docs', title: '13. Maps & Documents' },
+  { id: 'sec-maps', title: '13. Maps' },
   { id: 'sec-photos', title: '14. Property Photographs' },
 ];
 
@@ -731,8 +731,7 @@ export default function BandhanHLLAP({
     const bhuCount = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0) ? fields.cadastralMapImages.length : ((fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : (fields.bhuNakshaImageUrl ? 1 : 0));
     const guideCount = (fields.sketchMapImages && fields.sketchMapImages.length > 0) ? fields.sketchMapImages.length : ((fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : (fields.guidelineValueImageUrl ? 1 : 0));
     const bdaCount = fields.bdaMapImages?.length || 0;
-    const benchCount = fields.benchmarkMapImages?.length || 0;
-    const totalMaps = rorCount + locCount + bhuCount + guideCount + bdaCount + benchCount;
+    const totalMaps = rorCount + locCount + bhuCount + guideCount + bdaCount;
     const mapPages = totalMaps > 0 ? Math.ceil(totalMaps / 2) : 0;
 
     return String(basePages + photoPages + mapPages);
@@ -749,7 +748,6 @@ export default function BandhanHLLAP({
     fields.guidelineRateImages,
     fields.guidelineValueImageUrl,
     fields.bdaMapImages,
-    fields.benchmarkMapImages,
   ]);
 
   // Continuously measure exact PDF page count in the background to reference the exact last page number utilised
@@ -785,7 +783,6 @@ export default function BandhanHLLAP({
     fields.guidelineRateImages,
     fields.guidelineValueImageUrl,
     fields.bdaMapImages,
-    fields.benchmarkMapImages,
     fields.floors,
     fields.drcFloors,
     fields.propertyAddress,
@@ -1232,7 +1229,7 @@ export default function BandhanHLLAP({
   };
 
   // Map Handlers for BaseMapsSection
-  const handleMapUpload = async (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMapUpload = async (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     try {
@@ -1276,7 +1273,7 @@ export default function BandhanHLLAP({
     }
   };
 
-  const handleMapRemove = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', idx?: number) => {
+  const handleMapRemove = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', idx?: number) => {
     if (idx === undefined) {
       setFields(prev => ({ ...prev, [fieldKey]: [] }));
       return;
@@ -1290,7 +1287,7 @@ export default function BandhanHLLAP({
     });
   };
 
-  const handleMapReorder = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', newImgs: string[]) => {
+  const handleMapReorder = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', newImgs: string[]) => {
     setFields(prev => ({ ...prev, [fieldKey]: newImgs }));
   };
 
@@ -5356,15 +5353,16 @@ export default function BandhanHLLAP({
               defaultOpen={false}
             />
 
-            {/* 13. Maps & Documents */}
+            {/* 13. Maps */}
             <BaseMapsSection
-              title="Maps & Documents"
-              sectionId="sec-docs"
+              title="Maps"
+              sectionId="sec-maps"
               sectionNumber={13}
               locationMapImages={fields.locationMapImages || (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : [])}
               mouzaMapImages={fields.mouzaMapImages || (fields.rorImageUrl ? [fields.rorImageUrl] : [])}
               sketchMapImages={fields.sketchMapImages || (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : [])}
               cadastralMapImages={fields.cadastralMapImages || (fields.bhuNakshaImageUrl ? [fields.bhuNakshaImageUrl] : [])}
+              bdaMapImages={fields.bdaMapImages || []}
               latitude={fields.latitude}
               longitude={fields.longitude}
               technicalAddress={fields.legalAddress || ''}
@@ -5382,10 +5380,13 @@ export default function BandhanHLLAP({
               onSketchMapRemove={idx => handleMapRemove('sketchMapImages', idx)}
               onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
               onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
+              onBdaMapUpload={e => handleMapUpload('bdaMapImages', e)}
+              onBdaMapRemove={idx => handleMapRemove('bdaMapImages', idx)}
               onReorderLocationMap={newImgs => handleMapReorder('locationMapImages', newImgs)}
               onReorderMouzaMap={newImgs => handleMapReorder('mouzaMapImages', newImgs)}
               onReorderSketchMap={newImgs => handleMapReorder('sketchMapImages', newImgs)}
               onReorderCadastralMap={newImgs => handleMapReorder('cadastralMapImages', newImgs)}
+              onReorderBdaMap={newImgs => handleMapReorder('bdaMapImages', newImgs)}
             />
 
             {/* 14. Property Photographs */}

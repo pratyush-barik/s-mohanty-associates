@@ -31,7 +31,7 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
   fieldLabels: {
     'section-documents-title': 'Documents',
     'documents-title': 'Documents',
-    'section-12-title': 'Location & Sketch Maps',
+    'section-12-title': 'Maps',
     'section-11-title': 'Property Photographs',
   },
   defaultValues: {

@@ -570,20 +570,25 @@ async function generateHLLAPPDF(
     const cadastralBytesList = cadastralCount > 0 ? imageResults.slice(imgIdx, imgIdx + cadastralCount).map(b => ({ bytes: b!, caption: '' })).filter(p => p.bytes) : [];
     imgIdx += cadastralCount;
 
-    if (mouzaBytesList.length > 0) {
-      await r.drawMapGallery(mouzaBytesList, 'Mouza Map (Bhulekh / Revenue Map) (1)', 240, false);
-    }
-    if (sketchBytesList.length > 0) {
-      await r.drawMapGallery(sketchBytesList, 'Sketch Map (Demarcation / Hand-Drawn) (1)', 240, false);
-    }
-    if (cadastralBytesList.length > 0) {
-      await r.drawMapGallery(cadastralBytesList, 'Cadastral Map (1)', 240, false);
-    }
+    const normBdaImages = fields.bdaMapImages || normalizeMapImages(fields.bdaMapImage);
+    const bdaCount = normBdaImages.length;
+    const bdaBytesList = bdaCount > 0 ? imageResults.slice(imgIdx, imgIdx + bdaCount).map(b => ({ bytes: b!, caption: '' })).filter(p => p.bytes) : [];
+    imgIdx += bdaCount;
 
     if (locationBytes) {
-      const lat = fields.latitude || '';
-      const lng = fields.longitude || '';
-      await r.drawMapGallery([{ bytes: locationBytes }], `Location Map(Latitude-${lat}, Longitude-${lng})`, 240, false);
+      await r.drawMapGallery([{ bytes: locationBytes }], 'Google Satellite Map', 240, false);
+    }
+    if (mouzaBytesList.length > 0) {
+      await r.drawMapGallery(mouzaBytesList, 'Mouza Map', 240, false);
+    }
+    if (sketchBytesList.length > 0) {
+      await r.drawMapGallery(sketchBytesList, 'Sketch Map', 240, false);
+    }
+    if (cadastralBytesList.length > 0) {
+      await r.drawMapGallery(cadastralBytesList, 'Cadastral Map', 240, false);
+    }
+    if (bdaBytesList.length > 0) {
+      await r.drawMapGallery(bdaBytesList, 'BDA Map', 240, false);
     }
 
     // 3. Photographs (Fresh page)
@@ -656,11 +661,15 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
     { id: 'section-7', title: 'Boundaries' },
     { id: 'section-8', title: 'Remarks & Declaration' },
     { id: 'section-documents', title: '9. Documents' },
-    { id: 'section-12', title: '10. Maps & Documents' },
+    { id: 'section-12', title: '10. Maps' },
     { id: 'section-11', title: '11. Photographs' },
     { id: 'section-deviations', title: '12. DEVIATIONS / OBSERVATIONS' },
   ],
   fieldLabels: {
+    'documents-title': '9. Documents',
+    'section-documents-title': '9. Documents',
+    'section-12-title': '10. Maps',
+    'section-11-title': '11. Photographs',
     loanApplicationNo: 'Deal Number',
     ownerName: 'Applicant Name(s)',
     ownerAddress: 'Address as per request',

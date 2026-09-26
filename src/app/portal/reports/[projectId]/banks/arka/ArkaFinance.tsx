@@ -374,7 +374,7 @@ export default function ArkaFinance({
     { id: 'arka-sec6', title: '6. Valuation Details' },
     { id: 'arka-sec7', title: '7. Remarks & Undertaking' },
     { id: 'arka-docs', title: '8. Documents' },
-    { id: 'arka-maps', title: '9. Location and Sketch Maps' },
+    { id: 'arka-maps', title: '9. Maps' },
     { id: 'arka-photos', title: '10. Property Photographs' },
   ];
 
@@ -516,6 +516,9 @@ export default function ArkaFinance({
       const cadastralImages = fields.cadastralMapImages || [];
       const cadastralBytes = (await Promise.all(cadastralImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
 
+      const bdaImages = fields.bdaMapImages || [];
+      const bdaBytes = (await Promise.all(bdaImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
+
       const renderer = new PDFArkaFinanceRenderer();
       await renderer.init();
       const bytes = await renderer.render({
@@ -526,6 +529,7 @@ export default function ArkaFinance({
         mouzaMapImages: mouzaBytes,
         sketchMapImages: sketchBytes,
         cadastralMapImages: cadastralBytes,
+        bdaMapImages: bdaBytes,
       } as ArkaReportFields);
       const blob = new Blob([bytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
@@ -617,6 +621,9 @@ export default function ArkaFinance({
       const cadastralImages = fields.cadastralMapImages || [];
       const cadastralBytes = (await Promise.all(cadastralImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
 
+      const bdaImages = fields.bdaMapImages || [];
+      const bdaBytes = (await Promise.all(bdaImages.map(fetchBytes))).filter((b: Uint8Array | null): b is Uint8Array => b !== null);
+
       const renderer = new PDFArkaFinanceRenderer();
       await renderer.init();
       const bytes = await renderer.render({
@@ -627,6 +634,7 @@ export default function ArkaFinance({
         mouzaMapImages: mouzaBytes,
         sketchMapImages: sketchBytes,
         cadastralMapImages: cadastralBytes,
+        bdaMapImages: bdaBytes,
       } as ArkaReportFields);
       const blob = new Blob([bytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
@@ -1713,13 +1721,14 @@ export default function ArkaFinance({
         />
 
         <BaseMapsSection
-          title="Location and Sketch Maps"
+          title="Maps"
           sectionId="arka-maps"
           sectionNumber={9}
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
           cadastralMapImages={fields.cadastralMapImages || []}
+          bdaMapImages={fields.bdaMapImages || []}
           latitude={fields.latitude}
           longitude={fields.longitude}
           technicalAddress={fields.arkaAddressOfTheProperty || ''}
@@ -1736,10 +1745,13 @@ export default function ArkaFinance({
           onSketchMapRemove={idx => handleMapRemove('sketchMapImages', idx)}
           onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
           onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
+          onBdaMapUpload={e => handleMapUpload('bdaMapImages', e)}
+          onBdaMapRemove={idx => handleMapRemove('bdaMapImages', idx)}
           onReorderLocationMap={newImgs => handleReorderMap('locationMapImages', newImgs)}
           onReorderMouzaMap={newImgs => handleReorderMap('mouzaMapImages', newImgs)}
           onReorderSketchMap={newImgs => handleReorderMap('sketchMapImages', newImgs)}
           onReorderCadastralMap={newImgs => handleReorderMap('cadastralMapImages', newImgs)}
+          onReorderBdaMap={newImgs => handleReorderMap('bdaMapImages', newImgs)}
         />
 
         <BasePhotographsSection

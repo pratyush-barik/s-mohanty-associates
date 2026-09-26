@@ -30,7 +30,8 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   fieldLabels: {
     'documents-title': 'Documents',
-    'section-12-title': 'Location & Sketch Maps',
+    'section-documents-title': 'Documents',
+    'section-12-title': 'Maps',
     'section-11-title': 'Property Photographs',
   },
   defaultValues: {

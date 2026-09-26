@@ -916,8 +916,11 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     images: {
       documents?: { bytes: Uint8Array; caption?: string }[];
       photos: { bytes: Uint8Array; label?: string }[];
-      locationMaps: Uint8Array[];
-      cadastralMaps: Uint8Array[];
+      locationMaps?: Uint8Array[];
+      mouzaMaps?: Uint8Array[];
+      sketchMaps?: Uint8Array[];
+      cadastralMaps?: Uint8Array[];
+      bdaMaps?: Uint8Array[];
     }
   ): Promise<Uint8Array> {
 
@@ -1590,8 +1593,11 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // SECTION 13 — Location cum Route Map showing property Boundaries
     // ══════════════════════════════════════════════════════════════════
     const locImgs = images.locationMaps || [];
+    const mouzaImgs = images.mouzaMaps || [];
+    const sketchImgs = images.sketchMaps || [];
     const cadImgs = images.cadastralMaps || [];
-    const hasMaps = locImgs.length > 0 || cadImgs.length > 0;
+    const bdaImgs = images.bdaMaps || [];
+    const hasMaps = locImgs.length > 0 || mouzaImgs.length > 0 || sketchImgs.length > 0 || cadImgs.length > 0 || bdaImgs.length > 0;
 
     if (hasMaps) {
       const mpW1 = 115;
@@ -1621,7 +1627,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
       this.cursorY += mpAddrH + 8;
 
       // Maps rendered standalone, placed one by one (no caption, no box)
-      const allMapBytes: Uint8Array[] = [...locImgs, ...cadImgs];
+      const allMapBytes: Uint8Array[] = [...locImgs, ...mouzaImgs, ...sketchImgs, ...cadImgs, ...bdaImgs];
 
       for (const mapBytes of allMapBytes) {
         const img = await this.embedImageSafe(mapBytes);

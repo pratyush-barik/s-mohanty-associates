@@ -593,12 +593,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     { id: 'bob-section-questionnaire', title: '9. Declaration (Questionnaire)' },
     { id: 'bob-section-code-of-conduct', title: '10. Code of Conduct' },
     { id: 'section-documents', title: '11. Documents' },
-    { id: 'section-12', title: '12. Maps & Spatial Documents' },
+    { id: 'section-12', title: '12. Maps' },
     { id: 'section-11', title: '13. Property Photographs' },
   ],
   fieldLabels: {
     'documents-title': '11. DOCUMENTS',
-    'section-12-title': '12. MAPS & SPATIAL DOCUMENTS',
+    'section-documents-title': '11. DOCUMENTS',
+    'section-12-title': '12. MAPS',
     'section-11-title': '13. PROPERTY PHOTOGRAPHS',
   },
   defaultValues: {

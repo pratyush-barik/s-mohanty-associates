@@ -29,13 +29,13 @@ export const AXIS_SBB_CONFIG: BankConfig = {
     { id: 'axis-sbb-section-9', title: '9. Valuation Engine' },
     { id: 'axis-sbb-section-10', title: '10. Remarks & Undertaking' },
     { id: 'section-documents', title: '11. Documents' },
-    { id: 'section-12', title: '12. Location & Sketch Map or Maps' },
+    { id: 'section-12', title: '12. Maps' },
     { id: 'section-11', title: '13. Property Photographs' },
     { id: 'annexures', title: '14. Annexures' },
   ],
   fieldLabels: {
     'documents-title': '11. DOCUMENTS',
-    'section-12-title': '12. LOCATION & SKETCH MAP OR MAPS',
+    'section-12-title': '12. MAPS',
     'section-11-title': '13. PROPERTY PHOTOGRAPHS',
     'annexures-title': '14. ANNEXURES'
   },

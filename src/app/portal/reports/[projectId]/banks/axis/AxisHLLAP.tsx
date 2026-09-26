@@ -487,7 +487,10 @@ export default function AxisHLLAP({
   ]);
 
   // File Upload Handlers for Maps
-  const handleMapUpload = async (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMapUpload = async (
+    fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages',
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -523,7 +526,7 @@ export default function AxisHLLAP({
     }
   };
 
-  const handleMapRemove = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', idx?: number) => {
+  const handleMapRemove = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', idx?: number) => {
     if (idx === undefined) {
       setFields(p => ({ ...p, [fieldKey]: [] }));
       return;
@@ -534,7 +537,7 @@ export default function AxisHLLAP({
     }));
   };
 
-  const handleMapReorder = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', reordered: string[]) => {
+  const handleMapReorder = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', reordered: string[]) => {
     setFields(p => ({
       ...p,
       [fieldKey]: reordered,
@@ -705,6 +708,7 @@ export default function AxisHLLAP({
     const mouzaMapBytes = (await Promise.all((fields.mouzaMapImages || []).map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
     const sketchMapBytes = (await Promise.all((fields.sketchMapImages || []).map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
     const cadastralMapBytes = (await Promise.all((fields.cadastralMapImages || []).map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+    const bdaMapBytes = (await Promise.all((fields.bdaMapImages || []).map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
 
     const renderer = new PDFAxisHLLAPRenderer();
     return await renderer.generateAxisHLLAPReport(
@@ -716,6 +720,7 @@ export default function AxisHLLAP({
         mouzaMaps: mouzaMapBytes,
         sketchMaps: sketchMapBytes,
         cadastralMaps: cadastralMapBytes,
+        bdaMaps: bdaMapBytes,
       }
     );
   };
@@ -793,9 +798,9 @@ export default function AxisHLLAP({
     { id: 'axis-sec5', title: 'Recommended Valuation (7–10)' },
     { id: 'axis-sec6', title: 'Attachments & Remarks (11–12)' },
     { id: 'axis-sec7', title: 'Undertaking & Valuer Signatory' },
-    { id: 'axis-documents', title: 'Documents (8)' },
-    { id: 'axis-maps', title: 'Location & Sketch Maps (9)' },
-    { id: 'axis-photos', title: 'Property Photographs (10)' },
+    { id: 'axis-documents', title: '8. Documents' },
+    { id: 'axis-maps', title: '9. Maps' },
+    { id: 'axis-photos', title: '10. Property Photographs' },
   ];
 
   return (
@@ -2413,15 +2418,16 @@ export default function AxisHLLAP({
           onReorderDocuments={handleDocumentReorder}
         />
 
-        {/* SECTION 9: Location and Sketch Maps */}
+        {/* SECTION 9: Maps */}
         <BaseMapsSection
-          title="Location and Sketch Maps"
+          title="Maps"
           sectionId="axis-maps"
           sectionNumber={9}
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
           cadastralMapImages={fields.cadastralMapImages || []}
+          bdaMapImages={fields.bdaMapImages || []}
           latitude={fields.latitude}
           longitude={fields.longitude}
           technicalAddress={fields.propertyDetailsHeader || ''}
@@ -2442,10 +2448,13 @@ export default function AxisHLLAP({
           onSketchMapRemove={idx => handleMapRemove('sketchMapImages', idx)}
           onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
           onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
+          onBdaMapUpload={e => handleMapUpload('bdaMapImages', e)}
+          onBdaMapRemove={idx => handleMapRemove('bdaMapImages', idx)}
           onReorderLocationMap={newImgs => handleMapReorder('locationMapImages', newImgs)}
           onReorderMouzaMap={newImgs => handleMapReorder('mouzaMapImages', newImgs)}
           onReorderSketchMap={newImgs => handleMapReorder('sketchMapImages', newImgs)}
           onReorderCadastralMap={newImgs => handleMapReorder('cadastralMapImages', newImgs)}
+          onReorderBdaMap={newImgs => handleMapReorder('bdaMapImages', newImgs)}
         />
 
         {/* SECTION 10: Property Photographs */}

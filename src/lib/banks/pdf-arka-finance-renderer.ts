@@ -520,22 +520,22 @@ export class PDFArkaFinanceRenderer extends PDFBankRenderer {
     const mouzaMaps = Array.isArray(fields.mouzaMapImages) ? fields.mouzaMapImages : (fields as any).mouzaMapImage ? [(fields as any).mouzaMapImage] : [];
     const sketchMaps = Array.isArray(fields.sketchMapImages) ? fields.sketchMapImages : (fields as any).sketchMapImage ? [(fields as any).sketchMapImage] : [];
     const cadastralMaps = Array.isArray(fields.cadastralMapImages) ? fields.cadastralMapImages : (fields as any).cadastralMapImage ? [(fields as any).cadastralMapImage] : [];
+    const bdaMaps = Array.isArray(fields.bdaMapImages) ? fields.bdaMapImages : (fields as any).bdaMapImage ? [(fields as any).bdaMapImage] : [];
 
-    const latLongStr = (fields.latitude || fields.longitude)
-      ? ` (LAT: ${fv('latitude')}, LONG: ${fv('longitude')})`
-      : '';
-    const locTitle = `LOCATION MAP${latLongStr}`;
     if (locationMaps.length > 0) {
-      await this.drawMapGallery(locationMaps, locTitle, 230, false);
+      await this.drawMapGallery(locationMaps, 'Google Satellite Map', 230, false);
     }
     if (mouzaMaps.length > 0) {
-      await this.drawMapGallery(mouzaMaps, 'MOUZA MAP', 230, false);
+      await this.drawMapGallery(mouzaMaps, 'Mouza Map', 230, false);
     }
     if (sketchMaps.length > 0) {
-      await this.drawMapGallery(sketchMaps, 'SKETCH MAP', 230, false);
+      await this.drawMapGallery(sketchMaps, 'Sketch Map', 230, false);
     }
     if (cadastralMaps.length > 0) {
-      await this.drawMapGallery(cadastralMaps, 'CADASTRAL MAP', 230, false);
+      await this.drawMapGallery(cadastralMaps, 'Cadastral Map', 230, false);
+    }
+    if (bdaMaps.length > 0) {
+      await this.drawMapGallery(bdaMaps, 'BDA Map', 230, false);
     }
 
     // 3. Photographs of the Property (strictly starts on a fresh page)

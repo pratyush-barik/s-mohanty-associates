@@ -1224,7 +1224,7 @@ export function BaseDocumentsSection({
   );
 }
 
-// ─── Standard Maps & Documents Section (Derived from General) ─────────
+// ─── Standard Maps Section ─────────
 export function BaseMapsSection({
   locationMapImage,
   locationMapImages,
@@ -1259,14 +1259,10 @@ export function BaseMapsSection({
   onBdaMapUpload,
   onBdaMapRemove,
   onReorderBdaMap,
-  benchmarkMapImages,
-  onBenchmarkMapUpload,
-  onBenchmarkMapRemove,
-  onReorderBenchmarkMap,
   sectionNumber = 10,
   sectionId = 'section-10',
-  title = 'Maps & Documents',
-  mapOrder = ['location', 'mouza', 'sketch', 'cadastral', 'bda', 'benchmark'],
+  title = 'Maps',
+  mapOrder = ['location', 'mouza', 'sketch', 'cadastral', 'bda'],
   withoutSectionWrapper = false,
   cadastralMapLabelOverride,
   defaultOpen = false,
@@ -1283,7 +1279,6 @@ export function BaseMapsSection({
   cadastralMapImage?: string | string[];
   cadastralMapImages?: string[];
   bdaMapImages?: string[];
-  benchmarkMapImages?: string[];
   isReadOnly?: boolean;
   uploading?: boolean | string;
   hasExternalCoordinatesField?: boolean;
@@ -1305,13 +1300,10 @@ export function BaseMapsSection({
   onBdaMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onBdaMapRemove?: (index?: number) => void;
   onReorderBdaMap?: (newImages: string[]) => void;
-  onBenchmarkMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onBenchmarkMapRemove?: (index?: number) => void;
-  onReorderBenchmarkMap?: (newImages: string[]) => void;
   sectionNumber?: number | string;
   sectionId?: string;
   title?: string;
-  mapOrder?: ('location' | 'mouza' | 'sketch' | 'cadastral' | 'bda' | 'benchmark')[];
+  mapOrder?: ('location' | 'mouza' | 'sketch' | 'cadastral' | 'bda')[];
   withoutSectionWrapper?: boolean;
   cadastralMapLabelOverride?: string;
   defaultOpen?: boolean;
@@ -1373,10 +1365,6 @@ export function BaseMapsSection({
     ? (uploading === 'bda' || uploading === 'bdaMapImages')
     : Boolean(uploading);
 
-  const isBenchmarkUploading = typeof uploading === 'string'
-    ? (uploading === 'benchmark' || uploading === 'benchmarkMapImages')
-    : Boolean(uploading);
-
   // Coordinates override technical address for more accurate pinpointing
   const queryParam = hasCoordinates
     ? `${cleanLat},${cleanLng}`
@@ -1394,22 +1382,21 @@ export function BaseMapsSection({
   const normSketchImages = normalizeMapImages(sketchMapImages);
   const normCadastralImages = normalizeMapImages(cadastralMapImages || cadastralMapImage);
   const normBdaImages = normalizeMapImages(bdaMapImages);
-  const normBenchmarkImages = normalizeMapImages(benchmarkMapImages);
 
   const renderLocationMap = () => (
     <div key="location">
       <MapImageCategoryCard
         images={normLocationImages}
-        categoryLabel="Satellite Screenshot"
+        categoryLabel="Google Satellite Map"
         isReadOnly={isReadOnly}
         uploading={isLocationUploading}
         icon="🛰️"
         title="Google Satellite Map"
-        btnLabel="Satellite Image"
+        btnLabel="Google Satellite Map"
         onUpload={onLocationMapUpload}
         onRemove={onLocationMapRemove}
         onReorder={onReorderLocationMap}
-        emptyMessage="No satellite map screenshots uploaded yet. Click '+ Add Satellite Image' to add one or more photos for PDF."
+        emptyMessage="No Google Satellite Map uploaded yet. Click '+ Add Google Satellite Map' to upload one or more maps."
         headerExtra={
           <div className="space-y-2 pt-1">
             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
@@ -1582,12 +1569,12 @@ export function BaseMapsSection({
         isReadOnly={isReadOnly}
         uploading={isMouzaUploading}
         icon="🗺️"
-        title="Mouza Map (Bhulekh / Revenue Map)"
+        title="Mouza Map"
         btnLabel="Mouza Map"
         onUpload={onMouzaMapUpload}
         onRemove={onMouzaMapRemove}
         onReorder={onReorderMouzaMap}
-        emptyMessage="No mouza map uploaded yet. Click '+ Add Mouza Map' to upload one or more maps."
+        emptyMessage="No Mouza Map uploaded yet. Click '+ Add Mouza Map' to upload one or more maps."
       />
     </div>
   );
@@ -1600,12 +1587,12 @@ export function BaseMapsSection({
         isReadOnly={isReadOnly}
         uploading={isSketchUploading}
         icon="📐"
-        title="Sketch Map (Demarcation / Hand-Drawn)"
+        title="Sketch Map"
         btnLabel="Sketch Map"
         onUpload={onSketchMapUpload}
         onRemove={onSketchMapRemove}
         onReorder={onReorderSketchMap}
-        emptyMessage="No sketch maps uploaded yet. Click '+ Add Sketch Map' to upload one or more maps."
+        emptyMessage="No Sketch Map uploaded yet. Click '+ Add Sketch Map' to upload one or more maps."
       />
     </div>
   );
@@ -1625,7 +1612,7 @@ export function BaseMapsSection({
         onReorder={onReorderCadastralMap}
         emptyMessage={cadastralMapLabelOverride 
           ? `No ${cadastralMapLabelOverride} uploaded yet. Click '+ Add ${cadastralMapLabelOverride}' to upload one or more maps.` 
-          : "No cadastral map uploaded yet. Click '+ Add Cadastral Map' to upload one or more maps."}
+          : "No Cadastral Map uploaded yet. Click '+ Add Cadastral Map' to upload one or more maps."}
       />
     </div>
   );
@@ -1634,45 +1621,26 @@ export function BaseMapsSection({
     <div key="bda">
       <MapImageCategoryCard
         images={normBdaImages}
-        categoryLabel="BDA MAP"
+        categoryLabel="BDA Map"
         isReadOnly={isReadOnly}
         uploading={isBdaUploading}
         icon="🏢"
-        title="BDA MAP"
+        title="BDA Map"
         btnLabel="BDA Map"
         onUpload={onBdaMapUpload}
         onRemove={onBdaMapRemove}
         onReorder={onReorderBdaMap}
-        emptyMessage="No BDA MAP uploaded yet. Click '+ Add BDA Map' to upload one or more maps."
+        emptyMessage="No BDA Map uploaded yet. Click '+ Add BDA Map' to upload one or more maps."
       />
     </div>
   );
 
-  const renderBenchmarkMap = () => (
-    <div key="benchmark">
-      <MapImageCategoryCard
-        images={normBenchmarkImages}
-        categoryLabel="BENCHMARK VALUATION"
-        isReadOnly={isReadOnly}
-        uploading={isBenchmarkUploading}
-        icon="📊"
-        title="BENCHMARK VALUATION"
-        btnLabel="BENCHMARK VALUATION"
-        onUpload={onBenchmarkMapUpload}
-        onRemove={onBenchmarkMapRemove}
-        onReorder={onReorderBenchmarkMap}
-        emptyMessage="No BENCHMARK VALUATION uploaded yet. Click '+ Add BENCHMARK VALUATION' to upload one or more maps."
-      />
-    </div>
-  );
-
-  const contentMap: Record<'location' | 'mouza' | 'sketch' | 'cadastral' | 'bda' | 'benchmark', () => React.ReactNode> = {
+  const contentMap: Record<'location' | 'mouza' | 'sketch' | 'cadastral' | 'bda', () => React.ReactNode> = {
     location: renderLocationMap,
     mouza: renderMouzaMap,
     sketch: renderSketchMap,
     cadastral: renderCadastralMap,
     bda: renderBdaMap,
-    benchmark: renderBenchmarkMap,
   };
 
   const content = (

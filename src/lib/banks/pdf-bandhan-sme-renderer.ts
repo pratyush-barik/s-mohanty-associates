@@ -462,7 +462,6 @@ export interface BandhanSMEReportFields {
   sketchMapImages?: string[];
   cadastralMapImages?: string[];
   bdaMapImages?: string[];
-  benchmarkMapImages?: string[];
   [key: string]: any;
 }
 
@@ -1302,7 +1301,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       }
     }
 
-    // ── 2. Section: Maps & Documents (Chronological Order) ──
+    // ── 2. Section: Maps (Chronological Order) ──
     // Continues with line break, no page break after documents
     const mapCategories: { title: string; urls: string[] }[] = [
       {
@@ -1312,30 +1311,26 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
           : (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : []),
       },
       {
-        title: 'Mouza Map (Bhulekh / Revenue Map)',
+        title: 'Mouza Map',
         urls: (fields.mouzaMapImages && fields.mouzaMapImages.length > 0)
           ? fields.mouzaMapImages
           : (fields.rorImageUrl ? [fields.rorImageUrl] : []),
       },
       {
-        title: 'Sketch Map (Demarcation / Hand-Drawn)',
+        title: 'Sketch Map',
         urls: (fields.sketchMapImages && fields.sketchMapImages.length > 0)
           ? fields.sketchMapImages
           : (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : []),
       },
       {
-        title: 'Cadastral Map (Bhu Naksha)',
+        title: 'Cadastral Map',
         urls: (fields.cadastralMapImages && fields.cadastralMapImages.length > 0)
           ? fields.cadastralMapImages
           : (fields.bhuNakshaImageUrl ? [fields.bhuNakshaImageUrl] : []),
       },
       {
-        title: 'BDA MAP',
+        title: 'BDA Map',
         urls: fields.bdaMapImages || [],
-      },
-      {
-        title: 'BENCHMARK VALUATION',
-        urls: fields.benchmarkMapImages || [],
       },
     ];
 

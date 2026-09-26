@@ -913,7 +913,7 @@ export default function AxisAGRI({
   };
 
   // Local map upload handlers (Sec 14 — device upload only)
-  const handleMultiMapUpload = async (e: React.ChangeEvent<HTMLInputElement>, key: 'locationMapImages' | 'cadastralMapImages' | 'sketchMapImages' | 'benchmarkImages') => {
+  const handleMultiMapUpload = async (e: React.ChangeEvent<HTMLInputElement>, key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages') => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     setUploading(key);
@@ -939,7 +939,7 @@ export default function AxisAGRI({
     }
   };
 
-  const handleMapRemove = (key: 'locationMapImages' | 'cadastralMapImages' | 'sketchMapImages' | 'benchmarkImages', idx?: number) => {
+  const handleMapRemove = (key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', idx?: number) => {
     if (idx === undefined) {
       handleChange(key, []);
       return;
@@ -1038,11 +1038,11 @@ export default function AxisAGRI({
       : (fields.locationMapImage ? [fields.locationMapImage] : []);
     const locBytes = (await Promise.all(locImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
 
-    // Fetch cadastral maps
-    const cadImages = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0)
-      ? fields.cadastralMapImages
-      : (fields.cadastralMapImage ? [fields.cadastralMapImage] : (fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : [])));
-    const cadBytes = (await Promise.all(cadImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
+    // Fetch mouza maps
+    const mouzaImages = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0)
+      ? fields.mouzaMapImages
+      : (fields.mouzaMapImage ? [fields.mouzaMapImage] : []);
+    const mouzaBytes = (await Promise.all(mouzaImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
 
     // Fetch sketch maps
     const sketchImages = (fields.sketchMapImages && fields.sketchMapImages.length > 0)
@@ -1050,11 +1050,15 @@ export default function AxisAGRI({
       : (fields.sketchMapImage ? [fields.sketchMapImage] : []);
     const sketchBytes = (await Promise.all(sketchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
 
-    // Fetch benchmark screenshots
-    const benchImages = (fields.benchmarkImages && fields.benchmarkImages.length > 0)
-      ? fields.benchmarkImages
-      : (fields.benchmarkImage ? [fields.benchmarkImage] : (fields.benchmarkValuationImage ? [fields.benchmarkValuationImage] : []));
-    const benchBytes = (await Promise.all(benchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
+    // Fetch cadastral maps
+    const cadImages = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0)
+      ? fields.cadastralMapImages
+      : (fields.cadastralMapImage ? [fields.cadastralMapImage] : []);
+    const cadBytes = (await Promise.all(cadImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
+
+    // Fetch BDA maps
+    const bdaImages = fields.bdaMapImages || [];
+    const bdaBytes = (await Promise.all(bdaImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null && b.length > 0);
 
     // Fetch documents
     const docImages = (fields.documentImages && fields.documentImages.length > 0)
@@ -1078,9 +1082,10 @@ export default function AxisAGRI({
       photos,
       documents: docBytesList,
       locationMaps: locBytes,
-      cadastralMaps: cadBytes,
+      mouzaMaps: mouzaBytes,
       sketchMaps: sketchBytes,
-      benchmarkImages: benchBytes,
+      cadastralMaps: cadBytes,
+      bdaMaps: bdaBytes,
     });
   };
 
@@ -1168,7 +1173,7 @@ export default function AxisAGRI({
     { id: 'sec-14', title: '14. Annexure "A"' },
     { id: 'sec-15', title: '15. Valuation Report Checklist' },
     { id: 'sec-16', title: '16. Documents' },
-    { id: 'sec-17', title: '17. Maps & Cadastral Plans' },
+    { id: 'sec-17', title: '17. Maps' },
     { id: 'sec-18', title: '18. Property Photographs' },
   ];
 
@@ -3837,10 +3842,10 @@ export default function AxisAGRI({
         />
 
         {/* ═══════════════════════════════════════════════════════════════
-            SECTION 17: MAPS & SPATIAL DOCUMENTS (LOCAL DEVICE UPLOAD ONLY)
+            SECTION 17: MAPS
         ═══════════════════════════════════════════════════════════════ */}
         <BaseMapsSection
-          title="Maps & Spatial Documents"
+          title="Maps"
           sectionNumber={17}
           sectionId="sec-17"
           isReadOnly={isReadOnly}
@@ -3851,18 +3856,25 @@ export default function AxisAGRI({
           latitude={fields.latitude}
           longitude={fields.longitude}
           locationMapImages={fields.locationMapImages}
-          cadastralMapImages={fields.cadastralMapImages}
+          mouzaMapImages={fields.mouzaMapImages}
           sketchMapImages={fields.sketchMapImages}
-          mapOrder={['location', 'cadastral', 'sketch']}
+          cadastralMapImages={fields.cadastralMapImages}
+          bdaMapImages={fields.bdaMapImages}
           onLocationMapUpload={(e) => handleMultiMapUpload(e, 'locationMapImages')}
           onLocationMapRemove={(idx) => handleMapRemove('locationMapImages', idx)}
-          onCadastralMapUpload={(e) => handleMultiMapUpload(e, 'cadastralMapImages')}
-          onCadastralMapRemove={(idx) => handleMapRemove('cadastralMapImages', idx)}
+          onMouzaMapUpload={(e) => handleMultiMapUpload(e, 'mouzaMapImages')}
+          onMouzaMapRemove={(idx) => handleMapRemove('mouzaMapImages', idx)}
           onSketchMapUpload={(e) => handleMultiMapUpload(e, 'sketchMapImages')}
           onSketchMapRemove={(idx) => handleMapRemove('sketchMapImages', idx)}
+          onCadastralMapUpload={(e) => handleMultiMapUpload(e, 'cadastralMapImages')}
+          onCadastralMapRemove={(idx) => handleMapRemove('cadastralMapImages', idx)}
+          onBdaMapUpload={(e) => handleMultiMapUpload(e, 'bdaMapImages')}
+          onBdaMapRemove={(idx) => handleMapRemove('bdaMapImages', idx)}
           onReorderLocationMap={(imgs) => handleChange('locationMapImages', imgs)}
-          onReorderCadastralMap={(imgs) => handleChange('cadastralMapImages', imgs)}
+          onReorderMouzaMap={(imgs) => handleChange('mouzaMapImages', imgs)}
           onReorderSketchMap={(imgs) => handleChange('sketchMapImages', imgs)}
+          onReorderCadastralMap={(imgs) => handleChange('cadastralMapImages', imgs)}
+          onReorderBdaMap={(imgs) => handleChange('bdaMapImages', imgs)}
         />
 
         {/* ═══════════════════════════════════════════════════════════════

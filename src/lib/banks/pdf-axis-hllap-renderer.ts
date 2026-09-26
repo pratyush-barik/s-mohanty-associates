@@ -746,6 +746,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
       mouzaMaps: Uint8Array[];
       sketchMaps?: Uint8Array[];
       cadastralMaps?: Uint8Array[];
+      bdaMaps?: Uint8Array[];
     },
     letterheadBytes?: Uint8Array | null
   ): Promise<Uint8Array> {
@@ -1204,6 +1205,11 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     const validCadastralMaps = (images.cadastralMaps || []).filter(c => (c as any)?.bytes ? (c as any).bytes.length > 0 : (c && (c as Uint8Array).length > 0));
     if (validCadastralMaps.length > 0) {
       await this.drawMapGallery(validCadastralMaps, 'CADASTRAL MAP', 260, false);
+    }
+
+    const validBdaMaps = (images.bdaMaps || []).filter(b => (b as any)?.bytes ? (b as any).bytes.length > 0 : (b && (b as Uint8Array).length > 0));
+    if (validBdaMaps.length > 0) {
+      await this.drawMapGallery(validBdaMaps, 'BDA MAP', 260, false);
     }
 
     // 3. Photographs Section (starts on a fresh page)

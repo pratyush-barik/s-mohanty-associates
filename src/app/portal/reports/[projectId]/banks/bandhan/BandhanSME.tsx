@@ -116,7 +116,7 @@ const NAV_SECTIONS = [
   { id: 'sec-abstract-opinion', title: '12. Abstract & Opinion' },
   { id: 'sec-declaration', title: '13. Declaration & Checklist' },
   { id: 'sec-documents', title: '14. Documents' },
-  { id: 'sec-docs', title: '15. Maps & Documents' },
+  { id: 'sec-maps', title: '15. Maps' },
   { id: 'sec-photos', title: '16. Property Photographs' },
 ];
 
@@ -1092,7 +1092,7 @@ export default function BandhanSME({
   };
 
   // Map Handlers for BaseMapsSection
-  const handleMapUpload = async (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMapUpload = async (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     try {
@@ -1136,7 +1136,7 @@ export default function BandhanSME({
     }
   };
 
-  const handleMapRemove = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', idx?: number) => {
+  const handleMapRemove = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', idx?: number) => {
     if (idx === undefined) {
       setFields(prev => ({ ...prev, [fieldKey]: [] }));
       return;
@@ -1150,7 +1150,7 @@ export default function BandhanSME({
     });
   };
 
-  const handleMapReorder = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages', newImgs: string[]) => {
+  const handleMapReorder = (fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', newImgs: string[]) => {
     setFields(prev => ({ ...prev, [fieldKey]: newImgs }));
   };
 
@@ -2998,15 +2998,16 @@ export default function BandhanSME({
               defaultOpen={true}
             />
 
-            {/* 15. Maps & Documents */}
+            {/* 15. Maps */}
             <BaseMapsSection
-              title="Maps & Documents"
-              sectionId="sec-docs"
+              title="Maps"
+              sectionId="sec-maps"
               sectionNumber={15}
               locationMapImages={fields.locationMapImages || (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : [])}
               mouzaMapImages={fields.mouzaMapImages || (fields.rorImageUrl ? [fields.rorImageUrl] : [])}
               sketchMapImages={fields.sketchMapImages || (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : [])}
               cadastralMapImages={fields.cadastralMapImages || (fields.bhuNakshaImageUrl ? [fields.bhuNakshaImageUrl] : [])}
+              bdaMapImages={fields.bdaMapImages || []}
               latitude={fields.latitude || ''}
               longitude={fields.longitude || ''}
               propertyAddress={fields.propAt || ''}
@@ -3024,6 +3025,9 @@ export default function BandhanSME({
               onCadastralMapUpload={(e) => handleMapUpload('cadastralMapImages', e)}
               onCadastralMapRemove={(idx) => handleMapRemove('cadastralMapImages', idx)}
               onReorderCadastralMap={(imgs) => handleMapReorder('cadastralMapImages', imgs)}
+              onBdaMapUpload={(e) => handleMapUpload('bdaMapImages', e)}
+              onBdaMapRemove={(idx) => handleMapRemove('bdaMapImages', idx)}
+              onReorderBdaMap={(imgs) => handleMapReorder('bdaMapImages', imgs)}
               defaultOpen={true}
             />
 

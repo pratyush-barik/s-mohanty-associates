@@ -598,7 +598,7 @@ export default function ArthanFinance({
 
   // Map Upload Handlers (device upload only)
   const handleMapUpload = async (
-    key: 'locationMapImages' | 'cadastralMapImages',
+    key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages',
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const files = e.target.files;
@@ -626,7 +626,7 @@ export default function ArthanFinance({
     }
   };
 
-  const handleMapRemove = (key: 'locationMapImages' | 'cadastralMapImages', index?: number) => {
+  const handleMapRemove = (key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', index?: number) => {
     if (index === undefined) {
       setFields(prev => ({ ...prev, [key]: [] }));
       return;
@@ -635,7 +635,7 @@ export default function ArthanFinance({
     setFields(prev => ({ ...prev, [key]: updated }));
   };
 
-  const handleReorderMap = (key: 'locationMapImages' | 'cadastralMapImages', newImgs: string[]) => {
+  const handleReorderMap = (key: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages', newImgs: string[]) => {
     setFields(prev => ({
       ...prev,
       [key]: newImgs,
@@ -769,13 +769,21 @@ export default function ArthanFinance({
       label: fields.propertyImageNames?.[idx] !== undefined && fields.propertyImageNames?.[idx] !== null ? fields.propertyImageNames[idx] : '',
     })).filter(p => p.bytes && p.bytes.length > 0);
 
-    // Fetch location maps
+    // Fetch maps
     const locImages = fields.locationMapImages || [];
     const locBytes = (await Promise.all(locImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
 
-    // Fetch cadastral maps
+    const mouzaImages = fields.mouzaMapImages || [];
+    const mouzaBytes = (await Promise.all(mouzaImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+
+    const sketchImages = fields.sketchMapImages || [];
+    const sketchBytes = (await Promise.all(sketchImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+
     const cadImages = fields.cadastralMapImages || [];
     const cadBytes = (await Promise.all(cadImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
+
+    const bdaImages = fields.bdaMapImages || [];
+    const bdaBytes = (await Promise.all(bdaImages.map(fetchBytes))).filter((b): b is Uint8Array => b !== null);
 
     const renderer = new PDFArthanFinanceRenderer();
     await renderer.init();
@@ -784,7 +792,10 @@ export default function ArthanFinance({
       documents,
       photos,
       locationMaps: locBytes,
+      mouzaMaps: mouzaBytes,
+      sketchMaps: sketchBytes,
       cadastralMaps: cadBytes,
+      bdaMaps: bdaBytes,
     });
   };
 
@@ -910,9 +921,9 @@ export default function ArthanFinance({
     { id: 'sec-9', title: 'Valuation of Property' },
     { id: 'sec-10', title: 'Property Specific Remarks & Observation' },
     { id: 'sec-11', title: 'Valuer Certification' },
-    { id: 'sec-docs', title: 'Documents' },
-    { id: 'sec-13', title: 'Location Cum Route Map Showing Property Boundaries' },
-    { id: 'sec-12', title: 'Property Photographs' },
+    { id: 'sec-docs', title: '12. Documents' },
+    { id: 'sec-13', title: '13. Maps' },
+    { id: 'sec-12', title: '14. Property Photographs' },
   ];
 
   return (
@@ -2221,7 +2232,7 @@ export default function ArthanFinance({
         />
 
         {/* ════ SECTION 13: MAPS ════ */}
-        <Section title="LOCATION CUM ROUTE MAP SHOWING PROPERTY BOUNDARIES" number={13} id="sec-13">
+        <Section title="Maps" number={13} id="sec-13">
           {/* Header Reference Card (Printed Above Maps in Bank Report) */}
           <div className="bg-slate-50/90 p-4 rounded-xl border border-slate-200/90 shadow-2xs space-y-3 mb-4 text-black [&_label]:!text-black">
             <div className="flex items-center justify-between border-b border-slate-200/80 pb-2">
@@ -2295,7 +2306,10 @@ export default function ArthanFinance({
           {/* Maps Gallery & Upload */}
           <BaseMapsSection
             locationMapImages={fields.locationMapImages || []}
+            mouzaMapImages={fields.mouzaMapImages || []}
+            sketchMapImages={fields.sketchMapImages || []}
             cadastralMapImages={fields.cadastralMapImages || []}
+            bdaMapImages={fields.bdaMapImages || []}
             latitude={fields.latitude}
             longitude={fields.longitude}
             technicalAddress={fields.addressAsPerActualSite || fields.addressAsPerDocument || ''}
@@ -2306,14 +2320,22 @@ export default function ArthanFinance({
             uploading={uploading}
             onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
             onLocationMapRemove={idx => handleMapRemove('locationMapImages', idx)}
+            onMouzaMapUpload={e => handleMapUpload('mouzaMapImages', e)}
+            onMouzaMapRemove={idx => handleMapRemove('mouzaMapImages', idx)}
+            onSketchMapUpload={e => handleMapUpload('sketchMapImages', e)}
+            onSketchMapRemove={idx => handleMapRemove('sketchMapImages', idx)}
             onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
             onCadastralMapRemove={idx => handleMapRemove('cadastralMapImages', idx)}
+            onBdaMapUpload={e => handleMapUpload('bdaMapImages', e)}
+            onBdaMapRemove={idx => handleMapRemove('bdaMapImages', idx)}
             onReorderLocationMap={newImgs => handleReorderMap('locationMapImages', newImgs)}
+            onReorderMouzaMap={newImgs => handleReorderMap('mouzaMapImages', newImgs)}
+            onReorderSketchMap={newImgs => handleReorderMap('sketchMapImages', newImgs)}
             onReorderCadastralMap={newImgs => handleReorderMap('cadastralMapImages', newImgs)}
-            mapOrder={['location', 'cadastral']}
+            onReorderBdaMap={newImgs => handleReorderMap('bdaMapImages', newImgs)}
             sectionNumber={13}
             sectionId="sec-13"
-            title="LOCATION CUM ROUTE MAP SHOWING PROPERTY BOUNDARIES"
+            title="Maps"
             withoutSectionWrapper={true}
           />
 

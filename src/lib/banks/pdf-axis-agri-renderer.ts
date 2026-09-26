@@ -945,9 +945,10 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       photos?: { bytes: Uint8Array; label?: string }[];
       documents?: { bytes: Uint8Array; caption?: string }[];
       locationMaps?: Uint8Array[];
-      cadastralMaps?: Uint8Array[];
+      mouzaMaps?: Uint8Array[];
       sketchMaps?: Uint8Array[];
-      benchmarkImages?: Uint8Array[];
+      cadastralMaps?: Uint8Array[];
+      bdaMaps?: Uint8Array[];
     } = {}
   ): Promise<Uint8Array> {
     const W = CONTENT_W; // 487.28pt
@@ -2136,10 +2137,11 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     const MAP_MAX_H = Math.floor(CONTENT_H * 0.45);  // ~294pt cap per image
 
     const mapGroups: { label: string; bytes: Uint8Array }[] = [
-      ...(images.locationMaps  || []).filter(b => b && b.length > 0).map(b => ({ label: 'LOCATIONAL DIAGRAM WITH GPS CO-ORDINATES', bytes: b })),
-      ...(images.cadastralMaps || []).filter(b => b && b.length > 0).map(b => ({ label: 'CADASTRAL MAP',         bytes: b })),
+      ...(images.locationMaps  || []).filter(b => b && b.length > 0).map(b => ({ label: 'GOOGLE SATELLITE MAP', bytes: b })),
+      ...(images.mouzaMaps     || []).filter(b => b && b.length > 0).map(b => ({ label: 'MOUZA MAP', bytes: b })),
       ...(images.sketchMaps    || []).filter(b => b && b.length > 0).map(b => ({ label: 'SKETCH MAP',            bytes: b })),
-      ...(images.benchmarkImages || []).filter(b => b && b.length > 0).map(b => ({ label: 'BENCHMARK VALUATION', bytes: b })),
+      ...(images.cadastralMaps || []).filter(b => b && b.length > 0).map(b => ({ label: 'CADASTRAL MAP',         bytes: b })),
+      ...(images.bdaMaps       || []).filter(b => b && b.length > 0).map(b => ({ label: 'BDA MAP', bytes: b })),
     ];
 
     if (mapGroups.length > 0) {
