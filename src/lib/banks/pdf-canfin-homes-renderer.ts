@@ -161,9 +161,9 @@ export class PDFCanFinHomesRenderer extends PDFBankRenderer {
 
     drawCenteredBold('VALUE OF THE PROPERTY', FONT_SIZE_HEADER, 16, true);
     
-    const marketValue = fields.canfinHomesEnableCoverMarketValueEdit ? this.fv('canfinHomesCoverMarketValueManual', '') : this.fv('canfinHomesTotalFairMarketValueManual', '');
-    const distressValue = fields.canfinHomesEnableCoverDistressValueEdit ? this.fv('canfinHomesCoverDistressValueManual', '') : this.fv('canfinHomesDistressValueManual', '');
-    const realizableValue = fields.canfinHomesEnableCoverRealizableValueEdit ? this.fv('canfinHomesCoverRealizableValueManual', '') : this.fv('canfinHomesRealizableValueManual', '');
+    const marketValue = fields.canfinHomesEnableCoverPageValueEdit ? this.fv('canfinHomesPresentMarketValue', '') : this.fv('canfinHomesTotalFairMarketValueManual', '');
+    const distressValue = fields.canfinHomesEnableCoverPageValueEdit ? this.fv('canfinHomesDistressSaleValue', '') : this.fv('canfinHomesDistressValueManual', '');
+    const realizableValue = fields.canfinHomesEnableCoverPageValueEdit ? this.fv('canfinHomesRealizableValue', '') : this.fv('canfinHomesRealizableValueManual', '');
     
     drawCenteredBold(`PRESENT MARKET VALUE: ${marketValue || '0.00'}`, FONT_SIZE, 14);
     drawCenteredBold(`DISTRESS SALE VALUE: ${distressValue || '0.00'}`, FONT_SIZE, 14);
