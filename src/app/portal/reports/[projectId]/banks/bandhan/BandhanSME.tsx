@@ -1581,11 +1581,6 @@ export default function BandhanSME({
                 Statutory format for SME & Commercial Land & Building Valuations
               </p>
             </div>
-            {previewedPageCount && (
-              <span className="text-xs font-semibold px-2.5 py-1 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg">
-                📄 Estimated PDF: {previewedPageCount} Pages
-              </span>
-            )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Ref. No:">
