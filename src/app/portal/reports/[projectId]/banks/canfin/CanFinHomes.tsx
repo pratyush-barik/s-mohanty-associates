@@ -521,7 +521,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.canfinHomesCustomerName || ''} onChange={e => handleChange('canfinHomesCustomerName', e.target.value)} disabled={isReadOnly} />
                 </Field>
                 <Field label={
-                  <div className="flex items-center justify-between">
+                  <div className="w-full flex items-center justify-between">
                     <span>Name of Document holder as per legal docs</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableDocHolderEdit ? 'On' : 'Off'}</span>
@@ -638,7 +638,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
               <h3 className="font-bold text-gray-700 mb-4">Property Specifications</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label={
-                  <div className="flex items-center justify-between">
+                  <div className="w-full flex items-center justify-between">
                     <span>Flat/House/Plot No.</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnablePlotNoEdit ? 'On' : 'Off'}</span>
@@ -801,7 +801,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <input type="number" className={inputCls} value={fields.canfinHomesAgeOfTheProperty || ''} onChange={e => handleChange('canfinHomesAgeOfTheProperty', e.target.value)} disabled={isReadOnly} />
                 </Field>
                 <Field label={
-                  <div className="flex items-center justify-between">
+                  <div className="w-full flex items-center justify-between">
                     <span>Residual age of the Property</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableResidualAgeEdit ? 'On' : 'Off'}</span>
@@ -884,7 +884,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
               <h3 className="font-bold text-gray-700 mb-4">Address Information</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label={
-                  <div className="flex items-center justify-between">
+                  <div className="w-full flex items-center justify-between">
                     <span>Technical Address of property (Survey No./Plot no/House no/Flat No.) Location/District/State</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableTechnicalAddressEdit ? 'On' : 'Off'}</span>
@@ -917,7 +917,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 </Field>
                 <div className="flex flex-col gap-2">
                   <Field label={
-                    <div className="flex items-center justify-between">
+                    <div className="w-full flex items-center justify-between">
                       <span>Legal Address of property (Survey No./Plot no/House no/Flat No.) Location/District/State Pls mention as per deed</span>
                       {fields.canfinHomesSameAsTechnicalAddress && (
                         <div className="flex items-center gap-2">
@@ -962,7 +962,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   </label>
                 </div>
                 <Field label={
-                  <div className="flex items-center justify-between">
+                  <div className="w-full flex items-center justify-between">
                     <span>Pin Code</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnablePinCodeEdit ? 'On' : 'Off'}</span>
@@ -1602,7 +1602,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   />
                 </Field>
                 <Field label={
-                  <div className="flex items-center justify-between">
+                  <div className="w-full flex items-center justify-between">
                     <span>The Projected Residual Life of The Structure (in Years)</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableProjectedResidualLifeEdit ? 'On' : 'Off'}</span>
@@ -1836,7 +1836,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 <Field label={
-                  <div className="flex items-center justify-between">
+                  <div className="w-full flex items-center justify-between">
                     <span>Date Of Visit</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableDateOfVisitEdit ? 'On' : 'Off'}</span>
@@ -2280,7 +2280,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                 <Field label={
-                  <div className="flex items-center justify-between">
+                  <div className="w-full flex items-center justify-between">
                     <span>Recommended/Fair Market Rate (i+ii)</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableFairMarketRateEdit ? 'On' : 'Off'}</span>
@@ -2314,7 +2314,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 </Field>
 
                 <Field label={
-                  <div className="flex items-center justify-between">
+                  <div className="w-full flex items-center justify-between">
                     <span>Total Fair Market Value on 100% complete</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableTotalFairMarketValueEdit ? 'On' : 'Off'}</span>
@@ -2348,7 +2348,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 </Field>
 
                 <Field label={
-                  <div className="flex items-center justify-between">
+                  <div className="w-full flex items-center justify-between">
                     <span>Distress Value (80%)</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableDistressValueEdit ? 'On' : 'Off'}</span>
@@ -2382,7 +2382,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 </Field>
 
                 <Field label={
-                  <div className="flex items-center justify-between">
+                  <div className="w-full flex items-center justify-between">
                     <span>Realizable Value (90%)</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableRealizableValueEdit ? 'On' : 'Off'}</span>
@@ -2489,7 +2489,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   
                   {/* Date */}
                   <Field label={
-                    <div className="flex items-center justify-between">
+                    <div className="w-full flex items-center justify-between">
                       <span>Date</span>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableDeclarationDateEdit ? 'On' : 'Off'}</span>
