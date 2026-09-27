@@ -1570,37 +1570,7 @@ export default function BandhanSME({
           </div>
         )}
 
-        {/* Header Block */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
-          <div className="flex flex-wrap items-center justify-between pb-4 mb-4 border-b border-slate-200 gap-2">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">
-                Bandhan Bank — SME Valuation Report
-              </h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Statutory format for SME & Commercial Land & Building Valuations
-              </p>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Ref. No:">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.refNo || ''}
-                onChange={(e) => handleChange('refNo', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
-            <Field label="Report Date:">
-              <BaseDateInput
-                value={fields.reportDate || ''}
-                onChange={(val) => handleChange('reportDate', val)}
-                disabled={isReadOnly}
-              />
-            </Field>
-          </div>
-        </div>
+
 
         {/* 1. BASIC INFORMATION */}
         <Section number={1} id="sec-basic" title="Basic Information (Section I: Points A–M)">
