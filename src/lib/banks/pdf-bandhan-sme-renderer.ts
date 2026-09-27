@@ -40,6 +40,238 @@ import {
 } from '../pdf-bank-renderer';
 import { formatIndianCurrency } from '@/lib/numberToWords';
 
+export const parseNum = (v: any): number => {
+  if (!v) return 0;
+  const s = String(v)
+    .replace(/Rs\.?/gi, '')
+    .replace(/₹/g, '')
+    .replace(/,/g, '')
+    .trim();
+  const n = parseFloat(s.replace(/[^0-9.-]/g, ''));
+  return isNaN(n) ? 0 : n;
+};
+
+export const formatCurrencyINR = (val: number): string => {
+  if (val === undefined || val === null || isNaN(val)) return '0';
+  const rounded = Math.round((val + Number.EPSILON) * 100) / 100;
+  return new Intl.NumberFormat('en-IN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(rounded);
+};
+
+export function getConstructionDetailsForStructure(structureType?: string): string {
+  const st = (structureType || 'RCC').trim().toLowerCase();
+  if (st.includes('aluform') || st.includes('mivan')) return 'Aluform (Mivan) RCC shuttering structure';
+  if (st.includes('load bearing') || st.includes('loadbearing')) return 'Load bearing wall structure';
+  if (st.includes('steel')) return 'Steel framed structure';
+  if (st.includes('rcc')) return 'RCC Framed structure';
+  return `${structureType || 'RCC'} structure`;
+}
+
+export function getNdmaStructureTypeForStructure(structureType?: string): string {
+  const st = (structureType || 'RCC').trim().toLowerCase();
+  if (st.includes('aluform') || st.includes('mivan')) return 'Aluform Shuttering Structure';
+  if (st.includes('load bearing') || st.includes('loadbearing')) return 'Load Bearing Structure';
+  if (st.includes('steel')) return 'Steel Structure';
+  if (st.includes('rcc')) return 'RCC Framed Structure';
+  return `${structureType || 'RCC'} Structure`;
+}
+
+export function getWorkProgressStructureLabel(structureType?: string): string {
+  const st = (structureType || 'RCC').trim();
+  return `${st} work`;
+}
+
+export function formatDateDisplay(d?: string): string {
+  if (!d || !d.trim()) return '';
+  const trimmed = d.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [y, m, day] = trimmed.split('-');
+    return `${day}/${m}/${y}`;
+  }
+  return trimmed;
+}
+
+export function formatCommencementCompletion(
+  commencement?: string,
+  completion?: string,
+  rawCombined?: string
+): string {
+  const c = commencement ? formatDateDisplay(commencement) : '';
+  const e = completion ? formatDateDisplay(completion) : '';
+
+  if (c && e) {
+    return `Project Commencement - ${c}, Expected Completion - ${e}`;
+  }
+  if (c) {
+    return `Project Commencement - ${c}`;
+  }
+  if (e) {
+    return `Expected Completion - ${e}`;
+  }
+  if (rawCombined && rawCombined.trim() && rawCombined.trim() !== 'NA') {
+    return rawCombined.trim();
+  }
+  return 'NA';
+}
+
+export function convertAreaToSqft(
+  unit: string = 'ACRE_DEC',
+  valStr: string = ''
+): { sqft: number; sqftStr: string } {
+  const num = parseFloat(String(valStr).replace(/[^0-9.]/g, ''));
+  if (isNaN(num) || num <= 0) {
+    return { sqft: 0, sqftStr: '' };
+  }
+  let sqft = 0;
+  if (unit === 'ACRE_DEC') {
+    sqft = num * 43560;
+  } else if (unit === 'DECIMAL') {
+    sqft = num * 435.6;
+  } else if (unit === 'SQFT') {
+    sqft = num;
+  } else if (unit === 'SQYD') {
+    sqft = num * 9;
+  } else if (unit === 'SQMT') {
+    sqft = num * 10.7639;
+  } else if (unit === 'GUNTHA') {
+    sqft = num * 1089;
+  }
+  const rounded = Math.round((sqft + Number.EPSILON) * 100) / 100;
+  const formatted = rounded % 1 === 0
+    ? formatCurrencyINR(rounded)
+    : rounded.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return {
+    sqft: rounded,
+    sqftStr: `${formatted} sqft.`,
+  };
+}
+
+export function parseSqftFromArea(
+  valStr?: string,
+  unit?: string,
+  numVal?: string
+): number {
+  if (numVal && unit) {
+    const conv = convertAreaToSqft(unit, numVal);
+    if (conv.sqft > 0) return conv.sqft;
+  }
+  if (!valStr) return 0;
+  const s = String(valStr);
+  const ieMatch = s.match(/i\.e\.\s*([\d,]+(?:\.\d+)?)\s*sqft/i);
+  if (ieMatch && ieMatch[1]) {
+    const n = parseFloat(ieMatch[1].replace(/,/g, ''));
+    if (!isNaN(n) && n > 0) return n;
+  }
+  const sqftMatch = s.match(/([\d,]+(?:\.\d+)?)\s*sqft/i);
+  if (sqftMatch && sqftMatch[1]) {
+    const n = parseFloat(sqftMatch[1].replace(/,/g, ''));
+    if (!isNaN(n) && n > 0) return n;
+  }
+  const plain = parseFloat(s.replace(/[^0-9.]/g, ''));
+  return isNaN(plain) ? 0 : plain;
+}
+
+export function formatAreaOfLandStatement(
+  unit: string = 'ACRE_DEC',
+  primaryVal: string = '',
+  acresVal: string = '',
+  decsVal: string = '',
+  rawResult: string = ''
+): { statement: string; sqft: number; sqftStr: string } {
+  const pNum = parseFloat(String(primaryVal).replace(/[^0-9.]/g, '')) || 0;
+  const aNum = parseFloat(String(acresVal).replace(/[^0-9.]/g, '')) || 0;
+  const dNum = parseFloat(String(decsVal).replace(/[^0-9.]/g, '')) || 0;
+
+  if (unit === 'SQFT') {
+    if (pNum > 0) {
+      const rounded = Math.round((pNum + Number.EPSILON) * 100) / 100;
+      const f = rounded % 1 === 0 ? formatCurrencyINR(rounded) : rounded.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return { statement: `${f} sqft.`, sqft: rounded, sqftStr: `${f} sqft.` };
+    }
+    return { statement: primaryVal ? `${primaryVal} sqft.` : (rawResult || ''), sqft: 0, sqftStr: '' };
+  }
+
+  if (unit === 'ACRE_DEC') {
+    let totalAcres = 0;
+    if (acresVal || decsVal) {
+      const decsPart = dNum >= 1 ? dNum / 100 : dNum;
+      totalAcres = aNum + decsPart;
+    } else if (pNum > 0) {
+      totalAcres = pNum;
+    }
+    if (totalAcres > 0) {
+      const sqft = Math.round(((totalAcres * 43560) + Number.EPSILON) * 100) / 100;
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const decsStr = totalAcres.toFixed(3);
+      return {
+        statement: `(AC.${decsStr}Decs) i.e. ${f} sqft.`,
+        sqft,
+        sqftStr: `${f} sqft.`,
+      };
+    }
+    return { statement: rawResult || '', sqft: 0, sqftStr: '' };
+  }
+
+  if (unit === 'DECIMAL') {
+    if (pNum > 0) {
+      const sqft = Math.round(((pNum * 435.6) + Number.EPSILON) * 100) / 100;
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return {
+        statement: `(${pNum} Decs) i.e. ${f} sqft.`,
+        sqft,
+        sqftStr: `${f} sqft.`,
+      };
+    }
+    return { statement: rawResult || '', sqft: 0, sqftStr: '' };
+  }
+
+  if (unit === 'SQYD') {
+    if (pNum > 0) {
+      const sqft = Math.round(((pNum * 9) + Number.EPSILON) * 100) / 100;
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fNum = pNum % 1 === 0 ? formatCurrencyINR(pNum) : pNum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return {
+        statement: `(${fNum} Sq.Yds) i.e. ${f} sqft.`,
+        sqft,
+        sqftStr: `${f} sqft.`,
+      };
+    }
+    return { statement: rawResult || '', sqft: 0, sqftStr: '' };
+  }
+
+  if (unit === 'SQMT') {
+    if (pNum > 0) {
+      const sqft = Math.round(((pNum * 10.7639) + Number.EPSILON) * 100) / 100;
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fNum = pNum % 1 === 0 ? formatCurrencyINR(pNum) : pNum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return {
+        statement: `(${fNum} Sq.Mtr) i.e. ${f} sqft.`,
+        sqft,
+        sqftStr: `${f} sqft.`,
+      };
+    }
+    return { statement: rawResult || '', sqft: 0, sqftStr: '' };
+  }
+
+  if (unit === 'GUNTHA') {
+    if (pNum > 0) {
+      const sqft = Math.round(((pNum * 1089) + Number.EPSILON) * 100) / 100;
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const fNum = pNum % 1 === 0 ? formatCurrencyINR(pNum) : pNum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return {
+        statement: `(${fNum} Guntha) i.e. ${f} sqft.`,
+        sqft,
+        sqftStr: `${f} sqft.`,
+      };
+    }
+    return { statement: rawResult || '', sqft: 0, sqftStr: '' };
+  }
+
+  return { statement: rawResult || primaryVal || '', sqft: pNum, sqftStr: `${pNum} sqft.` };
+}
+
 export interface BandhanSMEPlotBoundary {
   plotNo: string;
   east: string;
@@ -93,7 +325,10 @@ export interface BandhanSMEReportFields {
   reportDate?: string;
 
   // Section I: Basic Information (A - M)
+  branchDetails?: string;
   branchName?: string;
+  bankLetterNo?: string;
+  bankLetterDate?: string;
   letterNoAndDate?: string;
   valuationMadeAtBorrowerRequest?: string;
   managerAccompanied?: string;
@@ -133,6 +368,9 @@ export interface BandhanSMEReportFields {
   areaLandDoc?: string;
   areaLandRor?: string;
   areaLandPhysical?: string;
+  landAreaUnit?: string;
+  landAreaValue?: string;
+  landAreaSqft?: string;
 
   // Location of Property & Postal Address (H)
   plotNo?: string;
@@ -270,6 +508,8 @@ export interface BandhanSMEReportFields {
   landMarketValueTotal?: string;
   landDistressValue?: string;
   landRealisableValue?: string;
+  distressSalePct?: string;
+  realisableValuePct?: string;
 
   // Valuation of Building
   // 1. Basic Information of Building (A - F, G, H, I - AB)
@@ -439,6 +679,7 @@ export interface BandhanSMEReportFields {
   // Declaration & Sign-off
   declarationItems?: string[];
   reportPagesCount?: string;
+  reportPagesCountLocked?: boolean;
   siteEngineerName?: string;
   empanelledValuerName?: string;
   valuerQualifications?: string;
@@ -597,11 +838,9 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   }
 
   /**
-   * Main PDF Generation Entrance
+   * Internal pass to render all sections sequentially with optional explicit reportPagesCount
    */
-  public async generateBandhanSMEReport(fields: BandhanSMEReportFields): Promise<Uint8Array> {
-    await this.init();
-
+  public async renderAllSections(fields: BandhanSMEReportFields, explicitPageCount?: string): Promise<void> {
     // 1. Cover Letterhead & Basic Information
     this.renderBasicInformationSection(fields);
 
@@ -615,16 +854,66 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.renderTotalAbstractAndOpinionSection(fields);
 
     // 5. Valuer Declaration & Credentials Sign-Off Block
-    this.renderDeclarationAndSignoffSection(fields);
+    this.renderDeclarationAndSignoffSection(fields, explicitPageCount);
 
     // 6. Valuation Report Check-List
     this.renderChecklistSection(fields);
 
-    // 7. Enclosures (ROR, Location Map, Photos, Bhu Naksha, Guideline Value)
+    // 7. Enclosures (Documents, Maps, Photos)
     await this.renderEnclosures(fields);
+  }
 
-    // Finalize and save
-    return await this.save();
+  /**
+   * Main PDF Generation Entrance with Two-Pass Page Count Guarantee
+   */
+  public async generateBandhanSMEReport(fields: BandhanSMEReportFields): Promise<Uint8Array> {
+    const res = await this.generateBandhanSMEReportWithCount(fields);
+    return res.pdfBytes;
+  }
+
+  /**
+   * Generates PDF with exact Two-Pass Page Count guarantee and returns both bytes & exact page count
+   */
+  public async generateBandhanSMEReportWithCount(fields: BandhanSMEReportFields): Promise<{ pdfBytes: Uint8Array; pageCount: number }> {
+    // If locked by user, render single pass with user's custom count
+    if (fields.reportPagesCountLocked && fields.reportPagesCount) {
+      await this.init();
+      await this.renderAllSections(fields, fields.reportPagesCount);
+      const exactCount = this.doc.getPageCount();
+      const bytes = await this.save();
+      return { pdfBytes: bytes, pageCount: exactCount };
+    }
+
+    // Auto Mode: Two-Pass Rendering
+    const photoCount = (fields.propertyPhotos && fields.propertyPhotos.length > 0)
+      ? fields.propertyPhotos.length
+      : (fields.propertyImages?.length || 0);
+    const photoPages = photoCount > 0 ? Math.ceil(photoCount / 2) : 0;
+    const rorCount = (fields.mouzaMapImages && fields.mouzaMapImages.length > 0) ? fields.mouzaMapImages.length : (fields.rorImageUrl ? 1 : 0);
+    const locCount = (fields.locationMapImages && fields.locationMapImages.length > 0) ? fields.locationMapImages.length : (fields.locationMapImageUrl ? 1 : 0);
+    const bhuCount = (fields.cadastralMapImages && fields.cadastralMapImages.length > 0) ? fields.cadastralMapImages.length : ((fields.bhuNakshaImages && fields.bhuNakshaImages.length > 0) ? fields.bhuNakshaImages.length : (fields.bhuNakshaImageUrl ? 1 : 0));
+    const guideCount = (fields.sketchMapImages && fields.sketchMapImages.length > 0) ? fields.sketchMapImages.length : ((fields.guidelineRateImages && fields.guidelineRateImages.length > 0) ? fields.guidelineRateImages.length : (fields.guidelineValueImageUrl ? 1 : 0));
+    const bdaCount = fields.bdaMapImages?.length || 0;
+    const totalMaps = rorCount + locCount + bhuCount + guideCount + bdaCount;
+    const mapPages = totalMaps > 0 ? Math.ceil(totalMaps / 2) : 0;
+    const initialEstimate = String(8 + photoPages + mapPages);
+
+    await this.init();
+    await this.renderAllSections(fields, initialEstimate);
+    const pass1Count = this.doc.getPageCount();
+
+    if (String(pass1Count) === initialEstimate) {
+      const bytes = await this.save();
+      return { pdfBytes: bytes, pageCount: pass1Count };
+    }
+
+    // Pass 2: Re-render with the exact page count measured from Pass 1
+    const pass2Renderer = new PDFBandhanSMERenderer();
+    await pass2Renderer.init();
+    await pass2Renderer.renderAllSections(fields, String(pass1Count));
+    const finalCount = pass2Renderer.doc.getPageCount();
+    const finalBytes = await pass2Renderer.save();
+    return { pdfBytes: finalBytes, pageCount: finalCount };
   }
 
   // ==========================================================================
@@ -1161,9 +1450,12 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   // ==========================================================================
   // 5. DECLARATION & SIGN-OFF BLOCK
   // ==========================================================================
-  private renderDeclarationAndSignoffSection(fields: BandhanSMEReportFields): void {
+  private renderDeclarationAndSignoffSection(fields: BandhanSMEReportFields, explicitPageCount?: string): void {
     this.cursorY += 8;
     this.drawSectionSpanner('DECLARATION: I / WE HEREBY DECLARE THAT:');
+
+    const computedPages = explicitPageCount || fields.reportPagesCount || '26';
+    const reportPagesCount = fields.reportPagesCountLocked ? (fields.reportPagesCount || computedPages) : computedPages;
 
     const defaultDeclarations = [
       'A. THE INFORMATION FURNISHED ABOVE IS TRUE TO THE BEST OF MY / OUR KNOWLEDGE AND BELIEF.',
@@ -1180,12 +1472,20 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       'L. WE ARE NEITHER THE AUDITORS TO THE OWNER OF THE PROPERTY (IES) NOR THEIR FIRMS, ASSOCIATES NOR ARE WE THE STATUTORY AUDITORS TO THE BRANCH FROM WHICH THE LOAN IS PROPOSED TO BE AVAILED / ALREADY AVAILED.',
       `M. IT IS HEREBY CERTIFIED THAT THE PRESENT MARKET VALUE OF THE ABOVE PROPERTY IS, IN MY OPINION/OUR OPINION ${fields.fairMarketValue || 'Rs.0/-'} AND THE ESTIMATED REALIZABLE VALUE UNDER DISTRESS SALE WILL BE ${fields.distressValue || 'Rs.0/-'}.`,
       'N. I HAVE NOT BEEN DISMISSED OR REMOVED FROM GOVT. SERVICE OR CONVICTED OF AN OFFENCE CONNECTED WITH ANY PROCEEDINGS OF INCOME TAX ACT, WEALTH TAX ACT OR GIFT TAX ACT OR HAVE BEEN BLACKLISTED BY ANY BANK/FINANCIAL INSTITUTION/ GOVT. DEPARTMENT/PUBLIC SECTOR ENTERPRISE/BODY CORPORATE ETC.',
-      `O. THIS VALUATION REPORT CONTAINS ${fields.reportPagesCount || '26'} PAGES ONLY.`,
+      `O. THIS VALUATION REPORT CONTAINS ${reportPagesCount} PAGES ONLY.`,
       `P. NAME OF SITE ENGINEER: ${fields.siteEngineerName || 'MR. SIBA BEHERA'}`,
       'Q. PHOTOGRAPHS OF THE ASSET VALUED ENCLOSED.',
     ];
 
-    const decls = (fields.declarationItems && fields.declarationItems.length > 0) ? fields.declarationItems : defaultDeclarations;
+    let decls = (fields.declarationItems && fields.declarationItems.length > 0) ? fields.declarationItems : defaultDeclarations;
+    if (fields.declarationItems && fields.declarationItems.length > 0) {
+      decls = decls.map(d => {
+        if (/^O\.\s*THIS\s*VALUATION\s*REPORT\s*CONTAINS/i.test(d)) {
+          return `O. THIS VALUATION REPORT CONTAINS ${reportPagesCount} PAGES ONLY.`;
+        }
+        return d;
+      });
+    }
 
     for (const d of decls) {
       const dH = this.cellHeight(d, CONTENT_W - 12, { fontSize: 8 });
@@ -1218,9 +1518,13 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       borderWidth: BORDER_W,
     });
 
+    const valuerQual = (!fields.valuerQualifications || fields.valuerQualifications === 'B.Tech (Civil), M.Val (RE)' || fields.valuerQualifications.includes('B.Tech (Civil)'))
+      ? 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'
+      : fields.valuerQualifications;
+
     this.page.drawText('SIGNATURE OF EMPANELLED VALUER:', { x: MARGIN_L + 8, y: sY - 14, size: 8.5, font: this.fontBold, color: rgb(0, 0, 0) });
     this.page.drawText(`NAME OF THE EMPANELLED VALUER: ${fields.empanelledValuerName || 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)'}`, { x: MARGIN_L + 8, y: sY - 26, size: 8, font: this.fontBold, color: rgb(0, 0, 0) });
-    this.page.drawText(`EDUCATIONAL / PROFESSIONAL QUALIFICATION: ${fields.valuerQualifications || 'B.Tech (Civil), M.Val (RE)'}`, { x: MARGIN_L + 8, y: sY - 38, size: 7.5, font: this.fontRegular, color: rgb(0, 0, 0) });
+    this.page.drawText(`EDUCATIONAL / PROFESSIONAL QUALIFICATION: ${valuerQual}`, { x: MARGIN_L + 8, y: sY - 38, size: 7.5, font: this.fontRegular, color: rgb(0, 0, 0) });
     this.page.drawText(`REGD. VALUER OF INSTITUTION OF VALUERS: ${fields.valuerIovRegNo || 'No. F-26377'}`, { x: MARGIN_L + 8, y: sY - 50, size: 7.5, font: this.fontRegular, color: rgb(0, 0, 0) });
     this.page.drawText(`REGD. VALUER UNDER SECTION 34AB OF WEALTH TAX ACT: ${fields.valuerWealthTaxRegNo || 'Regd. No.-107/2016-17, Cat -I'}`, { x: MARGIN_L + 8, y: sY - 62, size: 7.5, font: this.fontRegular, color: rgb(0, 0, 0) });
     this.page.drawText(`DATE: ${fields.declarationDate || fields.reportDate || formatReportDate(new Date())}`, { x: MARGIN_L + 8, y: sY - 74, size: 7.5, font: this.fontBold, color: rgb(0, 0, 0) });
@@ -1456,9 +1760,14 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 }
 
 /**
- * Factory function for Bandhan Bank SME PDF Generation
+ * Factory functions for Bandhan Bank SME PDF Generation
  */
 export async function generateBandhanSMEReport(fields: BandhanSMEReportFields): Promise<Uint8Array> {
   const renderer = new PDFBandhanSMERenderer();
   return await renderer.generateBandhanSMEReport(fields);
+}
+
+export async function generateBandhanSMEReportWithCount(fields: BandhanSMEReportFields): Promise<{ pdfBytes: Uint8Array; pageCount: number }> {
+  const renderer = new PDFBandhanSMERenderer();
+  return await renderer.generateBandhanSMEReportWithCount(fields);
 }
