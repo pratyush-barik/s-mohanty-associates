@@ -1772,15 +1772,6 @@ export default function BandhanSME({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Nature of Business:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.borrowerNatureOfBusiness || ''}
-                    onChange={(e) => handleChange('borrowerNatureOfBusiness', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
                 <Field label="At (Location):">
                   <input
                     type="text"
@@ -1844,15 +1835,6 @@ export default function BandhanSME({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Father's Name:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.ownerFatherName || ''}
-                    onChange={(e) => handleChange('ownerFatherName', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
                 <Field label="At (Location):">
                   <input
                     type="text"
@@ -1904,6 +1886,15 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.ownerPhone || ''}
                     onChange={(e) => handleChange('ownerPhone', sanitizePositiveInt(e.target.value, 15))}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Father's Name:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.ownerFatherName || ''}
+                    onChange={(e) => handleChange('ownerFatherName', e.target.value)}
                     disabled={isReadOnly}
                   />
                 </Field>

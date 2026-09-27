@@ -972,9 +972,6 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.draw2ColRow('PS:', fields.borrowerPs || '', true, false);
     this.draw2ColRow('DIST:', fields.borrowerDist || '', true, false);
     this.draw2ColRow('PHONE NO:', fields.borrowerPhone || '', true, false);
-    if (fields.borrowerNatureOfBusiness) {
-      this.draw2ColRow('NATURE OF BUSINESS:', fields.borrowerNatureOfBusiness || '', true, false);
-    }
 
     // M. Owner Details sub-block
     this.drawBandhanRow('M.', 'NAME / ADDRESS / TELEPHONE NO. OF THE OWNER/OWNER(S) OF THE PROPERTY:', '', true, true);
