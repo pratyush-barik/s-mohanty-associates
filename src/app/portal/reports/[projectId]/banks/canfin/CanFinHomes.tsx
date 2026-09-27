@@ -561,7 +561,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Name of The Building/Society</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesBuildingSocietyNameNA} 
@@ -587,7 +587,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Name of the Builder/Seller</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesBuilderSellerNameNA} 
@@ -714,7 +714,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>For Multi storey building: Total no of units</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesTotalNoOfUnitsNA} 
@@ -741,7 +741,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>No of Units on each floor</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesNoOfUnitsOnEachFloorNA} 
@@ -768,7 +768,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Details of unit</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesDetailsOfUnitNA} 
@@ -853,7 +853,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <Field label={
                     <div className="flex items-center justify-between">
                       <span>IF Vacant then from how long/ If tenanted then Name/List of Tenants</span>
-                      <label className="flex items-center gap-1 cursor-pointer">
+                      <label className="flex items-center gap-1 cursor-pointer ml-3">
                         <input 
                           type="checkbox" 
                           checked={fields.canfinHomesVacantOrTenantedDetailsNA} 
@@ -1098,7 +1098,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Nearby Land Mark</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesNearbyLandMarkNA} 
@@ -1286,7 +1286,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <Field label={
                     <div className="flex items-center justify-between">
                       <span>Discrepancy found in Boundaries, If any plz specify</span>
-                      <label className="flex items-center gap-1 cursor-pointer">
+                      <label className="flex items-center gap-1 cursor-pointer ml-3">
                         <input 
                           type="checkbox" 
                           checked={fields.canfinHomesDiscrepancyFoundInBoundariesNA} 
@@ -1334,7 +1334,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Nature of Soil</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesNatureOfSoilNA} 
@@ -1484,7 +1484,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Type of finishing (Paint)</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesTypeOfFinishingNA} 
@@ -1510,7 +1510,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Type of specification used</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesTypeOfSpecificationUsedNA} 
@@ -1537,7 +1537,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Amenities provided in building/society</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesAmenitiesProvidedNA} 
@@ -1569,7 +1569,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Construction progress up to</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesConstructionProgressUpToNA} 
@@ -1664,7 +1664,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       />
                       <span className="font-semibold text-gray-700">a) Approved plans Details (Provided / Not Provided)</span>
                     </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesApprovedPlansDetailsNA} 
@@ -1701,7 +1701,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       />
                       <span className="font-semibold text-gray-700">b) Commencement Certificate / Building Permit Details (Provided / Not Provided)</span>
                     </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesCommencementCertificateDetailsNA} 
@@ -1738,7 +1738,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       />
                       <span className="font-semibold text-gray-700">c) Occupation/Completion certificate details (Provided / Not Provided)</span>
                     </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesOccupationCertificateDetailsNA} 
@@ -1775,7 +1775,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       />
                       <span className="font-semibold text-gray-700">d) Ownership Documents (Provided / Not Provided)</span>
                     </label>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesOwnershipDocumentsDetailsNA} 
@@ -1911,7 +1911,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Land Area (if applicable)(sqyd/sqmt)</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesLandAreaNA} 
@@ -1939,7 +1939,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Carpet Area as per physical measurement (Approx.)</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesCarpetAreaNA} 
@@ -1967,7 +1967,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>area as per</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesAreaAsPerNA} 
@@ -1994,7 +1994,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Super BUA (sq. ft.)</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesSuperBUANA} 
@@ -2022,7 +2022,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>BUA (sq. ft.) (For Row house BUA on each floor to be mentioned)</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesBUANA} 
@@ -2195,7 +2195,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                 <Field label={
                   <div className="flex items-center justify-between">
                     <span>Nature of water Supply</span>
-                    <label className="flex items-center gap-1 cursor-pointer">
+                    <label className="flex items-center gap-1 cursor-pointer ml-3">
                       <input 
                         type="checkbox" 
                         checked={fields.canfinHomesNatureOfWaterSupplyNA} 
