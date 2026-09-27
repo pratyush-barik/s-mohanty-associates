@@ -955,10 +955,10 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('A.', 'NAME OF THE BANK BRANCH / CBO / Asset Centre:', fields.branchName || '');
     this.drawBandhanRow('B.', 'BANK LETTER NO. & DATE-REQUESTING FOR UNDERTAKING VALUATION:', fields.letterNoAndDate || '');
     this.drawBandhanRow('C.', 'WHETHER VALUATION WAS MADE AT THE REQUEST OF THE BORROWER? :', fields.valuationMadeAtBorrowerRequest || 'No');
-    this.drawBandhanRow('D.', 'NAME OF THE MANAGER/OFFICER WHO ACCOMPANIED THE VALUER:', fields.managerAccompanied || 'No');
+    this.drawBandhanRow('D.', 'NAME OF THE MANAGER/OFFICER WHO ACCOMPANIED THE VALUER:', fields.managerAccompanied || '');
     this.drawBandhanRow('E.', 'VALUATION: WHETHER FRESH/REVALUATION/PERIODIC VALUATION:', fields.valuationType || 'Fresh Valuation');
-    this.drawBandhanRow('F.', 'DATE OF EARLIER VALUATION, IF ANY:', fields.dateOfEarlierValuation || 'No');
-    this.drawBandhanRow('G.', 'NAME OF THE PREVIOUS VALUER, IF ANY:', fields.previousValuerName || 'Not Applicable');
+    this.drawBandhanRow('F.', 'DATE OF EARLIER VALUATION, IF ANY:', fields.dateOfEarlierValuation || '');
+    this.drawBandhanRow('G.', 'NAME OF THE PREVIOUS VALUER, IF ANY:', fields.previousValuerName || '');
     this.drawBandhanRow('H.', 'DATE OF VISIT TO THE PROPERTY:', fields.dateOfVisit || '');
     this.drawBandhanRow('I.', 'DATE ON WHICH VALUATION IS MADE:', fields.dateOfValuation || fields.reportDate || '');
     this.drawBandhanRow('J.', 'PERSON(S) IN PRESENCE OF WHOM VALUATION IS MADE:', fields.personsPresent || '');
@@ -985,7 +985,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.draw2ColRow('PIN:', fields.ownerPin || '', true, false);
     this.draw2ColRow('DIST:', fields.ownerDist || '', true, false);
     this.draw2ColRow('PHONE NO:', fields.ownerPhone || '', true, false);
-    this.draw2ColRow("FATHER'S NAME (In case Property in Name of Individual):", fields.ownerFatherName || 'NA', true, false);
+    this.draw2ColRow("FATHER'S NAME (In case Property in Name of Individual):", fields.ownerFatherName || '', true, false);
   }
 
   // ==========================================================================

@@ -328,7 +328,7 @@ export default function BandhanSME({
       reworkNotes: raw.reworkNotes || '',
 
       // Header
-      refNo: raw.refNo || defaultRefNo,
+      refNo: raw.refNo !== undefined ? raw.refNo : defaultRefNo,
       reportDate: formatReportDate(raw.reportDate || new Date()),
 
       // Section I: Basic Information (A - M)
@@ -338,283 +338,283 @@ export default function BandhanSME({
       bankLetterDate,
       letterNoAndDate,
       valuationMadeAtBorrowerRequest: raw.valuationMadeAtBorrowerRequest || 'No',
-      managerAccompanied: raw.managerAccompanied || 'No',
+      managerAccompanied: raw.managerAccompanied !== undefined ? raw.managerAccompanied : '',
       valuationType: raw.valuationType || 'Fresh Valuation',
-      dateOfEarlierValuation: raw.dateOfEarlierValuation || 'No',
-      previousValuerName: raw.previousValuerName || 'Not Applicable',
+      dateOfEarlierValuation: raw.dateOfEarlierValuation !== undefined ? raw.dateOfEarlierValuation : '',
+      previousValuerName: raw.previousValuerName !== undefined ? raw.previousValuerName : '',
       dateOfVisit: raw.dateOfVisit
         ? formatReportDate(raw.dateOfVisit)
         : (firstFieldAgentVisit?.dateStr || (prefill?.fieldVisitDate ? formatReportDate(prefill.fieldVisitDate) : (prefill?.inspectionDate ? formatReportDate(prefill.inspectionDate) : formatReportDate(new Date())))),
       dateOfValuation: raw.dateOfValuation ? formatReportDate(raw.dateOfValuation) : (raw.reportDate ? formatReportDate(raw.reportDate) : formatReportDate(new Date())),
-      personsPresent: raw.personsPresent || (prefill?.contactName ? `${prefill.contactName}, Mob-${prefill?.serviceRequest?.guestPhone || ''}` : ''),
-      documentsProduced: raw.documentsProduced || 'Xerox copy of Sale Deed, Patta, Sketch Map, Assessment of Holding',
+      personsPresent: raw.personsPresent !== undefined ? raw.personsPresent : (prefill?.contactName ? `${prefill.contactName}, Mob-${prefill?.serviceRequest?.guestPhone || ''}` : ''),
+      documentsProduced: raw.documentsProduced !== undefined ? raw.documentsProduced : 'Xerox copy of Sale Deed, Patta, Sketch Map, Assessment of Holding',
 
       // Borrower Details (L)
-      borrowerName: raw.borrowerName || prefill?.serviceRequest?.guestName || prefill?.contactName || '',
-      borrowerAt: raw.borrowerAt || prefill?.propertyAddress || '',
-      borrowerPo: raw.borrowerPo || '',
-      borrowerPs: raw.borrowerPs || '',
-      borrowerDist: raw.borrowerDist || prefill?.serviceRequest?.city || '',
-      borrowerPhone: raw.borrowerPhone || prefill?.serviceRequest?.guestPhone || '',
-      borrowerNatureOfBusiness: raw.borrowerNatureOfBusiness || '',
+      borrowerName: raw.borrowerName !== undefined ? raw.borrowerName : (prefill?.serviceRequest?.guestName || prefill?.contactName || ''),
+      borrowerAt: raw.borrowerAt !== undefined ? raw.borrowerAt : (prefill?.propertyAddress || ''),
+      borrowerPo: raw.borrowerPo !== undefined ? raw.borrowerPo : '',
+      borrowerPs: raw.borrowerPs !== undefined ? raw.borrowerPs : '',
+      borrowerDist: raw.borrowerDist !== undefined ? raw.borrowerDist : (prefill?.serviceRequest?.city || ''),
+      borrowerPhone: raw.borrowerPhone !== undefined ? raw.borrowerPhone : (prefill?.serviceRequest?.guestPhone || ''),
+      borrowerNatureOfBusiness: raw.borrowerNatureOfBusiness !== undefined ? raw.borrowerNatureOfBusiness : '',
 
       // Owner Details (M)
-      ownerName: raw.ownerName || prefill?.contactName || '',
-      ownerAt: raw.ownerAt || prefill?.propertyAddress || '',
-      ownerPo: raw.ownerPo || '',
-      ownerPs: raw.ownerPs || '',
-      ownerPin: raw.ownerPin || prefill?.serviceRequest?.pincode || '',
-      ownerDist: raw.ownerDist || prefill?.serviceRequest?.city || '',
-      ownerPhone: raw.ownerPhone || prefill?.serviceRequest?.guestPhone || '',
-      ownerFatherName: raw.ownerFatherName || '',
+      ownerName: raw.ownerName !== undefined ? raw.ownerName : (prefill?.contactName || ''),
+      ownerAt: raw.ownerAt !== undefined ? raw.ownerAt : (prefill?.propertyAddress || ''),
+      ownerPo: raw.ownerPo !== undefined ? raw.ownerPo : '',
+      ownerPs: raw.ownerPs !== undefined ? raw.ownerPs : '',
+      ownerPin: raw.ownerPin !== undefined ? raw.ownerPin : (prefill?.serviceRequest?.pincode || ''),
+      ownerDist: raw.ownerDist !== undefined ? raw.ownerDist : (prefill?.serviceRequest?.city || ''),
+      ownerPhone: raw.ownerPhone !== undefined ? raw.ownerPhone : (prefill?.serviceRequest?.guestPhone || ''),
+      ownerFatherName: raw.ownerFatherName !== undefined ? raw.ownerFatherName : '',
 
       // Section II: Valuation of Land
       // 1. Details of Property (A - L, I)
-      detailsPropertyOffered: raw.detailsPropertyOffered || 'Land & Building',
+      detailsPropertyOffered: raw.detailsPropertyOffered !== undefined ? raw.detailsPropertyOffered : 'Land & Building',
       dateAcquisitionLand: raw.dateAcquisitionLand ? formatReportDate(raw.dateAcquisitionLand) : '',
-      valueAsPerSaleDeed: raw.valueAsPerSaleDeed || '',
-      saleDeedDocNo: raw.saleDeedDocNo || '',
+      valueAsPerSaleDeed: raw.valueAsPerSaleDeed !== undefined ? raw.valueAsPerSaleDeed : '',
+      saleDeedDocNo: raw.saleDeedDocNo !== undefined ? raw.saleDeedDocNo : '',
       landAreaUnit,
       landAreaValue,
-      landAreaSqft: raw.landAreaSqft || '',
-      areaLandDoc: raw.areaLandDoc || (landAreaValue ? formatAreaOfLandStatement(landAreaUnit, landAreaValue).statement : ''),
-      areaLandRor: raw.areaLandRor || (landAreaValue ? formatAreaOfLandStatement(landAreaUnit, landAreaValue).statement : ''),
-      areaLandPhysical: raw.areaLandPhysical || (landAreaValue ? formatAreaOfLandStatement(landAreaUnit, landAreaValue).statement : ''),
+      landAreaSqft: raw.landAreaSqft !== undefined ? raw.landAreaSqft : '',
+      areaLandDoc: raw.areaLandDoc !== undefined ? raw.areaLandDoc : (landAreaValue ? formatAreaOfLandStatement(landAreaUnit, landAreaValue).statement : ''),
+      areaLandRor: raw.areaLandRor !== undefined ? raw.areaLandRor : (landAreaValue ? formatAreaOfLandStatement(landAreaUnit, landAreaValue).statement : ''),
+      areaLandPhysical: raw.areaLandPhysical !== undefined ? raw.areaLandPhysical : (landAreaValue ? formatAreaOfLandStatement(landAreaUnit, landAreaValue).statement : ''),
 
       // Location of Property & Postal Address (H)
-      plotNo: raw.plotNo || '',
-      khataNo: raw.khataNo || '',
-      propAt: raw.propAt || prefill?.propertyAddress || '',
-      propPo: raw.propPo || '',
-      propPs: raw.propPs || '',
-      propPin: raw.propPin || prefill?.serviceRequest?.pincode || '',
-      propDist: raw.propDist || prefill?.serviceRequest?.city || '',
+      plotNo: raw.plotNo !== undefined ? raw.plotNo : '',
+      khataNo: raw.khataNo !== undefined ? raw.khataNo : '',
+      propAt: raw.propAt !== undefined ? raw.propAt : (prefill?.propertyAddress || ''),
+      propPo: raw.propPo !== undefined ? raw.propPo : '',
+      propPs: raw.propPs !== undefined ? raw.propPs : '',
+      propPin: raw.propPin !== undefined ? raw.propPin : (prefill?.serviceRequest?.pincode || ''),
+      propDist: raw.propDist !== undefined ? raw.propDist : (prefill?.serviceRequest?.city || ''),
 
-      urbanSemiUrbanRural: raw.urbanSemiUrbanRural || 'Urban Area',
-      situatedAreaType: raw.situatedAreaType || 'Residential cum Commercial Area',
-      classificationOfLocality: raw.classificationOfLocality || 'Middle Class',
-      typeOfProperty: raw.typeOfProperty || 'Land & building',
-      isAgricultural: raw.isAgricultural || 'No',
-      agriculturalConversionContemplated: raw.agriculturalConversionContemplated || 'Not Applicable',
-      isIndustrial: raw.isIndustrial || 'No',
-      industrialActivitySuited: raw.industrialActivitySuited || 'Not Applicable',
-      isResidential: raw.isResidential || 'Yes',
-      isCommercial: raw.isCommercial || 'Yes',
-      isInstitutional: raw.isInstitutional || 'No',
-      isOthersSpecify: raw.isOthersSpecify || 'No',
+      urbanSemiUrbanRural: raw.urbanSemiUrbanRural !== undefined ? raw.urbanSemiUrbanRural : 'Urban Area',
+      situatedAreaType: raw.situatedAreaType !== undefined ? raw.situatedAreaType : 'Residential cum Commercial Area',
+      classificationOfLocality: raw.classificationOfLocality !== undefined ? raw.classificationOfLocality : 'Middle Class',
+      typeOfProperty: raw.typeOfProperty !== undefined ? raw.typeOfProperty : 'Land & building',
+      isAgricultural: raw.isAgricultural !== undefined ? raw.isAgricultural : 'No',
+      agriculturalConversionContemplated: raw.agriculturalConversionContemplated !== undefined ? raw.agriculturalConversionContemplated : 'Not Applicable',
+      isIndustrial: raw.isIndustrial !== undefined ? raw.isIndustrial : 'No',
+      industrialActivitySuited: raw.industrialActivitySuited !== undefined ? raw.industrialActivitySuited : 'Not Applicable',
+      isResidential: raw.isResidential !== undefined ? raw.isResidential : 'Yes',
+      isCommercial: raw.isCommercial !== undefined ? raw.isCommercial : 'Yes',
+      isInstitutional: raw.isInstitutional !== undefined ? raw.isInstitutional : 'No',
+      isOthersSpecify: raw.isOthersSpecify !== undefined ? raw.isOthersSpecify : 'No',
 
       // 2.1 Title of Property Freehold / Leasehold
-      titleFreeholdLeasehold: raw.titleFreeholdLeasehold || 'It is a free hold land',
-      ownershipOfProperty: raw.ownershipOfProperty || 'Single Ownership',
-      jointOwnershipShare: raw.jointOwnershipShare || 'Not Applicable',
-      taxesPaidUpTo: raw.taxesPaidUpTo || 'We have not verified any recent rent receipt',
-      landRevenue: raw.landRevenue || 'We have not verified any recent rent receipt',
-      landBuildingMunicipalTaxes: raw.landBuildingMunicipalTaxes || 'We have not verified any recent rent receipt',
-      wealthTaxAssessedPaid: raw.wealthTaxAssessedPaid || 'Not Applicable',
+      titleFreeholdLeasehold: raw.titleFreeholdLeasehold !== undefined ? raw.titleFreeholdLeasehold : 'It is a free hold land',
+      ownershipOfProperty: raw.ownershipOfProperty !== undefined ? raw.ownershipOfProperty : 'Single Ownership',
+      jointOwnershipShare: raw.jointOwnershipShare !== undefined ? raw.jointOwnershipShare : 'Not Applicable',
+      taxesPaidUpTo: raw.taxesPaidUpTo !== undefined ? raw.taxesPaidUpTo : 'We have not verified any recent rent receipt',
+      landRevenue: raw.landRevenue !== undefined ? raw.landRevenue : 'We have not verified any recent rent receipt',
+      landBuildingMunicipalTaxes: raw.landBuildingMunicipalTaxes !== undefined ? raw.landBuildingMunicipalTaxes : 'We have not verified any recent rent receipt',
+      wealthTaxAssessedPaid: raw.wealthTaxAssessedPaid !== undefined ? raw.wealthTaxAssessedPaid : 'Not Applicable',
 
       // 2.2 If Leasehold
-      isLeaseholdApplicable: raw.isLeaseholdApplicable || 'No',
-      lessorName: raw.lessorName || 'Not Applicable',
-      lesseeName: raw.lesseeName || 'Not Applicable',
-      natureOfLease: raw.natureOfLease || 'Not Applicable',
-      dateCommencementLease: raw.dateCommencementLease || 'Not Applicable',
-      periodOfLease: raw.periodOfLease || 'Not Applicable',
-      termsOfRenewal: raw.termsOfRenewal || 'Not Applicable',
-      leasePremiumRentPerAnnum: raw.leasePremiumRentPerAnnum || 'Not Applicable',
-      unexpiredPeriodOfLease: raw.unexpiredPeriodOfLease || 'Not Applicable',
-      initialPremium: raw.initialPremium || 'Not Applicable',
-      groundRentPerAnnum: raw.groundRentPerAnnum || 'Not Applicable',
-      unearnedIncreasePayable: raw.unearnedIncreasePayable || 'Not Applicable',
-      leasePermitsMortgage: raw.leasePermitsMortgage || 'Not Applicable',
+      isLeaseholdApplicable: raw.isLeaseholdApplicable !== undefined ? raw.isLeaseholdApplicable : 'No',
+      lessorName: raw.lessorName !== undefined ? raw.lessorName : 'Not Applicable',
+      lesseeName: raw.lesseeName !== undefined ? raw.lesseeName : 'Not Applicable',
+      natureOfLease: raw.natureOfLease !== undefined ? raw.natureOfLease : 'Not Applicable',
+      dateCommencementLease: raw.dateCommencementLease !== undefined ? raw.dateCommencementLease : 'Not Applicable',
+      periodOfLease: raw.periodOfLease !== undefined ? raw.periodOfLease : 'Not Applicable',
+      termsOfRenewal: raw.termsOfRenewal !== undefined ? raw.termsOfRenewal : 'Not Applicable',
+      leasePremiumRentPerAnnum: raw.leasePremiumRentPerAnnum !== undefined ? raw.leasePremiumRentPerAnnum : 'Not Applicable',
+      unexpiredPeriodOfLease: raw.unexpiredPeriodOfLease !== undefined ? raw.unexpiredPeriodOfLease : 'Not Applicable',
+      initialPremium: raw.initialPremium !== undefined ? raw.initialPremium : 'Not Applicable',
+      groundRentPerAnnum: raw.groundRentPerAnnum !== undefined ? raw.groundRentPerAnnum : 'Not Applicable',
+      unearnedIncreasePayable: raw.unearnedIncreasePayable !== undefined ? raw.unearnedIncreasePayable : 'Not Applicable',
+      leasePermitsMortgage: raw.leasePermitsMortgage !== undefined ? raw.leasePermitsMortgage : 'Not Applicable',
 
       // 2. Rent Details
-      rentOccupationStatus: raw.rentOccupationStatus || 'The Plot is occupied by Owner',
-      tenantNames: raw.tenantNames || 'Not Applicable',
-      tenantPortionOccupied: raw.tenantPortionOccupied || 'Not Applicable',
-      monthlyAnnualRentPaid: raw.monthlyAnnualRentPaid || 'Not Applicable',
-      grossRentReceived: raw.grossRentReceived || 'Not Applicable',
+      rentOccupationStatus: raw.rentOccupationStatus !== undefined ? raw.rentOccupationStatus : 'The Plot is occupied by Owner',
+      tenantNames: raw.tenantNames !== undefined ? raw.tenantNames : 'Not Applicable',
+      tenantPortionOccupied: raw.tenantPortionOccupied !== undefined ? raw.tenantPortionOccupied : 'Not Applicable',
+      monthlyAnnualRentPaid: raw.monthlyAnnualRentPaid !== undefined ? raw.monthlyAnnualRentPaid : 'Not Applicable',
+      grossRentReceived: raw.grossRentReceived !== undefined ? raw.grossRentReceived : 'Not Applicable',
 
       // 3. Brief Description of Property
-      detailedAddressWithPin: raw.detailedAddressWithPin || prefill?.propertyAddress || '',
-      municipalityWardNo: raw.municipalityWardNo || '',
-      streetNo: raw.streetNo || '',
-      surveyPlotNo: raw.surveyPlotNo || raw.plotNo || '',
-      briefKhataNo: raw.briefKhataNo || raw.khataNo || '',
-      mouza: raw.mouza || '',
-      thanaNo: raw.thanaNo || '',
-      tehasilNo: raw.tehasilNo || '',
-      tehasil: raw.tehasil || '',
-      sro: raw.sro || '',
-      policeStation: raw.policeStation || '',
-      villageTownCity: raw.villageTownCity || 'City',
-      district: raw.district || prefill?.serviceRequest?.city || '',
-      state: raw.state || 'Odisha',
+      detailedAddressWithPin: raw.detailedAddressWithPin !== undefined ? raw.detailedAddressWithPin : (prefill?.propertyAddress || ''),
+      municipalityWardNo: raw.municipalityWardNo !== undefined ? raw.municipalityWardNo : '',
+      streetNo: raw.streetNo !== undefined ? raw.streetNo : '',
+      surveyPlotNo: raw.surveyPlotNo !== undefined ? raw.surveyPlotNo : (raw.plotNo || ''),
+      briefKhataNo: raw.briefKhataNo !== undefined ? raw.briefKhataNo : (raw.khataNo || ''),
+      mouza: raw.mouza !== undefined ? raw.mouza : '',
+      thanaNo: raw.thanaNo !== undefined ? raw.thanaNo : '',
+      tehasilNo: raw.tehasilNo !== undefined ? raw.tehasilNo : '',
+      tehasil: raw.tehasil !== undefined ? raw.tehasil : '',
+      sro: raw.sro !== undefined ? raw.sro : '',
+      policeStation: raw.policeStation !== undefined ? raw.policeStation : '',
+      villageTownCity: raw.villageTownCity !== undefined ? raw.villageTownCity : 'City',
+      district: raw.district !== undefined ? raw.district : (prefill?.serviceRequest?.city || ''),
+      state: raw.state !== undefined ? raw.state : 'Odisha',
 
-      dimensionDocEastWest: raw.dimensionDocEastWest || 'As per Sketch Map',
-      dimensionDocNorthSouth: raw.dimensionDocNorthSouth || 'As per Sketch Map',
-      dimensionMeasEastWest: raw.dimensionMeasEastWest || 'As per Sketch Map',
-      dimensionMeasNorthSouth: raw.dimensionMeasNorthSouth || 'As per Sketch Map',
-      extentOfSite: raw.extentOfSite || (landAreaValue ? formatAreaOfLandStatement(landAreaUnit, landAreaValue).statement : ''),
-      extentConsideredValuation: raw.extentConsideredValuation || (landAreaValue ? formatAreaOfLandStatement(landAreaUnit, landAreaValue).statement : ''),
+      dimensionDocEastWest: raw.dimensionDocEastWest !== undefined ? raw.dimensionDocEastWest : 'As per Sketch Map',
+      dimensionDocNorthSouth: raw.dimensionDocNorthSouth !== undefined ? raw.dimensionDocNorthSouth : 'As per Sketch Map',
+      dimensionMeasEastWest: raw.dimensionMeasEastWest !== undefined ? raw.dimensionMeasEastWest : 'As per Sketch Map',
+      dimensionMeasNorthSouth: raw.dimensionMeasNorthSouth !== undefined ? raw.dimensionMeasNorthSouth : 'As per Sketch Map',
+      extentOfSite: raw.extentOfSite !== undefined ? raw.extentOfSite : (landAreaValue ? formatAreaOfLandStatement(landAreaUnit, landAreaValue).statement : ''),
+      extentConsideredValuation: raw.extentConsideredValuation !== undefined ? raw.extentConsideredValuation : (landAreaValue ? formatAreaOfLandStatement(landAreaUnit, landAreaValue).statement : ''),
 
       documentPlotBoundaries: defaultPlots,
-      verifiedBoundaryEast: raw.verifiedBoundaryEast || '',
-      verifiedBoundaryWest: raw.verifiedBoundaryWest || '',
-      verifiedBoundaryNorth: raw.verifiedBoundaryNorth || '',
-      verifiedBoundarySouth: raw.verifiedBoundarySouth || '',
-      sketchEnclosed: raw.sketchEnclosed || 'Yes, Enclosed',
+      verifiedBoundaryEast: raw.verifiedBoundaryEast !== undefined ? raw.verifiedBoundaryEast : '',
+      verifiedBoundaryWest: raw.verifiedBoundaryWest !== undefined ? raw.verifiedBoundaryWest : '',
+      verifiedBoundaryNorth: raw.verifiedBoundaryNorth !== undefined ? raw.verifiedBoundaryNorth : '',
+      verifiedBoundarySouth: raw.verifiedBoundarySouth !== undefined ? raw.verifiedBoundarySouth : '',
+      sketchEnclosed: raw.sketchEnclosed !== undefined ? raw.sketchEnclosed : 'Yes, Enclosed',
 
       // 4. Characteristics of the Site
-      levelOfLand: raw.levelOfLand || 'Leveled and Plain',
-      useToWhichCanBePut: raw.useToWhichCanBePut || 'Residential cum Commercial Purpose',
-      easementAgreements: raw.easementAgreements || 'No such agreement verified',
-      restrictiveCovenant: raw.restrictiveCovenant || 'No',
-      approvalLetterNoDateDevelopment: raw.approvalLetterNoDateDevelopment || 'Not Applicable',
-      buildingUseCertificateObtained: raw.buildingUseCertificateObtained || 'Not Applicable',
-      townPlanningSchemeInclusion: raw.townPlanningSchemeInclusion || '',
-      cornerOrIntermittentPlot: raw.cornerOrIntermittentPlot || 'Intermittent Plot',
-      isLandLocked: raw.isLandLocked || 'No',
-      freeAccessAndProximity: raw.freeAccessAndProximity || 'Yes (15 ft wide CC Road) / Bike, Car, Bus',
-      roadFacilities: raw.roadFacilities || 'Yes, Available at site',
-      roadKindAndWidth: raw.roadKindAndWidth || '15 ft wide BT Road',
-      distMunicipalOffice: raw.distMunicipalOffice || '',
-      distMunicipalLimits: raw.distMunicipalLimits || '',
-      waterPotentialities: raw.waterPotentialities || 'Good',
-      possibilityFlooding: raw.possibilityFlooding || 'No',
-      undergroundSewerageAvailable: raw.undergroundSewerageAvailable || 'No',
-      drainageSystemsAvailable: raw.drainageSystemsAvailable || 'Surface Drainage',
-      powerSupplyAvailable: raw.powerSupplyAvailable || 'Yes',
-      surroundingDevelopment: raw.surroundingDevelopment || 'Residential Buildings',
+      levelOfLand: raw.levelOfLand !== undefined ? raw.levelOfLand : 'Leveled and Plain',
+      useToWhichCanBePut: raw.useToWhichCanBePut !== undefined ? raw.useToWhichCanBePut : 'Residential cum Commercial Purpose',
+      easementAgreements: raw.easementAgreements !== undefined ? raw.easementAgreements : 'No such agreement verified',
+      restrictiveCovenant: raw.restrictiveCovenant !== undefined ? raw.restrictiveCovenant : 'No',
+      approvalLetterNoDateDevelopment: raw.approvalLetterNoDateDevelopment !== undefined ? raw.approvalLetterNoDateDevelopment : 'Not Applicable',
+      buildingUseCertificateObtained: raw.buildingUseCertificateObtained !== undefined ? raw.buildingUseCertificateObtained : 'Not Applicable',
+      townPlanningSchemeInclusion: raw.townPlanningSchemeInclusion !== undefined ? raw.townPlanningSchemeInclusion : '',
+      cornerOrIntermittentPlot: raw.cornerOrIntermittentPlot !== undefined ? raw.cornerOrIntermittentPlot : 'Intermittent Plot',
+      isLandLocked: raw.isLandLocked !== undefined ? raw.isLandLocked : 'No',
+      freeAccessAndProximity: raw.freeAccessAndProximity !== undefined ? raw.freeAccessAndProximity : 'Yes (15 ft wide CC Road) / Bike, Car, Bus',
+      roadFacilities: raw.roadFacilities !== undefined ? raw.roadFacilities : 'Yes, Available at site',
+      roadKindAndWidth: raw.roadKindAndWidth !== undefined ? raw.roadKindAndWidth : '15 ft wide BT Road',
+      distMunicipalOffice: raw.distMunicipalOffice !== undefined ? raw.distMunicipalOffice : '',
+      distMunicipalLimits: raw.distMunicipalLimits !== undefined ? raw.distMunicipalLimits : '',
+      waterPotentialities: raw.waterPotentialities !== undefined ? raw.waterPotentialities : 'Good',
+      possibilityFlooding: raw.possibilityFlooding !== undefined ? raw.possibilityFlooding : 'No',
+      undergroundSewerageAvailable: raw.undergroundSewerageAvailable !== undefined ? raw.undergroundSewerageAvailable : 'No',
+      drainageSystemsAvailable: raw.drainageSystemsAvailable !== undefined ? raw.drainageSystemsAvailable : 'Surface Drainage',
+      powerSupplyAvailable: raw.powerSupplyAvailable !== undefined ? raw.powerSupplyAvailable : 'Yes',
+      surroundingDevelopment: raw.surroundingDevelopment !== undefined ? raw.surroundingDevelopment : 'Residential Buildings',
 
-      proximitySchool: raw.proximitySchool || '',
-      proximityCollege: raw.proximityCollege || '',
-      proximityHospital: raw.proximityHospital || '',
-      proximityMarket: raw.proximityMarket || '',
-      proximityBusStand: raw.proximityBusStand || '',
-      proximityRailwayStation: raw.proximityRailwayStation || '',
-      proximityOtherPlace: raw.proximityOtherPlace || '',
-      latitudeLongitude: raw.latitudeLongitude || '',
-      locationAdvantages: raw.locationAdvantages || '',
-      locationDisadvantages: raw.locationDisadvantages || 'Nothing Observed',
+      proximitySchool: raw.proximitySchool !== undefined ? raw.proximitySchool : '',
+      proximityCollege: raw.proximityCollege !== undefined ? raw.proximityCollege : '',
+      proximityHospital: raw.proximityHospital !== undefined ? raw.proximityHospital : '',
+      proximityMarket: raw.proximityMarket !== undefined ? raw.proximityMarket : '',
+      proximityBusStand: raw.proximityBusStand !== undefined ? raw.proximityBusStand : '',
+      proximityRailwayStation: raw.proximityRailwayStation !== undefined ? raw.proximityRailwayStation : '',
+      proximityOtherPlace: raw.proximityOtherPlace !== undefined ? raw.proximityOtherPlace : '',
+      latitudeLongitude: raw.latitudeLongitude !== undefined ? raw.latitudeLongitude : '',
+      locationAdvantages: raw.locationAdvantages !== undefined ? raw.locationAdvantages : '',
+      locationDisadvantages: raw.locationDisadvantages !== undefined ? raw.locationDisadvantages : 'Nothing Observed',
 
       // 5. Other Issues / Points
-      landAcquisitionNotification: raw.landAcquisitionNotification || 'No such documents verified',
-      developmentContributionDemanded: raw.developmentContributionDemanded || 'No such documents verified',
-      landCeilingEnactments: raw.landCeilingEnactments || 'No such documents verified',
-      salesInstancesInLocality: raw.salesInstancesInLocality || 'Transactions of the property are not available in the locality',
-      salesBasisArrivingLandRate: raw.salesBasisArrivingLandRate || 'The present market rate of land confirmed through local enquiry and property dealers and found to be acceptable.',
-      adoptedLandRateRationale: raw.adoptedLandRateRationale || '',
+      landAcquisitionNotification: raw.landAcquisitionNotification !== undefined ? raw.landAcquisitionNotification : 'No such documents verified',
+      developmentContributionDemanded: raw.developmentContributionDemanded !== undefined ? raw.developmentContributionDemanded : 'No such documents verified',
+      landCeilingEnactments: raw.landCeilingEnactments !== undefined ? raw.landCeilingEnactments : 'No such documents verified',
+      salesInstancesInLocality: raw.salesInstancesInLocality !== undefined ? raw.salesInstancesInLocality : 'Transactions of the property are not available in the locality',
+      salesBasisArrivingLandRate: raw.salesBasisArrivingLandRate !== undefined ? raw.salesBasisArrivingLandRate : 'The present market rate of land confirmed through local enquiry and property dealers and found to be acceptable.',
+      adoptedLandRateRationale: raw.adoptedLandRateRationale !== undefined ? raw.adoptedLandRateRationale : '',
 
       // 6. Valuation of Land
-      previousValuationDetails: raw.previousValuationDetails || 'Not Available / Not Applicable',
-      presentValuationApproachDetails: raw.presentValuationApproachDetails || 'Land & Building method of valuation has been adopted',
-      landAreaTotal: raw.landAreaTotal || (landAreaValue ? String(parseSqftFromArea('', landAreaUnit, landAreaValue)) : ''),
-      landGovtBenchmarkRate: raw.landGovtBenchmarkRate || '',
-      landGovtValueTotal: raw.landGovtValueTotal || '',
-      landMarketRate: raw.landMarketRate || '',
-      landMarketValueTotal: raw.landMarketValueTotal || '',
-      landDistressValue: raw.landDistressValue || '',
-      landRealisableValue: raw.landRealisableValue || '',
+      previousValuationDetails: raw.previousValuationDetails !== undefined ? raw.previousValuationDetails : 'Not Available / Not Applicable',
+      presentValuationApproachDetails: raw.presentValuationApproachDetails !== undefined ? raw.presentValuationApproachDetails : 'Land & Building method of valuation has been adopted',
+      landAreaTotal: raw.landAreaTotal !== undefined ? raw.landAreaTotal : (landAreaValue ? String(parseSqftFromArea('', landAreaUnit, landAreaValue)) : ''),
+      landGovtBenchmarkRate: raw.landGovtBenchmarkRate !== undefined ? raw.landGovtBenchmarkRate : '',
+      landGovtValueTotal: raw.landGovtValueTotal !== undefined ? raw.landGovtValueTotal : '',
+      landMarketRate: raw.landMarketRate !== undefined ? raw.landMarketRate : '',
+      landMarketValueTotal: raw.landMarketValueTotal !== undefined ? raw.landMarketValueTotal : '',
+      landDistressValue: raw.landDistressValue !== undefined ? raw.landDistressValue : '',
+      landRealisableValue: raw.landRealisableValue !== undefined ? raw.landRealisableValue : '',
       distressSalePct: raw.distressSalePct !== undefined ? String(raw.distressSalePct) : '85',
       realisableValuePct: raw.realisableValuePct !== undefined ? String(raw.realisableValuePct) : '95',
 
       // Valuation of Building
       // 1. Basic Info
-      buildingType: raw.buildingType || 'Residential Cum Commercial',
-      yearCommencementCompletion: raw.yearCommencementCompletion || '',
-      typeOfConstruction: raw.typeOfConstruction || 'RCC Frames',
-      estimatedFutureLife: raw.estimatedFutureLife || '60 Yrs',
-      farFsiPermissibleUtilized: raw.farFsiPermissibleUtilized || 'FAR: 3.46',
-      buildingApprovalAuthorityDetails: raw.buildingApprovalAuthorityDetails || '',
-      constructionAsPerPlanDeviations: raw.constructionAsPerPlanDeviations || 'Yes',
+      buildingType: raw.buildingType !== undefined ? raw.buildingType : 'Residential Cum Commercial',
+      yearCommencementCompletion: raw.yearCommencementCompletion !== undefined ? raw.yearCommencementCompletion : '',
+      typeOfConstruction: raw.typeOfConstruction !== undefined ? raw.typeOfConstruction : 'RCC Frames',
+      estimatedFutureLife: raw.estimatedFutureLife !== undefined ? raw.estimatedFutureLife : '60 Yrs',
+      farFsiPermissibleUtilized: raw.farFsiPermissibleUtilized !== undefined ? raw.farFsiPermissibleUtilized : 'FAR: 3.46',
+      buildingApprovalAuthorityDetails: raw.buildingApprovalAuthorityDetails !== undefined ? raw.buildingApprovalAuthorityDetails : '',
+      constructionAsPerPlanDeviations: raw.constructionAsPerPlanDeviations !== undefined ? raw.constructionAsPerPlanDeviations : 'Yes',
 
-      builtUpAreaAssessmentHolding: raw.builtUpAreaAssessmentHolding || '',
-      builtUpAreaAsPerActual: raw.builtUpAreaAsPerActual || '',
-      carpetAreaTotal: raw.carpetAreaTotal || '',
-      saleableAreaTotal: raw.saleableAreaTotal || '',
+      builtUpAreaAssessmentHolding: raw.builtUpAreaAssessmentHolding !== undefined ? raw.builtUpAreaAssessmentHolding : '',
+      builtUpAreaAsPerActual: raw.builtUpAreaAsPerActual !== undefined ? raw.builtUpAreaAsPerActual : '',
+      carpetAreaTotal: raw.carpetAreaTotal !== undefined ? raw.carpetAreaTotal : '',
+      saleableAreaTotal: raw.saleableAreaTotal !== undefined ? raw.saleableAreaTotal : '',
 
-      buildingOwnerOccupiedTenanted: raw.buildingOwnerOccupiedTenanted || 'Owner Occupied',
-      ownerOccupiedPortion: raw.ownerOccupiedPortion || 'Not Applicable',
-      isUnderRentControlAct: raw.isUnderRentControlAct || 'No',
-      buildingTenantNames: raw.buildingTenantNames || 'Not Applicable',
-      buildingTenantPortions: raw.buildingTenantPortions || 'Not Applicable',
-      buildingMonthlyRent: raw.buildingMonthlyRent || 'Not Applicable',
-      buildingGrossRent: raw.buildingGrossRent || 'Not Applicable',
-      occupantsRelatedToOwner: raw.occupantsRelatedToOwner || 'Not Applicable',
-      fixturesAmountRecovered: raw.fixturesAmountRecovered || 'Borne by Owner',
-      waterElectricityChargesBorneBy: raw.waterElectricityChargesBorneBy || 'Borne by Owner',
-      isRentDisputePendingCourt: raw.isRentDisputePendingCourt || 'No',
-      hasStandardRentFixed: raw.hasStandardRentFixed || 'Not Applicable',
-      tenantBearMaintenance: raw.tenantBearMaintenance || 'Not Applicable',
-      liftMaintenanceBorneBy: raw.liftMaintenanceBorneBy || 'Not Applicable',
-      pumpMaintenanceBorneBy: raw.pumpMaintenanceBorneBy || 'Borne by Owner',
-      commonElectricityBorneBy: raw.commonElectricityBorneBy || 'Borne by Owner',
-      propertyTaxAmountBorneBy: raw.propertyTaxAmountBorneBy || 'No such document is verified',
-      isBuildingInsuredDetails: raw.isBuildingInsuredDetails || 'No such document is verified',
-      statutoryDuesPaid: raw.statutoryDuesPaid || 'No such document is verified',
-      buildingFreeAccess: raw.buildingFreeAccess || 'Yes',
+      buildingOwnerOccupiedTenanted: raw.buildingOwnerOccupiedTenanted !== undefined ? raw.buildingOwnerOccupiedTenanted : 'Owner Occupied',
+      ownerOccupiedPortion: raw.ownerOccupiedPortion !== undefined ? raw.ownerOccupiedPortion : 'Not Applicable',
+      isUnderRentControlAct: raw.isUnderRentControlAct !== undefined ? raw.isUnderRentControlAct : 'No',
+      buildingTenantNames: raw.buildingTenantNames !== undefined ? raw.buildingTenantNames : 'Not Applicable',
+      buildingTenantPortions: raw.buildingTenantPortions !== undefined ? raw.buildingTenantPortions : 'Not Applicable',
+      buildingMonthlyRent: raw.buildingMonthlyRent !== undefined ? raw.buildingMonthlyRent : 'Not Applicable',
+      buildingGrossRent: raw.buildingGrossRent !== undefined ? raw.buildingGrossRent : 'Not Applicable',
+      occupantsRelatedToOwner: raw.occupantsRelatedToOwner !== undefined ? raw.occupantsRelatedToOwner : 'Not Applicable',
+      fixturesAmountRecovered: raw.fixturesAmountRecovered !== undefined ? raw.fixturesAmountRecovered : 'Borne by Owner',
+      waterElectricityChargesBorneBy: raw.waterElectricityChargesBorneBy !== undefined ? raw.waterElectricityChargesBorneBy : 'Borne by Owner',
+      isRentDisputePendingCourt: raw.isRentDisputePendingCourt !== undefined ? raw.isRentDisputePendingCourt : 'No',
+      hasStandardRentFixed: raw.hasStandardRentFixed !== undefined ? raw.hasStandardRentFixed : 'Not Applicable',
+      tenantBearMaintenance: raw.tenantBearMaintenance !== undefined ? raw.tenantBearMaintenance : 'Not Applicable',
+      liftMaintenanceBorneBy: raw.liftMaintenanceBorneBy !== undefined ? raw.liftMaintenanceBorneBy : 'Not Applicable',
+      pumpMaintenanceBorneBy: raw.pumpMaintenanceBorneBy !== undefined ? raw.pumpMaintenanceBorneBy : 'Borne by Owner',
+      commonElectricityBorneBy: raw.commonElectricityBorneBy !== undefined ? raw.commonElectricityBorneBy : 'Borne by Owner',
+      propertyTaxAmountBorneBy: raw.propertyTaxAmountBorneBy !== undefined ? raw.propertyTaxAmountBorneBy : 'No such document is verified',
+      isBuildingInsuredDetails: raw.isBuildingInsuredDetails !== undefined ? raw.isBuildingInsuredDetails : 'No such document is verified',
+      statutoryDuesPaid: raw.statutoryDuesPaid !== undefined ? raw.statutoryDuesPaid : 'No such document is verified',
+      buildingFreeAccess: raw.buildingFreeAccess !== undefined ? raw.buildingFreeAccess : 'Yes',
 
       // 2. Technical Details
-      numberOfFloorsAndHeight: raw.numberOfFloorsAndHeight || "G+3 Storied Building & Height: 10'-6\"",
+      numberOfFloorsAndHeight: raw.numberOfFloorsAndHeight !== undefined ? raw.numberOfFloorsAndHeight : "G+3 Storied Building & Height: 10'-6\"",
       floorDetails: (raw.floorDetails && raw.floorDetails.length > 0) ? raw.floorDetails : [
         { floorName: 'Ground Floor', height: raw.floorHeightGF || "10'-6\"", plinthArea: raw.plinthAreaGF || '', doorsWindows: raw.doorsWindowsGF || 'Iron Shutter', flooring: raw.flooringGF || 'VT Flooring', wallFinishing: raw.wallFinishingGF || 'Cement Plastering, Putty, Painting' },
         { floorName: 'First Floor', height: raw.floorHeightFF || 'Do', plinthArea: raw.plinthAreaFF || '', doorsWindows: raw.doorsWindowsFF || 'Sal wood choukath with non sal wood shutter', flooring: raw.flooringFF || 'Do', wallFinishing: raw.wallFinishingFF || 'Do' },
         { floorName: 'Second Floor', height: raw.floorHeightSF || 'Do', plinthArea: raw.plinthAreaSF || '', doorsWindows: raw.doorsWindowsSF || 'Do', flooring: raw.flooringSF || 'Do', wallFinishing: raw.wallFinishingSF || 'Do' },
         { floorName: 'Third Floor', height: raw.floorHeightTF || 'Do', plinthArea: raw.plinthAreaTF || '', doorsWindows: raw.doorsWindowsTF || 'Do', flooring: raw.flooringTF || 'Do', wallFinishing: raw.wallFinishingTF || 'Do' },
       ],
-      floorHeightGF: raw.floorHeightGF || "10'-6\"",
-      floorHeightFF: raw.floorHeightFF || 'Do',
-      floorHeightSF: raw.floorHeightSF || 'Do',
-      floorHeightTF: raw.floorHeightTF || 'Do',
-      plinthAreaGF: raw.plinthAreaGF || '',
-      plinthAreaFF: raw.plinthAreaFF || '',
-      plinthAreaSF: raw.plinthAreaSF || '',
-      plinthAreaTF: raw.plinthAreaTF || '',
-      buildingConditionExterior: raw.buildingConditionExterior || 'Good',
-      buildingConditionInterior: raw.buildingConditionInterior || 'Good',
-      foundationType: raw.foundationType || 'Column Foundation',
-      doorsWindowsGF: raw.doorsWindowsGF || 'Iron Shutter',
-      doorsWindowsFF: raw.doorsWindowsFF || 'Sal wood choukath with non sal wood shutter',
-      doorsWindowsSF: raw.doorsWindowsSF || 'Do',
-      doorsWindowsTF: raw.doorsWindowsTF || 'Do',
-      flooringGF: raw.flooringGF || 'VT Flooring',
-      flooringFF: raw.flooringFF || 'Do',
-      flooringSF: raw.flooringSF || 'Do',
-      flooringTF: raw.flooringTF || 'Do',
-      wallFinishingGF: raw.wallFinishingGF || 'Cement Plastering, Putty, Painting',
-      wallFinishingFF: raw.wallFinishingFF || 'Do',
-      wallFinishingSF: raw.wallFinishingSF || 'Do',
-      wallFinishingTF: raw.wallFinishingTF || 'Do',
+      floorHeightGF: raw.floorHeightGF !== undefined ? raw.floorHeightGF : "10'-6\"",
+      floorHeightFF: raw.floorHeightFF !== undefined ? raw.floorHeightFF : 'Do',
+      floorHeightSF: raw.floorHeightSF !== undefined ? raw.floorHeightSF : 'Do',
+      floorHeightTF: raw.floorHeightTF !== undefined ? raw.floorHeightTF : 'Do',
+      plinthAreaGF: raw.plinthAreaGF !== undefined ? raw.plinthAreaGF : '',
+      plinthAreaFF: raw.plinthAreaFF !== undefined ? raw.plinthAreaFF : '',
+      plinthAreaSF: raw.plinthAreaSF !== undefined ? raw.plinthAreaSF : '',
+      plinthAreaTF: raw.plinthAreaTF !== undefined ? raw.plinthAreaTF : '',
+      buildingConditionExterior: raw.buildingConditionExterior !== undefined ? raw.buildingConditionExterior : 'Good',
+      buildingConditionInterior: raw.buildingConditionInterior !== undefined ? raw.buildingConditionInterior : 'Good',
+      foundationType: raw.foundationType !== undefined ? raw.foundationType : 'Column Foundation',
+      doorsWindowsGF: raw.doorsWindowsGF !== undefined ? raw.doorsWindowsGF : 'Iron Shutter',
+      doorsWindowsFF: raw.doorsWindowsFF !== undefined ? raw.doorsWindowsFF : 'Sal wood choukath with non sal wood shutter',
+      doorsWindowsSF: raw.doorsWindowsSF !== undefined ? raw.doorsWindowsSF : 'Do',
+      doorsWindowsTF: raw.doorsWindowsTF !== undefined ? raw.doorsWindowsTF : 'Do',
+      flooringGF: raw.flooringGF !== undefined ? raw.flooringGF : 'VT Flooring',
+      flooringFF: raw.flooringFF !== undefined ? raw.flooringFF : 'Do',
+      flooringSF: raw.flooringSF !== undefined ? raw.flooringSF : 'Do',
+      flooringTF: raw.flooringTF !== undefined ? raw.flooringTF : 'Do',
+      wallFinishingGF: raw.wallFinishingGF !== undefined ? raw.wallFinishingGF : 'Cement Plastering, Putty, Painting',
+      wallFinishingFF: raw.wallFinishingFF !== undefined ? raw.wallFinishingFF : 'Do',
+      wallFinishingSF: raw.wallFinishingSF !== undefined ? raw.wallFinishingSF : 'Do',
+      wallFinishingTF: raw.wallFinishingTF !== undefined ? raw.wallFinishingTF : 'Do',
 
       // 3. Construction Specifications
-      specFoundation: raw.specFoundation || 'Column Foundation',
-      specBasement: raw.specBasement || 'No',
-      specSuperstructure: raw.specSuperstructure || 'Brick Masonry Super Structure',
-      specJoineryDoorsWindows: raw.specJoineryDoorsWindows || 'Sal wood choukath with non sal wood shutter',
-      specRccWorks: raw.specRccWorks || 'Lintel, Chajja, Beam',
-      specPlastering: raw.specPlastering || 'Cement Plastering',
-      specFlooringSkirting: raw.specFlooringSkirting || 'VT Flooring',
-      specSpecialFinishing: raw.specSpecialFinishing || 'Yes',
-      specRoofing: raw.specRoofing || 'RCC Roof',
-      specDrainage: raw.specDrainage || 'Surface Drainage',
-      specDecorativeFeatures: raw.specDecorativeFeatures || 'Interior work is done on Second & Third Floor',
-      specInternalWiring: raw.specInternalWiring || 'Concealed',
-      specWiringFittingsClass: raw.specWiringFittingsClass || 'Superior',
-      specSanitaryInstallation: raw.specSanitaryInstallation || 'Yes',
-      specNoOfGeysers: raw.specNoOfGeysers || 'Not Verified',
-      specSanitaryFittingsClass: raw.specSanitaryFittingsClass || 'Superior',
-      specCompoundWall: raw.specCompoundWall || 'Yes',
-      specCompoundWallHeightLength: raw.specCompoundWallHeightLength || "Height: 5'-0\", Length: 150'-0\"",
-      specCompoundWallType: raw.specCompoundWallType || 'Brick Masonry Wall with Iron Gate',
-      specLiftsCapacity: raw.specLiftsCapacity || 'No',
-      specUndergroundSump: raw.specUndergroundSump || 'Not Available',
-      specOverheadTank: raw.specOverheadTank || 'Yes',
-      specOverheadTankLocation: raw.specOverheadTankLocation || 'On the top of the roof',
-      specOverheadTankCapacity: raw.specOverheadTankCapacity || '2000 Liters',
-      specPumpsHp: raw.specPumpsHp || '1 Nos & 1 HP Pump',
-      specRoadsPavingCompound: raw.specRoadsPavingCompound || 'No',
-      specSewageDisposal: raw.specSewageDisposal || 'Connected to Public Sewers',
-      specQualityClassConstruction: raw.specQualityClassConstruction || 'Good',
+      specFoundation: raw.specFoundation !== undefined ? raw.specFoundation : 'Column Foundation',
+      specBasement: raw.specBasement !== undefined ? raw.specBasement : 'No',
+      specSuperstructure: raw.specSuperstructure !== undefined ? raw.specSuperstructure : 'Brick Masonry Super Structure',
+      specJoineryDoorsWindows: raw.specJoineryDoorsWindows !== undefined ? raw.specJoineryDoorsWindows : 'Sal wood choukath with non sal wood shutter',
+      specRccWorks: raw.specRccWorks !== undefined ? raw.specRccWorks : 'Lintel, Chajja, Beam',
+      specPlastering: raw.specPlastering !== undefined ? raw.specPlastering : 'Cement Plastering',
+      specFlooringSkirting: raw.specFlooringSkirting !== undefined ? raw.specFlooringSkirting : 'VT Flooring',
+      specSpecialFinishing: raw.specSpecialFinishing !== undefined ? raw.specSpecialFinishing : 'Yes',
+      specRoofing: raw.specRoofing !== undefined ? raw.specRoofing : 'RCC Roof',
+      specDrainage: raw.specDrainage !== undefined ? raw.specDrainage : 'Surface Drainage',
+      specDecorativeFeatures: raw.specDecorativeFeatures !== undefined ? raw.specDecorativeFeatures : 'Interior work is done on Second & Third Floor',
+      specInternalWiring: raw.specInternalWiring !== undefined ? raw.specInternalWiring : 'Concealed',
+      specWiringFittingsClass: raw.specWiringFittingsClass !== undefined ? raw.specWiringFittingsClass : 'Superior',
+      specSanitaryInstallation: raw.specSanitaryInstallation !== undefined ? raw.specSanitaryInstallation : 'Yes',
+      specNoOfGeysers: raw.specNoOfGeysers !== undefined ? raw.specNoOfGeysers : 'Not Verified',
+      specSanitaryFittingsClass: raw.specSanitaryFittingsClass !== undefined ? raw.specSanitaryFittingsClass : 'Superior',
+      specCompoundWall: raw.specCompoundWall !== undefined ? raw.specCompoundWall : 'Yes',
+      specCompoundWallHeightLength: raw.specCompoundWallHeightLength !== undefined ? raw.specCompoundWallHeightLength : "Height: 5'-0\", Length: 150'-0\"",
+      specCompoundWallType: raw.specCompoundWallType !== undefined ? raw.specCompoundWallType : 'Brick Masonry Wall with Iron Gate',
+      specLiftsCapacity: raw.specLiftsCapacity !== undefined ? raw.specLiftsCapacity : 'No',
+      specUndergroundSump: raw.specUndergroundSump !== undefined ? raw.specUndergroundSump : 'Not Available',
+      specOverheadTank: raw.specOverheadTank !== undefined ? raw.specOverheadTank : 'Yes',
+      specOverheadTankLocation: raw.specOverheadTankLocation !== undefined ? raw.specOverheadTankLocation : 'On the top of the roof',
+      specOverheadTankCapacity: raw.specOverheadTankCapacity !== undefined ? raw.specOverheadTankCapacity : '2000 Liters',
+      specPumpsHp: raw.specPumpsHp !== undefined ? raw.specPumpsHp : '1 Nos & 1 HP Pump',
+      specRoadsPavingCompound: raw.specRoadsPavingCompound !== undefined ? raw.specRoadsPavingCompound : 'No',
+      specSewageDisposal: raw.specSewageDisposal !== undefined ? raw.specSewageDisposal : 'Connected to Public Sewers',
+      specQualityClassConstruction: raw.specQualityClassConstruction !== undefined ? raw.specQualityClassConstruction : 'Good',
 
       // 4. Details of Building Valuation Table
       buildingValuationRows: defaultBldgRows,
@@ -628,7 +628,7 @@ export default function BandhanSME({
         { name: 'Overhead Water Tank', cost: '' },
         { name: 'Extra Steel / Collapsible Gates', cost: '' },
       ],
-      extraItemsTotal: raw.extraItemsTotal || 'Rs. 0.00',
+      extraItemsTotal: raw.extraItemsTotal !== undefined ? raw.extraItemsTotal : 'Rs. 0.00',
 
       isAmenitiesNA: raw.isAmenitiesNA !== undefined ? raw.isAmenitiesNA : true,
       amenities: Array.isArray(raw.amenities) ? raw.amenities : [
@@ -643,7 +643,7 @@ export default function BandhanSME({
         { name: 'Aluminium Hand Rails', cost: '' },
         { name: 'False Ceiling', cost: '' },
       ],
-      amenitiesTotal: raw.amenitiesTotal || 'Rs. 0.00',
+      amenitiesTotal: raw.amenitiesTotal !== undefined ? raw.amenitiesTotal : 'Rs. 0.00',
 
       isMiscNA: raw.isMiscNA !== undefined ? raw.isMiscNA : true,
       miscItems: Array.isArray(raw.miscItems) ? raw.miscItems : [
@@ -652,7 +652,7 @@ export default function BandhanSME({
         { name: 'Separate Water Tank / Sump', cost: '' },
         { name: 'Trees, Gardening', cost: '' },
       ],
-      miscItemsTotal: raw.miscItemsTotal || 'Rs. 0.00',
+      miscItemsTotal: raw.miscItemsTotal !== undefined ? raw.miscItemsTotal : 'Rs. 0.00',
 
       isServicesNA: raw.isServicesNA !== undefined ? raw.isServicesNA : true,
       servicesItems: Array.isArray(raw.servicesItems) ? raw.servicesItems : [
@@ -662,74 +662,74 @@ export default function BandhanSME({
         { name: 'C.B Deposit, Fitting etc.', cost: '' },
         { name: 'Pavement', cost: '' },
       ],
-      servicesItemsTotal: raw.servicesItemsTotal || 'Rs. 0.00',
+      servicesItemsTotal: raw.servicesItemsTotal !== undefined ? raw.servicesItemsTotal : 'Rs. 0.00',
 
       // 6.0 Total Abstract of Entire Property
-      abstractGovtLand: raw.abstractGovtLand || '',
-      abstractMarketLand: raw.abstractMarketLand || '',
-      abstractRealLand: raw.abstractRealLand || '',
-      abstractDistressLand: raw.abstractDistressLand || '',
+      abstractGovtLand: raw.abstractGovtLand !== undefined ? raw.abstractGovtLand : '',
+      abstractMarketLand: raw.abstractMarketLand !== undefined ? raw.abstractMarketLand : '',
+      abstractRealLand: raw.abstractRealLand !== undefined ? raw.abstractRealLand : '',
+      abstractDistressLand: raw.abstractDistressLand !== undefined ? raw.abstractDistressLand : '',
 
-      abstractGovtBuilding: raw.abstractGovtBuilding || 'Rs. 0.00',
-      abstractMarketBuilding: raw.abstractMarketBuilding || '',
-      abstractRealBuilding: raw.abstractRealBuilding || '',
-      abstractDistressBuilding: raw.abstractDistressBuilding || '',
+      abstractGovtBuilding: raw.abstractGovtBuilding !== undefined ? raw.abstractGovtBuilding : 'Rs. 0.00',
+      abstractMarketBuilding: raw.abstractMarketBuilding !== undefined ? raw.abstractMarketBuilding : '',
+      abstractRealBuilding: raw.abstractRealBuilding !== undefined ? raw.abstractRealBuilding : '',
+      abstractDistressBuilding: raw.abstractDistressBuilding !== undefined ? raw.abstractDistressBuilding : '',
 
-      abstractGovtExtra: raw.abstractGovtExtra || 'Rs. 0.00',
-      abstractMarketExtra: raw.abstractMarketExtra || 'Rs. 0.00',
-      abstractRealExtra: raw.abstractRealExtra || 'Rs. 0.00',
-      abstractDistressExtra: raw.abstractDistressExtra || 'Rs. 0.00',
+      abstractGovtExtra: raw.abstractGovtExtra !== undefined ? raw.abstractGovtExtra : 'Rs. 0.00',
+      abstractMarketExtra: raw.abstractMarketExtra !== undefined ? raw.abstractMarketExtra : 'Rs. 0.00',
+      abstractRealExtra: raw.abstractRealExtra !== undefined ? raw.abstractRealExtra : 'Rs. 0.00',
+      abstractDistressExtra: raw.abstractDistressExtra !== undefined ? raw.abstractDistressExtra : 'Rs. 0.00',
 
-      abstractGovtAmenities: raw.abstractGovtAmenities || 'Rs. 0.00',
-      abstractMarketAmenities: raw.abstractMarketAmenities || 'Rs. 0.00',
-      abstractRealAmenities: raw.abstractRealAmenities || 'Rs. 0.00',
-      abstractDistressAmenities: raw.abstractDistressAmenities || 'Rs. 0.00',
+      abstractGovtAmenities: raw.abstractGovtAmenities !== undefined ? raw.abstractGovtAmenities : 'Rs. 0.00',
+      abstractMarketAmenities: raw.abstractMarketAmenities !== undefined ? raw.abstractMarketAmenities : 'Rs. 0.00',
+      abstractRealAmenities: raw.abstractRealAmenities !== undefined ? raw.abstractRealAmenities : 'Rs. 0.00',
+      abstractDistressAmenities: raw.abstractDistressAmenities !== undefined ? raw.abstractDistressAmenities : 'Rs. 0.00',
 
-      abstractGovtMisc: raw.abstractGovtMisc || 'Rs. 0.00',
-      abstractMarketMisc: raw.abstractMarketMisc || 'Rs. 0.00',
-      abstractRealMisc: raw.abstractRealMisc || 'Rs. 0.00',
-      abstractDistressMisc: raw.abstractDistressMisc || 'Rs. 0.00',
+      abstractGovtMisc: raw.abstractGovtMisc !== undefined ? raw.abstractGovtMisc : 'Rs. 0.00',
+      abstractMarketMisc: raw.abstractMarketMisc !== undefined ? raw.abstractMarketMisc : 'Rs. 0.00',
+      abstractRealMisc: raw.abstractRealMisc !== undefined ? raw.abstractRealMisc : 'Rs. 0.00',
+      abstractDistressMisc: raw.abstractDistressMisc !== undefined ? raw.abstractDistressMisc : 'Rs. 0.00',
 
-      abstractGovtServices: raw.abstractGovtServices || 'Rs. 0.00',
-      abstractMarketServices: raw.abstractMarketServices || 'Rs. 0.00',
-      abstractRealServices: raw.abstractRealServices || 'Rs. 0.00',
-      abstractDistressServices: raw.abstractDistressServices || 'Rs. 0.00',
+      abstractGovtServices: raw.abstractGovtServices !== undefined ? raw.abstractGovtServices : 'Rs. 0.00',
+      abstractMarketServices: raw.abstractMarketServices !== undefined ? raw.abstractMarketServices : 'Rs. 0.00',
+      abstractRealServices: raw.abstractRealServices !== undefined ? raw.abstractRealServices : 'Rs. 0.00',
+      abstractDistressServices: raw.abstractDistressServices !== undefined ? raw.abstractDistressServices : 'Rs. 0.00',
 
-      abstractGovtTotal: raw.abstractGovtTotal || '',
-      abstractMarketTotal: raw.abstractMarketTotal || '',
-      abstractRealTotal: raw.abstractRealTotal || '',
-      abstractDistressTotal: raw.abstractDistressTotal || '',
+      abstractGovtTotal: raw.abstractGovtTotal !== undefined ? raw.abstractGovtTotal : '',
+      abstractMarketTotal: raw.abstractMarketTotal !== undefined ? raw.abstractMarketTotal : '',
+      abstractRealTotal: raw.abstractRealTotal !== undefined ? raw.abstractRealTotal : '',
+      abstractDistressTotal: raw.abstractDistressTotal !== undefined ? raw.abstractDistressTotal : '',
 
-      abstractGovtSay: raw.abstractGovtSay || '',
-      abstractMarketSay: raw.abstractMarketSay || '',
-      abstractRealSay: raw.abstractRealSay || '',
-      abstractDistressSay: raw.abstractDistressSay || '',
+      abstractGovtSay: raw.abstractGovtSay !== undefined ? raw.abstractGovtSay : '',
+      abstractMarketSay: raw.abstractMarketSay !== undefined ? raw.abstractMarketSay : '',
+      abstractRealSay: raw.abstractRealSay !== undefined ? raw.abstractRealSay : '',
+      abstractDistressSay: raw.abstractDistressSay !== undefined ? raw.abstractDistressSay : '',
 
       // Remarks, Basis & Valuation Opinion
-      valuationRemarksBox: raw.valuationRemarksBox || '',
-      basisOfValuationStatement: raw.basisOfValuationStatement || '(LAND & BUILDING METHOD OF VALUATION HAS BEEN ADOPTED FOR FINDING THE FAIR MARKET VALUE OF THE PROPERTY)',
-      fairMarketValue: raw.fairMarketValue || '',
-      fairMarketValueWords: raw.fairMarketValueWords || '',
-      realisableValue: raw.realisableValue || '',
-      realisableValueWords: raw.realisableValueWords || '',
-      bookValueOfLand: raw.bookValueOfLand || '',
-      bookValueOfLandWords: raw.bookValueOfLandWords || '',
-      distressValue: raw.distressValue || '',
-      distressValueWords: raw.distressValueWords || '',
-      insurableValueOfProperty: raw.insurableValueOfProperty || '',
-      insurableValueOfPropertyWords: raw.insurableValueOfPropertyWords || '',
+      valuationRemarksBox: raw.valuationRemarksBox !== undefined ? raw.valuationRemarksBox : '',
+      basisOfValuationStatement: raw.basisOfValuationStatement !== undefined ? raw.basisOfValuationStatement : '(LAND & BUILDING METHOD OF VALUATION HAS BEEN ADOPTED FOR FINDING THE FAIR MARKET VALUE OF THE PROPERTY)',
+      fairMarketValue: raw.fairMarketValue !== undefined ? raw.fairMarketValue : '',
+      fairMarketValueWords: raw.fairMarketValueWords !== undefined ? raw.fairMarketValueWords : '',
+      realisableValue: raw.realisableValue !== undefined ? raw.realisableValue : '',
+      realisableValueWords: raw.realisableValueWords !== undefined ? raw.realisableValueWords : '',
+      bookValueOfLand: raw.bookValueOfLand !== undefined ? raw.bookValueOfLand : '',
+      bookValueOfLandWords: raw.bookValueOfLandWords !== undefined ? raw.bookValueOfLandWords : '',
+      distressValue: raw.distressValue !== undefined ? raw.distressValue : '',
+      distressValueWords: raw.distressValueWords !== undefined ? raw.distressValueWords : '',
+      insurableValueOfProperty: raw.insurableValueOfProperty !== undefined ? raw.insurableValueOfProperty : '',
+      insurableValueOfPropertyWords: raw.insurableValueOfPropertyWords !== undefined ? raw.insurableValueOfPropertyWords : '',
 
       // Declaration & Sign-off
       declarationItems: raw.declarationItems || [],
       reportPagesCount: raw.reportPagesCountLocked ? (raw.reportPagesCount || '') : '',
       reportPagesCountLocked: Boolean(raw.reportPagesCountLocked),
-      siteEngineerName: raw.siteEngineerName || 'MR. SIBA BEHERA',
-      empanelledValuerName: raw.empanelledValuerName || 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)',
+      siteEngineerName: raw.siteEngineerName !== undefined ? raw.siteEngineerName : 'MR. SIBA BEHERA',
+      empanelledValuerName: raw.empanelledValuerName !== undefined ? raw.empanelledValuerName : 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)',
       valuerQualifications: (!raw.valuerQualifications || raw.valuerQualifications === 'B.Tech (Civil), M.Val (RE)' || raw.valuerQualifications.includes('B.Tech (Civil)'))
         ? 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'
         : raw.valuerQualifications,
-      valuerIovRegNo: raw.valuerIovRegNo || 'No. F-26377',
-      valuerWealthTaxRegNo: raw.valuerWealthTaxRegNo || 'Regd. No.-107/2016-17, Cat -I',
+      valuerIovRegNo: raw.valuerIovRegNo !== undefined ? raw.valuerIovRegNo : 'No. F-26377',
+      valuerWealthTaxRegNo: raw.valuerWealthTaxRegNo !== undefined ? raw.valuerWealthTaxRegNo : 'Regd. No.-107/2016-17, Cat -I',
       declarationDate: raw.declarationDate || formatReportDate(new Date()),
 
       // Checklist
@@ -1589,7 +1589,6 @@ export default function BandhanSME({
                 className={inputCls}
                 value={fields.refNo || ''}
                 onChange={(e) => handleChange('refNo', e.target.value)}
-                placeholder="e.g. BANDHAN/SME/2026/01"
                 disabled={isReadOnly}
               />
             </Field>
@@ -1637,7 +1636,6 @@ export default function BandhanSME({
                           branchName: combined,
                         }));
                       }}
-                      placeholder="e.g. Asset Centre / Borivali Branch, Mumbai"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -1662,7 +1660,6 @@ export default function BandhanSME({
                           letterNoAndDate: combined,
                         }));
                       }}
-                      placeholder="e.g. BANDHAN/SME/2026/102"
                       disabled={isReadOnly}
                     />
                   </div>
@@ -1699,9 +1696,8 @@ export default function BandhanSME({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.managerAccompanied || 'No'}
+                value={fields.managerAccompanied || ''}
                 onChange={(e) => handleChange('managerAccompanied', e.target.value)}
-                placeholder="No or Officer Name"
                 disabled={isReadOnly}
               />
             </Field>
@@ -1721,9 +1717,8 @@ export default function BandhanSME({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.dateOfEarlierValuation || 'No'}
+                value={fields.dateOfEarlierValuation || ''}
                 onChange={(e) => handleChange('dateOfEarlierValuation', e.target.value)}
-                placeholder="No or Earlier Date"
                 disabled={isReadOnly}
               />
             </Field>
@@ -1731,9 +1726,8 @@ export default function BandhanSME({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.previousValuerName || 'Not Applicable'}
+                value={fields.previousValuerName || ''}
                 onChange={(e) => handleChange('previousValuerName', e.target.value)}
-                placeholder="Not Applicable or Valuer Name"
                 disabled={isReadOnly}
               />
             </Field>
@@ -1777,7 +1771,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.personsPresent || ''}
                   onChange={(e) => handleChange('personsPresent', e.target.value)}
-                  placeholder="e.g. Person Name, Mob-98XXXXXXXX"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1789,7 +1782,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.documentsProduced || ''}
                   onChange={(e) => handleChange('documentsProduced', e.target.value)}
-                  placeholder="e.g. Xerox copy of Sale Deed, Patta, Sketch Map, Assessment of Holding"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -1807,7 +1799,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.borrowerName || ''}
                     onChange={(e) => handleChange('borrowerName', e.target.value)}
-                    placeholder="e.g. M/S. Company / Borrower Name"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1817,7 +1808,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.borrowerNatureOfBusiness || ''}
                     onChange={(e) => handleChange('borrowerNatureOfBusiness', e.target.value)}
-                    placeholder="e.g. Trading, Manufacturing, Retail"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1827,7 +1817,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.borrowerAt || ''}
                     onChange={(e) => handleChange('borrowerAt', e.target.value)}
-                    placeholder="e.g. Area / Street"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1837,7 +1826,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.borrowerPo || ''}
                     onChange={(e) => handleChange('borrowerPo', e.target.value)}
-                    placeholder="Post Office"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1847,7 +1835,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.borrowerPs || ''}
                     onChange={(e) => handleChange('borrowerPs', e.target.value)}
-                    placeholder="Police Station"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1857,7 +1844,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.borrowerDist || ''}
                     onChange={(e) => handleChange('borrowerDist', e.target.value)}
-                    placeholder="e.g. Khordha, Odisha"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1867,7 +1853,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.borrowerPhone || ''}
                     onChange={(e) => handleChange('borrowerPhone', sanitizePositiveInt(e.target.value, 15))}
-                    placeholder="Mob-XXXXXXXXXX"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1886,17 +1871,15 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.ownerName || ''}
                     onChange={(e) => handleChange('ownerName', e.target.value)}
-                    placeholder="e.g. Owner Full Name"
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Father's / Husband's Name:">
+                <Field label="Father's Name:">
                   <input
                     type="text"
                     className={inputCls}
                     value={fields.ownerFatherName || ''}
                     onChange={(e) => handleChange('ownerFatherName', e.target.value)}
-                    placeholder="e.g. S/o / W/o Full Name"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1906,7 +1889,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.ownerAt || ''}
                     onChange={(e) => handleChange('ownerAt', e.target.value)}
-                    placeholder="e.g. Plot No, Street"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1916,7 +1898,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.ownerPo || ''}
                     onChange={(e) => handleChange('ownerPo', e.target.value)}
-                    placeholder="Post Office"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1926,7 +1907,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.ownerPs || ''}
                     onChange={(e) => handleChange('ownerPs', e.target.value)}
-                    placeholder="Police Station"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1936,7 +1916,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.ownerPin || ''}
                     onChange={(e) => handleChange('ownerPin', sanitizePositiveInt(e.target.value, 6))}
-                    placeholder="e.g. 751010"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1946,7 +1925,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.ownerDist || ''}
                     onChange={(e) => handleChange('ownerDist', e.target.value)}
-                    placeholder="e.g. Khordha, Odisha"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -1956,7 +1934,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.ownerPhone || ''}
                     onChange={(e) => handleChange('ownerPhone', sanitizePositiveInt(e.target.value, 15))}
-                    placeholder="Mob-XXXXXXXXXX"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2055,7 +2032,6 @@ export default function BandhanSME({
                         landAreaSqft: val ? formatted.sqftStr : '',
                       }));
                     }}
-                    placeholder="0.00"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2072,7 +2048,6 @@ export default function BandhanSME({
                     })()}
                     readOnly
                     disabled
-                    placeholder="0 sqft."
                   />
                 </Field>
               </div>
@@ -2101,7 +2076,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.valueAsPerSaleDeed || ''}
                   onChange={(e) => handleChange('valueAsPerSaleDeed', e.target.value)}
-                  placeholder="e.g. Rs. 45,00,000/-"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -2111,7 +2085,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.saleDeedDocNo || ''}
                   onChange={(e) => handleChange('saleDeedDocNo', e.target.value)}
-                  placeholder="e.g. 1081609995"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -2121,7 +2094,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.areaLandDoc || ''}
                   onChange={(e) => handleChange('areaLandDoc', e.target.value)}
-                  placeholder="e.g. (AC.0.069Decs) i.e. 3006.00 sqft."
                   disabled={isReadOnly}
                 />
               </Field>
@@ -2131,7 +2103,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.areaLandRor || ''}
                   onChange={(e) => handleChange('areaLandRor', e.target.value)}
-                  placeholder="e.g. (AC.0.069Decs) i.e. 3006.00 sqft."
                   disabled={isReadOnly}
                 />
               </Field>
@@ -2141,7 +2112,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.areaLandPhysical || ''}
                   onChange={(e) => handleChange('areaLandPhysical', e.target.value)}
-                  placeholder="e.g. (AC.0.069Decs) i.e. 3006.00 sqft."
                   disabled={isReadOnly}
                 />
               </Field>
@@ -2158,7 +2128,6 @@ export default function BandhanSME({
                       className={inputCls}
                       value={fields.plotNo || ''}
                       onChange={(e) => handleChange('plotNo', e.target.value)}
-                      placeholder="e.g. Plot No: 443/11470"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2168,7 +2137,6 @@ export default function BandhanSME({
                       className={inputCls}
                       value={fields.khataNo || ''}
                       onChange={(e) => handleChange('khataNo', e.target.value)}
-                      placeholder="e.g. Khata No: 1330/8618"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2178,7 +2146,6 @@ export default function BandhanSME({
                       className={inputCls}
                       value={fields.propAt || ''}
                       onChange={(e) => handleChange('propAt', e.target.value)}
-                      placeholder="Locality"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2188,7 +2155,6 @@ export default function BandhanSME({
                       className={inputCls}
                       value={fields.propPo || ''}
                       onChange={(e) => handleChange('propPo', e.target.value)}
-                      placeholder="Post Office"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2198,7 +2164,6 @@ export default function BandhanSME({
                       className={inputCls}
                       value={fields.propPs || ''}
                       onChange={(e) => handleChange('propPs', e.target.value)}
-                      placeholder="Police Station"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2208,7 +2173,6 @@ export default function BandhanSME({
                       className={inputCls}
                       value={fields.propPin || ''}
                       onChange={(e) => handleChange('propPin', sanitizePositiveInt(e.target.value, 6))}
-                      placeholder="PIN"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2218,7 +2182,6 @@ export default function BandhanSME({
                       className={inputCls}
                       value={fields.propDist || ''}
                       onChange={(e) => handleChange('propDist', e.target.value)}
-                      placeholder="e.g. Khordha, Odisha"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -2375,9 +2338,8 @@ export default function BandhanSME({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.jointOwnershipShare || 'Not Applicable'}
+                value={fields.jointOwnershipShare || ''}
                 onChange={(e) => handleChange('jointOwnershipShare', e.target.value)}
-                placeholder="Not Applicable or Undivided Share"
                 disabled={isReadOnly}
               />
             </Field>
@@ -2385,9 +2347,8 @@ export default function BandhanSME({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.taxesPaidUpTo || 'We have not verified any recent rent receipt'}
+                value={fields.taxesPaidUpTo || ''}
                 onChange={(e) => handleChange('taxesPaidUpTo', e.target.value)}
-                placeholder="Receipt status"
                 disabled={isReadOnly}
               />
             </Field>
@@ -2395,9 +2356,8 @@ export default function BandhanSME({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.landRevenue || 'We have not verified any recent rent receipt'}
+                value={fields.landRevenue || ''}
                 onChange={(e) => handleChange('landRevenue', e.target.value)}
-                placeholder="Revenue status"
                 disabled={isReadOnly}
               />
             </Field>
@@ -2405,9 +2365,8 @@ export default function BandhanSME({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.landBuildingMunicipalTaxes || 'We have not verified any recent rent receipt'}
+                value={fields.landBuildingMunicipalTaxes || ''}
                 onChange={(e) => handleChange('landBuildingMunicipalTaxes', e.target.value)}
-                placeholder="Municipal Tax status"
                 disabled={isReadOnly}
               />
             </Field>
@@ -2433,7 +2392,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.lessorName || 'Not Applicable'}
+                      value={fields.lessorName || ''}
                       onChange={(e) => handleChange('lessorName', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2442,7 +2401,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.lesseeName || 'Not Applicable'}
+                      value={fields.lesseeName || ''}
                       onChange={(e) => handleChange('lesseeName', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2451,7 +2410,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.natureOfLease || 'Not Applicable'}
+                      value={fields.natureOfLease || ''}
                       onChange={(e) => handleChange('natureOfLease', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2460,7 +2419,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.dateCommencementLease || 'Not Applicable'}
+                      value={fields.dateCommencementLease || ''}
                       onChange={(e) => handleChange('dateCommencementLease', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2469,7 +2428,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.periodOfLease || 'Not Applicable'}
+                      value={fields.periodOfLease || ''}
                       onChange={(e) => handleChange('periodOfLease', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2478,7 +2437,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.termsOfRenewal || 'Not Applicable'}
+                      value={fields.termsOfRenewal || ''}
                       onChange={(e) => handleChange('termsOfRenewal', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2487,7 +2446,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.leasePremiumRentPerAnnum || 'Not Applicable'}
+                      value={fields.leasePremiumRentPerAnnum || ''}
                       onChange={(e) => handleChange('leasePremiumRentPerAnnum', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2496,7 +2455,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.unexpiredPeriodOfLease || 'Not Applicable'}
+                      value={fields.unexpiredPeriodOfLease || ''}
                       onChange={(e) => handleChange('unexpiredPeriodOfLease', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2505,7 +2464,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.initialPremium || 'Not Applicable'}
+                      value={fields.initialPremium || ''}
                       onChange={(e) => handleChange('initialPremium', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2514,7 +2473,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.groundRentPerAnnum || 'Not Applicable'}
+                      value={fields.groundRentPerAnnum || ''}
                       onChange={(e) => handleChange('groundRentPerAnnum', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2523,7 +2482,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.unearnedIncreasePayable || 'Not Applicable'}
+                      value={fields.unearnedIncreasePayable || ''}
                       onChange={(e) => handleChange('unearnedIncreasePayable', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2532,7 +2491,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.leasePermitsMortgage || 'Not Applicable'}
+                      value={fields.leasePermitsMortgage || ''}
                       onChange={(e) => handleChange('leasePermitsMortgage', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -2558,9 +2517,8 @@ export default function BandhanSME({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.tenantNames || 'Not Applicable'}
+                    value={fields.tenantNames || ''}
                     onChange={(e) => handleChange('tenantNames', e.target.value)}
-                    placeholder="Not Applicable or Tenant Name"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2568,9 +2526,8 @@ export default function BandhanSME({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.tenantPortionOccupied || 'Not Applicable'}
+                    value={fields.tenantPortionOccupied || ''}
                     onChange={(e) => handleChange('tenantPortionOccupied', e.target.value)}
-                    placeholder="Not Applicable"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2578,9 +2535,8 @@ export default function BandhanSME({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.monthlyAnnualRentPaid || 'Not Applicable'}
+                    value={fields.monthlyAnnualRentPaid || ''}
                     onChange={(e) => handleChange('monthlyAnnualRentPaid', e.target.value)}
-                    placeholder="Not Applicable or Rent Amount"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2600,7 +2556,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.detailedAddressWithPin || ''}
                     onChange={(e) => handleChange('detailedAddressWithPin', e.target.value)}
-                    placeholder="Detailed address as per deeds"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2611,7 +2566,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.municipalityWardNo || ''}
                   onChange={(e) => handleChange('municipalityWardNo', e.target.value)}
-                  placeholder="Ward No"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -2624,7 +2578,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.mouza || ''}
                   onChange={(e) => handleChange('mouza', e.target.value)}
-                  placeholder="Mouza Name"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -2634,7 +2587,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.thanaNo || ''}
                   onChange={(e) => handleChange('thanaNo', e.target.value)}
-                  placeholder="Thana No"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -2644,7 +2596,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.tehasil || ''}
                   onChange={(e) => handleChange('tehasil', e.target.value)}
-                  placeholder="Tehasil"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -2654,7 +2605,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.sro || ''}
                   onChange={(e) => handleChange('sro', e.target.value)}
-                  placeholder="SRO Office"
                   disabled={isReadOnly}
                 />
               </Field>
@@ -2673,7 +2623,7 @@ export default function BandhanSME({
                       <input
                         type="text"
                         className={inputCls}
-                        value={fields.dimensionDocEastWest || 'As per Sketch Map'}
+                        value={fields.dimensionDocEastWest || ''}
                         onChange={(e) => handleChange('dimensionDocEastWest', e.target.value)}
                         disabled={isReadOnly}
                       />
@@ -2682,7 +2632,7 @@ export default function BandhanSME({
                       <input
                         type="text"
                         className={inputCls}
-                        value={fields.dimensionDocNorthSouth || 'As per Sketch Map'}
+                        value={fields.dimensionDocNorthSouth || ''}
                         onChange={(e) => handleChange('dimensionDocNorthSouth', e.target.value)}
                         disabled={isReadOnly}
                       />
@@ -2697,7 +2647,7 @@ export default function BandhanSME({
                       <input
                         type="text"
                         className={inputCls}
-                        value={fields.dimensionMeasEastWest || 'As per Sketch Map'}
+                        value={fields.dimensionMeasEastWest || ''}
                         onChange={(e) => handleChange('dimensionMeasEastWest', e.target.value)}
                         disabled={isReadOnly}
                       />
@@ -2706,7 +2656,7 @@ export default function BandhanSME({
                       <input
                         type="text"
                         className={inputCls}
-                        value={fields.dimensionMeasNorthSouth || 'As per Sketch Map'}
+                        value={fields.dimensionMeasNorthSouth || ''}
                         onChange={(e) => handleChange('dimensionMeasNorthSouth', e.target.value)}
                         disabled={isReadOnly}
                       />
@@ -2720,7 +2670,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.extentOfSite || ''}
                     onChange={(e) => handleChange('extentOfSite', e.target.value)}
-                    placeholder="e.g. (AC.0.069Decs) i.e. 3006.00 sqft."
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2730,7 +2679,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.extentConsideredValuation || ''}
                     onChange={(e) => handleChange('extentConsideredValuation', e.target.value)}
-                    placeholder="e.g. (AC.0.069Decs) i.e. 3006.00 sqft."
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2762,7 +2710,6 @@ export default function BandhanSME({
                       className="font-medium text-xs text-slate-900 border-b border-slate-300 focus:outline-none focus:border-blue-500 w-64 px-1 py-0.5"
                       value={pb.plotNo}
                       onChange={(e) => handlePlotBoundaryChange(idx, 'plotNo', e.target.value)}
-                      placeholder="e.g. Plot No: 443/11470"
                       disabled={isReadOnly}
                     />
                     {!isReadOnly && (fields.documentPlotBoundaries || []).length > 1 && (
@@ -2782,7 +2729,6 @@ export default function BandhanSME({
                         className={inputCls}
                         value={pb.east}
                         onChange={(e) => handlePlotBoundaryChange(idx, 'east', e.target.value)}
-                        placeholder="East Boundary"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -2792,7 +2738,6 @@ export default function BandhanSME({
                         className={inputCls}
                         value={pb.west}
                         onChange={(e) => handlePlotBoundaryChange(idx, 'west', e.target.value)}
-                        placeholder="West Boundary"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -2802,7 +2747,6 @@ export default function BandhanSME({
                         className={inputCls}
                         value={pb.north}
                         onChange={(e) => handlePlotBoundaryChange(idx, 'north', e.target.value)}
-                        placeholder="North Boundary"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -2812,7 +2756,6 @@ export default function BandhanSME({
                         className={inputCls}
                         value={pb.south}
                         onChange={(e) => handlePlotBoundaryChange(idx, 'south', e.target.value)}
-                        placeholder="South Boundary"
                         disabled={isReadOnly}
                       />
                     </Field>
@@ -2833,7 +2776,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.verifiedBoundaryEast || ''}
                     onChange={(e) => handleChange('verifiedBoundaryEast', e.target.value)}
-                    placeholder="East boundary"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2843,7 +2785,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.verifiedBoundaryWest || ''}
                     onChange={(e) => handleChange('verifiedBoundaryWest', e.target.value)}
-                    placeholder="West boundary"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2853,7 +2794,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.verifiedBoundaryNorth || ''}
                     onChange={(e) => handleChange('verifiedBoundaryNorth', e.target.value)}
-                    placeholder="North boundary"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2863,7 +2803,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.verifiedBoundarySouth || ''}
                     onChange={(e) => handleChange('verifiedBoundarySouth', e.target.value)}
-                    placeholder="South boundary"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2930,7 +2869,6 @@ export default function BandhanSME({
                 className={inputCls}
                 value={fields.latitudeLongitude || ''}
                 onChange={(e) => handleChange('latitudeLongitude', e.target.value)}
-                placeholder="e.g. Latitude: 20.3128, Longitude: 85.8569"
                 disabled={isReadOnly}
               />
             </Field>
@@ -2947,7 +2885,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.distMunicipalOffice || ''}
                     onChange={(e) => handleChange('distMunicipalOffice', e.target.value)}
-                    placeholder="e.g. Bhubaneswar"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2957,7 +2894,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.distMunicipalLimits || ''}
                     onChange={(e) => handleChange('distMunicipalLimits', e.target.value)}
-                    placeholder="e.g. Bhubaneswar Municipal Corporation"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2974,7 +2910,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.proximitySchool || ''}
                     onChange={(e) => handleChange('proximitySchool', e.target.value)}
-                    placeholder="e.g. 2 Kms"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2984,7 +2919,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.proximityCollege || ''}
                     onChange={(e) => handleChange('proximityCollege', e.target.value)}
-                    placeholder="e.g. 3 Kms"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -2994,7 +2928,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.proximityHospital || ''}
                     onChange={(e) => handleChange('proximityHospital', e.target.value)}
-                    placeholder="e.g. 1 Km"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3004,7 +2937,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.proximityMarket || ''}
                     onChange={(e) => handleChange('proximityMarket', e.target.value)}
-                    placeholder="e.g. 500 Mtrs"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3014,7 +2946,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.proximityBusStand || ''}
                     onChange={(e) => handleChange('proximityBusStand', e.target.value)}
-                    placeholder="e.g. 2 Kms"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3024,7 +2955,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.proximityRailwayStation || ''}
                     onChange={(e) => handleChange('proximityRailwayStation', e.target.value)}
-                    placeholder="e.g. 2 Kms"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3034,7 +2964,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.proximityOtherPlace || ''}
                     onChange={(e) => handleChange('proximityOtherPlace', e.target.value)}
-                    placeholder="e.g. NH-16 (1 Km)"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3051,7 +2980,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.locationAdvantages || ''}
                     onChange={(e) => handleChange('locationAdvantages', e.target.value)}
-                    placeholder="e.g. Situated in developed area close to civic amenities..."
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3059,9 +2987,8 @@ export default function BandhanSME({
                   <textarea
                     rows={2}
                     className={inputCls}
-                    value={fields.locationDisadvantages || 'Nothing Observed'}
+                    value={fields.locationDisadvantages || ''}
                     onChange={(e) => handleChange('locationDisadvantages', e.target.value)}
-                    placeholder="e.g. Nothing Observed"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3077,7 +3004,7 @@ export default function BandhanSME({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.landAcquisitionNotification || 'No such documents verified'}
+                value={fields.landAcquisitionNotification || ''}
                 onChange={(e) => handleChange('landAcquisitionNotification', e.target.value)}
                 disabled={isReadOnly}
               />
@@ -3086,7 +3013,7 @@ export default function BandhanSME({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.developmentContributionDemanded || 'No such documents verified'}
+                value={fields.developmentContributionDemanded || ''}
                 onChange={(e) => handleChange('developmentContributionDemanded', e.target.value)}
                 disabled={isReadOnly}
               />
@@ -3095,7 +3022,7 @@ export default function BandhanSME({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.landCeilingEnactments || 'No such documents verified'}
+                value={fields.landCeilingEnactments || ''}
                 onChange={(e) => handleChange('landCeilingEnactments', e.target.value)}
                 disabled={isReadOnly}
               />
@@ -3108,7 +3035,7 @@ export default function BandhanSME({
                 <textarea
                   rows={2}
                   className={inputCls}
-                  value={fields.salesInstancesInLocality || 'Transactions of the property are not available in the locality'}
+                  value={fields.salesInstancesInLocality || ''}
                   onChange={(e) => handleChange('salesInstancesInLocality', e.target.value)}
                   disabled={isReadOnly}
                 />
@@ -3117,7 +3044,7 @@ export default function BandhanSME({
                 <textarea
                   rows={2}
                   className={inputCls}
-                  value={fields.salesBasisArrivingLandRate || 'The present market rate of land confirmed through local enquiry and property dealers and found to be acceptable.'}
+                  value={fields.salesBasisArrivingLandRate || ''}
                   onChange={(e) => handleChange('salesBasisArrivingLandRate', e.target.value)}
                   disabled={isReadOnly}
                 />
@@ -3128,7 +3055,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.adoptedLandRateRationale || ''}
                   onChange={(e) => handleChange('adoptedLandRateRationale', e.target.value)}
-                  placeholder="e.g. Prevailing market rate is Rs.5800/- to Rs.6100/-. Adopted market rate is Rs.6000/- Per Sft..."
                   disabled={isReadOnly}
                 />
               </Field>
@@ -3146,7 +3072,7 @@ export default function BandhanSME({
                 <textarea
                   rows={2}
                   className={inputCls}
-                  value={fields.previousValuationDetails || 'Not Available / Not Applicable'}
+                  value={fields.previousValuationDetails || ''}
                   onChange={(e) => handleChange('previousValuationDetails', e.target.value)}
                   disabled={isReadOnly}
                 />
@@ -3165,7 +3091,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.presentValuationApproachDetails || ''}
                   onChange={(e) => handleChange('presentValuationApproachDetails', e.target.value)}
-                  placeholder="e.g. Land & Building method of valuation has been adopted..."
                   disabled={isReadOnly}
                 />
               </Field>
@@ -3177,7 +3102,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.landAreaTotal || fields.extentOfSite || ''}
                     onChange={(e) => handleChange('landAreaTotal', sanitizePositiveFloat(e.target.value))}
-                    placeholder="e.g. 3006.00"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3187,7 +3111,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.landMarketRate || ''}
                     onChange={(e) => handleChange('landMarketRate', sanitizePositiveFloat(e.target.value))}
-                    placeholder="e.g. 6000"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3197,7 +3120,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.landGovtBenchmarkRate || ''}
                     onChange={(e) => handleChange('landGovtBenchmarkRate', sanitizePositiveFloat(e.target.value))}
-                    placeholder="e.g. 3970"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3207,7 +3129,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.landGovtValueTotal || ''}
                     onChange={(e) => handleChange('landGovtValueTotal', e.target.value)}
-                    placeholder="Auto-calculated"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3217,7 +3138,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.landMarketValueTotal || ''}
                     onChange={(e) => handleChange('landMarketValueTotal', e.target.value)}
-                    placeholder="Auto-calculated"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3227,9 +3147,8 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.distressSalePct !== undefined ? fields.distressSalePct : '85'}
+                      value={fields.distressSalePct !== undefined ? fields.distressSalePct : ''}
                       onChange={(e) => handleChange('distressSalePct', sanitizePercentage(e.target.value))}
-                      placeholder="85 (or clear for 100%)"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -3239,7 +3158,6 @@ export default function BandhanSME({
                       className={inputCls}
                       value={fields.landDistressValue || ''}
                       onChange={(e) => handleChange('landDistressValue', e.target.value)}
-                      placeholder="Auto-calculated"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -3250,9 +3168,8 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.realisableValuePct !== undefined ? fields.realisableValuePct : '95'}
+                      value={fields.realisableValuePct !== undefined ? fields.realisableValuePct : ''}
                       onChange={(e) => handleChange('realisableValuePct', sanitizePercentage(e.target.value))}
-                      placeholder="95 (or clear for 100%)"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -3262,7 +3179,6 @@ export default function BandhanSME({
                       className={inputCls}
                       value={fields.landRealisableValue || ''}
                       onChange={(e) => handleChange('landRealisableValue', e.target.value)}
-                      placeholder="Auto-calculated"
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -3290,7 +3206,6 @@ export default function BandhanSME({
                 className={inputCls}
                 value={fields.yearCommencementCompletion || ''}
                 onChange={(e) => handleChange('yearCommencementCompletion', e.target.value)}
-                placeholder="e.g. Construction- 2019, Completion- 2021"
                 disabled={isReadOnly}
               />
             </Field>
@@ -3316,7 +3231,7 @@ export default function BandhanSME({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.farFsiPermissibleUtilized || 'FAR: 3.46'}
+                value={fields.farFsiPermissibleUtilized || ''}
                 onChange={(e) => handleChange('farFsiPermissibleUtilized', e.target.value)}
                 disabled={isReadOnly}
               />
@@ -3327,7 +3242,6 @@ export default function BandhanSME({
                 className={inputCls}
                 value={fields.buildingApprovalAuthorityDetails || ''}
                 onChange={(e) => handleChange('buildingApprovalAuthorityDetails', e.target.value)}
-                placeholder="e.g. Assessment of Holding given by Bhubaneswar Municipal Corporation..."
                 disabled={isReadOnly}
               />
             </Field>
@@ -3351,7 +3265,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.builtUpAreaAssessmentHolding || ''}
                     onChange={(e) => handleChange('builtUpAreaAssessmentHolding', e.target.value)}
-                    placeholder="e.g. As per Municipal Assessment"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3361,7 +3274,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.builtUpAreaAsPerActual || ''}
                     onChange={(e) => handleChange('builtUpAreaAsPerActual', e.target.value)}
-                    placeholder="e.g. GF: 2807 Sft, FF: 2807 Sft, SF: 2807 Sft, TF: 2807 Sft, Total: 10428 Sft"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3371,7 +3283,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.carpetAreaTotal || ''}
                     onChange={(e) => handleChange('carpetAreaTotal', e.target.value)}
-                    placeholder="e.g. 8624.00 Sft"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3381,7 +3292,6 @@ export default function BandhanSME({
                     className={inputCls}
                     value={fields.saleableAreaTotal || ''}
                     onChange={(e) => handleChange('saleableAreaTotal', e.target.value)}
-                    placeholder="e.g. 10428.00 Sft"
                     disabled={isReadOnly}
                   />
                 </Field>
@@ -3446,7 +3356,7 @@ export default function BandhanSME({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.numberOfFloorsAndHeight || "G+3 Storied Building & Height: 10'-6\""}
+                  value={fields.numberOfFloorsAndHeight || ''}
                   onChange={(e) => handleChange('numberOfFloorsAndHeight', e.target.value)}
                   disabled={isReadOnly}
                 />
@@ -3524,7 +3434,6 @@ export default function BandhanSME({
                           className="font-medium text-xs text-slate-900 border-b border-slate-300 focus:outline-none focus:border-blue-500 w-48 px-1 py-0.5"
                           value={fl.floorName}
                           onChange={(e) => handleFloorDetailChange(idx, 'floorName', e.target.value)}
-                          placeholder="e.g. Ground Floor"
                           disabled={isReadOnly}
                         />
                       </div>
@@ -3545,7 +3454,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={fl.height || ''}
                           onChange={(e) => handleFloorDetailChange(idx, 'height', e.target.value)}
-                          placeholder="10'-6&quot;"
                           disabled={isReadOnly}
                         />
                       </Field>
@@ -3555,7 +3463,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={fl.plinthArea || ''}
                           onChange={(e) => handleFloorDetailChange(idx, 'plinthArea', sanitizePositiveFloat(e.target.value))}
-                          placeholder="e.g. 2156.00"
                           disabled={isReadOnly}
                         />
                       </Field>
@@ -3565,7 +3472,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={fl.doorsWindows || ''}
                           onChange={(e) => handleFloorDetailChange(idx, 'doorsWindows', e.target.value)}
-                          placeholder="Sal wood..."
                           disabled={isReadOnly}
                         />
                       </Field>
@@ -3575,7 +3481,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={fl.flooring || ''}
                           onChange={(e) => handleFloorDetailChange(idx, 'flooring', e.target.value)}
-                          placeholder="VT Flooring"
                           disabled={isReadOnly}
                         />
                       </Field>
@@ -3585,7 +3490,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={fl.wallFinishing || ''}
                           onChange={(e) => handleFloorDetailChange(idx, 'wallFinishing', e.target.value)}
-                          placeholder="Cement Plaster..."
                           disabled={isReadOnly}
                         />
                       </Field>
@@ -3825,7 +3729,7 @@ export default function BandhanSME({
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.specCompoundWallHeightLength || "Height: 5'-0\", Length: 150'-0\""}
+                      value={fields.specCompoundWallHeightLength || ''}
                       onChange={(e) => handleChange('specCompoundWallHeightLength', e.target.value)}
                       disabled={isReadOnly}
                     />
@@ -3920,7 +3824,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={br.description}
                           onChange={(e) => handleBuildingRowChange(idx, 'description', e.target.value)}
-                          placeholder="Description"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -3930,7 +3833,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={br.plinthArea}
                           onChange={(e) => handleBuildingRowChange(idx, 'plinthArea', sanitizePositiveFloat(e.target.value))}
-                          placeholder="Plinth"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -3949,7 +3851,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={br.age}
                           onChange={(e) => handleBuildingRowChange(idx, 'age', sanitizePositiveInt(e.target.value, 3))}
-                          placeholder="Yrs"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -3959,7 +3860,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={br.replacementRate}
                           onChange={(e) => handleBuildingRowChange(idx, 'replacementRate', sanitizePositiveFloat(e.target.value))}
-                          placeholder="Rate"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -3969,7 +3869,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={br.replacementCost}
                           onChange={(e) => handleBuildingRowChange(idx, 'replacementCost', sanitizePositiveFloat(e.target.value))}
-                          placeholder="Cost"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -3979,7 +3878,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={br.depreciation}
                           onChange={(e) => handleBuildingRowChange(idx, 'depreciation', sanitizePositiveFloat(e.target.value))}
-                          placeholder="Dep"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -3989,7 +3887,6 @@ export default function BandhanSME({
                           className={inputCls}
                           value={br.valueAfterDepreciation}
                           onChange={(e) => handleBuildingRowChange(idx, 'valueAfterDepreciation', sanitizePositiveFloat(e.target.value))}
-                          placeholder="Net Val"
                           disabled={isReadOnly}
                         />
                       </td>
@@ -4036,7 +3933,6 @@ export default function BandhanSME({
                           className={`${inputCls} text-xs py-0.5`}
                           value={it.cost}
                           onChange={(e) => handleSubScheduleChange('extraItems', idx, sanitizePositiveFloat(e.target.value))}
-                          placeholder="Cost"
                           disabled={isReadOnly}
                         />
                       </div>
@@ -4069,7 +3965,6 @@ export default function BandhanSME({
                           className={`${inputCls} text-xs py-0.5`}
                           value={it.cost}
                           onChange={(e) => handleSubScheduleChange('amenities', idx, sanitizePositiveFloat(e.target.value))}
-                          placeholder="Cost"
                           disabled={isReadOnly}
                         />
                       </div>
@@ -4102,7 +3997,6 @@ export default function BandhanSME({
                           className={`${inputCls} text-xs py-0.5`}
                           value={it.cost}
                           onChange={(e) => handleSubScheduleChange('miscItems', idx, sanitizePositiveFloat(e.target.value))}
-                          placeholder="Cost"
                           disabled={isReadOnly}
                         />
                       </div>
@@ -4135,7 +4029,6 @@ export default function BandhanSME({
                           className={`${inputCls} text-xs py-0.5`}
                           value={it.cost}
                           onChange={(e) => handleSubScheduleChange('servicesItems', idx, sanitizePositiveFloat(e.target.value))}
-                          placeholder="Cost"
                           disabled={isReadOnly}
                         />
                       </div>
@@ -4195,7 +4088,6 @@ export default function BandhanSME({
                 className={inputCls}
                 value={fields.valuationRemarksBox || ''}
                 onChange={(e) => handleChange('valuationRemarksBox', e.target.value)}
-                placeholder="e.g. SUBJECT PROPERTY IS A G+3 STORIED BUILDING..."
                 disabled={isReadOnly}
               />
             </Field>
@@ -4206,7 +4098,6 @@ export default function BandhanSME({
                 className={inputCls}
                 value={fields.basisOfValuationStatement || ''}
                 onChange={(e) => handleChange('basisOfValuationStatement', e.target.value)}
-                placeholder="(LAND & BUILDING METHOD OF VALUATION HAS BEEN ADOPTED FOR FINDING THE FAIR MARKET VALUE OF THE PROPERTY)"
                 disabled={isReadOnly}
               />
             </Field>
@@ -4218,7 +4109,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.fairMarketValueWords || ''}
                   onChange={(e) => handleChange('fairMarketValueWords', e.target.value)}
-                  placeholder="Rupees..."
                   disabled={isReadOnly}
                 />
               </Field>
@@ -4228,7 +4118,6 @@ export default function BandhanSME({
                   className={inputCls}
                   value={fields.realisableValueWords || ''}
                   onChange={(e) => handleChange('realisableValueWords', e.target.value)}
-                  placeholder="Rupees..."
                   disabled={isReadOnly}
                 />
               </Field>
@@ -4247,7 +4136,7 @@ export default function BandhanSME({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.empanelledValuerName || 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)'}
+                    value={fields.empanelledValuerName || ''}
                     onChange={(e) => handleChange('empanelledValuerName', e.target.value)}
                     disabled={isReadOnly}
                   />
@@ -4256,7 +4145,7 @@ export default function BandhanSME({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.siteEngineerName || 'MR. SIBA BEHERA'}
+                    value={fields.siteEngineerName || ''}
                     onChange={(e) => handleChange('siteEngineerName', e.target.value)}
                     disabled={isReadOnly}
                   />
@@ -4265,7 +4154,7 @@ export default function BandhanSME({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.valuerQualifications || 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'}
+                    value={fields.valuerQualifications || ''}
                     onChange={(e) => handleChange('valuerQualifications', e.target.value)}
                     disabled={isReadOnly}
                   />
@@ -4274,7 +4163,7 @@ export default function BandhanSME({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.valuerIovRegNo || 'No. F-26377'}
+                    value={fields.valuerIovRegNo || ''}
                     onChange={(e) => handleChange('valuerIovRegNo', e.target.value)}
                     disabled={isReadOnly}
                   />
@@ -4283,7 +4172,7 @@ export default function BandhanSME({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.valuerWealthTaxRegNo || 'Regd. No.-107/2016-17, Cat -I'}
+                    value={fields.valuerWealthTaxRegNo || ''}
                     onChange={(e) => handleChange('valuerWealthTaxRegNo', e.target.value)}
                     disabled={isReadOnly}
                   />
@@ -4324,7 +4213,6 @@ export default function BandhanSME({
                     className={`${inputCls} mt-1`}
                     value={fields.reportPagesCount || ''}
                     onChange={(e) => handleChange('reportPagesCount', sanitizePositiveInt(e.target.value, 3))}
-                    placeholder="e.g. 26"
                     disabled={isReadOnly || !fields.reportPagesCountLocked}
                   />
                 </div>
