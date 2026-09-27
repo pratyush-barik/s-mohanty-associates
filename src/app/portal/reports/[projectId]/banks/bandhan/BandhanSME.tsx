@@ -191,14 +191,12 @@ function AreaOfLandField({
   value,
   fieldKey,
   onChange,
-  onApplyAll,
   isReadOnly = false,
 }: {
   label: string;
   value?: string;
   fieldKey: 'areaLandDoc' | 'areaLandRor' | 'areaLandPhysical';
   onChange: (formatted: string, unit: string, numVal: string) => void;
-  onApplyAll?: (formatted: string, unit: string, numVal: string) => void;
   isReadOnly?: boolean;
 }) {
   const parsed = useMemo(() => parseAreaValueAndUnit(value), [value]);
@@ -242,16 +240,6 @@ function AreaOfLandField({
       <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-slate-200/70">
         <label className="text-xs font-bold text-slate-800 tracking-wide">{label}</label>
         <div className="flex items-center gap-2">
-          {onApplyAll && (
-            <button
-              type="button"
-              onClick={() => onApplyAll(currentFormatted, unit, numVal)}
-              className="text-[11px] font-semibold text-indigo-700 hover:text-indigo-950 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded cursor-pointer transition-all"
-              title="Copy this land area and unit to Title Deed, ROR and Physical measurement"
-            >
-              ↻ Copy to ROR & Physical
-            </button>
-          )}
           <button
             type="button"
             onClick={() => setIsCustom(!isCustom)}
@@ -979,22 +967,6 @@ export default function BandhanSME({
     },
     []
   );
-
-  const handleApplyAllAreas = useCallback((formatted: string, unit: string, numVal: string) => {
-    const sqft = convertAreaToSqft(unit, numVal).sqft;
-    setFields((prev) => ({
-      ...prev,
-      areaLandDoc: formatted,
-      areaLandRor: formatted,
-      areaLandPhysical: formatted,
-      extentOfSite: formatted,
-      extentConsideredValuation: formatted,
-      landAreaUnit: unit,
-      landAreaValue: numVal,
-      landAreaTotal: sqft > 0 ? String(sqft) : prev.landAreaTotal,
-      landAreaSqft: sqft > 0 ? `${sqft} Sft` : prev.landAreaSqft,
-    }));
-  }, []);
 
   // Multi-Plot Boundary Handlers
   const handleAddPlotBoundary = () => {
@@ -2133,7 +2105,6 @@ export default function BandhanSME({
                   fieldKey="areaLandDoc"
                   value={fields.areaLandDoc || ''}
                   onChange={(formatted, unit, numVal) => handleAreaFieldChange('areaLandDoc', formatted, unit, numVal)}
-                  onApplyAll={handleApplyAllAreas}
                   isReadOnly={isReadOnly}
                 />
               </div>
