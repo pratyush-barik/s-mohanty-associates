@@ -118,23 +118,23 @@ export interface BandhanSMEProps {
 }
 
 const NAV_SECTIONS: NavItem[] = [
-  { id: 'sec-basic', title: 'Basic Information (Section I: Points A–M)' },
-  { id: 'sec-prop-details', title: 'Land Details (Section II.1: Points A–L)' },
-  { id: 'sec-title-rent', title: 'Title, Ownership & Rent (Points 2.1, 2.2 & 2.3)' },
-  { id: 'sec-desc-boundaries', title: 'Property Description & Multi-Plot Boundaries (Point 3)' },
-  { id: 'sec-site-char', title: 'Site Characteristics (Point 3) & Location Adv/Disadv (Point 4)' },
-  { id: 'sec-other-issues', title: 'Other Issues & Sales Rationale (Point 5)' },
-  { id: 'sec-land-valuation', title: 'Valuation of Land (Section II.6)' },
-  { id: 'sec-bldg-basic', title: 'Building Basic Info & Built-up Area (Part 1: Points A–H)' },
-  { id: 'sec-bldg-checklist', title: 'Building Occupancy & Details (Points I to AB)' },
-  { id: 'sec-bldg-tech-spec', title: 'Technical Details & Specifications (Parts 2 & 3)' },
-  { id: 'sec-bldg-valuation-schedules', title: 'Building Valuation, Sub-Schedules & 6.0 Total Abstract Matrix' },
-  { id: 'sec-remarks-opinion', title: 'Remarks & Certificate of Valuation' },
-  { id: 'sec-declaration', title: 'Declaration & Valuer Credentials' },
-  { id: 'sec-checklist', title: 'Valuation Checklist' },
-  { id: 'sec-documents', title: 'Documents' },
-  { id: 'sec-maps', title: 'Maps' },
-  { id: 'sec-photos', title: 'Property Photographs' },
+  { id: 'sec-basic', title: 'I. Basic Information (Points A–M)' },
+  { id: 'sec-prop-details', title: 'II. Valuation of Land (1. Details of Property)' },
+  { id: 'sec-title-rent', title: 'II. Valuation of Land (2. Title, Ownership & Rent)' },
+  { id: 'sec-desc-boundaries', title: 'II. Valuation of Land (3. Description & Boundaries)' },
+  { id: 'sec-site-char', title: 'II. Valuation of Land (4. Site Characteristics & Location)' },
+  { id: 'sec-other-issues', title: 'II. Valuation of Land (5. Other Issues & Sales Rationale)' },
+  { id: 'sec-land-valuation', title: 'II. Valuation of Land (6. Valuation of Land)' },
+  { id: 'sec-bldg-basic', title: 'III. Valuation of Building (1. Basic Info & Built-up Area)' },
+  { id: 'sec-bldg-checklist', title: 'III. Valuation of Building (1. Occupancy & Checklist)' },
+  { id: 'sec-bldg-tech-spec', title: 'III. Valuation of Building (2. Tech Details & 3. Specs)' },
+  { id: 'sec-bldg-valuation-schedules', title: 'III. Valuation of Building (4. Valuation & 6.0 Matrix)' },
+  { id: 'sec-remarks-opinion', title: 'IV. Remarks & Valuation Certificate (Opinion)' },
+  { id: 'sec-declaration', title: 'V. Declaration & Credentials' },
+  { id: 'sec-checklist', title: 'VI. Valuation Checklist (10 Points)' },
+  { id: 'sec-documents', title: 'VII. Documents' },
+  { id: 'sec-maps', title: 'VIII. Maps & Cadastral Plans' },
+  { id: 'sec-photos', title: 'IX. Property Photographs' },
 ];
 
 const sanitizePositiveInt = (val: string, maxLen?: number): string => {
@@ -1573,7 +1573,7 @@ export default function BandhanSME({
 
 
         {/* 1. BASIC INFORMATION */}
-        <Section number={1} id="sec-basic" title="Basic Information (Section I: Points A–M)">
+        <Section number={1} id="sec-basic" title="I. Basic Information (Points A–M)">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <Field label="A. Name of the Bank Branch / CBO / Asset Centre:">
@@ -1904,7 +1904,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 2. LAND DETAILS & MASTER AREA UNIT SELECTOR */}
-        <Section number={2} id="sec-prop-details" title="Land Details (Section II: Details of Property)">
+        <Section number={2} id="sec-prop-details" title="II. Valuation of Land (1. Details of Property: Points A–L)">
           <div className="space-y-4">
             {/* Master Area Converter Banner */}
             <div className="p-4 bg-gradient-to-r from-indigo-50/90 to-blue-50/90 border border-indigo-200/80 rounded-xl space-y-3">
@@ -2267,7 +2267,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 3. TITLE, OWNERSHIP & RENT */}
-        <Section number={3} id="sec-title-rent" title="Title, Ownership & Rent (Points 2.1, 2.2 & 2.3)">
+        <Section number={3} id="sec-title-rent" title="II. Valuation of Land (2. Title, Ownership & Rent: Points 2.1, 2.2 & 2.3)">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="2.1 Title of Property (Freehold / Leasehold):">
               <select
@@ -2507,7 +2507,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 4. DESCRIPTION & BOUNDARIES */}
-        <Section number={4} id="sec-desc-boundaries" title="Property Description & Multi-Plot Boundaries (Point 3)">
+        <Section number={4} id="sec-desc-boundaries" title="II. Valuation of Land (3. Brief Description of Property & Multi-Plot Boundaries)">
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2">
@@ -2773,7 +2773,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 5. SITE CHARACTERISTICS & PROXIMITIES */}
-        <Section number={5} id="sec-site-char" title="Site Characteristics (Point 3) & Location Advantages/Disadvantages (Point 4)">
+        <Section number={5} id="sec-site-char" title="II. Valuation of Land (4. Site Characteristics & Location Advantages/Disadvantages)">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="A. Level of Land / Topography:">
               {renderSelect(
@@ -2959,7 +2959,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 6. OTHER ISSUES & SALES RATIONALE */}
-        <Section number={6} id="sec-other-issues" title="Other Issues & Sales Rationale (Point 5)">
+        <Section number={6} id="sec-other-issues" title="II. Valuation of Land (5. Other Issues / Points & Sales Rationale)">
           <div className="space-y-4">
             <Field label="A. Land Acquisition Notification:">
               <input
@@ -3024,7 +3024,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 7. VALUATION OF LAND */}
-        <Section number={7} id="sec-land-valuation" title="6. Valuation of Land (Section II.6)">
+        <Section number={7} id="sec-land-valuation" title="II. Valuation of Land (6. Valuation of Land: Computations & Summary)">
           <div className="space-y-4">
             {/* A. Previous Valuation Details */}
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
@@ -3150,7 +3150,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 8. BUILDING BASIC INFO & BUILT UP AREA */}
-        <Section number={8} id="sec-bldg-basic" title="Valuation of Building: Basic Info & Built-up Area (Part 1: Points A–H)">
+        <Section number={8} id="sec-bldg-basic" title="III. Valuation of Building (1. Basic Information & Built-up Area: Points A–H)">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="A. Type of Building:">
               {renderSelect(
@@ -3262,7 +3262,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 9. BUILDING CHECKLIST */}
-        <Section number={9} id="sec-bldg-checklist" title="Building Occupancy & Details (Points I to AB)">
+        <Section number={9} id="sec-bldg-checklist" title="III. Valuation of Building (1. Building Occupancy & Details: Points I to AB)">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <Field label="I. Occupancy:">
               <select
@@ -3309,7 +3309,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 10. TECHNICAL DETAILS & SPECIFICATIONS */}
-        <Section number={10} id="sec-bldg-tech-spec" title="2. Technical Details & 3. Specifications of Building">
+        <Section number={10} id="sec-bldg-tech-spec" title="III. Valuation of Building (2. Technical Details & 3. Specifications of Construction)">
           <div className="space-y-4">
             {/* Top Technical Summary */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -3745,7 +3745,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 11. BUILDING VALUATION, SUB-SCHEDULES & 6.0 TOTAL ABSTRACT MATRIX */}
-        <Section number={11} id="sec-bldg-valuation-schedules" title="Building Valuation, Sub-Schedules (Part 4 & 5) & 6.0 Total Abstract Matrix">
+        <Section number={11} id="sec-bldg-valuation-schedules" title="III. Valuation of Building (4. Details of Building Valuation, 5. Sub-Schedules & 6.0 Total Abstract Matrix)">
           <div className="space-y-4">
             {/* 8-Col Valuation Table */}
             <div className="flex items-center justify-between">
@@ -4041,7 +4041,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 12. REMARKS & CERTIFICATE OF VALUATION / OPINION */}
-        <Section number={12} id="sec-remarks-opinion" title="Remarks & Certificate of Valuation / Opinion">
+        <Section number={12} id="sec-remarks-opinion" title="IV. General Remarks & Certificate of Valuation / Valuer Opinion">
           <div className="space-y-4">
             <Field label="General Remarks & Condition of the Property / Remarks:">
               <textarea
@@ -4087,7 +4087,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 13. DECLARATION & VALUER CREDENTIALS */}
-        <Section number={13} id="sec-declaration" title="Declaration & Valuer Credentials">
+        <Section number={13} id="sec-declaration" title="V. Declaration & Valuer Credentials">
           <div className="space-y-6">
             {/* Valuer Credentials & Sign-Off */}
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
@@ -4183,7 +4183,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 14. VALUATION CHECKLIST */}
-        <Section number={14} id="sec-checklist" title="Valuation Report Check-List (10 Points)">
+        <Section number={14} id="sec-checklist" title="VI. Valuation Report Check-List (10 Points)">
           <div className="space-y-4">
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
               <h4 className="font-semibold text-slate-800 text-sm">Valuation Report Check-List (10 Points)</h4>
@@ -4210,7 +4210,7 @@ export default function BandhanSME({
 
         {/* 15. Documents */}
         <BaseDocumentsSection
-          title="Documents"
+          title="VII. Documents"
           sectionId="sec-documents"
           sectionNumber={15}
           documentImages={fields.documentImages || []}
@@ -4226,7 +4226,7 @@ export default function BandhanSME({
 
         {/* 16. Maps */}
         <BaseMapsSection
-          title="Maps"
+          title="VIII. Maps & Cadastral Plans"
           sectionId="sec-maps"
           sectionNumber={16}
           locationMapImages={fields.locationMapImages || (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : [])}
@@ -4259,7 +4259,7 @@ export default function BandhanSME({
 
         {/* 17. Property Photographs */}
         <BasePhotographsSection
-          title="Property Photographs"
+          title="IX. Property Photographs"
           sectionNumber={17}
           sectionId="sec-photos"
           propertyImages={propertyImages}
