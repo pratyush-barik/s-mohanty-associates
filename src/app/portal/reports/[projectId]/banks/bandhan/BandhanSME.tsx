@@ -33,6 +33,7 @@ import {
   generateBandhanSMEReportWithCount,
   convertAreaToSqft,
   parseSqftFromArea,
+  parseAreaValueAndUnit,
   formatAreaOfLandStatement,
   formatDateDisplay,
   formatCommencementCompletion,
@@ -128,7 +129,7 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-bldg-basic', title: 'III. Valuation of Building (1. Basic Info & Built-up Area)' },
   { id: 'sec-bldg-checklist', title: 'III. Valuation of Building (1. Occupancy & Checklist)' },
   { id: 'sec-bldg-tech-spec', title: 'III. Valuation of Building (2. Tech Details & 3. Specs)' },
-  { id: 'sec-bldg-valuation-schedules', title: 'III. Valuation of Building (4. Valuation & 6.0 Matrix)' },
+  { id: 'sec-bldg-valuation-schedules', title: 'III. Valuation of Building (4. Valuation, Sub-Schedules & 6.0 Matrix)' },
   { id: 'sec-remarks-opinion', title: 'IV. Remarks & Valuation Certificate (Opinion)' },
   { id: 'sec-declaration', title: 'V. Declaration & Credentials' },
   { id: 'sec-checklist', title: 'VI. Valuation Checklist (10 Points)' },
@@ -184,6 +185,149 @@ const renderSelect = (
     </select>
   );
 };
+
+function AreaOfLandField({
+  label,
+  value,
+  fieldKey,
+  onChange,
+  onApplyAll,
+  isReadOnly = false,
+}: {
+  label: string;
+  value?: string;
+  fieldKey: 'areaLandDoc' | 'areaLandRor' | 'areaLandPhysical';
+  onChange: (formatted: string, unit: string, numVal: string) => void;
+  onApplyAll?: (formatted: string, unit: string, numVal: string) => void;
+  isReadOnly?: boolean;
+}) {
+  const parsed = useMemo(() => parseAreaValueAndUnit(value), [value]);
+  const [unit, setUnit] = useState<string>(parsed.unit || 'ACRE_DEC');
+  const [numVal, setNumVal] = useState<string>(parsed.value || '');
+  const [isCustom, setIsCustom] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (!isCustom && value) {
+      const p = parseAreaValueAndUnit(value);
+      if (p.unit) setUnit(p.unit);
+      if (p.value) setNumVal(p.value);
+    }
+  }, [value, isCustom]);
+
+  const handleUnitChange = (newUnit: string) => {
+    setUnit(newUnit);
+    if (!isCustom) {
+      const res = formatAreaOfLandStatement(newUnit, numVal);
+      onChange(numVal ? res.statement : '', newUnit, numVal);
+    }
+  };
+
+  const handleValueChange = (newVal: string) => {
+    const clean = sanitizePositiveFloat(newVal);
+    setNumVal(clean);
+    if (!isCustom) {
+      const res = formatAreaOfLandStatement(unit, clean);
+      onChange(clean ? res.statement : '', unit, clean);
+    }
+  };
+
+  const currentFormatted = useMemo(() => {
+    if (value && value.trim()) return value;
+    if (numVal && numVal.trim()) return formatAreaOfLandStatement(unit, numVal).statement;
+    return '';
+  }, [value, unit, numVal]);
+
+  return (
+    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-slate-200/70">
+        <label className="text-xs font-bold text-slate-800 tracking-wide">{label}</label>
+        <div className="flex items-center gap-2">
+          {onApplyAll && (
+            <button
+              type="button"
+              onClick={() => onApplyAll(currentFormatted, unit, numVal)}
+              className="text-[11px] font-semibold text-indigo-700 hover:text-indigo-950 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded cursor-pointer transition-all"
+              title="Copy this land area and unit to Title Deed, ROR and Physical measurement"
+            >
+              ↻ Copy to ROR & Physical
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setIsCustom(!isCustom)}
+            className="text-[11px] text-slate-500 hover:text-slate-800 underline cursor-pointer"
+          >
+            {isCustom ? 'Use Unit Selector' : 'Edit Text'}
+          </button>
+        </div>
+      </div>
+
+      {!isCustom ? (
+        <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+          <div className="sm:col-span-5">
+            <span className="text-[11px] font-medium text-slate-600 block mb-1">Choose Unit:</span>
+            <select
+              className={selectCls}
+              value={unit}
+              onChange={(e) => handleUnitChange(e.target.value)}
+              disabled={isReadOnly}
+            >
+              <option value="ACRE_DEC">Acre (Ac. ... Dec)</option>
+              <option value="DECIMAL">Decimal (Dec)</option>
+              <option value="SQFT">Sq.Ft (Sft)</option>
+              <option value="SQYD">Sq.Yards (Sq.Yds)</option>
+              <option value="SQMT">Sq.Meters (Sq.Mtr)</option>
+              <option value="GUNTHA">Guntha</option>
+            </select>
+          </div>
+
+          <div className="sm:col-span-7">
+            <span className="text-[11px] font-medium text-slate-600 block mb-1">
+              {unit === 'ACRE_DEC'
+                ? 'Area in Acre (e.g. 0.069)'
+                : unit === 'DECIMAL'
+                ? 'Area in Decimal (e.g. 6.9)'
+                : unit === 'SQFT'
+                ? 'Area in Sq.Ft (e.g. 3006)'
+                : unit === 'SQYD'
+                ? 'Area in Sq.Yards (e.g. 334)'
+                : unit === 'SQMT'
+                ? 'Area in Sq.Meters (e.g. 279.27)'
+                : 'Area in Guntha (e.g. 2.76)'}
+            </span>
+            <input
+              type="text"
+              className={inputCls}
+              value={numVal}
+              onChange={(e) => handleValueChange(e.target.value)}
+              disabled={isReadOnly}
+              placeholder={unit === 'ACRE_DEC' ? '0.069' : ''}
+            />
+          </div>
+
+          {currentFormatted ? (
+            <div className="sm:col-span-12 flex items-center gap-2 bg-indigo-50/80 border border-indigo-200/80 px-3 py-1.5 rounded-lg text-xs">
+              <span className="font-semibold text-indigo-900 shrink-0">Report:</span>
+              <span className="font-bold text-indigo-950 font-mono tracking-tight">{currentFormatted}</span>
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div className="space-y-1">
+          <span className="text-[11px] font-medium text-slate-600 block">Direct Custom Text:</span>
+          <input
+            type="text"
+            className={inputCls}
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value, unit, numVal)}
+            disabled={isReadOnly}
+            placeholder="Total Area: Ac.0.069 Dec i.e. 3006.00 Sft"
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function BandhanSME({
   projectId,
@@ -810,6 +954,46 @@ export default function BandhanSME({
       }
       return next;
     });
+  }, []);
+
+  const handleAreaFieldChange = useCallback(
+    (fieldKey: 'areaLandDoc' | 'areaLandRor' | 'areaLandPhysical', formatted: string, unit: string, numVal: string) => {
+      const sqft = convertAreaToSqft(unit, numVal).sqft;
+      setFields((prev) => {
+        const next = {
+          ...prev,
+          [fieldKey]: formatted,
+          landAreaUnit: unit,
+          landAreaValue: numVal || prev.landAreaValue,
+        };
+        if (fieldKey === 'areaLandDoc' || !prev.extentOfSite) {
+          next.extentOfSite = formatted;
+          next.extentConsideredValuation = formatted;
+          if (sqft > 0) {
+            next.landAreaTotal = String(sqft);
+            next.landAreaSqft = `${sqft} Sft`;
+          }
+        }
+        return next;
+      });
+    },
+    []
+  );
+
+  const handleApplyAllAreas = useCallback((formatted: string, unit: string, numVal: string) => {
+    const sqft = convertAreaToSqft(unit, numVal).sqft;
+    setFields((prev) => ({
+      ...prev,
+      areaLandDoc: formatted,
+      areaLandRor: formatted,
+      areaLandPhysical: formatted,
+      extentOfSite: formatted,
+      extentConsideredValuation: formatted,
+      landAreaUnit: unit,
+      landAreaValue: numVal,
+      landAreaTotal: sqft > 0 ? String(sqft) : prev.landAreaTotal,
+      landAreaSqft: sqft > 0 ? `${sqft} Sft` : prev.landAreaSqft,
+    }));
   }, []);
 
   // Multi-Plot Boundary Handlers
@@ -1904,116 +2088,8 @@ export default function BandhanSME({
         </Section>
 
         {/* 2. LAND DETAILS & MASTER AREA UNIT SELECTOR */}
-        <Section number={2} id="sec-prop-details" title="II. Valuation of Land (1. Details of Property: Points A–L)">
+        <Section number={2} id="sec-prop-details" title="II. Valuation of Land (1. Details of Property)">
           <div className="space-y-4">
-            {/* Master Area Converter Banner */}
-            <div className="p-4 bg-gradient-to-r from-indigo-50/90 to-blue-50/90 border border-indigo-200/80 rounded-xl space-y-3">
-              <div className="flex flex-wrap items-center justify-between pb-2 border-b border-indigo-200/60 gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="font-sans font-semibold text-indigo-900 text-xs sm:text-sm">
-                    Master Land Area Unit & Conversion
-                  </span>
-                </div>
-                {(() => {
-                  const val = fields.landAreaValue || '';
-                  if (!val || parseFloat(val) <= 0) return null;
-                  const conv = convertAreaToSqft(fields.landAreaUnit || 'ACRE_DEC', val);
-                  return conv.sqftStr ? (
-                    <span className="text-[11px] font-semibold text-indigo-900 bg-white/90 px-2.5 py-0.5 rounded border border-indigo-200 shadow-2xs">
-                      ⚡ Master Area: {conv.sqftStr}
-                    </span>
-                  ) : null;
-                })()}
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Field label="Choose Area Unit:">
-                  <select
-                    className={selectCls}
-                    value={fields.landAreaUnit || 'ACRE_DEC'}
-                    onChange={(e) => {
-                      const unit = e.target.value as any;
-                      const val = fields.landAreaValue || '';
-                      const formatted = formatAreaOfLandStatement(unit, val);
-                      setFields(prev => ({
-                        ...prev,
-                        landAreaUnit: unit,
-                        areaLandDoc: formatted.statement,
-                        areaLandRor: formatted.statement,
-                        areaLandPhysical: formatted.statement,
-                        extentOfSite: formatted.statement,
-                        extentConsideredValuation: formatted.statement,
-                        landAreaTotal: formatted.sqft > 0 ? String(formatted.sqft) : prev.landAreaTotal,
-                        landAreaSqft: formatted.sqftStr,
-                      }));
-                    }}
-                    disabled={isReadOnly}
-                  >
-                    <option value="ACRE_DEC">Acre</option>
-                    <option value="DECIMAL">Decimal</option>
-                    <option value="SQFT">Sq.Ft</option>
-                    <option value="SQYD">Sq.Yards</option>
-                    <option value="SQMT">Sq.Meters</option>
-                    <option value="GUNTHA">Guntha</option>
-                  </select>
-                </Field>
-
-                <Field
-                  label={
-                    fields.landAreaUnit === 'ACRE_DEC'
-                      ? 'Land Area (Acre):'
-                      : fields.landAreaUnit === 'DECIMAL'
-                      ? 'Land Area (Decimal):'
-                      : fields.landAreaUnit === 'SQFT'
-                      ? 'Land Area (Sq.Ft):'
-                      : fields.landAreaUnit === 'SQYD'
-                      ? 'Land Area (Sq.Yards):'
-                      : fields.landAreaUnit === 'SQMT'
-                      ? 'Land Area (Sq.Meters):'
-                      : 'Land Area (Guntha):'
-                  }
-                >
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.landAreaValue || ''}
-                    onChange={(e) => {
-                      const val = sanitizePositiveFloat(e.target.value);
-                      const unit = fields.landAreaUnit || 'ACRE_DEC';
-                      const formatted = formatAreaOfLandStatement(unit, val);
-                      setFields(prev => ({
-                        ...prev,
-                        landAreaValue: val,
-                        areaLandDoc: val ? formatted.statement : '',
-                        areaLandRor: val ? formatted.statement : '',
-                        areaLandPhysical: val ? formatted.statement : '',
-                        extentOfSite: val ? formatted.statement : '',
-                        extentConsideredValuation: val ? formatted.statement : '',
-                        landAreaTotal: val && formatted.sqft > 0 ? String(formatted.sqft) : '',
-                        landAreaSqft: val ? formatted.sqftStr : '',
-                      }));
-                    }}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-
-                <Field label="Land Area in sqft (Auto-Converted):">
-                  <input
-                    type="text"
-                    className={`${inputCls} bg-slate-100/90 text-slate-800 font-semibold cursor-not-allowed border-slate-300`}
-                    value={(() => {
-                      const val = fields.landAreaValue || '';
-                      if (!val || parseFloat(val) <= 0) return '';
-                      const conv = convertAreaToSqft(fields.landAreaUnit || 'ACRE_DEC', val);
-                      return conv.sqftStr || '';
-                    })()}
-                    readOnly
-                    disabled
-                  />
-                </Field>
-              </div>
-            </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="A. Details of Property Offered as Secured:">
                 {renderSelect(
@@ -2049,33 +2125,40 @@ export default function BandhanSME({
                   disabled={isReadOnly}
                 />
               </Field>
-              <Field label="E. Area of Land (As per Title Deed):">
-                <input
-                  type="text"
-                  className={inputCls}
+
+              {/* E. Area of Land (As per Title Deed) */}
+              <div className="sm:col-span-2">
+                <AreaOfLandField
+                  label="E. Area of Land (As per Title Deed):"
+                  fieldKey="areaLandDoc"
                   value={fields.areaLandDoc || ''}
-                  onChange={(e) => handleChange('areaLandDoc', e.target.value)}
-                  disabled={isReadOnly}
+                  onChange={(formatted, unit, numVal) => handleAreaFieldChange('areaLandDoc', formatted, unit, numVal)}
+                  onApplyAll={handleApplyAllAreas}
+                  isReadOnly={isReadOnly}
                 />
-              </Field>
-              <Field label="F. Area of Land (As per ROR):">
-                <input
-                  type="text"
-                  className={inputCls}
+              </div>
+
+              {/* F. Area of Land (As per ROR) */}
+              <div className="sm:col-span-2">
+                <AreaOfLandField
+                  label="F. Area of Land (As per ROR):"
+                  fieldKey="areaLandRor"
                   value={fields.areaLandRor || ''}
-                  onChange={(e) => handleChange('areaLandRor', e.target.value)}
-                  disabled={isReadOnly}
+                  onChange={(formatted, unit, numVal) => handleAreaFieldChange('areaLandRor', formatted, unit, numVal)}
+                  isReadOnly={isReadOnly}
                 />
-              </Field>
-              <Field label="G. Area of Land (As per Physical Measurement):">
-                <input
-                  type="text"
-                  className={inputCls}
+              </div>
+
+              {/* G. Area of Land (As per Physical Measurement) */}
+              <div className="sm:col-span-2">
+                <AreaOfLandField
+                  label="G. Area of Land (As per Physical Measurement):"
+                  fieldKey="areaLandPhysical"
                   value={fields.areaLandPhysical || ''}
-                  onChange={(e) => handleChange('areaLandPhysical', e.target.value)}
-                  disabled={isReadOnly}
+                  onChange={(formatted, unit, numVal) => handleAreaFieldChange('areaLandPhysical', formatted, unit, numVal)}
+                  isReadOnly={isReadOnly}
                 />
-              </Field>
+              </div>
 
               {/* Property Address & Postal Location H */}
               <div className="sm:col-span-2 p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
@@ -2267,198 +2350,205 @@ export default function BandhanSME({
         </Section>
 
         {/* 3. TITLE, OWNERSHIP & RENT */}
-        <Section number={3} id="sec-title-rent" title="II. Valuation of Land (2. Title, Ownership & Rent: Points 2.1, 2.2 & 2.3)">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="2.1 Title of Property (Freehold / Leasehold):">
-              <select
-                className={selectCls}
-                value={fields.titleFreeholdLeasehold || 'It is a free hold land'}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  handleChange('titleFreeholdLeasehold', val);
-                  if (val.toLowerCase().includes('lease')) {
-                    handleChange('isLeaseholdApplicable', 'Yes');
-                  }
-                }}
-                disabled={isReadOnly}
-              >
-                <option value="It is a free hold land">Freehold</option>
-                <option value="It is a lease hold land">Leasehold</option>
-              </select>
-            </Field>
-            <Field label="A. Ownership of Property:">
-              {renderSelect(
-                fields.ownershipOfProperty,
-                ['Single Ownership', 'Joint Ownership'],
-                (v) => handleChange('ownershipOfProperty', v),
-                isReadOnly,
-                'Single Ownership'
-              )}
-            </Field>
-            <Field label="B. Joint Ownership Share:">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.jointOwnershipShare || ''}
-                onChange={(e) => handleChange('jointOwnershipShare', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
-            <Field label="C. Taxes Paid Up To:">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.taxesPaidUpTo || ''}
-                onChange={(e) => handleChange('taxesPaidUpTo', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
-            <Field label="D. Land Revenue:">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.landRevenue || ''}
-                onChange={(e) => handleChange('landRevenue', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
-            <Field label="E. Municipal Taxes:">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.landBuildingMunicipalTaxes || ''}
-                onChange={(e) => handleChange('landBuildingMunicipalTaxes', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
+        <Section number={3} id="sec-title-rent" title="II. Valuation of Land (2. Title, Ownership & Rent)">
+          <div className="space-y-4">
+            {/* 2.1 Title of Property Freehold / Leasehold */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
+              <div className="pb-2 border-b border-slate-200">
+                <h4 className="font-semibold text-slate-800 text-sm">2.1 Title of Property Free Hold / Lease Hold (Points A to F)</h4>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <Field label="2.1 Title of Property (Freehold / Leasehold):">
+                  <select
+                    className={selectCls}
+                    value={fields.titleFreeholdLeasehold || 'It is a free hold land'}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      handleChange('titleFreeholdLeasehold', val);
+                      if (val.toLowerCase().includes('lease')) {
+                        handleChange('isLeaseholdApplicable', 'Yes');
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  >
+                    <option value="It is a free hold land">Freehold</option>
+                    <option value="It is a lease hold land">Leasehold</option>
+                  </select>
+                </Field>
+                <Field label="A. Ownership of Property:">
+                  {renderSelect(
+                    fields.ownershipOfProperty,
+                    ['Single Ownership', 'Joint Ownership'],
+                    (v) => handleChange('ownershipOfProperty', v),
+                    isReadOnly,
+                    'Single Ownership'
+                  )}
+                </Field>
+                <Field label="B. Joint Ownership Share:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.jointOwnershipShare || ''}
+                    onChange={(e) => handleChange('jointOwnershipShare', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="C. Taxes Paid Up To:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.taxesPaidUpTo || ''}
+                    onChange={(e) => handleChange('taxesPaidUpTo', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="D. Land Revenue:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.landRevenue || ''}
+                    onChange={(e) => handleChange('landRevenue', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="E. Municipal Taxes:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.landBuildingMunicipalTaxes || ''}
+                    onChange={(e) => handleChange('landBuildingMunicipalTaxes', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="F. Wealth Tax Assessed / Paid:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.wealthTaxAssessedPaid || ''}
+                    onChange={(e) => handleChange('wealthTaxAssessedPaid', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
+            </div>
 
             {/* 2.2 If Leasehold */}
             <div className="sm:col-span-2 p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+              <div className="pb-2 border-b border-slate-200">
                 <h4 className="font-semibold text-slate-800 text-sm">2.2 If Lease Hold (Points A to M)</h4>
-                <label className="text-xs flex items-center gap-1 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={fields.isLeaseholdApplicable === 'Yes'}
-                    onChange={(e) => handleChange('isLeaseholdApplicable', e.target.checked ? 'Yes' : 'No')}
-                    disabled={isReadOnly}
-                  />
-                  <span>Enable Leasehold Details</span>
-                </label>
               </div>
 
-              {fields.isLeaseholdApplicable === 'Yes' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <Field label="A. Name of the Lessor:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.lessorName || ''}
-                      onChange={(e) => handleChange('lessorName', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="B. Name of the Lessee:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.lesseeName || ''}
-                      onChange={(e) => handleChange('lesseeName', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="C. Nature of Lease:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.natureOfLease || ''}
-                      onChange={(e) => handleChange('natureOfLease', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="D. Date of Commencement:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.dateCommencementLease || ''}
-                      onChange={(e) => handleChange('dateCommencementLease', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="E. Period of Lease:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.periodOfLease || ''}
-                      onChange={(e) => handleChange('periodOfLease', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="G. Terms of Renewal:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.termsOfRenewal || ''}
-                      onChange={(e) => handleChange('termsOfRenewal', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="H. Lease Premium / Rent Per Annum:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.leasePremiumRentPerAnnum || ''}
-                      onChange={(e) => handleChange('leasePremiumRentPerAnnum', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="I. Un-expired Period of Lease:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.unexpiredPeriodOfLease || ''}
-                      onChange={(e) => handleChange('unexpiredPeriodOfLease', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="J. Initial Premium:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.initialPremium || ''}
-                      onChange={(e) => handleChange('initialPremium', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="K. Ground Rent Payable Per Annum:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.groundRentPerAnnum || ''}
-                      onChange={(e) => handleChange('groundRentPerAnnum', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="L. Unearned Increase Payable to Lessor:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.unearnedIncreasePayable || ''}
-                      onChange={(e) => handleChange('unearnedIncreasePayable', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="M. Lease Agreement Permits Mortgage:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.leasePermitsMortgage || ''}
-                      onChange={(e) => handleChange('leasePermitsMortgage', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                </div>
-              )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <Field label="A. Name of the Lessor:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.lessorName || ''}
+                    onChange={(e) => handleChange('lessorName', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="B. Name of the Lessee:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.lesseeName || ''}
+                    onChange={(e) => handleChange('lesseeName', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="C. Nature of Lease:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.natureOfLease || ''}
+                    onChange={(e) => handleChange('natureOfLease', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="D. Date of Commencement:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.dateCommencementLease || ''}
+                    onChange={(e) => handleChange('dateCommencementLease', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="E. Period of Lease:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.periodOfLease || ''}
+                    onChange={(e) => handleChange('periodOfLease', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="G. Terms of Renewal:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.termsOfRenewal || ''}
+                    onChange={(e) => handleChange('termsOfRenewal', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="H. Lease Premium / Rent Per Annum:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.leasePremiumRentPerAnnum || ''}
+                    onChange={(e) => handleChange('leasePremiumRentPerAnnum', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="I. Un-expired Period of Lease:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.unexpiredPeriodOfLease || ''}
+                    onChange={(e) => handleChange('unexpiredPeriodOfLease', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="J. Initial Premium:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.initialPremium || ''}
+                    onChange={(e) => handleChange('initialPremium', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="K. Ground Rent Payable Per Annum:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.groundRentPerAnnum || ''}
+                    onChange={(e) => handleChange('groundRentPerAnnum', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="L. Unearned Increase Payable to Lessor:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.unearnedIncreasePayable || ''}
+                    onChange={(e) => handleChange('unearnedIncreasePayable', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="M. Lease Agreement Permits Mortgage:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.leasePermitsMortgage || ''}
+                    onChange={(e) => handleChange('leasePermitsMortgage', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
             </div>
 
             {/* 2.3 Rent Details */}
@@ -2507,7 +2597,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 4. DESCRIPTION & BOUNDARIES */}
-        <Section number={4} id="sec-desc-boundaries" title="II. Valuation of Land (3. Brief Description of Property & Multi-Plot Boundaries)">
+        <Section number={4} id="sec-desc-boundaries" title="II. Valuation of Land (3. Description & Boundaries)">
           <div className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="sm:col-span-2">
@@ -2773,7 +2863,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 5. SITE CHARACTERISTICS & PROXIMITIES */}
-        <Section number={5} id="sec-site-char" title="II. Valuation of Land (4. Site Characteristics & Location Advantages/Disadvantages)">
+        <Section number={5} id="sec-site-char" title="II. Valuation of Land (4. Site Characteristics & Location)">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="A. Level of Land / Topography:">
               {renderSelect(
@@ -2959,7 +3049,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 6. OTHER ISSUES & SALES RATIONALE */}
-        <Section number={6} id="sec-other-issues" title="II. Valuation of Land (5. Other Issues / Points & Sales Rationale)">
+        <Section number={6} id="sec-other-issues" title="II. Valuation of Land (5. Other Issues & Sales Rationale)">
           <div className="space-y-4">
             <Field label="A. Land Acquisition Notification:">
               <input
@@ -3024,7 +3114,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 7. VALUATION OF LAND */}
-        <Section number={7} id="sec-land-valuation" title="II. Valuation of Land (6. Valuation of Land: Computations & Summary)">
+        <Section number={7} id="sec-land-valuation" title="II. Valuation of Land (6. Valuation of Land)">
           <div className="space-y-4">
             {/* A. Previous Valuation Details */}
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
@@ -3150,7 +3240,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 8. BUILDING BASIC INFO & BUILT UP AREA */}
-        <Section number={8} id="sec-bldg-basic" title="III. Valuation of Building (1. Basic Information & Built-up Area: Points A–H)">
+        <Section number={8} id="sec-bldg-basic" title="III. Valuation of Building (1. Basic Info & Built-up Area)">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="A. Type of Building:">
               {renderSelect(
@@ -3262,7 +3352,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 9. BUILDING CHECKLIST */}
-        <Section number={9} id="sec-bldg-checklist" title="III. Valuation of Building (1. Building Occupancy & Details: Points I to AB)">
+        <Section number={9} id="sec-bldg-checklist" title="III. Valuation of Building (1. Occupancy & Checklist)">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
             <Field label="I. Occupancy:">
               <select
@@ -3309,7 +3399,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 10. TECHNICAL DETAILS & SPECIFICATIONS */}
-        <Section number={10} id="sec-bldg-tech-spec" title="III. Valuation of Building (2. Technical Details & 3. Specifications of Construction)">
+        <Section number={10} id="sec-bldg-tech-spec" title="III. Valuation of Building (2. Tech Details & 3. Specs)">
           <div className="space-y-4">
             {/* Top Technical Summary */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
@@ -3745,7 +3835,7 @@ export default function BandhanSME({
         </Section>
 
         {/* 11. BUILDING VALUATION, SUB-SCHEDULES & 6.0 TOTAL ABSTRACT MATRIX */}
-        <Section number={11} id="sec-bldg-valuation-schedules" title="III. Valuation of Building (4. Details of Building Valuation, 5. Sub-Schedules & 6.0 Total Abstract Matrix)">
+        <Section number={11} id="sec-bldg-valuation-schedules" title="III. Valuation of Building (4. Valuation, Sub-Schedules & 6.0 Matrix)">
           <div className="space-y-4">
             {/* 8-Col Valuation Table */}
             <div className="flex items-center justify-between">

@@ -178,6 +178,60 @@ export function parseSqftFromArea(
   return isNaN(plain) ? 0 : plain;
 }
 
+export function parseAreaValueAndUnit(
+  rawStr?: string,
+  defaultUnit: string = 'ACRE_DEC'
+): { unit: string; value: string } {
+  if (!rawStr || !rawStr.trim()) {
+    return { unit: defaultUnit, value: '' };
+  }
+  const s = rawStr.trim();
+
+  // Match Acre: Total Area: Ac.0.069 Dec or Ac.0.069 or (AC.0.069Decs)
+  const acMatch = s.match(/(?:Ac\.?|Acre\s*:?)\s*(\d+(?:\.\d+)?)/i);
+  if (acMatch && acMatch[1]) {
+    return { unit: 'ACRE_DEC', value: acMatch[1] };
+  }
+
+  // Match Sq.Yds
+  const ydMatch = s.match(/(\d+(?:\.\d+)?)\s*(?:Sq\.?\s*Yds|Sq\.?\s*Yards|sqyd)/i);
+  if (ydMatch && ydMatch[1]) {
+    return { unit: 'SQYD', value: ydMatch[1] };
+  }
+
+  // Match Sq.Mtr
+  const mtMatch = s.match(/(\d+(?:\.\d+)?)\s*(?:Sq\.?\s*Mtr|Sq\.?\s*Meters|sqmt)/i);
+  if (mtMatch && mtMatch[1]) {
+    return { unit: 'SQMT', value: mtMatch[1] };
+  }
+
+  // Match Guntha
+  const gMatch = s.match(/(\d+(?:\.\d+)?)\s*Guntha/i);
+  if (gMatch && gMatch[1]) {
+    return { unit: 'GUNTHA', value: gMatch[1] };
+  }
+
+  // Match Decimal
+  const decMatch = s.match(/(\d+(?:\.\d+)?)\s*(?:Dec|Decimal|Decs)/i);
+  if (decMatch && decMatch[1]) {
+    return { unit: 'DECIMAL', value: decMatch[1] };
+  }
+
+  // Match Sqft / Sft
+  const sftMatch = s.match(/(\d+(?:\.\d+)?)\s*(?:Sft|Sq\.?\s*Ft|sqft)/i);
+  if (sftMatch && sftMatch[1]) {
+    return { unit: 'SQFT', value: sftMatch[1] };
+  }
+
+  // Plain number
+  const numMatch = s.match(/^(\d+(?:\.\d+)?)$/);
+  if (numMatch && numMatch[1]) {
+    return { unit: defaultUnit, value: numMatch[1] };
+  }
+
+  return { unit: defaultUnit, value: '' };
+}
+
 export function formatAreaOfLandStatement(
   unit: string = 'ACRE_DEC',
   primaryVal: string = '',
@@ -192,10 +246,10 @@ export function formatAreaOfLandStatement(
   if (unit === 'SQFT') {
     if (pNum > 0) {
       const rounded = Math.round((pNum + Number.EPSILON) * 100) / 100;
-      const f = rounded % 1 === 0 ? formatCurrencyINR(rounded) : rounded.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      return { statement: `${f} sqft.`, sqft: rounded, sqftStr: `${f} sqft.` };
+      const f = rounded % 1 === 0 ? formatCurrencyINR(rounded) + '.00' : rounded.toFixed(2);
+      return { statement: `Total Area: ${f} Sft`, sqft: rounded, sqftStr: `${f} Sft` };
     }
-    return { statement: primaryVal ? `${primaryVal} sqft.` : (rawResult || ''), sqft: 0, sqftStr: '' };
+    return { statement: primaryVal ? `Total Area: ${primaryVal} Sft` : (rawResult || ''), sqft: 0, sqftStr: '' };
   }
 
   if (unit === 'ACRE_DEC') {
@@ -207,13 +261,15 @@ export function formatAreaOfLandStatement(
       totalAcres = pNum;
     }
     if (totalAcres > 0) {
-      const sqft = Math.round(((totalAcres * 43560) + Number.EPSILON) * 100) / 100;
-      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      const decsStr = totalAcres.toFixed(3);
+      const rawSqft = totalAcres * 43560;
+      const sqft = Math.round((rawSqft + Number.EPSILON) * 100) / 100;
+      const cleanSqft = Math.abs(sqft - Math.round(sqft)) < 0.5 ? Math.round(sqft) : sqft;
+      const f = cleanSqft % 1 === 0 ? formatCurrencyINR(cleanSqft) + '.00' : cleanSqft.toFixed(2);
+      const decsStr = primaryVal ? primaryVal : totalAcres.toString();
       return {
-        statement: `(AC.${decsStr}Decs) i.e. ${f} sqft.`,
-        sqft,
-        sqftStr: `${f} sqft.`,
+        statement: `Total Area: Ac.${decsStr} Dec i.e. ${f} Sft`,
+        sqft: cleanSqft,
+        sqftStr: `${f} Sft`,
       };
     }
     return { statement: rawResult || '', sqft: 0, sqftStr: '' };
@@ -221,12 +277,14 @@ export function formatAreaOfLandStatement(
 
   if (unit === 'DECIMAL') {
     if (pNum > 0) {
-      const sqft = Math.round(((pNum * 435.6) + Number.EPSILON) * 100) / 100;
-      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const rawSqft = pNum * 435.6;
+      const sqft = Math.round((rawSqft + Number.EPSILON) * 100) / 100;
+      const cleanSqft = Math.abs(sqft - Math.round(sqft)) < 0.5 ? Math.round(sqft) : sqft;
+      const f = cleanSqft % 1 === 0 ? formatCurrencyINR(cleanSqft) + '.00' : cleanSqft.toFixed(2);
       return {
-        statement: `(${pNum} Decs) i.e. ${f} sqft.`,
-        sqft,
-        sqftStr: `${f} sqft.`,
+        statement: `Total Area: ${primaryVal || pNum} Dec i.e. ${f} Sft`,
+        sqft: cleanSqft,
+        sqftStr: `${f} Sft`,
       };
     }
     return { statement: rawResult || '', sqft: 0, sqftStr: '' };
@@ -235,12 +293,11 @@ export function formatAreaOfLandStatement(
   if (unit === 'SQYD') {
     if (pNum > 0) {
       const sqft = Math.round(((pNum * 9) + Number.EPSILON) * 100) / 100;
-      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      const fNum = pNum % 1 === 0 ? formatCurrencyINR(pNum) : pNum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) + '.00' : sqft.toFixed(2);
       return {
-        statement: `(${fNum} Sq.Yds) i.e. ${f} sqft.`,
+        statement: `Total Area: ${primaryVal || pNum} Sq.Yds i.e. ${f} Sft`,
         sqft,
-        sqftStr: `${f} sqft.`,
+        sqftStr: `${f} Sft`,
       };
     }
     return { statement: rawResult || '', sqft: 0, sqftStr: '' };
@@ -249,12 +306,11 @@ export function formatAreaOfLandStatement(
   if (unit === 'SQMT') {
     if (pNum > 0) {
       const sqft = Math.round(((pNum * 10.7639) + Number.EPSILON) * 100) / 100;
-      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      const fNum = pNum % 1 === 0 ? formatCurrencyINR(pNum) : pNum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) + '.00' : sqft.toFixed(2);
       return {
-        statement: `(${fNum} Sq.Mtr) i.e. ${f} sqft.`,
+        statement: `Total Area: ${primaryVal || pNum} Sq.Mtr i.e. ${f} Sft`,
         sqft,
-        sqftStr: `${f} sqft.`,
+        sqftStr: `${f} Sft`,
       };
     }
     return { statement: rawResult || '', sqft: 0, sqftStr: '' };
@@ -263,18 +319,17 @@ export function formatAreaOfLandStatement(
   if (unit === 'GUNTHA') {
     if (pNum > 0) {
       const sqft = Math.round(((pNum * 1089) + Number.EPSILON) * 100) / 100;
-      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) : sqft.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      const fNum = pNum % 1 === 0 ? formatCurrencyINR(pNum) : pNum.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const f = sqft % 1 === 0 ? formatCurrencyINR(sqft) + '.00' : sqft.toFixed(2);
       return {
-        statement: `(${fNum} Guntha) i.e. ${f} sqft.`,
+        statement: `Total Area: ${primaryVal || pNum} Guntha i.e. ${f} Sft`,
         sqft,
-        sqftStr: `${f} sqft.`,
+        sqftStr: `${f} Sft`,
       };
     }
     return { statement: rawResult || '', sqft: 0, sqftStr: '' };
   }
 
-  return { statement: rawResult || primaryVal || '', sqft: pNum, sqftStr: `${pNum} sqft.` };
+  return { statement: rawResult || primaryVal || '', sqft: pNum, sqftStr: `${pNum} Sft` };
 }
 
 export interface BandhanSMEFloorDetail {
@@ -1036,21 +1091,19 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('F.', 'WEALTH TAX ASSESSED/PAID, IF ANY:', fields.wealthTaxAssessedPaid || 'Not Applicable');
 
     // 2.2 If Leasehold
-    if (fields.isLeaseholdApplicable === 'Yes') {
-      this.drawSectionSpanner('2.2 IF LEASE HOLD:');
-      this.drawBandhanRow('A.', 'NAME OF THE LESSOR:', fields.lessorName || 'Not Applicable');
-      this.drawBandhanRow('B.', 'NAME OF THE LESSEE:', fields.lesseeName || 'Not Applicable');
-      this.drawBandhanRow('C.', 'NATURE OF LEASE:', fields.natureOfLease || 'Not Applicable');
-      this.drawBandhanRow('D.', 'DATE OF COMMENCEMENT OF LEASE:', fields.dateCommencementLease || 'Not Applicable');
-      this.drawBandhanRow('E.', 'PERIOD OF LEASE:', fields.periodOfLease || 'Not Applicable');
-      this.drawBandhanRow('G.', 'TERMS OF RENEWAL:', fields.termsOfRenewal || 'Not Applicable');
-      this.drawBandhanRow('H.', 'LEASE PREMIUM / RENT PER ANNUM:', fields.leasePremiumRentPerAnnum || 'Not Applicable');
-      this.drawBandhanRow('I.', 'UN-EXPIRED PERIOD OF LEASE:', fields.unexpiredPeriodOfLease || 'Not Applicable');
-      this.drawBandhanRow('J.', 'INITIAL PREMIUM:', fields.initialPremium || 'Not Applicable');
-      this.drawBandhanRow('K.', 'GROUND RENT PAYABLE PER ANNUM:', fields.groundRentPerAnnum || 'Not Applicable');
-      this.drawBandhanRow('L.', 'UNEARNED INCREASE PAYABLE TO THE LESSOR IN THE EVENT OF SALE OR TRANSFER:', fields.unearnedIncreasePayable || 'Not Applicable');
-      this.drawBandhanRow('M.', 'WHETHER LEASE AGREEMENT PERMITS CREATION OF MORTGAGE:', fields.leasePermitsMortgage || 'Not Applicable');
-    }
+    this.drawSectionSpanner('2.2 IF LEASE HOLD:');
+    this.drawBandhanRow('A.', 'NAME OF THE LESSOR:', fields.lessorName || 'Not Applicable');
+    this.drawBandhanRow('B.', 'NAME OF THE LESSEE:', fields.lesseeName || 'Not Applicable');
+    this.drawBandhanRow('C.', 'NATURE OF LEASE:', fields.natureOfLease || 'Not Applicable');
+    this.drawBandhanRow('D.', 'DATE OF COMMENCEMENT OF LEASE:', fields.dateCommencementLease || 'Not Applicable');
+    this.drawBandhanRow('E.', 'PERIOD OF LEASE:', fields.periodOfLease || 'Not Applicable');
+    this.drawBandhanRow('G.', 'TERMS OF RENEWAL:', fields.termsOfRenewal || 'Not Applicable');
+    this.drawBandhanRow('H.', 'LEASE PREMIUM / RENT PER ANNUM:', fields.leasePremiumRentPerAnnum || 'Not Applicable');
+    this.drawBandhanRow('I.', 'UN-EXPIRED PERIOD OF LEASE:', fields.unexpiredPeriodOfLease || 'Not Applicable');
+    this.drawBandhanRow('J.', 'INITIAL PREMIUM:', fields.initialPremium || 'Not Applicable');
+    this.drawBandhanRow('K.', 'GROUND RENT PAYABLE PER ANNUM:', fields.groundRentPerAnnum || 'Not Applicable');
+    this.drawBandhanRow('L.', 'UNEARNED INCREASE PAYABLE TO THE LESSOR IN THE EVENT OF SALE OR TRANSFER:', fields.unearnedIncreasePayable || 'Not Applicable');
+    this.drawBandhanRow('M.', 'WHETHER LEASE AGREEMENT PERMITS CREATION OF MORTGAGE:', fields.leasePermitsMortgage || 'Not Applicable');
 
     // 2.3 Rent Details
     this.drawSectionSpanner('2.3 RENT:', fields.rentOccupationStatus || 'The Plot is occupied by Owner');
