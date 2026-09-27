@@ -885,7 +885,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label={
                   <div className="w-full flex items-center justify-between">
-                    <span>Technical Address of property (Survey No./Plot no/House no/Flat No.) Location/District/State</span>
+                    <span>Technical Address of property (Survey No./Plot<br/>no/House no/Flat No.) Location/District/State</span>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableTechnicalAddressEdit ? 'On' : 'Off'}</span>
                       <button
