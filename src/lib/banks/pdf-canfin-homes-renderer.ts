@@ -203,9 +203,30 @@ export class PDFCanFinHomesRenderer extends PDFBankRenderer {
 
   private drawSection2() {
     this.drawSectionHeader('2. GENERAL');
-    this.drawSimpleRow('Purpose Of Loan', this.fvChoice('canfinHomesPurposeOfLoanDropdown', 'canfinHomesPurposeOfLoanCustom'));
-    this.drawSimpleRow('Name of the Customer', this.fv('canfinHomesNameOfCustomer'));
-    this.drawSimpleRow('Name of Document holder as per legal docs', this.fv('canfinHomesNameOfDocumentHolderManual'));
+    this.drawSimpleRow('Purpose Of Loan', this.fvChoice('canfinHomesPurposeOfLoanDropdown', 'canfinHomesPurposeOfLoan'));
+    this.drawSimpleRow('Name of the Customer', this.fv('canfinHomesCustomerName'));
+    
+    const isDocHolderEditOn = this.fields.canfinHomesEnableDocHolderEdit || false;
+    let docHolderText = '';
+    if (isDocHolderEditOn) {
+      docHolderText = this.fv('canfinHomesDocHolderName');
+    } else {
+      const owners = this.fields.canfinHomesPropertyOwners || [];
+      docHolderText = owners.map((o: any) => {
+        if (!o.name) return '';
+        let text = o.name;
+        if (o.relationship && o.relativeName) {
+          text += `, ${o.relationship}- ${o.relativeName}`;
+        } else if (o.relationship) {
+          text += `, ${o.relationship}`;
+        } else if (o.relativeName) {
+          text += `, ${o.relativeName}`;
+        }
+        return text;
+      }).filter(Boolean).join(' & ');
+    }
+    this.drawSimpleRow('Name of Document holder as per legal docs', docHolderText);
+    
     this.drawSimpleRow('Date of Technical Visit', this.fv('canfinHomesDateOfTechnicalVisit'));
     this.drawSimpleRow('Name of The Building/Society', this.fvCheckbox('canfinHomesNameOfTheBuildingSociety', 'canfinHomesNameOfTheBuildingSocietyNA'));
     this.drawSimpleRow('Name of the Builder/Seller', this.fvCheckbox('canfinHomesNameOfTheBuilderSeller', 'canfinHomesNameOfTheBuilderSellerNA'));

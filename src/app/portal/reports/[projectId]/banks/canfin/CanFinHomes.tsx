@@ -16,15 +16,15 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   navSections: [
-    { id: 'section-cover', title: 'VALUE OF THE PROPERTY (COVER PAGE)' },
+    { id: 'section-cover', title: 'COVER PAGE' },
     { id: 'canfin-section-2', title: 'General' },
-    { id: 'canfin-section-3', title: 'Details of the Property' },
-    { id: 'canfin-section-4', title: 'Surroundings, Accesibility & Proximity to Civil Ameneties' },
-    { id: 'canfin-section-5', title: 'Survey of Construction' },
-    { id: 'canfin-section-6', title: 'Documents Verified' },
+    { id: 'canfin-section-3', title: 'Property Details' },
+    { id: 'canfin-section-4', title: 'Surroundings & Access' },
+    { id: 'canfin-section-5', title: 'Construction Survey' },
+    { id: 'canfin-section-6', title: 'Verified Docs' },
     { id: 'canfin-section-7', title: 'Valuation Report' },
-    { id: 'canfin-section-8', title: 'The Condition of Structure' },
-    { id: 'canfin-section-9', title: 'Concluding Declarations' },
+    { id: 'canfin-section-8', title: 'Structural Condition' },
+    { id: 'canfin-section-9', title: 'Remarks & Declarations' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Photographs' },
@@ -469,7 +469,10 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
       number: 2,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
-        const prefilledDocHolder = fields.canfinHomesPropertyOwners?.map((o: any) => o.name).filter(Boolean).join(', ') || '';
+        const prefilledDocHolder = fields.canfinHomesPropertyOwners?.map((o: any) => {
+          const parts = [o.name, o.relationship ? `${o.relationship}-` : '', o.relativeName].filter(Boolean);
+          return parts.join(' ');
+        }).filter((s: string) => s.trim()).join(', ') || '';
 
         return (
           <div className="animate-fade-in space-y-6">
@@ -521,14 +524,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <div className="flex items-center justify-between">
                     <span>Name of Document holder as per legal docs</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableDocHolderEdit ? 'On' : 'Off'}</span>
                       <button
                         type="button"
                         onClick={() => handleChange('canfinHomesEnableDocHolderEdit', !fields.canfinHomesEnableDocHolderEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableDocHolderEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableDocHolderEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                       >
-                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableDocHolderEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableDocHolderEdit ? 'translate-x-5' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -541,12 +544,11 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.canfinHomesEnableDocHolderEdit} 
                       title='>>Prefill from section 1, field "PROPERTY OWNER"<<'
                     />
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                      title='>>Prefill from section 1, field "PROPERTY OWNER"<<'
-                    >
-                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnableDocHolderEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </div>
+                    {!fields.canfinHomesEnableDocHolderEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 1, field "PROPERTY OWNER"<<'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
                   </div>
                 </Field>
                 <Field label="Date of Technical Visit">
@@ -639,14 +641,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <div className="flex items-center justify-between">
                     <span>Flat/House/Plot No.</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnablePlotNoEdit ? 'On' : 'Off'}</span>
                       <button
                         type="button"
                         onClick={() => handleChange('canfinHomesEnablePlotNoEdit', !fields.canfinHomesEnablePlotNoEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnablePlotNoEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnablePlotNoEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                       >
-                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnablePlotNoEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnablePlotNoEdit ? 'translate-x-5' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -659,12 +661,11 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.canfinHomesEnablePlotNoEdit} 
                       title='>>Prefill from section 1, field "PLOT NUMBER"<<'
                     />
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                      title='>>Prefill from section 1, field "PLOT NUMBER"<<'
-                    >
-                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnablePlotNoEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </div>
+                    {!fields.canfinHomesEnablePlotNoEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 1, field "PLOT NUMBER"<<'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
                   </div>
                 </Field>
                 <div className="flex flex-col gap-2">
@@ -803,14 +804,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <div className="flex items-center justify-between">
                     <span>Residual age of the Property</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableResidualAgeEdit ? 'On' : 'Off'}</span>
                       <button
                         type="button"
                         onClick={() => handleChange('canfinHomesEnableResidualAgeEdit', !fields.canfinHomesEnableResidualAgeEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableResidualAgeEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableResidualAgeEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                       >
-                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableResidualAgeEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableResidualAgeEdit ? 'translate-x-5' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -823,12 +824,11 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.canfinHomesEnableResidualAgeEdit} 
                       title='>>Auto calculates values from [Estimated Total Lifespan - Age Of The property]<<'
                     />
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                      title='>>Auto calculates values from [Estimated Total Lifespan - Age Of The property]<<'
-                    >
-                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnableResidualAgeEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </div>
+                    {!fields.canfinHomesEnableResidualAgeEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Auto calculates values from [Estimated Total Lifespan - Age Of The property]<<'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
                   </div>
                 </Field>
                 <Field label="Occupancy details" className="md:col-span-2">
@@ -887,14 +887,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <div className="flex items-center justify-between">
                     <span>Technical Address of property (Survey No./Plot no/House no/Flat No.) Location/District/State</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableTechnicalAddressEdit ? 'On' : 'Off'}</span>
                       <button
                         type="button"
                         onClick={() => handleChange('canfinHomesEnableTechnicalAddressEdit', !fields.canfinHomesEnableTechnicalAddressEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableTechnicalAddressEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableTechnicalAddressEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                       >
-                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableTechnicalAddressEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableTechnicalAddressEdit ? 'translate-x-5' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -908,12 +908,11 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.canfinHomesEnableTechnicalAddressEdit} 
                       title='>>Prefill from section 1, field "ADDRESS OF THE PROPERTY"<<'
                     />
-                    <div
-                      className="absolute top-2 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                      title='>>Prefill from section 1, field "ADDRESS OF THE PROPERTY"<<'
-                    >
-                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnableTechnicalAddressEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </div>
+                    {!fields.canfinHomesEnableTechnicalAddressEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 1, field "ADDRESS OF THE PROPERTY"<<'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
                   </div>
                 </Field>
                 <div className="flex flex-col gap-2">
@@ -922,14 +921,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       <span>Legal Address of property (Survey No./Plot no/House no/Flat No.) Location/District/State Pls mention as per deed</span>
                       {fields.canfinHomesSameAsTechnicalAddress && (
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-gray-500">Edit</span>
+                          <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableLegalAddressEdit ? 'On' : 'Off'}</span>
                           <button
                             type="button"
                             onClick={() => handleChange('canfinHomesEnableLegalAddressEdit', !fields.canfinHomesEnableLegalAddressEdit)}
                             disabled={isReadOnly}
-                            className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableLegalAddressEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableLegalAddressEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                           >
-                            <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableLegalAddressEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                            <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableLegalAddressEdit ? 'translate-x-5' : ''}`} />
                           </button>
                         </div>
                       )}
@@ -944,13 +943,10 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                         disabled={isReadOnly || (fields.canfinHomesSameAsTechnicalAddress && !fields.canfinHomesEnableLegalAddressEdit)} 
                         title={fields.canfinHomesSameAsTechnicalAddress ? '>>Prefill from section 3, field "Technical Address of property"<<' : ''}
                       />
-                      {fields.canfinHomesSameAsTechnicalAddress && (
-                        <div
-                          className="absolute top-2 right-0 flex items-center pr-3 group text-gray-400 pointer-events-none"
-                          title='>>Prefill from section 3, field "Technical Address of property"<<'
-                        >
-                          <Lock className={`w-4 h-4 ${fields.canfinHomesEnableLegalAddressEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                        </div>
+                      {fields.canfinHomesSameAsTechnicalAddress && !fields.canfinHomesEnableLegalAddressEdit && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 3, field "Technical Address of property"<<'>
+                            <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                          </div>
                       )}
                     </div>
                   </Field>
@@ -969,14 +965,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <div className="flex items-center justify-between">
                     <span>Pin Code</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnablePinCodeEdit ? 'On' : 'Off'}</span>
                       <button
                         type="button"
                         onClick={() => handleChange('canfinHomesEnablePinCodeEdit', !fields.canfinHomesEnablePinCodeEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnablePinCodeEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnablePinCodeEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                       >
-                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnablePinCodeEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnablePinCodeEdit ? 'translate-x-5' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -990,12 +986,11 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.canfinHomesEnablePinCodeEdit} 
                       title='>>Prefill from section 1, field "PIN CODE"<<'
                     />
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                      title='>>Prefill from section 1, field "PIN CODE"<<'
-                    >
-                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnablePinCodeEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </div>
+                    {!fields.canfinHomesEnablePinCodeEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 1, field "PIN CODE"<<'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
                   </div>
                 </Field>
                 <Field label="Date of Valuation">
@@ -1610,14 +1605,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <div className="flex items-center justify-between">
                     <span>The Projected Residual Life of The Structure (in Years)</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableProjectedResidualLifeEdit ? 'On' : 'Off'}</span>
                       <button
                         type="button"
                         onClick={() => handleChange('canfinHomesEnableProjectedResidualLifeEdit', !fields.canfinHomesEnableProjectedResidualLifeEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableProjectedResidualLifeEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableProjectedResidualLifeEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                       >
-                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableProjectedResidualLifeEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableProjectedResidualLifeEdit ? 'translate-x-5' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -1631,12 +1626,11 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.canfinHomesEnableProjectedResidualLifeEdit} 
                       title='>>Prefill from section 3, field "Residual age of the Property"<<'
                     />
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                      title='>>Prefill from section 3, field "Residual age of the Property"<<'
-                    >
-                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnableProjectedResidualLifeEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </div>
+                    {!fields.canfinHomesEnableProjectedResidualLifeEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 3, field "Residual age of the Property"<<'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
                   </div>
                 </Field>
               </div>
@@ -1845,14 +1839,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <div className="flex items-center justify-between">
                     <span>Date Of Visit</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableDateOfVisitEdit ? 'On' : 'Off'}</span>
                       <button
                         type="button"
                         onClick={() => handleChange('canfinHomesEnableDateOfVisitEdit', !fields.canfinHomesEnableDateOfVisitEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableDateOfVisitEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableDateOfVisitEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                       >
-                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableDateOfVisitEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableDateOfVisitEdit ? 'translate-x-5' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -1874,11 +1868,8 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       />
                     )}
                     {!fields.canfinHomesEnableDateOfVisitEdit && (
-                      <div
-                        className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                        title='>>Prefill from section 2, field "Date of Technical Visit"<<'
-                      >
-                        <Lock className={`w-4 h-4 text-gray-400`} />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 2, field "Date of Technical Visit"<<'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                       </div>
                     )}
                   </div>
@@ -2292,14 +2283,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <div className="flex items-center justify-between">
                     <span>Recommended/Fair Market Rate (i+ii)</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableFairMarketRateEdit ? 'On' : 'Off'}</span>
                       <button
                         type="button"
                         onClick={() => handleChange('canfinHomesEnableFairMarketRateEdit', !fields.canfinHomesEnableFairMarketRateEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableFairMarketRateEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableFairMarketRateEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                       >
-                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableFairMarketRateEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableFairMarketRateEdit ? 'translate-x-5' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -2314,12 +2305,11 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.canfinHomesEnableFairMarketRateEdit} 
                       title='>>Auto calculates values from [Current market land rate + Construction Market Rate]<<'
                     />
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                      title='>>Auto calculates values from [Current market land rate + Construction Market Rate]<<'
-                    >
-                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnableFairMarketRateEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </div>
+                    {!fields.canfinHomesEnableFairMarketRateEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Auto calculates values from [Current market land rate + Construction Market Rate]<<'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
                   </div>
                 </Field>
 
@@ -2327,14 +2317,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <div className="flex items-center justify-between">
                     <span>Total Fair Market Value on 100% complete</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableTotalFairMarketValueEdit ? 'On' : 'Off'}</span>
                       <button
                         type="button"
                         onClick={() => handleChange('canfinHomesEnableTotalFairMarketValueEdit', !fields.canfinHomesEnableTotalFairMarketValueEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableTotalFairMarketValueEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableTotalFairMarketValueEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                       >
-                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableTotalFairMarketValueEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableTotalFairMarketValueEdit ? 'translate-x-5' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -2349,12 +2339,11 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.canfinHomesEnableTotalFairMarketValueEdit} 
                       title='>>Prefill from section 8, field "Recommended/Fair Market Rate"<<'
                     />
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                      title='>>Prefill from section 8, field "Recommended/Fair Market Rate"<<'
-                    >
-                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnableTotalFairMarketValueEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </div>
+                    {!fields.canfinHomesEnableTotalFairMarketValueEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 8, field "Recommended/Fair Market Rate"<<'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
                   </div>
                 </Field>
 
@@ -2362,14 +2351,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <div className="flex items-center justify-between">
                     <span>Distress Value (80%)</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableDistressValueEdit ? 'On' : 'Off'}</span>
                       <button
                         type="button"
                         onClick={() => handleChange('canfinHomesEnableDistressValueEdit', !fields.canfinHomesEnableDistressValueEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableDistressValueEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableDistressValueEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                       >
-                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableDistressValueEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableDistressValueEdit ? 'translate-x-5' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -2384,12 +2373,11 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.canfinHomesEnableDistressValueEdit} 
                       title='>>Auto calculates values from [Total Fair Market Value * 0.8]<<'
                     />
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                      title='>>Auto calculates values from [Total Fair Market Value * 0.8]<<'
-                    >
-                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnableDistressValueEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </div>
+                    {!fields.canfinHomesEnableDistressValueEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Auto calculates values from [Total Fair Market Value * 0.8]<<'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
                   </div>
                 </Field>
 
@@ -2397,14 +2385,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                   <div className="flex items-center justify-between">
                     <span>Realizable Value (90%)</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-medium text-gray-500">Edit</span>
+                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableRealizableValueEdit ? 'On' : 'Off'}</span>
                       <button
                         type="button"
                         onClick={() => handleChange('canfinHomesEnableRealizableValueEdit', !fields.canfinHomesEnableRealizableValueEdit)}
                         disabled={isReadOnly}
-                        className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableRealizableValueEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableRealizableValueEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                       >
-                        <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableRealizableValueEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableRealizableValueEdit ? 'translate-x-5' : ''}`} />
                       </button>
                     </div>
                   </div>
@@ -2419,12 +2407,11 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       disabled={isReadOnly || !fields.canfinHomesEnableRealizableValueEdit} 
                       title='>>Auto calculates values from [Total Fair Market Value * 0.9]<<'
                     />
-                    <div
-                      className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                      title='>>Auto calculates values from [Total Fair Market Value * 0.9]<<'
-                    >
-                      <Lock className={`w-4 h-4 ${fields.canfinHomesEnableRealizableValueEdit ? 'text-emerald-700' : 'text-gray-400'}`} />
-                    </div>
+                    {!fields.canfinHomesEnableRealizableValueEdit && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Auto calculates values from [Total Fair Market Value * 0.9]<<'>
+                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                      </div>
+                    )}
                   </div>
                 </Field>
 
@@ -2437,7 +2424,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     },
     {
       id: 'canfin-section-9',
-      title: '9. CONCLUDING DECLARATIONS',
+      title: 'Remarks & Declarations',
       number: 9,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
@@ -2505,14 +2492,14 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                     <div className="flex items-center justify-between">
                       <span>Date</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium text-gray-500">Edit</span>
+                        <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableDeclarationDateEdit ? 'On' : 'Off'}</span>
                         <button
                           type="button"
                           onClick={() => handleChange('canfinHomesEnableDeclarationDateEdit', !fields.canfinHomesEnableDeclarationDateEdit)}
                           disabled={isReadOnly}
-                          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 focus:outline-none ${fields.canfinHomesEnableDeclarationDateEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableDeclarationDateEdit ? 'bg-green-500' : 'bg-gray-300'}`}
                         >
-                          <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${fields.canfinHomesEnableDeclarationDateEdit ? 'translate-x-5' : 'translate-x-1'}`} />
+                          <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableDeclarationDateEdit ? 'translate-x-5' : ''}`} />
                         </button>
                       </div>
                     </div>
@@ -2534,11 +2521,8 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                         />
                       )}
                       {!fields.canfinHomesEnableDeclarationDateEdit && (
-                        <div
-                          className="absolute inset-y-0 right-0 flex items-center pr-3 group text-gray-500 hover:text-gray-700 pointer-events-none"
-                          title='>>Prefill from system current date<<'
-                        >
-                          <Lock className={`w-4 h-4 text-gray-400`} />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from system current date<<'>
+                          <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                         </div>
                       )}
                     </div>
