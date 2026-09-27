@@ -42,9 +42,15 @@ import { formatIndianCurrency } from '@/lib/numberToWords';
 
 export const parseNum = (v: any): number => {
   if (v === undefined || v === null || v === '') return 0;
-  let s = String(v)
+  let s = String(v).trim();
+  if (s.includes('=')) {
+    const parts = s.split('=');
+    s = parts[parts.length - 1];
+  }
+  s = s
     .replace(/Rs\.?/gi, '')
     .replace(/₹/g, '')
+    .replace(/\/-/g, '')
     .replace(/,/g, '')
     .trim();
   let clean = s.replace(/[^0-9.]/g, '');
@@ -163,18 +169,38 @@ export function parseSqftFromArea(
     if (conv.sqft > 0) return conv.sqft;
   }
   if (!valStr) return 0;
-  const s = String(valStr);
-  const ieMatch = s.match(/i\.e\.\s*([\d,]+(?:\.\d+)?)\s*sqft/i);
+  const s = String(valStr).trim();
+
+  // 1. Look for 'i.e. <digits> Sft' or 'i.e. <digits> sqft'
+  const ieMatch = s.match(/i\.e\.?\s*([\d,]+(?:\.\d+)?)\s*(?:Sft|Sq\.?\s*Ft|sqft)/i);
   if (ieMatch && ieMatch[1]) {
     const n = parseFloat(ieMatch[1].replace(/,/g, ''));
     if (!isNaN(n) && n > 0) return n;
   }
-  const sqftMatch = s.match(/([\d,]+(?:\.\d+)?)\s*sqft/i);
+
+  // 2. Look for '<digits> Sft' or '<digits> sqft'
+  const sqftMatch = s.match(/([\d,]+(?:\.\d+)?)\s*(?:Sft|Sq\.?\s*Ft|sqft)/i);
   if (sqftMatch && sqftMatch[1]) {
     const n = parseFloat(sqftMatch[1].replace(/,/g, ''));
     if (!isNaN(n) && n > 0) return n;
   }
-  const plain = parseFloat(s.replace(/[^0-9.]/g, ''));
+
+  // 3. Look for 'Ac.<digits> Dec' -> convert to sqft (1 Acre = 43560 sqft)
+  const acMatch = s.match(/Ac\.?\s*(\d+(?:\.\d+)?)\s*Dec/i);
+  if (acMatch && acMatch[1]) {
+    const ac = parseFloat(acMatch[1]);
+    if (!isNaN(ac) && ac > 0) return Math.round(ac * 43560);
+  }
+
+  // 4. Look for '<digits> Dec' -> convert to sqft (1 Dec = 435.6 sqft)
+  const decMatch = s.match(/(\d+(?:\.\d+)?)\s*Dec/i);
+  if (decMatch && decMatch[1]) {
+    const dec = parseFloat(decMatch[1]);
+    if (!isNaN(dec) && dec > 0) return Math.round(dec * 435.6);
+  }
+
+  // 5. Plain number
+  const plain = parseFloat(s.replace(/,/g, '').replace(/[^0-9.]/g, ''));
   return isNaN(plain) ? 0 : plain;
 }
 
@@ -556,6 +582,8 @@ export interface BandhanSMEReportFields {
   proximityRailwayStation?: string;
   proximityOtherPlace?: string;
   latitudeLongitude?: string;
+  latitude?: string;
+  longitude?: string;
   locationAdvantages?: string;
   locationDisadvantages?: string;
 
@@ -571,6 +599,7 @@ export interface BandhanSMEReportFields {
   previousValuationDetails?: string;
   presentValuationApproachDetails?: string;
   landAreaTotal?: string;
+  landGovtBenchmarkPerAcre?: string;
   landGovtBenchmarkRate?: string;
   landGovtValueTotal?: string;
   landMarketRate?: string;

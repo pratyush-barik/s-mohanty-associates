@@ -128,7 +128,8 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-land-valuation', title: 'II. Valuation of Land (6. Valuation of Land)' },
   { id: 'sec-bldg-basic', title: 'III. Valuation of Building (1. Basic Info & Built-up Area)' },
   { id: 'sec-bldg-checklist', title: 'III. Valuation of Building (1. Occupancy & Checklist)' },
-  { id: 'sec-bldg-tech-spec', title: 'III. Valuation of Building (2. Tech Details & 3. Specs)' },
+  { id: 'sec-bldg-tech', title: 'III. Valuation of Building (2. Technical Details of Building)' },
+  { id: 'sec-bldg-specs', title: 'III. Valuation of Building (3. Specifications of Construction)' },
   { id: 'sec-bldg-valuation-schedules', title: 'III. Valuation of Building (4. Valuation, Sub-Schedules & 6.0 Matrix)' },
   { id: 'sec-remarks-opinion', title: 'IV. Remarks & Valuation Certificate (Opinion)' },
   { id: 'sec-declaration', title: 'V. Declaration & Credentials' },
@@ -626,6 +627,12 @@ export default function BandhanSME({
       proximityRailwayStation: raw.proximityRailwayStation !== undefined ? raw.proximityRailwayStation : '',
       proximityOtherPlace: raw.proximityOtherPlace !== undefined ? raw.proximityOtherPlace : '',
       latitudeLongitude: raw.latitudeLongitude !== undefined ? raw.latitudeLongitude : '',
+      latitude: raw.latitude !== undefined
+        ? raw.latitude
+        : (prefill?.serviceRequest?.latitude || (raw.latitudeLongitude ? (raw.latitudeLongitude.match(/([\d.]+)\s*°?\s*N?/i)?.[1] || '') : '')),
+      longitude: raw.longitude !== undefined
+        ? raw.longitude
+        : (prefill?.serviceRequest?.longitude || (raw.latitudeLongitude ? (raw.latitudeLongitude.match(/([\d.]+)\s*°?\s*E?/i)?.[1] || '') : '')),
       locationAdvantages: raw.locationAdvantages !== undefined ? raw.locationAdvantages : '',
       locationDisadvantages: raw.locationDisadvantages !== undefined ? raw.locationDisadvantages : 'Nothing Observed',
 
@@ -640,7 +647,8 @@ export default function BandhanSME({
       // 6. Valuation of Land
       previousValuationDetails: raw.previousValuationDetails !== undefined ? raw.previousValuationDetails : 'Not Available / Not Applicable',
       presentValuationApproachDetails: raw.presentValuationApproachDetails !== undefined ? raw.presentValuationApproachDetails : 'Land & Building method of valuation has been adopted',
-      landAreaTotal: raw.landAreaTotal !== undefined ? raw.landAreaTotal : (landAreaValue ? String(parseSqftFromArea('', landAreaUnit, landAreaValue)) : ''),
+      landAreaTotal: raw.landAreaTotal !== undefined ? raw.landAreaTotal : (raw.areaLandDoc || (landAreaValue ? formatAreaOfLandStatement(landAreaUnit, landAreaValue).statement : '')),
+      landGovtBenchmarkPerAcre: raw.landGovtBenchmarkPerAcre !== undefined ? raw.landGovtBenchmarkPerAcre : '',
       landGovtBenchmarkRate: raw.landGovtBenchmarkRate !== undefined ? raw.landGovtBenchmarkRate : '',
       landGovtValueTotal: raw.landGovtValueTotal !== undefined ? raw.landGovtValueTotal : '',
       landMarketRate: raw.landMarketRate !== undefined ? raw.landMarketRate : '',
@@ -957,8 +965,8 @@ export default function BandhanSME({
         if (fieldKey === 'areaLandDoc' || !prev.extentOfSite) {
           next.extentOfSite = formatted;
           next.extentConsideredValuation = formatted;
+          next.landAreaTotal = formatted;
           if (sqft > 0) {
-            next.landAreaTotal = String(sqft);
             next.landAreaSqft = `${sqft} Sft`;
           }
         }
@@ -1222,9 +1230,13 @@ export default function BandhanSME({
     const pArea = parseSqftFromArea(fields.landAreaTotal || fields.extentOfSite || fields.areaLandDoc, fields.landAreaUnit, fields.landAreaValue);
     const lMktRate = parseNum(fields.landMarketRate);
     const lGovtRate = parseNum(fields.landGovtBenchmarkRate);
+    const lGovtAcre = parseNum(fields.landGovtBenchmarkPerAcre);
+
+    const effectiveGovtSftRate = lGovtRate > 0 ? lGovtRate : (lGovtAcre > 0 ? Math.round(lGovtAcre / 43560) : 0);
+    const effectiveGovtAcreRate = lGovtAcre > 0 ? lGovtAcre : (lGovtRate > 0 ? Math.round(lGovtRate * 43560) : 0);
 
     const landMarketVal = (pArea > 0 && lMktRate > 0) ? Math.round(pArea * lMktRate) : 0;
-    const landGovtVal = (pArea > 0 && lGovtRate > 0) ? Math.round(pArea * lGovtRate) : 0;
+    const landGovtVal = (pArea > 0 && effectiveGovtSftRate > 0) ? Math.round(pArea * effectiveGovtSftRate) : 0;
     const distPct = (fields.distressSalePct !== undefined && fields.distressSalePct !== '') ? parseNum(fields.distressSalePct) : 85;
     const realPct = (fields.realisableValuePct !== undefined && fields.realisableValuePct !== '') ? parseNum(fields.realisableValuePct) : 95;
     const landDistVal = Math.round(landMarketVal * (distPct / 100));
@@ -1263,16 +1275,31 @@ export default function BandhanSME({
       const next = { ...prev };
 
       // Sync Land Valuation Totals
-      const landMktStr = landMarketVal > 0 ? `Rs.${formatCurrencyINR(landMarketVal)}/-` : '';
-      const landGovtStr = landGovtVal > 0 ? `Rs.${formatCurrencyINR(landGovtVal)}/-` : '';
+      const landMktStr = landMarketVal > 0
+        ? `Total Market Value of Land: ${pArea.toFixed(2)} Sft X Rs.${formatCurrencyINR(lMktRate)}/- Per Sft = Rs.${formatCurrencyINR(landMarketVal)}/-`
+        : '';
+      const landGovtStr = (landGovtVal > 0 && effectiveGovtSftRate > 0)
+        ? `Govt. Benchmark Value: Rs.${formatCurrencyINR(effectiveGovtAcreRate)} /- Per Acre i.e. Rs.${formatCurrencyINR(effectiveGovtSftRate)}/- Per Sft\nGuideline Value of Land= ${pArea.toFixed(2)} Sft X Rs.${formatCurrencyINR(effectiveGovtSftRate)}/- Per Sft = Rs.${formatCurrencyINR(landGovtVal)}/-`
+        : '';
       const landDistStr = landDistVal > 0 ? `Rs.${formatCurrencyINR(landDistVal)}/-` : '';
       const landRealStr = landRealVal > 0 ? `Rs.${formatCurrencyINR(landRealVal)}/-` : '';
 
-      if (landMarketVal > 0 && prev.landMarketValueTotal !== landMktStr) {
-        next.landMarketValueTotal = landMktStr;
+      if (landMarketVal > 0) {
+        if (prev.landMarketValueTotal !== landMktStr) {
+          next.landMarketValueTotal = landMktStr;
+          changed = true;
+        }
+        if (prev.landDistressValue !== landDistStr) {
+          next.landDistressValue = landDistStr;
+          changed = true;
+        }
+        if (prev.landRealisableValue !== landRealStr) {
+          next.landRealisableValue = landRealStr;
+          changed = true;
+        }
+      }
+      if (landGovtVal > 0 && prev.landGovtValueTotal !== landGovtStr) {
         next.landGovtValueTotal = landGovtStr;
-        next.landDistressValue = landDistStr;
-        next.landRealisableValue = landRealStr;
         changed = true;
       }
 
@@ -1375,6 +1402,7 @@ export default function BandhanSME({
     fields.areaLandDoc,
     fields.landMarketRate,
     fields.landGovtBenchmarkRate,
+    fields.landGovtBenchmarkPerAcre,
     fields.distressSalePct,
     fields.realisableValuePct,
     fields.buildingValuationRows,
@@ -1687,7 +1715,7 @@ export default function BandhanSME({
   };
 
   return (
-    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
+    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900 font-sans">
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
         {/* Top Active Configuration Banner */}
@@ -2593,8 +2621,38 @@ export default function BandhanSME({
               </Field>
             </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Field label="C. Street No.:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.streetNo || ''}
+                  onChange={(e) => handleChange('streetNo', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="D. Survey / Plot No.:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.surveyPlotNo || ''}
+                  onChange={(e) => handleChange('surveyPlotNo', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="E. Khata No.:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.briefKhataNo || ''}
+                  onChange={(e) => handleChange('briefKhataNo', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <Field label="Mouza:">
+              <Field label="F. Mouza:">
                 <input
                   type="text"
                   className={inputCls}
@@ -2603,7 +2661,7 @@ export default function BandhanSME({
                   disabled={isReadOnly}
                 />
               </Field>
-              <Field label="Thana No:">
+              <Field label="G. Thana No:">
                 <input
                   type="text"
                   className={inputCls}
@@ -2612,7 +2670,16 @@ export default function BandhanSME({
                   disabled={isReadOnly}
                 />
               </Field>
-              <Field label="Tehasil:">
+              <Field label="H. Tehasil No.:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.tehasilNo || ''}
+                  onChange={(e) => handleChange('tehasilNo', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="I. Tehasil:">
                 <input
                   type="text"
                   className={inputCls}
@@ -2621,12 +2688,51 @@ export default function BandhanSME({
                   disabled={isReadOnly}
                 />
               </Field>
-              <Field label="SRO:">
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <Field label="J. SRO:">
                 <input
                   type="text"
                   className={inputCls}
                   value={fields.sro || ''}
                   onChange={(e) => handleChange('sro', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="K. Police Station (P.S):">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.policeStation || ''}
+                  onChange={(e) => handleChange('policeStation', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="L. Village / Town / City:">
+                {renderSelect(
+                  fields.villageTownCity,
+                  ['City', 'Town', 'Village'],
+                  (v) => handleChange('villageTownCity', v),
+                  isReadOnly,
+                  'City'
+                )}
+              </Field>
+              <Field label="M. District:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.district || ''}
+                  onChange={(e) => handleChange('district', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="N. State:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.state || ''}
+                  onChange={(e) => handleChange('state', e.target.value)}
                   disabled={isReadOnly}
                 />
               </Field>
@@ -2707,127 +2813,139 @@ export default function BandhanSME({
               </div>
             </div>
 
-            {/* P. Multi-Plot Boundaries (P. 1) Document) */}
-            <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/50 space-y-3">
-              <div className="flex items-center justify-between">
+            {/* P. Boundaries of the Property (Unified Points 1 & 2) */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-4">
+              <div className="pb-2 border-b border-slate-200">
                 <h4 className="font-semibold text-slate-800 text-sm">
-                  P) 1) Boundaries as per Document / Deed (Dynamic Multi-Plot Support)
+                  P. Boundaries of the Property (Points 1 & 2)
                 </h4>
-                {!isReadOnly && (
-                  <button
-                    type="button"
-                    onClick={handleAddPlotBoundary}
-                    className="px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded cursor-pointer"
-                  >
-                    + Add Plot Boundary
-                  </button>
-                )}
               </div>
 
-              {(fields.documentPlotBoundaries || []).map((pb, idx) => (
-                <div key={idx} className="p-3 bg-white border border-slate-200 rounded-md space-y-2">
-                  <div className="flex items-center justify-between">
+              {/* 1) Document Boundaries */}
+              <div className="p-3 bg-white border border-slate-200 rounded-md space-y-3">
+                <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+                  <h5 className="font-semibold text-xs text-slate-700">
+                    1) Boundaries as per Document / Deed (Dynamic Multi-Plot Support)
+                  </h5>
+                  {!isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={handleAddPlotBoundary}
+                      className="px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded cursor-pointer transition-all"
+                    >
+                      + Add Plot Boundary
+                    </button>
+                  )}
+                </div>
+
+                {(fields.documentPlotBoundaries || []).map((pb, idx) => (
+                  <div key={idx} className="p-3 bg-slate-50/70 border border-slate-200/80 rounded-md space-y-2">
+                    <div className="flex items-center justify-between">
+                      <input
+                        type="text"
+                        className="font-medium text-xs text-slate-900 bg-white border border-slate-200 rounded focus:outline-none focus:border-blue-500 w-64 px-2 py-1"
+                        value={pb.plotNo}
+                        placeholder="Plot No / Schedule"
+                        onChange={(e) => handlePlotBoundaryChange(idx, 'plotNo', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                      {!isReadOnly && (fields.documentPlotBoundaries || []).length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemovePlotBoundary(idx)}
+                          className="text-red-500 hover:text-red-700 text-xs font-semibold cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <Field label="I) East:">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={pb.east}
+                          onChange={(e) => handlePlotBoundaryChange(idx, 'east', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                      <Field label="II) West:">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={pb.west}
+                          onChange={(e) => handlePlotBoundaryChange(idx, 'west', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                      <Field label="III) North:">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={pb.north}
+                          onChange={(e) => handlePlotBoundaryChange(idx, 'north', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                      <Field label="IV) South:">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={pb.south}
+                          onChange={(e) => handlePlotBoundaryChange(idx, 'south', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </Field>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* 2) Physical Boundaries */}
+              <div className="p-3 bg-white border border-slate-200 rounded-md space-y-3">
+                <div className="pb-1 border-b border-slate-100">
+                  <h5 className="font-semibold text-xs text-slate-700">
+                    2) Boundaries as per Physical Verification on Site
+                  </h5>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                  <Field label="I) East:">
                     <input
                       type="text"
-                      className="font-medium text-xs text-slate-900 border-b border-slate-300 focus:outline-none focus:border-blue-500 w-64 px-1 py-0.5"
-                      value={pb.plotNo}
-                      onChange={(e) => handlePlotBoundaryChange(idx, 'plotNo', e.target.value)}
+                      className={inputCls}
+                      value={fields.verifiedBoundaryEast || ''}
+                      onChange={(e) => handleChange('verifiedBoundaryEast', e.target.value)}
                       disabled={isReadOnly}
                     />
-                    {!isReadOnly && (fields.documentPlotBoundaries || []).length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemovePlotBoundary(idx)}
-                        className="text-red-500 hover:text-red-700 text-xs font-semibold cursor-pointer"
-                      >
-                        Remove
-                      </button>
-                    )}
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    <Field label="I) East:">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={pb.east}
-                        onChange={(e) => handlePlotBoundaryChange(idx, 'east', e.target.value)}
-                        disabled={isReadOnly}
-                      />
-                    </Field>
-                    <Field label="II) West:">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={pb.west}
-                        onChange={(e) => handlePlotBoundaryChange(idx, 'west', e.target.value)}
-                        disabled={isReadOnly}
-                      />
-                    </Field>
-                    <Field label="III) North:">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={pb.north}
-                        onChange={(e) => handlePlotBoundaryChange(idx, 'north', e.target.value)}
-                        disabled={isReadOnly}
-                      />
-                    </Field>
-                    <Field label="IV) South:">
-                      <input
-                        type="text"
-                        className={inputCls}
-                        value={pb.south}
-                        onChange={(e) => handlePlotBoundaryChange(idx, 'south', e.target.value)}
-                        disabled={isReadOnly}
-                      />
-                    </Field>
-                  </div>
+                  </Field>
+                  <Field label="II) West:">
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.verifiedBoundaryWest || ''}
+                      onChange={(e) => handleChange('verifiedBoundaryWest', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+                  <Field label="III) North:">
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.verifiedBoundaryNorth || ''}
+                      onChange={(e) => handleChange('verifiedBoundaryNorth', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+                  <Field label="IV) South:">
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.verifiedBoundarySouth || ''}
+                      onChange={(e) => handleChange('verifiedBoundarySouth', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </Field>
                 </div>
-              ))}
-            </div>
-
-            {/* Verified Boundaries (P. 2) Physical) */}
-            <div className="border border-slate-200 rounded-lg p-4 bg-slate-50/50 space-y-3">
-              <h4 className="font-semibold text-slate-800 text-sm">
-                P) 2) Boundaries as per Physical Verification on Site
-              </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <Field label="I) East:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.verifiedBoundaryEast || ''}
-                    onChange={(e) => handleChange('verifiedBoundaryEast', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="II) West:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.verifiedBoundaryWest || ''}
-                    onChange={(e) => handleChange('verifiedBoundaryWest', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="III) North:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.verifiedBoundaryNorth || ''}
-                    onChange={(e) => handleChange('verifiedBoundaryNorth', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="IV) South:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.verifiedBoundarySouth || ''}
-                    onChange={(e) => handleChange('verifiedBoundarySouth', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
               </div>
             </div>
           </div>
@@ -2835,68 +2953,124 @@ export default function BandhanSME({
 
         {/* 5. SITE CHARACTERISTICS & PROXIMITIES */}
         <Section number={5} id="sec-site-char" title="II. Valuation of Land (4. Site Characteristics & Location)">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="A. Level of Land / Topography:">
-              {renderSelect(
-                fields.levelOfLand,
-                ['Leveled and Plain', 'Low Lying Land', 'Elevated / Sloping Land', 'Uneven / Undulated Land'],
-                (v) => handleChange('levelOfLand', v),
-                isReadOnly,
-                'Leveled and Plain'
-              )}
-            </Field>
-            <Field label="B. Permitted Use:">
-              {renderSelect(
-                fields.useToWhichCanBePut,
-                ['Residential cum Commercial Purpose', 'Residential Purpose', 'Commercial Purpose', 'Industrial Purpose', 'Institutional Purpose'],
-                (v) => handleChange('useToWhichCanBePut', v),
-                isReadOnly,
-                'Residential cum Commercial Purpose'
-              )}
-            </Field>
-            <Field label="H. Corner / Intermittent Plot:">
-              <select
-                className={selectCls}
-                value={fields.cornerOrIntermittentPlot || 'Intermittent Plot'}
-                onChange={(e) => handleChange('cornerOrIntermittentPlot', e.target.value)}
-                disabled={isReadOnly}
-              >
-                <option value="Intermittent Plot">Intermittent Plot</option>
-                <option value="Corner Plot">Corner Plot</option>
-              </select>
-            </Field>
-            <Field label="I. Land Locked?:">
-              <select
-                className={selectCls}
-                value={fields.isLandLocked || 'No'}
-                onChange={(e) => handleChange('isLandLocked', e.target.value)}
-                disabled={isReadOnly}
-              >
-                <option value="No">No</option>
-                <option value="Yes">Yes</option>
-              </select>
-            </Field>
-            <Field label="L. Road Kind & Width:">
-              {renderSelect(
-                fields.roadKindAndWidth,
-                ['15 ft wide BT Road', '20 ft wide BT Road', '25 ft wide BT Road', '30 ft wide BT Road', '40 ft wide BT Road', '15 ft wide CC Road', '20 ft wide CC Road', '10 ft wide Morrum Road', 'Earthen Road'],
-                (v) => handleChange('roadKindAndWidth', v),
-                isReadOnly,
-                '15 ft wide BT Road'
-              )}
-            </Field>
-            <Field label="U. Latitude / Longitude Coordinates:">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.latitudeLongitude || ''}
-                onChange={(e) => handleChange('latitudeLongitude', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="A. Level of Land / Topography:">
+                {renderSelect(
+                  fields.levelOfLand,
+                  ['Leveled and Plain', 'Low Lying Land', 'Elevated / Sloping Land', 'Uneven / Undulated Land'],
+                  (v) => handleChange('levelOfLand', v),
+                  isReadOnly,
+                  'Leveled and Plain'
+                )}
+              </Field>
+              <Field label="B. Permitted Use:">
+                {renderSelect(
+                  fields.useToWhichCanBePut,
+                  ['Residential cum Commercial Purpose', 'Residential Purpose', 'Commercial Purpose', 'Industrial Purpose', 'Institutional Purpose'],
+                  (v) => handleChange('useToWhichCanBePut', v),
+                  isReadOnly,
+                  'Residential cum Commercial Purpose'
+                )}
+              </Field>
+              <Field label="C. Agreement of Easements (Encroachments):">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.easementAgreements || ''}
+                  onChange={(e) => handleChange('easementAgreements', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="D. Restrictive Covenant:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.restrictiveCovenant || ''}
+                  onChange={(e) => handleChange('restrictiveCovenant', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="E. Development Agency Approval Letter No. & Date:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.approvalLetterNoDateDevelopment || ''}
+                  onChange={(e) => handleChange('approvalLetterNoDateDevelopment', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="F. Building Use Certificate Obtained?:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.buildingUseCertificateObtained || ''}
+                  onChange={(e) => handleChange('buildingUseCertificateObtained', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="G. Town Planning Scheme / Development Plan Inclusion:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.townPlanningSchemeInclusion || ''}
+                  onChange={(e) => handleChange('townPlanningSchemeInclusion', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="H. Corner / Intermittent Plot:">
+                <select
+                  className={selectCls}
+                  value={fields.cornerOrIntermittentPlot || 'Intermittent Plot'}
+                  onChange={(e) => handleChange('cornerOrIntermittentPlot', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Intermittent Plot">Intermittent Plot</option>
+                  <option value="Corner Plot">Corner Plot</option>
+                </select>
+              </Field>
+              <Field label="I. Land Locked?:">
+                <select
+                  className={selectCls}
+                  value={fields.isLandLocked || 'No'}
+                  onChange={(e) => handleChange('isLandLocked', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </Field>
+              <Field label="J. Free Access & Surface Communication Proximity:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.freeAccessAndProximity || ''}
+                  onChange={(e) => handleChange('freeAccessAndProximity', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="K. Road Facilities:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.roadFacilities || ''}
+                  onChange={(e) => handleChange('roadFacilities', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="L. Road Kind & Width:">
+                {renderSelect(
+                  fields.roadKindAndWidth,
+                  ['15 ft wide BT Road', '20 ft wide BT Road', '25 ft wide BT Road', '30 ft wide BT Road', '40 ft wide BT Road', '15 ft wide CC Road', '20 ft wide CC Road', '10 ft wide Morrum Road', 'Earthen Road'],
+                  (v) => handleChange('roadKindAndWidth', v),
+                  isReadOnly,
+                  '15 ft wide BT Road'
+                )}
+              </Field>
+            </div>
 
             {/* M. Distance from Municipal Office / Limits */}
-            <div className="sm:col-span-2 p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
               <p className="text-xs font-semibold text-slate-700">
                 M. IF THE PROPERTY IS NOT WITHIN THE CITY/TOWN/MUNICIPAL LIMIT THEN STATE THE DISTANCE OF THE PROPERTY FROM THE:
               </p>
@@ -2922,8 +3096,66 @@ export default function BandhanSME({
               </div>
             </div>
 
-            {/* Civic Proximities */}
-            <div className="sm:col-span-2 p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-2">
+            {/* N to S Environmental & Infrastructure Details */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Field label="N. Water Potentialities:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.waterPotentialities || ''}
+                  onChange={(e) => handleChange('waterPotentialities', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="O. Possibility of Frequent Flooding:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.possibilityFlooding || ''}
+                  onChange={(e) => handleChange('possibilityFlooding', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="P. Underground Sewerage System:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.undergroundSewerageAvailable || ''}
+                  onChange={(e) => handleChange('undergroundSewerageAvailable', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Q. Drainage Systems Available:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.drainageSystemsAvailable || ''}
+                  onChange={(e) => handleChange('drainageSystemsAvailable', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="R. Power Supply Available?:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.powerSupplyAvailable || ''}
+                  onChange={(e) => handleChange('powerSupplyAvailable', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="S. Surrounding Area Development:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.surroundingDevelopment || ''}
+                  onChange={(e) => handleChange('surroundingDevelopment', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+
+            {/* Civic Proximities T */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
               <p className="text-xs font-semibold text-slate-700">T. PROXIMITY TO CIVIC AMENITIES:</p>
               <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2 text-xs">
                 <Field label="(i) School:">
@@ -2992,8 +3224,83 @@ export default function BandhanSME({
               </div>
             </div>
 
+            {/* U. Latitude / Longitude Coordinates */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="font-semibold text-slate-800 text-sm">
+                  U. Latitude / Longitude Coordinates
+                </h4>
+                {fields.latitude && fields.longitude && (
+                  <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
+                    📍 {fields.latitude}, {fields.longitude}
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Field label="Latitude (DD):">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    placeholder="e.g. 20.2961"
+                    value={fields.latitude || ''}
+                    onChange={(e) => {
+                      const lat = e.target.value;
+                      const lng = fields.longitude || '';
+                      const combined = lat && lng ? `${lat}° N, ${lng}° E` : lat;
+                      setFields((prev) => ({
+                        ...prev,
+                        latitude: lat,
+                        latitudeLongitude: combined,
+                      }));
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Longitude (DD):">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    placeholder="e.g. 85.8245"
+                    value={fields.longitude || ''}
+                    onChange={(e) => {
+                      const lng = e.target.value;
+                      const lat = fields.latitude || '';
+                      const combined = lat && lng ? `${lat}° N, ${lng}° E` : lng;
+                      setFields((prev) => ({
+                        ...prev,
+                        longitude: lng,
+                        latitudeLongitude: combined,
+                      }));
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Combined Coordinates (Statutory Display):">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    placeholder="e.g. 20.2961° N, 85.8245° E"
+                    value={fields.latitudeLongitude || ''}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      const parts = val.replace(/°\s*[NE]/gi, '').split(/[,\s/]+/);
+                      const lat = parts[0] || fields.latitude || '';
+                      const lng = parts[1] || fields.longitude || '';
+                      setFields((prev) => ({
+                        ...prev,
+                        latitudeLongitude: val,
+                        ...(lat && !isNaN(Number(lat)) ? { latitude: lat } : {}),
+                        ...(lng && !isNaN(Number(lng)) ? { longitude: lng } : {}),
+                      }));
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
+            </div>
+
             {/* 4. Location Advantages & Disadvantages */}
-            <div className="sm:col-span-2 p-3 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
               <p className="text-xs font-semibold text-slate-700">4. LOCATION ADVANTAGES & DISADVANTAGES</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="A. Location Advantages:">
@@ -3102,11 +3409,14 @@ export default function BandhanSME({
             </div>
 
             {/* B. Present Valuation Details */}
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
-              <h4 className="font-semibold text-slate-800 text-sm">B. PRESENT VALUATION DETAILS:</h4>
-              <p className="text-xs text-slate-600 italic">
-                (HERE THE REGISTERED VALUER SHOULD DISCUSS IN DETAIL HIS APPROACH IN VALUATION OF THE PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATIONS.)
-              </p>
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-4">
+              <div className="pb-2 border-b border-slate-200">
+                <h4 className="font-semibold text-slate-800 text-sm">B. PRESENT VALUATION DETAILS:</h4>
+                <p className="text-xs text-slate-500 italic mt-0.5">
+                  (HERE THE REGISTERED VALUER SHOULD DISCUSS IN DETAIL HIS APPROACH IN VALUATION OF THE PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATIONS.)
+                </p>
+              </div>
+
               <Field label="Approach in Valuation of the Property:">
                 <textarea
                   rows={2}
@@ -3117,93 +3427,218 @@ export default function BandhanSME({
                 />
               </Field>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <Field label="1. Valuation of Land (Area Sq.ft):">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.landAreaTotal || fields.extentOfSite || ''}
-                    onChange={(e) => handleChange('landAreaTotal', sanitizePositiveFloat(e.target.value))}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Adopted Market Land Rate (Rs./Sq.ft):">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.landMarketRate || ''}
-                    onChange={(e) => handleChange('landMarketRate', sanitizePositiveFloat(e.target.value))}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Govt. Benchmark Land Rate (Rs./Sq.ft):">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.landGovtBenchmarkRate || ''}
-                    onChange={(e) => handleChange('landGovtBenchmarkRate', sanitizePositiveFloat(e.target.value))}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="2. Govt. Value:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.landGovtValueTotal || ''}
-                    onChange={(e) => handleChange('landGovtValueTotal', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="3. Market Value:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.landMarketValueTotal || ''}
-                    onChange={(e) => handleChange('landMarketValueTotal', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
+              {/* 1. Valuation of Land */}
+              <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3 shadow-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-bold text-slate-800 tracking-wide">1. VALUATION OF LAND:</span>
+                    <span className="text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                      <span>↳ Referenced from:</span>
+                      <span className="font-semibold">E. Area of Land (As per Title Deed)</span>
+                    </span>
+                  </div>
+                  {fields.areaLandDoc && (fields.landAreaTotal || '') !== fields.areaLandDoc && !isReadOnly && (
+                    <button
+                      type="button"
+                      onClick={() => handleChange('landAreaTotal', fields.areaLandDoc || '')}
+                      className="text-[11px] font-semibold text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-md cursor-pointer transition-all shadow-xs"
+                      title="Reset value to match Section 2 Point E (Title Deed Area)"
+                    >
+                      ↻ Sync from Title Deed
+                    </button>
+                  )}
+                </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <Field label="4. Distress %:">
+                <div className="space-y-2">
+                  <textarea
+                    rows={2}
+                    className={inputCls}
+                    placeholder="e.g. Total Area: Ac.0.069 Dec i.e. 3006.00 Sft (1 Acre = 1000 Dec)"
+                    value={fields.landAreaTotal !== undefined ? fields.landAreaTotal : (fields.areaLandDoc || '')}
+                    onChange={(e) => handleChange('landAreaTotal', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                  <div className="flex flex-wrap items-center justify-between text-[11px] text-slate-500 gap-2 px-0.5">
+                    <span>Editable statement for statutory valuation calculation.</span>
+                    <span className="font-semibold text-slate-700 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded">
+                      Effective Calculated Area: {parseSqftFromArea(fields.landAreaTotal || fields.areaLandDoc || fields.extentOfSite, fields.landAreaUnit, fields.landAreaValue).toFixed(2)} Sft
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Govt. Value */}
+              <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3 shadow-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                  <span className="text-xs font-bold text-slate-800 tracking-wide">2. GOVT. VALUE (Benchmark & Guideline Value):</span>
+                  <span className="text-[11px] text-slate-500">
+                    Area: <span className="font-semibold text-slate-700">{parseSqftFromArea(fields.landAreaTotal || fields.areaLandDoc || fields.extentOfSite, fields.landAreaUnit, fields.landAreaValue).toFixed(2)} Sft</span>
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field label="Govt. Benchmark Value (Per Acre):">
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.distressSalePct !== undefined ? fields.distressSalePct : ''}
-                      onChange={(e) => handleChange('distressSalePct', sanitizePercentage(e.target.value))}
+                      placeholder="e.g. 172920000"
+                      value={fields.landGovtBenchmarkPerAcre || ''}
+                      onChange={(e) => {
+                        const val = sanitizePositiveFloat(e.target.value);
+                        const acreN = parseFloat(val) || 0;
+                        const sftRate = acreN > 0 ? String(Math.round(acreN / 43560)) : '';
+                        setFields(prev => ({
+                          ...prev,
+                          landGovtBenchmarkPerAcre: val,
+                          landGovtBenchmarkRate: sftRate || prev.landGovtBenchmarkRate,
+                        }));
+                      }}
                       disabled={isReadOnly}
                     />
                   </Field>
-                  <Field label="4. Distress Sale Value:">
+
+                  <Field label="Govt. Benchmark Land Rate (Rs./Sq.ft):">
                     <input
                       type="text"
                       className={inputCls}
-                      value={fields.landDistressValue || ''}
-                      onChange={(e) => handleChange('landDistressValue', e.target.value)}
+                      placeholder="e.g. 3970"
+                      value={fields.landGovtBenchmarkRate || ''}
+                      onChange={(e) => {
+                        const val = sanitizePositiveFloat(e.target.value);
+                        const sftN = parseFloat(val) || 0;
+                        const acreVal = sftN > 0 ? String(Math.round(sftN * 43560)) : '';
+                        setFields(prev => ({
+                          ...prev,
+                          landGovtBenchmarkRate: val,
+                          landGovtBenchmarkPerAcre: acreVal || prev.landGovtBenchmarkPerAcre,
+                        }));
+                      }}
                       disabled={isReadOnly}
                     />
                   </Field>
                 </div>
 
-                <div className="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <Field label="5. Realisable %:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.realisableValuePct !== undefined ? fields.realisableValuePct : ''}
-                      onChange={(e) => handleChange('realisableValuePct', sanitizePercentage(e.target.value))}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="5. Realisable Estimation of the Property in case of Distress Sale:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.landRealisableValue || ''}
-                      onChange={(e) => handleChange('landRealisableValue', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
+                <Field label="2. Govt. Value (Guideline Value Statement):">
+                  <textarea
+                    rows={3}
+                    className={inputCls}
+                    placeholder="Govt. Benchmark Value: Rs.17,29,20,000 /- Per Acre i.e. Rs.3970/- Per Sft&#10;Guideline Value of Land= 3006.00 Sft X Rs.3970/- Per Sft = Rs.1,19,33,820/-"
+                    value={fields.landGovtValueTotal || ''}
+                    onChange={(e) => handleChange('landGovtValueTotal', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
+
+              {/* 3. Market Value */}
+              <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3 shadow-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                  <span className="text-xs font-bold text-slate-800 tracking-wide">3. MARKET VALUE:</span>
+                  <span className="text-[11px] text-slate-500">
+                    Area: <span className="font-semibold text-slate-700">{parseSqftFromArea(fields.landAreaTotal || fields.areaLandDoc || fields.extentOfSite, fields.landAreaUnit, fields.landAreaValue).toFixed(2)} Sft</span>
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <Field label="Adopted Market Land Rate (Rs./Sq.ft):">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        placeholder="e.g. 6000"
+                        value={fields.landMarketRate || ''}
+                        onChange={(e) => handleChange('landMarketRate', sanitizePositiveFloat(e.target.value))}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <Field label="3. Market Value (Total Market Value Statement):">
+                      <textarea
+                        rows={2}
+                        className={inputCls}
+                        placeholder="Total Market Value of Land: 3006.00 Sft X Rs.6000/- Per Sft = Rs.1,80,36,000/-"
+                        value={fields.landMarketValueTotal || ''}
+                        onChange={(e) => handleChange('landMarketValueTotal', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4 & 5. Distress Sale & Realisable Estimation */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* 4. Distress */}
+                <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-800 tracking-wide">4. DISTRESS SALE VALUE</span>
+                    <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span>🔒 Read-Only (Auto-calculated)</span>
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Field label="Distress %:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        placeholder="85"
+                        value={fields.distressSalePct !== undefined ? fields.distressSalePct : '85'}
+                        onChange={(e) => handleChange('distressSalePct', sanitizePercentage(e.target.value))}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <div className="col-span-2">
+                      <Field label={`4. Distress Sale Value (${fields.distressSalePct || '85'}%):`}>
+                        <input
+                          type="text"
+                          className={`${inputCls} bg-slate-50 font-bold text-slate-800 cursor-not-allowed border-slate-200`}
+                          value={fields.landDistressValue || ''}
+                          readOnly
+                          disabled
+                        />
+                      </Field>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-slate-500 italic">
+                    Auto-calculated as {fields.distressSalePct || '85'}% of Total Market Value.
+                  </p>
+                </div>
+
+                {/* 5. Realisable */}
+                <div className="p-4 bg-white border border-slate-200 rounded-xl space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-800 tracking-wide">5. REALISABLE ESTIMATION</span>
+                    <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                      <span>🔒 Read-Only (Auto-calculated)</span>
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Field label="Realisable %:">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        placeholder="95"
+                        value={fields.realisableValuePct !== undefined ? fields.realisableValuePct : '95'}
+                        onChange={(e) => handleChange('realisableValuePct', sanitizePercentage(e.target.value))}
+                        disabled={isReadOnly}
+                      />
+                    </Field>
+                    <div className="col-span-2">
+                      <Field label={`5. Realisable Value (${fields.realisableValuePct || '95'}%):`}>
+                        <input
+                          type="text"
+                          className={`${inputCls} bg-slate-50 font-bold text-slate-800 cursor-not-allowed border-slate-200`}
+                          value={fields.landRealisableValue || ''}
+                          readOnly
+                          disabled
+                        />
+                      </Field>
+                    </div>
+                  </div>
+                  <p className="text-[11px] text-slate-500 italic leading-snug">
+                    Auto-calculated as {fields.realisableValuePct || '95'}% of Total Market Value (distress bank sale estimation).
+                  </p>
                 </div>
               </div>
             </div>
@@ -3369,164 +3804,297 @@ export default function BandhanSME({
           </div>
         </Section>
 
-        {/* 10. TECHNICAL DETAILS & SPECIFICATIONS */}
-        <Section number={10} id="sec-bldg-tech-spec" title="III. Valuation of Building (2. Tech Details & 3. Specs)">
+        {/* 10. TECHNICAL DETAILS OF THE BUILDING */}
+        <Section number={10} id="sec-bldg-tech" title="III. Valuation of Building (2. Technical Details of Building)">
           <div className="space-y-4">
-            {/* Top Technical Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-              <Field label="A. Number of Floors & Total Height:">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.numberOfFloorsAndHeight || ''}
-                  onChange={(e) => handleChange('numberOfFloorsAndHeight', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-              <Field label="C. (i) Building Condition (Exterior):">
-                {renderSelect(
-                  fields.buildingConditionExterior,
-                  ['Good', 'Very Good', 'Fair', 'Average', 'Poor'],
-                  (v) => handleChange('buildingConditionExterior', v),
-                  isReadOnly,
-                  'Good'
-                )}
-              </Field>
-              <Field label="C. (ii) Building Condition (Interior):">
-                {renderSelect(
-                  fields.buildingConditionInterior,
-                  ['Good', 'Very Good', 'Fair', 'Average', 'Poor'],
-                  (v) => handleChange('buildingConditionInterior', v),
-                  isReadOnly,
-                  'Good'
-                )}
-              </Field>
-              <Field label="D. Foundation Type:">
-                {renderSelect(
-                  fields.foundationType,
-                  ['Column Foundation', 'Isolated Footing', 'Raft Foundation', 'Strip Footing', 'Pile Foundation', 'Under Reamed Pile'],
-                  (v) => handleChange('foundationType', v),
-                  isReadOnly,
-                  'Column Foundation'
-                )}
-              </Field>
-              <Field label="Roofing:">
-                {renderSelect(
-                  fields.specRoofing,
-                  ['RCC Roof', 'ACC Sheet', 'GI Sheet', 'Tiles Roof', 'Madras Terrace', 'Pre-cast RCC Slab'],
-                  (v) => handleChange('specRoofing', v),
-                  isReadOnly,
-                  'RCC Roof'
-                )}
-              </Field>
-            </div>
-
-            {/* Dynamic Floor-Wise Technical Details (A, B, E, F, G) */}
-            <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 space-y-3">
-              <div className="flex items-center justify-between">
+            {/* A. Number of Floors & Height */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200">
                 <div>
-                  <h4 className="font-semibold text-slate-800 text-sm">
-                    2. Floor-Wise Technical Details (Points A, B, E, F, G)
+                  <h4 className="font-bold text-slate-800 text-xs tracking-wide">
+                    A. NUMBER OF FLOORS &amp; HEIGHT OF EACH FLOOR
                   </h4>
-                  <p className="text-xs text-slate-500">
-                    Add or modify floors below. All sub-points under A (Height), B (Plinth Area), E (Doors &amp; Windows), F (Flooring), and G (Wall Finishing) dynamically follow these entries.
+                  <p className="text-[11px] text-slate-500">
+                    Define the floor schedule and heights below. The floor entries defined here dynamically populate Points B, E, F, and G.
                   </p>
                 </div>
                 {!isReadOnly && (
                   <button
                     type="button"
                     onClick={handleAddFloorDetail}
-                    className="px-2.5 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded cursor-pointer"
+                    className="px-3 py-1 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-md cursor-pointer transition-all shadow-xs"
                   >
                     + Add Floor
                   </button>
                 )}
               </div>
 
-              {(fields.floorDetails || []).map((fl, idx) => {
-                const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)'];
-                const rom = romans[idx] || `(${idx + 1})`;
-                return (
-                  <div key={idx} className="p-3 bg-white border border-slate-200 rounded-md space-y-3">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-xs text-blue-700">{rom}</span>
-                        <input
-                          type="text"
-                          className="font-medium text-xs text-slate-900 border-b border-slate-300 focus:outline-none focus:border-blue-500 w-48 px-1 py-0.5"
-                          value={fl.floorName}
-                          onChange={(e) => handleFloorDetailChange(idx, 'floorName', e.target.value)}
-                          disabled={isReadOnly}
-                        />
+              <Field label="A. Number of Floors & Total Height (Summary Statement):">
+                <input
+                  type="text"
+                  className={inputCls}
+                  placeholder="e.g. G+3 Storied Building & Height: 10'-6&quot;"
+                  value={fields.numberOfFloorsAndHeight || ''}
+                  onChange={(e) => handleChange('numberOfFloorsAndHeight', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+
+              <div className="space-y-2.5 pt-1">
+                <span className="text-[11px] font-bold text-slate-700 block uppercase tracking-wider">
+                  Floor-Wise Height Details (Points A.i, A.ii...):
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {(fields.floorDetails || []).map((fl, idx) => {
+                    const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)'];
+                    const rom = romans[idx] || `(${idx + 1})`;
+                    return (
+                      <div key={idx} className="p-3 bg-white border border-slate-200 rounded-lg space-y-2 shadow-2xs">
+                        <div className="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                          <div className="flex items-center gap-1.5 flex-1 mr-2">
+                            <span className="font-bold text-xs text-blue-700">{rom}</span>
+                            <input
+                              type="text"
+                              className="font-semibold text-xs text-slate-900 border-b border-slate-200 focus:outline-none focus:border-blue-500 w-full px-1 py-0.5"
+                              value={fl.floorName}
+                              onChange={(e) => handleFloorDetailChange(idx, 'floorName', e.target.value)}
+                              disabled={isReadOnly}
+                              placeholder={`Floor ${idx + 1}`}
+                            />
+                          </div>
+                          {!isReadOnly && (fields.floorDetails || []).length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveFloorDetail(idx)}
+                              className="text-red-500 hover:text-red-700 text-xs font-bold cursor-pointer p-0.5"
+                              title="Remove floor"
+                            >
+                              ×
+                            </button>
+                          )}
+                        </div>
+                        <Field label={`A.${rom} ${fl.floorName} Height:`}>
+                          <input
+                            type="text"
+                            className={inputCls}
+                            placeholder="e.g. 10'-6&quot; or Do"
+                            value={fl.height || ''}
+                            onChange={(e) => handleFloorDetailChange(idx, 'height', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </Field>
                       </div>
-                      {!isReadOnly && (fields.floorDetails || []).length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveFloorDetail(idx)}
-                          className="text-red-500 hover:text-red-700 text-xs font-semibold cursor-pointer"
-                        >
-                          Remove
-                        </button>
-                      )}
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-5 gap-2 text-xs">
-                      <Field label={`A.${rom} Height:`}>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* B. Plinth Area Floor-Wise */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-200">
+                <div className="flex flex-wrap items-center gap-2">
+                  <h4 className="font-bold text-slate-800 text-xs tracking-wide">
+                    B. PLINTH AREA FLOOR-WISE
+                  </h4>
+                  <span className="text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
+                    ↳ Referenced from Point A ({(fields.floorDetails || []).length} Floors)
+                  </span>
+                </div>
+                <span className="text-xs font-semibold text-slate-700 bg-white border border-slate-200 px-2.5 py-1 rounded-md">
+                  Total Floor Plinth Area: {(fields.floorDetails || []).reduce((acc, f) => acc + (parseFloat(String(f.plinthArea).replace(/[^0-9.]/g, '')) || 0), 0).toFixed(2)} Sft
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {(fields.floorDetails || []).map((fl, idx) => {
+                  const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)'];
+                  const rom = romans[idx] || `(${idx + 1})`;
+                  return (
+                    <div key={idx} className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5 shadow-2xs">
+                      <span className="font-bold text-xs text-slate-800 block">
+                        B.{rom} {fl.floorName}
+                      </span>
+                      <Field label="Plinth Area (Sft):">
                         <input
                           type="text"
                           className={inputCls}
-                          value={fl.height || ''}
-                          onChange={(e) => handleFloorDetailChange(idx, 'height', e.target.value)}
-                          disabled={isReadOnly}
-                        />
-                      </Field>
-                      <Field label={`B.${rom} Plinth Area (Sft):`}>
-                        <input
-                          type="text"
-                          className={inputCls}
+                          placeholder="e.g. 2156.00"
                           value={fl.plinthArea || ''}
                           onChange={(e) => handleFloorDetailChange(idx, 'plinthArea', sanitizePositiveFloat(e.target.value))}
                           disabled={isReadOnly}
                         />
                       </Field>
-                      <Field label={`E.${rom} Doors & Windows:`}>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* C. Condition of the Building */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <h4 className="font-bold text-slate-800 text-xs tracking-wide pb-2 border-b border-slate-200">
+                C. CONDITION OF THE BUILDING
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Field label="C. (i) Condition of Building (Exterior):">
+                  {renderSelect(
+                    fields.buildingConditionExterior,
+                    ['Good', 'Very Good', 'Fair', 'Average', 'Poor'],
+                    (v) => handleChange('buildingConditionExterior', v),
+                    isReadOnly,
+                    'Good'
+                  )}
+                </Field>
+                <Field label="C. (ii) Condition of Building (Interior):">
+                  {renderSelect(
+                    fields.buildingConditionInterior,
+                    ['Good', 'Very Good', 'Fair', 'Average', 'Poor'],
+                    (v) => handleChange('buildingConditionInterior', v),
+                    isReadOnly,
+                    'Good'
+                  )}
+                </Field>
+              </div>
+            </div>
+
+            {/* D. Type of Foundations */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <h4 className="font-bold text-slate-800 text-xs tracking-wide pb-2 border-b border-slate-200">
+                D. TYPE OF FOUNDATIONS
+              </h4>
+              <div className="max-w-md">
+                <Field label="D. Type of Foundations:">
+                  {renderSelect(
+                    fields.foundationType,
+                    ['Column Foundation', 'Isolated Footing', 'Raft Foundation', 'Strip Footing', 'Pile Foundation', 'Under Reamed Pile'],
+                    (v) => handleChange('foundationType', v),
+                    isReadOnly,
+                    'Column Foundation'
+                  )}
+                </Field>
+              </div>
+            </div>
+
+            {/* E. Doors and Windows Floor-Wise */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-slate-200">
+                <h4 className="font-bold text-slate-800 text-xs tracking-wide">
+                  E. DOORS AND WINDOWS (FLOOR-WISE)
+                </h4>
+                <span className="text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
+                  ↳ Referenced from Point A ({(fields.floorDetails || []).length} Floors)
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {(fields.floorDetails || []).map((fl, idx) => {
+                  const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)'];
+                  const rom = romans[idx] || `(${idx + 1})`;
+                  return (
+                    <div key={idx} className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5 shadow-2xs">
+                      <span className="font-bold text-xs text-slate-800 block">
+                        E.{rom} {fl.floorName}
+                      </span>
+                      <Field label="Doors &amp; Windows:">
                         <input
                           type="text"
                           className={inputCls}
+                          placeholder="e.g. Sal wood choukath with shutter"
                           value={fl.doorsWindows || ''}
                           onChange={(e) => handleFloorDetailChange(idx, 'doorsWindows', e.target.value)}
                           disabled={isReadOnly}
                         />
                       </Field>
-                      <Field label={`F.${rom} Flooring:`}>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* F. Flooring Floor-Wise */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-slate-200">
+                <h4 className="font-bold text-slate-800 text-xs tracking-wide">
+                  F. FLOORING (FLOOR-WISE)
+                </h4>
+                <span className="text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
+                  ↳ Referenced from Point A ({(fields.floorDetails || []).length} Floors)
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {(fields.floorDetails || []).map((fl, idx) => {
+                  const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)'];
+                  const rom = romans[idx] || `(${idx + 1})`;
+                  return (
+                    <div key={idx} className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5 shadow-2xs">
+                      <span className="font-bold text-xs text-slate-800 block">
+                        F.{rom} {fl.floorName}
+                      </span>
+                      <Field label="Flooring Type:">
                         <input
                           type="text"
                           className={inputCls}
+                          placeholder="e.g. VT Flooring or Do"
                           value={fl.flooring || ''}
                           onChange={(e) => handleFloorDetailChange(idx, 'flooring', e.target.value)}
                           disabled={isReadOnly}
                         />
                       </Field>
-                      <Field label={`G.${rom} Wall Finishing:`}>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* G. Wall Finishing Floor-Wise */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <div className="flex flex-wrap items-center gap-2 pb-2 border-b border-slate-200">
+                <h4 className="font-bold text-slate-800 text-xs tracking-wide">
+                  G. WALL FINISHING (FLOOR-WISE)
+                </h4>
+                <span className="text-[11px] font-medium text-indigo-700 bg-indigo-50 border border-indigo-200 px-2 py-0.5 rounded-md">
+                  ↳ Referenced from Point A ({(fields.floorDetails || []).length} Floors)
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                {(fields.floorDetails || []).map((fl, idx) => {
+                  const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)'];
+                  const rom = romans[idx] || `(${idx + 1})`;
+                  return (
+                    <div key={idx} className="p-3 bg-white border border-slate-200 rounded-lg space-y-1.5 shadow-2xs">
+                      <span className="font-bold text-xs text-slate-800 block">
+                        G.{rom} {fl.floorName}
+                      </span>
+                      <Field label="Wall Finishing:">
                         <input
                           type="text"
                           className={inputCls}
+                          placeholder="e.g. Cement Plastering, Putty, Paint"
                           value={fl.wallFinishing || ''}
                           onChange={(e) => handleFloorDetailChange(idx, 'wallFinishing', e.target.value)}
                           disabled={isReadOnly}
                         />
                       </Field>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
+          </div>
+        </Section>
 
-            {/* 3. Construction Specifications (Points A to W) */}
-            <div className="border border-slate-200 rounded-lg p-4 bg-slate-50 space-y-4">
-              <h4 className="font-semibold text-slate-800 text-sm">
-                3. Specifications of Construction (Floor-Wise)
+        {/* 11. SPECIFICATIONS OF CONSTRUCTION */}
+        <Section number={11} id="sec-bldg-specs" title="III. Valuation of Building (3. Specifications of Construction)">
+          <div className="space-y-4">
+            {/* Structure & Framework (A - E) */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <h4 className="font-bold text-slate-800 text-xs tracking-wide pb-2 border-b border-slate-200 uppercase">
+                Structure &amp; Joinery (Points A to E)
               </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 <Field label="A. Foundation:">
                   {renderSelect(
                     fields.specFoundation,
@@ -3579,6 +4147,15 @@ export default function BandhanSME({
                     'Lintel, Chajja, Beam'
                   )}
                 </Field>
+              </div>
+            </div>
+
+            {/* Finishes & Roofing (F - K) */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <h4 className="font-bold text-slate-800 text-xs tracking-wide pb-2 border-b border-slate-200 uppercase">
+                Finishes, Roofing &amp; Features (Points F to K)
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 <Field label="F. Plastering:">
                   {renderSelect(
                     fields.specPlastering,
@@ -3606,7 +4183,7 @@ export default function BandhanSME({
                     'Yes'
                   )}
                 </Field>
-                <Field label="I. Roofing:">
+                <Field label="I. Roofing (Weather Proof Course):">
                   {renderSelect(
                     fields.specRoofing,
                     ['RCC Roof', 'ACC Sheet', 'GI Sheet', 'Tiles Roof', 'Madras Terrace', 'Pre-cast RCC Slab'],
@@ -3624,7 +4201,7 @@ export default function BandhanSME({
                     'Surface Drainage'
                   )}
                 </Field>
-                <Field label="K. Decorative Features:">
+                <Field label="K. Special Architectural / Decorative Features:">
                   {renderSelect(
                     fields.specDecorativeFeatures,
                     ['Interior work is done on Second & Third Floor', 'Interior Decorative Works with False Ceiling', 'Standard Architectural Elevation', 'Normal Plaster Grooves', 'None'],
@@ -3633,6 +4210,15 @@ export default function BandhanSME({
                     'Interior work is done on Second & Third Floor'
                   )}
                 </Field>
+              </div>
+            </div>
+
+            {/* Electrical & Sanitary Utilities (L - O, Q - R, T - W) */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <h4 className="font-bold text-slate-800 text-xs tracking-wide pb-2 border-b border-slate-200 uppercase">
+                Utilities, Electrical &amp; Sanitary (Points L to O, Q, R, T to W)
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 <Field label="L. (i) Internal Wiring (Concealed/External):">
                   {renderSelect(
                     fields.specInternalWiring,
@@ -3642,7 +4228,7 @@ export default function BandhanSME({
                     'Concealed'
                   )}
                 </Field>
-                <Field label="L. (ii) Class of Fittings:">
+                <Field label="L. (ii) Class of Electrical Fittings:">
                   {renderSelect(
                     fields.specWiringFittingsClass,
                     ['Superior', 'Standard / Modular', 'Ordinary', 'Semi-Modular', 'Premium Modular (Anchor/Havells/Legrand)'],
@@ -3733,80 +4319,85 @@ export default function BandhanSME({
                   )}
                 </Field>
               </div>
+            </div>
 
-              {/* P. Compound Wall Details */}
-              <div className="p-3 bg-white border border-slate-200 rounded-md space-y-2">
-                <p className="font-semibold text-slate-700 text-xs uppercase">P. Compound Wall</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <Field label="1. Compound Wall:">
-                    {renderSelect(
-                      fields.specCompoundWall,
-                      ['Yes', 'No', 'Partial', 'Not Applicable'],
-                      (v) => handleChange('specCompoundWall', v),
-                      isReadOnly,
-                      'Yes'
-                    )}
-                  </Field>
-                  <Field label="2. Height and Length:">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.specCompoundWallHeightLength || ''}
-                      onChange={(e) => handleChange('specCompoundWallHeightLength', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                  <Field label="3. Type of Construction:">
-                    {renderSelect(
-                      fields.specCompoundWallType,
-                      ['Brick Masonry Wall with Iron Gate', 'Brick Masonry Wall with Plaster & Paint', 'RCC / Precast Compound Wall', 'Stone Masonry Wall', 'Barbed Wire Fencing with MS Gate', 'Not Applicable'],
-                      (v) => handleChange('specCompoundWallType', v),
-                      isReadOnly,
-                      'Brick Masonry Wall with Iron Gate'
-                    )}
-                  </Field>
-                </div>
+            {/* P. Compound Wall Details */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <h4 className="font-bold text-slate-800 text-xs tracking-wide pb-2 border-b border-slate-200 uppercase">
+                P. Compound Wall Details
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Field label="P. 1. Compound Wall:">
+                  {renderSelect(
+                    fields.specCompoundWall,
+                    ['Yes', 'No', 'Partial', 'Not Applicable'],
+                    (v) => handleChange('specCompoundWall', v),
+                    isReadOnly,
+                    'Yes'
+                  )}
+                </Field>
+                <Field label="P. 2. Height and Length:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    placeholder="e.g. Height: 5'-0&quot;, Length: 150'-0&quot;"
+                    value={fields.specCompoundWallHeightLength || ''}
+                    onChange={(e) => handleChange('specCompoundWallHeightLength', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="P. 3. Type of Construction:">
+                  {renderSelect(
+                    fields.specCompoundWallType,
+                    ['Brick Masonry Wall with Iron Gate', 'Brick Masonry Wall with Plaster & Paint', 'RCC / Precast Compound Wall', 'Stone Masonry Wall', 'Barbed Wire Fencing with MS Gate', 'Not Applicable'],
+                    (v) => handleChange('specCompoundWallType', v),
+                    isReadOnly,
+                    'Brick Masonry Wall with Iron Gate'
+                  )}
+                </Field>
               </div>
+            </div>
 
-              {/* S. Overhead Tank Details */}
-              <div className="p-3 bg-white border border-slate-200 rounded-md space-y-2">
-                <p className="font-semibold text-slate-700 text-xs uppercase">S. Overhead Tank</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <Field label="1. Overhead Tank:">
-                    {renderSelect(
-                      fields.specOverheadTank,
-                      ['Yes', 'No', 'Not Applicable'],
-                      (v) => handleChange('specOverheadTank', v),
-                      isReadOnly,
-                      'Yes'
-                    )}
-                  </Field>
-                  <Field label="2. Where Located:">
-                    {renderSelect(
-                      fields.specOverheadTankLocation,
-                      ['On the top of the roof', 'Over Head Staging / Terrace', 'On RCC Slab Above Staircase Headroom', 'Not Applicable'],
-                      (v) => handleChange('specOverheadTankLocation', v),
-                      isReadOnly,
-                      'On the top of the roof'
-                    )}
-                  </Field>
-                  <Field label="3. Capacity:">
-                    {renderSelect(
-                      fields.specOverheadTankCapacity,
-                      ['2000 Liters', '1000 Liters (PVC/Sintex)', '1500 Liters', '3000 Liters', '5000 Liters (RCC/PVC)', 'Not Applicable'],
-                      (v) => handleChange('specOverheadTankCapacity', v),
-                      isReadOnly,
-                      '2000 Liters'
-                    )}
-                  </Field>
-                </div>
+            {/* S. Overhead Tank Details */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <h4 className="font-bold text-slate-800 text-xs tracking-wide pb-2 border-b border-slate-200 uppercase">
+                S. Overhead Tank Details
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Field label="S. 1. Overhead Tank:">
+                  {renderSelect(
+                    fields.specOverheadTank,
+                    ['Yes', 'No', 'Not Applicable'],
+                    (v) => handleChange('specOverheadTank', v),
+                    isReadOnly,
+                    'Yes'
+                  )}
+                </Field>
+                <Field label="S. 2. Where Located:">
+                  {renderSelect(
+                    fields.specOverheadTankLocation,
+                    ['On the top of the roof', 'Over Head Staging / Terrace', 'On RCC Slab Above Staircase Headroom', 'Not Applicable'],
+                    (v) => handleChange('specOverheadTankLocation', v),
+                    isReadOnly,
+                    'On the top of the roof'
+                  )}
+                </Field>
+                <Field label="S. 3. Capacity:">
+                  {renderSelect(
+                    fields.specOverheadTankCapacity,
+                    ['2000 Liters', '1000 Liters (PVC/Sintex)', '1500 Liters', '3000 Liters', '5000 Liters (RCC/PVC)', 'Not Applicable'],
+                    (v) => handleChange('specOverheadTankCapacity', v),
+                    isReadOnly,
+                    '2000 Liters'
+                  )}
+                </Field>
               </div>
             </div>
           </div>
         </Section>
 
-        {/* 11. BUILDING VALUATION, SUB-SCHEDULES & 6.0 TOTAL ABSTRACT MATRIX */}
-        <Section number={11} id="sec-bldg-valuation-schedules" title="III. Valuation of Building (4. Valuation, Sub-Schedules & 6.0 Matrix)">
+        {/* 12. BUILDING VALUATION, SUB-SCHEDULES & 6.0 TOTAL ABSTRACT MATRIX */}
+        <Section number={12} id="sec-bldg-valuation-schedules" title="III. Valuation of Building (4. Valuation, Sub-Schedules & 6.0 Matrix)">
           <div className="space-y-4">
             {/* 8-Col Valuation Table */}
             <div className="flex items-center justify-between">
@@ -4101,8 +4692,8 @@ export default function BandhanSME({
           </div>
         </Section>
 
-        {/* 12. REMARKS & CERTIFICATE OF VALUATION / OPINION */}
-        <Section number={12} id="sec-remarks-opinion" title="IV. General Remarks & Certificate of Valuation / Valuer Opinion">
+        {/* 13. REMARKS & CERTIFICATE OF VALUATION / OPINION */}
+        <Section number={13} id="sec-remarks-opinion" title="IV. General Remarks & Certificate of Valuation / Valuer Opinion">
           <div className="space-y-4">
             <Field label="General Remarks & Condition of the Property / Remarks:">
               <textarea
@@ -4147,8 +4738,8 @@ export default function BandhanSME({
           </div>
         </Section>
 
-        {/* 13. DECLARATION & VALUER CREDENTIALS */}
-        <Section number={13} id="sec-declaration" title="V. Declaration & Valuer Credentials">
+        {/* 14. DECLARATION & VALUER CREDENTIALS */}
+        <Section number={14} id="sec-declaration" title="V. Declaration & Valuer Credentials">
           <div className="space-y-6">
             {/* Valuer Credentials & Sign-Off */}
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
@@ -4243,8 +4834,8 @@ export default function BandhanSME({
           </div>
         </Section>
 
-        {/* 14. VALUATION CHECKLIST */}
-        <Section number={14} id="sec-checklist" title="VI. Valuation Report Check-List (10 Points)">
+        {/* 15. VALUATION CHECKLIST */}
+        <Section number={15} id="sec-checklist" title="VI. Valuation Report Check-List (10 Points)">
           <div className="space-y-4">
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
               <h4 className="font-semibold text-slate-800 text-sm">Valuation Report Check-List (10 Points)</h4>
@@ -4269,11 +4860,11 @@ export default function BandhanSME({
           </div>
         </Section>
 
-        {/* 15. Documents */}
+        {/* 16. Documents */}
         <BaseDocumentsSection
           title="VII. Documents"
           sectionId="sec-documents"
-          sectionNumber={15}
+          sectionNumber={16}
           documentImages={fields.documentImages || []}
           documentImageNames={fields.documentImageNames || []}
           isReadOnly={isReadOnly}
@@ -4285,11 +4876,11 @@ export default function BandhanSME({
           defaultOpen={true}
         />
 
-        {/* 16. Maps */}
+        {/* 17. Maps */}
         <BaseMapsSection
           title="VIII. Maps & Cadastral Plans"
           sectionId="sec-maps"
-          sectionNumber={16}
+          sectionNumber={17}
           locationMapImages={fields.locationMapImages || (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : [])}
           mouzaMapImages={fields.mouzaMapImages || (fields.rorImageUrl ? [fields.rorImageUrl] : [])}
           sketchMapImages={fields.sketchMapImages || (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : [])}
@@ -4297,9 +4888,30 @@ export default function BandhanSME({
           bdaMapImages={fields.bdaMapImages || []}
           latitude={fields.latitude || ''}
           longitude={fields.longitude || ''}
+          technicalAddress={fields.detailedAddressWithPin || ''}
           propertyAddress={fields.propAt || ''}
+          hasExternalCoordinatesField={true}
+          coordinatesSectionName="Section 5 (Point U. Latitude / Longitude Coordinates)"
           isReadOnly={isReadOnly}
           uploading={saving}
+          onLatitudeChange={(val) => {
+            const lng = fields.longitude || '';
+            const combined = val && lng ? `${val}° N, ${lng}° E` : val;
+            setFields((prev) => ({
+              ...prev,
+              latitude: val,
+              latitudeLongitude: combined,
+            }));
+          }}
+          onLongitudeChange={(val) => {
+            const lat = fields.latitude || '';
+            const combined = lat && val ? `${lat}° N, ${val}° E` : val;
+            setFields((prev) => ({
+              ...prev,
+              longitude: val,
+              latitudeLongitude: combined,
+            }));
+          }}
           onLocationMapUpload={(e) => handleMapUpload('locationMapImages', e)}
           onLocationMapRemove={(idx) => handleMapRemove('locationMapImages', idx)}
           onReorderLocationMap={(imgs) => handleMapReorder('locationMapImages', imgs)}
@@ -4318,10 +4930,10 @@ export default function BandhanSME({
           defaultOpen={true}
         />
 
-        {/* 17. Property Photographs */}
+        {/* 18. Property Photographs */}
         <BasePhotographsSection
           title="IX. Property Photographs"
-          sectionNumber={17}
+          sectionNumber={18}
           sectionId="sec-photos"
           propertyImages={propertyImages}
           propertyImageNames={propertyImageNames}
