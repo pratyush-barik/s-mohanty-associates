@@ -127,13 +127,28 @@ export interface BandhanSMEProps {
 }
 
 const NAV_SECTIONS: NavItem[] = [
-  { id: 'sec-basic', title: 'I. Basic Information (Points A–M)' },
-  { id: 'sec-prop-details', title: 'II. Valuation of Land (Parts 1–7)' },
-  { id: 'sec-bldg-basic', title: 'III. Valuation of Building (Parts 1–6)' },
-  { id: 'sec-remarks-opinion', title: 'IV. Remarks & Valuation Certificate (Opinion)' },
-  { id: 'sec-declaration', title: 'V. Declaration & Checklist' },
-  { id: 'sec-documents', title: 'VI. Documents & Maps' },
-  { id: 'sec-photos', title: 'VII. Property Photographs' },
+  { id: 'sec-basic', title: 'Basic Information' },
+  // II. Valuation of Land Subsections
+  { id: 'sec-prop-details', title: 'Land: Details of Property' },
+  { id: 'sec-title-rent', title: 'Land: Title, Ownership & Rent' },
+  { id: 'sec-desc-boundaries', title: 'Land: Description & Boundaries' },
+  { id: 'sec-site-char', title: 'Land: Characteristics of Site' },
+  { id: 'sec-location-adv-disadv', title: 'Land: Location Advantages' },
+  { id: 'sec-other-issues', title: 'Land: Other Issues & Points' },
+  { id: 'sec-land-valuation', title: 'Land: Valuation' },
+  // III. Valuation of Building Subsections
+  { id: 'sec-bldg-basic', title: 'Building: Basic Information' },
+  { id: 'sec-bldg-tech', title: 'Building: Technical Details' },
+  { id: 'sec-bldg-specs', title: 'Building: Construction Specs' },
+  { id: 'sec-bldg-valuation', title: 'Building: Valuation Details' },
+  { id: 'sec-bldg-subschedules', title: 'Building: Sub-Schedules' },
+  { id: 'sec-bldg-abstract-matrix', title: 'Building: Total Abstract Matrix' },
+  // Standalone Sections
+  { id: 'sec-remarks-opinion', title: 'Remarks & Valuation Certificate' },
+  { id: 'sec-declaration', title: 'Declaration & Credentials' },
+  { id: 'sec-checklist', title: 'Valuation Checklist' },
+  { id: 'sec-documents', title: 'Documents & Maps' },
+  { id: 'sec-photos', title: 'Property Photographs' },
 ];
 
 const sanitizePositiveInt = (val: string, maxLen?: number): string => {
