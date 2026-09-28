@@ -1745,10 +1745,10 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   }
 
   // --------------------------------------------------------------------------
-  // Helper: 6.0 TOTAL ABSTRACT MATRIX (Land + Building + Sub-Schedules)
+  // Helper: 6. TOTAL ABSTRACT MATRIX (Land + Building + Sub-Schedules)
   // --------------------------------------------------------------------------
   private renderTotalAbstractMatrix(fields: BandhanSMEReportFields): void {
-    this.drawBandhanRow('6.0', 'TOTAL ABSTRACT OF THE ENTIRE PROPERTY:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanRow('6.', 'TOTAL ABSTRACT OF THE ENTIRE PROPERTY:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
 
     const distPctDisplay = (fields.distressSalePct !== undefined && fields.distressSalePct !== '') ? `${fields.distressSalePct}%` : '85%';
     const realPctDisplay = (fields.realisableValuePct !== undefined && fields.realisableValuePct !== '') ? `${fields.realisableValuePct}%` : '95%';

@@ -5842,7 +5842,7 @@ export default function BandhanSME({
             <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-xl space-y-4 shadow-2xs">
               <div className="pb-2 border-b border-emerald-200/60">
                 <h4 className="font-bold text-emerald-950 text-sm tracking-wide">
-                  6.0. TOTAL ABSTRACT OF THE ENTIRE PROPERTY:
+                  6. TOTAL ABSTRACT OF THE ENTIRE PROPERTY:
                 </h4>
                 <p className="text-xs text-emerald-800/80 italic mt-0.5">
                   Consolidated valuation summary across Land, Building, Extra Items, Amenities, Miscellaneous, and Services.
@@ -6008,7 +6008,7 @@ export default function BandhanSME({
                   />
                 </Field>
                 <p className="text-[11px] text-slate-500 font-medium italic">
-                  Referenced from: Section 6.0 Total Abstract Matrix — Market Value ({fields.abstractMarketSay || fields.abstractMarketTotal || 'Rs. 0.00'})
+                  Referenced from: Section 6 Total Abstract Matrix — Market Value ({fields.abstractMarketSay || fields.abstractMarketTotal || 'Rs. 0.00'})
                 </p>
               </div>
 
@@ -6023,7 +6023,7 @@ export default function BandhanSME({
                   />
                 </Field>
                 <p className="text-[11px] text-slate-500 font-medium italic">
-                  Referenced from: Section 6.0 Total Abstract Matrix — Realisable Value ({fields.abstractRealSay || fields.abstractRealTotal || 'Rs. 0.00'})
+                  Referenced from: Section 6 Total Abstract Matrix — Realisable Value ({fields.abstractRealSay || fields.abstractRealTotal || 'Rs. 0.00'})
                 </p>
               </div>
             </div>
