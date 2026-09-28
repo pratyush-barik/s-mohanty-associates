@@ -1181,9 +1181,6 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   // 1. SECTION I: BASIC INFORMATION
   // ==========================================================================
   private renderBasicInformationSection(fields: BandhanSMEReportFields): void {
-    // Header space
-    this.cursorY += 6;
-
     this.drawSectionSpanner('I. BASIC INFORMATION:');
 
     this.drawBandhanRow('A.', 'NAME OF THE BANK BRANCH / CBO / Asset Centre:', fields.branchName || '');
@@ -1664,7 +1661,6 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
           },
         ];
 
-    this.cursorY += 8;
     this.drawSectionSpanner('4. DETAILS OF BUILDING VALUATION:');
 
     // 8-Col Header matching exact bank template:
@@ -1681,15 +1677,15 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       'NET VALUE AFTER DEPRECIATION',
     ];
 
-    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: true, fontSize: 6 }));
-    const headerH = Math.max(32, ...headerHeights);
+    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: true, fontSize: 8 }));
+    const headerH = Math.max(30, ...headerHeights);
     this.checkPageBreak(headerH);
 
     let curX = MARGIN_L;
     for (let i = 0; i < headers.length; i++) {
       this.drawCell(curX, this.cursorY, colW[i], headerH, headers[i], {
         bold: true,
-        fontSize: 6,
+        fontSize: 8,
         align: 'center',
         vAlign: 'middle',
         fillColor: LBL_BG,
@@ -1701,7 +1697,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     // Data rows
     for (const r of rows) {
       const values = [r.description, r.plinthArea, r.height, r.age, r.replacementRate, r.replacementCost, r.depreciation, r.valueAfterDepreciation];
-      const rHeights = values.map((v, i) => this.cellHeight(v || '-', colW[i], { fontSize: 7 }));
+      const rHeights = values.map((v, i) => this.cellHeight(v || '-', colW[i], { fontSize: 8.5 }));
       const rH = Math.max(20, ...rHeights);
       this.checkPageBreak(rH);
 
@@ -1709,7 +1705,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       for (let i = 0; i < values.length; i++) {
         this.drawCell(rx, this.cursorY, colW[i], rH, values[i] || '-', {
           bold: i === 7,
-          fontSize: 7,
+          fontSize: 8.5,
           align: i === 0 ? 'left' : 'center',
           vAlign: 'middle',
         });
@@ -1748,7 +1744,6 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   // Helper: 6.0 TOTAL ABSTRACT MATRIX (Land + Building + Sub-Schedules)
   // --------------------------------------------------------------------------
   private renderTotalAbstractMatrix(fields: BandhanSMEReportFields): void {
-    this.cursorY += 8;
     this.drawSectionSpanner('6.0. TOTAL ABSTRACT OF THE ENTIRE PROPERTY:');
 
     const distPctDisplay = (fields.distressSalePct !== undefined && fields.distressSalePct !== '') ? `${fields.distressSalePct}%` : '85%';
@@ -1764,21 +1759,22 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       `DISTRESS VALUE (${distPctDisplay})`,
     ];
 
-    const rowH = 22;
-    this.checkPageBreak(rowH);
+    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: true, fontSize: 9 }));
+    const headerH = Math.max(24, ...headerHeights);
+    this.checkPageBreak(headerH);
 
     let curX = MARGIN_L;
     for (let i = 0; i < headers.length; i++) {
-      this.drawCell(curX, this.cursorY, colW[i], rowH, headers[i], {
+      this.drawCell(curX, this.cursorY, colW[i], headerH, headers[i], {
         bold: true,
-        fontSize: 7,
+        fontSize: 9,
         align: 'center',
         vAlign: 'middle',
         fillColor: LBL_BG,
       });
       curX += colW[i];
     }
-    this.cursorY += rowH;
+    this.cursorY += headerH;
 
     // Abstract rows
     const abstractRows = [
@@ -1793,7 +1789,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     ];
 
     for (const ar of abstractRows) {
-      const rH = 18;
+      const rH = 20;
       this.checkPageBreak(rH);
 
       let rx = MARGIN_L;
@@ -1802,7 +1798,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       for (let i = 0; i < values.length; i++) {
         this.drawCell(rx, this.cursorY, colW[i], rH, values[i], {
           bold: ar.isTotal,
-          fontSize: 8,
+          fontSize: 9.5,
           align: i === 0 ? 'left' : 'center',
           vAlign: 'middle',
           fillColor: ar.isTotal ? LBL_BG : undefined,
@@ -1819,14 +1815,13 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   private renderRemarksAndOpinionSection(fields: BandhanSMEReportFields): void {
     // Remarks Box
     if (fields.valuationRemarksBox) {
-      this.cursorY += 8;
       this.drawSectionSpanner('GENERAL REMARKS & CONDITION OF THE PROPERTY / REMARKS:');
-      const rH = this.cellHeight(fields.valuationRemarksBox, CONTENT_W, { fontSize: 8.5 });
-      const boxH = Math.max(24, rH + 6);
+      const rH = this.cellHeight(fields.valuationRemarksBox, CONTENT_W, { fontSize: TABLE_FONT_SIZE });
+      const boxH = Math.max(26, rH + 6);
       this.checkPageBreak(boxH);
 
       this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, boxH, fields.valuationRemarksBox, {
-        fontSize: 8.5,
+        fontSize: TABLE_FONT_SIZE,
         align: 'left',
         vAlign: 'top',
       });
@@ -1834,17 +1829,16 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     }
 
     // Basis of Valuation & Certificate of Valuation / Valuer Opinion
-    this.cursorY += 8;
     this.drawSectionSpanner('CERTIFICATE OF VALUATION & VALUER OPINION:', fields.basisOfValuationStatement || '(LAND & BUILDING METHOD OF VALUATION HAS BEEN ADOPTED FOR FINDING THE FAIR MARKET VALUE OF THE PROPERTY)');
 
     const opinionPara = `As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is ${fields.fairMarketValue || 'Rs. 0/-'} (${fields.fairMarketValueWords || 'Rupees Zero Only'}). The Realizable Value is ${fields.realisableValue || 'Rs. 0/-'} (${fields.realisableValueWords || 'Rupees Zero Only'}). The book value of the above property as of Land is ${fields.bookValueOfLand || 'Rs. 0/-'} (${fields.bookValueOfLandWords || 'Rupees Zero Only'}) and the Distress Value ${fields.distressValue || 'Rs. 0/-'} (${fields.distressValueWords || 'Rupees Zero Only'}) And Insurable Value of the Property is ${fields.insurableValueOfProperty || 'Rs. 0/-'}.`;
 
-    const opH = this.cellHeight(opinionPara, CONTENT_W, { fontSize: 9 });
-    const fullOpH = Math.max(30, opH + 8);
+    const opH = this.cellHeight(opinionPara, CONTENT_W, { fontSize: 11 });
+    const fullOpH = Math.max(32, opH + 8);
     this.checkPageBreak(fullOpH);
 
     this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, fullOpH, opinionPara, {
-      fontSize: 9,
+      fontSize: 11,
       align: 'left',
       vAlign: 'top',
       fillColor: OPT_BG,
@@ -1861,15 +1855,14 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // Intro line: I / WE HEREBY DECLARE THAT:
     const introText = 'I / WE HEREBY DECLARE THAT:';
-    const introH = 16;
+    const introH = this.cellHeight(introText, CONTENT_W, { bold: true, fontSize: 10 });
     this.checkPageBreak(introH);
-    const introY = this.pdfY(this.cursorY);
-    this.page.drawText(this.sanitizeText(introText), {
-      x: MARGIN_L + 6,
-      y: introY - 11,
-      size: 8.5,
-      font: this.fontBold,
-      color: rgb(0, 0, 0),
+    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, introH, introText, {
+      bold: true,
+      fontSize: 10,
+      align: 'left',
+      vAlign: 'middle',
+      hideBorder: { top: true, bottom: true, left: true, right: true },
     });
     this.cursorY += introH;
 
@@ -1907,24 +1900,22 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     }
 
     for (const d of decls) {
-      const dH = this.cellHeight(d, CONTENT_W - 12, { fontSize: 8 });
-      const rowH = Math.max(14, dH + 2);
+      const dH = this.cellHeight(d, CONTENT_W, { fontSize: 9.5 });
+      const rowH = Math.max(16, dH);
       this.checkPageBreak(rowH);
 
-      const y = this.pdfY(this.cursorY);
-      this.page.drawText(this.sanitizeText(d), {
-        x: MARGIN_L + 6,
-        y: y - 10,
-        size: 8,
-        font: this.fontRegular,
-        color: rgb(0, 0, 0),
+      this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, rowH, d, {
+        fontSize: 9.5,
+        align: 'left',
+        vAlign: 'middle',
+        hideBorder: { top: true, bottom: true, left: true, right: true },
       });
       this.cursorY += rowH;
     }
 
     // Valuer Sign-off Box
-    this.cursorY += 12;
-    const signBoxH = 80;
+    this.cursorY += 10;
+    const signBoxH = 88;
     this.checkPageBreak(signBoxH + 10);
 
     const sY = this.pdfY(this.cursorY);
@@ -1941,12 +1932,12 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       ? 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'
       : fields.valuerQualifications;
 
-    this.page.drawText('SIGNATURE OF EMPANELLED VALUER:', { x: MARGIN_L + 8, y: sY - 14, size: 8.5, font: this.fontBold, color: rgb(0, 0, 0) });
-    this.page.drawText(`NAME OF THE EMPANELLED VALUER: ${fields.empanelledValuerName || 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)'}`, { x: MARGIN_L + 8, y: sY - 26, size: 8, font: this.fontBold, color: rgb(0, 0, 0) });
-    this.page.drawText(`EDUCATIONAL / PROFESSIONAL QUALIFICATION: ${valuerQual}`, { x: MARGIN_L + 8, y: sY - 38, size: 7.5, font: this.fontRegular, color: rgb(0, 0, 0) });
-    this.page.drawText(`REGD. VALUER OF INSTITUTION OF VALUERS: ${fields.valuerIovRegNo || 'No. F-26377'}`, { x: MARGIN_L + 8, y: sY - 50, size: 7.5, font: this.fontRegular, color: rgb(0, 0, 0) });
-    this.page.drawText(`REGD. VALUER UNDER SECTION 34AB OF WEALTH TAX ACT: ${fields.valuerWealthTaxRegNo || 'Regd. No.-107/2016-17, Cat -I'}`, { x: MARGIN_L + 8, y: sY - 62, size: 7.5, font: this.fontRegular, color: rgb(0, 0, 0) });
-    this.page.drawText(`DATE: ${fields.declarationDate || fields.reportDate || formatReportDate(new Date())}`, { x: MARGIN_L + 8, y: sY - 74, size: 7.5, font: this.fontBold, color: rgb(0, 0, 0) });
+    this.page.drawText('SIGNATURE OF EMPANELLED VALUER:', { x: MARGIN_L + 8, y: sY - 14, size: 9.5, font: this.fontBold, color: rgb(0, 0, 0) });
+    this.page.drawText(`NAME OF THE EMPANELLED VALUER: ${fields.empanelledValuerName || 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)'}`, { x: MARGIN_L + 8, y: sY - 28, size: 9, font: this.fontBold, color: rgb(0, 0, 0) });
+    this.page.drawText(`EDUCATIONAL / PROFESSIONAL QUALIFICATION: ${valuerQual}`, { x: MARGIN_L + 8, y: sY - 42, size: 8.5, font: this.fontRegular, color: rgb(0, 0, 0) });
+    this.page.drawText(`REGD. VALUER OF INSTITUTION OF VALUERS: ${fields.valuerIovRegNo || 'No. F-26377'}`, { x: MARGIN_L + 8, y: sY - 56, size: 8.5, font: this.fontRegular, color: rgb(0, 0, 0) });
+    this.page.drawText(`REGD. VALUER UNDER SECTION 34AB OF WEALTH TAX ACT: ${fields.valuerWealthTaxRegNo || 'Regd. No.-107/2016-17, Cat -I'}`, { x: MARGIN_L + 8, y: sY - 70, size: 8.5, font: this.fontRegular, color: rgb(0, 0, 0) });
+    this.page.drawText(`DATE: ${fields.declarationDate || fields.reportDate || formatReportDate(new Date())}`, { x: MARGIN_L + 8, y: sY - 84, size: 8.5, font: this.fontBold, color: rgb(0, 0, 0) });
 
     this.cursorY += signBoxH;
   }
@@ -1959,37 +1950,36 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // 1. Valuation report check-list (centered and underlined)
     const titleText = 'Valuation report check-list';
-    const textW = this.fontBold.widthOfTextAtSize(titleText, 10);
+    const textW = this.fontBold.widthOfTextAtSize(titleText, 12);
     const titleX = MARGIN_L + (CONTENT_W - textW) / 2;
     const titleY = this.pdfY(this.cursorY);
 
     this.page.drawText(titleText, {
       x: titleX,
-      y: titleY - 10,
-      size: 10,
+      y: titleY - 12,
+      size: 12,
       font: this.fontBold,
       color: rgb(0, 0, 0),
     });
 
     this.page.drawLine({
-      start: { x: titleX, y: titleY - 12 },
-      end: { x: titleX + textW, y: titleY - 12 },
+      start: { x: titleX, y: titleY - 14 },
+      end: { x: titleX + textW, y: titleY - 14 },
       thickness: 0.75,
       color: rgb(0, 0, 0),
     });
-    this.cursorY += 18;
+    this.cursorY += 20;
 
     // 2. Subtitle line after line break
     const subText = 'Please ensure that the following important points are in order in the submitted report. [Put tick/cross]';
-    const subY = this.pdfY(this.cursorY);
-    this.page.drawText(subText, {
-      x: MARGIN_L,
-      y: subY - 9,
-      size: 8.5,
-      font: this.fontRegular,
-      color: rgb(0, 0, 0),
+    const subH = this.cellHeight(subText, CONTENT_W, { fontSize: 9.5 });
+    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, subH, subText, {
+      fontSize: 9.5,
+      align: 'left',
+      vAlign: 'middle',
+      hideBorder: { top: true, bottom: true, left: true, right: true },
     });
-    this.cursorY += 16;
+    this.cursorY += subH + 6;
 
     const defaultChecklist: BandhanSMEChecklistItem[] = [
       { pointNo: 1, question: 'Full names of all property owners are mentioned. Address of the property is mentioned and is same as latest title deed', answer: 'Yes' },
@@ -2005,24 +1995,25 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     ];
 
     const items = (fields.checklist && fields.checklist.length > 0) ? fields.checklist : defaultChecklist;
+    const qW = CONTENT_W - 60;
+    const ansW = 60;
 
     for (const item of items) {
       const qText = `${item.pointNo}. ${item.question} ${item.subText ? item.subText : ''}`;
-      const qW = CONTENT_W - 50;
-      const hQ = this.cellHeight(qText, qW, { fontSize: 8 });
-      const rowH = Math.max(20, hQ + 4);
+      const hQ = this.cellHeight(qText, qW, { fontSize: 9.5 });
+      const rowH = Math.max(22, hQ + 4);
 
       this.checkPageBreak(rowH);
 
       this.drawCell(MARGIN_L, this.cursorY, qW, rowH, qText, {
-        fontSize: 8,
+        fontSize: 9.5,
         align: 'left',
         vAlign: 'middle',
       });
 
-      this.drawCell(MARGIN_L + qW, this.cursorY, 50, rowH, item.answer || 'Yes', {
+      this.drawCell(MARGIN_L + qW, this.cursorY, ansW, rowH, item.answer || 'Yes', {
         bold: true,
-        fontSize: 8.5,
+        fontSize: 10,
         align: 'center',
         vAlign: 'middle',
       });
