@@ -443,6 +443,7 @@ export const DateInput = BaseDateInput;
 export interface NavItem {
   id: string;
   title: string;
+  isHeader?: boolean;
 }
 
 export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
@@ -461,14 +462,17 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
     );
 
     sections.forEach(sec => {
-      const el = document.getElementById(sec.id);
-      if (el) observer.observe(el);
+      if (!sec.isHeader && sec.id) {
+        const el = document.getElementById(sec.id);
+        if (el) observer.observe(el);
+      }
     });
 
     return () => observer.disconnect();
   }, [sections]);
 
   const scrollTo = (id: string) => {
+    if (!id) return;
     const el = document.getElementById(id);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -476,10 +480,21 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
   };
 
   return (
-    <div className="hidden xl:flex flex-col bg-white/90 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-48 sticky top-4 shrink-0 z-40 max-h-[calc(100vh-32px)] overflow-hidden">
+    <div className="hidden xl:flex flex-col bg-white/90 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-52 sticky top-4 shrink-0 z-40 max-h-[calc(100vh-32px)] overflow-hidden">
       <div className="text-[10px] font-black text-emerald-600 mb-2 px-2 uppercase tracking-widest shrink-0">Sections</div>
       <div className="flex flex-col gap-1 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar">
-        {sections.map((sec) => {
+        {sections.map((sec, idx) => {
+          if (sec.isHeader) {
+            return (
+              <div
+                key={`hdr-${idx}-${sec.title}`}
+                className="text-[10.5px] font-black text-slate-500 uppercase tracking-wider px-2 pt-2.5 pb-0.5 mt-1 border-t border-slate-200/80 first:border-t-0 first:pt-0.5 select-none"
+              >
+                {sec.title}
+              </div>
+            );
+          }
+
           const isActive = activeId === sec.id;
           const rawTitle = sec.title || '';
           const cleanTitle = rawTitle
@@ -493,7 +508,7 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
 
           return (
             <button
-              key={sec.id}
+              key={sec.id || `item-${idx}`}
               type="button"
               title={cleanTitle}
               onClick={() => scrollTo(sec.id)}

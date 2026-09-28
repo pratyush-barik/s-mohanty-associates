@@ -127,23 +127,31 @@ export interface BandhanSMEProps {
 }
 
 const NAV_SECTIONS: NavItem[] = [
+  // Section I
+  { id: '', title: 'Section I', isHeader: true },
   { id: 'sec-basic', title: 'Basic Information' },
-  // II. Valuation of Land Subsections
-  { id: 'sec-prop-details', title: 'Land: Details of Property' },
-  { id: 'sec-title-rent', title: 'Land: Title, Ownership & Rent' },
-  { id: 'sec-desc-boundaries', title: 'Land: Description & Boundaries' },
-  { id: 'sec-site-char', title: 'Land: Characteristics of Site' },
-  { id: 'sec-location-adv-disadv', title: 'Land: Location Advantages' },
-  { id: 'sec-other-issues', title: 'Land: Other Issues & Points' },
-  { id: 'sec-land-valuation', title: 'Land: Valuation' },
-  // III. Valuation of Building Subsections
-  { id: 'sec-bldg-basic', title: 'Building: Basic Information' },
-  { id: 'sec-bldg-tech', title: 'Building: Technical Details' },
-  { id: 'sec-bldg-specs', title: 'Building: Construction Specs' },
-  { id: 'sec-bldg-valuation', title: 'Building: Valuation Details' },
-  { id: 'sec-bldg-subschedules', title: 'Building: Sub-Schedules' },
-  { id: 'sec-bldg-abstract-matrix', title: 'Building: Total Abstract Matrix' },
-  // Standalone Sections
+
+  // Section II: Valuation of Land
+  { id: '', title: 'Section II', isHeader: true },
+  { id: 'sec-prop-details', title: 'Details of Property' },
+  { id: 'sec-title-rent', title: 'Title, Ownership & Rent' },
+  { id: 'sec-desc-boundaries', title: 'Description & Boundaries' },
+  { id: 'sec-site-char', title: 'Characteristics of Site' },
+  { id: 'sec-location-adv-disadv', title: 'Location Advantages' },
+  { id: 'sec-other-issues', title: 'Other Issues & Points' },
+  { id: 'sec-land-valuation', title: 'Valuation' },
+
+  // Section III: Valuation of Building
+  { id: '', title: 'Section III', isHeader: true },
+  { id: 'sec-bldg-basic', title: 'Basic Information' },
+  { id: 'sec-bldg-tech', title: 'Technical Details' },
+  { id: 'sec-bldg-specs', title: 'Specifications of Construction' },
+  { id: 'sec-bldg-valuation', title: 'Building Valuation Table' },
+  { id: 'sec-bldg-subschedules', title: 'Sub-Schedules' },
+  { id: 'sec-bldg-abstract-matrix', title: 'Total Abstract Matrix' },
+
+  // Additional Sections
+  { id: '', title: 'Additional Sections', isHeader: true },
   { id: 'sec-remarks-opinion', title: 'Remarks & Valuation Certificate' },
   { id: 'sec-declaration', title: 'Declaration & Credentials' },
   { id: 'sec-checklist', title: 'Valuation Checklist' },
