@@ -1242,7 +1242,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawSectionSpanner('II. VALUATION OF LAND:', undefined, TABLE_FONT_SIZE, LBL_BG);
 
     // 1. Details of Property
-    this.drawSectionSpanner('1. DETAILS OF PROPERTY:');
+    this.drawBandhanRow('1.', 'DETAILS OF PROPERTY:', '', true, true);
     this.drawBandhanRow('A.', 'DETAILS OF PROPERTY OFFERED AS SECURED:', fields.detailsPropertyOffered || 'Land & Building');
     this.drawBandhanRow('B.', 'DATE OF ACQUISITION/PURCHASE OF LAND:', fields.dateAcquisitionLand || '');
     this.drawBandhanRow('C.', 'VALUE OF THE PROPERTY AS PER REGD. SALE DEED:', fields.valueAsPerSaleDeed || '');
@@ -1306,7 +1306,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('D.', 'GROSS AMOUNT RECEIVE FOR THE WHOLE PROPERTY:', fields.grossRentReceived || 'Not Applicable');
 
     // 3. Brief Description of Property
-    this.drawSectionSpanner('3. BRIEF DESCRIPTION OF THE PROPERTY:');
+    this.drawBandhanRow('3.', 'BRIEF DESCRIPTION OF THE PROPERTY:', '', true, true);
     this.drawBandhanRow('A.', 'ADDRESS OF THE PROPERTY IN DETAIL (PIN NO. TO BE CAPTURED MANDATORILY):', fields.detailedAddressWithPin || '');
     this.drawBandhanRow('B.', 'MUNICIPALITY WARD NO:', fields.municipalityWardNo || '');
     this.drawBandhanRow('C.', 'STREET NO.:', fields.streetNo || '');
@@ -1336,8 +1336,8 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     // Boundaries P) 1) & 2)
     this.renderBoundarySchedules(fields);
 
-    // 3. Characteristics of the Site
-    this.drawSectionSpanner('3. CHARACTERISTICS OF THE SITE:');
+    // 4. Characteristics of the Site
+    this.drawBandhanRow('4.', 'CHARACTERISTICS OF THE SITE:', '', true, true);
     this.drawBandhanRow('A.', 'LEVEL OF LAND WITH TOPOGRAPHICAL CONDITION:', fields.levelOfLand || 'Leveled and Plain');
     this.drawBandhanRow('B.', 'USE TO WHICH IT CAN BE PUT:', fields.useToWhichCanBePut || 'Residential cum Commercial Purpose');
     this.drawBandhanRow('C.', 'IS THERE ANY AGREEMENT OF EASEMENTS (ENCROACHMENTS)? IF SO, DETAILS:', fields.easementAgreements || 'No such agreement verified');
@@ -1372,13 +1372,13 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('(vii)', 'ANY OTHER IMPORTANT PLACE:', fields.proximityOtherPlace || '');
     this.drawBandhanRow('U.', 'LATITUDE/LONGITUDE:', fields.latitudeLongitude || '');
 
-    // 4. Location Advantages & Disadvantages
-    this.drawSectionSpanner('4. LOCATION ADVANTAGES & DISADVANTAGES:');
+    // 5. Location Advantages & Disadvantages
+    this.drawBandhanRow('5.', 'LOCATION ADVANTAGES & DISADVANTAGES:', '', true, true);
     this.drawBandhanRow('A.', 'LOCATION ADVANTAGES:', fields.locationAdvantages || '');
     this.drawBandhanRow('B.', 'LOCATION DISADVANTAGES (DETAILS):', fields.locationDisadvantages || 'Nothing Observed');
 
-    // 5. Other Issues / Points
-    this.drawSectionSpanner('5. OTHER ISSUES/POINTS:');
+    // 6. Other Issues / Points
+    this.drawBandhanRow('6.', 'OTHER ISSUES/POINTS:', '', true, true);
     this.drawBandhanRow('A.', 'HAS THE WHOLE OR PART OF THE LAND BEEN NOTIFIED FOR ACQUISITION BY GOVERNMENT OR ANY STATUTORY BODY?:', fields.landAcquisitionNotification || 'No such documents verified');
     this.drawBandhanRow('B.', 'HAS ANY CONTRIBUTION BEEN MADE TOWARDS DEVELOPMENT OR IS ANY DEMAND FOR SUCH CONTRIBUTION STILL OUT STANDING:', fields.developmentContributionDemanded || 'No such documents verified');
     this.drawBandhanRow('C.', 'WHETHER COVERED UNDER ANY STATE/CENTRAL GOVT ENACTMENTS (E.G URBAN LAND CEILING ACT) OR NOTIFIED UNDER AGENCY/CANTONMENT AREA:', fields.landCeilingEnactments || 'No such documents verified');
@@ -1387,8 +1387,8 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('b.', 'IF SALE INSTANCE ARE NOT AVAILABLE OR NOT RELIED UPON, PLEASE FURNISHED THE BASIS OF ARRIVING AT THE LAND RATE:', fields.salesBasisArrivingLandRate || 'The present market rate of land confirmed through local enquiry and property dealers and found to be acceptable.');
     this.drawBandhanRow('c.', 'LAND RATE ADOPTED IN THIS VALUATION:', fields.adoptedLandRateRationale || '');
 
-    // 6. Valuation of Land
-    this.drawSectionSpanner('6. VALUATION:');
+    // 7. Valuation of Land
+    this.drawBandhanRow('7.', 'VALUATION:', '', true, true);
     this.drawBandhanRow('A.', 'PREVIOUS VALUATION DETAILS:', fields.previousValuationDetails || 'Not Available');
     this.drawBandhanRow('B.', 'PRESENT VALUATION DETAILS:', '', true, true);
     this.drawBandhanRow('', '(HERE THE REGISTERED VALUE SHOULD DISCUSS IN DETAIL HIS APPROACH IN VALUATION OF THE PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATIONS.):', fields.presentValuationApproachDetails || 'Land & Building Method has been adopted for valuation purpose.');
@@ -1456,7 +1456,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawSectionSpanner('III. VALUATION OF BUILDING:', undefined, TABLE_FONT_SIZE, LBL_BG);
 
     // 1. Basic Info
-    this.drawSectionSpanner('1. BASIC INFORMATION OF THE BUILDING:');
+    this.drawBandhanRow('1.', 'BASIC INFORMATION OF THE BUILDING:', '', true, true);
     this.drawBandhanRow('A.', 'TYPE OF BUILDING (RESIDENTIAL/COMMERCIAL/INDUSTRIAL):', fields.buildingType || 'Residential Cum Commercial');
     const derivedYears = (fields.yearConstruction || fields.yearCompletion)
       ? [
@@ -1521,7 +1521,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('AB.', 'WHETHER THE BUILDING IS HAVING FREE ACCESS:', fields.buildingFreeAccess || 'Yes');
 
     // 2. Technical Details of Building
-    this.drawSectionSpanner('2. TECHNICAL DETAILS OF THE BUILDING:');
+    this.drawBandhanRow('2.', 'TECHNICAL DETAILS OF THE BUILDING:', '', true, true);
     this.drawBandhanRow('A.', 'NUMBER OF FLOORS & HEIGHT OF EACH FLOOR INCLUDING BASEMENTS, IF ANY:', fields.numberOfFloorsAndHeight || "G+3 Storied Building & Height: 10'-6\"");
 
     const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)', '(xi)', '(xii)', '(xiii)', '(xiv)', '(xv)', '(xvi)', '(xvii)', '(xviii)', '(xix)', '(xx)'];
@@ -1585,7 +1585,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     }
 
     // 3. Construction Specifications
-    this.drawSectionSpanner('3. SPECIFICATIONS OF CONSTRUCTION (FLOOR-WISE) IN RESPECT OF:');
+    this.drawBandhanRow('3.', 'SPECIFICATIONS OF CONSTRUCTION (FLOOR-WISE) IN RESPECT OF:', '', true, true);
     this.drawBandhanRow('A.', 'FOUNDATION:', fields.specFoundation || 'Column Foundation');
     this.drawBandhanRow('B.', 'BASEMENT:', fields.specBasement || 'No');
     this.drawBandhanRow('C.', 'SUPERSTRUCTURE:', fields.specSuperstructure || 'Brick Masonry Super Structure');
@@ -1665,7 +1665,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
           },
         ];
 
-    this.drawSectionSpanner('4. DETAILS OF BUILDING VALUATION:');
+    this.drawBandhanRow('4.', 'DETAILS OF BUILDING VALUATION:', '', true, true);
 
     // 8-Col Header matching exact bank template:
     // Particulars (85) | Plinth (48) | Roof Ht (42) | Age (50) | Repl Rate (62) | Repl Cost (68) | Dep Amt (66) | Net Val (66.28) = 487.28
@@ -1724,7 +1724,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   // --------------------------------------------------------------------------
   private renderSubSchedules(fields: BandhanSMEReportFields): void {
     const renderSchedule = (title: string, items: BandhanSMESubScheduleItem[] | undefined, total: string | undefined) => {
-      this.drawSectionSpanner(title);
+      this.draw2ColRow(title, '', true, true);
 
       if (!items || items.length === 0) {
         this.draw2ColRow('TOTAL:', total || 'Rs. 0.00', true, true);
@@ -1748,7 +1748,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   // Helper: 6.0 TOTAL ABSTRACT MATRIX (Land + Building + Sub-Schedules)
   // --------------------------------------------------------------------------
   private renderTotalAbstractMatrix(fields: BandhanSMEReportFields): void {
-    this.drawSectionSpanner('6.0. TOTAL ABSTRACT OF THE ENTIRE PROPERTY:');
+    this.drawBandhanRow('6.0', 'TOTAL ABSTRACT OF THE ENTIRE PROPERTY:', '', true, true);
 
     const distPctDisplay = (fields.distressSalePct !== undefined && fields.distressSalePct !== '') ? `${fields.distressSalePct}%` : '85%';
     const realPctDisplay = (fields.realisableValuePct !== undefined && fields.realisableValuePct !== '') ? `${fields.realisableValuePct}%` : '95%';
