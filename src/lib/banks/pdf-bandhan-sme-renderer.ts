@@ -2036,7 +2036,9 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   // Order: Documents -> Maps (line break, no page break) -> Photos (fresh page)
   // ==========================================================================
   private async renderEnclosures(fields: BandhanSMEReportFields): Promise<void> {
-    // ── 1. Section: Documents (Unified Document Uploads) ──
+    let docOrMapPageStarted = false;
+
+    // ── 1. Section: Documents (Unified Document Uploads - Fresh Page) ──
     const docImages: string[] = fields.documentImages || [];
     const docNames: string[] = fields.documentImageNames || [];
     const validDocs = docImages.filter(u => Boolean(u && u.trim()));
@@ -2053,12 +2055,15 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       }
 
       if (docBytesList.length > 0) {
+        if (!docOrMapPageStarted) {
+          this.addPage();
+          docOrMapPageStarted = true;
+        }
         await this.drawDocumentsGallery(docBytesList, 'ENCLOSURE: DOCUMENTS', 240, false);
       }
     }
 
-    // ── 2. Section: Maps (Chronological Order) ──
-    // Continues with line break, no page break after documents
+    // ── 2. Section: Maps (Combined with Documents flow, no extra page break) ──
     const mapCategories: { title: string; urls: string[] }[] = [
       {
         title: 'Google Satellite Map',
@@ -2090,9 +2095,6 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       },
     ];
 
-    // ── 2. Section: Maps (Chronological Order - Fresh Page) ──
-    let mapsPageStarted = false;
-
     for (const cat of mapCategories) {
       const validUrls = cat.urls.filter(u => Boolean(u && u.trim()));
       if (validUrls.length === 0) continue;
@@ -2106,15 +2108,15 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       }
 
       if (imgBytesList.length > 0) {
-        if (!mapsPageStarted) {
+        if (!docOrMapPageStarted) {
           this.addPage();
-          mapsPageStarted = true;
+          docOrMapPageStarted = true;
         }
         await this.drawMapGallery(imgBytesList, cat.title, 240, false);
       }
     }
 
-    // ── 3. Section: Property Photographs (Fresh Page) ──
+    // ── 3. Section: Property Photographs (Fresh Page via base drawPhotoGrid) ──
     const photos: BandhanSMEPhoto[] = (fields.propertyPhotos && fields.propertyPhotos.length > 0)
       ? fields.propertyPhotos
       : (fields.propertyImages || []).map((url: string, i: number) => ({
@@ -2124,9 +2126,21 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     const validPhotos = photos.filter(p => Boolean(p.url && p.url.trim()));
     if (validPhotos.length > 0) {
-      this.addPage();
-      this.drawSectionSpanner('PHOTOGRAPHS OF THE ASSET VALUED');
-      await this.drawBandhanPhotoGrid(validPhotos);
+      const photoItems: { bytes: Uint8Array; label?: string }[] = [];
+      for (let i = 0; i < validPhotos.length; i++) {
+        const p = validPhotos[i];
+        const b = await fetchBytes(p.url);
+        if (b && b.length > 0) {
+          photoItems.push({
+            bytes: b,
+            label: p.caption || (p as any).gps || (p as any).timestamp || `Photograph ${i + 1}`,
+          });
+        }
+      }
+
+      if (photoItems.length > 0) {
+        await this.drawPhotoGrid(photoItems, 'PHOTOGRAPHS OF THE ASSET VALUED', 180, true);
+      }
     }
   }
 
@@ -2150,71 +2164,6 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       height: drawH,
     });
     this.cursorY += drawH + 10;
-  }
-
-  // --------------------------------------------------------------------------
-  // Helper: Draw 2-column photo grid with GPS badges
-  // --------------------------------------------------------------------------
-  private async drawBandhanPhotoGrid(photos: BandhanSMEPhoto[]): Promise<void> {
-    const photoW = (CONTENT_W - 12) / 2; // ~237.64 pt
-    const photoH = 170;
-
-    for (let i = 0; i < photos.length; i += 2) {
-      this.checkPageBreak(photoH + 20);
-
-      const p1 = photos[i];
-      const p2 = photos[i + 1];
-
-      await this.drawSinglePhotoWithGPS(p1, MARGIN_L, this.cursorY, photoW, photoH);
-
-      if (p2) {
-        await this.drawSinglePhotoWithGPS(p2, MARGIN_L + photoW + 12, this.cursorY, photoW, photoH);
-      }
-
-      this.cursorY += photoH + 12;
-    }
-  }
-
-  private async drawSinglePhotoWithGPS(
-    photo: BandhanSMEPhoto,
-    x: number,
-    y: number,
-    w: number,
-    h: number
-  ): Promise<void> {
-    if (!photo || !photo.url) return;
-    const img = await this.embedImgFromUrl(photo.url);
-    if (!img) return;
-
-    const yPos = this.pdfY(y);
-
-    this.page.drawImage(img, {
-      x,
-      y: yPos - h,
-      width: w,
-      height: h,
-    });
-
-    const stampText = photo.caption || photo.gps || photo.timestamp || '';
-    if (stampText) {
-      const badgeH = 18;
-      this.page.drawRectangle({
-        x,
-        y: yPos - h,
-        width: w,
-        height: badgeH,
-        color: rgb(0, 0, 0),
-        opacity: 0.65,
-      });
-
-      this.page.drawText(this.sanitizeText(stampText), {
-        x: x + 4,
-        y: yPos - h + 5,
-        size: 8,
-        font: this.fontRegular,
-        color: rgb(1, 1, 1),
-      });
-    }
   }
 }
 

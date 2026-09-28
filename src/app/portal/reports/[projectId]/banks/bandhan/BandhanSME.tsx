@@ -128,25 +128,12 @@ export interface BandhanSMEProps {
 
 const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-basic', title: 'I. Basic Information (Points A–M)' },
-  { id: 'sec-prop-details', title: 'II. Valuation of Land (1. Details of Property)' },
-  { id: 'sec-title-rent', title: 'II. Valuation of Land (2. Title, Ownership & Rent)' },
-  { id: 'sec-desc-boundaries', title: 'II. Valuation of Land (3. Brief Description of the Property)' },
-  { id: 'sec-site-char', title: 'II. Valuation of Land (4. Characteristics of the Site)' },
-  { id: 'sec-location-adv-disadv', title: 'II. Valuation of Land (5. Location Advantages & Disadvantages)' },
-  { id: 'sec-other-issues', title: 'II. Valuation of Land (6. Other Issues/Points)' },
-  { id: 'sec-land-valuation', title: 'II. Valuation of Land (7. Valuation)' },
-  { id: 'sec-bldg-basic', title: 'III. Valuation of Building (1. Basic Information of the Building)' },
-  { id: 'sec-bldg-tech', title: 'III. Valuation of Building (2. Technical Details of Building)' },
-  { id: 'sec-bldg-specs', title: 'III. Valuation of Building (3. Specifications of Construction)' },
-  { id: 'sec-bldg-valuation', title: 'III. Valuation of Building (4. Valuation Details of Building)' },
-  { id: 'sec-bldg-subschedules', title: 'III. Valuation of Building (5. Sub-Schedules: Extra Items, Amenities, Misc & Services)' },
-  { id: 'sec-bldg-abstract-matrix', title: 'III. Valuation of Building (6. Total Abstract Valuation Matrix)' },
+  { id: 'sec-prop-details', title: 'II. Valuation of Land (Parts 1–7)' },
+  { id: 'sec-bldg-basic', title: 'III. Valuation of Building (Parts 1–6)' },
   { id: 'sec-remarks-opinion', title: 'IV. Remarks & Valuation Certificate (Opinion)' },
-  { id: 'sec-declaration', title: 'V. Declaration & Credentials' },
-  { id: 'sec-checklist', title: 'VI. Valuation Checklist (10 Points)' },
-  { id: 'sec-documents', title: 'Documents' },
-  { id: 'sec-maps', title: 'Maps' },
-  { id: 'sec-photos', title: 'Property Photographs' },
+  { id: 'sec-declaration', title: 'V. Declaration & Checklist' },
+  { id: 'sec-documents', title: 'VI. Documents & Maps' },
+  { id: 'sec-photos', title: 'VII. Property Photographs' },
 ];
 
 const sanitizePositiveInt = (val: string, maxLen?: number): string => {
