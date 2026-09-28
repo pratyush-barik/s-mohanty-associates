@@ -1665,7 +1665,30 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
           },
         ];
 
-    this.drawBandhanRow('4.', 'DETAILS OF BUILDING VALUATION:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    // Line break before starting 4. DETAILS OF BUILDING VALUATION:
+    this.cursorY += 8;
+
+    // 4. DETAILS OF BUILDING VALUATION: occupy both columns not 1 (Sl. No + remaining width)
+    const remW = CONTENT_W - this.colSl;
+    const hSl = this.cellHeight('4.', this.colSl, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const hTitle = this.cellHeight('DETAILS OF BUILDING VALUATION:', remW, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const rowH = Math.max(TABLE_MIN_ROW_H, hSl, hTitle);
+    this.checkPageBreak(rowH);
+    this.drawCell(MARGIN_L, this.cursorY, this.colSl, rowH, '4.', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'center',
+      vAlign: 'top',
+      fillColor: LBL_BG,
+    });
+    this.drawCell(MARGIN_L + this.colSl, this.cursorY, remW, rowH, 'DETAILS OF BUILDING VALUATION:', {
+      bold: true,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'left',
+      vAlign: 'top',
+      fillColor: LBL_BG,
+    });
+    this.cursorY += rowH;
 
     // 8-Col Header matching exact bank template:
     // Particulars (85) | Plinth (48) | Roof Ht (42) | Age (50) | Repl Rate (62) | Repl Cost (68) | Dep Amt (66) | Net Val (66.28) = 487.28
@@ -1681,14 +1704,14 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       'NET VALUE AFTER DEPRECIATION',
     ];
 
-    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: true, fontSize: TABLE_FONT_SIZE }));
+    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: false, fontSize: TABLE_FONT_SIZE }));
     const headerH = Math.max(30, ...headerHeights);
     this.checkPageBreak(headerH);
 
     let curX = MARGIN_L;
     for (let i = 0; i < headers.length; i++) {
       this.drawCell(curX, this.cursorY, colW[i], headerH, headers[i], {
-        bold: true,
+        bold: false,
         fontSize: TABLE_FONT_SIZE,
         align: 'center',
         vAlign: 'middle',
@@ -1717,6 +1740,9 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       }
       this.cursorY += rH;
     }
+
+    // Line break after ending table
+    this.cursorY += 8;
   }
 
   // --------------------------------------------------------------------------
