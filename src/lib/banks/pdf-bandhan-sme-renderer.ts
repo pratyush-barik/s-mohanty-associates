@@ -1185,18 +1185,22 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     this.drawBandhanRow('A.', 'NAME OF THE BANK BRANCH / CBO / Asset Centre:', fields.branchName || '');
 
-    const bankLetterFormatted = (fields.bankLetterNo || fields.bankLetterDate)
-      ? [
-          fields.bankLetterNo ? `Bank Letter No.: ${fields.bankLetterNo}` : 'Bank Letter No.:',
-          fields.bankLetterDate ? `Date: ${fields.bankLetterDate}` : 'Date:',
-        ].join('\n')
-      : (fields.letterNoAndDate
-          ? (fields.letterNoAndDate.includes('Bank Letter No.')
-              ? fields.letterNoAndDate
-              : (fields.letterNoAndDate.startsWith('Dt.')
-                  ? `Bank Letter No.:\nDate: ${fields.letterNoAndDate.replace(/^Dt\.?\s*/i, '')}`
-                  : `Bank Letter No.: ${fields.letterNoAndDate}\nDate:`))
-          : 'Bank Letter No.:\nDate:');
+    const hasLetterNo = Boolean(fields.bankLetterNo && fields.bankLetterNo.trim() && fields.bankLetterNo.trim() !== 'NA' && fields.bankLetterNo.trim() !== 'N/A');
+    const hasLetterDate = Boolean(fields.bankLetterDate && fields.bankLetterDate.trim() && fields.bankLetterDate.trim() !== 'NA' && fields.bankLetterDate.trim() !== 'N/A');
+
+    let bankLetterFormatted = '';
+    if (hasLetterNo || hasLetterDate) {
+      const parts: string[] = [];
+      if (hasLetterNo) parts.push(`Bank Letter No.: ${fields.bankLetterNo!.trim()}`);
+      if (hasLetterDate) parts.push(`Date: ${fields.bankLetterDate!.trim()}`);
+      bankLetterFormatted = parts.join('\n');
+    } else if (fields.letterNoAndDate && fields.letterNoAndDate.trim() && fields.letterNoAndDate.trim() !== 'NA' && fields.letterNoAndDate.trim() !== 'N/A') {
+      const cleanedLines = fields.letterNoAndDate.trim().split('\n').map(l => l.trim()).filter(l => {
+        if (l === 'Bank Letter No.:' || l === 'Bank Letter No.' || l === 'Bank Letter No:' || l === 'Date:' || l === 'Date.:') return false;
+        return Boolean(l);
+      });
+      bankLetterFormatted = cleanedLines.join('\n');
+    }
 
     this.drawBandhanRow('B.', 'BANK LETTER NO. & DATE-REQUESTING FOR UNDERTAKING VALUATION:', bankLetterFormatted);
     this.drawBandhanRow('C.', 'WHETHER VALUATION WAS MADE AT THE REQUEST OF THE BORROWER? :', fields.valuationMadeAtBorrowerRequest || 'No');
