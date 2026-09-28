@@ -1082,7 +1082,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   /**
    * Draw section spanner banner using regular table text size (just bold)
    */
-  private drawSectionSpanner(title: string, subTitle?: string, fontSize: number = TABLE_FONT_SIZE): void {
+  private drawSectionSpanner(title: string, subTitle?: string, fontSize: number = TABLE_FONT_SIZE, fillColor?: string): void {
     const fullTitle = subTitle ? `${title}\n${subTitle}` : title;
     const h = this.cellHeight(fullTitle, CONTENT_W, { bold: true, fontSize });
     const rowH = Math.max(TABLE_MIN_ROW_H, h);
@@ -1093,7 +1093,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       fontSize,
       align: 'left',
       vAlign: 'middle',
-      fillColor: LBL_BG,
+      fillColor,
     });
     this.cursorY += rowH;
   }
@@ -1181,7 +1181,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   // 1. SECTION I: BASIC INFORMATION
   // ==========================================================================
   private renderBasicInformationSection(fields: BandhanSMEReportFields): void {
-    this.drawSectionSpanner('I. BASIC INFORMATION:');
+    this.drawSectionSpanner('I. BASIC INFORMATION:', undefined, TABLE_FONT_SIZE, LBL_BG);
 
     this.drawBandhanRow('A.', 'NAME OF THE BANK BRANCH / CBO / Asset Centre:', fields.branchName || '');
 
@@ -1239,7 +1239,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   // ==========================================================================
   private renderValuationOfLandSection(fields: BandhanSMEReportFields): void {
     this.cursorY += 8;
-    this.drawSectionSpanner('II. VALUATION OF LAND:');
+    this.drawSectionSpanner('II. VALUATION OF LAND:', undefined, TABLE_FONT_SIZE, LBL_BG);
 
     // 1. Details of Property
     this.drawSectionSpanner('1. DETAILS OF PROPERTY:');
@@ -1453,7 +1453,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   // ==========================================================================
   private renderValuationOfBuildingSection(fields: BandhanSMEReportFields): void {
     this.cursorY += 8;
-    this.drawSectionSpanner('III. VALUATION OF BUILDING:');
+    this.drawSectionSpanner('III. VALUATION OF BUILDING:', undefined, TABLE_FONT_SIZE, LBL_BG);
 
     // 1. Basic Info
     this.drawSectionSpanner('1. BASIC INFORMATION OF THE BUILDING:');
@@ -1819,7 +1819,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   private renderRemarksAndOpinionSection(fields: BandhanSMEReportFields): void {
     // Remarks Box
     if (fields.valuationRemarksBox) {
-      this.drawSectionSpanner('GENERAL REMARKS & CONDITION OF THE PROPERTY / REMARKS:');
+      this.drawSectionSpanner('GENERAL REMARKS & CONDITION OF THE PROPERTY / REMARKS:', undefined, TABLE_FONT_SIZE, LBL_BG);
       const rH = this.cellHeight(fields.valuationRemarksBox, CONTENT_W, { fontSize: TABLE_FONT_SIZE });
       const boxH = Math.max(26, rH + 6);
       this.checkPageBreak(boxH);
@@ -1833,7 +1833,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     }
 
     // Basis of Valuation & Certificate of Valuation / Valuer Opinion
-    this.drawSectionSpanner('CERTIFICATE OF VALUATION & VALUER OPINION:', fields.basisOfValuationStatement || '(LAND & BUILDING METHOD OF VALUATION HAS BEEN ADOPTED FOR FINDING THE FAIR MARKET VALUE OF THE PROPERTY)');
+    this.drawSectionSpanner('CERTIFICATE OF VALUATION & VALUER OPINION:', fields.basisOfValuationStatement || '(LAND & BUILDING METHOD OF VALUATION HAS BEEN ADOPTED FOR FINDING THE FAIR MARKET VALUE OF THE PROPERTY)', TABLE_FONT_SIZE, LBL_BG);
 
     const opinionPara = `As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is ${fields.fairMarketValue || 'Rs. 0/-'} (${fields.fairMarketValueWords || 'Rupees Zero Only'}). The Realizable Value is ${fields.realisableValue || 'Rs. 0/-'} (${fields.realisableValueWords || 'Rupees Zero Only'}). The book value of the above property as of Land is ${fields.bookValueOfLand || 'Rs. 0/-'} (${fields.bookValueOfLandWords || 'Rupees Zero Only'}) and the Distress Value ${fields.distressValue || 'Rs. 0/-'} (${fields.distressValueWords || 'Rupees Zero Only'}) And Insurable Value of the Property is ${fields.insurableValueOfProperty || 'Rs. 0/-'}.`;
 
@@ -1855,7 +1855,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   // ==========================================================================
   private renderDeclarationAndSignoffSection(fields: BandhanSMEReportFields, explicitPageCount?: string): void {
     this.addPage();
-    this.drawSectionSpanner('DECLARATION:');
+    this.drawSectionSpanner('DECLARATION:', undefined, TABLE_FONT_SIZE, LBL_BG);
 
     // Intro line: I / WE HEREBY DECLARE THAT:
     const introText = 'I / WE HEREBY DECLARE THAT:';
