@@ -483,7 +483,7 @@ export class PDFGeneralRenderer {
 
     // Fill
     if (opts?.fillColor) {
-      this.drawRect(x, topY, w, h, opts.fillColor, undefined, undefined, opts.bgOpacity);
+      this.drawRect(x, topY, w, h, opts.fillColor, undefined, undefined, opts.bgOpacity ?? BG_OPACITY);
     }
 
     // Border

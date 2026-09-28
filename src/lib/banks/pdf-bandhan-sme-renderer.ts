@@ -6,7 +6,7 @@
  * - Section I: Basic Information (A to M with 6-row Borrower & Owner sub-tables)
  * - Section II: Valuation of Land (1. Details, 2.1 Freehold, 2.2 Leasehold, 2. Rent, 3. Description & multi-plot boundary schedule, 4. Characteristics & Proximities, 5. Other issues, 6. Land Valuation)
  * - Valuation of Building (1. Basic Info & Deviations, 1.H Plinth comparisons, 26-item checklist I to AB, 2. Technical Details, 3. Construction Specifications, 4. Building Valuation Table, 5.1-5.4 Sub-schedules)
- * - Section 6.0: Total Abstract Matrix (Land, Building, Extra Items, Amenities, Misc, Services across Govt, Market, Realisable 95%, Distress 85%, and OR SAY rounding)
+ * - Section 6: TOTAL ABSTRACT OF THE ENTIRE PROPERTY (Land, Building, Extra Items, Amenities, Misc, Services across Govt, Market, Realisable 95%, Distress 85%, and OR SAY rounding)
  * - Remarks, Basis of Valuation, and Comprehensive Valuation Opinion Paragraph
  * - 17-point Valuer Declaration (A to Q) & Credentials Sign-Off Block
  * - 10-Point Valuation Report Check-List
@@ -864,7 +864,7 @@ export interface BandhanSMEReportFields {
   servicesItems?: BandhanSMESubScheduleItem[];
   servicesItemsTotal?: string;
 
-  // 6.0 Total Abstract of Entire Property
+  // 6. TOTAL ABSTRACT OF THE ENTIRE PROPERTY
   abstractGovtLand?: string;
   abstractMarketLand?: string;
   abstractRealLand?: string;
@@ -1108,7 +1108,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     // 2. Valuation of Land (Section II)
     this.renderValuationOfLandSection(fields);
 
-    // 3. Valuation of Building (Section III - Parts 1 to 5 + 6.0 Total Abstract Matrix)
+    // 3. Valuation of Building (Section III - Parts 1 to 5 + 6. TOTAL ABSTRACT OF THE ENTIRE PROPERTY)
     this.renderValuationOfBuildingSection(fields);
 
     // 4. Standalone: Remarks & Certificate of Valuation / Valuer Opinion
@@ -1642,7 +1642,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     // 5. Sub-Schedules (5.1 Extra Items, 5.2 Amenities, 5.3 Misc, 5.4 Services)
     this.renderSubSchedules(fields);
 
-    // 6.0 Total Abstract Matrix (Land + Building + Sub-Schedules)
+    // 6. TOTAL ABSTRACT OF THE ENTIRE PROPERTY (Land + Building + Sub-Schedules)
     this.renderTotalAbstractMatrix(fields);
   }
 
@@ -1745,7 +1745,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   }
 
   // --------------------------------------------------------------------------
-  // Helper: 6. TOTAL ABSTRACT MATRIX (Land + Building + Sub-Schedules)
+  // Helper: 6. TOTAL ABSTRACT OF THE ENTIRE PROPERTY (Land + Building + Sub-Schedules)
   // --------------------------------------------------------------------------
   private renderTotalAbstractMatrix(fields: BandhanSMEReportFields): void {
     this.drawBandhanRow('6.', 'TOTAL ABSTRACT OF THE ENTIRE PROPERTY:', '', true, true, TABLE_FONT_SIZE, LBL_BG);

@@ -148,7 +148,7 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-bldg-specs', title: 'Specifications of Construction' },
   { id: 'sec-bldg-valuation', title: 'Building Valuation Table' },
   { id: 'sec-bldg-subschedules', title: 'Sub-Schedules' },
-  { id: 'sec-bldg-abstract-matrix', title: 'Total Abstract Matrix' },
+  { id: 'sec-bldg-abstract-matrix', title: 'TOTAL ABSTRACT OF THE ENTIRE PROPERTY' },
 
   // Additional Sections
   { id: '', title: 'Additional Sections', isHeader: true },
@@ -5836,8 +5836,8 @@ export default function BandhanSME({
           </div>
         </Section>
 
-        {/* 14. TOTAL ABSTRACT MATRIX (POINT 6) */}
-        <Section number={14} id="sec-bldg-abstract-matrix" title="III. Valuation of Building (6. Total Abstract Valuation Matrix)">
+        {/* 14. TOTAL ABSTRACT OF THE ENTIRE PROPERTY (POINT 6) */}
+        <Section number={14} id="sec-bldg-abstract-matrix" title="III. Valuation of Building (6. TOTAL ABSTRACT OF THE ENTIRE PROPERTY)">
           <div className="space-y-4">
             <div className="p-4 bg-emerald-50/70 border border-emerald-200/80 rounded-xl space-y-4 shadow-2xs">
               <div className="pb-2 border-b border-emerald-200/60">
@@ -6008,7 +6008,7 @@ export default function BandhanSME({
                   />
                 </Field>
                 <p className="text-[11px] text-slate-500 font-medium italic">
-                  Referenced from: Section 6 Total Abstract Matrix — Market Value ({fields.abstractMarketSay || fields.abstractMarketTotal || 'Rs. 0.00'})
+                  Referenced from: TOTAL ABSTRACT OF THE ENTIRE PROPERTY — Market Value ({fields.abstractMarketSay || fields.abstractMarketTotal || 'Rs. 0.00'})
                 </p>
               </div>
 
@@ -6023,7 +6023,7 @@ export default function BandhanSME({
                   />
                 </Field>
                 <p className="text-[11px] text-slate-500 font-medium italic">
-                  Referenced from: Section 6 Total Abstract Matrix — Realisable Value ({fields.abstractRealSay || fields.abstractRealTotal || 'Rs. 0.00'})
+                  Referenced from: TOTAL ABSTRACT OF THE ENTIRE PROPERTY — Realisable Value ({fields.abstractRealSay || fields.abstractRealTotal || 'Rs. 0.00'})
                 </p>
               </div>
             </div>
