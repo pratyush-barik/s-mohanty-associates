@@ -137,7 +137,7 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-title-rent', title: 'Title, Ownership & Rent' },
   { id: 'sec-desc-boundaries', title: 'Description & Boundaries' },
   { id: 'sec-site-char', title: 'Characteristics of Site' },
-  { id: 'sec-location-adv-disadv', title: 'Location Advantages' },
+  { id: 'sec-location-adv-disadv', title: 'Location Advantages & Disadvantages' },
   { id: 'sec-other-issues', title: 'Other Issues & Points' },
   { id: 'sec-land-valuation', title: 'Valuation' },
 
