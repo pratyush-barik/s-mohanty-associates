@@ -603,7 +603,7 @@ function SubSection({ id, title, children, defaultOpen = true }: { id: string; t
   );
 }
 
-const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d]";
+const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d] read-only:bg-[#f1f3f5] read-only:text-[#495057] read-only:cursor-not-allowed";
 const selectCls = inputCls;
 const textareaCls = `${inputCls} min-h-[80px] resize-y`;
 
@@ -2079,7 +2079,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                       <div className="grid md:grid-cols-2 gap-4">
                         <Field label="Secondary Rate (RS. - Auto-Converted)">
                           <input
-                            className={`${inputCls} bg-emerald-50/50 text-emerald-900 font-semibold`}
+                            className={`${inputCls} font-semibold`}
                             type="text"
                             value={fields.landRatePerUnit ? convertLandRate(fields.landRatePerUnit, fields.landRateUnit || 'DEC', fields.landRateSecondaryUnit || 'ACRE') : (fields.landRateSecondaryPerUnit || '')}
                             readOnly
@@ -2552,7 +2552,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 </div>
                 <div>
                   <label className="text-[9px] font-semibold text-[#6c757d] uppercase">Net Value (auto)</label>
-                  <div className="px-3 py-2.5 rounded-lg bg-green-50 border border-green-200 text-sm font-bold text-green-800">
+                  <div className="px-3 py-2.5 rounded-lg bg-[#f1f3f5] border border-[#dee2e6] text-sm font-bold text-[#495057]">
                     RS.{formatIndianCurrency(computedFloorRows[idx]?.netValue || 0)}/-
                   </div>
                 </div>

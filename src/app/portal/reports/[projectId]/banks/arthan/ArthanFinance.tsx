@@ -1774,7 +1774,7 @@ export default function ArthanFinance({
                 <div className="space-y-1.5">
                   <Field label="Market Value for 100% Complete Property (in Rs)">
                     <input
-                      className={`${inputCls} bg-green-50 font-bold text-black`}
+                      className={`${inputCls} font-bold text-black`}
                       value={fields.marketValueLandBuilding || ''}
                       disabled={isReadOnly}
                       placeholder="Auto-calculated"
@@ -1789,7 +1789,7 @@ export default function ArthanFinance({
                 <div className="space-y-1.5">
                   <Field label="Market Value for Present Stage Completed Property (in Rs)">
                     <input
-                      className={`${inputCls} bg-green-50 font-bold text-black`}
+                      className={`${inputCls} font-bold text-black`}
                       value={fields.marketValueLandBuildingRight || ''}
                       disabled={isReadOnly}
                       placeholder="Auto-calculated"

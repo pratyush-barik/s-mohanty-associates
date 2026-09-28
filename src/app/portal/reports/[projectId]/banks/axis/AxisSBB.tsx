@@ -3614,7 +3614,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                       {renderNaToggle('axisSbbRemarks')}
                     </div>
                   </div>
-                  <textarea rows={8} className={`${inputCls} resize-y ${fields.axisSbbRemarksEditOn ? 'bg-green-50 border-green-300' : 'bg-white'}`} value={fields.axisSbbRemarksIsNA ? '' : (fields.axisSbbRemarksEditOn ? (fields.axisSbbRemarks || '') : synthesizedRemarks)} onChange={e => handleChange('axisSbbRemarks', e.target.value)} disabled={isReadOnly || !!fields.axisSbbRemarksIsNA || !fields.axisSbbRemarksEditOn} />
+                  <textarea rows={8} className={`${inputCls} resize-y ${fields.axisSbbRemarksEditOn ? 'bg-white border-blue-300' : ''}`} value={fields.axisSbbRemarksIsNA ? '' : (fields.axisSbbRemarksEditOn ? (fields.axisSbbRemarks || '') : synthesizedRemarks)} onChange={e => handleChange('axisSbbRemarks', e.target.value)} disabled={isReadOnly || !!fields.axisSbbRemarksIsNA || !fields.axisSbbRemarksEditOn} />
                 </div>
 
                 <div className="flex flex-col gap-1">
@@ -3622,7 +3622,7 @@ export const AXIS_SBB_CONFIG: BankConfig = {
                     <label className="text-xs font-bold text-gray-700">NOTE:-</label>
                     {renderNaToggle('axisSbbRemarksNote')}
                   </div>
-                  <textarea rows={2} className={`${inputCls} resize-y bg-white`} value={fields.axisSbbRemarksNoteIsNA ? '' : (fields.axisSbbRemarksNote || '')} onChange={e => handleChange('axisSbbRemarksNote', e.target.value)} disabled={isReadOnly || !!fields.axisSbbRemarksNoteIsNA} />
+                  <textarea rows={2} className={`${inputCls} resize-y`} value={fields.axisSbbRemarksNoteIsNA ? '' : (fields.axisSbbRemarksNote || '')} onChange={e => handleChange('axisSbbRemarksNote', e.target.value)} disabled={isReadOnly || !!fields.axisSbbRemarksNoteIsNA} />
                 </div>
               </div>
             </div>

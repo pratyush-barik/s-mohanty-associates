@@ -497,7 +497,7 @@ function Field({ label, children, span = 1 }: { label: string; children: React.R
   );
 }
 
-const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d]";
+const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d] read-only:bg-[#f1f3f5] read-only:text-[#495057] read-only:cursor-not-allowed";
 const selectCls = inputCls;
 
 /** 3-Column Option Field matching sample report format:

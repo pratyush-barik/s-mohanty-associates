@@ -475,3 +475,39 @@ table {
   background: #94a3b8;
 }
 
+/* ═══════════════════════════════════════════
+    GLOBAL FORM READ-ONLY & DISABLED STYLES
+    ═══════════════════════════════════════════ */
+
+input:read-only,
+textarea:read-only,
+input[readonly],
+textarea[readonly],
+input:disabled,
+textarea:disabled,
+select:disabled,
+input[disabled],
+textarea[disabled],
+select[disabled] {
+  background-color: #f1f3f5 !important;
+  color: #495057 !important;
+  cursor: not-allowed !important;
+  border-color: #dee2e6 !important;
+}
+
+input:read-only::placeholder,
+textarea:read-only::placeholder,
+input:disabled::placeholder,
+textarea:disabled::placeholder {
+  color: #adb5bd !important;
+}
+
+input:read-only:focus,
+textarea:read-only:focus,
+input[readonly]:focus,
+textarea[readonly]:focus {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #dee2e6 !important;
+}
+

@@ -941,7 +941,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 </div>
               </div>
               <div className="relative">
-                <input className={`${inputCls} ${unitTag ? 'pr-16' : ''} ${!isManual ? 'bg-green-50/50' : ''}`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} />
+                <input className={`${inputCls} ${unitTag ? 'pr-16' : ''}`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} />
                 {unitTag && <div className="absolute right-1 top-1.5 px-2 bg-gray-100 rounded text-xs text-gray-500 pointer-events-none">{unitTag}</div>}
               </div>
             </div>
@@ -978,7 +978,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                   <span className="text-[9px] text-gray-400 font-medium leading-none">NA</span>
                 </label>
               </div>
-              <input className={`${inputCls} text-xs p-1 ${!isManual ? 'bg-green-50/50' : ''}`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} title={formulaLabel} />
+              <input className={`${inputCls} text-xs p-1`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} title={formulaLabel} />
             </div>
           );
         };
@@ -1142,7 +1142,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 </div>
               </div>
               <div className="relative">
-                <input className={`${inputCls} ${unitTag ? 'pr-16' : ''} ${!isManual ? 'bg-green-50/50' : ''}`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} />
+                <input className={`${inputCls} ${unitTag ? 'pr-16' : ''}`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} />
                 {unitTag && <div className="absolute right-1 top-1.5 px-2 bg-gray-100 rounded text-xs text-gray-500 pointer-events-none">{unitTag}</div>}
               </div>
             </div>
@@ -1267,7 +1267,7 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
                 </div>
               </div>
               <div className="relative">
-                <input className={`${inputCls} ${unitTag ? 'pr-16' : ''} ${!isManual ? 'bg-green-50/50' : ''}`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} />
+                <input className={`${inputCls} ${unitTag ? 'pr-16' : ''}`} value={displayValue} onChange={e => isManual && handleChange(fieldKey, e.target.value)} disabled={isReadOnly || isNA || !isManual} />
                 {unitTag && <div className="absolute right-1 top-1.5 px-2 bg-gray-100 rounded text-xs text-gray-500 pointer-events-none">{unitTag}</div>}
               </div>
             </div>

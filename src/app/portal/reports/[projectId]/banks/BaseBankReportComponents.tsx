@@ -233,7 +233,7 @@ export function StructureDerivationBadge({
 }
 
 // ─── Standard Input & Select Classes ─────────────────────────────────
-export const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 disabled:bg-[#f1f3f5] disabled:text-[#6c757d] transition-all";
+export const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 disabled:bg-[#f1f3f5] disabled:text-[#6c757d] read-only:bg-[#f1f3f5] read-only:text-[#495057] read-only:cursor-not-allowed transition-all";
 export const selectCls = inputCls;
 
 // ─── Standard Accordion Section Card ─────────────────────────────────
