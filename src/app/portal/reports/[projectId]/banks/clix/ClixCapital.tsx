@@ -2090,6 +2090,16 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
         const s9Rows = fields.clixS9BuaRows || [];
         const s10Rows = fields.clixS10ValuationRows || [];
         
+        const formatINR = (val: string | number) => {
+          if (!val && val !== 0) return '';
+          if (val === 'NA') return 'NA';
+          const num = parseFloat(val.toString().replace(/,/g, ''));
+          if (isNaN(num)) return val.toString();
+          // Using maximumFractionDigits: 2 to keep consistency like .toFixed(2)
+          return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(num);
+        };
+        const parseINR = (val: string) => val.replace(/[^0-9.]/g, '');
+
         const getRowData = (floorId: string) => {
           return s10Rows.find((r: any) => r.id === floorId) || {};
         };
@@ -2163,12 +2173,12 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
           autoTotalBua += (parseFloat(amtStr) || 0);
         });
 
-        const autoTotalBuaStr = autoTotalBua.toFixed(2);
+        const autoTotalBuaStr = autoTotalBua.toString();
         const isTotalBuaEdit = fields.clixEnableS10TotalBuaEdit;
         const finalTotalBua = isTotalBuaEdit ? (fields.clixS10TotalBua || '') : autoTotalBuaStr;
 
         const landAmt = parseFloat(fields.clixS10LandAmount || '0') || 0;
-        const autoFmv = (landAmt + parseFloat(finalTotalBua || '0')).toFixed(2);
+        const autoFmv = (landAmt + parseFloat(finalTotalBua || '0')).toString();
         const isFmvEdit = fields.clixEnableS10FmvEdit;
         const finalFmv = isFmvEdit ? (fields.clixS10Fmv || '') : autoFmv;
 
@@ -2204,7 +2214,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       
                       const rateNum = parseFloat(rowData.rate || '0') || 0;
                       const areaNum = parseFloat(finalArea || '0') || 0;
-                      const autoAmtStr = (areaNum * rateNum).toFixed(2);
+                      const autoAmtStr = (areaNum * rateNum).toString();
                       const isAmtEdit = rowData.amountEdit;
                       const finalAmt = isAmtEdit ? (rowData.amount || '') : autoAmtStr;
 
@@ -2246,12 +2256,13 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                           </td>
 
                           <td className="px-2 py-2">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 relative">
+                              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">₹</span>
                               <input
-                                type={rowData.rateNA ? "text" : "number"}
-                                className={`${inputCls} ${rowData.rateNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                                value={rowData.rateNA ? 'NA' : (rowData.rate || '')}
-                                onChange={(e) => updateRow(floor.id, 'rate', e.target.value)}
+                                type="text"
+                                className={`${inputCls} pl-7 ${rowData.rateNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                value={rowData.rateNA ? 'NA' : formatINR(rowData.rate || '')}
+                                onChange={(e) => updateRow(floor.id, 'rate', parseINR(e.target.value))}
                                 disabled={isReadOnly || rowData.rateNA}
                               />
                               {renderRowNaToggle(floor.id, 'rateNA')}
@@ -2263,18 +2274,22 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                               {renderRowEditSwitch(floor.id, 'amountEdit')}
                               <div className="flex items-center gap-2 relative">
                                 {isAmtEdit ? (
-                                  <input
-                                    type={rowData.amountNA ? "text" : "number"}
-                                    className={`${inputCls} ${rowData.amountNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                                    value={rowData.amountNA ? 'NA' : finalAmt}
-                                    onChange={(e) => updateRow(floor.id, 'amount', e.target.value)}
-                                    disabled={isReadOnly || rowData.amountNA}
-                                  />
+                                  <div className="relative w-full">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">₹</span>
+                                    <input
+                                      type="text"
+                                      className={`${inputCls} pl-7 ${rowData.amountNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                      value={rowData.amountNA ? 'NA' : formatINR(finalAmt)}
+                                      onChange={(e) => updateRow(floor.id, 'amount', parseINR(e.target.value))}
+                                      disabled={isReadOnly || rowData.amountNA}
+                                    />
+                                  </div>
                                 ) : (
                                   <div className="relative w-full">
+                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">₹</span>
                                     <input 
-                                      className={`${inputCls} pr-10 bg-white text-gray-700`} 
-                                      value={rowData.amountNA ? 'NA' : finalAmt} 
+                                      className={`${inputCls} pl-7 pr-10 bg-white text-gray-700`} 
+                                      value={rowData.amountNA ? 'NA' : formatINR(finalAmt)} 
                                       readOnly 
                                       disabled={isReadOnly || rowData.amountNA}
                                       title=">>Auto calculating from [Area * Rate]<<"
@@ -2297,20 +2312,23 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                 </table>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Field label={
                   <div className="w-full flex items-center justify-between">
                     <span>Land Amount (Rs)</span>
                     {renderNaToggle('clixS10LandAmountNA', fields, handleChange, isReadOnly)}
                   </div>
                 }>
-                  <input
-                    type={fields.clixS10LandAmountNA ? "text" : "number"}
-                    className={`${inputCls} ${fields.clixS10LandAmountNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                    value={fields.clixS10LandAmountNA ? 'NA' : (fields.clixS10LandAmount || '')}
-                    onChange={(e) => handleChange('clixS10LandAmount', e.target.value)}
-                    disabled={isReadOnly || fields.clixS10LandAmountNA}
-                  />
+                  <div className="relative w-full">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">₹</span>
+                    <input
+                      type="text"
+                      className={`${inputCls} pl-7 ${fields.clixS10LandAmountNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                      value={fields.clixS10LandAmountNA ? 'NA' : formatINR(fields.clixS10LandAmount || '')}
+                      onChange={(e) => handleChange('clixS10LandAmount', parseINR(e.target.value))}
+                      disabled={isReadOnly || fields.clixS10LandAmountNA}
+                    />
+                  </div>
                 </Field>
 
                 <Field label={
@@ -2324,18 +2342,22 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                 }>
                   <div className="relative">
                     {isTotalBuaEdit ? (
-                      <input 
-                        type={fields.clixS10TotalBuaNA ? "text" : "number"}
-                        className={`${inputCls} ${fields.clixS10TotalBuaNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`} 
-                        value={fields.clixS10TotalBuaNA ? 'NA' : finalTotalBua} 
-                        onChange={e => handleChange('clixS10TotalBua', e.target.value)} 
-                        disabled={isReadOnly || fields.clixS10TotalBuaNA} 
-                      />
+                      <div className="relative w-full">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">₹</span>
+                        <input 
+                          type="text"
+                          className={`${inputCls} pl-7 ${fields.clixS10TotalBuaNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`} 
+                          value={fields.clixS10TotalBuaNA ? 'NA' : formatINR(finalTotalBua)} 
+                          onChange={e => handleChange('clixS10TotalBua', parseINR(e.target.value))} 
+                          disabled={isReadOnly || fields.clixS10TotalBuaNA} 
+                        />
+                      </div>
                     ) : (
                       <div className="relative w-full">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">₹</span>
                         <input 
-                          className={`${inputCls} pr-10 bg-white text-gray-700`} 
-                          value={fields.clixS10TotalBuaNA ? 'NA' : finalTotalBua} 
+                          className={`${inputCls} pl-7 pr-10 bg-white text-gray-700`} 
+                          value={fields.clixS10TotalBuaNA ? 'NA' : formatINR(finalTotalBua)} 
                           readOnly 
                           disabled={isReadOnly || fields.clixS10TotalBuaNA} 
                           title=">>Auto calculating from [Sum of all Amount (Rs)]<<"
@@ -2350,42 +2372,48 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                   </div>
                 </Field>
 
-                <Field label={
-                  <div className="w-full flex items-center justify-between">
-                    <span>Fair Market Value (Rs)</span>
-                    <div className="flex items-center gap-2">
-                      {renderEditSwitch('clixEnableS10FmvEdit', fields, handleChange, isReadOnly, fields.clixS10FmvNA)}
-                      {renderNaToggle('clixS10FmvNA', fields, handleChange, isReadOnly)}
-                    </div>
-                  </div>
-                }>
-                  <div className="relative">
-                    {isFmvEdit ? (
-                      <input 
-                        type={fields.clixS10FmvNA ? "text" : "number"}
-                        className={`${inputCls} ${fields.clixS10FmvNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`} 
-                        value={fields.clixS10FmvNA ? 'NA' : finalFmv} 
-                        onChange={e => handleChange('clixS10Fmv', e.target.value)} 
-                        disabled={isReadOnly || fields.clixS10FmvNA} 
-                      />
-                    ) : (
-                      <div className="relative w-full">
-                        <input 
-                          className={`${inputCls} pr-10 bg-white text-gray-700`} 
-                          value={fields.clixS10FmvNA ? 'NA' : finalFmv} 
-                          readOnly 
-                          disabled={isReadOnly || fields.clixS10FmvNA} 
-                          title=">>Auto calculating from [Land Amount + Total BUA value]<<"
-                        />
-                        {!fields.clixS10FmvNA && (
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Land Amount + Total BUA value]<<">
-                            <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
-                          </div>
-                        )}
+                <div className="md:col-span-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span className="text-indigo-900 font-bold text-base">Fair Market Value (Rs)</span>
+                      <div className="flex items-center gap-2">
+                        {renderEditSwitch('clixEnableS10FmvEdit', fields, handleChange, isReadOnly, fields.clixS10FmvNA)}
+                        {renderNaToggle('clixS10FmvNA', fields, handleChange, isReadOnly)}
                       </div>
-                    )}
-                  </div>
-                </Field>
+                    </div>
+                  }>
+                    <div className="relative">
+                      {isFmvEdit ? (
+                        <div className="relative w-full">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-900 font-bold z-10 text-lg">₹</span>
+                          <input 
+                            type="text"
+                            className={`${inputCls} pl-8 py-3 text-lg font-bold text-indigo-900 border-indigo-400 focus:border-indigo-600 focus:ring-indigo-500 ${fields.clixS10FmvNA ? 'bg-indigo-100 cursor-not-allowed' : 'bg-indigo-50/80 shadow-inner'}`} 
+                            value={fields.clixS10FmvNA ? 'NA' : formatINR(finalFmv)} 
+                            onChange={e => handleChange('clixS10Fmv', parseINR(e.target.value))} 
+                            disabled={isReadOnly || fields.clixS10FmvNA} 
+                          />
+                        </div>
+                      ) : (
+                        <div className="relative w-full">
+                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-900 font-bold z-10 text-lg">₹</span>
+                          <input 
+                            className={`${inputCls} pl-8 pr-10 py-3 text-lg font-bold text-indigo-900 border-indigo-400 bg-indigo-50/80 shadow-inner`} 
+                            value={fields.clixS10FmvNA ? 'NA' : formatINR(finalFmv)} 
+                            readOnly 
+                            disabled={isReadOnly || fields.clixS10FmvNA} 
+                            title=">>Auto calculating from [Land Amount + Total BUA value]<<"
+                          />
+                          {!fields.clixS10FmvNA && (
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Land Amount + Total BUA value]<<">
+                              <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </Field>
+                </div>
 
               </div>
             </div>
