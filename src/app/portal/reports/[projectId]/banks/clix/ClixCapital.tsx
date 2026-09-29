@@ -858,7 +858,6 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
       }
     }
   ],
-,
   defaultValues: {
     clixReportType: 'Technical Scrutiny Report',
     clixLoanType: 'LAP'
