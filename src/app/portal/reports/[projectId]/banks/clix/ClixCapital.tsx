@@ -28,7 +28,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     { id: 'clix-section-9', title: 'Area and Usage Detail' },
     { id: 'clix-section-10', title: 'Fair Market Value' },
     { id: 'clix-section-11', title: 'Derived Values (Realizable & Distress)' },
-    { id: 'section-12', title: 'Maps' }
+    { id: 'clix-section-12', title: 'Remarks & Declarations' }
   ],
   
   extraSectionsStart: [
@@ -2658,6 +2658,268 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
           </div>
         );
       }
+    },
+    {
+      id: 'clix-section-12',
+      title: '12. GENERAL REMARKS, DECLARATIONS & ATTACHMENTS',
+      number: 12,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const mortgageabilityOpts = ['Yes', 'No', 'Yes subject to conditions', 'Custom'];
+        
+        const isDateEdit = fields.clixEnableS12DateOfValuationEdit;
+        const autoDate = fields.clixS2DateOfInspection || new Date().toISOString().split('T')[0];
+        const finalDate = isDateEdit ? (fields.clixS12DateOfValuation || '') : autoDate;
+
+        const isValuerEdit = fields.clixEnableS12ValuerNameEdit;
+        const autoValuer = fields.reportAgentName || fields.fieldAgentName || 'S Mohanty Associates';
+        const finalValuer = isValuerEdit ? (fields.clixS12ValuerName || '') : autoValuer;
+
+        const attachmentOpts = [
+          'Photographs of Property',
+          'Location Map',
+          'Site Sketch',
+          'Copy of Legal Documents',
+          'Approved Building Plan',
+          'Custom'
+        ];
+        const selectedAttachments: string[] = fields.clixS12Attachments || [];
+
+        const toggleAttachment = (opt: string) => {
+          if (selectedAttachments.includes(opt)) {
+            handleChange('clixS12Attachments', selectedAttachments.filter((a: string) => a !== opt));
+          } else {
+            handleChange('clixS12Attachments', [...selectedAttachments, opt]);
+          }
+        };
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-slate-300 bg-[#cfd8dc] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-800 mb-4">General Remarks, Declarations & Attachments</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div className="md:col-span-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>General Remarks / Special Observations</span>
+                      {renderNaToggle('clixS12GeneralRemarksNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <textarea 
+                      className={`\${inputCls} min-h-[80px] \${fields.clixS12GeneralRemarksNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                      value={fields.clixS12GeneralRemarksNA ? 'NA' : (fields.clixS12GeneralRemarks || '')}
+                      onChange={(e) => handleChange('clixS12GeneralRemarks', e.target.value)}
+                      disabled={isReadOnly || fields.clixS12GeneralRemarksNA}
+                      rows={3}
+                    />
+                  </Field>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Any Legal/Structural Issues Observed</span>
+                      {renderNaToggle('clixS12LegalIssuesNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <textarea 
+                      className={`\${inputCls} min-h-[80px] \${fields.clixS12LegalIssuesNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                      value={fields.clixS12LegalIssuesNA ? 'NA' : (fields.clixS12LegalIssues || '')}
+                      onChange={(e) => handleChange('clixS12LegalIssues', e.target.value)}
+                      disabled={isReadOnly || fields.clixS12LegalIssuesNA}
+                      rows={3}
+                    />
+                  </Field>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Mortgageability (Suitable for Collateral Security)</span>
+                      {renderNaToggle('clixS12MortgageabilityNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <div className="flex flex-col gap-2">
+                      <select 
+                        className={`\${inputCls} \${fields.clixS12MortgageabilityNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                        value={fields.clixS12MortgageabilityDropdown || ''}
+                        onChange={(e) => {
+                          handleChange('clixS12MortgageabilityDropdown', e.target.value);
+                          if (e.target.value !== 'Custom') {
+                            handleChange('clixS12Mortgageability', e.target.value);
+                          } else {
+                            handleChange('clixS12Mortgageability', '');
+                          }
+                        }}
+                        disabled={isReadOnly || fields.clixS12MortgageabilityNA}
+                      >
+                        <option value="">Select...</option>
+                        {mortgageabilityOpts.map(o => <option key={o} value={o}>{o}</option>)}
+                      </select>
+                      {fields.clixS12MortgageabilityDropdown === 'Custom' && (
+                        <input 
+                          type="text"
+                          placeholder="Enter custom mortgageability..."
+                          className={`\${inputCls} \${fields.clixS12MortgageabilityNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                          value={fields.clixS12MortgageabilityNA ? 'NA' : (fields.clixS12Mortgageability || '')}
+                          onChange={(e) => handleChange('clixS12Mortgageability', e.target.value)}
+                          disabled={isReadOnly || fields.clixS12MortgageabilityNA}
+                        />
+                      )}
+                    </div>
+                  </Field>
+                </div>
+
+                <div className="md:col-span-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Attachments Enclosed</span>
+                      {renderNaToggle('clixS12AttachmentsNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <div className={`flex flex-wrap gap-2 p-3 border rounded-md \${fields.clixS12AttachmentsNA ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-60' : 'bg-white border-slate-300'}`}>
+                      {attachmentOpts.map(opt => {
+                        const isSelected = selectedAttachments.includes(opt);
+                        return (
+                          <label 
+                            key={opt}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm cursor-pointer transition-colors \${
+                              isSelected 
+                                ? 'bg-emerald-100 border-emerald-300 text-emerald-800 font-medium' 
+                                : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                            }`}
+                          >
+                            <input 
+                              type="checkbox"
+                              className="hidden"
+                              checked={isSelected}
+                              onChange={() => toggleAttachment(opt)}
+                              disabled={isReadOnly || fields.clixS12AttachmentsNA}
+                            />
+                            {isSelected && (
+                              <svg className="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                              </svg>
+                            )}
+                            {opt}
+                          </label>
+                        );
+                      })}
+                    </div>
+                    {selectedAttachments.includes('Custom') && (
+                      <div className="mt-2">
+                        <input 
+                          type="text"
+                          placeholder="Enter custom attachments..."
+                          className={`\${inputCls} \${fields.clixS12AttachmentsNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                          value={fields.clixS12AttachmentsNA ? 'NA' : (fields.clixS12AttachmentsCustom || '')}
+                          onChange={(e) => handleChange('clixS12AttachmentsCustom', e.target.value)}
+                          disabled={isReadOnly || fields.clixS12AttachmentsNA}
+                        />
+                      </div>
+                    )}
+                  </Field>
+                </div>
+
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Date of Valuation</span>
+                    <div className="flex items-center gap-2">
+                      {renderEditSwitch('clixEnableS12DateOfValuationEdit', fields, handleChange, isReadOnly, fields.clixS12DateOfValuationNA)}
+                      {renderNaToggle('clixS12DateOfValuationNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  </div>
+                }>
+                  <div className="relative w-full">
+                    {isDateEdit ? (
+                      <input 
+                        type="date"
+                        className={`\${inputCls} \${fields.clixS12DateOfValuationNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                        value={fields.clixS12DateOfValuationNA ? '' : finalDate}
+                        onChange={(e) => handleChange('clixS12DateOfValuation', e.target.value)}
+                        disabled={isReadOnly || fields.clixS12DateOfValuationNA}
+                      />
+                    ) : (
+                      <div className="relative w-full">
+                        <input 
+                          type="date"
+                          className={`\${inputCls} pr-10 bg-white text-gray-700`}
+                          value={fields.clixS12DateOfValuationNA ? '' : finalDate}
+                          readOnly 
+                          disabled={isReadOnly || fields.clixS12DateOfValuationNA}
+                          title='>>Prefill from section 2, "Date of Inspection"<<'
+                        />
+                        {!fields.clixS12DateOfValuationNA && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 2, "Date of Inspection"<<'>
+                            <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Field>
+
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Place</span>
+                    {renderNaToggle('clixS12PlaceNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <input 
+                    type="text"
+                    className={`\${inputCls} \${fields.clixS12PlaceNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                    value={fields.clixS12PlaceNA ? 'NA' : (fields.clixS12Place || '')}
+                    onChange={(e) => handleChange('clixS12Place', e.target.value)}
+                    disabled={isReadOnly || fields.clixS12PlaceNA}
+                  />
+                </Field>
+
+                <div className="md:col-span-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Valuer's Name / Executed By</span>
+                      <div className="flex items-center gap-2">
+                        {renderEditSwitch('clixEnableS12ValuerNameEdit', fields, handleChange, isReadOnly, fields.clixS12ValuerNameNA)}
+                        {renderNaToggle('clixS12ValuerNameNA', fields, handleChange, isReadOnly)}
+                      </div>
+                    </div>
+                  }>
+                    <div className="relative w-full">
+                      {isValuerEdit ? (
+                        <input 
+                          type="text"
+                          className={`\${inputCls} \${fields.clixS12ValuerNameNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                          value={fields.clixS12ValuerNameNA ? 'NA' : finalValuer}
+                          onChange={(e) => handleChange('clixS12ValuerName', e.target.value)}
+                          disabled={isReadOnly || fields.clixS12ValuerNameNA}
+                        />
+                      ) : (
+                        <div className="relative w-full">
+                          <input 
+                            className={`\${inputCls} pr-10 bg-white text-gray-700`}
+                            value={fields.clixS12ValuerNameNA ? 'NA' : finalValuer}
+                            readOnly 
+                            disabled={isReadOnly || fields.clixS12ValuerNameNA}
+                            title='>>Prefill from System, "Logged-in Valuer Profile"<<'
+                          />
+                          {!fields.clixS12ValuerNameNA && (
+                            <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from System, "Logged-in Valuer Profile"<<'>
+                              <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </Field>
+                </div>
+                
+              </div>
+            </div>
+          </div>
+        );
+      }
     }
   ],
   defaultValues: {
@@ -2756,6 +3018,18 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     clixS11GovtValue: '', clixS11GovtValueNA: false,
     clixEnableS11InsuranceEdit: false,
     clixS11Insurance: '', clixS11InsuranceNA: false,
+    
+    // Section 12 Variables
+    clixS12GeneralRemarks: '', clixS12GeneralRemarksNA: false,
+    clixS12LegalIssues: '', clixS12LegalIssuesNA: false,
+    clixS12MortgageabilityDropdown: '',
+    clixS12Mortgageability: '', clixS12MortgageabilityNA: false,
+    clixS12Attachments: [], clixS12AttachmentsCustom: '', clixS12AttachmentsNA: false,
+    clixEnableS12DateOfValuationEdit: false,
+    clixS12DateOfValuation: '', clixS12DateOfValuationNA: false,
+    clixS12Place: '', clixS12PlaceNA: false,
+    clixEnableS12ValuerNameEdit: false,
+    clixS12ValuerName: '', clixS12ValuerNameNA: false,
   }
 };
 
