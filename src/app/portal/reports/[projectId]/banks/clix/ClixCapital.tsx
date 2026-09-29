@@ -24,6 +24,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     { id: 'clix-section-5', title: 'Document Details' },
     { id: 'clix-section-6', title: 'Property Details' },
     { id: 'clix-section-7', title: 'Specifications' },
+    { id: 'clix-section-8', title: 'Boundaries and Set Backs' },
     { id: 'section-11', title: 'Photos' },
     { id: 'section-12', title: 'Maps' }
   ],
@@ -1477,6 +1478,229 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
           </div>
         );
       }
+    },
+    {
+      id: 'clix-section-8',
+      title: '8. BOUNDARIES AND SET BACKS',
+      number: 8,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-pink-200 bg-[#fce4ec] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Directional Boundaries Table</h3>
+              <div className="overflow-x-auto mb-6">
+                <table className="w-full text-sm text-left text-gray-500">
+                  <thead className="text-xs text-gray-700 uppercase bg-pink-100">
+                    <tr>
+                      <th className="px-4 py-2">Direction</th>
+                      <th className="px-4 py-2">As per documents</th>
+                      <th className="px-4 py-2">As per site</th>
+                      <th className="px-4 py-2">Dimensions (Feet/Meters)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {['North', 'South', 'East', 'West'].map((dir) => (
+                      <tr key={dir} className="bg-[#fce4ec] border-b border-pink-200">
+                        <td className="px-4 py-2 font-medium text-gray-900">{dir}</td>
+                        <td className="px-2 py-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              className={`${inputCls} ${fields[`clixS8Boundaries${dir}AsPerDocNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                              value={fields[`clixS8Boundaries${dir}AsPerDocNA`] ? 'NA' : (fields[`clixS8Boundaries${dir}AsPerDoc`] || '')}
+                              onChange={(e) => handleChange(`clixS8Boundaries${dir}AsPerDoc`, e.target.value)}
+                              disabled={isReadOnly || fields[`clixS8Boundaries${dir}AsPerDocNA`]}
+                            />
+                            {renderNaToggle(`clixS8Boundaries${dir}AsPerDocNA`, fields, handleChange, isReadOnly)}
+                          </div>
+                        </td>
+                        <td className="px-2 py-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              className={`${inputCls} ${fields[`clixS8Boundaries${dir}AsPerSiteNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                              value={fields[`clixS8Boundaries${dir}AsPerSiteNA`] ? 'NA' : (fields[`clixS8Boundaries${dir}AsPerSite`] || '')}
+                              onChange={(e) => handleChange(`clixS8Boundaries${dir}AsPerSite`, e.target.value)}
+                              disabled={isReadOnly || fields[`clixS8Boundaries${dir}AsPerSiteNA`]}
+                            />
+                            {renderNaToggle(`clixS8Boundaries${dir}AsPerSiteNA`, fields, handleChange, isReadOnly)}
+                          </div>
+                        </td>
+                        <td className="px-2 py-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type={fields[`clixS8Boundaries${dir}DimensionNA`] ? "text" : "number"}
+                              className={`${inputCls} ${fields[`clixS8Boundaries${dir}DimensionNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                              value={fields[`clixS8Boundaries${dir}DimensionNA`] ? 'NA' : (fields[`clixS8Boundaries${dir}Dimension`] || '')}
+                              onChange={(e) => handleChange(`clixS8Boundaries${dir}Dimension`, e.target.value)}
+                              disabled={isReadOnly || fields[`clixS8Boundaries${dir}DimensionNA`]}
+                            />
+                            {renderNaToggle(`clixS8Boundaries${dir}DimensionNA`, fields, handleChange, isReadOnly)}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Demarcation & Matching</span>
+                      {renderNaToggle('clixS8DemarcationMatchingNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <div className="flex gap-4">
+                      {['Yes', 'No'].map((opt) => (
+                        <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="clixS8DemarcationMatching"
+                            value={opt}
+                            checked={!fields.clixS8DemarcationMatchingNA && fields.clixS8DemarcationMatching === opt}
+                            onChange={(e) => handleChange('clixS8DemarcationMatching', e.target.value)}
+                            disabled={isReadOnly || fields.clixS8DemarcationMatchingNA}
+                            className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                          />
+                          <span className="text-gray-700 text-sm">{opt}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </Field>
+                  {fields.clixS8DemarcationMatching === 'No' && !fields.clixS8DemarcationMatchingNA && (
+                    <textarea 
+                      className={`${inputCls} bg-white mt-2`} 
+                      rows={3}
+                      placeholder="Explanation for Mismatch"
+                      value={fields.clixS8DemarcationMismatchExplanation || ''} 
+                      onChange={e => handleChange('clixS8DemarcationMismatchExplanation', e.target.value)} 
+                      disabled={isReadOnly} 
+                    />
+                  )}
+                </div>
+
+                <Field label={
+                  <div className="flex items-center justify-between">
+                    <span>Notes for demarcation</span>
+                    {renderNaToggle('clixS8NotesForDemarcationNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <textarea 
+                    className={`${inputCls} ${fields.clixS8NotesForDemarcationNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`} 
+                    rows={3}
+                    value={fields.clixS8NotesForDemarcationNA ? 'NA' : (fields.clixS8NotesForDemarcation || '')} 
+                    onChange={e => handleChange('clixS8NotesForDemarcation', e.target.value)} 
+                    disabled={isReadOnly || fields.clixS8NotesForDemarcationNA} 
+                  />
+                </Field>
+              </div>
+
+              <h3 className="font-bold text-gray-700 mb-4">Setbacks Table</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-500">
+                  <thead className="text-xs text-gray-700 uppercase bg-pink-100">
+                    <tr>
+                      <th className="px-4 py-2">Side</th>
+                      <th className="px-4 py-2">Approved</th>
+                      <th className="px-4 py-2">Actual</th>
+                      <th className="px-4 py-2">Deviations</th>
+                      <th className="px-4 py-2">Remarks</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {['Front', 'Rear', 'LeftSide', 'RightSide'].map((side) => {
+                      const displaySide = side === 'LeftSide' ? 'Left Side' : side === 'RightSide' ? 'Right Side' : side;
+                      const appValStr = fields[`clixS8Setbacks${side}Approved`];
+                      const actValStr = fields[`clixS8Setbacks${side}Actual`];
+                      const appVal = parseFloat(appValStr || '0') || 0;
+                      const actVal = parseFloat(actValStr || '0') || 0;
+                      const autoDev = (actVal - appVal).toFixed(2);
+                      const isDevEdit = fields[`clixS8EnableSetbacks${side}DeviationsEdit`];
+                      const devValue = isDevEdit ? (fields[`clixS8Setbacks${side}Deviations`] || '') : autoDev;
+
+                      return (
+                        <tr key={side} className="bg-[#fce4ec] border-b border-pink-200">
+                          <td className="px-4 py-2 font-medium text-gray-900">{displaySide}</td>
+                          <td className="px-2 py-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type={fields[`clixS8Setbacks${side}ApprovedNA`] ? "text" : "number"}
+                                className={`${inputCls} ${fields[`clixS8Setbacks${side}ApprovedNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                value={fields[`clixS8Setbacks${side}ApprovedNA`] ? 'NA' : (appValStr || '')}
+                                onChange={(e) => handleChange(`clixS8Setbacks${side}Approved`, e.target.value)}
+                                disabled={isReadOnly || fields[`clixS8Setbacks${side}ApprovedNA`]}
+                              />
+                              {renderNaToggle(`clixS8Setbacks${side}ApprovedNA`, fields, handleChange, isReadOnly)}
+                            </div>
+                          </td>
+                          <td className="px-2 py-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type={fields[`clixS8Setbacks${side}ActualNA`] ? "text" : "number"}
+                                className={`${inputCls} ${fields[`clixS8Setbacks${side}ActualNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                value={fields[`clixS8Setbacks${side}ActualNA`] ? 'NA' : (actValStr || '')}
+                                onChange={(e) => handleChange(`clixS8Setbacks${side}Actual`, e.target.value)}
+                                disabled={isReadOnly || fields[`clixS8Setbacks${side}ActualNA`]}
+                              />
+                              {renderNaToggle(`clixS8Setbacks${side}ActualNA`, fields, handleChange, isReadOnly)}
+                            </div>
+                          </td>
+                          <td className="px-2 py-2">
+                            <div className="flex flex-col gap-1">
+                              {renderEditSwitch(`clixS8EnableSetbacks${side}DeviationsEdit`, fields, handleChange, isReadOnly)}
+                              <div className="flex items-center gap-2 relative">
+                                {isDevEdit ? (
+                                  <input
+                                    type={fields[`clixS8Setbacks${side}DeviationsNA`] ? "text" : "number"}
+                                    className={`${inputCls} ${fields[`clixS8Setbacks${side}DeviationsNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                    value={fields[`clixS8Setbacks${side}DeviationsNA`] ? 'NA' : devValue}
+                                    onChange={(e) => handleChange(`clixS8Setbacks${side}Deviations`, e.target.value)}
+                                    disabled={isReadOnly || fields[`clixS8Setbacks${side}DeviationsNA`]}
+                                  />
+                                ) : (
+                                  <div className="relative w-full">
+                                    <input 
+                                      className={`${inputCls} pr-10 bg-white text-gray-700`} 
+                                      value={devValue} 
+                                      readOnly 
+                                      disabled={isReadOnly}
+                                      title=">>Auto calculating from [Actual - Approved]<<"
+                                    />
+                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Actual - Approved]<<">
+                                      <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                                    </div>
+                                  </div>
+                                )}
+                                {renderNaToggle(`clixS8Setbacks${side}DeviationsNA`, fields, handleChange, isReadOnly)}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-2 py-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                className={`${inputCls} ${fields[`clixS8Setbacks${side}RemarksNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                value={fields[`clixS8Setbacks${side}RemarksNA`] ? 'NA' : (fields[`clixS8Setbacks${side}Remarks`] || '')}
+                                onChange={(e) => handleChange(`clixS8Setbacks${side}Remarks`, e.target.value)}
+                                disabled={isReadOnly || fields[`clixS8Setbacks${side}RemarksNA`]}
+                              />
+                              {renderNaToggle(`clixS8Setbacks${side}RemarksNA`, fields, handleChange, isReadOnly)}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+          </div>
+        );
+      }
     }
   ],
   defaultValues: {
@@ -1505,6 +1729,43 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     clixInteriorsDropdown: 'Good',
     clixInteriors: 'Good',
     clixInteriorsNA: false,
+    
+    // Section 8 Variables
+    clixS8BoundariesNorthAsPerDoc: '', clixS8BoundariesNorthAsPerDocNA: false,
+    clixS8BoundariesNorthAsPerSite: '', clixS8BoundariesNorthAsPerSiteNA: false,
+    clixS8BoundariesNorthDimension: '', clixS8BoundariesNorthDimensionNA: false,
+    clixS8BoundariesSouthAsPerDoc: '', clixS8BoundariesSouthAsPerDocNA: false,
+    clixS8BoundariesSouthAsPerSite: '', clixS8BoundariesSouthAsPerSiteNA: false,
+    clixS8BoundariesSouthDimension: '', clixS8BoundariesSouthDimensionNA: false,
+    clixS8BoundariesEastAsPerDoc: '', clixS8BoundariesEastAsPerDocNA: false,
+    clixS8BoundariesEastAsPerSite: '', clixS8BoundariesEastAsPerSiteNA: false,
+    clixS8BoundariesEastDimension: '', clixS8BoundariesEastDimensionNA: false,
+    clixS8BoundariesWestAsPerDoc: '', clixS8BoundariesWestAsPerDocNA: false,
+    clixS8BoundariesWestAsPerSite: '', clixS8BoundariesWestAsPerSiteNA: false,
+    clixS8BoundariesWestDimension: '', clixS8BoundariesWestDimensionNA: false,
+    clixS8DemarcationMatching: 'Yes', clixS8DemarcationMatchingNA: false,
+    clixS8DemarcationMismatchExplanation: '',
+    clixS8NotesForDemarcation: '', clixS8NotesForDemarcationNA: false,
+    clixS8SetbacksFrontApproved: '', clixS8SetbacksFrontApprovedNA: false,
+    clixS8SetbacksFrontActual: '', clixS8SetbacksFrontActualNA: false,
+    clixS8EnableSetbacksFrontDeviationsEdit: false,
+    clixS8SetbacksFrontDeviations: '', clixS8SetbacksFrontDeviationsNA: false,
+    clixS8SetbacksFrontRemarks: '', clixS8SetbacksFrontRemarksNA: false,
+    clixS8SetbacksRearApproved: '', clixS8SetbacksRearApprovedNA: false,
+    clixS8SetbacksRearActual: '', clixS8SetbacksRearActualNA: false,
+    clixS8EnableSetbacksRearDeviationsEdit: false,
+    clixS8SetbacksRearDeviations: '', clixS8SetbacksRearDeviationsNA: false,
+    clixS8SetbacksRearRemarks: '', clixS8SetbacksRearRemarksNA: false,
+    clixS8SetbacksLeftSideApproved: '', clixS8SetbacksLeftSideApprovedNA: false,
+    clixS8SetbacksLeftSideActual: '', clixS8SetbacksLeftSideActualNA: false,
+    clixS8EnableSetbacksLeftSideDeviationsEdit: false,
+    clixS8SetbacksLeftSideDeviations: '', clixS8SetbacksLeftSideDeviationsNA: false,
+    clixS8SetbacksLeftSideRemarks: '', clixS8SetbacksLeftSideRemarksNA: false,
+    clixS8SetbacksRightSideApproved: '', clixS8SetbacksRightSideApprovedNA: false,
+    clixS8SetbacksRightSideActual: '', clixS8SetbacksRightSideActualNA: false,
+    clixS8EnableSetbacksRightSideDeviationsEdit: false,
+    clixS8SetbacksRightSideDeviations: '', clixS8SetbacksRightSideDeviationsNA: false,
+    clixS8SetbacksRightSideRemarks: '', clixS8SetbacksRightSideRemarksNA: false,
   }
 };
 
