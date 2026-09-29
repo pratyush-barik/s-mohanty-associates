@@ -22,6 +22,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     { id: 'clix-section-3', title: 'Property Address' },
     { id: 'clix-section-4', title: 'Visit Details' },
     { id: 'clix-section-5', title: 'Document Details' },
+    { id: 'clix-section-6', title: 'Property Details' },
     { id: 'section-11', title: 'Photos' },
     { id: 'section-12', title: 'Maps' }
   ],
@@ -849,6 +850,442 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
               </div>
             </div>
           );
+      }
+    },
+    {
+      id: 'clix-section-6',
+      title: '6. PROPERTY DETAILS',
+      number: 6,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        // ── Sub-type options filtered by property type ──
+        const subTypeMap: Record<string, string[]> = {
+          Commercial:  ['Shop', 'Office', 'Showroom', 'Warehouse', 'Hotel/Restaurant', 'Mall/Complex'],
+          Residential: ['Apartment/Flat', 'Independent House', 'Villa', 'Row House', 'Plot'],
+          Industrial:  ['Factory', 'Workshop', 'Industrial Shed', 'Industrial Plot', 'Godown'],
+        };
+        const subTypeOptions: string[] = subTypeMap[fields.clixPropertyType] || [];
+
+        // ── Residual Age auto-calc ──
+        const ageNum = parseFloat(fields.clixAgeOfProperty || '');
+        const autoResidualAge = !isNaN(ageNum) ? String(Math.max(0, 60 - ageNum)) : '';
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-[#E0F7FA] bg-[#E0F7FA] rounded-xl p-4">
+              <h3 className="font-bold text-gray-700 mb-4">Property Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                {/* Property Type */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Property Type</span>
+                      {renderNaToggle('clixPropertyTypeNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select
+                      className={inputCls}
+                      value={fields.clixPropertyTypeNA ? 'NA' : (fields.clixPropertyType || '')}
+                      onChange={e => {
+                        handleChange('clixPropertyType', e.target.value);
+                        handleChange('clixPropertySubType', '');
+                        handleChange('clixPropertySubTypeCustom', '');
+                        if (e.target.value !== 'Custom') handleChange('clixPropertyTypeCustom', '');
+                      }}
+                      disabled={isReadOnly || !!fields.clixPropertyTypeNA}
+                    >
+                      <option value="">Select Type</option>
+                      <option value="Commercial">Commercial</option>
+                      <option value="Residential">Residential</option>
+                      <option value="Industrial">Industrial</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixPropertyType === 'Custom' && !fields.clixPropertyTypeNA && (
+                    <input type="text" placeholder="Enter property type" className={inputCls}
+                      value={fields.clixPropertyTypeCustom || ''}
+                      onChange={e => handleChange('clixPropertyTypeCustom', e.target.value)}
+                      disabled={isReadOnly} />
+                  )}
+                </div>
+
+                {/* Property Sub Type */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Property Sub Type</span>
+                      {renderNaToggle('clixPropertySubTypeNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select
+                      className={inputCls}
+                      value={fields.clixPropertySubTypeNA ? 'NA' : (fields.clixPropertySubType || '')}
+                      onChange={e => {
+                        handleChange('clixPropertySubType', e.target.value);
+                        if (e.target.value !== 'Custom') handleChange('clixPropertySubTypeCustom', '');
+                      }}
+                      disabled={isReadOnly || !!fields.clixPropertySubTypeNA}
+                    >
+                      <option value="">Select Sub Type</option>
+                      {subTypeOptions.map(o => <option key={o} value={o}>{o}</option>)}
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixPropertySubType === 'Custom' && !fields.clixPropertySubTypeNA && (
+                    <input type="text" placeholder="Enter sub type" className={inputCls}
+                      value={fields.clixPropertySubTypeCustom || ''}
+                      onChange={e => handleChange('clixPropertySubTypeCustom', e.target.value)}
+                      disabled={isReadOnly} />
+                  )}
+                </div>
+
+                {/* Type of Ownership */}
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Type of Ownership</span>
+                    {renderNaToggle('clixOwnershipTypeNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <div className="flex gap-4 h-10 items-center">
+                    {['Freehold', 'Lease Hold'].map(type => (
+                      <label key={type} className="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="clixOwnershipType" value={type}
+                          checked={fields.clixOwnershipType === type}
+                          onChange={e => handleChange('clixOwnershipType', e.target.value)}
+                          disabled={isReadOnly || !!fields.clixOwnershipTypeNA}
+                          className="text-emerald-600 focus:ring-emerald-500" />
+                        <span className="text-sm font-medium text-gray-700">{type}</span>
+                      </label>
+                    ))}
+                  </div>
+                </Field>
+
+                {/* Geo Latitude */}
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Geo Location (Latitude)</span>
+                    {renderNaToggle('clixGeoLatitudeNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <input type="text" className={inputCls}
+                    value={fields.clixGeoLatitudeNA ? 'NA' : (fields.clixGeoLatitude || '')}
+                    onChange={e => { const v = e.target.value; if (/^-?\d*\.?\d*$/.test(v)) handleChange('clixGeoLatitude', v); }}
+                    disabled={isReadOnly || !!fields.clixGeoLatitudeNA}
+                    placeholder="e.g. 28.6139" />
+                </Field>
+
+                {/* Longitude */}
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Longitude</span>
+                    {renderNaToggle('clixGeoLongitudeNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <input type="text" className={inputCls}
+                    value={fields.clixGeoLongitudeNA ? 'NA' : (fields.clixGeoLongitude || '')}
+                    onChange={e => { const v = e.target.value; if (/^-?\d*\.?\d*$/.test(v)) handleChange('clixGeoLongitude', v); }}
+                    disabled={isReadOnly || !!fields.clixGeoLongitudeNA}
+                    placeholder="e.g. 77.2090" />
+                </Field>
+
+                {/* Property ID Number */}
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Property Identification Number</span>
+                    {renderNaToggle('clixPropertyIdNumberNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <input type="text" className={inputCls}
+                    value={fields.clixPropertyIdNumberNA ? 'NA' : (fields.clixPropertyIdNumber || '')}
+                    onChange={e => handleChange('clixPropertyIdNumber', e.target.value)}
+                    disabled={isReadOnly || !!fields.clixPropertyIdNumberNA} />
+                </Field>
+
+                {/* Electricity Meter Number */}
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Electricity Meter Number</span>
+                    {renderNaToggle('clixElectricityMeterNoNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <input type="text" className={inputCls}
+                    value={fields.clixElectricityMeterNoNA ? 'NA' : (fields.clixElectricityMeterNo || '')}
+                    onChange={e => handleChange('clixElectricityMeterNo', e.target.value)}
+                    disabled={isReadOnly || !!fields.clixElectricityMeterNoNA} />
+                </Field>
+
+                {/* Distance from city center */}
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Distance from City Center</span>
+                    {renderNaToggle('clixDistanceFromCityNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <div className="flex items-center gap-2">
+                    <input type="text" className={`${inputCls} flex-1`}
+                      value={fields.clixDistanceFromCityNA ? 'NA' : (fields.clixDistanceFromCity || '')}
+                      onChange={e => { const v = e.target.value; if (/^\d*\.?\d*$/.test(v)) handleChange('clixDistanceFromCity', v); }}
+                      disabled={isReadOnly || !!fields.clixDistanceFromCityNA}
+                      placeholder="0.0" />
+                    <span className="text-sm font-semibold text-gray-500 shrink-0">Kms</span>
+                  </div>
+                </Field>
+
+                {/* Distance from branch */}
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Distance from Branch</span>
+                    {renderNaToggle('clixDistanceFromBranchNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <div className="flex items-center gap-2">
+                    <input type="text" className={`${inputCls} flex-1`}
+                      value={fields.clixDistanceFromBranchNA ? 'NA' : (fields.clixDistanceFromBranch || '')}
+                      onChange={e => { const v = e.target.value; if (/^\d*\.?\d*$/.test(v)) handleChange('clixDistanceFromBranch', v); }}
+                      disabled={isReadOnly || !!fields.clixDistanceFromBranchNA}
+                      placeholder="0.0" />
+                    <span className="text-sm font-semibold text-gray-500 shrink-0">Kms</span>
+                  </div>
+                </Field>
+
+                {/* Property Location */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Property Location (MC/BDA/GP/DTCP etc.)</span>
+                      {renderNaToggle('clixPropertyLocationNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls}
+                      value={fields.clixPropertyLocationNA ? 'NA' : (fields.clixPropertyLocation || '')}
+                      onChange={e => {
+                        handleChange('clixPropertyLocation', e.target.value);
+                        if (e.target.value !== 'Custom') handleChange('clixPropertyLocationCustom', '');
+                      }}
+                      disabled={isReadOnly || !!fields.clixPropertyLocationNA}>
+                      <option value="">Select Location Type</option>
+                      <option value="MC">MC (Municipal Corporation)</option>
+                      <option value="BDA">BDA (Development Authority)</option>
+                      <option value="GP">GP (Gram Panchayat)</option>
+                      <option value="DTCP">DTCP</option>
+                      <option value="HMDA">HMDA</option>
+                      <option value="CMDA">CMDA</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixPropertyLocation === 'Custom' && !fields.clixPropertyLocationNA && (
+                    <input type="text" placeholder="Enter location type" className={inputCls}
+                      value={fields.clixPropertyLocationCustom || ''}
+                      onChange={e => handleChange('clixPropertyLocationCustom', e.target.value)}
+                      disabled={isReadOnly} />
+                  )}
+                </div>
+
+                {/* Access Road */}
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Access Road</span>
+                    {renderNaToggle('clixAccessRoadNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <input type="text" className={inputCls}
+                    value={fields.clixAccessRoadNA ? 'NA' : (fields.clixAccessRoad || '')}
+                    onChange={e => handleChange('clixAccessRoad', e.target.value)}
+                    disabled={isReadOnly || !!fields.clixAccessRoadNA} />
+                </Field>
+
+                {/* Surrounding Infrastructure */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Surrounding Infrastructure</span>
+                      {renderNaToggle('clixSurroundingInfraNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls}
+                      value={fields.clixSurroundingInfraNA ? 'NA' : (fields.clixSurroundingInfra || '')}
+                      onChange={e => {
+                        handleChange('clixSurroundingInfra', e.target.value);
+                        if (e.target.value !== 'Custom') handleChange('clixSurroundingInfraCustom', '');
+                      }}
+                      disabled={isReadOnly || !!fields.clixSurroundingInfraNA}>
+                      <option value="">Select</option>
+                      <option value="Good">Good</option>
+                      <option value="Average">Average</option>
+                      <option value="Poor">Poor</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixSurroundingInfra === 'Custom' && !fields.clixSurroundingInfraNA && (
+                    <input type="text" placeholder="Enter description" className={inputCls}
+                      value={fields.clixSurroundingInfraCustom || ''}
+                      onChange={e => handleChange('clixSurroundingInfraCustom', e.target.value)}
+                      disabled={isReadOnly} />
+                  )}
+                </div>
+
+                {/* Class of Locality */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Class of Locality</span>
+                      {renderNaToggle('clixClassOfLocalityNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls}
+                      value={fields.clixClassOfLocalityNA ? 'NA' : (fields.clixClassOfLocality || '')}
+                      onChange={e => {
+                        handleChange('clixClassOfLocality', e.target.value);
+                        if (e.target.value !== 'Custom') handleChange('clixClassOfLocalityCustom', '');
+                      }}
+                      disabled={isReadOnly || !!fields.clixClassOfLocalityNA}>
+                      <option value="">Select</option>
+                      <option value="Good">Good</option>
+                      <option value="Average">Average</option>
+                      <option value="Poor">Poor</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixClassOfLocality === 'Custom' && !fields.clixClassOfLocalityNA && (
+                    <input type="text" placeholder="Enter description" className={inputCls}
+                      value={fields.clixClassOfLocalityCustom || ''}
+                      onChange={e => handleChange('clixClassOfLocalityCustom', e.target.value)}
+                      disabled={isReadOnly} />
+                  )}
+                </div>
+
+                {/* Permitted Usage / Zoning */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Permitted Usage / Zoning as per master plan</span>
+                      {renderNaToggle('clixPermittedUsageNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls}
+                      value={fields.clixPermittedUsageNA ? 'NA' : (fields.clixPermittedUsage || '')}
+                      onChange={e => {
+                        handleChange('clixPermittedUsage', e.target.value);
+                        if (e.target.value !== 'Custom') handleChange('clixPermittedUsageCustom', '');
+                      }}
+                      disabled={isReadOnly || !!fields.clixPermittedUsageNA}>
+                      <option value="">Select Zone</option>
+                      <option value="Residential">Residential</option>
+                      <option value="Commercial">Commercial</option>
+                      <option value="Industrial">Industrial</option>
+                      <option value="Mixed Use">Mixed Use</option>
+                      <option value="Agricultural">Agricultural</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixPermittedUsage === 'Custom' && !fields.clixPermittedUsageNA && (
+                    <input type="text" placeholder="Enter permitted usage" className={inputCls}
+                      value={fields.clixPermittedUsageCustom || ''}
+                      onChange={e => handleChange('clixPermittedUsageCustom', e.target.value)}
+                      disabled={isReadOnly} />
+                  )}
+                </div>
+
+                {/* Existing Usage — prefill from Permitted Usage */}
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span>Existing Usage</span>
+                      {renderNaToggle('clixExistingUsageNA', fields, handleChange, isReadOnly)}
+                    </div>
+                    {renderEditSwitch('clixExistingUsageEdit', fields, handleChange, isReadOnly, !!fields.clixExistingUsageNA)}
+                  </div>
+                }>
+                  <div className="relative">
+                    <input type="text"
+                      title={!fields.clixExistingUsageEdit && !fields.clixExistingUsageNA ? 'Prefill from section 6, "Permitted Usage / Zoning as per master plan"' : undefined}
+                      className={`${inputCls} pr-10 ${fields.clixExistingUsageEdit && !fields.clixExistingUsageNA ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`}
+                      value={fields.clixExistingUsageNA ? 'NA' : (fields.clixExistingUsageEdit ? (fields.clixExistingUsage || '') : (fields.clixPermittedUsage || ''))}
+                      onChange={e => handleChange('clixExistingUsage', e.target.value)}
+                      disabled={isReadOnly || !!fields.clixExistingUsageNA || !fields.clixExistingUsageEdit} />
+                    {!fields.clixExistingUsageEdit && !fields.clixExistingUsageNA && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-help" title='Prefill from section 6, "Permitted Usage / Zoning as per master plan"'>
+                        <Lock className="w-5 h-5 text-emerald-800" />
+                      </div>
+                    )}
+                  </div>
+                </Field>
+
+                {/* Age of Property */}
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Age of Property (Years)</span>
+                    {renderNaToggle('clixAgeOfPropertyNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <input type="text" className={inputCls}
+                    value={fields.clixAgeOfPropertyNA ? 'NA' : (fields.clixAgeOfProperty || '')}
+                    onChange={e => { const v = e.target.value; if (/^\d*\.?\d*$/.test(v)) handleChange('clixAgeOfProperty', v); }}
+                    disabled={isReadOnly || !!fields.clixAgeOfPropertyNA}
+                    placeholder="e.g. 10" />
+                </Field>
+
+                {/* Residual Age — auto-calc: 60 - Age */}
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span>Residual Age (Years)</span>
+                      {renderNaToggle('clixResidualAgeNA', fields, handleChange, isReadOnly)}
+                    </div>
+                    {renderEditSwitch('clixResidualAgeEdit', fields, handleChange, isReadOnly, !!fields.clixResidualAgeNA)}
+                  </div>
+                }>
+                  <div className="relative">
+                    <input type="text"
+                      title={!fields.clixResidualAgeEdit && !fields.clixResidualAgeNA ? 'Auto calculating from [Standard Life Expectancy (60) - Age of Property]' : undefined}
+                      className={`${inputCls} pr-10 ${fields.clixResidualAgeEdit && !fields.clixResidualAgeNA ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`}
+                      value={fields.clixResidualAgeNA ? 'NA' : (fields.clixResidualAgeEdit ? (fields.clixResidualAge || '') : autoResidualAge)}
+                      onChange={e => { const v = e.target.value; if (/^\d*\.?\d*$/.test(v)) handleChange('clixResidualAge', v); }}
+                      disabled={isReadOnly || !!fields.clixResidualAgeNA || !fields.clixResidualAgeEdit}
+                      placeholder="Auto" />
+                    {!fields.clixResidualAgeEdit && !fields.clixResidualAgeNA && (
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 cursor-help" title='Auto calculating from [Standard Life Expectancy (60) - Age of Property]'>
+                        <Lock className="w-5 h-5 text-emerald-800" />
+                      </div>
+                    )}
+                  </div>
+                </Field>
+
+                {/* Marketability */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Marketability</span>
+                      {renderNaToggle('clixMarketabilityNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls}
+                      value={fields.clixMarketabilityNA ? 'NA' : (fields.clixMarketability || '')}
+                      onChange={e => {
+                        handleChange('clixMarketability', e.target.value);
+                        if (e.target.value !== 'Custom') handleChange('clixMarketabilityCustom', '');
+                      }}
+                      disabled={isReadOnly || !!fields.clixMarketabilityNA}>
+                      <option value="">Select</option>
+                      <option value="Easy">Easy</option>
+                      <option value="Moderate">Moderate</option>
+                      <option value="Difficult">Difficult</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixMarketability === 'Custom' && !fields.clixMarketabilityNA && (
+                    <input type="text" placeholder="Enter marketability" className={inputCls}
+                      value={fields.clixMarketabilityCustom || ''}
+                      onChange={e => handleChange('clixMarketabilityCustom', e.target.value)}
+                      disabled={isReadOnly} />
+                  )}
+                </div>
+
+              </div>
+            </div>
+          </div>
+        );
       }
     }
   ],
