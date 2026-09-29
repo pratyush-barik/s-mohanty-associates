@@ -184,13 +184,14 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                     <div className="relative">
                       <input
                         type="text"
+                        title={!fields.clixBorrowerRepNameEdit && !fields.clixBorrowerRepNameNA ? 'Prefill from section 2, "Borrower Name"' : undefined}
                         className={`${inputCls} pr-10 ${fields.clixBorrowerRepNameEdit && !fields.clixBorrowerRepNameNA ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`}
                         value={fields.clixBorrowerRepNameNA ? 'NA' : (fields.clixBorrowerRepNameEdit ? (fields.clixBorrowerRepName || '') : (fields.clixRepSameAsBorrower ? (fields.clixBorrowerName || '') : (fields.clixBorrowerRepName || '')))}
                         onChange={e => handleChange('clixBorrowerRepName', e.target.value)}
                         disabled={isReadOnly || !!fields.clixBorrowerRepNameNA || !fields.clixBorrowerRepNameEdit}
                       />
                       {!fields.clixBorrowerRepNameEdit && !fields.clixBorrowerRepNameNA && (
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from section 2, "Borrower Name"'>
                           <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                         </div>
                       )}
@@ -210,6 +211,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       <input
                         type="text"
                         maxLength={10}
+                        title={!fields.clixBorrowerRepContactNoEdit && !fields.clixBorrowerRepContactNoNA ? 'Prefill from section 2, "Borrower Contact No"' : undefined}
                         className={`${inputCls} pr-10 ${fields.clixBorrowerRepContactNoEdit && !fields.clixBorrowerRepContactNoNA ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`}
                         value={fields.clixBorrowerRepContactNoNA ? 'NA' : (fields.clixBorrowerRepContactNoEdit ? (fields.clixBorrowerRepContactNo || '') : (fields.clixRepSameAsBorrower ? (fields.clixBorrowerContactNo || '') : (fields.clixBorrowerRepContactNo || '')))}
                         onChange={e => {
@@ -219,7 +221,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                         disabled={isReadOnly || !!fields.clixBorrowerRepContactNoNA || !fields.clixBorrowerRepContactNoEdit}
                       />
                       {!fields.clixBorrowerRepContactNoEdit && !fields.clixBorrowerRepContactNoNA && (
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help">
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from section 2, "Borrower Contact No"'>
                           <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                         </div>
                       )}
@@ -301,10 +303,10 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                           value={fields.clixPropertyAddressSiteEdit ? (fields.clixPropertyAddressSite || '') : (fields.clixPropertyAddressInitiation || '')} 
                           onChange={e => handleChange('clixPropertyAddressSite', e.target.value)} 
                           disabled={isReadOnly || !fields.clixPropertyAddressSiteEdit} 
-                          title='>>Prefill from "Property Address (as per initiation)"<<'
+                          title={!fields.clixPropertyAddressSiteEdit ? 'Prefill from section 3, "Property Address (as per initiation)"' : undefined}
                         />
                         {!fields.clixPropertyAddressSiteEdit && (
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from "Property Address (as per initiation)"<<'>
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from section 3, "Property Address (as per initiation)"'>
                             <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                           </div>
                         )}
@@ -326,10 +328,10 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                           value={fields.clixPropertyAddressDocsEdit ? (fields.clixPropertyAddressDocs || '') : (fields.clixPropertyAddressInitiation || '')} 
                           onChange={e => handleChange('clixPropertyAddressDocs', e.target.value)} 
                           disabled={isReadOnly || !fields.clixPropertyAddressDocsEdit} 
-                          title='>>Prefill from "Property Address (as per initiation)"<<'
+                          title={!fields.clixPropertyAddressDocsEdit ? 'Prefill from section 3, "Property Address (as per initiation)"' : undefined}
                         />
                         {!fields.clixPropertyAddressDocsEdit && (
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from "Property Address (as per initiation)"<<'>
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from section 3, "Property Address (as per initiation)"'>
                             <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
                           </div>
                         )}
