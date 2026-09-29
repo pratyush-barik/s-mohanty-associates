@@ -1575,14 +1575,14 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     }
 
     // B. Plinth Area Floor-Wise
+    this.drawBandhanSpannedRow('B.', 'PLINTH AREA FLOOR-WISE:');
     if (floors.length > 0) {
-      this.drawBandhanSpannedRow('B.', 'PLINTH AREA FLOOR-WISE:');
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
         this.drawBandhanRow(rom, `PLINTH AREA (${fl.floorName.toUpperCase()}):`, fl.plinthArea ? `${fl.plinthArea} Sft.` : '');
       });
     } else {
-      this.drawBandhanRow('B.', 'PLINTH AREA FLOOR-WISE:', 'Not Applicable');
+      this.drawBandhanRow('', 'PLINTH AREA:', 'Not Applicable', true, false);
     }
 
     // C. Condition of Building
@@ -1592,36 +1592,36 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('D.', 'TYPE OF FOUNDATIONS:', fields.foundationType || 'Column Foundation');
 
     // E. Doors and Windows Floor-Wise
+    this.drawBandhanSpannedRow('E.', 'DOORS AND WINDOWS (FLOOR-WISE):');
     if (floors.length > 0) {
-      this.drawBandhanSpannedRow('E.', 'DOORS AND WINDOWS (FLOOR-WISE):');
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
         this.drawBandhanRow(rom, `DOORS AND WINDOWS (${fl.floorName.toUpperCase()}):`, fl.doorsWindows || 'Sal wood choukath with non sal wood shutter');
       });
     } else {
-      this.drawBandhanRow('E.', 'DOORS AND WINDOWS (FLOOR-WISE):', 'Not Applicable');
+      this.drawBandhanRow('', 'DOORS AND WINDOWS:', 'Not Applicable', true, false);
     }
 
     // F. Flooring Floor-Wise
+    this.drawBandhanSpannedRow('F.', 'FLOORING (FLOOR-WISE):');
     if (floors.length > 0) {
-      this.drawBandhanSpannedRow('F.', 'FLOORING (FLOOR-WISE):');
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
         this.drawBandhanRow(rom, `FLOORING (${fl.floorName.toUpperCase()}):`, fl.flooring || 'VT Flooring');
       });
     } else {
-      this.drawBandhanRow('F.', 'FLOORING (FLOOR-WISE):', 'Not Applicable');
+      this.drawBandhanRow('', 'FLOORING:', 'Not Applicable', true, false);
     }
 
     // G. Wall Finishing Floor-Wise
+    this.drawBandhanSpannedRow('G.', 'WALL FINISHING (FLOOR-WISE):');
     if (floors.length > 0) {
-      this.drawBandhanSpannedRow('G.', 'WALL FINISHING (FLOOR-WISE):');
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
         this.drawBandhanRow(rom, `WALL FINISHING (${fl.floorName.toUpperCase()}):`, fl.wallFinishing || 'Cement Plastering, Putty, Painting');
       });
     } else {
-      this.drawBandhanRow('G.', 'WALL FINISHING (FLOOR-WISE):', 'Not Applicable');
+      this.drawBandhanRow('', 'WALL FINISHING:', 'Not Applicable', true, false);
     }
 
     // 3. Construction Specifications
