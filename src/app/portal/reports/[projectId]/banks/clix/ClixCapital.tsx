@@ -20,6 +20,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     { id: 'clix-section-1', title: 'Report Type' },
     { id: 'clix-section-2', title: 'Customer Details' },
     { id: 'clix-section-3', title: 'Property Address' },
+    { id: 'clix-section-4', title: 'Visit Details' },
     { id: 'section-11', title: 'Photos' },
     { id: 'section-12', title: 'Maps' }
   ],
@@ -468,6 +469,144 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       disabled={isReadOnly}
                     />
                   </Field>
+                </div>
+              </div>
+            </div>
+          );
+      }
+    },
+
+    {
+      id: 'clix-section-4',
+      title: 'Visit Details',
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        return (
+            <div className="animate-fade-in space-y-6">
+              <div className="border border-[#fffde7] bg-[#fffde7] rounded-xl p-4">
+                <h3 className="font-bold text-gray-700 mb-4">Visit Details</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <div className="flex items-center">
+                        <span>Contact Person Name</span>
+                        {renderNaToggle('clixContactPersonNameNA', fields, handleChange, isReadOnly)}
+                      </div>
+                      {renderEditSwitch('clixContactPersonNameEdit', fields, handleChange, isReadOnly, !!fields.clixContactPersonNameNA)}
+                    </div>
+                  }>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        title={!fields.clixContactPersonNameEdit && !fields.clixContactPersonNameNA ? 'Prefill from section 2, "Borrower Representative Name"' : undefined}
+                        className={`${inputCls} pr-10 ${fields.clixContactPersonNameEdit && !fields.clixContactPersonNameNA ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`}
+                        value={fields.clixContactPersonNameNA ? 'NA' : (fields.clixContactPersonNameEdit ? (fields.clixContactPersonName || '') : (fields.clixBorrowerRepName || ''))}
+                        onChange={e => handleChange('clixContactPersonName', e.target.value)}
+                        disabled={isReadOnly || !!fields.clixContactPersonNameNA || !fields.clixContactPersonNameEdit}
+                      />
+                      {!fields.clixContactPersonNameEdit && !fields.clixContactPersonNameNA && (
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from section 2, "Borrower Representative Name"'>
+                          <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                        </div>
+                      )}
+                    </div>
+                  </Field>
+
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <div className="flex items-center">
+                        <span>Contact Person Mobile No</span>
+                        {renderNaToggle('clixContactPersonMobileNoNA', fields, handleChange, isReadOnly)}
+                      </div>
+                      {renderEditSwitch('clixContactPersonMobileNoEdit', fields, handleChange, isReadOnly, !!fields.clixContactPersonMobileNoNA)}
+                    </div>
+                  }>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        maxLength={10}
+                        title={!fields.clixContactPersonMobileNoEdit && !fields.clixContactPersonMobileNoNA ? 'Prefill from section 2, "Borrower Rep Contact No"' : undefined}
+                        className={`${inputCls} pr-10 ${fields.clixContactPersonMobileNoEdit && !fields.clixContactPersonMobileNoNA ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`}
+                        value={fields.clixContactPersonMobileNoNA ? 'NA' : (fields.clixContactPersonMobileNoEdit ? (fields.clixContactPersonMobileNo || '') : (fields.clixBorrowerRepContactNo || ''))}
+                        onChange={e => {
+                          const val = e.target.value.replace(/\D/g, '');
+                          handleChange('clixContactPersonMobileNo', val);
+                        }}
+                        disabled={isReadOnly || !!fields.clixContactPersonMobileNoNA || !fields.clixContactPersonMobileNoEdit}
+                      />
+                      {!fields.clixContactPersonMobileNoEdit && !fields.clixContactPersonMobileNoNA && (
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from section 2, "Borrower Rep Contact No"'>
+                          <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                        </div>
+                      )}
+                    </div>
+                  </Field>
+
+                  <div className="flex flex-col gap-2">
+                    <Field label="Relationship with Customer">
+                      <select
+                        className={inputCls}
+                        value={fields.clixRelationshipWithCustomer || ''}
+                        onChange={e => {
+                          handleChange('clixRelationshipWithCustomer', e.target.value);
+                          if (e.target.value !== 'Custom') {
+                            handleChange('clixRelationshipWithCustomerCustom', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      >
+                        <option value="">Select Relationship</option>
+                        <option value="Self">Self</option>
+                        <option value="Relative">Relative</option>
+                        <option value="Employee">Employee</option>
+                        <option value="NA">NA</option>
+                        <option value="Custom">Custom</option>
+                      </select>
+                    </Field>
+                    {fields.clixRelationshipWithCustomer === 'Custom' && (
+                      <input
+                        type="text"
+                        placeholder="Enter custom relationship"
+                        className={inputCls}
+                        value={fields.clixRelationshipWithCustomerCustom || ''}
+                        onChange={e => handleChange('clixRelationshipWithCustomerCustom', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    )}
+                  </div>
+
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>ID Proof details</span>
+                      {renderNaToggle('clixIdProofDetailsNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.clixIdProofDetailsNA ? 'NA' : (fields.clixIdProofDetails || '')}
+                      onChange={e => handleChange('clixIdProofDetails', e.target.value)}
+                      disabled={isReadOnly || !!fields.clixIdProofDetailsNA}
+                    />
+                  </Field>
+
+                  <div className="col-span-1 md:col-span-2">
+                    <Field label={
+                      <div className="w-full flex items-center justify-between">
+                        <span>Property identified through</span>
+                        {renderNaToggle('clixPropertyIdentifiedThroughNA', fields, handleChange, isReadOnly)}
+                      </div>
+                    }>
+                      <textarea
+                        className={`${inputCls} resize-y min-h-15`}
+                        rows={2}
+                        value={fields.clixPropertyIdentifiedThroughNA ? 'NA' : (fields.clixPropertyIdentifiedThrough || '')}
+                        onChange={e => handleChange('clixPropertyIdentifiedThrough', e.target.value)}
+                        disabled={isReadOnly || !!fields.clixPropertyIdentifiedThroughNA}
+                      />
+                    </Field>
+                  </div>
+
                 </div>
               </div>
             </div>
