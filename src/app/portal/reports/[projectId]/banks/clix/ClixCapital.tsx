@@ -17,6 +17,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
   navSections: [
     { id: 'section-cover', title: 'COVER PAGE' },
     { id: 'clix-section-1', title: 'Report Type' },
+    { id: 'clix-section-2', title: 'Customer Details' },
     { id: 'section-11', title: 'Photos' },
     { id: 'section-12', title: 'Maps' }
   ],
@@ -87,6 +88,113 @@ export default function ClixCapital(props: BankReportBuilderProps) {
                       className={inputCls}
                       value={fields.clixCollateralId || ''}
                       onChange={e => handleChange('clixCollateralId', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
+        if (sectionId === 'clix-section-2') {
+          return (
+            <div className="animate-fade-in space-y-6">
+              <div className="border border-[#E3F2FD] bg-[#E3F2FD] rounded-xl p-4">
+                <h3 className="font-bold text-gray-700 mb-4">Customer Details</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Field label="Borrower Name">
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.clixBorrowerName || ''}
+                      onChange={e => handleChange('clixBorrowerName', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+                  
+                  <Field label="Borrower Contact No">
+                    <input
+                      type="text"
+                      maxLength={10}
+                      className={inputCls}
+                      value={fields.clixBorrowerContactNo || ''}
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        handleChange('clixBorrowerContactNo', val);
+                      }}
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+
+                  <div className="col-span-1 md:col-span-2">
+                    <label className="flex items-center gap-2 cursor-pointer mt-2">
+                      <input
+                        type="checkbox"
+                        className="rounded text-emerald-600 focus:ring-emerald-500"
+                        checked={!!fields.clixRepSameAsBorrower}
+                        onChange={e => {
+                          const checked = e.target.checked;
+                          handleChange('clixRepSameAsBorrower', checked);
+                          if (checked) {
+                            handleChange('clixBorrowerRepName', fields.clixBorrowerName || '');
+                            handleChange('clixBorrowerRepContactNo', fields.clixBorrowerContactNo || '');
+                          } else {
+                            handleChange('clixBorrowerRepName', '');
+                            handleChange('clixBorrowerRepContactNo', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                      <span className="text-sm font-medium text-gray-700">Representative same as Borrower</span>
+                    </label>
+                  </div>
+
+                  <Field label="Borrower Representative Name">
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.clixBorrowerRepName || ''}
+                      onChange={e => handleChange('clixBorrowerRepName', e.target.value)}
+                      disabled={isReadOnly || !!fields.clixRepSameAsBorrower}
+                    />
+                  </Field>
+                  
+                  <Field label="Borrower Rep Contact No">
+                    <input
+                      type="text"
+                      maxLength={10}
+                      className={inputCls}
+                      value={fields.clixBorrowerRepContactNo || ''}
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        handleChange('clixBorrowerRepContactNo', val);
+                      }}
+                      disabled={isReadOnly || !!fields.clixRepSameAsBorrower}
+                    />
+                  </Field>
+                  
+                  <Field label="Relationship Manager Name">
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.clixRmName || ''}
+                      onChange={e => handleChange('clixRmName', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </Field>
+                  
+                  <Field label="Relationship Manager Contact No">
+                    <input
+                      type="text"
+                      maxLength={10}
+                      className={inputCls}
+                      value={fields.clixRmContactNo || ''}
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '');
+                        handleChange('clixRmContactNo', val);
+                      }}
                       disabled={isReadOnly}
                     />
                   </Field>

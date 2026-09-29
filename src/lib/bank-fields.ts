@@ -84,6 +84,14 @@ export interface BaseReportFields {
   clixLoanType?: string;
   clixApplicationNo?: string;
   clixCollateralId?: string;
+  clixBorrowerName?: string;
+  clixBorrowerContactNo?: string;
+  clixBorrowerRepName?: string;
+  clixBorrowerRepContactNo?: string;
+  clixRmName?: string;
+  clixRmContactNo?: string;
+  clixRepSameAsBorrower?: boolean;
+
 
   // Section 1 – General Details
   propertyType: string;
