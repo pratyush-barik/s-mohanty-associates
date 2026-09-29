@@ -73,24 +73,43 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                     )}
                   </div>
 
-                  <Field label="LAP/HL/Top up">
-                    <div className="flex gap-4 h-10 items-center">
-                      {['LAP', 'HL', 'Top up'].map((type) => (
-                        <label key={type} className="flex items-center gap-2 cursor-pointer">
+                  <div className="md:col-span-2">
+                    <Field label="LAP/HL/Top up">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex flex-wrap gap-4 items-center">
+                          {['LAP', 'HL', 'Top up', 'Others'].map((type) => (
+                            <label key={type} className="flex items-center gap-2 cursor-pointer h-10">
+                              <input
+                                type="radio"
+                                name="clixLoanType"
+                                value={type}
+                                checked={fields.clixLoanType === type}
+                                onChange={(e) => {
+                                  handleChange('clixLoanType', e.target.value);
+                                  if (e.target.value !== 'Others') {
+                                    handleChange('clixLoanTypeOthers', '');
+                                  }
+                                }}
+                                disabled={isReadOnly}
+                                className="text-emerald-600 focus:ring-emerald-500"
+                              />
+                              <span className="text-sm font-medium text-gray-700">{type}</span>
+                            </label>
+                          ))}
+                        </div>
+                        {fields.clixLoanType === 'Others' && (
                           <input
-                            type="radio"
-                            name="clixLoanType"
-                            value={type}
-                            checked={fields.clixLoanType === type}
-                            onChange={(e) => handleChange('clixLoanType', e.target.value)}
+                            type="text"
+                            placeholder="Enter custom loan type"
+                            className={inputCls}
+                            value={fields.clixLoanTypeOthers || ''}
+                            onChange={(e) => handleChange('clixLoanTypeOthers', e.target.value)}
                             disabled={isReadOnly}
-                            className="text-emerald-600 focus:ring-emerald-500"
                           />
-                          <span className="text-sm font-medium text-gray-700">{type}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </Field>
+                        )}
+                      </div>
+                    </Field>
+                  </div>
 
                   <Field label={
                     <div className="w-full flex items-center justify-between">
@@ -102,7 +121,10 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       type="text"
                       className={inputCls}
                       value={fields.clixApplicationNoNA ? 'NA' : (fields.clixApplicationNo || '')}
-                      onChange={e => handleChange('clixApplicationNo', e.target.value)}
+                      onChange={e => {
+                        const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                        handleChange('clixApplicationNo', val);
+                      }}
                       disabled={isReadOnly || !!fields.clixApplicationNoNA}
                     />
                   </Field>
@@ -117,7 +139,10 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       type="text"
                       className={inputCls}
                       value={fields.clixCollateralIdNA ? 'NA' : (fields.clixCollateralId || '')}
-                      onChange={e => handleChange('clixCollateralId', e.target.value)}
+                      onChange={e => {
+                        const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                        handleChange('clixCollateralId', val);
+                      }}
                       disabled={isReadOnly || !!fields.clixCollateralIdNA}
                     />
                   </Field>
@@ -2675,6 +2700,10 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
         const autoValuer = fields.reportAgentName || fields.fieldAgentName || 'S Mohanty Associates';
         const finalValuer = isValuerEdit ? (fields.clixS12ValuerName || '') : autoValuer;
 
+        const isPlaceEdit = fields.clixEnableS12PlaceEdit;
+        const autoPlace = fields.clixS6City || 'Bhubaneswar';
+        const finalPlace = isPlaceEdit ? (fields.clixS12Place || '') : autoPlace;
+
         const attachmentOpts = [
           'Photographs of Property',
           'Location Map',
@@ -2683,6 +2712,17 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
           'Approved Building Plan',
           'Custom'
         ];
+
+        const legalDocs = fields.clixLegalDocs || [];
+        const hasAvailableLegalDoc = legalDocs.some((d: any) => d.status === 'Available');
+        const hasAvailableApprovedPlan = legalDocs.some((d: any) => d.docName === 'Approved Plan' && d.status === 'Available');
+        const hasAvailableSketchMap = legalDocs.some((d: any) => d.docName === 'Sketch Map' && d.status === 'Available');
+        
+        const autoSelectedAttachments: string[] = [];
+        if (hasAvailableLegalDoc) autoSelectedAttachments.push('Copy of Legal Documents');
+        if (hasAvailableApprovedPlan) autoSelectedAttachments.push('Approved Building Plan');
+        if (hasAvailableSketchMap) autoSelectedAttachments.push('Site Sketch');
+        
         const selectedAttachments: string[] = fields.clixS12Attachments || [];
 
         const toggleAttachment = (opt: string) => {
@@ -2691,6 +2731,38 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
           } else {
             handleChange('clixS12Attachments', [...selectedAttachments, opt]);
           }
+        };
+
+        const RichTextEditor = ({ value, onChange, disabled, className, na }: any) => {
+          const editorRef = React.useRef<HTMLDivElement>(null);
+          React.useEffect(() => {
+            if (editorRef.current && value !== editorRef.current.innerHTML) {
+              editorRef.current.innerHTML = value || '';
+            }
+          }, [value]);
+          const exec = (command: string, arg?: string) => {
+            document.execCommand(command, false, arg);
+            editorRef.current?.focus();
+            onChange(editorRef.current?.innerHTML || '');
+          };
+          if (na) return <textarea className={`\${className} bg-gray-100 cursor-not-allowed`} value="NA" disabled rows={3} />;
+          return (
+            <div className={`border rounded flex flex-col overflow-hidden \${className}`}>
+              <div className="flex items-center gap-1 p-1 border-b bg-gray-50 text-gray-600">
+                <button type="button" onClick={() => exec('bold')} disabled={disabled} className="p-1 hover:bg-gray-200 rounded px-2 font-bold">B</button>
+                <button type="button" onClick={() => exec('italic')} disabled={disabled} className="p-1 hover:bg-gray-200 rounded px-2 italic">I</button>
+                <button type="button" onClick={() => exec('insertUnorderedList')} disabled={disabled} className="p-1 hover:bg-gray-200 rounded px-2">•</button>
+                <button type="button" onClick={() => exec('insertOrderedList')} disabled={disabled} className="p-1 hover:bg-gray-200 rounded px-2">1.</button>
+              </div>
+              <div
+                ref={editorRef}
+                contentEditable={!disabled}
+                className={`p-2 min-h-[80px] outline-none \${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                onInput={(e) => onChange(e.currentTarget.innerHTML)}
+                onBlur={(e) => onChange(e.currentTarget.innerHTML)}
+              />
+            </div>
+          );
         };
 
         return (
@@ -2707,12 +2779,12 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       {renderNaToggle('clixS12GeneralRemarksNA', fields, handleChange, isReadOnly)}
                     </div>
                   }>
-                    <textarea 
-                      className={`\${inputCls} min-h-[80px] \${fields.clixS12GeneralRemarksNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                      value={fields.clixS12GeneralRemarksNA ? 'NA' : (fields.clixS12GeneralRemarks || '')}
-                      onChange={(e) => handleChange('clixS12GeneralRemarks', e.target.value)}
+                    <RichTextEditor
+                      className={inputCls}
+                      value={fields.clixS12GeneralRemarks || ''}
+                      onChange={(v: string) => handleChange('clixS12GeneralRemarks', v)}
                       disabled={isReadOnly || fields.clixS12GeneralRemarksNA}
-                      rows={3}
+                      na={fields.clixS12GeneralRemarksNA}
                     />
                   </Field>
                 </div>
@@ -2724,12 +2796,12 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       {renderNaToggle('clixS12LegalIssuesNA', fields, handleChange, isReadOnly)}
                     </div>
                   }>
-                    <textarea 
-                      className={`\${inputCls} min-h-[80px] \${fields.clixS12LegalIssuesNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                      value={fields.clixS12LegalIssuesNA ? 'NA' : (fields.clixS12LegalIssues || '')}
-                      onChange={(e) => handleChange('clixS12LegalIssues', e.target.value)}
+                    <RichTextEditor
+                      className={inputCls}
+                      value={fields.clixS12LegalIssues || ''}
+                      onChange={(v: string) => handleChange('clixS12LegalIssues', v)}
                       disabled={isReadOnly || fields.clixS12LegalIssuesNA}
-                      rows={3}
+                      na={fields.clixS12LegalIssuesNA}
                     />
                   </Field>
                 </div>
@@ -2781,34 +2853,46 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                   }>
                     <div className={`flex flex-wrap gap-2 p-3 border rounded-md \${fields.clixS12AttachmentsNA ? 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-60' : 'bg-white border-slate-300'}`}>
                       {attachmentOpts.map(opt => {
-                        const isSelected = selectedAttachments.includes(opt);
+                        const isAutoSelected = autoSelectedAttachments.includes(opt);
+                        const isManuallySelected = selectedAttachments.includes(opt);
+                        const isSelected = isAutoSelected || isManuallySelected;
+                        
                         return (
-                          <label 
-                            key={opt}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm cursor-pointer transition-colors \${
-                              isSelected 
-                                ? 'bg-emerald-100 border-emerald-300 text-emerald-800 font-medium' 
-                                : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-                            }`}
-                          >
-                            <input 
-                              type="checkbox"
-                              className="hidden"
-                              checked={isSelected}
-                              onChange={() => toggleAttachment(opt)}
-                              disabled={isReadOnly || fields.clixS12AttachmentsNA}
-                            />
-                            {isSelected && (
-                              <svg className="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                              </svg>
+                          <div key={opt} className="relative group">
+                            <label 
+                              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm cursor-pointer transition-colors \${
+                                isSelected 
+                                  ? 'bg-emerald-100 border-emerald-300 text-emerald-800 font-medium' 
+                                  : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                              }`}
+                            >
+                              <input 
+                                type="checkbox"
+                                className="hidden"
+                                checked={isSelected}
+                                onChange={() => toggleAttachment(opt)}
+                                disabled={isReadOnly || fields.clixS12AttachmentsNA}
+                              />
+                              {isSelected && (
+                                <svg className="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                                </svg>
+                              )}
+                              {opt}
+                              {isAutoSelected && (
+                                <Lock className="w-3 h-3 text-emerald-700 ml-1" />
+                              )}
+                            </label>
+                            {isAutoSelected && (
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-48 bg-gray-800 text-white text-[10px] p-2 rounded shadow-lg z-50 pointer-events-none">
+                                Auto-selected based on Section 5 Availability
+                              </div>
                             )}
-                            {opt}
-                          </label>
+                          </div>
                         );
                       })}
                     </div>
-                    {selectedAttachments.includes('Custom') && (
+                    {(selectedAttachments.includes('Custom') || autoSelectedAttachments.includes('Custom')) && (
                       <div className="mt-2">
                         <input 
                           type="text"
@@ -2864,16 +2948,38 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                 <Field label={
                   <div className="w-full flex items-center justify-between">
                     <span>Place</span>
-                    {renderNaToggle('clixS12PlaceNA', fields, handleChange, isReadOnly)}
+                    <div className="flex items-center gap-2">
+                      {renderEditSwitch('clixEnableS12PlaceEdit', fields, handleChange, isReadOnly, fields.clixS12PlaceNA)}
+                      {renderNaToggle('clixS12PlaceNA', fields, handleChange, isReadOnly)}
+                    </div>
                   </div>
                 }>
-                  <input 
-                    type="text"
-                    className={`\${inputCls} \${fields.clixS12PlaceNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                    value={fields.clixS12PlaceNA ? 'NA' : (fields.clixS12Place || '')}
-                    onChange={(e) => handleChange('clixS12Place', e.target.value)}
-                    disabled={isReadOnly || fields.clixS12PlaceNA}
-                  />
+                  <div className="relative w-full">
+                    {isPlaceEdit ? (
+                      <input 
+                        type="text"
+                        className={`\${inputCls} \${fields.clixS12PlaceNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                        value={fields.clixS12PlaceNA ? 'NA' : finalPlace}
+                        onChange={(e) => handleChange('clixS12Place', e.target.value)}
+                        disabled={isReadOnly || fields.clixS12PlaceNA}
+                      />
+                    ) : (
+                      <div className="relative w-full">
+                        <input 
+                          className={`\${inputCls} pr-10 bg-white text-gray-700`}
+                          value={fields.clixS12PlaceNA ? 'NA' : finalPlace}
+                          readOnly 
+                          disabled={isReadOnly || fields.clixS12PlaceNA}
+                          title='>>Prefill from Section 6 City Reference<<'
+                        />
+                        {!fields.clixS12PlaceNA && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from Section 6 City Reference<<'>
+                            <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </Field>
 
                 <div className="md:col-span-2">
@@ -2915,6 +3021,28 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                   </Field>
                 </div>
                 
+                <div className="md:col-span-2">
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Append Digital Signature & Firm Seal</span>
+                    </div>
+                  }>
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => handleChange('clixS12DigitalSignature', !fields.clixS12DigitalSignature)}
+                        disabled={isReadOnly}
+                        className={`w-12 h-6 rounded-full relative transition-colors \${fields.clixS12DigitalSignature ? 'bg-green-500' : 'bg-gray-300'}`}
+                      >
+                        <span className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform \${fields.clixS12DigitalSignature ? 'translate-x-6' : ''}`} />
+                      </button>
+                      <span className="text-sm font-medium text-gray-700">
+                        {fields.clixS12DigitalSignature ? 'Yes (Will be appended on final PDF)' : 'No (Requires manual wet signature)'}
+                      </span>
+                    </div>
+                  </Field>
+                </div>
+
               </div>
             </div>
           </div>
@@ -2924,7 +3052,9 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
   ],
   defaultValues: {
     clixReportType: 'Technical Scrutiny Report',
+    clixReportTypeCustom: '',
     clixLoanType: 'LAP',
+    clixLoanTypeOthers: '',
     
     // Section 7 Variables
     clixTypeOfStructureDropdown: 'RCC',
@@ -3027,9 +3157,11 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     clixS12Attachments: [], clixS12AttachmentsCustom: '', clixS12AttachmentsNA: false,
     clixEnableS12DateOfValuationEdit: false,
     clixS12DateOfValuation: '', clixS12DateOfValuationNA: false,
+    clixEnableS12PlaceEdit: false,
     clixS12Place: '', clixS12PlaceNA: false,
     clixEnableS12ValuerNameEdit: false,
     clixS12ValuerName: '', clixS12ValuerNameNA: false,
+    clixS12DigitalSignature: true,
   }
 };
 
