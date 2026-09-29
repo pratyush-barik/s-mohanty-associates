@@ -57,7 +57,7 @@ export interface DrawTextOptions {
   bold?: boolean;
   italic?: boolean;
   fontSize?: number;
-  align?: 'left' | 'center' | 'right';
+  align?: 'left' | 'center' | 'right' | 'justify';
   maxWidth?: number;
 }
 
@@ -398,13 +398,43 @@ export class PDFGeneralRenderer {
   }
 
   /** Draw wrapped text at absolute coordinates, returns total height consumed */
-  protected drawWrappedTextAt(text: string, x: number, topY: number, maxWidth: number, opts?: DrawTextOptions): number {
+  protected drawWrappedTextAt(text: string, x: number, topY: number, maxWidth: number, opts?: DrawTextOptions & { textColor?: string }): number {
     const fontSize = opts?.fontSize || FONT_SIZE;
     const lineH = fontSize * LINE_HEIGHT;
     const lines = this.wrapText(String(text || ''), maxWidth, fontSize, opts?.bold, opts?.italic);
 
     for (let i = 0; i < lines.length; i++) {
-      this.drawTextAt(lines[i], x, topY + i * lineH, { ...opts, maxWidth });
+      const isLastLine = i === lines.length - 1;
+      if (opts?.align === 'justify' && !isLastLine) {
+        const line = lines[i];
+        const font = this.getFont(opts?.bold, opts?.italic);
+        const baselineOffset = fontSize * 0.8;
+        const pY = this.pdfY(topY + i * lineH) - baselineOffset;
+        const words = this.sanitizeText(line).trim().split(/\s+/);
+        if (words.length > 1) {
+          let wordsW = 0;
+          for (const word of words) {
+            wordsW += font.widthOfTextAtSize(word, fontSize);
+          }
+          const availableSpace = maxWidth - wordsW;
+          const spaceW = availableSpace / (words.length - 1);
+          if (spaceW >= 0 && spaceW <= 14) {
+            let curWordX = x;
+            for (const word of words) {
+              this.page.drawText(word, {
+                x: curWordX,
+                y: pY,
+                size: fontSize,
+                font,
+                color: opts?.textColor ? hexToRgb(opts.textColor) : rgb(0, 0, 0),
+              });
+              curWordX += font.widthOfTextAtSize(word, fontSize) + spaceW;
+            }
+            continue;
+          }
+        }
+      }
+      this.drawTextAt(lines[i], x, topY + i * lineH, { ...opts, align: opts?.align === 'justify' ? 'left' : opts?.align, maxWidth });
     }
     return lines.length * lineH;
   }
@@ -472,7 +502,7 @@ export class PDFGeneralRenderer {
     text: string,
     opts?: {
       bold?: boolean; italic?: boolean; fontSize?: number;
-      align?: 'left' | 'center' | 'right';
+      align?: 'left' | 'center' | 'right' | 'justify';
       fillColor?: string; bgOpacity?: number; borderColor?: string;
       textColor?: string;
       vAlign?: 'top' | 'middle';
@@ -509,8 +539,40 @@ export class PDFGeneralRenderer {
     }
 
     for (let i = 0; i < lines.length; i++) {
+      const isLastLine = i === lines.length - 1;
+      if (opts?.align === 'justify' && !isLastLine) {
+        const line = lines[i];
+        const font = this.getFont(opts?.bold, opts?.italic);
+        const baselineOffset = fontSize * 0.8;
+        const pY = this.pdfY(textTopY + i * fontSize * LINE_HEIGHT) - baselineOffset;
+        const words = this.sanitizeText(line).trim().split(/\s+/);
+        if (words.length > 1) {
+          let wordsW = 0;
+          for (const word of words) {
+            wordsW += font.widthOfTextAtSize(word, fontSize);
+          }
+          const availableSpace = textW - wordsW;
+          const spaceW = availableSpace / (words.length - 1);
+          // Only justify if the gap per space is reasonable (max 14pt) to avoid sparse stretching
+          if (spaceW >= 0 && spaceW <= 14) {
+            let curWordX = x + CELL_PAD_X;
+            for (const word of words) {
+              this.page.drawText(word, {
+                x: curWordX,
+                y: pY,
+                size: fontSize,
+                font,
+                color: opts?.textColor ? hexToRgb(opts.textColor) : rgb(0, 0, 0),
+              });
+              curWordX += font.widthOfTextAtSize(word, fontSize) + spaceW;
+            }
+            continue;
+          }
+        }
+      }
+
       this.drawTextAt(lines[i], x + CELL_PAD_X, textTopY + i * fontSize * LINE_HEIGHT, {
-        bold: opts?.bold, italic: opts?.italic, fontSize, align: opts?.align, maxWidth: textW, textColor: opts?.textColor
+        bold: opts?.bold, italic: opts?.italic, fontSize, align: opts?.align === 'justify' ? 'left' : opts?.align, maxWidth: textW, textColor: opts?.textColor
       });
     }
   }

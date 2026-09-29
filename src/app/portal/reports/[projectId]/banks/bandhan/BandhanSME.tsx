@@ -152,8 +152,8 @@ const NAV_SECTIONS: NavItem[] = [
 
   // Additional Sections
   { id: '', title: 'Additional Sections', isHeader: true },
-  { id: 'sec-remarks-opinion', title: 'Remarks & Valuation Certificate' },
-  { id: 'sec-declaration', title: 'Declaration & Credentials' },
+  { id: 'sec-remarks-opinion', title: 'Remarks' },
+  { id: 'sec-declaration', title: 'Declaration' },
   { id: 'sec-checklist', title: 'Valuation Checklist' },
   { id: 'sec-documents', title: 'Documents & Maps' },
   { id: 'sec-photos', title: 'Property Photographs' },
@@ -2755,15 +2755,15 @@ export default function BandhanSME({
                   </div>
                 </div>
 
-                {/* Sub-container I: Agricultural */}
+                {/* Sub-container 1: Agricultural */}
                 <div className="p-3.5 bg-white/90 border border-emerald-200/90 rounded-lg space-y-2.5 shadow-2xs">
                   <div className="pb-1.5 border-b border-emerald-100">
                     <h5 className="font-bold text-emerald-950 text-xs tracking-wide uppercase">
-                      I. Agricultural Classification
+                      1. Agricultural Classification
                     </h5>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <Field label="a. Agricultural:">
+                    <Field label="A. Agricultural:">
                       {renderSelect(
                         fields.isAgricultural,
                         ['No', 'Yes'],
@@ -2772,7 +2772,7 @@ export default function BandhanSME({
                         'No'
                       )}
                     </Field>
-                    <Field label="b. Conversion to House Site Plots Contemplated:">
+                    <Field label="B. Conversion to House Site Plots Contemplated:">
                       {renderSelect(
                         fields.agriculturalConversionContemplated,
                         ['Not Applicable', 'Conversion Permitted', 'Applied for Conversion', 'No', 'Yes'],
@@ -2784,15 +2784,15 @@ export default function BandhanSME({
                   </div>
                 </div>
 
-                {/* Sub-container II: Industrial */}
+                {/* Sub-container 2: Industrial */}
                 <div className="p-3.5 bg-white/90 border border-emerald-200/90 rounded-lg space-y-2.5 shadow-2xs">
                   <div className="pb-1.5 border-b border-emerald-100">
                     <h5 className="font-bold text-emerald-950 text-xs tracking-wide uppercase">
-                      II. Industrial Classification &amp; Activity
+                      2. Industrial Classification &amp; Activity
                     </h5>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <Field label="a. Industrial:">
+                    <Field label="A. Industrial:">
                       {renderSelect(
                         fields.isIndustrial,
                         ['No', 'Yes'],
@@ -2801,7 +2801,7 @@ export default function BandhanSME({
                         'No'
                       )}
                     </Field>
-                    <Field label="b. Activity / Industry Suited:">
+                    <Field label="B. Activity / Industry Suited:">
                       {renderSelect(
                         fields.industrialActivitySuited,
                         ['Not Applicable', 'Light Engineering / Fabrication', 'Warehousing / Logistics', 'Manufacturing Unit', 'Commercial Warehouse', 'Yes'],
@@ -2813,15 +2813,15 @@ export default function BandhanSME({
                   </div>
                 </div>
 
-                {/* Sub-container III to VI: Other Property Classifications */}
+                {/* Sub-container 3 to 6: Other Property Classifications */}
                 <div className="p-3.5 bg-white/90 border border-emerald-200/90 rounded-lg space-y-2.5 shadow-2xs">
                   <div className="pb-1.5 border-b border-emerald-100">
                     <h5 className="font-bold text-emerald-950 text-xs tracking-wide uppercase">
-                      III – VI. Other Property Classifications
+                      3 – 6. Other Property Classifications
                     </h5>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                    <Field label="III. Residential (Restrictive clauses):">
+                    <Field label="3. Residential (Restrictive clauses):">
                       {renderSelect(
                         fields.isResidential,
                         ['Yes', 'No'],
@@ -2830,7 +2830,7 @@ export default function BandhanSME({
                         'Yes'
                       )}
                     </Field>
-                    <Field label="IV. Commercial:">
+                    <Field label="4. Commercial:">
                       {renderSelect(
                         fields.isCommercial,
                         ['Yes', 'No'],
@@ -2839,7 +2839,7 @@ export default function BandhanSME({
                         'Yes'
                       )}
                     </Field>
-                    <Field label="V. Institutional:">
+                    <Field label="5. Institutional:">
                       {renderSelect(
                         fields.isInstitutional,
                         ['No', 'Yes'],
@@ -2848,7 +2848,7 @@ export default function BandhanSME({
                         'No'
                       )}
                     </Field>
-                    <Field label="VI. Others (Specify):">
+                    <Field label="6. Others (Specify):">
                       {renderSelect(
                         fields.isOthersSpecify,
                         ['No', 'Yes', 'Mixed Use', 'Not Applicable'],
@@ -3358,7 +3358,7 @@ export default function BandhanSME({
             <div className="p-4 bg-slate-50/60 border border-slate-200/80 rounded-xl space-y-4 shadow-2xs">
               <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
                 <h4 className="font-bold text-slate-800 text-xs tracking-wide uppercase">
-                  P. Boundaries of the Property (Points 1 & 2)
+                  P. Boundaries of the Property (Points 1, 2 &amp; 3)
                 </h4>
                 {!isReadOnly && (
                   <button
@@ -3506,6 +3506,26 @@ export default function BandhanSME({
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* 3) Sketch for Location */}
+              <div className="p-3.5 bg-slate-50/70 border border-slate-200 rounded-xl space-y-2.5 shadow-2xs">
+                <div className="pb-1.5 border-b border-slate-200/60">
+                  <h5 className="font-bold text-xs text-slate-800 tracking-wide uppercase">
+                    3) Sketch for Location of the Property Enclosed
+                  </h5>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <Field label="3) (Sketch for Location of the Property Enclosed):">
+                    {renderSelect(
+                      fields.sketchEnclosed,
+                      ['Yes, Enclosed', 'Yes', 'No', 'Not Applicable'],
+                      (v) => handleChange('sketchEnclosed', v),
+                      isReadOnly,
+                      'Yes, Enclosed'
+                    )}
+                  </Field>
+                </div>
               </div>
             </div>
           </div>
@@ -3947,7 +3967,7 @@ export default function BandhanSME({
               <h4 className="font-bold text-orange-900 text-xs tracking-wide uppercase pb-1.5 border-b border-orange-200/60">
                 D. SALES:
               </h4>
-              <Field label="a. Give instance of sales of immovable property in the locality, if available, indicating the name and address of the property, registration no. sale price and area of the land sold:">
+              <Field label="a. Give instances of sales of immovable property in the locality, if available, indicating the name and address of the property, registration no., sale price and area of the land sold:">
                 <textarea
                   rows={2}
                   className={inputCls}
@@ -3956,7 +3976,7 @@ export default function BandhanSME({
                   disabled={isReadOnly}
                 />
               </Field>
-              <Field label="b. If sale instance are not available or not relied upon, please furnished the basis of arriving at the land rate:">
+              <Field label="b. If sale instances are not available or not relied upon, please furnish the basis of arriving at the land rate:">
                 <textarea
                   rows={2}
                   className={inputCls}
@@ -5973,10 +5993,10 @@ export default function BandhanSME({
           </div>
         </Section>
 
-        {/* 15. REMARKS & CERTIFICATE OF VALUATION / OPINION */}
-        <Section number={15} id="sec-remarks-opinion" title="IV. General Remarks & Certificate of Valuation / Valuer Opinion">
+        {/* 15. REMARKS */}
+        <Section number={15} id="sec-remarks-opinion" title="IV. Remarks">
           <div className="space-y-4">
-            <Field label="General Remarks & Condition of the Property / Remarks:">
+            <Field label="REMARKS:-">
               <textarea
                 rows={3}
                 className={inputCls}
@@ -6040,8 +6060,8 @@ export default function BandhanSME({
           </div>
         </Section>
 
-        {/* 16. DECLARATION & VALUER CREDENTIALS */}
-        <Section number={16} id="sec-declaration" title="V. Declaration & Valuer Credentials">
+        {/* 16. DECLARATION */}
+        <Section number={16} id="sec-declaration" title="V. Declaration">
           <div className="space-y-6">
             {/* Valuer Credentials & Sign-Off */}
             <div className="p-4 bg-indigo-50/60 border border-indigo-200/80 rounded-lg space-y-3">

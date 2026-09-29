@@ -22,7 +22,6 @@ import {
   MARGIN_B,
   MARGIN_L,
   MARGIN_R,
-  CONTENT_W,
   FONT_SIZE,
   FONT_SIZE_HEADER,
   FONT_SIZE_TITLE,
@@ -40,6 +39,9 @@ import {
   fetchBytes,
 } from '../pdf-bank-renderer';
 import { formatIndianCurrency } from '@/lib/numberToWords';
+
+// Table width extended by 5 points to the right (right margin reduced from 54pt to 49pt)
+const CONTENT_W = PAGE_W - MARGIN_L - 49; // 492.28 pt
 
 export const parseNum = (v: any): number => {
   if (v === undefined || v === null || v === '') return 0;
@@ -1080,6 +1082,43 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   }
 
   /**
+   * Spanned 2-column header row: [Sl.No (colSl) | Title (remW = CONTENT_W - colSl)]
+   * Spans across Points and Remarks columns so the title occupies the full remaining width.
+   */
+  private drawBandhanSpannedRow(
+    sl: string,
+    title: string,
+    fontSize: number = TABLE_FONT_SIZE,
+    bgHex?: string
+  ): void {
+    const rawSl = (sl ?? '').trim();
+    const remW = CONTENT_W - this.colSl;
+    const hSl = rawSl ? this.cellHeight(rawSl, this.colSl, { bold: true, fontSize }) : TABLE_MIN_ROW_H;
+    const hTitle = this.cellHeight(title, remW, { bold: true, fontSize });
+    const rowH = Math.max(TABLE_MIN_ROW_H, hSl, hTitle);
+
+    this.checkPageBreak(rowH);
+
+    this.drawCell(MARGIN_L, this.cursorY, this.colSl, rowH, rawSl, {
+      bold: true,
+      fontSize,
+      align: 'center',
+      vAlign: 'middle',
+      fillColor: bgHex,
+    });
+
+    this.drawCell(MARGIN_L + this.colSl, this.cursorY, remW, rowH, title, {
+      bold: true,
+      fontSize,
+      align: 'left',
+      vAlign: 'middle',
+      fillColor: bgHex,
+    });
+
+    this.cursorY += rowH;
+  }
+
+  /**
    * Draw section spanner banner using regular table text size (just bold)
    */
   private drawSectionSpanner(title: string, subTitle?: string, fontSize: number = TABLE_FONT_SIZE, fillColor?: string): void {
@@ -1214,7 +1253,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('K.', 'LIST OF DOCUMENTS PRODUCED FOR VERIFICATION:', fields.documentsProduced || '');
 
     // L. Borrower Details sub-block
-    this.drawBandhanRow('L.', 'NAME OF THE BORROWER / BORROWAL ACCOUNT WITH ADDRESS, TELEPHONE NOS.& NATURE OF BUSINESS:', '', true, true);
+    this.drawBandhanSpannedRow('L.', 'NAME OF THE BORROWER / BORROWAL ACCOUNT WITH ADDRESS, TELEPHONE NOS.& NATURE OF BUSINESS:');
     this.drawBandhanRow('', 'NAME:', fields.borrowerName || '', true, false);
     this.drawBandhanRow('', 'AT:', fields.borrowerAt || '', true, false);
     this.drawBandhanRow('', 'P.O:', fields.borrowerPo || '', true, false);
@@ -1223,7 +1262,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('', 'PHONE NO:', fields.borrowerPhone || '', true, false);
 
     // M. Owner Details sub-block
-    this.drawBandhanRow('M.', 'NAME / ADDRESS / TELEPHONE NO. OF THE OWNER/OWNER(S) OF THE PROPERTY:', '', true, true);
+    this.drawBandhanSpannedRow('M.', 'NAME / ADDRESS / TELEPHONE NO. OF THE OWNER/OWNER(S) OF THE PROPERTY:');
     this.drawBandhanRow('', 'NAME:', fields.ownerName || '', true, false);
     this.drawBandhanRow('', 'AT:', fields.ownerAt || '', true, false);
     this.drawBandhanRow('', 'P.O:', fields.ownerPo || '', true, false);
@@ -1242,7 +1281,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawSectionSpanner('II. VALUATION OF LAND:', undefined, TABLE_FONT_SIZE, LBL_BG);
 
     // 1. Details of Property
-    this.drawBandhanRow('1.', 'DETAILS OF PROPERTY:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanSpannedRow('1.', 'DETAILS OF PROPERTY:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'DETAILS OF PROPERTY OFFERED AS SECURED:', fields.detailsPropertyOffered || 'Land & Building');
     this.drawBandhanRow('B.', 'DATE OF ACQUISITION/PURCHASE OF LAND:', fields.dateAcquisitionLand || '');
     this.drawBandhanRow('C.', 'VALUE OF THE PROPERTY AS PER REGD. SALE DEED:', fields.valueAsPerSaleDeed || '');
@@ -1252,7 +1291,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('G.', 'AREA OF LAND (AS PER PHYSICAL MEASUREMENT):', fields.areaLandPhysical || '');
 
     // H. Location of Property & Postal Address sub-block
-    this.drawBandhanRow('H.', 'LOCATION OF THE PROPERTY AND POSTAL ADDRESS:', '', true, true);
+    this.drawBandhanSpannedRow('H.', 'LOCATION OF THE PROPERTY AND POSTAL ADDRESS:');
     this.drawBandhanRow('', 'PLOT NO:', fields.plotNo || '', true, false);
     this.drawBandhanRow('', 'DAG NO/KHATIAN NO/RS NO:', fields.khataNo || '', true, false);
     this.drawBandhanRow('', 'AT:', fields.propAt || '', true, false);
@@ -1265,17 +1304,19 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('J.', 'WHETHER THE PROPERTY IS SITUATED IN RESIDENTIAL/COMMERCIAL / MIXED / INDUSTRIAL AREA:', fields.situatedAreaType || 'Residential cum Commercial Area');
     this.drawBandhanRow('K.', 'CLASSIFICATION OF LOCALITY- I.E KIND OF PEOPLE STAYING (HIGH / MIDDLE / POOR CLASS):', fields.classificationOfLocality || 'Middle Class');
     this.drawBandhanRow('L.', 'TYPE OF PROPERTY:', fields.typeOfProperty || 'Land & building');
-    this.drawBandhanRow('(I)', 'AGRICULTURAL:', fields.isAgricultural || 'No');
-    this.drawBandhanRow('A)', 'IN CASE IT IS AN AGRICULTURAL LAND, ANY CONVERSION TO HOUSE SITE PLOTS IS CONTEMPLATED:', fields.agriculturalConversionContemplated || 'Not Applicable');
-    this.drawBandhanRow('(II)', 'INDUSTRIAL:', fields.isIndustrial || 'No');
-    this.drawBandhanRow('A)', 'IF THE PROPERTY IS INDUSTRIAL-STATE FOR WHAT TYPE OF ACTIVITY/INDUSTRY THE PROPERTY IS WELL SUITED:', fields.isIndustrial === 'Yes' ? fields.industrialActivitySuited || 'Yes' : 'Not Applicable');
-    this.drawBandhanRow('(III)', 'RESIDENTIAL: (ANY RESTRICTIVE CLAUSES FOR SALE ETC. TO BE FURNISHED).', fields.isResidential || 'Yes');
-    this.drawBandhanRow('(IV)', 'COMMERCIAL:', fields.isCommercial || 'Yes');
-    this.drawBandhanRow('(V)', 'INSTITUTIONAL:', fields.isInstitutional || 'No');
-    this.drawBandhanRow('(VI)', 'OTHERS (SPECIFY):', fields.isOthersSpecify || 'No');
+    this.drawBandhanSpannedRow('1)', 'AGRICULTURAL:');
+    this.drawBandhanRow('A)', 'AGRICULTURAL:', fields.isAgricultural || 'No');
+    this.drawBandhanRow('B)', 'IN CASE IT IS AN AGRICULTURAL LAND, ANY CONVERSION TO HOUSE SITE PLOTS IS CONTEMPLATED:', fields.agriculturalConversionContemplated || 'Not Applicable');
+    this.drawBandhanSpannedRow('2)', 'INDUSTRIAL:');
+    this.drawBandhanRow('A)', 'INDUSTRIAL:', fields.isIndustrial || 'No');
+    this.drawBandhanRow('B)', 'IF THE PROPERTY IS INDUSTRIAL-STATE FOR WHAT TYPE OF ACTIVITY/INDUSTRY THE PROPERTY IS WELL SUITED:', fields.isIndustrial === 'Yes' ? fields.industrialActivitySuited || 'Yes' : 'Not Applicable');
+    this.drawBandhanRow('3)', 'RESIDENTIAL: (ANY RESTRICTIVE CLAUSES FOR SALE ETC. TO BE FURNISHED).', fields.isResidential || 'Yes');
+    this.drawBandhanRow('4)', 'COMMERCIAL:', fields.isCommercial || 'Yes');
+    this.drawBandhanRow('5)', 'INSTITUTIONAL:', fields.isInstitutional || 'No');
+    this.drawBandhanRow('6)', 'OTHERS (SPECIFY):', fields.isOthersSpecify || 'No');
 
     // 2. Title, Ownership & Rent
-    this.drawBandhanRow('2.1', 'TITLE OF THE PROPERTY FREE HOLD / LEASE HOLD:', fields.titleFreeholdLeasehold || 'It is a free hold land');
+    this.drawBandhanRow('2.1', 'TITLE OF THE PROPERTY FREE HOLD / LEASE HOLD:', fields.titleFreeholdLeasehold || 'It is a free hold land', true, false, TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'OWNERSHIP OF THE PROPERTY:', fields.ownershipOfProperty || 'Single Ownership');
     this.drawBandhanRow('B.', 'IN CASE OF JOINT OWNERSHIP WHETHER SHARE IS UNDIVIDED/DIVIDED. IF UNDIVIDED, SHARE OF EACH OWNER:', fields.jointOwnershipShare || 'Not Applicable');
     this.drawBandhanRow('C.', 'TAXES PAID UP TO:', fields.taxesPaidUpTo || 'We have not verified any recent rent receipt');
@@ -1284,7 +1325,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('F.', 'WEALTH TAX ASSESSED/PAID, IF ANY:', fields.wealthTaxAssessedPaid || 'Not Applicable');
 
     // 2.2 If Leasehold
-    this.drawBandhanRow('2.2', 'IF LEASE HOLD:', '', true, true);
+    this.drawBandhanSpannedRow('2.2', 'IF LEASE HOLD:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'NAME OF THE LESSOR:', fields.lessorName || 'Not Applicable');
     this.drawBandhanRow('B.', 'NAME OF THE LESSEE:', fields.lesseeName || 'Not Applicable');
     this.drawBandhanRow('C.', 'NATURE OF LEASE:', fields.natureOfLease || 'Not Applicable');
@@ -1299,14 +1340,14 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('M.', 'WHETHER LEASE AGREEMENT PERMITS CREATION OF MORTGAGE:', fields.leasePermitsMortgage || 'Not Applicable');
 
     // 2.3 Rent Details
-    this.drawBandhanRow('2.3', 'RENT:', fields.rentOccupationStatus || 'The Plot is occupied by Owner');
+    this.drawBandhanRow('2.3', 'RENT:', fields.rentOccupationStatus || 'The Plot is occupied by Owner', true, false, TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'NAMES OF TENANTS/LESSEES / LICENSEES, ETC.:', fields.tenantNames || 'Not Applicable');
     this.drawBandhanRow('B.', 'PORTION IN THEIR OCCUPATION:', fields.tenantPortionOccupied || 'Not Applicable');
     this.drawBandhanRow('C.', 'MONTHLY OR ANNUAL RENT / COMPENSATION / LICENSE FEE, ETC. PAID BY EACH:', fields.monthlyAnnualRentPaid || 'Not Applicable');
-    this.drawBandhanRow('D.', 'GROSS AMOUNT RECEIVE FOR THE WHOLE PROPERTY:', fields.grossRentReceived || 'Not Applicable');
+    this.drawBandhanRow('D.', 'GROSS AMOUNT RECEIVED FOR THE WHOLE PROPERTY:', fields.grossRentReceived || 'Not Applicable');
 
     // 3. Brief Description of Property
-    this.drawBandhanRow('3.', 'BRIEF DESCRIPTION OF THE PROPERTY:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanSpannedRow('3.', 'BRIEF DESCRIPTION OF THE PROPERTY:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'ADDRESS OF THE PROPERTY IN DETAIL (PIN NO. TO BE CAPTURED MANDATORILY):', fields.detailedAddressWithPin || '');
     this.drawBandhanRow('B.', 'MUNICIPALITY WARD NO:', fields.municipalityWardNo || '');
     this.drawBandhanRow('C.', 'STREET NO.:', fields.streetNo || '');
@@ -1323,11 +1364,11 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('N.', 'STATE:', fields.state || 'Odisha');
 
     // O. Dimensions & Extent
-    this.drawBandhanRow('O.', 'DIMENSIONS & EXTENT OF THE SITE:', '', true, true);
-    this.drawBandhanRow('(I)', 'DIMENSIONS OF THE SITE AS PER DOCUMENT:', '', true, true);
+    this.drawBandhanSpannedRow('O.', 'DIMENSIONS & EXTENT OF THE SITE:');
+    this.drawBandhanSpannedRow('(I)', 'DIMENSIONS OF THE SITE AS PER DOCUMENT:');
     this.drawBandhanRow('A)', 'EAST TO WEST:', fields.dimensionDocEastWest || 'As per Sketch Map');
     this.drawBandhanRow('B)', 'NORTH TO SOUTH:', fields.dimensionDocNorthSouth || 'As per Sketch Map');
-    this.drawBandhanRow('(II)', 'DIMENSIONS OF THE SITE AS PER MEASUREMENT:', '', true, true);
+    this.drawBandhanSpannedRow('(II)', 'DIMENSIONS OF THE SITE AS PER MEASUREMENT:');
     this.drawBandhanRow('A)', 'EAST TO WEST:', fields.dimensionMeasEastWest || 'As per Sketch Map');
     this.drawBandhanRow('B)', 'NORTH TO SOUTH:', fields.dimensionMeasNorthSouth || 'As per Sketch Map');
     this.drawBandhanRow('(III)', 'EXTENT OF SITE:', fields.extentOfSite || '');
@@ -1337,7 +1378,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.renderBoundarySchedules(fields);
 
     // 4. Characteristics of the Site
-    this.drawBandhanRow('4.', 'CHARACTERISTICS OF THE SITE:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanSpannedRow('4.', 'CHARACTERISTICS OF THE SITE:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'LEVEL OF LAND WITH TOPOGRAPHICAL CONDITION:', fields.levelOfLand || 'Leveled and Plain');
     this.drawBandhanRow('B.', 'USE TO WHICH IT CAN BE PUT:', fields.useToWhichCanBePut || 'Residential cum Commercial Purpose');
     this.drawBandhanRow('C.', 'IS THERE ANY AGREEMENT OF EASEMENTS (ENCROACHMENTS)? IF SO, DETAILS:', fields.easementAgreements || 'No such agreement verified');
@@ -1362,7 +1403,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('S.', 'DEVELOPMENT OF SURROUNDING AREAS:', fields.surroundingDevelopment || 'Residential Buildings');
 
     // Proximity to Civic Amenities
-    this.drawBandhanRow('T.', 'PROXIMITY TO CIVIC AMENITIES:', '', true, true);
+    this.drawBandhanSpannedRow('T.', 'PROXIMITY TO CIVIC AMENITIES:');
     this.drawBandhanRow('(i)', 'SCHOOL:', fields.proximitySchool || '');
     this.drawBandhanRow('(ii)', 'COLLEGE:', fields.proximityCollege || '');
     this.drawBandhanRow('(iii)', 'HOSPITAL:', fields.proximityHospital || '');
@@ -1373,25 +1414,25 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('U.', 'LATITUDE/LONGITUDE:', fields.latitudeLongitude || '');
 
     // 5. Location Advantages & Disadvantages
-    this.drawBandhanRow('5.', 'LOCATION ADVANTAGES & DISADVANTAGES:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanSpannedRow('5.', 'LOCATION ADVANTAGES & DISADVANTAGES:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'LOCATION ADVANTAGES:', fields.locationAdvantages || '');
     this.drawBandhanRow('B.', 'LOCATION DISADVANTAGES (DETAILS):', fields.locationDisadvantages || 'Nothing Observed');
 
     // 6. Other Issues / Points
-    this.drawBandhanRow('6.', 'OTHER ISSUES/POINTS:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanSpannedRow('6.', 'OTHER ISSUES/POINTS:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'HAS THE WHOLE OR PART OF THE LAND BEEN NOTIFIED FOR ACQUISITION BY GOVERNMENT OR ANY STATUTORY BODY?:', fields.landAcquisitionNotification || 'No such documents verified');
-    this.drawBandhanRow('B.', 'HAS ANY CONTRIBUTION BEEN MADE TOWARDS DEVELOPMENT OR IS ANY DEMAND FOR SUCH CONTRIBUTION STILL OUT STANDING:', fields.developmentContributionDemanded || 'No such documents verified');
+    this.drawBandhanRow('B.', 'HAS ANY CONTRIBUTION BEEN MADE TOWARDS DEVELOPMENT OR IS ANY DEMAND FOR SUCH CONTRIBUTION STILL OUTSTANDING:', fields.developmentContributionDemanded || 'No such documents verified');
     this.drawBandhanRow('C.', 'WHETHER COVERED UNDER ANY STATE/CENTRAL GOVT ENACTMENTS (E.G URBAN LAND CEILING ACT) OR NOTIFIED UNDER AGENCY/CANTONMENT AREA:', fields.landCeilingEnactments || 'No such documents verified');
-    this.drawBandhanRow('D.', 'SALES:', '', true, true);
-    this.drawBandhanRow('a.', 'GIVE INSTANCE OF SALES OF IMMOVABLE PROPERTY IN THE LOCALITY, IF AVAILABLE, INDICATING THE NAME AND ADDRESS OF THE PROPERTY, REGISTRATION NO. SALE PRICE AND AREA OF THE LAND SOLD:', fields.salesInstancesInLocality || 'Transactions of the property are not available in the locality');
-    this.drawBandhanRow('b.', 'IF SALE INSTANCE ARE NOT AVAILABLE OR NOT RELIED UPON, PLEASE FURNISHED THE BASIS OF ARRIVING AT THE LAND RATE:', fields.salesBasisArrivingLandRate || 'The present market rate of land confirmed through local enquiry and property dealers and found to be acceptable.');
+    this.drawBandhanSpannedRow('D.', 'SALES:');
+    this.drawBandhanRow('a.', 'GIVE INSTANCES OF SALES OF IMMOVABLE PROPERTY IN THE LOCALITY, IF AVAILABLE, INDICATING THE NAME AND ADDRESS OF THE PROPERTY, REGISTRATION NO., SALE PRICE AND AREA OF THE LAND SOLD:', fields.salesInstancesInLocality || 'Transactions of the property are not available in the locality');
+    this.drawBandhanRow('b.', 'IF SALE INSTANCES ARE NOT AVAILABLE OR NOT RELIED UPON, PLEASE FURNISH THE BASIS OF ARRIVING AT THE LAND RATE:', fields.salesBasisArrivingLandRate || 'The present market rate of land confirmed through local enquiry and property dealers and found to be acceptable.');
     this.drawBandhanRow('c.', 'LAND RATE ADOPTED IN THIS VALUATION:', fields.adoptedLandRateRationale || '');
 
     // 7. Valuation of Land
-    this.drawBandhanRow('7.', 'VALUATION:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanSpannedRow('7.', 'VALUATION:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'PREVIOUS VALUATION DETAILS:', fields.previousValuationDetails || 'Not Available');
-    this.drawBandhanRow('B.', 'PRESENT VALUATION DETAILS:', '', true, true);
-    this.drawBandhanRow('', '(HERE THE REGISTERED VALUE SHOULD DISCUSS IN DETAIL HIS APPROACH IN VALUATION OF THE PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATIONS.):', fields.presentValuationApproachDetails || 'Land & Building Method has been adopted for valuation purpose.');
+    this.drawBandhanSpannedRow('B.', 'PRESENT VALUATION DETAILS:');
+    this.drawBandhanRow('', '(HERE THE REGISTERED VALUER SHOULD DISCUSS IN DETAIL HIS APPROACH IN VALUATION OF THE PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATIONS.):', fields.presentValuationApproachDetails || 'Land & Building Method has been adopted for valuation purpose.');
     this.drawBandhanRow('1', 'VALUATION OF LAND:', fields.landAreaTotal || fields.extentOfSite || '');
     this.drawBandhanRow('2', 'GOVT. VALUE:', fields.landGovtValueTotal || '', true, true);
     this.drawBandhanRow('3', 'MARKET VALUE:', fields.landMarketValueTotal || '', true, true);
@@ -1413,12 +1454,12 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
           { plotNo: fields.plotNo || 'Schedule 1', east: 'As per deed', west: 'As per deed', north: 'Road', south: 'As per deed' }
         ];
 
-    this.drawBandhanRow('P.', 'BOUNDARIES OF THE PROPERTY:', '', true, true);
-    this.drawBandhanRow('1)', 'BOUNDARIES (AS PER DOCUMENT):', '', true, true);
+    this.drawBandhanSpannedRow('P.', 'BOUNDARIES OF THE PROPERTY:', TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanSpannedRow('1)', 'BOUNDARIES (AS PER DOCUMENT):');
 
     for (const dp of deedPlots) {
       if (deedPlots.length > 1) {
-        this.drawBandhanRow('', `SCHEDULE FOR PLOT / TITLE: ${dp.plotNo || 'Deed Schedule'}`, '', true, true);
+        this.drawBandhanSpannedRow('', `SCHEDULE FOR PLOT / TITLE: ${dp.plotNo || 'Deed Schedule'}`);
       }
       this.drawBandhanRow('(i)', 'EAST:', dp.east || '', true, false);
       this.drawBandhanRow('(ii)', 'WEST:', dp.west || '', true, false);
@@ -1426,14 +1467,14 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       this.drawBandhanRow('(iv)', 'SOUTH:', dp.south || '', true, false);
     }
 
-    this.drawBandhanRow('2)', 'BOUNDARIES (AS PER VERIFICATION):', '', true, true);
+    this.drawBandhanSpannedRow('2)', 'BOUNDARIES (AS PER VERIFICATION):');
     const physPlots = fields.physicalPlotBoundaries || [];
 
     for (let i = 0; i < deedPlots.length; i++) {
       const dp = deedPlots[i];
       const pp = physPlots[i];
       if (deedPlots.length > 1) {
-        this.drawBandhanRow('', `SCHEDULE FOR PLOT / TITLE: ${dp.plotNo || `Schedule ${i + 1}`}`, '', true, true);
+        this.drawBandhanSpannedRow('', `SCHEDULE FOR PLOT / TITLE: ${dp.plotNo || `Schedule ${i + 1}`}`);
       }
       const east = pp?.east || (i === 0 ? fields.verifiedBoundaryEast || '' : '');
       const west = pp?.west || (i === 0 ? fields.verifiedBoundaryWest || '' : '');
@@ -1456,7 +1497,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawSectionSpanner('III. VALUATION OF BUILDING:', undefined, TABLE_FONT_SIZE, LBL_BG);
 
     // 1. Basic Info
-    this.drawBandhanRow('1.', 'BASIC INFORMATION OF THE BUILDING:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanSpannedRow('1.', 'BASIC INFORMATION OF THE BUILDING:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'TYPE OF BUILDING (RESIDENTIAL/COMMERCIAL/INDUSTRIAL):', fields.buildingType || 'Residential Cum Commercial');
     const derivedYears = (fields.yearConstruction || fields.yearCompletion)
       ? [
@@ -1493,7 +1534,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     const combinedBuiltUp = [assessmentText, actualFloorsText].filter(Boolean).join('\n');
 
-    this.drawBandhanRow('H.', 'BUILT UP AREA DETAILS:', '', true, true);
+    this.drawBandhanSpannedRow('H.', 'BUILT UP AREA DETAILS:');
     this.drawBandhanRow('(I)', 'BUILT UP AREA:', combinedBuiltUp || 'Not Verified');
     this.drawBandhanRow('(II)', 'CARPET AREA:', fields.carpetAreaTotal ? (fields.carpetAreaTotal.includes('Sft') ? fields.carpetAreaTotal : `${parseFloat(fields.carpetAreaTotal).toFixed(2)} Sft (Approx.)`) : (fields.carpetAreaValue ? formatCarpetAreaStatement(fields.carpetAreaValue) : ''));
     this.drawBandhanRow('(III)', 'SALEABLE AREA:', fields.saleableAreaTotal ? (fields.saleableAreaTotal.includes('Sft') ? fields.saleableAreaTotal : `${parseFloat(fields.saleableAreaTotal).toFixed(2)} Sft`) : (fields.saleableAreaValue ? formatSaleableAreaStatement(fields.saleableAreaValue) : ''));
@@ -1521,7 +1562,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('AB.', 'WHETHER THE BUILDING IS HAVING FREE ACCESS:', fields.buildingFreeAccess || 'Yes');
 
     // 2. Technical Details of Building
-    this.drawBandhanRow('2.', 'TECHNICAL DETAILS OF THE BUILDING:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanSpannedRow('2.', 'TECHNICAL DETAILS OF THE BUILDING:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'NUMBER OF FLOORS & HEIGHT OF EACH FLOOR INCLUDING BASEMENTS, IF ANY:', fields.numberOfFloorsAndHeight || "G+3 Storied Building & Height: 10'-6\"");
 
     const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)', '(xi)', '(xii)', '(xiii)', '(xiv)', '(xv)', '(xvi)', '(xvii)', '(xviii)', '(xix)', '(xx)'];
@@ -1536,7 +1577,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // B. Plinth Area Floor-Wise
     if (floors.length > 0) {
-      this.drawBandhanRow('B.', 'PLINTH AREA FLOOR-WISE:', '', true, true);
+      this.drawBandhanSpannedRow('B.', 'PLINTH AREA FLOOR-WISE:');
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
         this.drawBandhanRow(rom, `PLINTH AREA (${fl.floorName.toUpperCase()}):`, fl.plinthArea ? `${fl.plinthArea} Sft.` : '');
@@ -1546,14 +1587,14 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     }
 
     // C. Condition of Building
-    this.drawBandhanRow('C.', 'CONDITION OF THE BUILDING:', '', true, true);
+    this.drawBandhanSpannedRow('C.', 'CONDITION OF THE BUILDING:');
     this.drawBandhanRow('(i)', 'CONDITION OF THE BUILDING (EXTERIOR):', fields.buildingConditionExterior || 'Good');
     this.drawBandhanRow('(ii)', 'CONDITION OF THE BUILDING (INTERIOR):', fields.buildingConditionInterior || 'Good');
     this.drawBandhanRow('D.', 'TYPE OF FOUNDATIONS:', fields.foundationType || 'Column Foundation');
 
     // E. Doors and Windows Floor-Wise
     if (floors.length > 0) {
-      this.drawBandhanRow('E.', 'DOORS AND WINDOWS (FLOOR-WISE):', '', true, true);
+      this.drawBandhanSpannedRow('E.', 'DOORS AND WINDOWS (FLOOR-WISE):');
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
         this.drawBandhanRow(rom, `DOORS AND WINDOWS (${fl.floorName.toUpperCase()}):`, fl.doorsWindows || 'Sal wood choukath with non sal wood shutter');
@@ -1564,7 +1605,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // F. Flooring Floor-Wise
     if (floors.length > 0) {
-      this.drawBandhanRow('F.', 'FLOORING (FLOOR-WISE):', '', true, true);
+      this.drawBandhanSpannedRow('F.', 'FLOORING (FLOOR-WISE):');
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
         this.drawBandhanRow(rom, `FLOORING (${fl.floorName.toUpperCase()}):`, fl.flooring || 'VT Flooring');
@@ -1575,7 +1616,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // G. Wall Finishing Floor-Wise
     if (floors.length > 0) {
-      this.drawBandhanRow('G.', 'WALL FINISHING (FLOOR-WISE):', '', true, true);
+      this.drawBandhanSpannedRow('G.', 'WALL FINISHING (FLOOR-WISE):');
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
         this.drawBandhanRow(rom, `WALL FINISHING (${fl.floorName.toUpperCase()}):`, fl.wallFinishing || 'Cement Plastering, Putty, Painting');
@@ -1585,7 +1626,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     }
 
     // 3. Construction Specifications
-    this.drawBandhanRow('3.', 'SPECIFICATIONS OF CONSTRUCTION (FLOOR-WISE) IN RESPECT OF:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanSpannedRow('3.', 'SPECIFICATIONS OF CONSTRUCTION (FLOOR-WISE) IN RESPECT OF:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'FOUNDATION:', fields.specFoundation || 'Column Foundation');
     this.drawBandhanRow('B.', 'BASEMENT:', fields.specBasement || 'No');
     this.drawBandhanRow('C.', 'SUPERSTRUCTURE:', fields.specSuperstructure || 'Brick Masonry Super Structure');
@@ -1599,7 +1640,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('K.', 'SPECIAL ARCHITECTURAL OR DECORATIVE FEATURES:', fields.specDecorativeFeatures || 'Interior work is done on Second & Third Floor');
 
     // L. Internal Wiring & Electrical Installations
-    this.drawBandhanRow('L.', 'INTERNAL WIRING & ELECTRICAL INSTALLATIONS:', '', true, true);
+    this.drawBandhanSpannedRow('L.', 'INTERNAL WIRING & ELECTRICAL INSTALLATIONS:');
     this.drawBandhanRow('1', 'INTERNAL WIRING - (CONCEALED / EXTERNAL):', fields.specInternalWiring || 'Concealed');
     this.drawBandhanRow('2', 'CLASS OF FITTINGS: SUPERIOR/ORDINARY:', fields.specWiringFittingsClass || 'Superior');
 
@@ -1608,7 +1649,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('O.', 'CLASS OF FITTING: SUPERIOR / ORDINARY:', fields.specSanitaryFittingsClass || 'Superior');
 
     // P. Compound Wall
-    this.drawBandhanRow('P.', 'COMPOUND WALL DETAILS:', '', true, true);
+    this.drawBandhanSpannedRow('P.', 'COMPOUND WALL DETAILS:');
     this.drawBandhanRow('1', 'COMPOUND WALL:', fields.specCompoundWall || 'Yes');
     this.drawBandhanRow('2', 'HEIGHT AND LENGTH:', fields.specCompoundWallHeightLength || "Height: 5'-0\", Length: 150'-0\"");
     this.drawBandhanRow('3', 'TYPE OF CONSTRUCTION:', fields.specCompoundWallType || 'Brick Masonry Wall with Iron Gate');
@@ -1617,7 +1658,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('R.', 'UNDERGROUND SUMP -CAPACITY AND TYPE OF CONSTRUCTION:', fields.specUndergroundSump || 'Not Available');
 
     // S. Overhead Tank
-    this.drawBandhanRow('S.', 'OVERHEAD TANK DETAILS:', '', true, true);
+    this.drawBandhanSpannedRow('S.', 'OVERHEAD TANK DETAILS:');
     this.drawBandhanRow('1', 'OVERHEAD TANK:', fields.specOverheadTank || 'Yes');
     this.drawBandhanRow('2', 'WHERE LOCATED:', fields.specOverheadTankLocation || 'On the top of the roof');
     this.drawBandhanRow('3', 'CAPACITY:', fields.specOverheadTankCapacity || '2000 Liters');
@@ -1668,33 +1709,14 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     // Line break before starting 4. DETAILS OF BUILDING VALUATION:
     this.cursorY += 8;
 
-    // 4. DETAILS OF BUILDING VALUATION: occupy both columns not 1 (Sl. No + remaining width)
-    const remW = CONTENT_W - this.colSl;
-    const hSl = this.cellHeight('4.', this.colSl, { bold: true, fontSize: TABLE_FONT_SIZE });
-    const hTitle = this.cellHeight('DETAILS OF BUILDING VALUATION:', remW, { bold: true, fontSize: TABLE_FONT_SIZE });
-    const rowH = Math.max(TABLE_MIN_ROW_H, hSl, hTitle);
-    this.checkPageBreak(rowH);
-    this.drawCell(MARGIN_L, this.cursorY, this.colSl, rowH, '4.', {
-      bold: true,
-      fontSize: TABLE_FONT_SIZE,
-      align: 'center',
-      vAlign: 'top',
-      fillColor: LBL_BG,
-    });
-    this.drawCell(MARGIN_L + this.colSl, this.cursorY, remW, rowH, 'DETAILS OF BUILDING VALUATION:', {
-      bold: true,
-      fontSize: TABLE_FONT_SIZE,
-      align: 'left',
-      vAlign: 'top',
-      fillColor: LBL_BG,
-    });
-    this.cursorY += rowH;
+    // 4. DETAILS OF BUILDING VALUATION: occupy both columns (Sl. No + remaining width)
+    this.drawBandhanSpannedRow('4.', 'DETAILS OF BUILDING VALUATION:', TABLE_FONT_SIZE, LBL_BG);
 
     // 8-Col Header matching exact bank template:
-    // Particulars (85) | Plinth (48) | Roof Ht (42) | Age (50) | Repl Rate (62) | Repl Cost (68) | Dep Amt (66) | Net Val (66.28) = 487.28
-    const colW = [85, 48, 42, 50, 62, 68, 66, 66.28];
+    // Particulars (72) | Plinth (44) | Roof Ht (40) | Age (55) | Repl Rate (70) | Repl Cost (72) | Dep Amt (71) | Net Val (68.28) = 492.28
+    const colW = [72, 44, 40, 55, 70, 72, 71, 68.28];
     const headers = [
-      'PERTICULARS OF ITEMS',
+      'PARTICULARS OF ITEMS',
       'PLINTH AREA IN SQFT',
       'ROOF HEIGHT',
       'AGE OF THE BUILDING IN YEARS',
@@ -1704,7 +1726,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       'NET VALUE AFTER DEPRECIATION',
     ];
 
-    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: false, fontSize: TABLE_FONT_SIZE }));
+    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: false, fontSize: 8.5 }));
     const headerH = Math.max(30, ...headerHeights);
     this.checkPageBreak(headerH);
 
@@ -1712,7 +1734,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     for (let i = 0; i < headers.length; i++) {
       this.drawCell(curX, this.cursorY, colW[i], headerH, headers[i], {
         bold: false,
-        fontSize: TABLE_FONT_SIZE,
+        fontSize: 8.5,
         align: 'center',
         vAlign: 'middle',
         fillColor: LBL_BG,
@@ -1724,7 +1746,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     // Data rows
     for (const r of rows) {
       const values = [r.description, r.plinthArea, r.height, r.age, r.replacementRate, r.replacementCost, r.depreciation, r.valueAfterDepreciation];
-      const rHeights = values.map((v, i) => this.cellHeight(v || '-', colW[i], { fontSize: TABLE_FONT_SIZE }));
+      const rHeights = values.map((v, i) => this.cellHeight(v || '-', colW[i], { fontSize: 8.5 }));
       const rH = Math.max(20, ...rHeights);
       this.checkPageBreak(rH);
 
@@ -1732,7 +1754,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       for (let i = 0; i < values.length; i++) {
         this.drawCell(rx, this.cursorY, colW[i], rH, values[i] || '-', {
           bold: i === 7,
-          fontSize: TABLE_FONT_SIZE,
+          fontSize: 8.5,
           align: i === 0 ? 'left' : 'center',
           vAlign: 'middle',
         });
@@ -1749,8 +1771,8 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   // Helper: 4 Building Sub-Schedules (5.1 Extra Items, 5.2 Amenities, 5.3 Misc, 5.4 Services)
   // --------------------------------------------------------------------------
   private renderSubSchedules(fields: BandhanSMEReportFields): void {
-    const renderSchedule = (title: string, items: BandhanSMESubScheduleItem[] | undefined, total: string | undefined) => {
-      this.draw2ColRow(title, '', true, true, LBL_BG);
+    const renderSchedule = (sl: string, title: string, items: BandhanSMESubScheduleItem[] | undefined, total: string | undefined) => {
+      this.drawBandhanSpannedRow(sl, title, TABLE_FONT_SIZE, LBL_BG);
 
       if (!items || items.length === 0) {
         this.draw2ColRow('TOTAL:', total || 'Rs. 0.00', true, true);
@@ -1764,32 +1786,36 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       this.draw2ColRow('TOTAL:', total || 'Rs. 0.00', true, true);
     };
 
-    renderSchedule('5.1 EXTRA ITEMS', fields.extraItems, fields.extraItemsTotal);
-    renderSchedule('5.2 AMENITIES', fields.amenities, fields.amenitiesTotal);
-    renderSchedule('5.3 MISCELLANEOUS', fields.miscItems, fields.miscItemsTotal);
-    renderSchedule('5.4 SERVICES', fields.servicesItems, fields.servicesItemsTotal);
+    renderSchedule('5.1', 'EXTRA ITEMS', fields.extraItems, fields.extraItemsTotal);
+    renderSchedule('5.2', 'AMENITIES', fields.amenities, fields.amenitiesTotal);
+    renderSchedule('5.3', 'MISCELLANEOUS', fields.miscItems, fields.miscItemsTotal);
+    renderSchedule('5.4', 'SERVICES', fields.servicesItems, fields.servicesItemsTotal);
   }
 
   // --------------------------------------------------------------------------
   // Helper: 6. TOTAL ABSTRACT OF THE ENTIRE PROPERTY (Land + Building + Sub-Schedules)
   // --------------------------------------------------------------------------
   private renderTotalAbstractMatrix(fields: BandhanSMEReportFields): void {
-    this.drawBandhanRow('6.', 'TOTAL ABSTRACT OF THE ENTIRE PROPERTY:', '', true, true, TABLE_FONT_SIZE, LBL_BG);
+    // Line break before starting 6. TOTAL ABSTRACT OF THE ENTIRE PROPERTY:
+    this.cursorY += 8;
+
+    // 6. TOTAL ABSTRACT OF THE ENTIRE PROPERTY: occupy both columns (Sl. No + remaining width)
+    this.drawBandhanSpannedRow('6.', 'TOTAL ABSTRACT OF THE ENTIRE PROPERTY:', TABLE_FONT_SIZE, LBL_BG);
 
     const distPctDisplay = (fields.distressSalePct !== undefined && fields.distressSalePct !== '') ? `${fields.distressSalePct}%` : '85%';
     const realPctDisplay = (fields.realisableValuePct !== undefined && fields.realisableValuePct !== '') ? `${fields.realisableValuePct}%` : '95%';
 
-    // 5-Col Table: Particulars (115.28) | Govt Value (93) | Market Value (93) | Realizable (93) | Distress (93) = 487.28
-    const colW = [115.28, 93, 93, 93, 93];
+    // 5-Col Table: Particulars (116.28) | Govt Value (94) | Market Value (94) | Realizable (94) | Distress (94) = 492.28
+    const colW = [116.28, 94, 94, 94, 94];
     const headers = [
-      'PERTICULARS',
+      'PARTICULARS',
       'GOVT. VALUE IN RS.',
       'MARKET VALUE IN RS.',
       `REALIZABLE VALUE (${realPctDisplay})`,
       `DISTRESS VALUE (${distPctDisplay})`,
     ];
 
-    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: true, fontSize: TABLE_FONT_SIZE }));
+    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: true, fontSize: 9.5 }));
     const headerH = Math.max(24, ...headerHeights);
     this.checkPageBreak(headerH);
 
@@ -1797,7 +1823,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     for (let i = 0; i < headers.length; i++) {
       this.drawCell(curX, this.cursorY, colW[i], headerH, headers[i], {
         bold: true,
-        fontSize: TABLE_FONT_SIZE,
+        fontSize: 9.5,
         align: 'center',
         vAlign: 'middle',
         fillColor: LBL_BG,
@@ -1820,7 +1846,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     for (const ar of abstractRows) {
       const values = [ar.name, ar.govt || 'Rs. 0.00', ar.mkt || 'Rs. 0.00', ar.real || 'Rs. 0.00', ar.dist || 'Rs. 0.00'];
-      const rHeights = values.map((v, i) => this.cellHeight(v, colW[i], { bold: ar.isTotal, fontSize: TABLE_FONT_SIZE }));
+      const rHeights = values.map((v, i) => this.cellHeight(v, colW[i], { bold: ar.isTotal, fontSize: 9.5 }));
       const rH = Math.max(20, ...rHeights);
       this.checkPageBreak(rH);
 
@@ -1828,7 +1854,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       for (let i = 0; i < values.length; i++) {
         this.drawCell(rx, this.cursorY, colW[i], rH, values[i], {
           bold: ar.isTotal,
-          fontSize: TABLE_FONT_SIZE,
+          fontSize: 9.5,
           align: i === 0 ? 'left' : 'center',
           vAlign: 'middle',
           fillColor: ar.isTotal ? LBL_BG : undefined,
@@ -1837,6 +1863,9 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       }
       this.cursorY += rH;
     }
+
+    // Line break after ending table
+    this.cursorY += 8;
   }
 
   // ==========================================================================
@@ -1845,35 +1874,50 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
   private renderRemarksAndOpinionSection(fields: BandhanSMEReportFields): void {
     // Remarks Box
     if (fields.valuationRemarksBox) {
-      this.drawSectionSpanner('GENERAL REMARKS & CONDITION OF THE PROPERTY / REMARKS:', undefined, TABLE_FONT_SIZE, LBL_BG);
+      this.drawSectionSpanner('REMARKS:-', undefined, TABLE_FONT_SIZE, LBL_BG);
       const rH = this.cellHeight(fields.valuationRemarksBox, CONTENT_W, { fontSize: TABLE_FONT_SIZE });
       const boxH = Math.max(26, rH + 6);
       this.checkPageBreak(boxH);
 
       this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, boxH, fields.valuationRemarksBox, {
         fontSize: TABLE_FONT_SIZE,
-        align: 'left',
+        align: 'justify',
         vAlign: 'top',
       });
       this.cursorY += boxH;
     }
 
-    // Basis of Valuation & Certificate of Valuation / Valuer Opinion
-    this.drawSectionSpanner('CERTIFICATE OF VALUATION & VALUER OPINION:', fields.basisOfValuationStatement || '(LAND & BUILDING METHOD OF VALUATION HAS BEEN ADOPTED FOR FINDING THE FAIR MARKET VALUE OF THE PROPERTY)', TABLE_FONT_SIZE, LBL_BG);
+    this.cursorY += 8;
 
+    // Basis of Valuation Statement (Unboxed, uncoloured, non-bolded)
+    const rawBasis = fields.basisOfValuationStatement || '(LAND & BUILDING METHOD OF VALUATION HAS BEEN ADOPTED FOR FINDING THE FAIR MARKET VALUE OF THE PROPERTY)';
+    const basisText = rawBasis.trim().startsWith('(') ? rawBasis.trim() : `(${rawBasis.trim()})`;
+    const basisH = this.cellHeight(basisText, CONTENT_W, { bold: false, fontSize: TABLE_FONT_SIZE });
+    this.checkPageBreak(basisH + 4);
+
+    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, basisH, basisText, {
+      bold: false,
+      fontSize: TABLE_FONT_SIZE,
+      align: 'justify',
+      vAlign: 'top',
+      hideBorder: { top: true, bottom: true, left: true, right: true },
+    });
+    this.cursorY += basisH + 8;
+
+    // Valuation Opinion Paragraph (Unboxed, uncoloured, non-bolded)
     const opinionPara = `As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is ${fields.fairMarketValue || 'Rs. 0/-'} (${fields.fairMarketValueWords || 'Rupees Zero Only'}). The Realizable Value is ${fields.realisableValue || 'Rs. 0/-'} (${fields.realisableValueWords || 'Rupees Zero Only'}). The book value of the above property as of Land is ${fields.bookValueOfLand || 'Rs. 0/-'} (${fields.bookValueOfLandWords || 'Rupees Zero Only'}) and the Distress Value ${fields.distressValue || 'Rs. 0/-'} (${fields.distressValueWords || 'Rupees Zero Only'}) And Insurable Value of the Property is ${fields.insurableValueOfProperty || 'Rs. 0/-'}.`;
 
-    const opH = this.cellHeight(opinionPara, CONTENT_W, { fontSize: TABLE_FONT_SIZE });
-    const fullOpH = Math.max(32, opH + 8);
-    this.checkPageBreak(fullOpH);
+    const opH = this.cellHeight(opinionPara, CONTENT_W, { bold: false, fontSize: TABLE_FONT_SIZE });
+    this.checkPageBreak(opH + 6);
 
-    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, fullOpH, opinionPara, {
+    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, opH, opinionPara, {
+      bold: false,
       fontSize: TABLE_FONT_SIZE,
-      align: 'left',
+      align: 'justify',
       vAlign: 'top',
-      fillColor: OPT_BG,
+      hideBorder: { top: true, bottom: true, left: true, right: true },
     });
-    this.cursorY += fullOpH;
+    this.cursorY += opH;
   }
 
   // ==========================================================================
@@ -1936,7 +1980,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
       this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, rowH, d, {
         fontSize: TABLE_FONT_SIZE,
-        align: 'left',
+        align: 'justify',
         vAlign: 'middle',
         hideBorder: { top: true, bottom: true, left: true, right: true },
       });
@@ -1945,10 +1989,39 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // Valuer Sign-off Box
     this.cursorY += 10;
-    const signBoxH = 120;
+    const padX = 8;
+    const padY = 8;
+    const maxSignTextW = CONTENT_W - padX * 2;
+    const lineSpacing = TABLE_FONT_SIZE * LINE_HEIGHT;
+
+    const valuerQual = (!fields.valuerQualifications || fields.valuerQualifications === 'B.Tech (Civil), M.Val (RE)' || fields.valuerQualifications.includes('B.Tech (Civil)'))
+      ? 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'
+      : fields.valuerQualifications;
+
+    const signItems: { text: string; bold: boolean }[] = [
+      { text: 'SIGNATURE OF EMPANELLED VALUER:', bold: true },
+      { text: `NAME OF THE EMPANELLED VALUER: ${fields.empanelledValuerName || 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)'}`, bold: true },
+      { text: `EDUCATIONAL / PROFESSIONAL QUALIFICATION: ${valuerQual}`, bold: false },
+      { text: `REGD. VALUER OF INSTITUTION OF VALUERS: ${fields.valuerIovRegNo || 'No. F-26377'}`, bold: false },
+      { text: `REGD. VALUER UNDER SECTION 34AB OF WEALTH TAX ACT: ${fields.valuerWealthTaxRegNo || 'Regd. No.-107/2016-17, Cat -I'}`, bold: false },
+      { text: `DATE: ${fields.declarationDate || fields.reportDate || formatReportDate(new Date())}`, bold: true },
+    ];
+
+    const allSignLines: { line: string; bold: boolean }[] = [];
+    for (const item of signItems) {
+      const wrapped = this.wrapText(item.text, maxSignTextW, TABLE_FONT_SIZE, item.bold);
+      for (const wLine of wrapped) {
+        allSignLines.push({ line: wLine, bold: item.bold });
+      }
+    }
+
+    const totalTextH = allSignLines.length * lineSpacing;
+    const signBoxH = Math.max(120, totalTextH + padY * 2);
     this.checkPageBreak(signBoxH + 10);
 
-    const sY = this.pdfY(this.cursorY);
+    const boxTopY = this.cursorY;
+    const sY = this.pdfY(boxTopY);
+
     this.page.drawRectangle({
       x: MARGIN_L,
       y: sY - signBoxH,
@@ -1958,16 +2031,15 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       borderWidth: BORDER_W,
     });
 
-    const valuerQual = (!fields.valuerQualifications || fields.valuerQualifications === 'B.Tech (Civil), M.Val (RE)' || fields.valuerQualifications.includes('B.Tech (Civil)'))
-      ? 'B.E. (Civil), M.Tech (Civil), M.Sc. (Real Estate Valuation), MBA (Finance), MBA (HR)'
-      : fields.valuerQualifications;
-
-    this.page.drawText('SIGNATURE OF EMPANELLED VALUER:', { x: MARGIN_L + 8, y: sY - 18, size: TABLE_FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
-    this.page.drawText(`NAME OF THE EMPANELLED VALUER: ${fields.empanelledValuerName || 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)'}`, { x: MARGIN_L + 8, y: sY - 36, size: TABLE_FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
-    this.page.drawText(`EDUCATIONAL / PROFESSIONAL QUALIFICATION: ${valuerQual}`, { x: MARGIN_L + 8, y: sY - 54, size: TABLE_FONT_SIZE, font: this.fontRegular, color: rgb(0, 0, 0) });
-    this.page.drawText(`REGD. VALUER OF INSTITUTION OF VALUERS: ${fields.valuerIovRegNo || 'No. F-26377'}`, { x: MARGIN_L + 8, y: sY - 72, size: TABLE_FONT_SIZE, font: this.fontRegular, color: rgb(0, 0, 0) });
-    this.page.drawText(`REGD. VALUER UNDER SECTION 34AB OF WEALTH TAX ACT: ${fields.valuerWealthTaxRegNo || 'Regd. No.-107/2016-17, Cat -I'}`, { x: MARGIN_L + 8, y: sY - 90, size: TABLE_FONT_SIZE, font: this.fontRegular, color: rgb(0, 0, 0) });
-    this.page.drawText(`DATE: ${fields.declarationDate || fields.reportDate || formatReportDate(new Date())}`, { x: MARGIN_L + 8, y: sY - 108, size: TABLE_FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
+    let curLineY = boxTopY + padY;
+    for (const item of allSignLines) {
+      this.drawTextAt(item.line, MARGIN_L + padX, curLineY, {
+        bold: item.bold,
+        fontSize: TABLE_FONT_SIZE,
+        maxWidth: maxSignTextW,
+      });
+      curLineY += lineSpacing;
+    }
 
     this.cursorY += signBoxH;
   }
