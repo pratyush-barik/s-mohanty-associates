@@ -1705,12 +1705,6 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
           },
         ];
 
-    // Line break before starting 4. DETAILS OF BUILDING VALUATION:
-    this.cursorY += 8;
-
-    // 4. DETAILS OF BUILDING VALUATION: occupy both columns (Sl. No + remaining width)
-    this.drawBandhanSpannedRow('4.', 'DETAILS OF BUILDING VALUATION:', TABLE_FONT_SIZE, LBL_BG);
-
     // 8-Col Header matching exact bank template:
     // Particulars (72) | Plinth (44) | Roof Ht (40) | Age (55) | Repl Rate (70) | Repl Cost (72) | Dep Amt (71) | Net Val (68.28) = 492.28
     const colW = [72, 44, 40, 55, 70, 72, 71, 68.28];
@@ -1725,15 +1719,31 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       'NET VALUE AFTER DEPRECIATION',
     ];
 
-    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: false, fontSize: 8.5 }));
-    const headerH = Math.max(30, ...headerHeights);
-    this.checkPageBreak(headerH);
+    // Calculate total height needed for entire Section 4 (Title + Header + Data Rows) so it stays together
+    const titleH = this.cellHeight('DETAILS OF BUILDING VALUATION:', CONTENT_W - this.colSl, { bold: true, fontSize: TABLE_FONT_SIZE });
+    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: false, fontSize: 8 }));
+    const headerH = Math.max(28, ...headerHeights);
+
+    const dataRowsH = rows.reduce((acc, r) => {
+      const values = [r.description, r.plinthArea, r.height, r.age, r.replacementRate, r.replacementCost, r.depreciation, r.valueAfterDepreciation];
+      const rHeights = values.map((v, i) => this.cellHeight(v || '-', colW[i], { fontSize: 8 }));
+      return acc + Math.max(18, ...rHeights);
+    }, 0);
+
+    const neededSectionH = titleH + headerH + dataRowsH + 16;
+    this.checkPageBreak(neededSectionH);
+
+    // Line break before starting 4. DETAILS OF BUILDING VALUATION:
+    this.cursorY += 8;
+
+    // 4. DETAILS OF BUILDING VALUATION: occupy both columns (Sl. No + remaining width)
+    this.drawBandhanSpannedRow('4.', 'DETAILS OF BUILDING VALUATION:', TABLE_FONT_SIZE, LBL_BG);
 
     let curX = MARGIN_L;
     for (let i = 0; i < headers.length; i++) {
       this.drawCell(curX, this.cursorY, colW[i], headerH, headers[i], {
         bold: false,
-        fontSize: 8.5,
+        fontSize: 8,
         align: 'center',
         vAlign: 'middle',
         fillColor: LBL_BG,
@@ -1745,15 +1755,15 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     // Data rows
     for (const r of rows) {
       const values = [r.description, r.plinthArea, r.height, r.age, r.replacementRate, r.replacementCost, r.depreciation, r.valueAfterDepreciation];
-      const rHeights = values.map((v, i) => this.cellHeight(v || '-', colW[i], { fontSize: 8.5 }));
-      const rH = Math.max(20, ...rHeights);
+      const rHeights = values.map((v, i) => this.cellHeight(v || '-', colW[i], { fontSize: 8 }));
+      const rH = Math.max(18, ...rHeights);
       this.checkPageBreak(rH);
 
       let rx = MARGIN_L;
       for (let i = 0; i < values.length; i++) {
         this.drawCell(rx, this.cursorY, colW[i], rH, values[i] || '-', {
           bold: i === 7,
-          fontSize: 8.5,
+          fontSize: 8,
           align: i === 0 ? 'left' : 'center',
           vAlign: 'middle',
         });
