@@ -1774,15 +1774,18 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       this.drawBandhanSpannedRow(sl, title, TABLE_FONT_SIZE, LBL_BG);
 
       if (!items || items.length === 0) {
-        this.draw2ColRow('TOTAL:', total || 'Rs. 0.00', true, true);
+        this.drawBandhanRow('', 'TOTAL:', total || 'Rs. 0.00', true, true);
         return;
       }
 
-      for (const it of items) {
+      const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)', '(xi)', '(xii)', '(xiii)', '(xiv)', '(xv)', '(xvi)', '(xvii)', '(xviii)', '(xix)', '(xx)'];
+      for (let i = 0; i < items.length; i++) {
+        const it = items[i];
+        const rom = romans[i] || `(${i + 1})`;
         const costStr = it.cost ? `Rs. ${formatCurrencyINR(parseNum(it.cost))}` : 'Rs. 0.00';
-        this.draw2ColRow(it.name, costStr, true, false);
+        this.drawBandhanRow(rom, it.name || '', costStr, true, false);
       }
-      this.draw2ColRow('TOTAL:', total || 'Rs. 0.00', true, true);
+      this.drawBandhanRow('', 'TOTAL:', total || 'Rs. 0.00', true, true);
     };
 
     renderSchedule('5.1', 'EXTRA ITEMS', fields.extraItems, fields.extraItemsTotal);
