@@ -23,6 +23,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     { id: 'clix-section-4', title: 'Visit Details' },
     { id: 'clix-section-5', title: 'Document Details' },
     { id: 'clix-section-6', title: 'Property Details' },
+    { id: 'clix-section-7', title: 'Specifications' },
     { id: 'section-11', title: 'Photos' },
     { id: 'section-12', title: 'Maps' }
   ],
@@ -1287,11 +1288,223 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
           </div>
         );
       }
+    },
+    {
+      id: 'clix-section-7',
+      title: '7. SPECIFICATIONS',
+      number: 7,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-orange-200 bg-[#fff3e0] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Specifications</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* Type of Structure */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Type of Structure</span>
+                      {renderNaToggle('clixTypeOfStructureNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.clixTypeOfStructureDropdown || ''} onChange={e => {
+                      handleChange('clixTypeOfStructureDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('clixTypeOfStructure', e.target.value);
+                      else handleChange('clixTypeOfStructure', '');
+                    }} disabled={isReadOnly || fields.clixTypeOfStructureNA}>
+                      <option value="RCC">RCC</option>
+                      <option value="Load Bearing">Load Bearing</option>
+                      <option value="Composite">Composite</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixTypeOfStructureDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom type..." value={fields.clixTypeOfStructureNA ? 'NA' : (fields.clixTypeOfStructure || '')} onChange={e => handleChange('clixTypeOfStructure', e.target.value)} disabled={isReadOnly || fields.clixTypeOfStructureNA} />
+                  )}
+                </div>
+
+                {/* Painting */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Painting</span>
+                      {renderNaToggle('clixPaintingNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.clixPaintingDropdown || ''} onChange={e => {
+                      handleChange('clixPaintingDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('clixPainting', e.target.value);
+                      else handleChange('clixPainting', '');
+                    }} disabled={isReadOnly || fields.clixPaintingNA}>
+                      <option value="Completed">Completed</option>
+                      <option value="Ongoing">Ongoing</option>
+                      <option value="Not Started">Not Started</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixPaintingDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom painting status..." value={fields.clixPaintingNA ? 'NA' : (fields.clixPainting || '')} onChange={e => handleChange('clixPainting', e.target.value)} disabled={isReadOnly || fields.clixPaintingNA} />
+                  )}
+                </div>
+
+                {/* Flooring */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Flooring</span>
+                      {renderNaToggle('clixFlooringNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.clixFlooringDropdown || ''} onChange={e => {
+                      handleChange('clixFlooringDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('clixFlooring', e.target.value);
+                      else handleChange('clixFlooring', '');
+                    }} disabled={isReadOnly || fields.clixFlooringNA}>
+                      <option value="Tiles">Tiles</option>
+                      <option value="Marble">Marble</option>
+                      <option value="Granite">Granite</option>
+                      <option value="Cement">Cement</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixFlooringDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom flooring..." value={fields.clixFlooringNA ? 'NA' : (fields.clixFlooring || '')} onChange={e => handleChange('clixFlooring', e.target.value)} disabled={isReadOnly || fields.clixFlooringNA} />
+                  )}
+                </div>
+
+                {/* Bathroom/ Plumbing fittings */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Bathroom/ Plumbing fittings</span>
+                      {renderNaToggle('clixBathroomFittingsNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.clixBathroomFittingsDropdown || ''} onChange={e => {
+                      handleChange('clixBathroomFittingsDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('clixBathroomFittings', e.target.value);
+                      else handleChange('clixBathroomFittings', '');
+                    }} disabled={isReadOnly || fields.clixBathroomFittingsNA}>
+                      <option value="Completed">Completed</option>
+                      <option value="Concealed">Concealed</option>
+                      <option value="Open">Open</option>
+                      <option value="Not Started">Not Started</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixBathroomFittingsDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom bathroom fittings..." value={fields.clixBathroomFittingsNA ? 'NA' : (fields.clixBathroomFittings || '')} onChange={e => handleChange('clixBathroomFittings', e.target.value)} disabled={isReadOnly || fields.clixBathroomFittingsNA} />
+                  )}
+                </div>
+
+                {/* Electrical fittings */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Electrical fittings</span>
+                      {renderNaToggle('clixElectricalFittingsNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.clixElectricalFittingsDropdown || ''} onChange={e => {
+                      handleChange('clixElectricalFittingsDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('clixElectricalFittings', e.target.value);
+                      else handleChange('clixElectricalFittings', '');
+                    }} disabled={isReadOnly || fields.clixElectricalFittingsNA}>
+                      <option value="Concealed wiring">Concealed wiring</option>
+                      <option value="Open wiring">Open wiring</option>
+                      <option value="None">None</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixElectricalFittingsDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom electrical fittings..." value={fields.clixElectricalFittingsNA ? 'NA' : (fields.clixElectricalFittings || '')} onChange={e => handleChange('clixElectricalFittings', e.target.value)} disabled={isReadOnly || fields.clixElectricalFittingsNA} />
+                  )}
+                </div>
+
+                {/* Kitchen */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Kitchen</span>
+                      {renderNaToggle('clixKitchenNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.clixKitchenDropdown || ''} onChange={e => {
+                      handleChange('clixKitchenDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('clixKitchen', e.target.value);
+                      else handleChange('clixKitchen', '');
+                    }} disabled={isReadOnly || fields.clixKitchenNA}>
+                      <option value="Tile Flooring & Steel Sink">Tile Flooring & Steel Sink</option>
+                      <option value="Granite Platform">Granite Platform</option>
+                      <option value="Bare">Bare</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixKitchenDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom kitchen details..." value={fields.clixKitchenNA ? 'NA' : (fields.clixKitchen || '')} onChange={e => handleChange('clixKitchen', e.target.value)} disabled={isReadOnly || fields.clixKitchenNA} />
+                  )}
+                </div>
+
+                {/* Interiors (Fixed) */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Interiors (Fixed)</span>
+                      {renderNaToggle('clixInteriorsNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.clixInteriorsDropdown || ''} onChange={e => {
+                      handleChange('clixInteriorsDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('clixInteriors', e.target.value);
+                      else handleChange('clixInteriors', '');
+                    }} disabled={isReadOnly || fields.clixInteriorsNA}>
+                      <option value="Good">Good</option>
+                      <option value="Average">Average</option>
+                      <option value="Poor">Poor</option>
+                      <option value="None">None</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.clixInteriorsDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom interiors..." value={fields.clixInteriorsNA ? 'NA' : (fields.clixInteriors || '')} onChange={e => handleChange('clixInteriors', e.target.value)} disabled={isReadOnly || fields.clixInteriorsNA} />
+                  )}
+                </div>
+
+              </div>
+            </div>
+          </div>
+        );
+      }
     }
   ],
   defaultValues: {
     clixReportType: 'Technical Scrutiny Report',
-    clixLoanType: 'LAP'
+    clixLoanType: 'LAP',
+    
+    // Section 7 Variables
+    clixTypeOfStructureDropdown: 'RCC',
+    clixTypeOfStructure: 'RCC',
+    clixTypeOfStructureNA: false,
+    clixPaintingDropdown: 'Completed',
+    clixPainting: 'Completed',
+    clixPaintingNA: false,
+    clixFlooringDropdown: 'Tiles',
+    clixFlooring: 'Tiles',
+    clixFlooringNA: false,
+    clixBathroomFittingsDropdown: 'Completed',
+    clixBathroomFittings: 'Completed',
+    clixBathroomFittingsNA: false,
+    clixElectricalFittingsDropdown: 'Concealed wiring',
+    clixElectricalFittings: 'Concealed wiring',
+    clixElectricalFittingsNA: false,
+    clixKitchenDropdown: 'Tile Flooring & Steel Sink',
+    clixKitchen: 'Tile Flooring & Steel Sink',
+    clixKitchenNA: false,
+    clixInteriorsDropdown: 'Good',
+    clixInteriors: 'Good',
+    clixInteriorsNA: false,
   }
 };
 
