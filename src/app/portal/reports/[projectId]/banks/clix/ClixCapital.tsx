@@ -310,9 +310,31 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
       id: 'clix-section-3',
       title: 'Property Address',
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const handlePinCodeChange = async (e: any) => {
+          const val = e.target.value.replace(/\D/g, '').substring(0, 6);
+          handleChange('clixPinCode', val);
+          if (val.length === 6) {
+            try {
+              const res = await fetch(`https://api.postalpincode.in/pincode/${val}`);
+              const data = await res.json();
+              if (data && data[0] && data[0].Status === 'Success') {
+                const postOffice = data[0].PostOffice[0];
+                if (postOffice.State && (!fields.clixStateEdit)) {
+                  handleChange('clixState', postOffice.State);
+                }
+                if (postOffice.District && (!fields.clixCityEdit)) {
+                  handleChange('clixCity', postOffice.District);
+                }
+              }
+            } catch (err) {
+              console.error('Failed to fetch pin code details', err);
+            }
+          }
+        };
+
         return (
             <div className="animate-fade-in space-y-6">
-              <div className="border border-[#E8F5E9] bg-[#E8F5E9] rounded-xl p-4">
+              <div className="border border-[#fff9c4] bg-[#fff9c4] rounded-xl p-4">
                 <h3 className="font-bold text-gray-700 mb-4">Property Address</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -393,120 +415,161 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                     />
                   </Field>
 
-                  <div className="flex flex-col gap-2">
-                    <Field label="City">
-                      <select
-                        className={inputCls}
-                        value={fields.clixCity || ''}
-                        onChange={e => {
-                          handleChange('clixCity', e.target.value);
-                          if (e.target.value !== 'Custom') {
-                            handleChange('clixCityCustom', '');
-                          }
-                        }}
-                        disabled={isReadOnly}
-                      >
-                        <option value="">Select City</option>
-                        <option value="Mumbai">Mumbai</option>
-                        <option value="Delhi">Delhi</option>
-                        <option value="Bangalore">Bangalore</option>
-                        <option value="Hyderabad">Hyderabad</option>
-                        <option value="Chennai">Chennai</option>
-                        <option value="Kolkata">Kolkata</option>
-                        <option value="Pune">Pune</option>
-                        <option value="Custom">Custom</option>
-                      </select>
-                    </Field>
-                    {fields.clixCity === 'Custom' && (
-                      <input
-                        type="text"
-                        placeholder="Enter custom city"
-                        className={inputCls}
-                        value={fields.clixCityCustom || ''}
-                        onChange={e => handleChange('clixCityCustom', e.target.value)}
-                        disabled={isReadOnly}
-                      />
-                    )}
-                  </div>
-
-                  <div className="flex flex-col gap-2">
-                    <Field label="State">
-                      <select
-                        className={inputCls}
-                        value={fields.clixState || ''}
-                        onChange={e => {
-                          handleChange('clixState', e.target.value);
-                          if (e.target.value !== 'Custom') {
-                            handleChange('clixStateCustom', '');
-                          }
-                        }}
-                        disabled={isReadOnly}
-                      >
-                        <option value="">Select State</option>
-                        <option value="Andhra Pradesh">Andhra Pradesh</option>
-                        <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-                        <option value="Assam">Assam</option>
-                        <option value="Bihar">Bihar</option>
-                        <option value="Chhattisgarh">Chhattisgarh</option>
-                        <option value="Goa">Goa</option>
-                        <option value="Gujarat">Gujarat</option>
-                        <option value="Haryana">Haryana</option>
-                        <option value="Himachal Pradesh">Himachal Pradesh</option>
-                        <option value="Jharkhand">Jharkhand</option>
-                        <option value="Karnataka">Karnataka</option>
-                        <option value="Kerala">Kerala</option>
-                        <option value="Madhya Pradesh">Madhya Pradesh</option>
-                        <option value="Maharashtra">Maharashtra</option>
-                        <option value="Manipur">Manipur</option>
-                        <option value="Meghalaya">Meghalaya</option>
-                        <option value="Mizoram">Mizoram</option>
-                        <option value="Nagaland">Nagaland</option>
-                        <option value="Odisha">Odisha</option>
-                        <option value="Punjab">Punjab</option>
-                        <option value="Rajasthan">Rajasthan</option>
-                        <option value="Sikkim">Sikkim</option>
-                        <option value="Tamil Nadu">Tamil Nadu</option>
-                        <option value="Telangana">Telangana</option>
-                        <option value="Tripura">Tripura</option>
-                        <option value="Uttar Pradesh">Uttar Pradesh</option>
-                        <option value="Uttarakhand">Uttarakhand</option>
-                        <option value="West Bengal">West Bengal</option>
-                        <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-                        <option value="Chandigarh">Chandigarh</option>
-                        <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
-                        <option value="Delhi">Delhi</option>
-                        <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-                        <option value="Ladakh">Ladakh</option>
-                        <option value="Lakshadweep">Lakshadweep</option>
-                        <option value="Puducherry">Puducherry</option>
-                        <option value="Custom">Custom</option>
-                      </select>
-                    </Field>
-                    {fields.clixState === 'Custom' && (
-                      <input
-                        type="text"
-                        placeholder="Enter custom state"
-                        className={inputCls}
-                        value={fields.clixStateCustom || ''}
-                        onChange={e => handleChange('clixStateCustom', e.target.value)}
-                        disabled={isReadOnly}
-                      />
-                    )}
-                  </div>
-
                   <Field label="Pin Code">
                     <input
                       type="text"
                       maxLength={6}
                       className={inputCls}
                       value={fields.clixPinCode || ''}
-                      onChange={e => {
-                        const val = e.target.value.replace(/\D/g, '');
-                        handleChange('clixPinCode', val);
-                      }}
+                      onChange={handlePinCodeChange}
                       disabled={isReadOnly}
                     />
                   </Field>
+
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>State</span>
+                      {renderEditSwitch('clixStateEdit', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    {fields.clixStateEdit ? (
+                      <div className="flex flex-col gap-2">
+                        <select
+                          className={inputCls}
+                          value={fields.clixState || ''}
+                          onChange={e => {
+                            handleChange('clixState', e.target.value);
+                            if (e.target.value !== 'Custom') {
+                              handleChange('clixStateCustom', '');
+                            }
+                          }}
+                          disabled={isReadOnly}
+                        >
+                          <option value="">Select State</option>
+                          <option value="Andhra Pradesh">Andhra Pradesh</option>
+                          <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                          <option value="Assam">Assam</option>
+                          <option value="Bihar">Bihar</option>
+                          <option value="Chhattisgarh">Chhattisgarh</option>
+                          <option value="Goa">Goa</option>
+                          <option value="Gujarat">Gujarat</option>
+                          <option value="Haryana">Haryana</option>
+                          <option value="Himachal Pradesh">Himachal Pradesh</option>
+                          <option value="Jharkhand">Jharkhand</option>
+                          <option value="Karnataka">Karnataka</option>
+                          <option value="Kerala">Kerala</option>
+                          <option value="Madhya Pradesh">Madhya Pradesh</option>
+                          <option value="Maharashtra">Maharashtra</option>
+                          <option value="Manipur">Manipur</option>
+                          <option value="Meghalaya">Meghalaya</option>
+                          <option value="Mizoram">Mizoram</option>
+                          <option value="Nagaland">Nagaland</option>
+                          <option value="Odisha">Odisha</option>
+                          <option value="Punjab">Punjab</option>
+                          <option value="Rajasthan">Rajasthan</option>
+                          <option value="Sikkim">Sikkim</option>
+                          <option value="Tamil Nadu">Tamil Nadu</option>
+                          <option value="Telangana">Telangana</option>
+                          <option value="Tripura">Tripura</option>
+                          <option value="Uttar Pradesh">Uttar Pradesh</option>
+                          <option value="Uttarakhand">Uttarakhand</option>
+                          <option value="West Bengal">West Bengal</option>
+                          <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                          <option value="Chandigarh">Chandigarh</option>
+                          <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                          <option value="Delhi">Delhi</option>
+                          <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                          <option value="Ladakh">Ladakh</option>
+                          <option value="Lakshadweep">Lakshadweep</option>
+                          <option value="Puducherry">Puducherry</option>
+                          <option value="Custom">Custom</option>
+                        </select>
+                        {fields.clixState === 'Custom' && (
+                          <input
+                            type="text"
+                            placeholder="Enter custom state"
+                            className={inputCls}
+                            value={fields.clixStateCustom || ''}
+                            onChange={e => handleChange('clixStateCustom', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <input
+                          type="text"
+                          title='Prefill from System, "Pin Code Lookup"'
+                          className={`${inputCls} pr-10 bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800`}
+                          value={fields.clixState || ''}
+                          readOnly
+                          disabled={isReadOnly}
+                        />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from System, "Pin Code Lookup"'>
+                          <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                        </div>
+                      </div>
+                    )}
+                  </Field>
+
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>City</span>
+                      {renderEditSwitch('clixCityEdit', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    {fields.clixCityEdit ? (
+                      <div className="flex flex-col gap-2">
+                        <select
+                          className={inputCls}
+                          value={fields.clixCity || ''}
+                          onChange={e => {
+                            handleChange('clixCity', e.target.value);
+                            if (e.target.value !== 'Custom') {
+                              handleChange('clixCityCustom', '');
+                            }
+                          }}
+                          disabled={isReadOnly}
+                        >
+                          <option value="">Select City</option>
+                          <option value="Mumbai">Mumbai</option>
+                          <option value="Delhi">Delhi</option>
+                          <option value="Bangalore">Bangalore</option>
+                          <option value="Hyderabad">Hyderabad</option>
+                          <option value="Chennai">Chennai</option>
+                          <option value="Kolkata">Kolkata</option>
+                          <option value="Pune">Pune</option>
+                          <option value="Custom">Custom</option>
+                        </select>
+                        {fields.clixCity === 'Custom' && (
+                          <input
+                            type="text"
+                            placeholder="Enter custom city"
+                            className={inputCls}
+                            value={fields.clixCityCustom || ''}
+                            onChange={e => handleChange('clixCityCustom', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <input
+                          type="text"
+                          title='Prefill from System, "Pin Code Lookup"'
+                          className={`${inputCls} pr-10 bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800`}
+                          value={fields.clixCity || ''}
+                          readOnly
+                          disabled={isReadOnly}
+                        />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from System, "Pin Code Lookup"'>
+                          <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                        </div>
+                      </div>
+                    )}
+                  </Field>
+
+
                 </div>
               </div>
             </div>
