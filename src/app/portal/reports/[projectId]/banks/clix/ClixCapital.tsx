@@ -198,18 +198,6 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                     />
                   </Field>
 
-                  <div className="col-span-1 md:col-span-2">
-                    <label className="flex items-center gap-2 cursor-pointer mt-2">
-                      <input
-                        type="checkbox"
-                        className="rounded text-emerald-600 focus:ring-emerald-500"
-                        checked={!!fields.clixRepSameAsBorrower}
-                        onChange={e => handleChange('clixRepSameAsBorrower', e.target.checked)}
-                        disabled={isReadOnly}
-                      />
-                      <span className="text-sm font-medium text-gray-700">Representative same as Borrower</span>
-                    </label>
-                  </div>
 
                   <Field label={
                     <div className="w-full flex items-center justify-between">
@@ -300,6 +288,19 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       disabled={isReadOnly || !!fields.clixRmContactNoNA}
                     />
                   </Field>
+
+                  <div className="col-span-1 md:col-span-2">
+                    <label className="flex items-center gap-2 cursor-pointer mt-2">
+                      <input
+                        type="checkbox"
+                        className="rounded text-emerald-600 focus:ring-emerald-500"
+                        checked={!!fields.clixRepSameAsBorrower}
+                        onChange={e => handleChange('clixRepSameAsBorrower', e.target.checked)}
+                        disabled={isReadOnly}
+                      />
+                      <span className="text-sm font-medium text-gray-700">Representative same as Borrower</span>
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -415,15 +416,61 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                     />
                   </Field>
 
-                  <Field label="Pin Code">
-                    <input
-                      type="text"
-                      maxLength={6}
-                      className={inputCls}
-                      value={fields.clixPinCode || ''}
-                      onChange={handlePinCodeChange}
-                      disabled={isReadOnly}
-                    />
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>City</span>
+                      {renderEditSwitch('clixCityEdit', fields, handleChange, isReadOnly)}
+                    </div>
+                  }>
+                    {fields.clixCityEdit ? (
+                      <div className="flex flex-col gap-2">
+                        <select
+                          className={inputCls}
+                          value={fields.clixCity || ''}
+                          onChange={e => {
+                            handleChange('clixCity', e.target.value);
+                            if (e.target.value !== 'Custom') {
+                              handleChange('clixCityCustom', '');
+                            }
+                          }}
+                          disabled={isReadOnly}
+                        >
+                          <option value="">Select City</option>
+                          <option value="Mumbai">Mumbai</option>
+                          <option value="Delhi">Delhi</option>
+                          <option value="Bangalore">Bangalore</option>
+                          <option value="Hyderabad">Hyderabad</option>
+                          <option value="Chennai">Chennai</option>
+                          <option value="Kolkata">Kolkata</option>
+                          <option value="Pune">Pune</option>
+                          <option value="Custom">Custom</option>
+                        </select>
+                        {fields.clixCity === 'Custom' && (
+                          <input
+                            type="text"
+                            placeholder="Enter custom city"
+                            className={inputCls}
+                            value={fields.clixCityCustom || ''}
+                            onChange={e => handleChange('clixCityCustom', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        )}
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <input
+                          type="text"
+                          title='Prefill from System, "Pin Code Lookup"'
+                          className={`${inputCls} pr-10 bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800`}
+                          value={fields.clixCity || ''}
+                          readOnly
+                          disabled={isReadOnly}
+                        />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from System, "Pin Code Lookup"'>
+                          <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                        </div>
+                      </div>
+                    )}
                   </Field>
 
                   <Field label={
@@ -512,61 +559,15 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                     )}
                   </Field>
 
-                  <Field label={
-                    <div className="w-full flex items-center justify-between">
-                      <span>City</span>
-                      {renderEditSwitch('clixCityEdit', fields, handleChange, isReadOnly)}
-                    </div>
-                  }>
-                    {fields.clixCityEdit ? (
-                      <div className="flex flex-col gap-2">
-                        <select
-                          className={inputCls}
-                          value={fields.clixCity || ''}
-                          onChange={e => {
-                            handleChange('clixCity', e.target.value);
-                            if (e.target.value !== 'Custom') {
-                              handleChange('clixCityCustom', '');
-                            }
-                          }}
-                          disabled={isReadOnly}
-                        >
-                          <option value="">Select City</option>
-                          <option value="Mumbai">Mumbai</option>
-                          <option value="Delhi">Delhi</option>
-                          <option value="Bangalore">Bangalore</option>
-                          <option value="Hyderabad">Hyderabad</option>
-                          <option value="Chennai">Chennai</option>
-                          <option value="Kolkata">Kolkata</option>
-                          <option value="Pune">Pune</option>
-                          <option value="Custom">Custom</option>
-                        </select>
-                        {fields.clixCity === 'Custom' && (
-                          <input
-                            type="text"
-                            placeholder="Enter custom city"
-                            className={inputCls}
-                            value={fields.clixCityCustom || ''}
-                            onChange={e => handleChange('clixCityCustom', e.target.value)}
-                            disabled={isReadOnly}
-                          />
-                        )}
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <input
-                          type="text"
-                          title='Prefill from System, "Pin Code Lookup"'
-                          className={`${inputCls} pr-10 bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800`}
-                          value={fields.clixCity || ''}
-                          readOnly
-                          disabled={isReadOnly}
-                        />
-                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from System, "Pin Code Lookup"'>
-                          <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
-                        </div>
-                      </div>
-                    )}
+                  <Field label="Pin Code">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      className={inputCls}
+                      value={fields.clixPinCode || ''}
+                      onChange={handlePinCodeChange}
+                      disabled={isReadOnly}
+                    />
                   </Field>
 
 
@@ -676,20 +677,57 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                     )}
                   </div>
 
-                  <Field label={
-                    <div className="w-full flex items-center justify-between">
-                      <span>ID Proof details</span>
-                      {renderNaToggle('clixIdProofDetailsNA', fields, handleChange, isReadOnly)}
-                    </div>
-                  }>
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={fields.clixIdProofDetailsNA ? 'NA' : (fields.clixIdProofDetails || '')}
-                      onChange={e => handleChange('clixIdProofDetails', e.target.value)}
-                      disabled={isReadOnly || !!fields.clixIdProofDetailsNA}
-                    />
-                  </Field>
+                  <div className="flex flex-col gap-2">
+                    <Field label={
+                      <div className="w-full flex items-center justify-between">
+                        <span>ID Proof details</span>
+                        {renderNaToggle('clixIdProofDetailsNA', fields, handleChange, isReadOnly)}
+                      </div>
+                    }>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <select
+                          className={`${inputCls} sm:w-1/3`}
+                          value={fields.clixIdProofType || ''}
+                          onChange={e => {
+                            handleChange('clixIdProofType', e.target.value);
+                            if (e.target.value !== 'Custom') {
+                              handleChange('clixIdProofTypeCustom', '');
+                            }
+                          }}
+                          disabled={isReadOnly || !!fields.clixIdProofDetailsNA}
+                        >
+                          <option value="">Select ID Type</option>
+                          <option value="Aadhaar">Aadhaar</option>
+                          <option value="PAN">PAN</option>
+                          <option value="Voter ID">Voter ID</option>
+                          <option value="Passport">Passport</option>
+                          <option value="Driving License">Driving License</option>
+                          <option value="Custom">Custom</option>
+                        </select>
+                        <input
+                          type="text"
+                          placeholder="ID Number"
+                          className={`${inputCls} sm:w-2/3`}
+                          value={fields.clixIdProofDetailsNA ? 'NA' : (fields.clixIdProofNumber || '')}
+                          onChange={e => {
+                            const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                            handleChange('clixIdProofNumber', val);
+                          }}
+                          disabled={isReadOnly || !!fields.clixIdProofDetailsNA}
+                        />
+                      </div>
+                    </Field>
+                    {fields.clixIdProofType === 'Custom' && (
+                      <input
+                        type="text"
+                        placeholder="Enter custom ID type"
+                        className={inputCls}
+                        value={fields.clixIdProofTypeCustom || ''}
+                        onChange={e => handleChange('clixIdProofTypeCustom', e.target.value)}
+                        disabled={isReadOnly || !!fields.clixIdProofDetailsNA}
+                      />
+                    )}
+                  </div>
 
                   <div className="col-span-1 md:col-span-2">
                     <Field label={
@@ -698,15 +736,49 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                         {renderNaToggle('clixPropertyIdentifiedThroughNA', fields, handleChange, isReadOnly)}
                       </div>
                     }>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {['Local Enquiry', 'Name Plate', 'Plot Number', 'Boundaries matching with document', 'Customer Confirmation', 'Custom'].map(opt => {
+                          const selected = Array.isArray(fields.clixPropertyIdentifiedThrough) ? fields.clixPropertyIdentifiedThrough : [];
+                          const isSelected = selected.includes(opt);
+                          return (
+                            <button
+                              key={opt}
+                              type="button"
+                              onClick={() => {
+                                if (isReadOnly || fields.clixPropertyIdentifiedThroughNA) return;
+                                if (isSelected) {
+                                  handleChange('clixPropertyIdentifiedThrough', selected.filter((i: string) => i !== opt));
+                                } else {
+                                  handleChange('clixPropertyIdentifiedThrough', [...selected, opt]);
+                                }
+                              }}
+                              disabled={isReadOnly || !!fields.clixPropertyIdentifiedThroughNA}
+                              className={`px-3 py-1.5 rounded-full text-sm font-medium border transition-colors ${
+                                fields.clixPropertyIdentifiedThroughNA
+                                  ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                                  : isSelected
+                                    ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                    : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </Field>
+                    {(Array.isArray(fields.clixPropertyIdentifiedThrough) ? fields.clixPropertyIdentifiedThrough : []).includes('Custom') && (
                       <textarea
-                        className={`${inputCls} resize-y min-h-15`}
+                        placeholder="Enter custom identification method"
+                        className={`${inputCls} mt-2 resize-y min-h-15`}
                         rows={2}
-                        value={fields.clixPropertyIdentifiedThroughNA ? 'NA' : (fields.clixPropertyIdentifiedThrough || '')}
-                        onChange={e => handleChange('clixPropertyIdentifiedThrough', e.target.value)}
+                        value={fields.clixPropertyIdentifiedThroughCustom || ''}
+                        onChange={e => handleChange('clixPropertyIdentifiedThroughCustom', e.target.value)}
                         disabled={isReadOnly || !!fields.clixPropertyIdentifiedThroughNA}
                       />
-                    </Field>
+                    )}
                   </div>
+
 
                 </div>
               </div>
