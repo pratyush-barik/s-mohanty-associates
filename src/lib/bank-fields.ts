@@ -79,6 +79,12 @@ export function reorderAndLabelAnnexures(
 
 // ─── Base Report Fields (identical to GeneralReportBuilder's ReportFields) ──
 export interface BaseReportFields {
+  // Clix Capital
+  clixReportType?: string;
+  clixLoanType?: string;
+  clixApplicationNo?: string;
+  clixCollateralId?: string;
+
   // Section 1 – General Details
   propertyType: string;
   ownerName: string;
