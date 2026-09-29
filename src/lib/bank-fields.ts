@@ -82,9 +82,17 @@ export function reorderAndLabelAnnexures(
 export interface ClixLegalDoc {
   id: string;
   docName: string;
+  docNameCustom: string;
   docNameNA: boolean;
   status: string;
   statusCustom: string;
+}
+
+export interface ClixAccFloor {
+  id: string;
+  label: string;
+  description: string;
+  isNA: boolean;
 }
 
 export interface BaseReportFields {
@@ -121,14 +129,7 @@ export interface BaseReportFields {
   clixIdProofDetailsNA?: boolean;
   clixIdProofDetails?: string;
   clixPropertyIdentifiedThroughNA?: boolean;
-  clixAccThirdFloorNA?: boolean;
-  clixAccThirdFloor?: string;
-  clixAccSecondFloorNA?: boolean;
-  clixAccSecondFloor?: string;
-  clixAccFirstFloorNA?: boolean;
-  clixAccFirstFloor?: string;
-  clixAccGroundFloorNA?: boolean;
-  clixAccGroundFloor?: string;
+  clixAccFloors?: ClixAccFloor[];
   clixLegalDocs?: ClixLegalDoc[];
   clixPropertyIdentifiedThrough?: string;
 
