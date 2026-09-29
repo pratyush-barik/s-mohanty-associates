@@ -1454,7 +1454,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
           { plotNo: fields.plotNo || 'Schedule 1', east: 'As per deed', west: 'As per deed', north: 'Road', south: 'As per deed' }
         ];
 
-    this.drawBandhanSpannedRow('P.', 'BOUNDARIES OF THE PROPERTY:', TABLE_FONT_SIZE, LBL_BG);
+    this.drawBandhanSpannedRow('P.', 'BOUNDARIES OF THE PROPERTY:');
     this.drawBandhanSpannedRow('1)', 'BOUNDARIES (AS PER DOCUMENT):');
 
     for (let i = 0; i < deedPlots.length; i++) {
@@ -1570,7 +1570,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     if (floors.length > 0) {
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
-        this.drawBandhanRow(rom, `${fl.floorName.toUpperCase()} HEIGHT:`, fl.height || "10'-6\"");
+        this.drawBandhanRow(rom, `${fl.floorName.toUpperCase()}:`, fl.height || "10'-6\"");
       });
     }
 
@@ -1579,7 +1579,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     if (floors.length > 0) {
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
-        this.drawBandhanRow(rom, `PLINTH AREA (${fl.floorName.toUpperCase()}):`, fl.plinthArea ? `${fl.plinthArea} Sft.` : '');
+        this.drawBandhanRow(rom, `${fl.floorName.toUpperCase()}:`, fl.plinthArea ? `${fl.plinthArea} Sft.` : '');
       });
     } else {
       this.drawBandhanRow('', 'PLINTH AREA:', 'Not Applicable', true, false);
@@ -1587,8 +1587,8 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // C. Condition of Building
     this.drawBandhanSpannedRow('C.', 'CONDITION OF THE BUILDING:');
-    this.drawBandhanRow('(i)', 'CONDITION OF THE BUILDING (EXTERIOR):', fields.buildingConditionExterior || 'Good');
-    this.drawBandhanRow('(ii)', 'CONDITION OF THE BUILDING (INTERIOR):', fields.buildingConditionInterior || 'Good');
+    this.drawBandhanRow('(i)', 'EXTERIOR:', fields.buildingConditionExterior || 'Good');
+    this.drawBandhanRow('(ii)', 'INTERIOR:', fields.buildingConditionInterior || 'Good');
     this.drawBandhanRow('D.', 'TYPE OF FOUNDATIONS:', fields.foundationType || 'Column Foundation');
 
     // E. Doors and Windows Floor-Wise
@@ -1596,7 +1596,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     if (floors.length > 0) {
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
-        this.drawBandhanRow(rom, `DOORS AND WINDOWS (${fl.floorName.toUpperCase()}):`, fl.doorsWindows || 'Sal wood choukath with non sal wood shutter');
+        this.drawBandhanRow(rom, `${fl.floorName.toUpperCase()}:`, fl.doorsWindows || 'Sal wood choukath with non sal wood shutter');
       });
     } else {
       this.drawBandhanRow('', 'DOORS AND WINDOWS:', 'Not Applicable', true, false);
@@ -1607,7 +1607,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     if (floors.length > 0) {
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
-        this.drawBandhanRow(rom, `FLOORING (${fl.floorName.toUpperCase()}):`, fl.flooring || 'VT Flooring');
+        this.drawBandhanRow(rom, `${fl.floorName.toUpperCase()}:`, fl.flooring || 'VT Flooring');
       });
     } else {
       this.drawBandhanRow('', 'FLOORING:', 'Not Applicable', true, false);
@@ -1618,7 +1618,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     if (floors.length > 0) {
       floors.forEach((fl, idx) => {
         const rom = romans[idx] || `(${idx + 1})`;
-        this.drawBandhanRow(rom, `WALL FINISHING (${fl.floorName.toUpperCase()}):`, fl.wallFinishing || 'Cement Plastering, Putty, Painting');
+        this.drawBandhanRow(rom, `${fl.floorName.toUpperCase()}:`, fl.wallFinishing || 'Cement Plastering, Putty, Painting');
       });
     } else {
       this.drawBandhanRow('', 'WALL FINISHING:', 'Not Applicable', true, false);
