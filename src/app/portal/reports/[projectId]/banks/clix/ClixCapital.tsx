@@ -27,7 +27,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     { id: 'clix-section-8', title: 'Boundaries and Set Backs' },
     { id: 'clix-section-9', title: 'Area and Usage Detail' },
     { id: 'clix-section-10', title: 'Fair Market Value' },
-    { id: 'section-11', title: 'Photos' },
+    { id: 'clix-section-11', title: 'Derived Values (Realizable & Distress)' },
     { id: 'section-12', title: 'Maps' }
   ],
   
@@ -2420,6 +2420,213 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
           </div>
         );
       }
+    },
+    {
+      id: 'clix-section-11',
+      title: '11. DERIVED VALUES (REALIZABLE & DISTRESS)',
+      number: 11,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        
+        const formatINR = (val: string | number) => {
+          if (!val && val !== 0) return '';
+          if (val === 'NA') return 'NA';
+          const num = parseFloat(val.toString().replace(/,/g, ''));
+          if (isNaN(num)) return val.toString();
+          return new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 }).format(num);
+        };
+        const parseINR = (val: string) => val.replace(/[^0-9.]/g, '');
+
+        // Auto-calculating FMV and Total BUA from Section 10 data if they weren't explicitly saved
+        const s9Rows = fields.clixS9BuaRows || [];
+        const s10Rows = fields.clixS10ValuationRows || [];
+        
+        const getS9AdoptedArea = (floorId: string) => {
+          const s9 = s9Rows.find((r: any) => r.id === floorId) || {};
+          return s9.adoptedEdit ? (s9.adopted || '0') : (s9.actual || '0');
+        };
+
+        const accFloors = fields.clixAccFloors || [];
+        const activeFloors = accFloors.filter((f: any) => !f.isNA);
+        
+        let autoTotalBua = 0;
+        activeFloors.forEach((f: any) => {
+          const r = s10Rows.find((row: any) => row.id === f.id) || {};
+          const adoptedAreaStr = r.areaEdit ? (r.area || '0') : getS9AdoptedArea(f.id);
+          const autoAmt = (parseFloat(adoptedAreaStr) || 0) * (parseFloat(r.rate || '0') || 0);
+          autoTotalBua += parseFloat(r.amountEdit ? (r.amount || '0') : autoAmt.toString()) || 0;
+        });
+
+        const finalTotalBua = fields.clixEnableS10TotalBuaEdit 
+          ? (fields.clixS10TotalBua || '') 
+          : autoTotalBua.toString();
+
+        const landAmt = parseFloat(fields.clixS10LandAmount || '0') || 0;
+        const autoFmv = (landAmt + parseFloat(finalTotalBua || '0')).toString();
+        
+        const finalFmv = fields.clixEnableS10FmvEdit 
+          ? (fields.clixS10Fmv || '') 
+          : autoFmv;
+
+        const fmvNum = parseFloat(finalFmv || '0') || 0;
+
+        // Section 11 calculations
+        const autoRealizable = (fmvNum * 0.85).toString();
+        const autoDistress = (fmvNum * 0.75).toString();
+        
+        const isRealizableEdit = fields.clixEnableS11RealizableEdit;
+        const finalRealizable = isRealizableEdit ? (fields.clixS11Realizable || '') : autoRealizable;
+
+        const isDistressEdit = fields.clixEnableS11DistressEdit;
+        const finalDistress = isDistressEdit ? (fields.clixS11Distress || '') : autoDistress;
+
+        const isInsuranceEdit = fields.clixEnableS11InsuranceEdit;
+        const finalInsurance = isInsuranceEdit ? (fields.clixS11Insurance || '') : finalTotalBua;
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-green-200 bg-[#f1f8e9] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Derived Values</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Realizable Value (Rs)</span>
+                    <div className="flex items-center gap-2">
+                      {renderEditSwitch('clixEnableS11RealizableEdit', fields, handleChange, isReadOnly, fields.clixS11RealizableNA)}
+                      {renderNaToggle('clixS11RealizableNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  </div>
+                }>
+                  <div className="relative w-full">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">₹</span>
+                    {isRealizableEdit ? (
+                      <input 
+                        type="text"
+                        className={`\${inputCls} pl-7 \${fields.clixS11RealizableNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                        value={fields.clixS11RealizableNA ? 'NA' : formatINR(finalRealizable)}
+                        onChange={(e) => handleChange('clixS11Realizable', parseINR(e.target.value))}
+                        disabled={isReadOnly || fields.clixS11RealizableNA}
+                      />
+                    ) : (
+                      <div className="relative w-full">
+                        <input 
+                          className={`\${inputCls} pl-7 pr-10 bg-white text-gray-700`}
+                          value={fields.clixS11RealizableNA ? 'NA' : formatINR(finalRealizable)}
+                          readOnly 
+                          disabled={isReadOnly || fields.clixS11RealizableNA}
+                          title=">>Auto calculating from [Fair Market Value * 0.85]<<"
+                        />
+                        {!fields.clixS11RealizableNA && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Fair Market Value * 0.85]<<">
+                            <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Field>
+
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Distress Sale Value (Rs)</span>
+                    <div className="flex items-center gap-2">
+                      {renderEditSwitch('clixEnableS11DistressEdit', fields, handleChange, isReadOnly, fields.clixS11DistressNA)}
+                      {renderNaToggle('clixS11DistressNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  </div>
+                }>
+                  <div className="relative w-full">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">₹</span>
+                    {isDistressEdit ? (
+                      <input 
+                        type="text"
+                        className={`\${inputCls} pl-7 \${fields.clixS11DistressNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                        value={fields.clixS11DistressNA ? 'NA' : formatINR(finalDistress)}
+                        onChange={(e) => handleChange('clixS11Distress', parseINR(e.target.value))}
+                        disabled={isReadOnly || fields.clixS11DistressNA}
+                      />
+                    ) : (
+                      <div className="relative w-full">
+                        <input 
+                          className={`\${inputCls} pl-7 pr-10 bg-white text-gray-700`}
+                          value={fields.clixS11DistressNA ? 'NA' : formatINR(finalDistress)}
+                          readOnly 
+                          disabled={isReadOnly || fields.clixS11DistressNA}
+                          title=">>Auto calculating from [Fair Market Value * 0.75]<<"
+                        />
+                        {!fields.clixS11DistressNA && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Fair Market Value * 0.75]<<">
+                            <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Field>
+
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Guideline / Govt. Value (Rs)</span>
+                    {renderNaToggle('clixS11GovtValueNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <div className="relative w-full">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">₹</span>
+                    <input 
+                      type="text"
+                      className={`\${inputCls} pl-7 \${fields.clixS11GovtValueNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                      value={fields.clixS11GovtValueNA ? 'NA' : formatINR(fields.clixS11GovtValue || '')}
+                      onChange={(e) => handleChange('clixS11GovtValue', parseINR(e.target.value))}
+                      disabled={isReadOnly || fields.clixS11GovtValueNA}
+                    />
+                  </div>
+                </Field>
+
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Insurance Value (Rs)</span>
+                    <div className="flex items-center gap-2">
+                      {renderEditSwitch('clixEnableS11InsuranceEdit', fields, handleChange, isReadOnly, fields.clixS11InsuranceNA)}
+                      {renderNaToggle('clixS11InsuranceNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  </div>
+                }>
+                  <div className="relative w-full">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium z-10">₹</span>
+                    {isInsuranceEdit ? (
+                      <input 
+                        type="text"
+                        className={`\${inputCls} pl-7 \${fields.clixS11InsuranceNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                        value={fields.clixS11InsuranceNA ? 'NA' : formatINR(finalInsurance)}
+                        onChange={(e) => handleChange('clixS11Insurance', parseINR(e.target.value))}
+                        disabled={isReadOnly || fields.clixS11InsuranceNA}
+                      />
+                    ) : (
+                      <div className="relative w-full">
+                        <input 
+                          className={`\${inputCls} pl-7 pr-10 bg-white text-gray-700`}
+                          value={fields.clixS11InsuranceNA ? 'NA' : formatINR(finalInsurance)}
+                          readOnly 
+                          disabled={isReadOnly || fields.clixS11InsuranceNA}
+                          title='>>Prefill from section 10, "Total BUA value (Rs)"<<'
+                        />
+                        {!fields.clixS11InsuranceNA && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 10, "Total BUA value (Rs)"<<'>
+                            <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Field>
+                
+              </div>
+            </div>
+          </div>
+        );
+      }
     }
   ],
   defaultValues: {
@@ -2507,6 +2714,15 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     clixS10TotalBua: '', clixS10TotalBuaNA: false,
     clixEnableS10FmvEdit: false,
     clixS10Fmv: '', clixS10FmvNA: false,
+
+    // Section 11 Variables
+    clixEnableS11RealizableEdit: false,
+    clixS11Realizable: '', clixS11RealizableNA: false,
+    clixEnableS11DistressEdit: false,
+    clixS11Distress: '', clixS11DistressNA: false,
+    clixS11GovtValue: '', clixS11GovtValueNA: false,
+    clixEnableS11InsuranceEdit: false,
+    clixS11Insurance: '', clixS11InsuranceNA: false,
   }
 };
 
