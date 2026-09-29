@@ -91,6 +91,16 @@ export interface BaseReportFields {
   clixRmName?: string;
   clixRmContactNo?: string;
   clixRepSameAsBorrower?: boolean;
+  clixPropertyAddressInitiation?: string;
+  clixPropertyAddressSite?: string;
+  clixPropertyAddressSiteEdit?: boolean;
+  clixPropertyAddressDocs?: string;
+  clixPropertyAddressDocsEdit?: boolean;
+  clixNearestLandmark?: string;
+  clixCity?: string;
+  clixState?: string;
+  clixPinCode?: string;
+
 
 
   // Section 1 – General Details
