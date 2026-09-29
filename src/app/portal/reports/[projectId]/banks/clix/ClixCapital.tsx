@@ -2471,8 +2471,13 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
         const fmvNum = parseFloat(finalFmv || '0') || 0;
 
         // Section 11 calculations
-        const autoRealizable = (fmvNum * 0.85).toString();
-        const autoDistress = (fmvNum * 0.75).toString();
+        const realMultStr = fields.clixS11RealizableMultiplier ?? '85';
+        const realMultNum = parseFloat(realMultStr) || 0;
+        const autoRealizable = (fmvNum * (realMultNum / 100)).toString();
+
+        const distMultStr = fields.clixS11DistressMultiplier ?? '75';
+        const distMultNum = parseFloat(distMultStr) || 0;
+        const autoDistress = (fmvNum * (distMultNum / 100)).toString();
         
         const isRealizableEdit = fields.clixEnableS11RealizableEdit;
         const finalRealizable = isRealizableEdit ? (fields.clixS11Realizable || '') : autoRealizable;
@@ -2492,7 +2497,20 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                 
                 <Field label={
                   <div className="w-full flex items-center justify-between">
-                    <span>Realizable Value (Rs)</span>
+                    <div className="flex items-center gap-2">
+                      <span>Realizable Value (Rs)</span>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <span>@</span>
+                        <input
+                          type="number"
+                          className="w-14 mx-1 px-1 border border-gray-300 rounded text-center focus:ring-green-500 focus:border-green-500 bg-white"
+                          value={fields.clixS11RealizableMultiplier ?? '85'}
+                          onChange={(e) => handleChange('clixS11RealizableMultiplier', e.target.value)}
+                          disabled={isReadOnly || fields.clixS11RealizableNA}
+                        />
+                        <span>%</span>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-2">
                       {renderEditSwitch('clixEnableS11RealizableEdit', fields, handleChange, isReadOnly, fields.clixS11RealizableNA)}
                       {renderNaToggle('clixS11RealizableNA', fields, handleChange, isReadOnly)}
@@ -2516,10 +2534,10 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                           value={fields.clixS11RealizableNA ? 'NA' : formatINR(finalRealizable)}
                           readOnly 
                           disabled={isReadOnly || fields.clixS11RealizableNA}
-                          title=">>Auto calculating from [Fair Market Value * 0.85]<<"
+                          title=">>Auto calculating from [Fair Market Value * (Realizable Multiplier / 100)]<<"
                         />
                         {!fields.clixS11RealizableNA && (
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Fair Market Value * 0.85]<<">
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Fair Market Value * (Realizable Multiplier / 100)]<<">
                             <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
                           </div>
                         )}
@@ -2530,7 +2548,20 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
 
                 <Field label={
                   <div className="w-full flex items-center justify-between">
-                    <span>Distress Sale Value (Rs)</span>
+                    <div className="flex items-center gap-2">
+                      <span>Distress Sale Value (Rs)</span>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <span>@</span>
+                        <input
+                          type="number"
+                          className="w-14 mx-1 px-1 border border-gray-300 rounded text-center focus:ring-green-500 focus:border-green-500 bg-white"
+                          value={fields.clixS11DistressMultiplier ?? '75'}
+                          onChange={(e) => handleChange('clixS11DistressMultiplier', e.target.value)}
+                          disabled={isReadOnly || fields.clixS11DistressNA}
+                        />
+                        <span>%</span>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-2">
                       {renderEditSwitch('clixEnableS11DistressEdit', fields, handleChange, isReadOnly, fields.clixS11DistressNA)}
                       {renderNaToggle('clixS11DistressNA', fields, handleChange, isReadOnly)}
@@ -2554,10 +2585,10 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                           value={fields.clixS11DistressNA ? 'NA' : formatINR(finalDistress)}
                           readOnly 
                           disabled={isReadOnly || fields.clixS11DistressNA}
-                          title=">>Auto calculating from [Fair Market Value * 0.75]<<"
+                          title=">>Auto calculating from [Fair Market Value * (Distress Multiplier / 100)]<<"
                         />
                         {!fields.clixS11DistressNA && (
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Fair Market Value * 0.75]<<">
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Fair Market Value * (Distress Multiplier / 100)]<<">
                             <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
                           </div>
                         )}
@@ -2716,8 +2747,10 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     clixS10Fmv: '', clixS10FmvNA: false,
 
     // Section 11 Variables
+    clixS11RealizableMultiplier: '85',
     clixEnableS11RealizableEdit: false,
     clixS11Realizable: '', clixS11RealizableNA: false,
+    clixS11DistressMultiplier: '75',
     clixEnableS11DistressEdit: false,
     clixS11Distress: '', clixS11DistressNA: false,
     clixS11GovtValue: '', clixS11GovtValueNA: false,
