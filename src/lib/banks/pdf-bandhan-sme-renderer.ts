@@ -97,6 +97,42 @@ export function getWorkProgressStructureLabel(structureType?: string): string {
   return `${st} work`;
 }
 
+export function formatCoordinateDecimal(coordStr?: string, isLat: boolean = true): string {
+  if (!coordStr) return '';
+  const trimmed = coordStr.trim();
+  if (!trimmed) return '';
+
+  // Match e.g. "20.312833 N" or "20.312833° N" or "20.312833N"
+  const matchWithDir = trimmed.match(/^([+-]?\d+(?:\.\d+)?)\s*°?\s*([NSEW])$/i);
+  if (matchWithDir) {
+    const num = Math.abs(parseFloat(matchWithDir[1]));
+    const dir = matchWithDir[2].toUpperCase();
+    return `${num} ${dir}`;
+  }
+
+  // Pure decimal number
+  const num = parseFloat(trimmed);
+  if (!isNaN(num)) {
+    const dir = isLat ? (num >= 0 ? 'N' : 'S') : (num >= 0 ? 'E' : 'W');
+    return `${Math.abs(num)} ${dir}`;
+  }
+
+  return trimmed;
+}
+
+export function deriveCoordinates(lat?: string, lng?: string): string {
+  const cleanLat = (lat || '').trim();
+  const cleanLng = (lng || '').trim();
+  if (!cleanLat && !cleanLng) return '';
+  if (cleanLat && cleanLng) {
+    const formattedLat = formatCoordinateDecimal(cleanLat, true);
+    const formattedLng = formatCoordinateDecimal(cleanLng, false);
+    return `${formattedLat}, ${formattedLng}`;
+  }
+  if (cleanLat) return formatCoordinateDecimal(cleanLat, true);
+  return formatCoordinateDecimal(cleanLng, false);
+}
+
 export function formatDateDisplay(d?: string): string {
   if (!d || !d.trim()) return '';
   const trimmed = d.trim();
@@ -1305,11 +1341,11 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('K.', 'CLASSIFICATION OF LOCALITY- I.E KIND OF PEOPLE STAYING (HIGH / MIDDLE / POOR CLASS):', fields.classificationOfLocality || 'Middle Class');
     this.drawBandhanRow('L.', 'TYPE OF PROPERTY:', fields.typeOfProperty || 'Land & building');
     this.drawBandhanSpannedRow('1)', 'AGRICULTURAL:');
-    this.drawBandhanRow('A)', 'AGRICULTURAL:', fields.isAgricultural || 'No');
-    this.drawBandhanRow('B)', 'IN CASE IT IS AN AGRICULTURAL LAND, ANY CONVERSION TO HOUSE SITE PLOTS IS CONTEMPLATED:', fields.agriculturalConversionContemplated || 'Not Applicable');
+    this.drawBandhanRow('(a)', 'AGRICULTURAL:', fields.isAgricultural || 'No');
+    this.drawBandhanRow('(b)', 'IN CASE IT IS AN AGRICULTURAL LAND, ANY CONVERSION TO HOUSE SITE PLOTS IS CONTEMPLATED:', fields.agriculturalConversionContemplated || 'Not Applicable');
     this.drawBandhanSpannedRow('2)', 'INDUSTRIAL:');
-    this.drawBandhanRow('A)', 'INDUSTRIAL:', fields.isIndustrial || 'No');
-    this.drawBandhanRow('B)', 'IF THE PROPERTY IS INDUSTRIAL-STATE FOR WHAT TYPE OF ACTIVITY/INDUSTRY THE PROPERTY IS WELL SUITED:', fields.isIndustrial === 'Yes' ? fields.industrialActivitySuited || 'Yes' : 'Not Applicable');
+    this.drawBandhanRow('(a)', 'INDUSTRIAL:', fields.isIndustrial || 'No');
+    this.drawBandhanRow('(b)', 'IF THE PROPERTY IS INDUSTRIAL-STATE FOR WHAT TYPE OF ACTIVITY/INDUSTRY THE PROPERTY IS WELL SUITED:', fields.isIndustrial === 'Yes' ? fields.industrialActivitySuited || 'Yes' : 'Not Applicable');
     this.drawBandhanRow('3)', 'RESIDENTIAL: (ANY RESTRICTIVE CLAUSES FOR SALE ETC. TO BE FURNISHED).', fields.isResidential || 'Yes');
     this.drawBandhanRow('4)', 'COMMERCIAL:', fields.isCommercial || 'Yes');
     this.drawBandhanRow('5)', 'INSTITUTIONAL:', fields.isInstitutional || 'No');
@@ -1331,13 +1367,13 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('C.', 'NATURE OF LEASE:', fields.natureOfLease || 'Not Applicable');
     this.drawBandhanRow('D.', 'DATE OF COMMENCEMENT OF LEASE:', fields.dateCommencementLease || 'Not Applicable');
     this.drawBandhanRow('E.', 'PERIOD OF LEASE:', fields.periodOfLease || 'Not Applicable');
-    this.drawBandhanRow('G.', 'TERMS OF RENEWAL:', fields.termsOfRenewal || 'Not Applicable');
-    this.drawBandhanRow('H.', 'LEASE PREMIUM / RENT PER ANNUM:', fields.leasePremiumRentPerAnnum || 'Not Applicable');
-    this.drawBandhanRow('I.', 'UN-EXPIRED PERIOD OF LEASE:', fields.unexpiredPeriodOfLease || 'Not Applicable');
-    this.drawBandhanRow('J.', 'INITIAL PREMIUM:', fields.initialPremium || 'Not Applicable');
-    this.drawBandhanRow('K.', 'GROUND RENT PAYABLE PER ANNUM:', fields.groundRentPerAnnum || 'Not Applicable');
-    this.drawBandhanRow('L.', 'UNEARNED INCREASE PAYABLE TO THE LESSOR IN THE EVENT OF SALE OR TRANSFER:', fields.unearnedIncreasePayable || 'Not Applicable');
-    this.drawBandhanRow('M.', 'WHETHER LEASE AGREEMENT PERMITS CREATION OF MORTGAGE:', fields.leasePermitsMortgage || 'Not Applicable');
+    this.drawBandhanRow('F.', 'TERMS OF RENEWAL:', fields.termsOfRenewal || 'Not Applicable');
+    this.drawBandhanRow('G.', 'LEASE PREMIUM / RENT PER ANNUM:', fields.leasePremiumRentPerAnnum || 'Not Applicable');
+    this.drawBandhanRow('H.', 'UN-EXPIRED PERIOD OF LEASE:', fields.unexpiredPeriodOfLease || 'Not Applicable');
+    this.drawBandhanRow('I.', 'INITIAL PREMIUM:', fields.initialPremium || 'Not Applicable');
+    this.drawBandhanRow('J.', 'GROUND RENT PAYABLE PER ANNUM:', fields.groundRentPerAnnum || 'Not Applicable');
+    this.drawBandhanRow('K.', 'UNEARNED INCREASE PAYABLE TO THE LESSOR IN THE EVENT OF SALE OR TRANSFER:', fields.unearnedIncreasePayable || 'Not Applicable');
+    this.drawBandhanRow('L.', 'WHETHER LEASE AGREEMENT PERMITS CREATION OF MORTGAGE:', fields.leasePermitsMortgage || 'Not Applicable');
 
     // 2.3 Rent Details
     this.drawBandhanRow('2.3', 'RENT:', fields.rentOccupationStatus || 'The Plot is occupied by Owner', true, false, TABLE_FONT_SIZE, LBL_BG);
@@ -1365,14 +1401,14 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // O. Dimensions & Extent
     this.drawBandhanSpannedRow('O.', 'DIMENSIONS & EXTENT OF THE SITE:');
-    this.drawBandhanSpannedRow('(I)', 'DIMENSIONS OF THE SITE AS PER DOCUMENT:');
-    this.drawBandhanRow('A)', 'EAST TO WEST:', fields.dimensionDocEastWest || 'As per Sketch Map');
-    this.drawBandhanRow('B)', 'NORTH TO SOUTH:', fields.dimensionDocNorthSouth || 'As per Sketch Map');
-    this.drawBandhanSpannedRow('(II)', 'DIMENSIONS OF THE SITE AS PER MEASUREMENT:');
-    this.drawBandhanRow('A)', 'EAST TO WEST:', fields.dimensionMeasEastWest || 'As per Sketch Map');
-    this.drawBandhanRow('B)', 'NORTH TO SOUTH:', fields.dimensionMeasNorthSouth || 'As per Sketch Map');
-    this.drawBandhanRow('(III)', 'EXTENT OF SITE:', fields.extentOfSite || '');
-    this.drawBandhanRow('(IV)', 'EXTENT OF SITE CONSIDERED FOR VALUATION PURPOSE:', fields.extentConsideredValuation || '');
+    this.drawBandhanSpannedRow('1)', 'DIMENSIONS OF THE SITE AS PER DOCUMENT:');
+    this.drawBandhanRow('(a)', 'EAST TO WEST:', fields.dimensionDocEastWest || 'As per Sketch Map');
+    this.drawBandhanRow('(b)', 'NORTH TO SOUTH:', fields.dimensionDocNorthSouth || 'As per Sketch Map');
+    this.drawBandhanSpannedRow('2)', 'DIMENSIONS OF THE SITE AS PER MEASUREMENT:');
+    this.drawBandhanRow('(a)', 'EAST TO WEST:', fields.dimensionMeasEastWest || 'As per Sketch Map');
+    this.drawBandhanRow('(b)', 'NORTH TO SOUTH:', fields.dimensionMeasNorthSouth || 'As per Sketch Map');
+    this.drawBandhanRow('3)', 'EXTENT OF SITE:', fields.extentOfSite || '');
+    this.drawBandhanRow('4)', 'EXTENT OF SITE CONSIDERED FOR VALUATION PURPOSE:', fields.extentConsideredValuation || '');
 
     // Boundaries P) 1) & 2)
     this.renderBoundarySchedules(fields);
@@ -1393,8 +1429,8 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('K.', 'ROAD FACILITIES:', fields.roadFacilities || 'Yes, Available at site');
     this.drawBandhanRow('L.', 'ROAD (KIND OF ROAD AND WIDTH):', fields.roadKindAndWidth || '15 ft wide BT Road');
     this.drawBandhanRow('M.', 'IF THE PROPERTY IS NOT WITHIN THE CITY/TOWN/MUNICIPAL LIMIT THEN STATE THE DISTANCE OF THE PROPERTY FROM THE:', fields.distMunicipalLimitStatus || '');
-    this.drawBandhanRow('a.', 'MUNICIPAL OFFICE:', fields.distMunicipalOffice || 'Bhubaneswar');
-    this.drawBandhanRow('b.', 'MUNICIPAL LIMITS:', fields.distMunicipalLimits || 'Bhubaneswar Municipal Corporation');
+    this.drawBandhanRow('1)', 'MUNICIPAL OFFICE:', fields.distMunicipalOffice || 'Bhubaneswar');
+    this.drawBandhanRow('2)', 'MUNICIPAL LIMITS:', fields.distMunicipalLimits || 'Bhubaneswar Municipal Corporation');
     this.drawBandhanRow('N.', 'WATER POTENTIALITIES:', fields.waterPotentialities || 'Good');
     this.drawBandhanRow('O.', 'POSSIBILITY OF FREQUENT FLOODING:', fields.possibilityFlooding || 'No');
     this.drawBandhanRow('P.', 'UNDERGROUND SEWERAGE SYSTEM AVAILABILITY:', fields.undergroundSewerageAvailable || 'No');
@@ -1404,14 +1440,16 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // Proximity to Civic Amenities
     this.drawBandhanSpannedRow('T.', 'PROXIMITY TO CIVIC AMENITIES:');
-    this.drawBandhanRow('(i)', 'SCHOOL:', fields.proximitySchool || '');
-    this.drawBandhanRow('(ii)', 'COLLEGE:', fields.proximityCollege || '');
-    this.drawBandhanRow('(iii)', 'HOSPITAL:', fields.proximityHospital || '');
-    this.drawBandhanRow('(iv)', 'MARKET:', fields.proximityMarket || '');
-    this.drawBandhanRow('(v)', 'BUS STAND:', fields.proximityBusStand || '');
-    this.drawBandhanRow('(vi)', 'RAILWAY STATION:', fields.proximityRailwayStation || '');
-    this.drawBandhanRow('(vii)', 'ANY OTHER IMPORTANT PLACE:', fields.proximityOtherPlace || '');
-    this.drawBandhanRow('U.', 'LATITUDE/LONGITUDE:', fields.latitudeLongitude || '');
+    this.drawBandhanRow('i)', 'SCHOOL:', fields.proximitySchool || '');
+    this.drawBandhanRow('ii)', 'COLLEGE:', fields.proximityCollege || '');
+    this.drawBandhanRow('iii)', 'HOSPITAL:', fields.proximityHospital || '');
+    this.drawBandhanRow('iv)', 'MARKET:', fields.proximityMarket || '');
+    this.drawBandhanRow('v)', 'BUS STAND:', fields.proximityBusStand || '');
+    this.drawBandhanRow('vi)', 'RAILWAY STATION:', fields.proximityRailwayStation || '');
+    const formattedCoords = (fields.latitude && fields.longitude)
+      ? deriveCoordinates(fields.latitude, fields.longitude)
+      : (fields.latitudeLongitude ? deriveCoordinates(fields.latitudeLongitude) : '');
+    this.drawBandhanRow('U.', 'LATITUDE/LONGITUDE:', formattedCoords);
 
     // 5. Location Advantages & Disadvantages
     this.drawBandhanSpannedRow('5.', 'LOCATION ADVANTAGES & DISADVANTAGES:', TABLE_FONT_SIZE, LBL_BG);
@@ -1424,24 +1462,24 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanRow('B.', 'HAS ANY CONTRIBUTION BEEN MADE TOWARDS DEVELOPMENT OR IS ANY DEMAND FOR SUCH CONTRIBUTION STILL OUTSTANDING:', fields.developmentContributionDemanded || 'No such documents verified');
     this.drawBandhanRow('C.', 'WHETHER COVERED UNDER ANY STATE/CENTRAL GOVT ENACTMENTS (E.G URBAN LAND CEILING ACT) OR NOTIFIED UNDER AGENCY/CANTONMENT AREA:', fields.landCeilingEnactments || 'No such documents verified');
     this.drawBandhanSpannedRow('D.', 'SALES:');
-    this.drawBandhanRow('a.', 'GIVE INSTANCES OF SALES OF IMMOVABLE PROPERTY IN THE LOCALITY, IF AVAILABLE, INDICATING THE NAME AND ADDRESS OF THE PROPERTY, REGISTRATION NO., SALE PRICE AND AREA OF THE LAND SOLD:', fields.salesInstancesInLocality || 'Transactions of the property are not available in the locality');
-    this.drawBandhanRow('b.', 'IF SALE INSTANCES ARE NOT AVAILABLE OR NOT RELIED UPON, PLEASE FURNISH THE BASIS OF ARRIVING AT THE LAND RATE:', fields.salesBasisArrivingLandRate || 'The present market rate of land confirmed through local enquiry and property dealers and found to be acceptable.');
-    this.drawBandhanRow('c.', 'LAND RATE ADOPTED IN THIS VALUATION:', fields.adoptedLandRateRationale || '');
+    this.drawBandhanRow('1)', 'GIVE INSTANCES OF SALES OF IMMOVABLE PROPERTY IN THE LOCALITY, IF AVAILABLE, INDICATING THE NAME AND ADDRESS OF THE PROPERTY, REGISTRATION NO., SALE PRICE AND AREA OF THE LAND SOLD:', fields.salesInstancesInLocality || 'Transactions of the property are not available in the locality');
+    this.drawBandhanRow('2)', 'IF SALE INSTANCES ARE NOT AVAILABLE OR NOT RELIED UPON, PLEASE FURNISH THE BASIS OF ARRIVING AT THE LAND RATE:', fields.salesBasisArrivingLandRate || 'The present market rate of land confirmed through local enquiry and property dealers and found to be acceptable.');
+    this.drawBandhanRow('3)', 'LAND RATE ADOPTED IN THIS VALUATION:', fields.adoptedLandRateRationale || '');
 
     // 7. Valuation of Land
     this.drawBandhanSpannedRow('7.', 'VALUATION:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'PREVIOUS VALUATION DETAILS:', fields.previousValuationDetails || 'Not Available');
     this.drawBandhanSpannedRow('B.', 'PRESENT VALUATION DETAILS:');
     this.drawBandhanRow('', '(HERE THE REGISTERED VALUER SHOULD DISCUSS IN DETAIL HIS APPROACH IN VALUATION OF THE PROPERTY AND INDICATE HOW THE VALUE HAS BEEN ARRIVED AT, SUPPORTED BY NECESSARY CALCULATIONS.):', fields.presentValuationApproachDetails || 'Land & Building Method has been adopted for valuation purpose.');
-    this.drawBandhanRow('1', 'VALUATION OF LAND:', fields.landAreaTotal || fields.extentOfSite || '');
-    this.drawBandhanRow('2', 'GOVT. VALUE:', fields.landGovtValueTotal || '', true, true);
-    this.drawBandhanRow('3', 'MARKET VALUE:', fields.landMarketValueTotal || '', true, true);
+    this.drawBandhanRow('1)', 'VALUATION OF LAND:', fields.landAreaTotal || fields.extentOfSite || '');
+    this.drawBandhanRow('2)', 'GOVT. VALUE:', fields.landGovtValueTotal || '', true, true);
+    this.drawBandhanRow('3)', 'MARKET VALUE:', fields.landMarketValueTotal || '', true, true);
 
     const distPctDisplay = (fields.distressSalePct !== undefined && fields.distressSalePct !== '') ? `${fields.distressSalePct}%` : '100%';
     const realPctDisplay = (fields.realisableValuePct !== undefined && fields.realisableValuePct !== '') ? `${fields.realisableValuePct}%` : '100%';
 
-    this.drawBandhanRow('4', `DISTRESS SALE VALUE (${distPctDisplay}):`, fields.landDistressValue || '', true, true);
-    this.drawBandhanRow('5', `REALISABLE ESTIMATION OF THE PROPERTY IN CASE OF DISTRESS SALE, IN CASE, THE BANK WILL SELL THE PROPERTY THROUGH PROCEEDINGS. (${realPctDisplay}):`, fields.landRealisableValue || '', true, true);
+    this.drawBandhanRow('4)', `DISTRESS SALE VALUE (${distPctDisplay}):`, fields.landDistressValue || '', true, true);
+    this.drawBandhanRow('5)', `REALISABLE ESTIMATION OF THE PROPERTY IN CASE OF DISTRESS SALE, IN CASE, THE BANK WILL SELL THE PROPERTY THROUGH PROCEEDINGS. (${realPctDisplay}):`, fields.landRealisableValue || '', true, true);
   }
 
   // --------------------------------------------------------------------------
@@ -1534,9 +1572,9 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     const combinedBuiltUp = [assessmentText, actualFloorsText].filter(Boolean).join('\n');
 
     this.drawBandhanSpannedRow('H.', 'BUILT UP AREA DETAILS:');
-    this.drawBandhanRow('(I)', 'BUILT UP AREA:', combinedBuiltUp || 'Not Verified');
-    this.drawBandhanRow('(II)', 'CARPET AREA:', fields.carpetAreaTotal ? (fields.carpetAreaTotal.includes('Sft') ? fields.carpetAreaTotal : `${parseFloat(fields.carpetAreaTotal).toFixed(2)} Sft (Approx.)`) : (fields.carpetAreaValue ? formatCarpetAreaStatement(fields.carpetAreaValue) : ''));
-    this.drawBandhanRow('(III)', 'SALEABLE AREA:', fields.saleableAreaTotal ? (fields.saleableAreaTotal.includes('Sft') ? fields.saleableAreaTotal : `${parseFloat(fields.saleableAreaTotal).toFixed(2)} Sft`) : (fields.saleableAreaValue ? formatSaleableAreaStatement(fields.saleableAreaValue) : ''));
+    this.drawBandhanRow('1)', 'BUILT UP AREA:', combinedBuiltUp || 'Not Verified');
+    this.drawBandhanRow('2)', 'CARPET AREA:', fields.carpetAreaTotal ? (fields.carpetAreaTotal.includes('Sft') ? fields.carpetAreaTotal : `${parseFloat(fields.carpetAreaTotal).toFixed(2)} Sft (Approx.)`) : (fields.carpetAreaValue ? formatCarpetAreaStatement(fields.carpetAreaValue) : ''));
+    this.drawBandhanRow('3)', 'SALEABLE AREA:', fields.saleableAreaTotal ? (fields.saleableAreaTotal.includes('Sft') ? fields.saleableAreaTotal : `${parseFloat(fields.saleableAreaTotal).toFixed(2)} Sft`) : (fields.saleableAreaValue ? formatSaleableAreaStatement(fields.saleableAreaValue) : ''));
 
     // Points I to AB (Occupancy & Statutory details)
     this.drawBandhanRow('I.', 'IS THE BUILDING OWNER-OCCUPIED / TENANTED / BOTH?:', fields.buildingOwnerOccupiedTenanted || 'Owner Occupied');
@@ -1564,7 +1602,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanSpannedRow('2.', 'TECHNICAL DETAILS OF THE BUILDING:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanRow('A.', 'NUMBER OF FLOORS & HEIGHT OF EACH FLOOR INCLUDING BASEMENTS, IF ANY:', fields.numberOfFloorsAndHeight || "G+3 Storied Building & Height: 10'-6\"");
 
-    const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)', '(xi)', '(xii)', '(xiii)', '(xiv)', '(xv)', '(xvi)', '(xvii)', '(xviii)', '(xix)', '(xx)'];
+    const romans = ['i)', 'ii)', 'iii)', 'iv)', 'v)', 'vi)', 'vii)', 'viii)', 'ix)', 'x)', 'xi)', 'xii)', 'xiii)', 'xiv)', 'xv)', 'xvi)', 'xvii)', 'xviii)', 'xix)', 'xx)'];
 
     // A. Floor Heights (i, ii, etc.)
     if (floors.length > 0) {
@@ -1587,8 +1625,8 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // C. Condition of Building
     this.drawBandhanSpannedRow('C.', 'CONDITION OF THE BUILDING:');
-    this.drawBandhanRow('(i)', 'EXTERIOR:', fields.buildingConditionExterior || 'Good');
-    this.drawBandhanRow('(ii)', 'INTERIOR:', fields.buildingConditionInterior || 'Good');
+    this.drawBandhanRow('i)', 'EXTERIOR:', fields.buildingConditionExterior || 'Good');
+    this.drawBandhanRow('ii)', 'INTERIOR:', fields.buildingConditionInterior || 'Good');
     this.drawBandhanRow('D.', 'TYPE OF FOUNDATIONS:', fields.foundationType || 'Column Foundation');
 
     // E. Doors and Windows Floor-Wise
@@ -1640,8 +1678,8 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // L. Internal Wiring & Electrical Installations
     this.drawBandhanSpannedRow('L.', 'INTERNAL WIRING & ELECTRICAL INSTALLATIONS:');
-    this.drawBandhanRow('1', 'INTERNAL WIRING - (CONCEALED / EXTERNAL):', fields.specInternalWiring || 'Concealed');
-    this.drawBandhanRow('2', 'CLASS OF FITTINGS: SUPERIOR/ORDINARY:', fields.specWiringFittingsClass || 'Superior');
+    this.drawBandhanRow('1)', 'INTERNAL WIRING - (CONCEALED / EXTERNAL):', fields.specInternalWiring || 'Concealed');
+    this.drawBandhanRow('2)', 'CLASS OF FITTINGS: SUPERIOR/ORDINARY:', fields.specWiringFittingsClass || 'Superior');
 
     this.drawBandhanRow('M.', 'SANITARY INSTALLATION:', fields.specSanitaryInstallation || 'Yes');
     this.drawBandhanRow('N.', 'NO. OF GEYSERS:', fields.specNoOfGeysers || 'Not Verified');
@@ -1649,18 +1687,18 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     // P. Compound Wall
     this.drawBandhanSpannedRow('P.', 'COMPOUND WALL DETAILS:');
-    this.drawBandhanRow('1', 'COMPOUND WALL:', fields.specCompoundWall || 'Yes');
-    this.drawBandhanRow('2', 'HEIGHT AND LENGTH:', fields.specCompoundWallHeightLength || "Height: 5'-0\", Length: 150'-0\"");
-    this.drawBandhanRow('3', 'TYPE OF CONSTRUCTION:', fields.specCompoundWallType || 'Brick Masonry Wall with Iron Gate');
+    this.drawBandhanRow('1)', 'COMPOUND WALL:', fields.specCompoundWall || 'Yes');
+    this.drawBandhanRow('2)', 'HEIGHT AND LENGTH:', fields.specCompoundWallHeightLength || "Height: 5'-0\", Length: 150'-0\"");
+    this.drawBandhanRow('3)', 'TYPE OF CONSTRUCTION:', fields.specCompoundWallType || 'Brick Masonry Wall with Iron Gate');
 
     this.drawBandhanRow('Q.', 'NO OF LIFTS AND CAPACITY:', fields.specLiftsCapacity || 'No');
     this.drawBandhanRow('R.', 'UNDERGROUND SUMP -CAPACITY AND TYPE OF CONSTRUCTION:', fields.specUndergroundSump || 'Not Available');
 
     // S. Overhead Tank
     this.drawBandhanSpannedRow('S.', 'OVERHEAD TANK DETAILS:');
-    this.drawBandhanRow('1', 'OVERHEAD TANK:', fields.specOverheadTank || 'Yes');
-    this.drawBandhanRow('2', 'WHERE LOCATED:', fields.specOverheadTankLocation || 'On the top of the roof');
-    this.drawBandhanRow('3', 'CAPACITY:', fields.specOverheadTankCapacity || '2000 Liters');
+    this.drawBandhanRow('1)', 'OVERHEAD TANK:', fields.specOverheadTank || 'Yes');
+    this.drawBandhanRow('2)', 'WHERE LOCATED:', fields.specOverheadTankLocation || 'On the top of the roof');
+    this.drawBandhanRow('3)', 'CAPACITY:', fields.specOverheadTankCapacity || '2000 Liters');
 
     this.drawBandhanRow('T.', 'PUMPS - NO. AND THEIR HORSE POWER:', fields.specPumpsHp || '1 Nos & 1 HP Pump');
     this.drawBandhanRow('U.', 'ROADS AND PAVING WITHIN THE COMPOUND:', fields.specRoadsPavingCompound || 'No');
@@ -1788,10 +1826,10 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
         return;
       }
 
-      const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)', '(xi)', '(xii)', '(xiii)', '(xiv)', '(xv)', '(xvi)', '(xvii)', '(xviii)', '(xix)', '(xx)'];
+      const romans = ['A.', 'B.', 'C.', 'D.', 'E.', 'F.', 'G.', 'H.', 'I.', 'J.', 'K.', 'L.', 'M.', 'N.', 'O.', 'P.', 'Q.', 'R.', 'S.', 'T.'];
       for (let i = 0; i < items.length; i++) {
         const it = items[i];
-        const rom = romans[i] || `(${i + 1})`;
+        const rom = romans[i] || `${String.fromCharCode(65 + i)}.`;
         const costStr = it.cost ? `Rs. ${formatCurrencyINR(parseNum(it.cost))}` : 'Rs. 0.00';
         this.drawBandhanRow(rom, it.name || '', costStr, true, false);
       }

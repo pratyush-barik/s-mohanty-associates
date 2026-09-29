@@ -48,6 +48,7 @@ import {
   formatSaleableAreaStatement,
   parseNum,
   formatCurrencyINR,
+  deriveCoordinates,
 } from '@/lib/banks/pdf-bandhan-sme-renderer';
 import { BankConfig } from '@/lib/bank-fields';
 import { formatReportDate } from '@/lib/pdf-bank-renderer';
@@ -127,35 +128,36 @@ export interface BandhanSMEProps {
 }
 
 const NAV_SECTIONS: NavItem[] = [
-  // Section I
-  { id: '', title: 'Section I', isHeader: true },
-  { id: 'sec-basic', title: 'Basic Information' },
+  // Section I: Basic Information
+  { id: '', title: 'Section I: Basic Information', isHeader: true },
+  { id: 'sec-basic', title: '1. Basic Information (Points A–M)' },
 
   // Section II: Valuation of Land
-  { id: '', title: 'Section II', isHeader: true },
-  { id: 'sec-prop-details', title: 'Details of Property' },
-  { id: 'sec-title-rent', title: 'Title, Ownership & Rent' },
-  { id: 'sec-desc-boundaries', title: 'Description & Boundaries' },
-  { id: 'sec-site-char', title: 'Characteristics of Site' },
-  { id: 'sec-location-adv-disadv', title: 'Location Advantages & Disadvantages' },
-  { id: 'sec-other-issues', title: 'Other Issues & Points' },
-  { id: 'sec-land-valuation', title: 'Valuation' },
+  { id: '', title: 'Section II: Valuation of Land', isHeader: true },
+  { id: 'sec-prop-details', title: '1. Details of Property' },
+  { id: 'sec-title-rent', title: '2. Title, Ownership & Rent' },
+  { id: 'sec-desc-boundaries', title: '3. Brief Description of the Property' },
+  { id: 'sec-site-char', title: '4. Characteristics of the Site' },
+  { id: 'sec-location-adv-disadv', title: '5. Location Advantages & Disadvantages' },
+  { id: 'sec-other-issues', title: '6. Other Issues/Points' },
+  { id: 'sec-land-valuation', title: '7. Valuation' },
 
   // Section III: Valuation of Building
-  { id: '', title: 'Section III', isHeader: true },
-  { id: 'sec-bldg-basic', title: 'Basic Information' },
-  { id: 'sec-bldg-tech', title: 'Technical Details' },
-  { id: 'sec-bldg-specs', title: 'Specifications of Construction' },
-  { id: 'sec-bldg-valuation', title: 'Building Valuation Table' },
-  { id: 'sec-bldg-subschedules', title: 'Sub-Schedules' },
-  { id: 'sec-bldg-abstract-matrix', title: 'TOTAL ABSTRACT OF THE ENTIRE PROPERTY' },
+  { id: '', title: 'Section III: Valuation of Building', isHeader: true },
+  { id: 'sec-bldg-basic', title: '1. Basic Information of the Building' },
+  { id: 'sec-bldg-tech', title: '2. Technical Details of the Building' },
+  { id: 'sec-bldg-specs', title: '3. Specifications of Construction' },
+  { id: 'sec-bldg-valuation', title: '4. Details of Building Valuation' },
+  { id: 'sec-bldg-subschedules', title: '5. Sub-Schedules (5.1–5.4)' },
+  { id: 'sec-bldg-abstract-matrix', title: '6. TOTAL ABSTRACT OF THE ENTIRE PROPERTY' },
 
   // Additional Sections
   { id: '', title: 'Additional Sections', isHeader: true },
-  { id: 'sec-remarks-opinion', title: 'Remarks' },
+  { id: 'sec-remarks-opinion', title: 'Remarks & Valuation Opinion' },
   { id: 'sec-declaration', title: 'Declaration' },
-  { id: 'sec-checklist', title: 'Valuation Checklist' },
-  { id: 'sec-documents', title: 'Documents & Maps' },
+  { id: 'sec-checklist', title: 'Valuation Report Check-List' },
+  { id: 'sec-documents', title: 'Documents' },
+  { id: 'sec-maps', title: 'Maps' },
   { id: 'sec-photos', title: 'Property Photographs' },
 ];
 
@@ -179,59 +181,6 @@ const sanitizePercentage = (val: string): string => {
   const num = parseFloat(clean);
   if (num > 100) return '100';
   return clean;
-};
-
-const formatCoordinateDms = (coordStr?: string, isLat: boolean = true): string => {
-  if (!coordStr) return '';
-  const trimmed = coordStr.trim();
-  if (!trimmed) return '';
-
-  // If already formatted in DMS (has ° and ' or " or ′ or ″)
-  if (trimmed.includes('°') && (trimmed.includes("'") || trimmed.includes('"') || trimmed.includes('′') || trimmed.includes('″'))) {
-    return trimmed;
-  }
-
-  // Match e.g. "20.312833", "20.312833° N", "20.312833N"
-  const match = trimmed.match(/^([+-]?\d+(?:\.\d+)?)\s*°?\s*([NSEW])?$/i);
-  if (match) {
-    const num = parseFloat(match[1]);
-    if (!isNaN(num)) {
-      const explicitDir = match[2]?.toUpperCase();
-      const defaultHemi = isLat ? (num >= 0 ? 'N' : 'S') : (num >= 0 ? 'E' : 'W');
-      const hemi = explicitDir || defaultHemi;
-      const absVal = Math.abs(num);
-      const deg = Math.floor(absVal);
-      const minFull = (absVal - deg) * 60;
-      const min = Math.floor(minFull);
-      const sec = ((minFull - min) * 60).toFixed(1);
-      return `${deg}°${min}'${sec}"${hemi}`;
-    }
-  }
-
-  const parsed = parseFloat(trimmed);
-  if (!isNaN(parsed)) {
-    const hemi = isLat ? (parsed >= 0 ? 'N' : 'S') : (parsed >= 0 ? 'E' : 'W');
-    const absVal = Math.abs(parsed);
-    const deg = Math.floor(absVal);
-    const minFull = (absVal - deg) * 60;
-    const min = Math.floor(minFull);
-    const sec = ((minFull - min) * 60).toFixed(1);
-    return `${deg}°${min}'${sec}"${hemi}`;
-  }
-
-  return trimmed;
-};
-
-const deriveCoordinates = (lat?: string, lng?: string): string => {
-  const cleanLat = (lat || '').trim();
-  const cleanLng = (lng || '').trim();
-  if (!cleanLat && !cleanLng) return '';
-  if (cleanLat && cleanLng) {
-    const formattedLat = formatCoordinateDms(cleanLat, true);
-    const formattedLng = formatCoordinateDms(cleanLng, false);
-    return `${formattedLat} ${formattedLng}`;
-  }
-  return formatCoordinateDms(cleanLat || cleanLng, Boolean(cleanLat));
 };
 
 const formatYearCommencementCompletion = (construction?: string, completion?: string): string => {
@@ -2759,11 +2708,11 @@ export default function BandhanSME({
                 <div className="p-3.5 bg-white/90 border border-emerald-200/90 rounded-lg space-y-2.5 shadow-2xs">
                   <div className="pb-1.5 border-b border-emerald-100">
                     <h5 className="font-bold text-emerald-950 text-xs tracking-wide uppercase">
-                      1. Agricultural Classification
+                      1) Agricultural Classification
                     </h5>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <Field label="A. Agricultural:">
+                    <Field label="(a) Agricultural:">
                       {renderSelect(
                         fields.isAgricultural,
                         ['No', 'Yes'],
@@ -2772,7 +2721,7 @@ export default function BandhanSME({
                         'No'
                       )}
                     </Field>
-                    <Field label="B. Conversion to House Site Plots Contemplated:">
+                    <Field label="(b) Conversion to House Site Plots Contemplated:">
                       {renderSelect(
                         fields.agriculturalConversionContemplated,
                         ['Not Applicable', 'Conversion Permitted', 'Applied for Conversion', 'No', 'Yes'],
@@ -2788,11 +2737,11 @@ export default function BandhanSME({
                 <div className="p-3.5 bg-white/90 border border-emerald-200/90 rounded-lg space-y-2.5 shadow-2xs">
                   <div className="pb-1.5 border-b border-emerald-100">
                     <h5 className="font-bold text-emerald-950 text-xs tracking-wide uppercase">
-                      2. Industrial Classification &amp; Activity
+                      2) Industrial Classification &amp; Activity
                     </h5>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    <Field label="A. Industrial:">
+                    <Field label="(a) Industrial:">
                       {renderSelect(
                         fields.isIndustrial,
                         ['No', 'Yes'],
@@ -2801,7 +2750,7 @@ export default function BandhanSME({
                         'No'
                       )}
                     </Field>
-                    <Field label="B. Activity / Industry Suited:">
+                    <Field label="(b) Activity / Industry Suited:">
                       {renderSelect(
                         fields.industrialActivitySuited,
                         ['Not Applicable', 'Light Engineering / Fabrication', 'Warehousing / Logistics', 'Manufacturing Unit', 'Commercial Warehouse', 'Yes'],
@@ -2817,11 +2766,11 @@ export default function BandhanSME({
                 <div className="p-3.5 bg-white/90 border border-emerald-200/90 rounded-lg space-y-2.5 shadow-2xs">
                   <div className="pb-1.5 border-b border-emerald-100">
                     <h5 className="font-bold text-emerald-950 text-xs tracking-wide uppercase">
-                      3 – 6. Other Property Classifications
+                      3) – 6) Other Property Classifications
                     </h5>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                    <Field label="3. Residential (Restrictive clauses):">
+                    <Field label="3) Residential (Restrictive clauses):">
                       {renderSelect(
                         fields.isResidential,
                         ['Yes', 'No'],
@@ -2830,7 +2779,7 @@ export default function BandhanSME({
                         'Yes'
                       )}
                     </Field>
-                    <Field label="4. Commercial:">
+                    <Field label="4) Commercial:">
                       {renderSelect(
                         fields.isCommercial,
                         ['Yes', 'No'],
@@ -2839,7 +2788,7 @@ export default function BandhanSME({
                         'Yes'
                       )}
                     </Field>
-                    <Field label="5. Institutional:">
+                    <Field label="5) Institutional:">
                       {renderSelect(
                         fields.isInstitutional,
                         ['No', 'Yes'],
@@ -2848,7 +2797,7 @@ export default function BandhanSME({
                         'No'
                       )}
                     </Field>
-                    <Field label="6. Others (Specify):">
+                    <Field label="6) Others (Specify):">
                       {renderSelect(
                         fields.isOthersSpecify,
                         ['No', 'Yes', 'Mixed Use', 'Not Applicable'],
@@ -3279,13 +3228,13 @@ export default function BandhanSME({
             {/* O. Dimensions & Extent */}
             <div className="p-4 bg-sky-50/60 border border-sky-200/80 rounded-xl space-y-3 shadow-2xs">
               <h4 className="font-bold text-sky-900 text-xs tracking-wide uppercase pb-1.5 border-b border-sky-200/60">
-                O. Dimensions & Extent of Site (Points I to IV)
+                O. Dimensions &amp; Extent of the Site (Points 1 to 4)
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="p-3 bg-white border border-sky-200/80 rounded-lg space-y-2 shadow-2xs">
-                  <p className="font-semibold text-xs text-sky-950">(I) Dimensions as per Document</p>
+                  <p className="font-semibold text-xs text-sky-950">1) Dimensions as per Document</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <Field label="A) East to West:">
+                    <Field label="(a) East to West:">
                       <input
                         type="text"
                         className={inputCls}
@@ -3294,7 +3243,7 @@ export default function BandhanSME({
                         disabled={isReadOnly}
                       />
                     </Field>
-                    <Field label="B) North to South:">
+                    <Field label="(b) North to South:">
                       <input
                         type="text"
                         className={inputCls}
@@ -3307,9 +3256,9 @@ export default function BandhanSME({
                 </div>
 
                 <div className="p-3 bg-white border border-sky-200/80 rounded-lg space-y-2 shadow-2xs">
-                  <p className="font-semibold text-xs text-sky-950">(II) Dimensions as per Measurement</p>
+                  <p className="font-semibold text-xs text-sky-950">2) Dimensions as per Measurement</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <Field label="A) East to West:">
+                    <Field label="(a) East to West:">
                       <input
                         type="text"
                         className={inputCls}
@@ -3318,7 +3267,7 @@ export default function BandhanSME({
                         disabled={isReadOnly}
                       />
                     </Field>
-                    <Field label="B) North to South:">
+                    <Field label="(b) North to South:">
                       <input
                         type="text"
                         className={inputCls}
@@ -3332,7 +3281,7 @@ export default function BandhanSME({
 
                 <div className="sm:col-span-1">
                   <ExtentOfLandField
-                    label="(III) Extent of Site:"
+                    label="3) Extent of Site:"
                     subLabel="(Referred from E. Area of Land - Title Deed, Editable)"
                     value={fields.extentOfSite || fields.areaLandDoc || ''}
                     inheritedUnit={fields.landAreaUnit || 'ACRE_DEC'}
@@ -3343,7 +3292,7 @@ export default function BandhanSME({
 
                 <div className="sm:col-span-1">
                   <ExtentOfLandField
-                    label="(IV) Extent Considered for Valuation:"
+                    label="4) Extent Considered for Valuation:"
                     subLabel="(Referred from E. Area of Land - Title Deed, Editable)"
                     value={fields.extentConsideredValuation || fields.extentOfSite || fields.areaLandDoc || ''}
                     inheritedUnit={fields.landAreaUnit || 'ACRE_DEC'}
@@ -3358,7 +3307,7 @@ export default function BandhanSME({
             <div className="p-4 bg-slate-50/60 border border-slate-200/80 rounded-xl space-y-4 shadow-2xs">
               <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-slate-200/80">
                 <h4 className="font-bold text-slate-800 text-xs tracking-wide uppercase">
-                  P. Boundaries of the Property (Points 1, 2 &amp; 3)
+                  P. Boundaries of the Property (Points 1), 2) &amp; 3))
                 </h4>
                 {!isReadOnly && (
                   <button
@@ -3696,7 +3645,7 @@ export default function BandhanSME({
                 </Field>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="a. Municipal Office:">
+                <Field label="1) Municipal Office:">
                   <input
                     type="text"
                     className={inputCls}
@@ -3705,7 +3654,7 @@ export default function BandhanSME({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="b. Municipal Limits:">
+                <Field label="2) Municipal Limits:">
                   <input
                     type="text"
                     className={inputCls}
@@ -4038,7 +3987,7 @@ export default function BandhanSME({
               <div className="p-4 bg-indigo-50/60 border border-indigo-200/80 rounded-xl space-y-3 shadow-2xs">
                 <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-indigo-200/60">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-xs font-bold text-indigo-900 tracking-wide uppercase">1. VALUATION OF LAND:</span>
+                    <span className="text-xs font-bold text-indigo-900 tracking-wide uppercase">1) VALUATION OF LAND:</span>
                     <span className="text-[11px] font-medium text-indigo-700 bg-white border border-indigo-200 px-2 py-0.5 rounded-md flex items-center gap-1 shadow-2xs">
                       <span>↳ Referenced from:</span>
                       <span className="font-semibold">E. Area of Land (As per Title Deed)</span>
@@ -4073,7 +4022,7 @@ export default function BandhanSME({
               {/* 2. Govt. Value */}
               <div className="p-4 bg-blue-50/60 border border-blue-200/80 rounded-xl space-y-3 shadow-2xs">
                 <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-blue-200/60">
-                  <span className="text-xs font-bold text-blue-900 tracking-wide uppercase">2. GOVT. VALUE (Benchmark & Guideline Value):</span>
+                  <span className="text-xs font-bold text-blue-900 tracking-wide uppercase">2) GOVT. VALUE (Benchmark &amp; Guideline Value):</span>
                   <span className="text-[11px] text-blue-800 bg-white border border-blue-200 px-2 py-0.5 rounded-md font-medium shadow-2xs">
                     Area: <span className="font-semibold text-blue-950">{parseSqftFromArea(fields.landAreaTotal || fields.areaLandDoc || fields.extentOfSite, fields.landAreaUnit, fields.landAreaValue).toFixed(2)} Sft</span>
                   </span>
@@ -4209,7 +4158,7 @@ export default function BandhanSME({
               {/* 3. Market Value */}
               <div className="p-4 bg-emerald-50/60 border border-emerald-200/80 rounded-xl space-y-3 shadow-2xs">
                 <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-emerald-200/60">
-                  <span className="text-xs font-bold text-emerald-900 tracking-wide uppercase">3. MARKET VALUE:</span>
+                  <span className="text-xs font-bold text-emerald-900 tracking-wide uppercase">3) MARKET VALUE:</span>
                   <span className="text-[11px] text-emerald-800 bg-white border border-emerald-200 px-2 py-0.5 rounded-md font-medium shadow-2xs">
                     Area: <span className="font-semibold text-emerald-950">{parseSqftFromArea(fields.landAreaTotal || fields.areaLandDoc || fields.extentOfSite, fields.landAreaUnit, fields.landAreaValue).toFixed(2)} Sft</span>
                   </span>
@@ -4343,7 +4292,7 @@ export default function BandhanSME({
                 {/* 4. Distress */}
                 <div className="p-4 bg-amber-50/60 border border-amber-200/80 rounded-xl space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between pb-2 border-b border-amber-200/60">
-                    <span className="text-xs font-bold text-amber-900 tracking-wide uppercase">4. DISTRESS SALE VALUE</span>
+                    <span className="text-xs font-bold text-amber-900 tracking-wide uppercase">4) DISTRESS SALE VALUE</span>
                     <span className="text-[10px] font-semibold text-amber-800 bg-white border border-amber-300 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
                       <span>🔒 Read-Only (Auto-calculated)</span>
                     </span>
@@ -4359,7 +4308,7 @@ export default function BandhanSME({
                       />
                     </Field>
                     <div className="col-span-2">
-                      <Field label={`4. Distress Sale Value (${fields.distressSalePct !== undefined && fields.distressSalePct !== '' ? fields.distressSalePct : '100'}%):`}>
+                      <Field label={`4) Distress Sale Value (${fields.distressSalePct !== undefined && fields.distressSalePct !== '' ? fields.distressSalePct : '100'}%):`}>
                         <input
                           type="text"
                           className={`${inputCls} font-bold text-slate-800 cursor-not-allowed border-amber-200`}
@@ -4378,7 +4327,7 @@ export default function BandhanSME({
                 {/* 5. Realisable */}
                 <div className="p-4 bg-purple-50/60 border border-purple-200/80 rounded-xl space-y-3 shadow-2xs">
                   <div className="flex items-center justify-between pb-2 border-b border-purple-200/60">
-                    <span className="text-xs font-bold text-purple-900 tracking-wide uppercase">5. REALISABLE ESTIMATION</span>
+                    <span className="text-xs font-bold text-purple-900 tracking-wide uppercase">5) REALISABLE ESTIMATION</span>
                     <span className="text-[10px] font-semibold text-purple-800 bg-white border border-purple-300 px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs">
                       <span>🔒 Read-Only (Auto-calculated)</span>
                     </span>
@@ -4394,7 +4343,7 @@ export default function BandhanSME({
                       />
                     </Field>
                     <div className="col-span-2">
-                      <Field label={`5. Realisable Value (${fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '100'}%):`}>
+                      <Field label={`5) Realisable Value (${fields.realisableValuePct !== undefined && fields.realisableValuePct !== '' ? fields.realisableValuePct : '100'}%):`}>
                         <input
                           type="text"
                           className={`${inputCls} font-bold text-slate-800 cursor-not-allowed border-purple-200`}
@@ -5013,8 +4962,8 @@ export default function BandhanSME({
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     {fields.floorDetails.map((fl, idx) => {
-                      const romans = ['(i)', '(ii)', '(iii)', '(iv)', '(v)', '(vi)', '(vii)', '(viii)', '(ix)', '(x)', '(xi)', '(xii)', '(xiii)', '(xiv)', '(xv)', '(xvi)', '(xvii)', '(xviii)', '(xix)', '(xx)'];
-                      const rom = romans[idx] || `(${idx + 1})`;
+                      const romans = ['i)', 'ii)', 'iii)', 'iv)', 'v)', 'vi)', 'vii)', 'viii)', 'ix)', 'x)', 'xi)', 'xii)', 'xiii)', 'xiv)', 'xv)', 'xvi)', 'xvii)', 'xviii)', 'xix)', 'xx)'];
+                      const rom = romans[idx] || `${idx + 1})`;
                       return (
                         <div key={idx} className="p-3 bg-white border border-sky-200/80 rounded-lg space-y-2 shadow-2xs">
                           <div className="flex items-center justify-between pb-1.5 border-b border-sky-100">
@@ -5081,7 +5030,7 @@ export default function BandhanSME({
                   {fields.floorDetails.map((fl, idx) => (
                     <div key={idx} className="p-3 bg-white border border-purple-200/80 rounded-lg space-y-1.5 shadow-2xs">
                       <span className="font-bold text-xs text-purple-900 block">
-                        {idx + 1}. {fl.floorName}
+                        {['i)', 'ii)', 'iii)', 'iv)', 'v)', 'vi)', 'vii)', 'viii)', 'ix)', 'x)'][idx] || `${idx + 1})`} {fl.floorName}
                       </span>
                       <Field label="Plinth Area (Sft):">
                         <input
@@ -5104,7 +5053,7 @@ export default function BandhanSME({
                 C. CONDITION OF THE BUILDING
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Field label="1. Exterior Condition:">
+                <Field label="i) Exterior Condition:">
                   {renderSelect(
                     fields.buildingConditionExterior,
                     ['Good', 'Very Good', 'Fair', 'Average', 'Poor'],
@@ -5113,7 +5062,7 @@ export default function BandhanSME({
                     'Good'
                   )}
                 </Field>
-                <Field label="2. Interior Condition:">
+                <Field label="ii) Interior Condition:">
                   {renderSelect(
                     fields.buildingConditionInterior,
                     ['Good', 'Very Good', 'Fair', 'Average', 'Poor'],
@@ -5158,7 +5107,7 @@ export default function BandhanSME({
                   {fields.floorDetails.map((fl, idx) => (
                     <div key={idx} className="p-3 bg-white border border-amber-200/80 rounded-lg space-y-1.5 shadow-2xs">
                       <span className="font-bold text-xs text-amber-900 block">
-                        {idx + 1}. {fl.floorName}
+                        {['i)', 'ii)', 'iii)', 'iv)', 'v)', 'vi)', 'vii)', 'viii)', 'ix)', 'x)'][idx] || `${idx + 1})`} {fl.floorName}
                       </span>
                       <Field label="Doors &amp; Windows:">
                         <input
@@ -5195,7 +5144,7 @@ export default function BandhanSME({
                   {fields.floorDetails.map((fl, idx) => (
                     <div key={idx} className="p-3 bg-white border border-rose-200/80 rounded-lg space-y-1.5 shadow-2xs">
                       <span className="font-bold text-xs text-rose-900 block">
-                        {idx + 1}. {fl.floorName}
+                        {['i)', 'ii)', 'iii)', 'iv)', 'v)', 'vi)', 'vii)', 'viii)', 'ix)', 'x)'][idx] || `${idx + 1})`} {fl.floorName}
                       </span>
                       <Field label="Flooring Type:">
                         <input
@@ -5232,7 +5181,7 @@ export default function BandhanSME({
                   {fields.floorDetails.map((fl, idx) => (
                     <div key={idx} className="p-3 bg-white border border-emerald-200/80 rounded-lg space-y-1.5 shadow-2xs">
                       <span className="font-bold text-xs text-emerald-900 block">
-                        {idx + 1}. {fl.floorName}
+                        {['i)', 'ii)', 'iii)', 'iv)', 'v)', 'vi)', 'vii)', 'viii)', 'ix)', 'x)'][idx] || `${idx + 1})`} {fl.floorName}
                       </span>
                       <Field label="Wall Finishing:">
                         <input
