@@ -100,6 +100,19 @@ export interface BaseReportFields {
   clixCity?: string;
   clixState?: string;
   clixPinCode?: string;
+  clixStateCustom?: string;
+  clixCityCustom?: string;
+  clixNearestLandmarkNA?: boolean;
+  clixRmContactNoNA?: boolean;
+  clixRmNameNA?: boolean;
+  clixBorrowerRepContactNoEdit?: boolean;
+  clixBorrowerRepContactNoNA?: boolean;
+  clixBorrowerRepNameEdit?: boolean;
+  clixBorrowerRepNameNA?: boolean;
+  clixBorrowerContactNoNA?: boolean;
+  clixCollateralIdNA?: boolean;
+  clixApplicationNoNA?: boolean;
+  clixReportTypeCustom?: string;
 
 
 
