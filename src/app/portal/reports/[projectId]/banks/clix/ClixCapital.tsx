@@ -1709,20 +1709,77 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
       number: 9,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
-        const floorsList = [
-          { key: 'Basement', label: 'Basement' },
-          { key: 'Ground', label: 'Ground Floor' },
-          { key: 'First', label: 'First Floor' },
-          { key: 'Second', label: 'Second Floor' },
-          { key: 'Third', label: 'Third Floor' },
-          { key: 'Fourth', label: 'Fourth Floor' }
+        const DEFAULT_FLOORS = [
+          { id: 'basement', label: 'Basement',     description: '', isNA: false },
+          { id: 'ground',   label: 'Ground Floor',  description: '', isNA: false },
+          { id: 'first',    label: 'First Floor',   description: '', isNA: false },
+          { id: 'second',   label: 'Second Floor',  description: '', isNA: false },
+          { id: 'third',    label: 'Third Floor',   description: '', isNA: false },
+          { id: 'fourth',   label: 'Fourth Floor',  description: '', isNA: false },
         ];
+        const accFloors: any[] = fields.clixAccFloors || DEFAULT_FLOORS;
+        const activeFloors = accFloors.filter((f: any) => !f.isNA);
+        const s9Rows = fields.clixS9BuaRows || [];
+
+        const getRowData = (floorId: string) => {
+          return s9Rows.find((r: any) => r.id === floorId) || {};
+        };
+        const updateRow = (floorId: string, key: string, val: any) => {
+          const existing = s9Rows.find((r: any) => r.id === floorId);
+          if (existing) {
+             handleChange('clixS9BuaRows', s9Rows.map((r: any) => r.id === floorId ? { ...r, [key]: val } : r));
+          } else {
+             handleChange('clixS9BuaRows', [...s9Rows, { id: floorId, [key]: val }]);
+          }
+        };
+
+        const renderRowNaToggle = (floorId: string, fieldKey: string) => {
+          const isNa = !!getRowData(floorId)[fieldKey];
+          return (
+            <label className="flex items-center gap-1 cursor-pointer ml-3">
+              <input
+                type="checkbox"
+                className="rounded text-emerald-600 focus:ring-emerald-500"
+                checked={isNa}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  updateRow(floorId, fieldKey, checked);
+                  if (checked) {
+                    updateRow(floorId, fieldKey.replace('NA', ''), 'NA');
+                  } else {
+                    updateRow(floorId, fieldKey.replace('NA', ''), '');
+                  }
+                }}
+                disabled={isReadOnly}
+              />
+              <span className="text-[10px] uppercase font-bold text-gray-400">NA</span>
+            </label>
+          );
+        };
+
+        const renderRowEditSwitch = (floorId: string, fieldKey: string, isNa: boolean = false) => {
+          const editOn = !!getRowData(floorId)[fieldKey];
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase font-bold text-gray-400">Edit {editOn ? 'On' : 'Off'}</span>
+              <button
+                type="button"
+                onClick={() => updateRow(floorId, fieldKey, !editOn)}
+                disabled={isReadOnly || isNa}
+                className={`w-10 h-5 rounded-full relative transition-colors ${(editOn && !isNa) ? 'bg-green-500' : 'bg-gray-300'}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${editOn ? 'translate-x-5' : ''}`} />
+              </button>
+            </div>
+          );
+        };
 
         let totalAdopted = 0;
-        floorsList.forEach(f => {
-          const actualStr = fields[`clixS9Bua${f.key}Actual`] || '0';
-          const isEdit = fields[`clixEnableS9Bua${f.key}AdoptedEdit`];
-          const adoptedStr = isEdit ? (fields[`clixS9Bua${f.key}Adopted`] || '0') : actualStr;
+        activeFloors.forEach((f: any) => {
+          const rowData = getRowData(f.id);
+          const actualStr = rowData.actual || '0';
+          const isEdit = rowData.adoptedEdit;
+          const adoptedStr = isEdit ? (rowData.adopted || '0') : actualStr;
           totalAdopted += (parseFloat(adoptedStr) || 0);
         });
 
@@ -1735,8 +1792,8 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
         let autoDev = '0';
         if (approvedFloors > 0) {
           autoDev = (((constructedFloors - approvedFloors) / approvedFloors) * 100).toFixed(2);
-        } else if (constructedFloors > 0 && approvedFloors === 0) {
-          autoDev = '100'; // If 0 approved but >0 constructed, 100% deviation technically infinite but practical
+        } else if (constructedFloors > 0 && (fields.clixS9FloorsApprovedNA || approvedFloors === 0)) {
+          autoDev = '100'; 
         }
         
         const isDevEdit = fields.clixEnableS9FloorsDeviationEdit;
@@ -1751,79 +1808,87 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                 <table className="w-full text-sm text-left text-gray-500">
                   <thead className="text-xs text-gray-700 uppercase bg-teal-100">
                     <tr>
-                      <th className="px-4 py-2">Floor</th>
-                      <th className="px-4 py-2">Area (Sale deed)</th>
-                      <th className="px-4 py-2">Area (as per actual)</th>
-                      <th className="px-4 py-2">Area Adopted for valuation</th>
-                      <th className="px-4 py-2">Occupancy Status</th>
+                      <th className="px-4 py-2 min-w-[150px]">Floor</th>
+                      <th className="px-4 py-2 min-w-[200px]">Area (Sale deed) (Sq.Ft.)</th>
+                      <th className="px-4 py-2 min-w-[200px]">Area (as per actual) (Sq.Ft.)</th>
+                      <th className="px-4 py-2 min-w-[250px]">Area Adopted for valuation (Sq.Ft.)</th>
+                      <th className="px-4 py-2 min-w-[200px]">Occupancy Status</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {floorsList.map((floor) => {
-                      const isAdoptedEdit = fields[`clixEnableS9Bua${floor.key}AdoptedEdit`];
-                      const actualArea = fields[`clixS9Bua${floor.key}Actual`] || '';
-                      const adoptedVal = isAdoptedEdit ? (fields[`clixS9Bua${floor.key}Adopted`] || '') : actualArea;
-                      const occDrop = fields[`clixS9Bua${floor.key}OccupancyDropdown`];
+                    {activeFloors.length === 0 && (
+                      <tr>
+                        <td colSpan={5} className="px-4 py-4 text-center text-gray-500 bg-[#e0f2f1]">
+                          No active floors found. Please add floors in Section 5 (Accommodation Table).
+                        </td>
+                      </tr>
+                    )}
+                    {activeFloors.map((floor: any) => {
+                      const rowData = getRowData(floor.id);
+                      const isAdoptedEdit = rowData.adoptedEdit;
+                      const actualArea = rowData.actual || '';
+                      const adoptedVal = isAdoptedEdit ? (rowData.adopted || '') : actualArea;
+                      const occDrop = rowData.occupancyDropdown;
 
                       return (
-                        <tr key={floor.key} className="bg-[#e0f2f1] border-b border-teal-200">
+                        <tr key={floor.id} className="bg-[#e0f2f1] border-b border-teal-200">
                           <td className="px-4 py-2 font-medium text-gray-900">{floor.label}</td>
                           
                           <td className="px-2 py-2">
                             <div className="flex items-center gap-2">
                               <input
-                                type={fields[`clixS9Bua${floor.key}SaleDeedNA`] ? "text" : "number"}
-                                className={`${inputCls} ${fields[`clixS9Bua${floor.key}SaleDeedNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                                value={fields[`clixS9Bua${floor.key}SaleDeedNA`] ? 'NA' : (fields[`clixS9Bua${floor.key}SaleDeed`] || '')}
-                                onChange={(e) => handleChange(`clixS9Bua${floor.key}SaleDeed`, e.target.value)}
-                                disabled={isReadOnly || fields[`clixS9Bua${floor.key}SaleDeedNA`]}
+                                type={rowData.saleDeedNA ? "text" : "number"}
+                                className={`${inputCls} ${rowData.saleDeedNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                value={rowData.saleDeedNA ? 'NA' : (rowData.saleDeed || '')}
+                                onChange={(e) => updateRow(floor.id, 'saleDeed', e.target.value)}
+                                disabled={isReadOnly || rowData.saleDeedNA}
                               />
-                              {renderNaToggle(`clixS9Bua${floor.key}SaleDeedNA`, fields, handleChange, isReadOnly)}
+                              {renderRowNaToggle(floor.id, 'saleDeedNA')}
                             </div>
                           </td>
 
                           <td className="px-2 py-2">
                             <div className="flex items-center gap-2">
                               <input
-                                type={fields[`clixS9Bua${floor.key}ActualNA`] ? "text" : "number"}
-                                className={`${inputCls} ${fields[`clixS9Bua${floor.key}ActualNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                                value={fields[`clixS9Bua${floor.key}ActualNA`] ? 'NA' : actualArea}
-                                onChange={(e) => handleChange(`clixS9Bua${floor.key}Actual`, e.target.value)}
-                                disabled={isReadOnly || fields[`clixS9Bua${floor.key}ActualNA`]}
+                                type={rowData.actualNA ? "text" : "number"}
+                                className={`${inputCls} ${rowData.actualNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                value={rowData.actualNA ? 'NA' : actualArea}
+                                onChange={(e) => updateRow(floor.id, 'actual', e.target.value)}
+                                disabled={isReadOnly || rowData.actualNA}
                               />
-                              {renderNaToggle(`clixS9Bua${floor.key}ActualNA`, fields, handleChange, isReadOnly)}
+                              {renderRowNaToggle(floor.id, 'actualNA')}
                             </div>
                           </td>
 
                           <td className="px-2 py-2">
                             <div className="flex flex-col gap-1">
-                              {renderEditSwitch(`clixEnableS9Bua${floor.key}AdoptedEdit`, fields, handleChange, isReadOnly)}
+                              {renderRowEditSwitch(floor.id, 'adoptedEdit')}
                               <div className="flex items-center gap-2 relative">
                                 {isAdoptedEdit ? (
                                   <input
-                                    type={fields[`clixS9Bua${floor.key}AdoptedNA`] ? "text" : "number"}
-                                    className={`${inputCls} ${fields[`clixS9Bua${floor.key}AdoptedNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                                    value={fields[`clixS9Bua${floor.key}AdoptedNA`] ? 'NA' : adoptedVal}
-                                    onChange={(e) => handleChange(`clixS9Bua${floor.key}Adopted`, e.target.value)}
-                                    disabled={isReadOnly || fields[`clixS9Bua${floor.key}AdoptedNA`]}
+                                    type={rowData.adoptedNA ? "text" : "number"}
+                                    className={`${inputCls} ${rowData.adoptedNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                    value={rowData.adoptedNA ? 'NA' : adoptedVal}
+                                    onChange={(e) => updateRow(floor.id, 'adopted', e.target.value)}
+                                    disabled={isReadOnly || rowData.adoptedNA}
                                   />
                                 ) : (
                                   <div className="relative w-full">
                                     <input 
                                       className={`${inputCls} pr-10 bg-white text-gray-700`} 
-                                      value={fields[`clixS9Bua${floor.key}AdoptedNA`] ? 'NA' : adoptedVal} 
+                                      value={rowData.adoptedNA ? 'NA' : adoptedVal} 
                                       readOnly 
-                                      disabled={isReadOnly || fields[`clixS9Bua${floor.key}AdoptedNA`]}
+                                      disabled={isReadOnly || rowData.adoptedNA}
                                       title='>>Prefill from section 9, "Area (as per actual)"<<'
                                     />
-                                    {!fields[`clixS9Bua${floor.key}AdoptedNA`] && (
+                                    {!rowData.adoptedNA && (
                                       <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 9, "Area (as per actual)"<<'>
                                         <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
                                       </div>
                                     )}
                                   </div>
                                 )}
-                                {renderNaToggle(`clixS9Bua${floor.key}AdoptedNA`, fields, handleChange, isReadOnly)}
+                                {renderRowNaToggle(floor.id, 'adoptedNA')}
                               </div>
                             </div>
                           </td>
@@ -1832,18 +1897,18 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                             <div className="flex flex-col gap-2">
                               <div className="flex items-center gap-2">
                                 <select
-                                  className={`${inputCls} ${fields[`clixS9Bua${floor.key}OccupancyNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
-                                  value={fields[`clixS9Bua${floor.key}OccupancyNA`] ? 'NA' : (occDrop || '')}
+                                  className={`${inputCls} ${rowData.occupancyNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                  value={rowData.occupancyNA ? 'NA' : (occDrop || '')}
                                   onChange={(e) => {
                                     const val = e.target.value;
-                                    handleChange(`clixS9Bua${floor.key}OccupancyDropdown`, val);
+                                    updateRow(floor.id, 'occupancyDropdown', val);
                                     if (val !== 'Custom') {
-                                      handleChange(`clixS9Bua${floor.key}Occupancy`, val);
+                                      updateRow(floor.id, 'occupancy', val);
                                     } else {
-                                      handleChange(`clixS9Bua${floor.key}Occupancy`, '');
+                                      updateRow(floor.id, 'occupancy', '');
                                     }
                                   }}
-                                  disabled={isReadOnly || fields[`clixS9Bua${floor.key}OccupancyNA`]}
+                                  disabled={isReadOnly || rowData.occupancyNA}
                                 >
                                   <option value="">Select Option</option>
                                   <option value="Self-Occupied">Self-Occupied</option>
@@ -1851,15 +1916,15 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                                   <option value="Tenanted">Tenanted</option>
                                   <option value="Custom">Custom</option>
                                 </select>
-                                {renderNaToggle(`clixS9Bua${floor.key}OccupancyNA`, fields, handleChange, isReadOnly)}
+                                {renderRowNaToggle(floor.id, 'occupancyNA')}
                               </div>
-                              {occDrop === 'Custom' && !fields[`clixS9Bua${floor.key}OccupancyNA`] && (
+                              {occDrop === 'Custom' && !rowData.occupancyNA && (
                                 <input
                                   type="text"
                                   className={`${inputCls} bg-white`}
                                   placeholder="Enter custom occupancy..."
-                                  value={fields[`clixS9Bua${floor.key}Occupancy`] || ''}
-                                  onChange={(e) => handleChange(`clixS9Bua${floor.key}Occupancy`, e.target.value)}
+                                  value={rowData.occupancy || ''}
+                                  onChange={(e) => updateRow(floor.id, 'occupancy', e.target.value)}
                                   disabled={isReadOnly}
                                 />
                               )}
@@ -1875,7 +1940,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label={
                   <div className="w-full flex items-center justify-between">
-                    <span>Total Built-up area</span>
+                    <span>Total Built-up area (Sq.Ft.)</span>
                     <div className="flex items-center gap-2">
                       {renderEditSwitch('clixEnableS9TotalBuaAdoptedEdit', fields, handleChange, isReadOnly, fields.clixS9TotalBuaAdoptedNA)}
                       {renderNaToggle('clixS9TotalBuaAdoptedNA', fields, handleChange, isReadOnly)}
@@ -2070,41 +2135,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     clixS8SetbacksRightSideRemarks: '', clixS8SetbacksRightSideRemarksNA: false,
     
     // Section 9 Variables
-    clixS9BuaBasementSaleDeed: '', clixS9BuaBasementSaleDeedNA: false,
-    clixS9BuaBasementActual: '', clixS9BuaBasementActualNA: false,
-    clixEnableS9BuaBasementAdoptedEdit: false,
-    clixS9BuaBasementAdopted: '', clixS9BuaBasementAdoptedNA: false,
-    clixS9BuaBasementOccupancyDropdown: 'Self-Occupied', clixS9BuaBasementOccupancy: 'Self-Occupied', clixS9BuaBasementOccupancyNA: false,
-    
-    clixS9BuaGroundSaleDeed: '', clixS9BuaGroundSaleDeedNA: false,
-    clixS9BuaGroundActual: '', clixS9BuaGroundActualNA: false,
-    clixEnableS9BuaGroundAdoptedEdit: false,
-    clixS9BuaGroundAdopted: '', clixS9BuaGroundAdoptedNA: false,
-    clixS9BuaGroundOccupancyDropdown: 'Self-Occupied', clixS9BuaGroundOccupancy: 'Self-Occupied', clixS9BuaGroundOccupancyNA: false,
-    
-    clixS9BuaFirstSaleDeed: '', clixS9BuaFirstSaleDeedNA: false,
-    clixS9BuaFirstActual: '', clixS9BuaFirstActualNA: false,
-    clixEnableS9BuaFirstAdoptedEdit: false,
-    clixS9BuaFirstAdopted: '', clixS9BuaFirstAdoptedNA: false,
-    clixS9BuaFirstOccupancyDropdown: 'Self-Occupied', clixS9BuaFirstOccupancy: 'Self-Occupied', clixS9BuaFirstOccupancyNA: false,
-    
-    clixS9BuaSecondSaleDeed: '', clixS9BuaSecondSaleDeedNA: false,
-    clixS9BuaSecondActual: '', clixS9BuaSecondActualNA: false,
-    clixEnableS9BuaSecondAdoptedEdit: false,
-    clixS9BuaSecondAdopted: '', clixS9BuaSecondAdoptedNA: false,
-    clixS9BuaSecondOccupancyDropdown: 'Self-Occupied', clixS9BuaSecondOccupancy: 'Self-Occupied', clixS9BuaSecondOccupancyNA: false,
-    
-    clixS9BuaThirdSaleDeed: '', clixS9BuaThirdSaleDeedNA: false,
-    clixS9BuaThirdActual: '', clixS9BuaThirdActualNA: false,
-    clixEnableS9BuaThirdAdoptedEdit: false,
-    clixS9BuaThirdAdopted: '', clixS9BuaThirdAdoptedNA: false,
-    clixS9BuaThirdOccupancyDropdown: 'Self-Occupied', clixS9BuaThirdOccupancy: 'Self-Occupied', clixS9BuaThirdOccupancyNA: false,
-    
-    clixS9BuaFourthSaleDeed: '', clixS9BuaFourthSaleDeedNA: false,
-    clixS9BuaFourthActual: '', clixS9BuaFourthActualNA: false,
-    clixEnableS9BuaFourthAdoptedEdit: false,
-    clixS9BuaFourthAdopted: '', clixS9BuaFourthAdoptedNA: false,
-    clixS9BuaFourthOccupancyDropdown: 'Self-Occupied', clixS9BuaFourthOccupancy: 'Self-Occupied', clixS9BuaFourthOccupancyNA: false,
+    clixS9BuaRows: [],
     
     clixEnableS9TotalBuaAdoptedEdit: false,
     clixS9TotalBuaAdopted: '', clixS9TotalBuaAdoptedNA: false,
