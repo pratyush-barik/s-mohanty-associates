@@ -23,72 +23,13 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     { id: 'section-11', title: 'Photos' },
     { id: 'section-12', title: 'Maps' }
   ],
-  defaultValues: {
-    clixReportType: 'Technical Scrutiny Report',
-    clixLoanType: 'LAP'
-  }
-};
-
-const renderNaToggle = (
-  fieldKey: string,
-  fields: Partial<BaseReportFields>,
-  handleChange: (k: string, v: any) => void,
-  isReadOnly: boolean
-) => {
-  const isNa = !!fields[fieldKey as keyof BaseReportFields];
-  return (
-    <label className="flex items-center gap-1 cursor-pointer ml-3">
-      <input
-        type="checkbox"
-        className="rounded text-emerald-600 focus:ring-emerald-500"
-        checked={isNa}
-        onChange={(e) => {
-          const checked = e.target.checked;
-          handleChange(fieldKey, checked);
-          if (checked) {
-            handleChange(fieldKey.replace('NA', ''), 'NA');
-          } else {
-            handleChange(fieldKey.replace('NA', ''), '');
-          }
-        }}
-        disabled={isReadOnly}
-      />
-      <span className="text-[10px] uppercase font-bold text-gray-400">NA</span>
-    </label>
-  );
-};
-
-const renderEditSwitch = (
-  fieldKey: string,
-  fields: Partial<BaseReportFields>,
-  handleChange: (k: string, v: any) => void,
-  isReadOnly: boolean,
-  isNa: boolean = false
-) => {
-  const editOn = !!fields[fieldKey as keyof BaseReportFields];
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {editOn ? 'On' : 'Off'}</span>
-      <button
-        type="button"
-        onClick={() => handleChange(fieldKey, !editOn)}
-        disabled={isReadOnly || isNa}
-        className={`w-10 h-5 rounded-full relative transition-colors ${(editOn && !isNa) ? 'bg-green-500' : 'bg-gray-300'}`}
-      >
-        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${editOn ? 'translate-x-5' : ''}`} />
-      </button>
-    </div>
-  );
-};
-
-export default function ClixCapital(props: BankReportBuilderProps) {
-  return (
-    <BankReportBuilder
-      config={CLIX_CAPITAL_CONFIG}
-      {...props}
-      renderSection={(sectionId, fields, handleChange, isReadOnly) => {
-        if (sectionId === 'clix-section-1') {
-          return (
+  
+  extraSectionsStart: [
+    {
+      id: 'clix-section-1',
+      title: 'Report Type',
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        return (
             <div className="animate-fade-in space-y-6">
               <div className="border border-[#F5F5F5] bg-[#F5F5F5] rounded-xl p-4">
                 <h3 className="font-bold text-gray-700 mb-4">Report Type</h3>
@@ -177,10 +118,13 @@ export default function ClixCapital(props: BankReportBuilderProps) {
               </div>
             </div>
           );
-        }
-
-        if (sectionId === 'clix-section-2') {
-          return (
+      }
+    },
+    {
+      id: 'clix-section-2',
+      title: 'Customer Details',
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        return (
             <div className="animate-fade-in space-y-6">
               <div className="border border-[#E3F2FD] bg-[#E3F2FD] rounded-xl p-4">
                 <h3 className="font-bold text-gray-700 mb-4">Customer Details</h3>
@@ -319,10 +263,13 @@ export default function ClixCapital(props: BankReportBuilderProps) {
               </div>
             </div>
           );
-        }
-
-        if (sectionId === 'clix-section-3') {
-          return (
+      }
+    },
+    {
+      id: 'clix-section-3',
+      title: 'Property Address',
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        return (
             <div className="animate-fade-in space-y-6">
               <div className="border border-[#E8F5E9] bg-[#E8F5E9] rounded-xl p-4">
                 <h3 className="font-bold text-gray-700 mb-4">Property Address</h3>
@@ -331,7 +278,7 @@ export default function ClixCapital(props: BankReportBuilderProps) {
                   <div className="col-span-1 md:col-span-2">
                     <Field label="Property Address (as per initiation)">
                       <textarea
-                        className={`${inputCls} resize-y min-h-[60px]`}
+                        className={`${inputCls} resize-y min-h-15`}
                         rows={2}
                         value={fields.clixPropertyAddressInitiation || ''}
                         onChange={e => handleChange('clixPropertyAddressInitiation', e.target.value)}
@@ -349,7 +296,7 @@ export default function ClixCapital(props: BankReportBuilderProps) {
                     }>
                       <div className="relative">
                         <textarea 
-                          className={`${inputCls} pr-10 resize-y min-h-[60px] ${fields.clixPropertyAddressSiteEdit ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`} 
+                          className={`${inputCls} pr-10 resize-y min-h-15 ${fields.clixPropertyAddressSiteEdit ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`} 
                           rows={2}
                           value={fields.clixPropertyAddressSiteEdit ? (fields.clixPropertyAddressSite || '') : (fields.clixPropertyAddressInitiation || '')} 
                           onChange={e => handleChange('clixPropertyAddressSite', e.target.value)} 
@@ -374,7 +321,7 @@ export default function ClixCapital(props: BankReportBuilderProps) {
                     }>
                       <div className="relative">
                         <textarea 
-                          className={`${inputCls} pr-10 resize-y min-h-[60px] ${fields.clixPropertyAddressDocsEdit ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`} 
+                          className={`${inputCls} pr-10 resize-y min-h-15 ${fields.clixPropertyAddressDocsEdit ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`} 
                           rows={2}
                           value={fields.clixPropertyAddressDocsEdit ? (fields.clixPropertyAddressDocs || '') : (fields.clixPropertyAddressInitiation || '')} 
                           onChange={e => handleChange('clixPropertyAddressDocs', e.target.value)} 
@@ -523,10 +470,72 @@ export default function ClixCapital(props: BankReportBuilderProps) {
               </div>
             </div>
           );
-        }
+      }
+    }
+  ],
+  defaultValues: {
+    clixReportType: 'Technical Scrutiny Report',
+    clixLoanType: 'LAP'
+  }
+};
 
-        return null; // For standard sections like cover, photos, maps
-      }}
-    />
+const renderNaToggle = (
+  fieldKey: string,
+  fields: Partial<BaseReportFields>,
+  handleChange: (k: string, v: any) => void,
+  isReadOnly: boolean
+) => {
+  const isNa = !!fields[fieldKey as keyof BaseReportFields];
+  return (
+    <label className="flex items-center gap-1 cursor-pointer ml-3">
+      <input
+        type="checkbox"
+        className="rounded text-emerald-600 focus:ring-emerald-500"
+        checked={isNa}
+        onChange={(e) => {
+          const checked = e.target.checked;
+          handleChange(fieldKey, checked);
+          if (checked) {
+            handleChange(fieldKey.replace('NA', ''), 'NA');
+          } else {
+            handleChange(fieldKey.replace('NA', ''), '');
+          }
+        }}
+        disabled={isReadOnly}
+      />
+      <span className="text-[10px] uppercase font-bold text-gray-400">NA</span>
+    </label>
+  );
+};
+
+const renderEditSwitch = (
+  fieldKey: string,
+  fields: Partial<BaseReportFields>,
+  handleChange: (k: string, v: any) => void,
+  isReadOnly: boolean,
+  isNa: boolean = false
+) => {
+  const editOn = !!fields[fieldKey as keyof BaseReportFields];
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {editOn ? 'On' : 'Off'}</span>
+      <button
+        type="button"
+        onClick={() => handleChange(fieldKey, !editOn)}
+        disabled={isReadOnly || isNa}
+        className={`w-10 h-5 rounded-full relative transition-colors ${(editOn && !isNa) ? 'bg-green-500' : 'bg-gray-300'}`}
+      >
+        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${editOn ? 'translate-x-5' : ''}`} />
+      </button>
+    </div>
+  );
+};
+
+export default function ClixCapital(props: BankReportBuilderProps) {
+  return (
+    <BankReportBuilder
+      config={CLIX_CAPITAL_CONFIG}
+      {...props}
+      />
   );
 }
