@@ -1457,10 +1457,10 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     this.drawBandhanSpannedRow('P.', 'BOUNDARIES OF THE PROPERTY:', TABLE_FONT_SIZE, LBL_BG);
     this.drawBandhanSpannedRow('1)', 'BOUNDARIES (AS PER DOCUMENT):');
 
-    for (const dp of deedPlots) {
-      if (deedPlots.length > 1) {
-        this.drawBandhanSpannedRow('', `SCHEDULE FOR PLOT / TITLE: ${dp.plotNo || 'Deed Schedule'}`);
-      }
+    for (let i = 0; i < deedPlots.length; i++) {
+      const dp = deedPlots[i];
+      const plotLabel = dp.plotNo || (deedPlots.length > 1 ? `Schedule ${i + 1}` : 'Schedule 1');
+      this.drawBandhanRow('', 'SCHEDULE FOR PLOT / TITLE:', plotLabel, true, false);
       this.drawBandhanRow('(i)', 'EAST:', dp.east || '', true, false);
       this.drawBandhanRow('(ii)', 'WEST:', dp.west || '', true, false);
       this.drawBandhanRow('(iii)', 'NORTH:', dp.north || '', true, false);
@@ -1473,9 +1473,8 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     for (let i = 0; i < deedPlots.length; i++) {
       const dp = deedPlots[i];
       const pp = physPlots[i];
-      if (deedPlots.length > 1) {
-        this.drawBandhanSpannedRow('', `SCHEDULE FOR PLOT / TITLE: ${dp.plotNo || `Schedule ${i + 1}`}`);
-      }
+      const plotLabel = pp?.plotNo || dp.plotNo || (deedPlots.length > 1 ? `Schedule ${i + 1}` : 'Schedule 1');
+      this.drawBandhanRow('', 'SCHEDULE FOR PLOT / TITLE:', plotLabel, true, false);
       const east = pp?.east || (i === 0 ? fields.verifiedBoundaryEast || '' : '');
       const west = pp?.west || (i === 0 ? fields.verifiedBoundaryWest || '' : '');
       const north = pp?.north || (i === 0 ? fields.verifiedBoundaryNorth || '' : '');
