@@ -26,6 +26,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     { id: 'clix-section-7', title: 'Specifications' },
     { id: 'clix-section-8', title: 'Boundaries and Set Backs' },
     { id: 'clix-section-9', title: 'Area and Usage Detail' },
+    { id: 'clix-section-10', title: 'Fair Market Value' },
     { id: 'section-11', title: 'Photos' },
     { id: 'section-12', title: 'Maps' }
   ],
@@ -2068,6 +2069,329 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
           </div>
         );
       }
+    },
+    {
+      id: 'clix-section-10',
+      title: '10. FAIR MARKET VALUE',
+      number: 10,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const DEFAULT_FLOORS = [
+          { id: 'basement', label: 'Basement',     description: '', isNA: false },
+          { id: 'ground',   label: 'Ground Floor',  description: '', isNA: false },
+          { id: 'first',    label: 'First Floor',   description: '', isNA: false },
+          { id: 'second',   label: 'Second Floor',  description: '', isNA: false },
+          { id: 'third',    label: 'Third Floor',   description: '', isNA: false },
+          { id: 'fourth',   label: 'Fourth Floor',  description: '', isNA: false },
+        ];
+        const accFloors: any[] = fields.clixAccFloors || DEFAULT_FLOORS;
+        const activeFloors = accFloors.filter((f: any) => !f.isNA);
+        
+        const s9Rows = fields.clixS9BuaRows || [];
+        const s10Rows = fields.clixS10ValuationRows || [];
+        
+        const getRowData = (floorId: string) => {
+          return s10Rows.find((r: any) => r.id === floorId) || {};
+        };
+        const getS9AdoptedArea = (floorId: string) => {
+          const s9 = s9Rows.find((r: any) => r.id === floorId) || {};
+          const isAdoptedEdit = s9.adoptedEdit;
+          const actualArea = s9.actual || '0';
+          return isAdoptedEdit ? (s9.adopted || '0') : actualArea;
+        };
+
+        const updateRow = (floorId: string, key: string, val: any) => {
+          const existing = s10Rows.find((r: any) => r.id === floorId);
+          if (existing) {
+             handleChange('clixS10ValuationRows', s10Rows.map((r: any) => r.id === floorId ? { ...r, [key]: val } : r));
+          } else {
+             handleChange('clixS10ValuationRows', [...s10Rows, { id: floorId, [key]: val }]);
+          }
+        };
+
+        const renderRowNaToggle = (floorId: string, fieldKey: string) => {
+          const isNa = !!getRowData(floorId)[fieldKey];
+          return (
+            <label className="flex items-center gap-1 cursor-pointer ml-3">
+              <input
+                type="checkbox"
+                className="rounded text-emerald-600 focus:ring-emerald-500"
+                checked={isNa}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  updateRow(floorId, fieldKey, checked);
+                  if (checked) {
+                    updateRow(floorId, fieldKey.replace('NA', ''), 'NA');
+                  } else {
+                    updateRow(floorId, fieldKey.replace('NA', ''), '');
+                  }
+                }}
+                disabled={isReadOnly}
+              />
+              <span className="text-[10px] uppercase font-bold text-gray-400">NA</span>
+            </label>
+          );
+        };
+
+        const renderRowEditSwitch = (floorId: string, fieldKey: string, isNa: boolean = false) => {
+          const editOn = !!getRowData(floorId)[fieldKey];
+          return (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] uppercase font-bold text-gray-400">Edit {editOn ? 'On' : 'Off'}</span>
+              <button
+                type="button"
+                onClick={() => updateRow(floorId, fieldKey, !editOn)}
+                disabled={isReadOnly || isNa}
+                className={`w-10 h-5 rounded-full relative transition-colors ${(editOn && !isNa) ? 'bg-green-500' : 'bg-gray-300'}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${editOn ? 'translate-x-5' : ''}`} />
+              </button>
+            </div>
+          );
+        };
+
+        let autoTotalBua = 0;
+        activeFloors.forEach((f: any) => {
+          const r = getRowData(f.id);
+          const s9AreaStr = getS9AdoptedArea(f.id);
+          const adoptedAreaStr = r.areaEdit ? (r.area || '0') : s9AreaStr;
+          const areaNum = parseFloat(adoptedAreaStr) || 0;
+          const rateNum = parseFloat(r.rate || '0') || 0;
+          const autoAmt = areaNum * rateNum;
+          
+          const amtStr = r.amountEdit ? (r.amount || '0') : autoAmt.toString();
+          autoTotalBua += (parseFloat(amtStr) || 0);
+        });
+
+        const autoTotalBuaStr = autoTotalBua.toFixed(2);
+        const isTotalBuaEdit = fields.clixEnableS10TotalBuaEdit;
+        const finalTotalBua = isTotalBuaEdit ? (fields.clixS10TotalBua || '') : autoTotalBuaStr;
+
+        const landAmt = parseFloat(fields.clixS10LandAmount || '0') || 0;
+        const autoFmv = (landAmt + parseFloat(finalTotalBua || '0')).toFixed(2);
+        const isFmvEdit = fields.clixEnableS10FmvEdit;
+        const finalFmv = isFmvEdit ? (fields.clixS10Fmv || '') : autoFmv;
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-indigo-200 bg-[#e8eaf6] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Valuation Tables (General & Self Construction)</h3>
+              
+              <div className="overflow-x-auto mb-6">
+                <table className="w-full text-sm text-left text-gray-500">
+                  <thead className="text-xs text-gray-700 uppercase bg-indigo-100">
+                    <tr>
+                      <th className="px-4 py-2 min-w-[150px]">Floor</th>
+                      <th className="px-4 py-2 min-w-[200px]">Area (Sqft)</th>
+                      <th className="px-4 py-2 min-w-[200px]">Rate (per Sqft)</th>
+                      <th className="px-4 py-2 min-w-[200px]">Amount (Rs)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {activeFloors.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className="px-4 py-4 text-center text-gray-500 bg-[#e8eaf6]">
+                          No active floors found. Please add floors in Section 5.
+                        </td>
+                      </tr>
+                    )}
+                    {activeFloors.map((floor: any) => {
+                      const rowData = getRowData(floor.id);
+                      
+                      const s9AreaStr = getS9AdoptedArea(floor.id);
+                      const isAreaEdit = rowData.areaEdit;
+                      const finalArea = isAreaEdit ? (rowData.area || '') : s9AreaStr;
+                      
+                      const rateNum = parseFloat(rowData.rate || '0') || 0;
+                      const areaNum = parseFloat(finalArea || '0') || 0;
+                      const autoAmtStr = (areaNum * rateNum).toFixed(2);
+                      const isAmtEdit = rowData.amountEdit;
+                      const finalAmt = isAmtEdit ? (rowData.amount || '') : autoAmtStr;
+
+                      return (
+                        <tr key={floor.id} className="bg-[#e8eaf6] border-b border-indigo-200">
+                          <td className="px-4 py-2 font-medium text-gray-900">{floor.label}</td>
+                          
+                          <td className="px-2 py-2">
+                            <div className="flex flex-col gap-1">
+                              {renderRowEditSwitch(floor.id, 'areaEdit')}
+                              <div className="flex items-center gap-2 relative">
+                                {isAreaEdit ? (
+                                  <input
+                                    type={rowData.areaNA ? "text" : "number"}
+                                    className={`${inputCls} ${rowData.areaNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                    value={rowData.areaNA ? 'NA' : finalArea}
+                                    onChange={(e) => updateRow(floor.id, 'area', e.target.value)}
+                                    disabled={isReadOnly || rowData.areaNA}
+                                  />
+                                ) : (
+                                  <div className="relative w-full">
+                                    <input 
+                                      className={`${inputCls} pr-10 bg-white text-gray-700`} 
+                                      value={rowData.areaNA ? 'NA' : finalArea} 
+                                      readOnly 
+                                      disabled={isReadOnly || rowData.areaNA}
+                                      title='>>Prefill from section 9, "Area Adopted for valuation (Sq.Ft.)"<<'
+                                    />
+                                    {!rowData.areaNA && (
+                                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 9, "Area Adopted for valuation (Sq.Ft.)"<<'>
+                                        <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                {renderRowNaToggle(floor.id, 'areaNA')}
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="px-2 py-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type={rowData.rateNA ? "text" : "number"}
+                                className={`${inputCls} ${rowData.rateNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                value={rowData.rateNA ? 'NA' : (rowData.rate || '')}
+                                onChange={(e) => updateRow(floor.id, 'rate', e.target.value)}
+                                disabled={isReadOnly || rowData.rateNA}
+                              />
+                              {renderRowNaToggle(floor.id, 'rateNA')}
+                            </div>
+                          </td>
+
+                          <td className="px-2 py-2">
+                            <div className="flex flex-col gap-1">
+                              {renderRowEditSwitch(floor.id, 'amountEdit')}
+                              <div className="flex items-center gap-2 relative">
+                                {isAmtEdit ? (
+                                  <input
+                                    type={rowData.amountNA ? "text" : "number"}
+                                    className={`${inputCls} ${rowData.amountNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                    value={rowData.amountNA ? 'NA' : finalAmt}
+                                    onChange={(e) => updateRow(floor.id, 'amount', e.target.value)}
+                                    disabled={isReadOnly || rowData.amountNA}
+                                  />
+                                ) : (
+                                  <div className="relative w-full">
+                                    <input 
+                                      className={`${inputCls} pr-10 bg-white text-gray-700`} 
+                                      value={rowData.amountNA ? 'NA' : finalAmt} 
+                                      readOnly 
+                                      disabled={isReadOnly || rowData.amountNA}
+                                      title=">>Auto calculating from [Area * Rate]<<"
+                                    />
+                                    {!rowData.amountNA && (
+                                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Area * Rate]<<">
+                                        <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                {renderRowNaToggle(floor.id, 'amountNA')}
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Land Amount (Rs)</span>
+                    {renderNaToggle('clixS10LandAmountNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <input
+                    type={fields.clixS10LandAmountNA ? "text" : "number"}
+                    className={`${inputCls} ${fields.clixS10LandAmountNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                    value={fields.clixS10LandAmountNA ? 'NA' : (fields.clixS10LandAmount || '')}
+                    onChange={(e) => handleChange('clixS10LandAmount', e.target.value)}
+                    disabled={isReadOnly || fields.clixS10LandAmountNA}
+                  />
+                </Field>
+
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Total BUA value (Rs)</span>
+                    <div className="flex items-center gap-2">
+                      {renderEditSwitch('clixEnableS10TotalBuaEdit', fields, handleChange, isReadOnly, fields.clixS10TotalBuaNA)}
+                      {renderNaToggle('clixS10TotalBuaNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  </div>
+                }>
+                  <div className="relative">
+                    {isTotalBuaEdit ? (
+                      <input 
+                        type={fields.clixS10TotalBuaNA ? "text" : "number"}
+                        className={`${inputCls} ${fields.clixS10TotalBuaNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`} 
+                        value={fields.clixS10TotalBuaNA ? 'NA' : finalTotalBua} 
+                        onChange={e => handleChange('clixS10TotalBua', e.target.value)} 
+                        disabled={isReadOnly || fields.clixS10TotalBuaNA} 
+                      />
+                    ) : (
+                      <div className="relative w-full">
+                        <input 
+                          className={`${inputCls} pr-10 bg-white text-gray-700`} 
+                          value={fields.clixS10TotalBuaNA ? 'NA' : finalTotalBua} 
+                          readOnly 
+                          disabled={isReadOnly || fields.clixS10TotalBuaNA} 
+                          title=">>Auto calculating from [Sum of all Amount (Rs)]<<"
+                        />
+                        {!fields.clixS10TotalBuaNA && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Sum of all Amount (Rs)]<<">
+                            <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Field>
+
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Fair Market Value (Rs)</span>
+                    <div className="flex items-center gap-2">
+                      {renderEditSwitch('clixEnableS10FmvEdit', fields, handleChange, isReadOnly, fields.clixS10FmvNA)}
+                      {renderNaToggle('clixS10FmvNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  </div>
+                }>
+                  <div className="relative">
+                    {isFmvEdit ? (
+                      <input 
+                        type={fields.clixS10FmvNA ? "text" : "number"}
+                        className={`${inputCls} ${fields.clixS10FmvNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`} 
+                        value={fields.clixS10FmvNA ? 'NA' : finalFmv} 
+                        onChange={e => handleChange('clixS10Fmv', e.target.value)} 
+                        disabled={isReadOnly || fields.clixS10FmvNA} 
+                      />
+                    ) : (
+                      <div className="relative w-full">
+                        <input 
+                          className={`${inputCls} pr-10 bg-white text-gray-700`} 
+                          value={fields.clixS10FmvNA ? 'NA' : finalFmv} 
+                          readOnly 
+                          disabled={isReadOnly || fields.clixS10FmvNA} 
+                          title=">>Auto calculating from [Land Amount + Total BUA value]<<"
+                        />
+                        {!fields.clixS10FmvNA && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Land Amount + Total BUA value]<<">
+                            <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Field>
+
+              </div>
+            </div>
+          </div>
+        );
+      }
     }
   ],
   defaultValues: {
@@ -2147,6 +2471,14 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     clixS9FloorsDeviation: '', clixS9FloorsDeviationNA: false,
     
     clixS9DemolitionList: 'NA',
+
+    // Section 10 Variables
+    clixS10ValuationRows: [],
+    clixS10LandAmount: '', clixS10LandAmountNA: false,
+    clixEnableS10TotalBuaEdit: false,
+    clixS10TotalBua: '', clixS10TotalBuaNA: false,
+    clixEnableS10FmvEdit: false,
+    clixS10Fmv: '', clixS10FmvNA: false,
   }
 };
 
