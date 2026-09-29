@@ -1976,11 +1976,11 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                 <table className="w-full text-sm text-left text-gray-500">
                   <thead className="text-xs text-gray-700 uppercase bg-teal-100">
                     <tr>
-                      <th className="px-4 py-2 min-w-[150px]">Floor</th>
-                      <th className="px-4 py-2 min-w-[200px]">Area (Sale deed) (Sq.Ft.)</th>
-                      <th className="px-4 py-2 min-w-[200px]">Area (as per actual) (Sq.Ft.)</th>
-                      <th className="px-4 py-2 min-w-[250px]">Area Adopted for valuation (Sq.Ft.)</th>
-                      <th className="px-4 py-2 min-w-[200px]">Occupancy Status</th>
+                      <th className="px-4 py-2 min-w-37.5">Floor</th>
+                      <th className="px-4 py-2 min-w-50">Area (Sale deed) (Sq.Ft.)</th>
+                      <th className="px-4 py-2 min-w-50">Area (as per actual) (Sq.Ft.)</th>
+                      <th className="px-4 py-2 min-w-62.5">Area Adopted for valuation (Sq.Ft.)</th>
+                      <th className="px-4 py-2 min-w-50">Occupancy Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2358,10 +2358,10 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                 <table className="w-full text-sm text-left text-gray-500">
                   <thead className="text-xs text-gray-700 uppercase bg-indigo-100">
                     <tr>
-                      <th className="px-4 py-2 min-w-[150px]">Floor</th>
-                      <th className="px-4 py-2 min-w-[200px]">Area (Sqft)</th>
-                      <th className="px-4 py-2 min-w-[200px]">Rate (per Sqft)</th>
-                      <th className="px-4 py-2 min-w-[200px]">Amount (Rs)</th>
+                      <th className="px-4 py-2 min-w-37.5">Floor</th>
+                      <th className="px-4 py-2 min-w-50">Area (Sqft)</th>
+                      <th className="px-4 py-2 min-w-50">Rate (per Sqft)</th>
+                      <th className="px-4 py-2 min-w-50">Amount (Rs)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2899,7 +2899,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
               <div
                 ref={editorRef}
                 contentEditable={!disabled}
-                className={`p-2 min-h-[80px] outline-none \${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                className={`p-2 min-h-20 outline-none ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
                 onInput={(e) => onChange(e.currentTarget.innerHTML)}
                 onBlur={(e) => onChange(e.currentTarget.innerHTML)}
               />
@@ -3002,11 +3002,11 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                         return (
                           <div key={opt} className="relative group">
                             <label 
-                              className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm cursor-pointer transition-colors \${
+                              className={
                                 isSelected 
-                                  ? 'bg-emerald-100 border-emerald-300 text-emerald-800 font-medium' 
-                                  : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
-                              }`}
+                                  ? 'flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm cursor-pointer transition-colors bg-emerald-100 border-emerald-300 text-emerald-800 font-medium' 
+                                  : 'flex items-center gap-2 px-3 py-1.5 rounded-full border text-sm cursor-pointer transition-colors bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                              }
                             >
                               <input 
                                 type="checkbox"
