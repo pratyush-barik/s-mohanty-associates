@@ -25,6 +25,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     { id: 'clix-section-6', title: 'Property Details' },
     { id: 'clix-section-7', title: 'Specifications' },
     { id: 'clix-section-8', title: 'Boundaries and Set Backs' },
+    { id: 'clix-section-9', title: 'Area and Usage Detail' },
     { id: 'section-11', title: 'Photos' },
     { id: 'section-12', title: 'Maps' }
   ],
@@ -1701,6 +1702,307 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
           </div>
         );
       }
+    },
+    {
+      id: 'clix-section-9',
+      title: '9. AREA AND USAGE DETAIL',
+      number: 9,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const floorsList = [
+          { key: 'Basement', label: 'Basement' },
+          { key: 'Ground', label: 'Ground Floor' },
+          { key: 'First', label: 'First Floor' },
+          { key: 'Second', label: 'Second Floor' },
+          { key: 'Third', label: 'Third Floor' },
+          { key: 'Fourth', label: 'Fourth Floor' }
+        ];
+
+        let totalAdopted = 0;
+        floorsList.forEach(f => {
+          const actualStr = fields[`clixS9Bua${f.key}Actual`] || '0';
+          const isEdit = fields[`clixEnableS9Bua${f.key}AdoptedEdit`];
+          const adoptedStr = isEdit ? (fields[`clixS9Bua${f.key}Adopted`] || '0') : actualStr;
+          totalAdopted += (parseFloat(adoptedStr) || 0);
+        });
+
+        const autoTotalAdopted = totalAdopted.toFixed(2);
+        const isTotalEdit = fields.clixEnableS9TotalBuaAdoptedEdit;
+        const finalTotalAdopted = isTotalEdit ? (fields.clixS9TotalBuaAdopted || '') : autoTotalAdopted;
+
+        const approvedFloors = parseFloat(fields.clixS9FloorsApproved || '0') || 0;
+        const constructedFloors = parseFloat(fields.clixS9FloorsConstructed || '0') || 0;
+        let autoDev = '0';
+        if (approvedFloors > 0) {
+          autoDev = (((constructedFloors - approvedFloors) / approvedFloors) * 100).toFixed(2);
+        } else if (constructedFloors > 0 && approvedFloors === 0) {
+          autoDev = '100'; // If 0 approved but >0 constructed, 100% deviation technically infinite but practical
+        }
+        
+        const isDevEdit = fields.clixEnableS9FloorsDeviationEdit;
+        const finalDev = isDevEdit ? (fields.clixS9FloorsDeviation || '') : autoDev;
+
+        return (
+          <div className="animate-fade-in space-y-6">
+            <div className="border border-teal-200 bg-[#e0f2f1] rounded-md p-4 mb-4">
+              <h3 className="font-bold text-gray-700 mb-4">Built-up Area (BUA) Table</h3>
+              
+              <div className="overflow-x-auto mb-6">
+                <table className="w-full text-sm text-left text-gray-500">
+                  <thead className="text-xs text-gray-700 uppercase bg-teal-100">
+                    <tr>
+                      <th className="px-4 py-2">Floor</th>
+                      <th className="px-4 py-2">Area (Sale deed)</th>
+                      <th className="px-4 py-2">Area (as per actual)</th>
+                      <th className="px-4 py-2">Area Adopted for valuation</th>
+                      <th className="px-4 py-2">Occupancy Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {floorsList.map((floor) => {
+                      const isAdoptedEdit = fields[`clixEnableS9Bua${floor.key}AdoptedEdit`];
+                      const actualArea = fields[`clixS9Bua${floor.key}Actual`] || '';
+                      const adoptedVal = isAdoptedEdit ? (fields[`clixS9Bua${floor.key}Adopted`] || '') : actualArea;
+                      const occDrop = fields[`clixS9Bua${floor.key}OccupancyDropdown`];
+
+                      return (
+                        <tr key={floor.key} className="bg-[#e0f2f1] border-b border-teal-200">
+                          <td className="px-4 py-2 font-medium text-gray-900">{floor.label}</td>
+                          
+                          <td className="px-2 py-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type={fields[`clixS9Bua${floor.key}SaleDeedNA`] ? "text" : "number"}
+                                className={`${inputCls} ${fields[`clixS9Bua${floor.key}SaleDeedNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                value={fields[`clixS9Bua${floor.key}SaleDeedNA`] ? 'NA' : (fields[`clixS9Bua${floor.key}SaleDeed`] || '')}
+                                onChange={(e) => handleChange(`clixS9Bua${floor.key}SaleDeed`, e.target.value)}
+                                disabled={isReadOnly || fields[`clixS9Bua${floor.key}SaleDeedNA`]}
+                              />
+                              {renderNaToggle(`clixS9Bua${floor.key}SaleDeedNA`, fields, handleChange, isReadOnly)}
+                            </div>
+                          </td>
+
+                          <td className="px-2 py-2">
+                            <div className="flex items-center gap-2">
+                              <input
+                                type={fields[`clixS9Bua${floor.key}ActualNA`] ? "text" : "number"}
+                                className={`${inputCls} ${fields[`clixS9Bua${floor.key}ActualNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                value={fields[`clixS9Bua${floor.key}ActualNA`] ? 'NA' : actualArea}
+                                onChange={(e) => handleChange(`clixS9Bua${floor.key}Actual`, e.target.value)}
+                                disabled={isReadOnly || fields[`clixS9Bua${floor.key}ActualNA`]}
+                              />
+                              {renderNaToggle(`clixS9Bua${floor.key}ActualNA`, fields, handleChange, isReadOnly)}
+                            </div>
+                          </td>
+
+                          <td className="px-2 py-2">
+                            <div className="flex flex-col gap-1">
+                              {renderEditSwitch(`clixEnableS9Bua${floor.key}AdoptedEdit`, fields, handleChange, isReadOnly)}
+                              <div className="flex items-center gap-2 relative">
+                                {isAdoptedEdit ? (
+                                  <input
+                                    type={fields[`clixS9Bua${floor.key}AdoptedNA`] ? "text" : "number"}
+                                    className={`${inputCls} ${fields[`clixS9Bua${floor.key}AdoptedNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                    value={fields[`clixS9Bua${floor.key}AdoptedNA`] ? 'NA' : adoptedVal}
+                                    onChange={(e) => handleChange(`clixS9Bua${floor.key}Adopted`, e.target.value)}
+                                    disabled={isReadOnly || fields[`clixS9Bua${floor.key}AdoptedNA`]}
+                                  />
+                                ) : (
+                                  <div className="relative w-full">
+                                    <input 
+                                      className={`${inputCls} pr-10 bg-white text-gray-700`} 
+                                      value={fields[`clixS9Bua${floor.key}AdoptedNA`] ? 'NA' : adoptedVal} 
+                                      readOnly 
+                                      disabled={isReadOnly || fields[`clixS9Bua${floor.key}AdoptedNA`]}
+                                      title='>>Prefill from section 9, "Area (as per actual)"<<'
+                                    />
+                                    {!fields[`clixS9Bua${floor.key}AdoptedNA`] && (
+                                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 9, "Area (as per actual)"<<'>
+                                        <Lock className="w-4 h-4 text-emerald-800 group-hover:text-emerald-900" />
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                                {renderNaToggle(`clixS9Bua${floor.key}AdoptedNA`, fields, handleChange, isReadOnly)}
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="px-2 py-2">
+                            <div className="flex flex-col gap-2">
+                              <div className="flex items-center gap-2">
+                                <select
+                                  className={`${inputCls} ${fields[`clixS9Bua${floor.key}OccupancyNA`] ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                                  value={fields[`clixS9Bua${floor.key}OccupancyNA`] ? 'NA' : (occDrop || '')}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    handleChange(`clixS9Bua${floor.key}OccupancyDropdown`, val);
+                                    if (val !== 'Custom') {
+                                      handleChange(`clixS9Bua${floor.key}Occupancy`, val);
+                                    } else {
+                                      handleChange(`clixS9Bua${floor.key}Occupancy`, '');
+                                    }
+                                  }}
+                                  disabled={isReadOnly || fields[`clixS9Bua${floor.key}OccupancyNA`]}
+                                >
+                                  <option value="">Select Option</option>
+                                  <option value="Self-Occupied">Self-Occupied</option>
+                                  <option value="Vacant">Vacant</option>
+                                  <option value="Tenanted">Tenanted</option>
+                                  <option value="Custom">Custom</option>
+                                </select>
+                                {renderNaToggle(`clixS9Bua${floor.key}OccupancyNA`, fields, handleChange, isReadOnly)}
+                              </div>
+                              {occDrop === 'Custom' && !fields[`clixS9Bua${floor.key}OccupancyNA`] && (
+                                <input
+                                  type="text"
+                                  className={`${inputCls} bg-white`}
+                                  placeholder="Enter custom occupancy..."
+                                  value={fields[`clixS9Bua${floor.key}Occupancy`] || ''}
+                                  onChange={(e) => handleChange(`clixS9Bua${floor.key}Occupancy`, e.target.value)}
+                                  disabled={isReadOnly}
+                                />
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Total Built-up area</span>
+                    <div className="flex items-center gap-2">
+                      {renderEditSwitch('clixEnableS9TotalBuaAdoptedEdit', fields, handleChange, isReadOnly, fields.clixS9TotalBuaAdoptedNA)}
+                      {renderNaToggle('clixS9TotalBuaAdoptedNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  </div>
+                }>
+                  <div className="relative">
+                    {isTotalEdit ? (
+                      <input 
+                        type={fields.clixS9TotalBuaAdoptedNA ? "text" : "number"}
+                        className={`${inputCls} ${fields.clixS9TotalBuaAdoptedNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`} 
+                        value={fields.clixS9TotalBuaAdoptedNA ? 'NA' : finalTotalAdopted} 
+                        onChange={e => handleChange('clixS9TotalBuaAdopted', e.target.value)} 
+                        disabled={isReadOnly || fields.clixS9TotalBuaAdoptedNA} 
+                      />
+                    ) : (
+                      <div className="relative w-full">
+                        <input 
+                          className={`${inputCls} pr-10 bg-white text-gray-700`} 
+                          value={fields.clixS9TotalBuaAdoptedNA ? 'NA' : finalTotalAdopted} 
+                          readOnly 
+                          disabled={isReadOnly || fields.clixS9TotalBuaAdoptedNA} 
+                          title=">>Auto calculating from [Sum of all Area Adopted for valuation]<<"
+                        />
+                        {!fields.clixS9TotalBuaAdoptedNA && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [Sum of all Area Adopted for valuation]<<">
+                            <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Field>
+
+                <div className="hidden md:block"></div>
+
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Floors (Approved)</span>
+                    {renderNaToggle('clixS9FloorsApprovedNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <input
+                    type={fields.clixS9FloorsApprovedNA ? "text" : "number"}
+                    className={`${inputCls} ${fields.clixS9FloorsApprovedNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                    value={fields.clixS9FloorsApprovedNA ? 'NA' : (fields.clixS9FloorsApproved || '')}
+                    onChange={(e) => handleChange('clixS9FloorsApproved', e.target.value)}
+                    disabled={isReadOnly || fields.clixS9FloorsApprovedNA}
+                  />
+                </Field>
+
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>Floors (Constructed)</span>
+                    {renderNaToggle('clixS9FloorsConstructedNA', fields, handleChange, isReadOnly)}
+                  </div>
+                }>
+                  <input
+                    type={fields.clixS9FloorsConstructedNA ? "text" : "number"}
+                    className={`${inputCls} ${fields.clixS9FloorsConstructedNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`}
+                    value={fields.clixS9FloorsConstructedNA ? 'NA' : (fields.clixS9FloorsConstructed || '')}
+                    onChange={(e) => handleChange('clixS9FloorsConstructed', e.target.value)}
+                    disabled={isReadOnly || fields.clixS9FloorsConstructedNA}
+                  />
+                </Field>
+
+                <Field label={
+                  <div className="w-full flex items-center justify-between">
+                    <span>% Deviation</span>
+                    <div className="flex items-center gap-2">
+                      {renderEditSwitch('clixEnableS9FloorsDeviationEdit', fields, handleChange, isReadOnly, fields.clixS9FloorsDeviationNA)}
+                      {renderNaToggle('clixS9FloorsDeviationNA', fields, handleChange, isReadOnly)}
+                    </div>
+                  </div>
+                }>
+                  <div className="relative">
+                    {isDevEdit ? (
+                      <input 
+                        type={fields.clixS9FloorsDeviationNA ? "text" : "number"}
+                        className={`${inputCls} ${fields.clixS9FloorsDeviationNA ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}`} 
+                        value={fields.clixS9FloorsDeviationNA ? 'NA' : finalDev} 
+                        onChange={e => handleChange('clixS9FloorsDeviation', e.target.value)} 
+                        disabled={isReadOnly || fields.clixS9FloorsDeviationNA} 
+                      />
+                    ) : (
+                      <div className="relative w-full">
+                        <input 
+                          className={`${inputCls} pr-10 bg-white text-gray-700`} 
+                          value={fields.clixS9FloorsDeviationNA ? 'NA' : finalDev} 
+                          readOnly 
+                          disabled={isReadOnly || fields.clixS9FloorsDeviationNA} 
+                          title=">>Auto calculating from [((Constructed - Approved) / Approved) * 100]<<"
+                        />
+                        {!fields.clixS9FloorsDeviationNA && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title=">>Auto calculating from [((Constructed - Approved) / Approved) * 100]<<">
+                            <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </Field>
+
+                <Field label="Demolition List">
+                  <div className="flex gap-4 mt-2">
+                    {['Yes', 'No', 'NA'].map((opt) => (
+                      <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="clixS9DemolitionList"
+                          value={opt}
+                          checked={fields.clixS9DemolitionList === opt}
+                          onChange={(e) => handleChange('clixS9DemolitionList', e.target.value)}
+                          disabled={isReadOnly}
+                          className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+                        />
+                        <span className="text-gray-700 text-sm">{opt}</span>
+                      </label>
+                    ))}
+                  </div>
+                </Field>
+                
+              </div>
+            </div>
+          </div>
+        );
+      }
     }
   ],
   defaultValues: {
@@ -1766,6 +2068,54 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     clixS8EnableSetbacksRightSideDeviationsEdit: false,
     clixS8SetbacksRightSideDeviations: '', clixS8SetbacksRightSideDeviationsNA: false,
     clixS8SetbacksRightSideRemarks: '', clixS8SetbacksRightSideRemarksNA: false,
+    
+    // Section 9 Variables
+    clixS9BuaBasementSaleDeed: '', clixS9BuaBasementSaleDeedNA: false,
+    clixS9BuaBasementActual: '', clixS9BuaBasementActualNA: false,
+    clixEnableS9BuaBasementAdoptedEdit: false,
+    clixS9BuaBasementAdopted: '', clixS9BuaBasementAdoptedNA: false,
+    clixS9BuaBasementOccupancyDropdown: 'Self-Occupied', clixS9BuaBasementOccupancy: 'Self-Occupied', clixS9BuaBasementOccupancyNA: false,
+    
+    clixS9BuaGroundSaleDeed: '', clixS9BuaGroundSaleDeedNA: false,
+    clixS9BuaGroundActual: '', clixS9BuaGroundActualNA: false,
+    clixEnableS9BuaGroundAdoptedEdit: false,
+    clixS9BuaGroundAdopted: '', clixS9BuaGroundAdoptedNA: false,
+    clixS9BuaGroundOccupancyDropdown: 'Self-Occupied', clixS9BuaGroundOccupancy: 'Self-Occupied', clixS9BuaGroundOccupancyNA: false,
+    
+    clixS9BuaFirstSaleDeed: '', clixS9BuaFirstSaleDeedNA: false,
+    clixS9BuaFirstActual: '', clixS9BuaFirstActualNA: false,
+    clixEnableS9BuaFirstAdoptedEdit: false,
+    clixS9BuaFirstAdopted: '', clixS9BuaFirstAdoptedNA: false,
+    clixS9BuaFirstOccupancyDropdown: 'Self-Occupied', clixS9BuaFirstOccupancy: 'Self-Occupied', clixS9BuaFirstOccupancyNA: false,
+    
+    clixS9BuaSecondSaleDeed: '', clixS9BuaSecondSaleDeedNA: false,
+    clixS9BuaSecondActual: '', clixS9BuaSecondActualNA: false,
+    clixEnableS9BuaSecondAdoptedEdit: false,
+    clixS9BuaSecondAdopted: '', clixS9BuaSecondAdoptedNA: false,
+    clixS9BuaSecondOccupancyDropdown: 'Self-Occupied', clixS9BuaSecondOccupancy: 'Self-Occupied', clixS9BuaSecondOccupancyNA: false,
+    
+    clixS9BuaThirdSaleDeed: '', clixS9BuaThirdSaleDeedNA: false,
+    clixS9BuaThirdActual: '', clixS9BuaThirdActualNA: false,
+    clixEnableS9BuaThirdAdoptedEdit: false,
+    clixS9BuaThirdAdopted: '', clixS9BuaThirdAdoptedNA: false,
+    clixS9BuaThirdOccupancyDropdown: 'Self-Occupied', clixS9BuaThirdOccupancy: 'Self-Occupied', clixS9BuaThirdOccupancyNA: false,
+    
+    clixS9BuaFourthSaleDeed: '', clixS9BuaFourthSaleDeedNA: false,
+    clixS9BuaFourthActual: '', clixS9BuaFourthActualNA: false,
+    clixEnableS9BuaFourthAdoptedEdit: false,
+    clixS9BuaFourthAdopted: '', clixS9BuaFourthAdoptedNA: false,
+    clixS9BuaFourthOccupancyDropdown: 'Self-Occupied', clixS9BuaFourthOccupancy: 'Self-Occupied', clixS9BuaFourthOccupancyNA: false,
+    
+    clixEnableS9TotalBuaAdoptedEdit: false,
+    clixS9TotalBuaAdopted: '', clixS9TotalBuaAdoptedNA: false,
+    
+    clixS9FloorsApproved: '', clixS9FloorsApprovedNA: false,
+    clixS9FloorsConstructed: '', clixS9FloorsConstructedNA: false,
+    
+    clixEnableS9FloorsDeviationEdit: false,
+    clixS9FloorsDeviation: '', clixS9FloorsDeviationNA: false,
+    
+    clixS9DemolitionList: 'NA',
   }
 };
 
