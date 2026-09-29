@@ -156,6 +156,13 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
       id: 'clix-section-2',
       title: 'Customer Details',
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const toTitleCase = (str: string) => {
+          return str.replace(
+            /\w\S*/g,
+            (txt) => txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase()
+          );
+        };
+
         return (
             <div className="animate-fade-in space-y-6">
               <div className="border border-[#E3F2FD] bg-[#E3F2FD] rounded-xl p-4">
@@ -167,7 +174,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       type="text"
                       className={inputCls}
                       value={fields.clixBorrowerName || ''}
-                      onChange={e => handleChange('clixBorrowerName', e.target.value)}
+                      onChange={e => handleChange('clixBorrowerName', toTitleCase(e.target.value))}
                       disabled={isReadOnly}
                     />
                   </Field>
@@ -184,7 +191,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       className={inputCls}
                       value={fields.clixBorrowerContactNoNA ? 'NA' : (fields.clixBorrowerContactNo || '')}
                       onChange={e => {
-                        const val = e.target.value.replace(/\D/g, '');
+                        const val = e.target.value.replace(/\D/g, '').substring(0, 10);
                         handleChange('clixBorrowerContactNo', val);
                       }}
                       disabled={isReadOnly || !!fields.clixBorrowerContactNoNA}
@@ -219,7 +226,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                         title={!fields.clixBorrowerRepNameEdit && !fields.clixBorrowerRepNameNA ? 'Prefill from section 2, "Borrower Name"' : undefined}
                         className={`${inputCls} pr-10 ${fields.clixBorrowerRepNameEdit && !fields.clixBorrowerRepNameNA ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`}
                         value={fields.clixBorrowerRepNameNA ? 'NA' : (fields.clixBorrowerRepNameEdit ? (fields.clixBorrowerRepName || '') : (fields.clixRepSameAsBorrower ? (fields.clixBorrowerName || '') : (fields.clixBorrowerRepName || '')))}
-                        onChange={e => handleChange('clixBorrowerRepName', e.target.value)}
+                        onChange={e => handleChange('clixBorrowerRepName', toTitleCase(e.target.value))}
                         disabled={isReadOnly || !!fields.clixBorrowerRepNameNA || !fields.clixBorrowerRepNameEdit}
                       />
                       {!fields.clixBorrowerRepNameEdit && !fields.clixBorrowerRepNameNA && (
@@ -247,7 +254,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                         className={`${inputCls} pr-10 ${fields.clixBorrowerRepContactNoEdit && !fields.clixBorrowerRepContactNoNA ? 'bg-[#A7F3D0] border-emerald-500 font-bold text-emerald-800' : 'bg-white text-gray-700'}`}
                         value={fields.clixBorrowerRepContactNoNA ? 'NA' : (fields.clixBorrowerRepContactNoEdit ? (fields.clixBorrowerRepContactNo || '') : (fields.clixRepSameAsBorrower ? (fields.clixBorrowerContactNo || '') : (fields.clixBorrowerRepContactNo || '')))}
                         onChange={e => {
-                          const val = e.target.value.replace(/\D/g, '');
+                          const val = e.target.value.replace(/\D/g, '').substring(0, 10);
                           handleChange('clixBorrowerRepContactNo', val);
                         }}
                         disabled={isReadOnly || !!fields.clixBorrowerRepContactNoNA || !fields.clixBorrowerRepContactNoEdit}
@@ -270,7 +277,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       type="text"
                       className={inputCls}
                       value={fields.clixRmNameNA ? 'NA' : (fields.clixRmName || '')}
-                      onChange={e => handleChange('clixRmName', e.target.value)}
+                      onChange={e => handleChange('clixRmName', toTitleCase(e.target.value))}
                       disabled={isReadOnly || !!fields.clixRmNameNA}
                     />
                   </Field>
@@ -287,7 +294,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
                       className={inputCls}
                       value={fields.clixRmContactNoNA ? 'NA' : (fields.clixRmContactNo || '')}
                       onChange={e => {
-                        const val = e.target.value.replace(/\D/g, '');
+                        const val = e.target.value.replace(/\D/g, '').substring(0, 10);
                         handleChange('clixRmContactNo', val);
                       }}
                       disabled={isReadOnly || !!fields.clixRmContactNoNA}
