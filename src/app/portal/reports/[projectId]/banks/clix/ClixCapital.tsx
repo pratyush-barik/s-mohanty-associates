@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig, BaseReportFields } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock } from 'lucide-react';
+import { Lock, Plus, Trash2 } from 'lucide-react';
 
 export const CLIX_CAPITAL_CONFIG: BankConfig = {
   bankId: 'CLIX CAPITAL LTD',
@@ -21,6 +21,7 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     { id: 'clix-section-2', title: 'Customer Details' },
     { id: 'clix-section-3', title: 'Property Address' },
     { id: 'clix-section-4', title: 'Visit Details' },
+    { id: 'clix-section-5', title: 'Document Details' },
     { id: 'section-11', title: 'Photos' },
     { id: 'section-12', title: 'Maps' }
   ],
@@ -612,8 +613,252 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
             </div>
           );
       }
+    },
+
+    {
+      id: 'clix-section-5',
+      title: '5. DOCUMENT DETAILS',
+      number: 5,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+        const legalDocs = fields.clixLegalDocs || [{ id: '1', docName: '', docNameNA: false, status: '', statusCustom: '' }];
+
+        const updateDoc = (id: string, key: string, val: any) => {
+          handleChange('clixLegalDocs', legalDocs.map((d: any) => d.id === id ? { ...d, [key]: val } : d));
+        };
+        const removeDoc = (id: string) => {
+          handleChange('clixLegalDocs', legalDocs.filter((d: any) => d.id !== id));
+        };
+        const addDoc = () => {
+          handleChange('clixLegalDocs', [...legalDocs, { id: Math.random().toString(), docName: '', docNameNA: false, status: '', statusCustom: '' }]);
+        };
+
+        return (
+            <div className="animate-fade-in space-y-6">
+              <div className="border border-[#F3E5F5] bg-[#F3E5F5] rounded-xl p-4">
+                <h3 className="font-bold text-gray-700 mb-4">Legal Documents</h3>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-3">S.No.</th>
+                        <th className="px-4 py-3">Document Name</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {legalDocs.map((doc: any, index: number) => (
+                        <tr key={doc.id} className="bg-white border-b">
+                          <td className="px-4 py-3 align-top">
+                            <div className="relative group inline-block cursor-help">
+                              <span className="font-medium bg-gray-100 px-2 py-1 rounded inline-flex items-center gap-1" title={`Auto calculating from ${index + 1}`}>
+                                {index + 1}
+                                <Lock className="w-3 h-3 text-emerald-800" />
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 align-top">
+                            <div className="flex items-start flex-col gap-1">
+                              <label className="flex items-center gap-1 cursor-pointer mb-1">
+                                <input
+                                  type="checkbox"
+                                  className="rounded text-emerald-600"
+                                  checked={doc.docNameNA}
+                                  onChange={e => updateDoc(doc.id, 'docNameNA', e.target.checked)}
+                                  disabled={isReadOnly}
+                                />
+                                <span className="text-[10px] uppercase font-bold text-gray-400">NA</span>
+                              </label>
+                              <input
+                                type="text"
+                                className={inputCls}
+                                value={doc.docNameNA ? 'NA' : doc.docName}
+                                onChange={e => updateDoc(doc.id, 'docName', e.target.value)}
+                                disabled={isReadOnly || doc.docNameNA}
+                              />
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 align-top">
+                            <div className="flex flex-col gap-2">
+                              <select
+                                className={inputCls}
+                                value={doc.status}
+                                onChange={e => {
+                                  updateDoc(doc.id, 'status', e.target.value);
+                                  if (e.target.value !== 'Custom') {
+                                    updateDoc(doc.id, 'statusCustom', '');
+                                  }
+                                }}
+                                disabled={isReadOnly}
+                              >
+                                <option value="">Select Status</option>
+                                <option value="Available">Available</option>
+                                <option value="NA">NA</option>
+                                <option value="Custom">Custom</option>
+                              </select>
+                              {doc.status === 'Custom' && (
+                                <input
+                                  type="text"
+                                  placeholder="Custom status"
+                                  className={inputCls}
+                                  value={doc.statusCustom}
+                                  onChange={e => updateDoc(doc.id, 'statusCustom', e.target.value)}
+                                  disabled={isReadOnly}
+                                />
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-3 align-top text-right">
+                            <button
+                              type="button"
+                              onClick={() => removeDoc(doc.id)}
+                              disabled={isReadOnly || legalDocs.length === 1}
+                              className="text-red-500 hover:text-red-700 disabled:opacity-50 mt-5"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  <button
+                    type="button"
+                    onClick={addDoc}
+                    disabled={isReadOnly}
+                    className="mt-4 flex items-center gap-2 text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                  >
+                    <Plus className="w-4 h-4" /> Add Document
+                  </button>
+                </div>
+              </div>
+
+              <div className="border border-[#F3E5F5] bg-[#F3E5F5] rounded-xl p-4">
+                <h3 className="font-bold text-gray-700 mb-4">Accommodation Table</h3>
+                <div className="grid grid-cols-1 gap-4">
+                  
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Ground Floor</span>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="rounded text-emerald-600"
+                          checked={fields.clixAccGroundFloorNA || false}
+                          onChange={e => {
+                            handleChange('clixAccGroundFloorNA', e.target.checked);
+                            if (e.target.checked) handleChange('clixAccGroundFloor', 'Not Constructed/NA');
+                            else handleChange('clixAccGroundFloor', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-[10px] uppercase font-bold text-gray-400">Not Constructed/NA</span>
+                      </label>
+                    </div>
+                  }>
+                    <textarea
+                      className={`${inputCls} resize-y min-h-15`}
+                      rows={2}
+                      value={fields.clixAccGroundFloor || ''}
+                      onChange={e => handleChange('clixAccGroundFloor', e.target.value)}
+                      disabled={isReadOnly || fields.clixAccGroundFloorNA}
+                    />
+                  </Field>
+
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>First Floor</span>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="rounded text-emerald-600"
+                          checked={fields.clixAccFirstFloorNA || false}
+                          onChange={e => {
+                            handleChange('clixAccFirstFloorNA', e.target.checked);
+                            if (e.target.checked) handleChange('clixAccFirstFloor', 'Not Constructed/NA');
+                            else handleChange('clixAccFirstFloor', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-[10px] uppercase font-bold text-gray-400">Not Constructed/NA</span>
+                      </label>
+                    </div>
+                  }>
+                    <textarea
+                      className={`${inputCls} resize-y min-h-15`}
+                      rows={2}
+                      value={fields.clixAccFirstFloor || ''}
+                      onChange={e => handleChange('clixAccFirstFloor', e.target.value)}
+                      disabled={isReadOnly || fields.clixAccFirstFloorNA}
+                    />
+                  </Field>
+
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Second Floor</span>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="rounded text-emerald-600"
+                          checked={fields.clixAccSecondFloorNA || false}
+                          onChange={e => {
+                            handleChange('clixAccSecondFloorNA', e.target.checked);
+                            if (e.target.checked) handleChange('clixAccSecondFloor', 'Not Constructed/NA');
+                            else handleChange('clixAccSecondFloor', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-[10px] uppercase font-bold text-gray-400">Not Constructed/NA</span>
+                      </label>
+                    </div>
+                  }>
+                    <textarea
+                      className={`${inputCls} resize-y min-h-15`}
+                      rows={2}
+                      value={fields.clixAccSecondFloor || ''}
+                      onChange={e => handleChange('clixAccSecondFloor', e.target.value)}
+                      disabled={isReadOnly || fields.clixAccSecondFloorNA}
+                    />
+                  </Field>
+
+                  <Field label={
+                    <div className="w-full flex items-center justify-between">
+                      <span>Third Floor</span>
+                      <label className="flex items-center gap-1 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="rounded text-emerald-600"
+                          checked={fields.clixAccThirdFloorNA || false}
+                          onChange={e => {
+                            handleChange('clixAccThirdFloorNA', e.target.checked);
+                            if (e.target.checked) handleChange('clixAccThirdFloor', 'Not Constructed/NA');
+                            else handleChange('clixAccThirdFloor', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                        <span className="text-[10px] uppercase font-bold text-gray-400">Not Constructed/NA</span>
+                      </label>
+                    </div>
+                  }>
+                    <textarea
+                      className={`${inputCls} resize-y min-h-15`}
+                      rows={2}
+                      value={fields.clixAccThirdFloor || ''}
+                      onChange={e => handleChange('clixAccThirdFloor', e.target.value)}
+                      disabled={isReadOnly || fields.clixAccThirdFloorNA}
+                    />
+                  </Field>
+
+                </div>
+              </div>
+            </div>
+          );
+      }
     }
   ],
+,
   defaultValues: {
     clixReportType: 'Technical Scrutiny Report',
     clixLoanType: 'LAP'

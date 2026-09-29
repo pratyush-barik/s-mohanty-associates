@@ -78,6 +78,15 @@ export function reorderAndLabelAnnexures(
 }
 
 // ─── Base Report Fields (identical to GeneralReportBuilder's ReportFields) ──
+
+export interface ClixLegalDoc {
+  id: string;
+  docName: string;
+  docNameNA: boolean;
+  status: string;
+  statusCustom: string;
+}
+
 export interface BaseReportFields {
   // Clix Capital
   clixReportType?: string;
@@ -101,6 +110,28 @@ export interface BaseReportFields {
   clixState?: string;
   clixPinCode?: string;
   clixStateCustom?: string;
+  clixContactPersonNameNA?: boolean;
+  clixContactPersonNameEdit?: boolean;
+  clixContactPersonName?: string;
+  clixContactPersonMobileNoNA?: boolean;
+  clixContactPersonMobileNoEdit?: boolean;
+  clixContactPersonMobileNo?: string;
+  clixRelationshipWithCustomer?: string;
+  clixRelationshipWithCustomerCustom?: string;
+  clixIdProofDetailsNA?: boolean;
+  clixIdProofDetails?: string;
+  clixPropertyIdentifiedThroughNA?: boolean;
+  clixAccThirdFloorNA?: boolean;
+  clixAccThirdFloor?: string;
+  clixAccSecondFloorNA?: boolean;
+  clixAccSecondFloor?: string;
+  clixAccFirstFloorNA?: boolean;
+  clixAccFirstFloor?: string;
+  clixAccGroundFloorNA?: boolean;
+  clixAccGroundFloor?: string;
+  clixLegalDocs?: ClixLegalDoc[];
+  clixPropertyIdentifiedThrough?: string;
+
   clixCityCustom?: string;
   clixNearestLandmarkNA?: boolean;
   clixRmContactNoNA?: boolean;
