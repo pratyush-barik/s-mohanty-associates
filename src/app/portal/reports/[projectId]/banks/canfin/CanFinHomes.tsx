@@ -5,6 +5,78 @@ import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
 import { Lock } from 'lucide-react';
 
+const MultiSelectChips = ({ options, value = [], onChange, disabled }: { options: string[], value: string[], onChange: (val: string[]) => void, disabled?: boolean }) => {
+  const [open, setOpen] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const toggleOption = (opt: string) => {
+    if (value.includes(opt)) {
+      onChange(value.filter(o => o !== opt));
+    } else {
+      onChange([...value, opt]);
+    }
+  };
+
+  const removeOption = (opt: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    onChange(value.filter(o => o !== opt));
+  };
+
+  return (
+    <div className="relative flex-1 text-sm font-sans" ref={containerRef}>
+      <div 
+        className={`${inputCls} min-h-[42px] py-1.5 h-auto cursor-pointer flex flex-wrap gap-1.5 items-center justify-between ${disabled ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'}`}
+        onClick={() => !disabled && setOpen(!open)}
+      >
+        <div className="flex flex-wrap gap-1.5 flex-1">
+          {!value || value.length === 0 ? (
+            <span className="text-gray-400 py-0.5">Select...</span>
+          ) : (
+            value.map(val => (
+              <span key={val} className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-medium">
+                {val}
+                {!disabled && (
+                  <button type="button" onClick={(e) => removeOption(val, e)} className="hover:bg-emerald-200 rounded-full p-0.5">
+                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  </button>
+                )}
+              </span>
+            ))
+          )}
+        </div>
+        <svg className="w-4 h-4 shrink-0 text-gray-400 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </div>
+      {open && !disabled && (
+        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+          {options.map(opt => (
+            <label key={opt} className="flex items-center px-3 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-50 m-0">
+              <input 
+                type="checkbox" 
+                className="mr-2 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                checked={value?.includes(opt)} 
+                onChange={() => toggleOption(opt)}
+              />
+              <span className="text-gray-700">{opt}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const CANFIN_HOMES_CONFIG: BankConfig = {
   bankId: 'CANFIN HOMES LTD',
   subTemplateId: '',
@@ -188,26 +260,26 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     canfinHomesProjectedResidualLife: '',
 
     // Section 7 Variables
-    canfinHomesTypeOfStructureDropdown: 'RCC',
-    canfinHomesTypeOfStructure: 'RCC',
+    canfinHomesTypeOfStructureDropdown: 'RCC Framed',
+    canfinHomesTypeOfStructure: 'RCC Framed',
     canfinHomesTypeOfStructureNA: false,
-    canfinHomesPaintingDropdown: 'Completed',
-    canfinHomesPainting: 'Completed',
+    canfinHomesPaintingDropdown: [],
+    canfinHomesPainting: '',
     canfinHomesPaintingNA: false,
-    canfinHomesFlooringDropdown: 'Tiles',
-    canfinHomesFlooring: 'Tiles',
+    canfinHomesFlooringDropdown: [],
+    canfinHomesFlooring: '',
     canfinHomesFlooringNA: false,
-    canfinHomesBathroomFittingsDropdown: 'Completed',
-    canfinHomesBathroomFittings: 'Completed',
+    canfinHomesBathroomFittingsDropdown: [],
+    canfinHomesBathroomFittings: '',
     canfinHomesBathroomFittingsNA: false,
-    canfinHomesElectricalFittingsDropdown: 'Concealed wiring',
-    canfinHomesElectricalFittings: 'Concealed wiring',
+    canfinHomesElectricalFittingsDropdown: [],
+    canfinHomesElectricalFittings: '',
     canfinHomesElectricalFittingsNA: false,
-    canfinHomesKitchenDropdown: 'Tile Flooring & Steel Sink',
-    canfinHomesKitchen: 'Tile Flooring & Steel Sink',
+    canfinHomesKitchenDropdown: [],
+    canfinHomesKitchen: '',
     canfinHomesKitchenNA: false,
-    canfinHomesInteriorsDropdown: 'Good',
-    canfinHomesInteriors: 'Good',
+    canfinHomesInteriorsDropdown: [],
+    canfinHomesInteriors: '',
     canfinHomesInteriorsNA: false,
 
     // Section 4 Variables
@@ -2293,6 +2365,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 {/* Type of Structure */}
+                {/* Type of Structure */}
                 <div className="flex flex-col gap-2">
                   <Field label={
                     <div className="flex items-center justify-between">
@@ -2312,7 +2385,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       if(e.target.value !== 'Custom') handleChange('canfinHomesTypeOfStructure', e.target.value);
                       else handleChange('canfinHomesTypeOfStructure', '');
                     }} disabled={isReadOnly || fields.canfinHomesTypeOfStructureNA}>
-                      <option value="RCC">RCC</option>
+                      <option value="RCC Framed">RCC Framed</option>
                       <option value="Load Bearing">Load Bearing</option>
                       <option value="Composite">Composite</option>
                       <option value="Custom">Custom</option>
@@ -2338,18 +2411,17 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       </label>
                     </div>
                   }>
-                    <select className={inputCls} value={fields.canfinHomesPaintingDropdown || ''} onChange={e => {
-                      handleChange('canfinHomesPaintingDropdown', e.target.value);
-                      if(e.target.value !== 'Custom') handleChange('canfinHomesPainting', e.target.value);
-                      else handleChange('canfinHomesPainting', '');
-                    }} disabled={isReadOnly || fields.canfinHomesPaintingNA}>
-                      <option value="Completed">Completed</option>
-                      <option value="Ongoing">Ongoing</option>
-                      <option value="Not Started">Not Started</option>
-                      <option value="Custom">Custom</option>
-                    </select>
+                    <MultiSelectChips 
+                      options={['Emulsion', 'Distemper', 'Weather Coat', 'Completed', 'Ongoing', 'Custom']} 
+                      value={fields.canfinHomesPaintingDropdown || []} 
+                      onChange={val => {
+                        handleChange('canfinHomesPaintingDropdown', val);
+                        if (!val.includes('Custom')) handleChange('canfinHomesPainting', val.join(', '));
+                      }} 
+                      disabled={isReadOnly || fields.canfinHomesPaintingNA} 
+                    />
                   </Field>
-                  {fields.canfinHomesPaintingDropdown === 'Custom' && (
+                  {fields.canfinHomesPaintingDropdown?.includes('Custom') && (
                     <input className={inputCls} placeholder="Enter custom painting status..." value={fields.canfinHomesPaintingNA ? 'NA' : (fields.canfinHomesPainting || '')} onChange={e => handleChange('canfinHomesPainting', e.target.value)} disabled={isReadOnly || fields.canfinHomesPaintingNA} />
                   )}
                 </div>
@@ -2369,19 +2441,17 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       </label>
                     </div>
                   }>
-                    <select className={inputCls} value={fields.canfinHomesFlooringDropdown || ''} onChange={e => {
-                      handleChange('canfinHomesFlooringDropdown', e.target.value);
-                      if(e.target.value !== 'Custom') handleChange('canfinHomesFlooring', e.target.value);
-                      else handleChange('canfinHomesFlooring', '');
-                    }} disabled={isReadOnly || fields.canfinHomesFlooringNA}>
-                      <option value="Tiles">Tiles</option>
-                      <option value="Marble">Marble</option>
-                      <option value="Granite">Granite</option>
-                      <option value="Cement">Cement</option>
-                      <option value="Custom">Custom</option>
-                    </select>
+                    <MultiSelectChips 
+                      options={['Vitrified Tiles', 'Ceramic Tiles', 'Marble', 'Granite', 'Cement Concrete', 'Custom']} 
+                      value={fields.canfinHomesFlooringDropdown || []} 
+                      onChange={val => {
+                        handleChange('canfinHomesFlooringDropdown', val);
+                        if (!val.includes('Custom')) handleChange('canfinHomesFlooring', val.join(', '));
+                      }} 
+                      disabled={isReadOnly || fields.canfinHomesFlooringNA} 
+                    />
                   </Field>
-                  {fields.canfinHomesFlooringDropdown === 'Custom' && (
+                  {fields.canfinHomesFlooringDropdown?.includes('Custom') && (
                     <input className={inputCls} placeholder="Enter custom flooring..." value={fields.canfinHomesFlooringNA ? 'NA' : (fields.canfinHomesFlooring || '')} onChange={e => handleChange('canfinHomesFlooring', e.target.value)} disabled={isReadOnly || fields.canfinHomesFlooringNA} />
                   )}
                 </div>
@@ -2401,19 +2471,17 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       </label>
                     </div>
                   }>
-                    <select className={inputCls} value={fields.canfinHomesBathroomFittingsDropdown || ''} onChange={e => {
-                      handleChange('canfinHomesBathroomFittingsDropdown', e.target.value);
-                      if(e.target.value !== 'Custom') handleChange('canfinHomesBathroomFittings', e.target.value);
-                      else handleChange('canfinHomesBathroomFittings', '');
-                    }} disabled={isReadOnly || fields.canfinHomesBathroomFittingsNA}>
-                      <option value="Completed">Completed</option>
-                      <option value="Concealed">Concealed</option>
-                      <option value="Open">Open</option>
-                      <option value="Not Started">Not Started</option>
-                      <option value="Custom">Custom</option>
-                    </select>
+                    <MultiSelectChips 
+                      options={['Concealed CPVC', 'Standard CP fittings', 'Ceramic sanitary ware', 'Custom']} 
+                      value={fields.canfinHomesBathroomFittingsDropdown || []} 
+                      onChange={val => {
+                        handleChange('canfinHomesBathroomFittingsDropdown', val);
+                        if (!val.includes('Custom')) handleChange('canfinHomesBathroomFittings', val.join(', '));
+                      }} 
+                      disabled={isReadOnly || fields.canfinHomesBathroomFittingsNA} 
+                    />
                   </Field>
-                  {fields.canfinHomesBathroomFittingsDropdown === 'Custom' && (
+                  {fields.canfinHomesBathroomFittingsDropdown?.includes('Custom') && (
                     <input className={inputCls} placeholder="Enter custom bathroom fittings..." value={fields.canfinHomesBathroomFittingsNA ? 'NA' : (fields.canfinHomesBathroomFittings || '')} onChange={e => handleChange('canfinHomesBathroomFittings', e.target.value)} disabled={isReadOnly || fields.canfinHomesBathroomFittingsNA} />
                   )}
                 </div>
@@ -2433,18 +2501,17 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       </label>
                     </div>
                   }>
-                    <select className={inputCls} value={fields.canfinHomesElectricalFittingsDropdown || ''} onChange={e => {
-                      handleChange('canfinHomesElectricalFittingsDropdown', e.target.value);
-                      if(e.target.value !== 'Custom') handleChange('canfinHomesElectricalFittings', e.target.value);
-                      else handleChange('canfinHomesElectricalFittings', '');
-                    }} disabled={isReadOnly || fields.canfinHomesElectricalFittingsNA}>
-                      <option value="Concealed wiring">Concealed wiring</option>
-                      <option value="Open wiring">Open wiring</option>
-                      <option value="None">None</option>
-                      <option value="Custom">Custom</option>
-                    </select>
+                    <MultiSelectChips 
+                      options={['Concealed copper wiring', 'Modular switches', 'Standard fixtures', 'Custom']} 
+                      value={fields.canfinHomesElectricalFittingsDropdown || []} 
+                      onChange={val => {
+                        handleChange('canfinHomesElectricalFittingsDropdown', val);
+                        if (!val.includes('Custom')) handleChange('canfinHomesElectricalFittings', val.join(', '));
+                      }} 
+                      disabled={isReadOnly || fields.canfinHomesElectricalFittingsNA} 
+                    />
                   </Field>
-                  {fields.canfinHomesElectricalFittingsDropdown === 'Custom' && (
+                  {fields.canfinHomesElectricalFittingsDropdown?.includes('Custom') && (
                     <input className={inputCls} placeholder="Enter custom electrical fittings..." value={fields.canfinHomesElectricalFittingsNA ? 'NA' : (fields.canfinHomesElectricalFittings || '')} onChange={e => handleChange('canfinHomesElectricalFittings', e.target.value)} disabled={isReadOnly || fields.canfinHomesElectricalFittingsNA} />
                   )}
                 </div>
@@ -2464,18 +2531,17 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       </label>
                     </div>
                   }>
-                    <select className={inputCls} value={fields.canfinHomesKitchenDropdown || ''} onChange={e => {
-                      handleChange('canfinHomesKitchenDropdown', e.target.value);
-                      if(e.target.value !== 'Custom') handleChange('canfinHomesKitchen', e.target.value);
-                      else handleChange('canfinHomesKitchen', '');
-                    }} disabled={isReadOnly || fields.canfinHomesKitchenNA}>
-                      <option value="Tile Flooring & Steel Sink">Tile Flooring & Steel Sink</option>
-                      <option value="Granite Platform">Granite Platform</option>
-                      <option value="Bare">Bare</option>
-                      <option value="Custom">Custom</option>
-                    </select>
+                    <MultiSelectChips 
+                      options={['Granite Platform', 'Stainless Steel Sink', 'Glazed Tiles dado', 'Bare', 'Custom']} 
+                      value={fields.canfinHomesKitchenDropdown || []} 
+                      onChange={val => {
+                        handleChange('canfinHomesKitchenDropdown', val);
+                        if (!val.includes('Custom')) handleChange('canfinHomesKitchen', val.join(', '));
+                      }} 
+                      disabled={isReadOnly || fields.canfinHomesKitchenNA} 
+                    />
                   </Field>
-                  {fields.canfinHomesKitchenDropdown === 'Custom' && (
+                  {fields.canfinHomesKitchenDropdown?.includes('Custom') && (
                     <input className={inputCls} placeholder="Enter custom kitchen details..." value={fields.canfinHomesKitchenNA ? 'NA' : (fields.canfinHomesKitchen || '')} onChange={e => handleChange('canfinHomesKitchen', e.target.value)} disabled={isReadOnly || fields.canfinHomesKitchenNA} />
                   )}
                 </div>
@@ -2495,19 +2561,17 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                       </label>
                     </div>
                   }>
-                    <select className={inputCls} value={fields.canfinHomesInteriorsDropdown || ''} onChange={e => {
-                      handleChange('canfinHomesInteriorsDropdown', e.target.value);
-                      if(e.target.value !== 'Custom') handleChange('canfinHomesInteriors', e.target.value);
-                      else handleChange('canfinHomesInteriors', '');
-                    }} disabled={isReadOnly || fields.canfinHomesInteriorsNA}>
-                      <option value="Good">Good</option>
-                      <option value="Average">Average</option>
-                      <option value="Poor">Poor</option>
-                      <option value="None">None</option>
-                      <option value="Custom">Custom</option>
-                    </select>
+                    <MultiSelectChips 
+                      options={['Woodwork/Wardrobes', 'False Ceiling', 'POP Cornice', 'None', 'Custom']} 
+                      value={fields.canfinHomesInteriorsDropdown || []} 
+                      onChange={val => {
+                        handleChange('canfinHomesInteriorsDropdown', val);
+                        if (!val.includes('Custom')) handleChange('canfinHomesInteriors', val.join(', '));
+                      }} 
+                      disabled={isReadOnly || fields.canfinHomesInteriorsNA} 
+                    />
                   </Field>
-                  {fields.canfinHomesInteriorsDropdown === 'Custom' && (
+                  {fields.canfinHomesInteriorsDropdown?.includes('Custom') && (
                     <input className={inputCls} placeholder="Enter custom interiors..." value={fields.canfinHomesInteriorsNA ? 'NA' : (fields.canfinHomesInteriors || '')} onChange={e => handleChange('canfinHomesInteriors', e.target.value)} disabled={isReadOnly || fields.canfinHomesInteriorsNA} />
                   )}
                 </div>
