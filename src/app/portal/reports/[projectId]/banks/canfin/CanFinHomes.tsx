@@ -22,7 +22,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     { id: 'canfin-section-4', title: 'Surroundings & Access' },
     { id: 'canfin-section-5', title: 'Construction Survey' },
     { id: 'canfin-section-6', title: 'Property Details' },
-    { id: 'canfin-section-7', title: 'Valuation Report' },
+    { id: 'canfin-section-7', title: 'Specifications' },
     { id: 'canfin-section-8', title: 'Structural Condition' },
     { id: 'canfin-section-9', title: 'Remarks & Declarations' },
     { id: 'section-documents', title: 'Documents' },
@@ -186,6 +186,29 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     canfinHomesStageOfConstruction: '',
     canfinHomesEnableProjectedResidualLifeEdit: false,
     canfinHomesProjectedResidualLife: '',
+
+    // Section 7 Variables
+    canfinHomesTypeOfStructureDropdown: 'RCC',
+    canfinHomesTypeOfStructure: 'RCC',
+    canfinHomesTypeOfStructureNA: false,
+    canfinHomesPaintingDropdown: 'Completed',
+    canfinHomesPainting: 'Completed',
+    canfinHomesPaintingNA: false,
+    canfinHomesFlooringDropdown: 'Tiles',
+    canfinHomesFlooring: 'Tiles',
+    canfinHomesFlooringNA: false,
+    canfinHomesBathroomFittingsDropdown: 'Completed',
+    canfinHomesBathroomFittings: 'Completed',
+    canfinHomesBathroomFittingsNA: false,
+    canfinHomesElectricalFittingsDropdown: 'Concealed wiring',
+    canfinHomesElectricalFittings: 'Concealed wiring',
+    canfinHomesElectricalFittingsNA: false,
+    canfinHomesKitchenDropdown: 'Tile Flooring & Steel Sink',
+    canfinHomesKitchen: 'Tile Flooring & Steel Sink',
+    canfinHomesKitchenNA: false,
+    canfinHomesInteriorsDropdown: 'Good',
+    canfinHomesInteriors: 'Good',
+    canfinHomesInteriorsNA: false,
 
     // Section 4 Variables
     canfinHomesNearestRailwayStation: '',
@@ -2259,249 +2282,235 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
     },
     {
       id: 'canfin-section-7',
-      title: '7. VALUATION REPORT',
+      title: '7. SPECIFICATIONS',
       number: 7,
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
-        // Computed values
-        const prefilledDateOfVisit = fields.canfinHomesDateOfTechnicalVisit || '';
-
         return (
           <div className="animate-fade-in space-y-6">
             <div className="border border-orange-200 bg-[#fff3e0] rounded-md p-4 mb-4">
-              <h3 className="font-bold text-gray-700 mb-4">Area Measurements</h3>
+              <h3 className="font-bold text-gray-700 mb-4">Specifications</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
-                <Field label={
-                  <div className="w-full flex items-center justify-between">
-                    <span>Date Of Visit</span>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] uppercase font-bold text-gray-400">Edit {fields.canfinHomesEnableDateOfVisitEdit ? 'On' : 'Off'}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleChange('canfinHomesEnableDateOfVisitEdit', !fields.canfinHomesEnableDateOfVisitEdit)}
-                        disabled={isReadOnly}
-                        className={`w-10 h-5 rounded-full relative transition-colors ${fields.canfinHomesEnableDateOfVisitEdit ? 'bg-green-500' : 'bg-gray-300'}`}
-                      >
-                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform ${fields.canfinHomesEnableDateOfVisitEdit ? 'translate-x-5' : ''}`} />
-                      </button>
-                    </div>
-                  </div>
-                }>
-                  <div className="relative">
-                    {fields.canfinHomesEnableDateOfVisitEdit ? (
-                      <BaseDateInput
-                        value={fields.canfinHomesDateOfVisit || ''}
-                        onChange={(val) => handleChange('canfinHomesDateOfVisit', val)}
-                        disabled={isReadOnly}
-                      />
-                    ) : (
-                      <input 
-                        className={`${inputCls} pr-10 bg-white text-gray-700`} 
-                        value={prefilledDateOfVisit} 
-                        readOnly 
-                        disabled={isReadOnly}
-                        title='>>Prefill from section 2, field "Date of Technical Visit"<<'
-                      />
-                    )}
-                    {!fields.canfinHomesEnableDateOfVisitEdit && (
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='>>Prefill from section 2, field "Date of Technical Visit"<<'>
-                        <Lock className="w-5 h-5 text-emerald-800 group-hover:text-emerald-900" />
-                      </div>
-                    )}
-                  </div>
-                </Field>
-
+                {/* Type of Structure */}
                 <div className="flex flex-col gap-2">
-                  <Field label="Type of Locality">
-                    <select 
-                      className={inputCls} 
-                      value={fields.canfinHomesTypeOfLocalityDropdown || ''} 
-                      onChange={e => {
-                        handleChange('canfinHomesTypeOfLocalityDropdown', e.target.value);
-                        if (e.target.value !== 'Custom') {
-                          handleChange('canfinHomesTypeOfLocality', e.target.value);
-                        } else {
-                          handleChange('canfinHomesTypeOfLocality', '');
-                        }
-                      }} 
-                      disabled={isReadOnly}
-                    >
-                      <option value="Lower middle class">Lower middle class</option>
-                      <option value="Middle class">Middle class</option>
-                      <option value="Upper Middle class">Upper Middle class</option>
-                      <option value="Posh">Posh</option>
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Type of Structure</span>
+                      <label className="flex items-center gap-1 cursor-pointer ml-3">
+                        <input type="checkbox" checked={fields.canfinHomesTypeOfStructureNA} onChange={e => {
+                          handleChange('canfinHomesTypeOfStructureNA', e.target.checked);
+                          if(e.target.checked) handleChange('canfinHomesTypeOfStructure', 'NA');
+                          else handleChange('canfinHomesTypeOfStructure', '');
+                        }} className="rounded text-emerald-600 focus:ring-emerald-500" disabled={isReadOnly} />
+                        <span className="text-xs font-medium text-gray-500">NA</span>
+                      </label>
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.canfinHomesTypeOfStructureDropdown || ''} onChange={e => {
+                      handleChange('canfinHomesTypeOfStructureDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('canfinHomesTypeOfStructure', e.target.value);
+                      else handleChange('canfinHomesTypeOfStructure', '');
+                    }} disabled={isReadOnly || fields.canfinHomesTypeOfStructureNA}>
+                      <option value="RCC">RCC</option>
+                      <option value="Load Bearing">Load Bearing</option>
+                      <option value="Composite">Composite</option>
                       <option value="Custom">Custom</option>
                     </select>
                   </Field>
-                  {fields.canfinHomesTypeOfLocalityDropdown === 'Custom' && (
-                    <input 
-                      className={inputCls} 
-                      placeholder="Enter custom locality..."
-                      value={fields.canfinHomesTypeOfLocality || ''} 
-                      onChange={e => handleChange('canfinHomesTypeOfLocality', e.target.value)} 
-                      disabled={isReadOnly} 
-                    />
+                  {fields.canfinHomesTypeOfStructureDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom type..." value={fields.canfinHomesTypeOfStructureNA ? 'NA' : (fields.canfinHomesTypeOfStructure || '')} onChange={e => handleChange('canfinHomesTypeOfStructure', e.target.value)} disabled={isReadOnly || fields.canfinHomesTypeOfStructureNA} />
                   )}
                 </div>
 
-                <Field label={
-                  <div className="flex items-center justify-between">
-                    <span>Land Area (if applicable)(sqyd/sqmt)</span>
-                    <label className="flex items-center gap-1 cursor-pointer ml-3">
-                      <input 
-                        type="checkbox" 
-                        checked={fields.canfinHomesLandAreaNA} 
-                        onChange={e => {
-                          handleChange('canfinHomesLandAreaNA', e.target.checked);
-                          if (e.target.checked) handleChange('canfinHomesLandArea', 'NA');
-                          else handleChange('canfinHomesLandArea', '');
-                        }} 
-                        className="rounded text-emerald-600 focus:ring-emerald-500" 
-                        disabled={isReadOnly} 
-                      />
-                      <span className="text-xs font-medium text-gray-500">NA</span>
-                    </label>
-                  </div>
-                }>
-                  <input 
-                    type={fields.canfinHomesLandAreaNA ? "text" : "number"}
-                    className={`${inputCls} ${fields.canfinHomesLandAreaNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
-                    value={fields.canfinHomesLandAreaNA ? 'NA' : (fields.canfinHomesLandArea || '')} 
-                    onChange={e => handleChange('canfinHomesLandArea', e.target.value)} 
-                    disabled={isReadOnly || fields.canfinHomesLandAreaNA} 
-                  />
-                </Field>
-
-                <Field label={
-                  <div className="flex items-center justify-between">
-                    <span>Carpet Area as per physical measurement (Approx.)</span>
-                    <label className="flex items-center gap-1 cursor-pointer ml-3">
-                      <input 
-                        type="checkbox" 
-                        checked={fields.canfinHomesCarpetAreaNA} 
-                        onChange={e => {
-                          handleChange('canfinHomesCarpetAreaNA', e.target.checked);
-                          if (e.target.checked) handleChange('canfinHomesCarpetArea', 'NA');
-                          else handleChange('canfinHomesCarpetArea', '');
-                        }} 
-                        className="rounded text-emerald-600 focus:ring-emerald-500" 
-                        disabled={isReadOnly} 
-                      />
-                      <span className="text-xs font-medium text-gray-500">NA</span>
-                    </label>
-                  </div>
-                }>
-                  <input 
-                    type={fields.canfinHomesCarpetAreaNA ? "text" : "number"}
-                    className={`${inputCls} ${fields.canfinHomesCarpetAreaNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
-                    value={fields.canfinHomesCarpetAreaNA ? 'NA' : (fields.canfinHomesCarpetArea || '')} 
-                    onChange={e => handleChange('canfinHomesCarpetArea', e.target.value)} 
-                    disabled={isReadOnly || fields.canfinHomesCarpetAreaNA} 
-                  />
-                </Field>
-
-                <Field label={
-                  <div className="flex items-center justify-between">
-                    <span>area as per</span>
-                    <label className="flex items-center gap-1 cursor-pointer ml-3">
-                      <input 
-                        type="checkbox" 
-                        checked={fields.canfinHomesAreaAsPerNA} 
-                        onChange={e => {
-                          handleChange('canfinHomesAreaAsPerNA', e.target.checked);
-                          if (e.target.checked) handleChange('canfinHomesAreaAsPer', 'NA');
-                          else handleChange('canfinHomesAreaAsPer', '');
-                        }} 
-                        className="rounded text-emerald-600 focus:ring-emerald-500" 
-                        disabled={isReadOnly} 
-                      />
-                      <span className="text-xs font-medium text-gray-500">NA</span>
-                    </label>
-                  </div>
-                }>
-                  <input 
-                    className={`${inputCls} ${fields.canfinHomesAreaAsPerNA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
-                    value={fields.canfinHomesAreaAsPerNA ? 'NA' : (fields.canfinHomesAreaAsPer || '')} 
-                    onChange={e => handleChange('canfinHomesAreaAsPer', e.target.value)} 
-                    disabled={isReadOnly || fields.canfinHomesAreaAsPerNA} 
-                  />
-                </Field>
-
-                <Field label={
-                  <div className="flex items-center justify-between">
-                    <span>Super BUA (sq. ft.)</span>
-                    <label className="flex items-center gap-1 cursor-pointer ml-3">
-                      <input 
-                        type="checkbox" 
-                        checked={fields.canfinHomesSuperBUANA} 
-                        onChange={e => {
-                          handleChange('canfinHomesSuperBUANA', e.target.checked);
-                          if (e.target.checked) handleChange('canfinHomesSuperBUA', 'NA');
-                          else handleChange('canfinHomesSuperBUA', '');
-                        }} 
-                        className="rounded text-emerald-600 focus:ring-emerald-500" 
-                        disabled={isReadOnly} 
-                      />
-                      <span className="text-xs font-medium text-gray-500">NA</span>
-                    </label>
-                  </div>
-                }>
-                  <input 
-                    type={fields.canfinHomesSuperBUANA ? "text" : "number"}
-                    className={`${inputCls} ${fields.canfinHomesSuperBUANA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
-                    value={fields.canfinHomesSuperBUANA ? 'NA' : (fields.canfinHomesSuperBUA || '')} 
-                    onChange={e => handleChange('canfinHomesSuperBUA', e.target.value)} 
-                    disabled={isReadOnly || fields.canfinHomesSuperBUANA} 
-                  />
-                </Field>
-
-                <Field label={
-                  <div className="flex items-center justify-between">
-                    <span>BUA (sq. ft.) (For Row house BUA on each floor to be mentioned)</span>
-                    <label className="flex items-center gap-1 cursor-pointer ml-3">
-                      <input 
-                        type="checkbox" 
-                        checked={fields.canfinHomesBUANA} 
-                        onChange={e => {
-                          handleChange('canfinHomesBUANA', e.target.checked);
-                          if (e.target.checked) handleChange('canfinHomesBUA', 'NA');
-                          else handleChange('canfinHomesBUA', '');
-                        }} 
-                        className="rounded text-emerald-600 focus:ring-emerald-500" 
-                        disabled={isReadOnly} 
-                      />
-                      <span className="text-xs font-medium text-gray-500">NA</span>
-                    </label>
-                  </div>
-                } className="md:col-span-2">
-                  <textarea 
-                    className={`${inputCls} ${fields.canfinHomesBUANA ? 'bg-gray-100 cursor-not-allowed' : ''}`} 
-                    rows={3}
-                    value={fields.canfinHomesBUANA ? 'NA' : (fields.canfinHomesBUA || '')} 
-                    onChange={e => handleChange('canfinHomesBUA', e.target.value)} 
-                    disabled={isReadOnly || fields.canfinHomesBUANA} 
-                  />
-                </Field>
-
-                <Field label="Encroachment on public land" className="md:col-span-2">
-                  <div className="flex flex-wrap gap-4 mt-2">
-                    {['Yes', 'No'].map(opt => (
-                      <label key={opt} className="flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="radio"
-                          name="canfinHomesEncroachmentOnPublicLand"
-                          value={opt}
-                          checked={fields.canfinHomesEncroachmentOnPublicLand === opt}
-                          onChange={(e) => handleChange('canfinHomesEncroachmentOnPublicLand', e.target.value)}
-                          disabled={isReadOnly}
-                          className="w-4 h-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
-                        />
-                        <span className="text-gray-700 text-sm">{opt}</span>
+                {/* Painting */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Painting</span>
+                      <label className="flex items-center gap-1 cursor-pointer ml-3">
+                        <input type="checkbox" checked={fields.canfinHomesPaintingNA} onChange={e => {
+                          handleChange('canfinHomesPaintingNA', e.target.checked);
+                          if(e.target.checked) handleChange('canfinHomesPainting', 'NA');
+                          else handleChange('canfinHomesPainting', '');
+                        }} className="rounded text-emerald-600 focus:ring-emerald-500" disabled={isReadOnly} />
+                        <span className="text-xs font-medium text-gray-500">NA</span>
                       </label>
-                    ))}
-                  </div>
-                </Field>
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.canfinHomesPaintingDropdown || ''} onChange={e => {
+                      handleChange('canfinHomesPaintingDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('canfinHomesPainting', e.target.value);
+                      else handleChange('canfinHomesPainting', '');
+                    }} disabled={isReadOnly || fields.canfinHomesPaintingNA}>
+                      <option value="Completed">Completed</option>
+                      <option value="Ongoing">Ongoing</option>
+                      <option value="Not Started">Not Started</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesPaintingDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom painting status..." value={fields.canfinHomesPaintingNA ? 'NA' : (fields.canfinHomesPainting || '')} onChange={e => handleChange('canfinHomesPainting', e.target.value)} disabled={isReadOnly || fields.canfinHomesPaintingNA} />
+                  )}
+                </div>
+
+                {/* Flooring */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Flooring</span>
+                      <label className="flex items-center gap-1 cursor-pointer ml-3">
+                        <input type="checkbox" checked={fields.canfinHomesFlooringNA} onChange={e => {
+                          handleChange('canfinHomesFlooringNA', e.target.checked);
+                          if(e.target.checked) handleChange('canfinHomesFlooring', 'NA');
+                          else handleChange('canfinHomesFlooring', '');
+                        }} className="rounded text-emerald-600 focus:ring-emerald-500" disabled={isReadOnly} />
+                        <span className="text-xs font-medium text-gray-500">NA</span>
+                      </label>
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.canfinHomesFlooringDropdown || ''} onChange={e => {
+                      handleChange('canfinHomesFlooringDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('canfinHomesFlooring', e.target.value);
+                      else handleChange('canfinHomesFlooring', '');
+                    }} disabled={isReadOnly || fields.canfinHomesFlooringNA}>
+                      <option value="Tiles">Tiles</option>
+                      <option value="Marble">Marble</option>
+                      <option value="Granite">Granite</option>
+                      <option value="Cement">Cement</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesFlooringDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom flooring..." value={fields.canfinHomesFlooringNA ? 'NA' : (fields.canfinHomesFlooring || '')} onChange={e => handleChange('canfinHomesFlooring', e.target.value)} disabled={isReadOnly || fields.canfinHomesFlooringNA} />
+                  )}
+                </div>
+
+                {/* Bathroom/ Plumbing fittings */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Bathroom/ Plumbing fittings</span>
+                      <label className="flex items-center gap-1 cursor-pointer ml-3">
+                        <input type="checkbox" checked={fields.canfinHomesBathroomFittingsNA} onChange={e => {
+                          handleChange('canfinHomesBathroomFittingsNA', e.target.checked);
+                          if(e.target.checked) handleChange('canfinHomesBathroomFittings', 'NA');
+                          else handleChange('canfinHomesBathroomFittings', '');
+                        }} className="rounded text-emerald-600 focus:ring-emerald-500" disabled={isReadOnly} />
+                        <span className="text-xs font-medium text-gray-500">NA</span>
+                      </label>
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.canfinHomesBathroomFittingsDropdown || ''} onChange={e => {
+                      handleChange('canfinHomesBathroomFittingsDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('canfinHomesBathroomFittings', e.target.value);
+                      else handleChange('canfinHomesBathroomFittings', '');
+                    }} disabled={isReadOnly || fields.canfinHomesBathroomFittingsNA}>
+                      <option value="Completed">Completed</option>
+                      <option value="Concealed">Concealed</option>
+                      <option value="Open">Open</option>
+                      <option value="Not Started">Not Started</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesBathroomFittingsDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom bathroom fittings..." value={fields.canfinHomesBathroomFittingsNA ? 'NA' : (fields.canfinHomesBathroomFittings || '')} onChange={e => handleChange('canfinHomesBathroomFittings', e.target.value)} disabled={isReadOnly || fields.canfinHomesBathroomFittingsNA} />
+                  )}
+                </div>
+
+                {/* Electrical fittings */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Electrical fittings</span>
+                      <label className="flex items-center gap-1 cursor-pointer ml-3">
+                        <input type="checkbox" checked={fields.canfinHomesElectricalFittingsNA} onChange={e => {
+                          handleChange('canfinHomesElectricalFittingsNA', e.target.checked);
+                          if(e.target.checked) handleChange('canfinHomesElectricalFittings', 'NA');
+                          else handleChange('canfinHomesElectricalFittings', '');
+                        }} className="rounded text-emerald-600 focus:ring-emerald-500" disabled={isReadOnly} />
+                        <span className="text-xs font-medium text-gray-500">NA</span>
+                      </label>
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.canfinHomesElectricalFittingsDropdown || ''} onChange={e => {
+                      handleChange('canfinHomesElectricalFittingsDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('canfinHomesElectricalFittings', e.target.value);
+                      else handleChange('canfinHomesElectricalFittings', '');
+                    }} disabled={isReadOnly || fields.canfinHomesElectricalFittingsNA}>
+                      <option value="Concealed wiring">Concealed wiring</option>
+                      <option value="Open wiring">Open wiring</option>
+                      <option value="None">None</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesElectricalFittingsDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom electrical fittings..." value={fields.canfinHomesElectricalFittingsNA ? 'NA' : (fields.canfinHomesElectricalFittings || '')} onChange={e => handleChange('canfinHomesElectricalFittings', e.target.value)} disabled={isReadOnly || fields.canfinHomesElectricalFittingsNA} />
+                  )}
+                </div>
+
+                {/* Kitchen */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Kitchen</span>
+                      <label className="flex items-center gap-1 cursor-pointer ml-3">
+                        <input type="checkbox" checked={fields.canfinHomesKitchenNA} onChange={e => {
+                          handleChange('canfinHomesKitchenNA', e.target.checked);
+                          if(e.target.checked) handleChange('canfinHomesKitchen', 'NA');
+                          else handleChange('canfinHomesKitchen', '');
+                        }} className="rounded text-emerald-600 focus:ring-emerald-500" disabled={isReadOnly} />
+                        <span className="text-xs font-medium text-gray-500">NA</span>
+                      </label>
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.canfinHomesKitchenDropdown || ''} onChange={e => {
+                      handleChange('canfinHomesKitchenDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('canfinHomesKitchen', e.target.value);
+                      else handleChange('canfinHomesKitchen', '');
+                    }} disabled={isReadOnly || fields.canfinHomesKitchenNA}>
+                      <option value="Tile Flooring & Steel Sink">Tile Flooring & Steel Sink</option>
+                      <option value="Granite Platform">Granite Platform</option>
+                      <option value="Bare">Bare</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesKitchenDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom kitchen details..." value={fields.canfinHomesKitchenNA ? 'NA' : (fields.canfinHomesKitchen || '')} onChange={e => handleChange('canfinHomesKitchen', e.target.value)} disabled={isReadOnly || fields.canfinHomesKitchenNA} />
+                  )}
+                </div>
+
+                {/* Interiors (Fixed) */}
+                <div className="flex flex-col gap-2">
+                  <Field label={
+                    <div className="flex items-center justify-between">
+                      <span>Interiors (Fixed)</span>
+                      <label className="flex items-center gap-1 cursor-pointer ml-3">
+                        <input type="checkbox" checked={fields.canfinHomesInteriorsNA} onChange={e => {
+                          handleChange('canfinHomesInteriorsNA', e.target.checked);
+                          if(e.target.checked) handleChange('canfinHomesInteriors', 'NA');
+                          else handleChange('canfinHomesInteriors', '');
+                        }} className="rounded text-emerald-600 focus:ring-emerald-500" disabled={isReadOnly} />
+                        <span className="text-xs font-medium text-gray-500">NA</span>
+                      </label>
+                    </div>
+                  }>
+                    <select className={inputCls} value={fields.canfinHomesInteriorsDropdown || ''} onChange={e => {
+                      handleChange('canfinHomesInteriorsDropdown', e.target.value);
+                      if(e.target.value !== 'Custom') handleChange('canfinHomesInteriors', e.target.value);
+                      else handleChange('canfinHomesInteriors', '');
+                    }} disabled={isReadOnly || fields.canfinHomesInteriorsNA}>
+                      <option value="Good">Good</option>
+                      <option value="Average">Average</option>
+                      <option value="Poor">Poor</option>
+                      <option value="None">None</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                  </Field>
+                  {fields.canfinHomesInteriorsDropdown === 'Custom' && (
+                    <input className={inputCls} placeholder="Enter custom interiors..." value={fields.canfinHomesInteriorsNA ? 'NA' : (fields.canfinHomesInteriors || '')} onChange={e => handleChange('canfinHomesInteriors', e.target.value)} disabled={isReadOnly || fields.canfinHomesInteriorsNA} />
+                  )}
+                </div>
 
               </div>
             </div>
