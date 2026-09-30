@@ -4,12 +4,37 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { saveReportDraft } from "@/app/actions/project";
-import GeneralReportBuilder from "./GeneralReportBuilder";
-import IBBIReportBuilder from "./IBBIReportBuilder";
-import IncomeTaxReportBuilder from "./IncomeTaxReportBuilder";
-import BankReportBuilder from "./BankReportBuilder";
 import ReportSetupWizard from "./ReportSetupWizard";
 import { decodeHtmlEntitiesDeep } from "@/lib/html-entities";
+
+// Loading skeleton shown while a builder chunk is being fetched
+function BuilderSkeleton() {
+  return (
+    <div className="w-full space-y-6 animate-pulse">
+      <div className="h-10 bg-gray-200 rounded-lg w-1/3" />
+      <div className="h-6 bg-gray-100 rounded w-2/3" />
+      <div className="space-y-4">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="h-14 bg-gray-100 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Core builders — lazy loaded (only the one the user needs gets fetched)
+const GeneralReportBuilder = dynamic(() => import("./GeneralReportBuilder"), {
+  loading: () => <BuilderSkeleton />,
+});
+const IBBIReportBuilder = dynamic(() => import("./IBBIReportBuilder"), {
+  loading: () => <BuilderSkeleton />,
+});
+const IncomeTaxReportBuilder = dynamic(() => import("./IncomeTaxReportBuilder"), {
+  loading: () => <BuilderSkeleton />,
+});
+const BankReportBuilder = dynamic(() => import("./BankReportBuilder"), {
+  loading: () => <BuilderSkeleton />,
+});
 
 interface BuilderSelectorProps {
   initialFields: any;

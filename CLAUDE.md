@@ -3,6 +3,11 @@
 ## Core Developer Directive
 - **Base Bank Reuse**: For every bank report builder project, always refer to and maximize reuse from Base Bank components (`src/app/portal/reports/[projectId]/banks/BaseBankReportComponents.tsx`), fields (`src/lib/bank-fields.ts`), and PDF renderer (`src/lib/pdf-bank-renderer.ts`). Avoid duplicating standard sections from scratch.
 
+## Performance Directive
+- **All report builders MUST use `dynamic()` imports** in `BuilderSelector.tsx`. Never convert them back to static `import` statements — doing so will bloat the Vercel serverless function bundle and exhaust free tier storage limits.
+- **New bank builders** must be added as `dynamic(() => import('./banks/...'))` entries in `BANK_BUILDER_MAP`.
+
+
 
 
 

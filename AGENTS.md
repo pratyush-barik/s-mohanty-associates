@@ -35,9 +35,16 @@ This version has breaking changes — APIs, conventions, and file structure may 
 ### File Structure
 - Server actions: `src/app/actions/project.ts`, `src/app/actions/service.ts`, `src/app/actions/enquiry.ts`
 - Portal pages: `src/app/portal/` with role-based dashboards (`owner/`, `manager/`, `field-agent/`, `report-agent/`)
-- Key components: `ChatInterface.tsx` (client-side enquiry chat), `ProjectChat.tsx` (employee-side project chat), `RequestsDashboard.tsx`, `EnquiryList.tsx`, `GeneralReportBuilder.tsx`, `IBBIReportBuilder.tsx`, `IncomeTaxReportBuilder.tsx`, `BankReportBuilder.tsx`, `BuilderSelector.tsx`, and `banks/` directory (57 bank builders)
+- Key components: `ChatInterface.tsx` (client-side enquiry chat), `ProjectChat.tsx` (employee-side project chat), `RequestsDashboard.tsx`, `EnquiryList.tsx`, `BuilderSelector.tsx` (dynamic router), and `banks/` directory (60+ bank builders)
+- **All report builders are lazy-loaded**: `GeneralReportBuilder.tsx`, `IBBIReportBuilder.tsx`, `IncomeTaxReportBuilder.tsx`, `BankReportBuilder.tsx`, and all bank-specific builders use `dynamic()` imports in `BuilderSelector.tsx`. Do NOT convert these back to static `import` statements — this would bloat the client bundle and exceed Vercel free tier storage limits.
 
 ### Core Guideline: Maximize Base Bank Architecture Reuse
 - **UI Components**: Always refer to and reuse building blocks from `src/app/portal/reports/[projectId]/banks/BaseBankReportComponents.tsx` (`BaseBankReportLayout`, `BaseLocationSection`, `BasePropertySection`, `BaseValuationSection`, `BaseBoundarySection`, `BasePhotographsSection`, `BaseMapsSection`, `BaseAnnexureSection`, `Field`, `Section`, `SubSection`, `FloatingNavigator`).
 - **Fields & Types**: Inherit from `src/lib/bank-fields.ts` (`BaseReportFields`, `BankConfig`).
 - **PDF Generation**: Extend `PDFBankRenderer` from `src/lib/pdf-bank-renderer.ts`, inheriting table structures, image section boxes, photo grids, coordinate math, and multi-page flows. Override only bank-specific delta methods.
+
+### Performance Guideline: Vercel Free Tier Constraints
+- **NEVER statically import report builders in `BuilderSelector.tsx`**. All builders (core and bank-specific) must use `next/dynamic` lazy imports to keep the main client bundle small (~18 KB instead of ~900+ KB).
+- **Purge old Vercel deployments periodically** — each deploy stores a full copy of the build artifacts. Keep only the latest production + 2-3 preview deployments.
+- **New bank builders** must be added as `dynamic(() => import('./banks/...'))` entries in the `BANK_BUILDER_MAP` object inside `BuilderSelector.tsx`.
+

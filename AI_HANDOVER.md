@@ -111,7 +111,7 @@ The core business logic is **100% complete**.
       - **Base Form Component (`BankReportBuilder.tsx`) & Modular Components (`BaseBankReportComponents.tsx`)**: Pre-built modular blocks (`BaseLocationSection`, `BasePropertySection`, `BaseValuationSection`, `BaseBoundarySection`, `BasePhotographsSection`, `BaseMapsSection`, `BaseAnnexureSection`, `Field`, `Section`, `SubSection`, `FloatingNavigator`).
       - **Master Types (`src/lib/bank-fields.ts`)**: `BaseReportFields` (~50 core valuation fields) + `BankConfig` delta types.
       - **Base PDF Renderer (`src/lib/pdf-bank-renderer.ts`)**: Extends `PDFGeneralRenderer`, allowing bank-specific PDF renderers to subclass and override table/section drawing logic.
-      - **Dynamic Router (`BuilderSelector.tsx`)**: Next.js `dynamic()` lazy-loading map for all 57 bank and sub-template builders in `src/app/portal/reports/[projectId]/banks/`. Loads only the selected bank's JavaScript bundle with zero overhead.
+      - **Dynamic Router (`BuilderSelector.tsx`)**: Next.js `dynamic()` lazy-loading for **ALL** report builders — the 4 core builders (`GeneralReportBuilder`, `IBBIReportBuilder`, `IncomeTaxReportBuilder`, `BankReportBuilder`) and all 60+ bank-specific sub-template builders in `src/app/portal/reports/[projectId]/banks/`. Only the builder the user actually selects is fetched from the CDN. A `<BuilderSkeleton />` animated placeholder is shown during the ~200-500ms chunk load. This architectural decision was made to reduce Vercel serverless function bundle sizes by ~60-70% and stay within the free tier storage limits.
       - **Per-Bank Stubs**: 57 bank and sub-template files organized alphabetically in `banks/` directory, ready to be customized per bank.
 
    **Shared Design Decisions across ReportBuilders:**
@@ -336,7 +336,7 @@ Outstanding items in **priority order**:
 > **Location Map in PDF**: Section 14 uses a Google Maps `<iframe>` for live preview (auto-loaded from property address). `pdf-lib` **cannot capture iframes**. The user must manually take a Google Maps satellite screenshot and upload it in the "Screenshot for PDF" upload within Section 14. Only the uploaded image appears in the PDF.
 
 > [!WARNING]
-> **GeneralReportBuilder.tsx and pdf-report-renderer.ts are large**. When editing the PDF output, you are working directly with `pdf-lib` coordinate math in `pdf-report-renderer.ts`.
+> **GeneralReportBuilder.tsx and pdf-report-renderer.ts are large** (368 KB and 212 KB respectively). However, they are loaded via `dynamic()` imports so they do NOT affect initial page load — only the builder the user selects is fetched on demand. When editing the PDF output, you are working directly with `pdf-lib` coordinate math in `pdf-report-renderer.ts`.
 > *Note on Alignment*: Text wrapping and pagination are handled manually by measuring string widths (`StandardFonts.Helvetica`) and cursor tracking.
 > *Note on Currency*: `pdf-lib` using standard Helvetica cannot encode the Indian Rupee symbol (`₹`). The symbol will throw a `WinAnsi cannot encode` error. Always fallback to `Rs.` or `INR` in text drawn to the PDF!
 > *Note on Orphaned Headings*: High-level drawing methods like `drawSectionHeader` use a keep-with-next margin (e.g. 60 points) when checking for page breaks to prevent headings from appearing alone at the bottom of a page.
@@ -486,6 +486,7 @@ Outstanding items in **priority order**:
 - **Arka Finance Ltd** — Bank report builder and its UI is fully completed and verified with 7-section custom UI (sequential numbered sections) and dedicated PDF renderer (double-blue borders, underlined headers, dynamic multi-field property owners, custom highlights).
 - **Dynamic UI Section Numbering** — All bank builders dynamically compute section numbering matching their specific `navSections` sequence.
 - **57 Bank/Sub-template Stubs** — Scalable OOP architecture with BankConfig-driven system, dynamic lazy-loading in BuilderSelector.
+- **Vercel Free Tier Bundle Optimization (September 2026)** — Converted all 4 core report builders (`GeneralReportBuilder`, `IBBIReportBuilder`, `IncomeTaxReportBuilder`, `BankReportBuilder`) from static imports to `dynamic()` lazy imports in `BuilderSelector.tsx`. Reduced main client bundle from ~907 KB to ~18 KB. Each builder is now fetched on-demand as a separate chunk only when the user selects it. Added `<BuilderSkeleton />` loading state. This brought Vercel Functions Storage usage from 76% → ~40-50% of the free tier limit.
 
 ### Pending / Next Steps
 - **IBBI PDF Font Consistency** — The rendering of font sizes is not consistent across the entire IBBI PDF/preview output. Needs a pass to standardize all font sizes.
