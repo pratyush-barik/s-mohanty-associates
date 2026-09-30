@@ -2178,7 +2178,8 @@ export default function BankReportBuilder({
   };
 
   const isFieldHidden = (key: string) => config?.hiddenFields?.includes(key) || false;
-      const getSectionNumber = (id: string, fallback: number | string) => {
+  const getSectionNumber = (id: string, fallback: number | string) => {
+    if (config?.sectionNumbers && config.sectionNumbers[id] !== undefined) return config.sectionNumbers[id];
     if (!config?.navSections) return fallback;
     const index = config.navSections.findIndex(s => s.id === id);
     return index !== -1 ? index + 1 : fallback;

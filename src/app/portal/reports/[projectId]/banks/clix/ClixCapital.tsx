@@ -4,11 +4,14 @@ import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuild
 import { BankConfig, BaseReportFields } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
 import { Lock, Plus, Trash2 } from 'lucide-react';
+import { PDFClixCapitalRenderer } from '@/lib/banks/pdf-clix-capital-renderer';
 
 export const CLIX_CAPITAL_CONFIG: BankConfig = {
   bankId: 'CLIX CAPITAL LTD',
   subTemplateId: '',
   displayName: 'Clix Capital Ltd',
+  hideDefaultDeclarationAndCertificate: true,
+  getPDFRenderer: (fields: any, projectCode?: string) => new PDFClixCapitalRenderer({ ...fields, projectCode }),
   hiddenSections: [
     'section-1', 'section-1a', 'section-2', 'section-3', 
     'section-4', 'section-5', 'section-6', 'section-7', 'section-7b', 'section-7c', 
@@ -16,7 +19,6 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
   navSections: [
-    { id: 'section-cover', title: 'COVER PAGE' },
     { id: 'clix-section-1', title: 'Report Type' },
     { id: 'clix-section-2', title: 'Customer Details' },
     { id: 'clix-section-3', title: 'Property Address' },
@@ -28,8 +30,17 @@ export const CLIX_CAPITAL_CONFIG: BankConfig = {
     { id: 'clix-section-9', title: 'Area and Usage Detail' },
     { id: 'clix-section-10', title: 'Fair Market Value' },
     { id: 'clix-section-11', title: 'Derived Values (Realizable & Distress)' },
-    { id: 'clix-section-12', title: 'Remarks & Declarations' }
+    { id: 'clix-section-12', title: 'Remarks & Declarations' },
+    { id: 'section-documents', title: 'Documents' },
+    { id: 'section-12', title: 'Maps' },
+    { id: 'section-11', title: 'Photographs' },
   ],
+  sectionNumbers: {
+    'documents': 13,
+    'section-documents': 13,
+    'section-12': 14,
+    'section-11': 15,
+  },
   
   extraSectionsStart: [
     {

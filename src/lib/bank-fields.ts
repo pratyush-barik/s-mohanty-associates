@@ -440,6 +440,8 @@ export interface BankConfig {
   hiddenFields?: string[];
   /** Hidden base sections for this bank */
   hiddenSections?: string[];
+  /** Section number overrides: sectionId -> number or string */
+  sectionNumbers?: Record<string, number | string>;
   /** Hide the default Declaration and Valuation Certificate sections at the end of the PDF */
   hideDefaultDeclarationAndCertificate?: boolean;
   /** Bank-specific validation rules added on top of base validation */
