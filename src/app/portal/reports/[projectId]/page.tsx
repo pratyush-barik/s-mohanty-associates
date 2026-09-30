@@ -55,33 +55,13 @@ export default async function ReportEditorPage({ params, searchParams }: { param
 
     const { serviceRequest, report } = project;
     const rawBucketImages = project.bucketImages;
-    const verifiedBucketImages: typeof rawBucketImages = [];
-    const deadBucketImageIds: string[] = [];
 
-    await Promise.all(
-      rawBucketImages.map(async (img) => {
-        if (!img.url || img.url.trim().length <= 5) {
-          deadBucketImageIds.push(img.id);
-          return;
-        }
-        try {
-          const resp = await fetch(img.url, { method: 'HEAD' });
-          if (resp.ok) {
-            verifiedBucketImages.push(img);
-          } else {
-            deadBucketImageIds.push(img.id);
-          }
-        } catch {
-          deadBucketImageIds.push(img.id);
-        }
-      })
+    // Trust bucket URLs at render time — dead links are cleaned by the daily
+    // cleanup-buckets cron job (vercel.json). This avoids firing 30+ concurrent
+    // HEAD requests on every page load, saving CPU time and speeding up renders.
+    const verifiedBucketImages = rawBucketImages.filter(
+      img => img.url && img.url.trim().length > 5
     );
-
-    if (deadBucketImageIds.length > 0) {
-      prisma.bucketImage.deleteMany({
-        where: { id: { in: deadBucketImageIds } }
-      }).catch(err => console.error('Failed to auto-purge dead bucket images:', err));
-    }
 
     const mappedBucketImages = verifiedBucketImages.map(img => ({
       ...img,
