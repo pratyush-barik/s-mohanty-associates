@@ -83,7 +83,15 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               tooltip="Prefill from Valuer Profile"
             />
             <Field label="Site Engineer Inspecting Property">
-              <input type="text" className={inputCls} placeholder="Enter Site Engineer Name" value={fields.kotakBbgSiteEngineer || ''} onChange={e => handleChange('kotakBbgSiteEngineer', e.target.value)} disabled={isReadOnly} />
+              <select className={inputCls} value={fields.kotakBbgSiteEngineer || ''} onChange={e => handleChange('kotakBbgSiteEngineer', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Site Engineer</option>
+                <option value="Engineer 1">Engineer 1</option>
+                <option value="Engineer 2">Engineer 2</option>
+                <option value="Custom">Custom</option>
+              </select>
+              {fields.kotakBbgSiteEngineer === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgSiteEngineerCustom || ''} onChange={e => handleChange('kotakBbgSiteEngineerCustom', e.target.value)} disabled={isReadOnly} />
+              )}
             </Field>
             <PrefillField
               label="Name of Customer / Borrower"
@@ -141,9 +149,17 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               tooltip="Prefill from Legal Title Deed"
             />
             <Field label="Google Coordinates">
-              <div className="flex space-x-2">
-                <input type="text" className={inputCls + ' flex-1'} value={fields.kotakBbgGoogleCoordinates || ''} onChange={e => handleChange('kotakBbgGoogleCoordinates', e.target.value)} disabled={isReadOnly} />
-                <button type="button" className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors" disabled={isReadOnly}>Fetch Location</button>
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgGoogleCoordinatesNA || false} onChange={e => handleChange('kotakBbgGoogleCoordinatesNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgGoogleCoordinatesNA && (
+                  <div className="flex space-x-2">
+                    <input type="text" className={inputCls + ' flex-1'} value={fields.kotakBbgGoogleCoordinates || ''} onChange={e => handleChange('kotakBbgGoogleCoordinates', e.target.value)} disabled={isReadOnly} />
+                    <button type="button" className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors" disabled={isReadOnly}>Fetch Location</button>
+                  </div>
+                )}
               </div>
             </Field>
             <Field label="Nature of Property">
@@ -154,7 +170,11 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                 <option value="Commercial">Commercial</option>
                 <option value="Industrial">Industrial</option>
                 <option value="Others">Others</option>
+                <option value="Custom">Custom</option>
               </select>
+              {fields.kotakBbgNatureOfProperty === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgNatureOfPropertyCustom || ''} onChange={e => handleChange('kotakBbgNatureOfPropertyCustom', e.target.value)} disabled={isReadOnly} />
+              )}
             </Field>
             <Field label="Tenure of Property">
               <div className="flex space-x-4 mt-2">
@@ -194,7 +214,11 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                 <option value="Tenanted">Tenanted</option>
                 <option value="Vacant">Vacant</option>
                 <option value="Partly Occupied">Partly Occupied</option>
+                <option value="Custom">Custom</option>
               </select>
+              {fields.kotakBbgOccupancy === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgOccupancyCustom || ''} onChange={e => handleChange('kotakBbgOccupancyCustom', e.target.value)} disabled={isReadOnly} />
+              )}
             </Field>
           </div>
         );
@@ -281,7 +305,11 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                 <option value="Conveyance Deed">Conveyance Deed</option>
                 <option value="Gift Deed">Gift Deed</option>
                 <option value="Others">Others</option>
+                <option value="Custom">Custom</option>
               </select>
+              {fields.kotakBbgDocumentBasis === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgDocumentBasisCustom || ''} onChange={e => handleChange('kotakBbgDocumentBasisCustom', e.target.value)} disabled={isReadOnly} />
+              )}
             </Field>
 
             <Field label="Valuer Confirmation of Property Identification">
@@ -299,7 +327,15 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
             </Field>
 
             <Field label="Locality Type, Condition & Classification">
-              <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgLocalityType || ''} onChange={e => handleChange('kotakBbgLocalityType', e.target.value)} disabled={isReadOnly} />
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgLocalityTypeNA || false} onChange={e => handleChange('kotakBbgLocalityTypeNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgLocalityTypeNA && (
+                  <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgLocalityType || ''} onChange={e => handleChange('kotakBbgLocalityType', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
             </Field>
 
             <Field label="Development of Surrounding Areas">
@@ -310,19 +346,50 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     <span>{type}</span>
                   </label>
                 ))}
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" checked={fields.kotakBbgSurroundingDevCustomChecked || false} onChange={e => handleChange('kotakBbgSurroundingDevCustomChecked', e.target.checked)} disabled={isReadOnly} />
+                  <span>Custom</span>
+                </label>
               </div>
+              {fields.kotakBbgSurroundingDevCustomChecked && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgSurroundingDevCustom || ''} onChange={e => handleChange('kotakBbgSurroundingDevCustom', e.target.value)} disabled={isReadOnly} />
+              )}
             </Field>
 
             <Field label="Access to Property">
-              <input type="text" className={inputCls} value={fields.kotakBbgAccess || ''} onChange={e => handleChange('kotakBbgAccess', e.target.value)} disabled={isReadOnly} />
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgAccessNA || false} onChange={e => handleChange('kotakBbgAccessNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgAccessNA && (
+                  <input type="text" className={inputCls} value={fields.kotakBbgAccess || ''} onChange={e => handleChange('kotakBbgAccess', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
             </Field>
             
             <Field label="Approach Road Name & Condition">
-              <input type="text" className={inputCls} value={fields.kotakBbgApproachRoad || ''} onChange={e => handleChange('kotakBbgApproachRoad', e.target.value)} disabled={isReadOnly} />
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgApproachRoadNA || false} onChange={e => handleChange('kotakBbgApproachRoadNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgApproachRoadNA && (
+                  <input type="text" className={inputCls} value={fields.kotakBbgApproachRoad || ''} onChange={e => handleChange('kotakBbgApproachRoad', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
             </Field>
             
             <Field label="Proximity to Civic Amenities">
-              <input type="text" className={inputCls} value={fields.kotakBbgProximity || ''} onChange={e => handleChange('kotakBbgProximity', e.target.value)} disabled={isReadOnly} />
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgProximityNA || false} onChange={e => handleChange('kotakBbgProximityNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgProximityNA && (
+                  <input type="text" className={inputCls} value={fields.kotakBbgProximity || ''} onChange={e => handleChange('kotakBbgProximity', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
             </Field>
           </div>
         );

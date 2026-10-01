@@ -44,7 +44,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     ]);
     this.drawKeyValueRow([
       { label: 'Name of the Valuer', value: this.getF('kotakBbgValuerName') },
-      { label: 'Site Engineer Inspecting Property', value: this.getF('kotakBbgSiteEngineer') },
+      { label: 'Site Engineer Inspecting Property', value: this.getF('kotakBbgSiteEngineer') === 'Custom' ? this.getF('kotakBbgSiteEngineerCustom') : this.getF('kotakBbgSiteEngineer') },
     ]);
     this.drawKeyValueRow([
       { label: 'Name of Customer / Borrower', value: this.getF('kotakBbgBorrowerName') },
@@ -63,8 +63,8 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Legal Address (as per documents)', value: this.getF('kotakBbgLegalAddress'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Google Coordinates', value: this.getF('kotakBbgGoogleCoordinates') },
-      { label: 'Nature of Property', value: this.getF('kotakBbgNatureOfProperty') },
+      { label: 'Google Coordinates', value: this.getF('kotakBbgGoogleCoordinatesNA') ? 'NA' : this.getF('kotakBbgGoogleCoordinates') },
+      { label: 'Nature of Property', value: this.getF('kotakBbgNatureOfProperty') === 'Custom' ? this.getF('kotakBbgNatureOfPropertyCustom') : this.getF('kotakBbgNatureOfProperty') },
     ]);
     this.drawKeyValueRow([
       { label: 'Tenure of Property', value: this.getF('kotakBbgTenure') },
@@ -72,7 +72,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     ]);
     this.drawKeyValueRow([
       { label: 'Transferability of Leasehold Rights', value: this.getF('kotakBbgTransferability') },
-      { label: 'Occupancy Details', value: this.getF('kotakBbgOccupancy') },
+      { label: 'Occupancy Details', value: this.getF('kotakBbgOccupancy') === 'Custom' ? this.getF('kotakBbgOccupancyCustom') : this.getF('kotakBbgOccupancy') },
     ]);
     
     this.drawSectionHeader('3. SITE & SURROUNDING DETAILS');
@@ -104,23 +104,27 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Discrepancy in Boundaries', value: this.getF('kotakBbgBoundariesDiscrepancyNA') ? 'NA' : this.getF('kotakBbgBoundariesDiscrepancy') },
     ]);
     this.drawKeyValueRow([
-      { label: 'Document Basis for Property Identification', value: this.getF('kotakBbgDocumentBasis') },
+      { label: 'Document Basis for Property Identification', value: this.getF('kotakBbgDocumentBasis') === 'Custom' ? this.getF('kotakBbgDocumentBasisCustom') : this.getF('kotakBbgDocumentBasis') },
       { label: 'Valuer Confirmation', value: this.getF('kotakBbgValuerConfirmation') ? 'Confirmed' : 'Not Confirmed' },
     ]);
     this.drawKeyValueRow([
       { label: 'Plot Demarcated at Site', value: this.getF('kotakBbgPlotDemarcated') ? 'Yes' : 'No' },
-      { label: 'Locality Type, Condition & Classification', value: this.getF('kotakBbgLocalityType') },
+      { label: 'Locality Type, Condition & Classification', value: this.getF('kotakBbgLocalityTypeNA') ? 'NA' : this.getF('kotakBbgLocalityType') },
     ]);
-    const surr = Array.isArray(this.getF('kotakBbgSurroundingDev')) ? this.getF('kotakBbgSurroundingDev').join(', ') : '';
+    const surrList = Array.isArray(this.getF('kotakBbgSurroundingDev')) ? [...this.getF('kotakBbgSurroundingDev')] : [];
+    if (this.getF('kotakBbgSurroundingDevCustomChecked') && this.getF('kotakBbgSurroundingDevCustom')) {
+      surrList.push(this.getF('kotakBbgSurroundingDevCustom'));
+    }
+    const surr = surrList.join(', ');
     this.drawKeyValueRow([
       { label: 'Development of Surrounding Areas', value: surr, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Access to Property', value: this.getF('kotakBbgAccess') },
-      { label: 'Approach Road Name & Condition', value: this.getF('kotakBbgApproachRoad') },
+      { label: 'Access to Property', value: this.getF('kotakBbgAccessNA') ? 'NA' : this.getF('kotakBbgAccess') },
+      { label: 'Approach Road Name & Condition', value: this.getF('kotakBbgApproachRoadNA') ? 'NA' : this.getF('kotakBbgApproachRoad') },
     ]);
     this.drawKeyValueRow([
-      { label: 'Proximity to Civic Amenities', value: this.getF('kotakBbgProximity'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Proximity to Civic Amenities', value: this.getF('kotakBbgProximityNA') ? 'NA' : this.getF('kotakBbgProximity'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
   }
