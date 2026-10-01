@@ -46,13 +46,14 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
   bankId: 'KOTAK MAHINDRA BANK',
   subTemplateId: 'BUSINESS BANKING GROUP',
   displayName: 'Kotak Mahindra Bank — Business Banking Group (BBG)',
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5'],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFKotakBbgRenderer({ ...fields, projectCode }),
   navSections: [
     { id: 'kotak-section-1', title: '1. General Details' },
     { id: 'kotak-section-2', title: '2. Details of Property Being Appraised' },
     { id: 'kotak-section-3', title: '3. Site & Surrounding Details' },
     { id: 'kotak-section-4', title: '4. Details of Approvals & Legal Verification' },
+    { id: 'kotak-section-5', title: '5. Building / Structural Details' },
   ],
   defaultValues: {
     kotakBbgPurpose: 'To ascertain Market value, Realizable value & Distress value for bank decision-making',
@@ -529,6 +530,130 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
               {fields.kotakBbgOtherDocumentsPerusedCustomChecked && (
                 <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgOtherDocumentsPerusedCustom || ''} onChange={e => handleChange('kotakBbgOtherDocumentsPerusedCustom', e.target.value)} disabled={isReadOnly} />
+              )}
+            </Field>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'kotak-section-5',
+      title: 'Building / Structural Details',
+      number: 5,
+      defaultOpen: false,
+      render: (fields, handleChange, isReadOnly) => {
+        const isVacantLand = fields.kotakBbgNatureOfProperty === 'Vacant Land';
+        if (isVacantLand) {
+          return (
+            <div style={{ backgroundColor: '#f3e5f5', padding: '16px', borderRadius: '8px' }}>
+              <p className="text-gray-600 text-sm italic">This section is not applicable because Nature of Property is "Vacant Land".</p>
+            </div>
+          );
+        }
+
+        const amenities = Array.isArray(fields.kotakBbgAmenitiesProvided) ? fields.kotakBbgAmenitiesProvided : [];
+        const toggleAmenities = (val: string) => {
+          if (amenities.includes(val)) {
+            handleChange('kotakBbgAmenitiesProvided', amenities.filter(v => v !== val));
+          } else {
+            handleChange('kotakBbgAmenitiesProvided', [...amenities, val]);
+          }
+        };
+
+        return (
+          <div style={{ backgroundColor: '#f3e5f5', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            <Field label="Type of Construction & Roofing">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgConstructionRoofingNA || false} onChange={e => handleChange('kotakBbgConstructionRoofingNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgConstructionRoofingNA && (
+                  <input type="text" className={inputCls} value={fields.kotakBbgConstructionRoofing || ''} onChange={e => handleChange('kotakBbgConstructionRoofing', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <Field label="Year of Construction">
+              <input type="number" min="1900" max="2100" className={inputCls} value={fields.kotakBbgYearOfConstruction || ''} onChange={e => handleChange('kotakBbgYearOfConstruction', e.target.value)} disabled={isReadOnly} placeholder="YYYY" />
+            </Field>
+
+            <Field label="Stage of Construction (%)">
+              <input type="number" min="0" max="100" className={inputCls} value={fields.kotakBbgStageOfConstruction || ''} onChange={e => handleChange('kotakBbgStageOfConstruction', e.target.value)} disabled={isReadOnly} placeholder="%" />
+            </Field>
+
+            <PrefillField
+              label="Residual Structural Age"
+              value={fields.kotakBbgResidualStructuralAge || ''}
+              onChange={(val: string) => handleChange('kotakBbgResidualStructuralAge', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Auto calculating from [Estimated Lifespan - Year of Construction]"
+            />
+
+            <Field label="Number of Floors">
+              <select className={inputCls} value={fields.kotakBbgNumberOfFloors || ''} onChange={e => handleChange('kotakBbgNumberOfFloors', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Option</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4+">4+</option>
+                <option value="Custom">Custom</option>
+              </select>
+              {fields.kotakBbgNumberOfFloors === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgNumberOfFloorsCustom || ''} onChange={e => handleChange('kotakBbgNumberOfFloorsCustom', e.target.value)} disabled={isReadOnly} />
+              )}
+            </Field>
+
+            <Field label="Quality of Construction">
+              <select className={inputCls} value={fields.kotakBbgQualityOfConstruction || ''} onChange={e => handleChange('kotakBbgQualityOfConstruction', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Option</option>
+                <option value="Excellent">Excellent</option>
+                <option value="Good">Good</option>
+                <option value="Average">Average</option>
+                <option value="Poor">Poor</option>
+              </select>
+            </Field>
+
+            <Field label="Technical Details (Finishing & Interiors)">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgTechnicalDetailsFinishingNA || false} onChange={e => handleChange('kotakBbgTechnicalDetailsFinishingNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgTechnicalDetailsFinishingNA && (
+                  <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgTechnicalDetailsFinishing || ''} onChange={e => handleChange('kotakBbgTechnicalDetailsFinishing', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <Field label="Amenities Provided">
+              <div className="flex flex-wrap gap-4 mt-2">
+                {['Boundary Wall', 'Parking', 'Firefighting'].map(type => (
+                  <label key={type} className="flex items-center space-x-2">
+                    <input type="checkbox" checked={amenities.includes(type)} onChange={() => toggleAmenities(type)} disabled={isReadOnly} />
+                    <span>{type}</span>
+                  </label>
+                ))}
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" checked={fields.kotakBbgAmenitiesProvidedCustomChecked || false} onChange={e => handleChange('kotakBbgAmenitiesProvidedCustomChecked', e.target.checked)} disabled={isReadOnly} />
+                  <span>Custom</span>
+                </label>
+              </div>
+              {fields.kotakBbgAmenitiesProvidedCustomChecked && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgAmenitiesProvidedCustom || ''} onChange={e => handleChange('kotakBbgAmenitiesProvidedCustom', e.target.value)} disabled={isReadOnly} />
+              )}
+            </Field>
+
+            <Field label="Usage of Property">
+              <select className={inputCls} value={fields.kotakBbgUsageOfProperty || ''} onChange={e => handleChange('kotakBbgUsageOfProperty', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Option</option>
+                <option value="Residential">Residential</option>
+                <option value="Commercial">Commercial</option>
+                <option value="Mixed Use">Mixed Use</option>
+                <option value="Custom">Custom</option>
+              </select>
+              {fields.kotakBbgUsageOfProperty === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgUsageOfPropertyCustom || ''} onChange={e => handleChange('kotakBbgUsageOfPropertyCustom', e.target.value)} disabled={isReadOnly} />
               )}
             </Field>
           </div>

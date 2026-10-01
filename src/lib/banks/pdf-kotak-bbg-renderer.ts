@@ -155,5 +155,37 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Other Documents Perused', value: otherDocs, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
+    this.drawSectionHeader('5. BUILDING / STRUCTURAL DETAILS');
+    if (this.getF('kotakBbgNatureOfProperty') === 'Vacant Land') {
+      this.drawKeyValueRow([{ label: 'This section is not applicable because Nature of Property is "Vacant Land".', value: '', labelWidth: CONTENT_W, valueWidth: 0 }]);
+    } else {
+      this.drawKeyValueRow([
+        { label: 'Type of Construction & Roofing', value: this.getF('kotakBbgConstructionRoofingNA') ? 'NA' : this.getF('kotakBbgConstructionRoofing') },
+        { label: 'Year of Construction', value: this.getF('kotakBbgYearOfConstruction') },
+      ]);
+      this.drawKeyValueRow([
+        { label: 'Stage of Construction (%)', value: this.getF('kotakBbgStageOfConstruction') },
+        { label: 'Residual Structural Age', value: this.getF('kotakBbgResidualStructuralAge') },
+      ]);
+      this.drawKeyValueRow([
+        { label: 'Number of Floors', value: this.getF('kotakBbgNumberOfFloors') === 'Custom' ? this.getF('kotakBbgNumberOfFloorsCustom') : this.getF('kotakBbgNumberOfFloors') },
+        { label: 'Quality of Construction', value: this.getF('kotakBbgQualityOfConstruction') },
+      ]);
+      this.drawKeyValueRow([
+        { label: 'Technical Details (Finishing & Interiors)', value: this.getF('kotakBbgTechnicalDetailsFinishingNA') ? 'NA' : this.getF('kotakBbgTechnicalDetailsFinishing'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      ]);
+      const amList = Array.isArray(this.getF('kotakBbgAmenitiesProvided')) ? [...this.getF('kotakBbgAmenitiesProvided')] : [];
+      if (this.getF('kotakBbgAmenitiesProvidedCustomChecked') && this.getF('kotakBbgAmenitiesProvidedCustom')) {
+        amList.push(this.getF('kotakBbgAmenitiesProvidedCustom'));
+      }
+      const am = amList.join(', ');
+      this.drawKeyValueRow([
+        { label: 'Amenities Provided', value: am, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      ]);
+      this.drawKeyValueRow([
+        { label: 'Usage of Property', value: this.getF('kotakBbgUsageOfProperty') === 'Custom' ? this.getF('kotakBbgUsageOfPropertyCustom') : this.getF('kotakBbgUsageOfProperty'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      ]);
+    }
+
   }
 }
