@@ -677,15 +677,16 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
     { id: 'section-5', title: 'Structural Details' },
     { id: 'section-6', title: 'Plan Approvals' },
     { id: 'layout-config', title: 'Layout Structure', special: true },
-    { id: 'section-7', title: isApartmentFlat ? 'Floor-wise Building Valuation (Apartment)' : 'Floor-wise Building Valuation' },
+    { id: 'section-7', title: isApartmentFlat ? 'Apartment Valuation' : 'Building Valuation' },
     ...(isApartmentFlat ? [] : [{ id: 'section-8', title: 'Land Valuation' }]),
     { id: 'section-abstract', title: 'Abstract of Valuation' },
-    { id: 'section-remarks', title: 'Remarks & Declaration' },
+    { id: 'section-remarks', title: 'Remarks' },
+    { id: 'section-declaration', title: 'Declaration' },
     { id: 'section-certificate', title: 'Valuation Certificate' },
     { id: 'section-photographs', title: 'Property Photographs' },
     { id: 'sec-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
-    { id: 'section-annexures', title: 'Annexures & Schedules' },
+    { id: 'section-annexures', title: 'Annexures' },
   ];
 
   useEffect(() => {
@@ -713,7 +714,7 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
   };
 
   return (
-    <div className="hidden xl:flex flex-col gap-0 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40">
+    <div className="hidden xl:flex flex-col gap-0.5 bg-white/85 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[170px] sticky top-24 shrink-0 z-40 max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar">
       <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">Sections</div>
       {NAV_SECTIONS.map((sec: any) => {
         const isActive = activeId === sec.id;
@@ -729,11 +730,11 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
             key={sec.id}
             type="button"
             onClick={() => scrollTo(sec.id)}
-            className={`text-left py-1 px-2.5 rounded-lg transition-all flex flex-col justify-center ${
+            className={`text-left py-1.5 px-2.5 rounded-lg transition-all flex flex-col justify-center ${
               isSpecial
                 ? isActive ? 'bg-red-500 text-black font-extrabold shadow-md border border-red-600 my-1' : 'bg-red-500 text-black font-bold hover:bg-red-600 hover:text-black border border-red-600 my-1'
                 : !sec.indent
-                  ? 'my-1 font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-100 shadow-sm'
+                  ? 'my-0.5 font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-100 shadow-sm'
                   : 'pl-3.5 text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
             } ${
               !isSpecial && isActive
@@ -741,7 +742,7 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
                 : ''
             }`}
           >
-            <span className={`leading-tight truncate w-full ${sec.indent ? 'text-[11px] font-bold' : 'text-[11.5px]'}`}>
+            <span className={`leading-snug whitespace-normal break-words w-full ${sec.indent ? 'text-[10.5px] font-bold' : 'text-[11px]'}`}>
               {cleanTitle}
             </span>
             {sec.sub && (
@@ -837,6 +838,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     bdaMapImages: Array.isArray(initialFields?.bdaMapImages) ? initialFields.bdaMapImages : (typeof initialFields?.bdaMapImage === 'string' && initialFields.bdaMapImage ? [initialFields.bdaMapImage] : DEFAULT_FIELDS.bdaMapImages),
     civicAmenities: Array.isArray(initialFields?.civicAmenities) ? initialFields.civicAmenities : DEFAULT_FIELDS.civicAmenities,
     ageOfPropertyActual: typeof initialFields?.ageOfPropertyActual === 'string' ? initialFields.ageOfPropertyActual : DEFAULT_FIELDS.ageOfPropertyActual,
+    representativeName: initialFields?.representativeName || firstFieldAgentVisit.engineerName || DEFAULT_FIELDS.representativeName || '',
+    representativeFatherName: initialFields?.representativeFatherName || DEFAULT_FIELDS.representativeFatherName || '',
     valuationLayout: finalValuationLayout,
   };
   if (!Array.isArray(merged.floors) || merged.floors.length === 0) {
@@ -1854,11 +1857,12 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.advanceCursor(8);
 
       // ── Declaration ──
+      const effectiveRepName = fields.representativeName || firstFieldAgentVisit.engineerName || '';
       r.drawTextBlock('Declaration:', { bold: true, fontSize: 14 });
       r.advanceCursor(2);
       r.drawTextBlock('I hereby declare that:');
       r.advanceCursor(2);
-      r.drawTextBlock(`\u2022 I have deputed my representative ${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} to inspect the property on ${fmtDate(fields.dateOfInspection)}.`);
+      r.drawTextBlock(`\u2022 I have deputed my representative ${effectiveRepName ? 'Mr. ' + effectiveRepName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} to inspect the property on ${fmtDate(fields.dateOfInspection)}.`);
       r.drawTextBlock('\u2022 I have no direct or indirect interest in the property valued.');
       r.drawTextBlock('\u2022 The information furnished is true and correct to the best of my knowledge and belief.');
       r.advanceCursor(10);
@@ -2367,10 +2371,11 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     `));
 
     // ── BLOCK: Declaration ──
+    const effectiveRepName = fields.representativeName || firstFieldAgentVisit.engineerName || '';
     allBlocks.push(`<div style="margin-top:10px;font-family:${ff};font-size:12pt;line-height:0.5em;">
       <p style="font-weight:bold;font-size:14pt;margin-bottom:4px;">Declaration:</p>
       <p style="margin-bottom:3px;">I hereby declare that:</p>
-      <p style="margin-bottom:3px;">\u2022 I have deputed my representative <b>${fields.representativeName ? 'Mr. ' + fields.representativeName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''}</b> to inspect the property on <b>${fmtDate(fields.dateOfInspection) || '______'}</b>.</p>
+      <p style="margin-bottom:3px;">\u2022 I have deputed my representative <b>${effectiveRepName ? 'Mr. ' + effectiveRepName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''}</b> to inspect the property on <b>${fmtDate(fields.dateOfInspection) || '______'}</b>.</p>
       <p style="margin-bottom:3px;">\u2022 I have no direct or indirect interest in the property valued.</p>
       <p style="margin-bottom:3px;">\u2022 The information furnished is true and correct to the best of my knowledge and belief.</p>
     </div>`);
@@ -3365,8 +3370,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       {/* ── Sections 7+ only visible after layout is chosen ── */}
       {fields.valuationLayout && (<>
 
-      {/* ── Section 7: Floor-wise Area & Building/Apartment Valuation ── */}
-      <Section title={isApartmentFlat ? 'Floor-wise Building Valuation (Apartment)' : 'Floor-wise Building Valuation'} number={7} id="section-7">
+      {/* ── Section 7: Area & Building/Apartment Valuation ── */}
+      <Section title={isApartmentFlat ? 'Apartment Valuation' : 'Building Valuation'} number={7} id="section-7">
         <div className="flex justify-between items-center mb-4">
           <h4 className="text-sm font-semibold text-[#0f2038]">{isApartmentFlat ? 'Apartment/Flat Valuation Details' : 'Building Valuation Details'}</h4>
           <div className="flex items-center gap-2">
@@ -3782,8 +3787,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         </div>
       </Section>
 
-      {/* ── Section 10: Remarks & Declaration ── */}
-      <Section title="Remarks & Declaration" number={isApartmentFlat ? 9 : 10} id="section-remarks" defaultOpen={false}>
+      {/* ── Section 10: Remarks ── */}
+      <Section title="Remarks" number={isApartmentFlat ? 9 : 10} id="section-remarks" defaultOpen={false}>
         <div className="space-y-4">
           <Field label="Demarcation" span={2}>
             <textarea className={inputCls + ' resize-none'} rows={2} value={fields.demarcation} onChange={e => handleChange('demarcation', e.target.value)} disabled={isReadOnly} placeholder="Demarcation details..." />
@@ -3794,12 +3799,32 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           <Field label="Remarks / Observations" span={2}>
             <textarea className={inputCls + ' resize-none'} rows={4} value={fields.remarks} onChange={e => handleChange('remarks', e.target.value)} disabled={isReadOnly} placeholder="Detailed remarks about the property..." />
           </Field>
-          <Field label="Name of Representative who Inspected">
-            <input className={inputCls} value={fields.representativeName} onChange={e => handleChange('representativeName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Dinesh Das" />
-          </Field>
-          <Field label="Representative's Father's Name">
-            <input className={inputCls} value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} disabled={isReadOnly} placeholder="Father's name of representative" />
-          </Field>
+        </div>
+      </Section>
+
+      {/* ── Section 11: Declaration ── */}
+      <Section title="Declaration" number={isApartmentFlat ? 10 : 11} id="section-declaration" defaultOpen={false}>
+        <div className="space-y-4">
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Name of Representative who Inspected">
+              <input
+                className={inputCls}
+                value={fields.representativeName}
+                onChange={e => handleChange('representativeName', e.target.value)}
+                disabled={isReadOnly}
+                placeholder={firstFieldAgentVisit.engineerName ? `e.g. ${firstFieldAgentVisit.engineerName}` : 'e.g. Dinesh Das'}
+              />
+            </Field>
+            <Field label="Representative's Father's Name">
+              <input
+                className={inputCls}
+                value={fields.representativeFatherName}
+                onChange={e => handleChange('representativeFatherName', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Father's name of representative"
+              />
+            </Field>
+          </div>
 
           {/* Declaration Box */}
           <div className="p-4 bg-[#f8fafc] rounded-xl border border-[#cbd5e1] text-xs leading-relaxed text-[#334155]">
@@ -3808,7 +3833,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             <ul className="space-y-1.5 list-disc pl-5 text-justify">
               <li>
                 I have deputed my representative{' '}
-                <strong>{fields.representativeName ? `Mr. ${fields.representativeName}` : '______'}</strong>
+                <strong>{(fields.representativeName || firstFieldAgentVisit.engineerName) ? `Mr. ${fields.representativeName || firstFieldAgentVisit.engineerName}` : '______'}</strong>
                 {fields.representativeFatherName ? `, S/o: ${fields.representativeFatherName}` : ''} to inspect the property on{' '}
                 <strong>{fmtDate(fields.dateOfInspection)}</strong>.
               </li>
@@ -3823,8 +3848,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         </div>
       </Section>
 
-      {/* ── Section 11: Valuation Certificate ── */}
-      <Section title="Valuation Certificate" number={isApartmentFlat ? 10 : 11} id="section-certificate" defaultOpen={false}>
+      {/* ── Section 12: Valuation Certificate ── */}
+      <Section title="Valuation Certificate" number={isApartmentFlat ? 11 : 12} id="section-certificate" defaultOpen={false}>
         <div className="bg-[#fdfcf8] border border-[#d4c5a9] rounded-xl p-6 text-sm leading-relaxed text-[#333]">
           <p className="text-center font-bold text-base mb-4 underline">VALUATION CERTIFICATE</p>
           <p className="mb-3 text-justify">
@@ -3869,7 +3894,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           }}
           onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
           onOpenBucketPicker={openBucketPicker}
-          sectionNumber={isApartmentFlat ? 11 : 12}
+          sectionNumber={isApartmentFlat ? 12 : 13}
           sectionId="section-photographs"
           title="Property Photographs"
         />
@@ -3885,7 +3910,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           onRemoveDocument={handleDocumentRemove}
           onDocumentNameChange={handleDocumentNameChange}
           onReorderDocuments={handleDocumentReorder}
-          sectionNumber={isApartmentFlat ? 12 : 13}
+          sectionNumber={isApartmentFlat ? 13 : 14}
           sectionId="sec-documents"
           title="Documents"
           defaultOpen={false}
@@ -3928,15 +3953,15 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           onBdaMapUpload={handleBdaMapUpload}
           onBdaMapRemove={handleBdaMapRemove}
           onReorderBdaMap={handleBdaMapReorder}
-          sectionNumber={isApartmentFlat ? 13 : 14}
+          sectionNumber={isApartmentFlat ? 14 : 15}
           sectionId="section-maps"
           title="Maps"
           defaultOpen={false}
         />
       )}
 
-      {/* ── Section 15: Annexure (Always available) ── */}
-      <Section title="Annexures & Schedules" number={isApartmentFlat ? 14 : 15} id="section-annexures" defaultOpen={true}>
+      {/* ── Section 16: Annexures (Always available) ── */}
+      <Section title="Annexures" number={isApartmentFlat ? 15 : 16} id="section-annexures" defaultOpen={true}>
         <div className="space-y-4">
           {/* Info banner */}
           <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#0a1628]/5 to-[#b8860b]/5 border border-[#b8860b]/20">

@@ -811,9 +811,9 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
             key={sec.id}
             type="button"
             onClick={() => scrollTo(sec.id)}
-            className={`text-left py-1 px-2.5 rounded-lg transition-all flex flex-col justify-center ${
+            className={`text-left py-1.5 px-2.5 rounded-lg transition-all flex flex-col justify-center ${
               !sec.indent 
-                ? 'my-1 font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-100 shadow-sm' 
+                ? 'my-0.5 font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-100 shadow-sm' 
                 : 'pl-3.5 text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
             } ${
               isActive
@@ -821,7 +821,7 @@ const FloatingNavigator = ({ isLandOnly, showLandAnnexure }: { isLandOnly: boole
                 : ''
             }`}
           >
-            <span className={`leading-tight ${sec.indent ? 'text-[11px] font-bold' : 'text-[11.5px]'}`}>
+            <span className={`leading-snug whitespace-normal break-words w-full ${sec.indent ? 'text-[10.5px] font-bold' : 'text-[11px]'}`}>
               {cleanTitle}
             </span>
             {sec.sub && (

@@ -885,7 +885,7 @@ const FloatingNavigator = () => {
   };
 
   return (
-    <div className="hidden xl:flex flex-col gap-0 bg-white/80 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[160px] sticky top-24 shrink-0 z-40 max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar">
+    <div className="hidden xl:flex flex-col gap-0.5 bg-white/85 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-[170px] sticky top-24 shrink-0 z-40 max-h-[calc(100vh-120px)] overflow-y-auto custom-scrollbar">
       <div className="text-[10px] font-black text-neutral-400 mb-1 px-2 uppercase tracking-widest">IBBI Sections</div>
       {NAV_SECTIONS.map((sec: any) => {
         const isActive = activeId === sec.id;
@@ -900,9 +900,9 @@ const FloatingNavigator = () => {
             key={sec.id}
             type="button"
             onClick={() => scrollTo(sec.id)}
-            className={`text-left py-1 px-2.5 rounded-lg transition-all flex flex-col justify-center ${
+            className={`text-left py-1.5 px-2.5 rounded-lg transition-all flex flex-col justify-center ${
               !sec.indent 
-                ? 'my-1 font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-100 shadow-sm' 
+                ? 'my-0.5 font-extrabold bg-indigo-50 text-indigo-800 border border-indigo-100 shadow-sm' 
                 : 'pl-3.5 text-slate-600 hover:bg-[#b8860b]/10 hover:text-[#b8860b]'
             } ${
               isActive
@@ -910,7 +910,7 @@ const FloatingNavigator = () => {
                 : ''
             }`}
           >
-            <span className={`leading-tight truncate w-full ${sec.indent ? 'text-[11px] font-bold' : 'text-[11.5px]'}`}>
+            <span className={`leading-snug whitespace-normal break-words w-full ${sec.indent ? 'text-[10.5px] font-bold' : 'text-[11px]'}`}>
               {cleanTitle}
             </span>
             {sec.sub && (
