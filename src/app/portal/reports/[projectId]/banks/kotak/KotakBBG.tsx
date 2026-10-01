@@ -70,43 +70,99 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
       number: 1,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
+        const today = new Date().toISOString().split('T')[0];
+        const valuerName = 'Er. S. Mohanty'; // Mock
+        const borrowerName = fields.kotakBbgBorrowerName || '[Borrower Name from App]';
+        
         return (
           <div style={{ backgroundColor: '#f5f5f5', padding: '16px', borderRadius: '8px' }} className="space-y-4">
             <PrefillField
+              label="Bank Name"
+              value={fields.kotakBbgBankName || 'Kotak Mahindra Bank'}
+              onChange={(val: string) => handleChange('kotakBbgBankName', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Prefill from Client Mandate Data"
+            />
+
+            <Field label="Bank Branch / IFCS">
+              <select className={inputCls} value={fields.kotakBbgBankBranch || ''} onChange={e => handleChange('kotakBbgBankBranch', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Branch</option>
+                <option value="Bhubaneswar Main">Bhubaneswar Main</option>
+                <option value="Cuttack Branch">Cuttack Branch</option>
+                <option value="Custom">Custom</option>
+              </select>
+              {fields.kotakBbgBankBranch === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom branch/IFCS" value={fields.kotakBbgBankBranchCustom || ''} onChange={e => handleChange('kotakBbgBankBranchCustom', e.target.value)} disabled={isReadOnly} />
+              )}
+            </Field>
+
+            <Field label="Bank Reference / Application No.">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgBankRefNA || false} onChange={e => handleChange('kotakBbgBankRefNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgBankRefNA && (
+                  <input type="text" className={inputCls} placeholder="Ref/App No." value={fields.kotakBbgBankRef || ''} onChange={e => handleChange('kotakBbgBankRef', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <PrefillField
               label="Purpose of Valuation"
-              value={fields.kotakBbgPurpose || ''}
+              value={fields.kotakBbgPurpose || 'Market Value Assessment'}
               onChange={(val: string) => handleChange('kotakBbgPurpose', val)}
               isReadOnly={isReadOnly}
               tooltip="Prefill from System Standard Template"
             />
-            <Field label="Date of Valuation">
-              <input type="date" className={inputCls} value={fields.kotakBbgDateOfValuation || ''} onChange={(e) => handleChange('kotakBbgDateOfValuation', e.target.value)} disabled={isReadOnly} />
-            </Field>
+            
+            <PrefillField
+              label="Date of Valuation"
+              value={fields.kotakBbgDateOfValuation || today}
+              onChange={(val: string) => handleChange('kotakBbgDateOfValuation', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Prefill from System Current Date"
+              type="date"
+            />
+
             <PrefillField
               label="Name of the Valuer"
-              value={fields.kotakBbgValuerName || ''}
+              value={fields.kotakBbgValuerName || valuerName}
               onChange={(val: string) => handleChange('kotakBbgValuerName', val)}
               isReadOnly={isReadOnly}
               tooltip="Prefill from Valuer Profile"
             />
+
             <Field label="Site Engineer Inspecting Property">
-              <select className={inputCls} value={fields.kotakBbgSiteEngineer || ''} onChange={e => handleChange('kotakBbgSiteEngineer', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select Site Engineer</option>
-                <option value="Engineer 1">Engineer 1</option>
-                <option value="Engineer 2">Engineer 2</option>
-                <option value="Custom">Custom</option>
-              </select>
-              {fields.kotakBbgSiteEngineer === 'Custom' && (
-                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgSiteEngineerCustom || ''} onChange={e => handleChange('kotakBbgSiteEngineerCustom', e.target.value)} disabled={isReadOnly} />
-              )}
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgSiteEngineerNA || false} onChange={e => handleChange('kotakBbgSiteEngineerNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgSiteEngineerNA && (
+                  <div className="space-y-2">
+                    <select className={inputCls} value={fields.kotakBbgSiteEngineer || ''} onChange={e => handleChange('kotakBbgSiteEngineer', e.target.value)} disabled={isReadOnly}>
+                      <option value="">Select Site Engineer</option>
+                      <option value="Engineer 1">Engineer 1</option>
+                      <option value="Engineer 2">Engineer 2</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                    {fields.kotakBbgSiteEngineer === 'Custom' && (
+                      <input type="text" className={inputCls} placeholder="Enter custom value" value={fields.kotakBbgSiteEngineerCustom || ''} onChange={e => handleChange('kotakBbgSiteEngineerCustom', e.target.value)} disabled={isReadOnly} />
+                    )}
+                  </div>
+                )}
+              </div>
             </Field>
+
             <PrefillField
               label="Name of Customer / Borrower"
-              value={fields.kotakBbgBorrowerName || ''}
+              value={borrowerName}
               onChange={(val: string) => handleChange('kotakBbgBorrowerName', val)}
               isReadOnly={isReadOnly}
               tooltip="Prefill from Application Data"
             />
+
             <Field label="Name of Property Owner(s)">
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 text-sm">
@@ -117,8 +173,8 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   <div title='Prefill from section 1, "Name of Customer / Borrower"' className="flex items-center space-x-2">
                     <textarea 
                       className={inputCls + ' resize-y flex-1'} 
-                      rows={3} 
-                      value={fields.kotakBbgBorrowerName || ''} 
+                      rows={2} 
+                      value={borrowerName} 
                       disabled={true} 
                     />
                     <button type="button" disabled className="p-1.5 border rounded flex-shrink-0 bg-white border-gray-300 text-gray-500">
@@ -126,22 +182,56 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </button>
                   </div>
                 ) : (
-                  <textarea className={inputCls + ' resize-y w-full'} rows={3} value={fields.kotakBbgOwnerName || ''} onChange={e => handleChange('kotakBbgOwnerName', e.target.value)} disabled={isReadOnly} />
+                  <textarea className={inputCls + ' resize-y w-full'} rows={2} placeholder="Owner Name(s)" value={fields.kotakBbgOwnerName || ''} onChange={e => handleChange('kotakBbgOwnerName', e.target.value)} disabled={isReadOnly} />
                 )}
               </div>
             </Field>
-            <Field label="Date of Technical Site Visit">
-              <input type="date" className={inputCls} value={fields.kotakBbgDateOfVisit || ''} onChange={(e) => handleChange('kotakBbgDateOfVisit', e.target.value)} disabled={isReadOnly} />
-            </Field>
+
+            <PrefillField
+              label="Date of Technical Site Visit"
+              value={fields.kotakBbgDateOfSiteVisit || today}
+              onChange={(val: string) => handleChange('kotakBbgDateOfSiteVisit', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Prefill from System Current Date"
+              type="date"
+            />
+            
             <Field label="Person Met at Site & Contact Details">
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm">
-                  <input type="checkbox" checked={fields.kotakBbgPersonMetNA || false} onChange={e => handleChange('kotakBbgPersonMetNA', e.target.checked)} disabled={isReadOnly} />
-                  <span>Not Available (NA)</span>
-                </label>
-                {!fields.kotakBbgPersonMetNA && (
-                  <input type="text" className={inputCls} value={fields.kotakBbgPersonMet || ''} onChange={e => handleChange('kotakBbgPersonMet', e.target.value)} disabled={isReadOnly} />
-                )}
+              <div className="p-3 bg-white bg-opacity-50 border border-gray-200 rounded space-y-4">
+                <div className="flex flex-col space-y-2">
+                  <span className="text-sm font-semibold text-gray-700">Name</span>
+                  <input type="text" className={inputCls} placeholder="Name" value={fields.kotakBbgPersonMet || ''} onChange={e => handleChange('kotakBbgPersonMet', e.target.value)} disabled={isReadOnly} />
+                </div>
+                
+                <div className="flex flex-col space-y-2">
+                  <span className="text-sm font-semibold text-gray-700">Relationship to Owner</span>
+                  <select className={inputCls} value={fields.kotakBbgPersonMetRelation || ''} onChange={e => handleChange('kotakBbgPersonMetRelation', e.target.value)} disabled={isReadOnly}>
+                    <option value="">Select Relationship</option>
+                    <option value="Self">Self</option>
+                    <option value="Relative">Relative</option>
+                    <option value="Tenant">Tenant</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Site Guard">Site Guard</option>
+                    <option value="Custom">Custom</option>
+                  </select>
+                  {fields.kotakBbgPersonMetRelation === 'Custom' && (
+                    <input type="text" className={inputCls} placeholder="Enter custom relationship" value={fields.kotakBbgPersonMetRelationCustom || ''} onChange={e => handleChange('kotakBbgPersonMetRelationCustom', e.target.value)} disabled={isReadOnly} />
+                  )}
+                </div>
+
+                <div className="flex flex-col space-y-2">
+                  <span className="text-sm font-semibold text-gray-700">Phone Number</span>
+                  <label className="flex items-center space-x-2 text-sm">
+                    <input type="checkbox" checked={fields.kotakBbgPersonMetContactNA || false} onChange={e => handleChange('kotakBbgPersonMetContactNA', e.target.checked)} disabled={isReadOnly} />
+                    <span>Not Applicable (NA)</span>
+                  </label>
+                  {!fields.kotakBbgPersonMetContactNA && (
+                    <input type="text" maxLength={10} className={inputCls} placeholder="10-digit number" value={fields.kotakBbgPersonMetContact || ''} onChange={e => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      handleChange('kotakBbgPersonMetContact', val);
+                    }} disabled={isReadOnly} />
+                  )}
+                </div>
               </div>
             </Field>
           </div>

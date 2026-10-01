@@ -38,21 +38,39 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     this.drawMainHeader('VALUATION REPORT');
 
     this.drawSectionHeader('1. GENERAL DETAILS');
+    const bankBranch = this.getF('kotakBbgBankBranch') === 'Custom' ? this.getF('kotakBbgBankBranchCustom') : this.getF('kotakBbgBankBranch');
     this.drawKeyValueRow([
-      { label: 'Purpose of Valuation', value: this.getF('kotakBbgPurpose') },
+      { label: 'Bank Name', value: this.getF('kotakBbgBankName') || 'Kotak Mahindra Bank' },
+      { label: 'Bank Branch / IFCS', value: bankBranch },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Bank Reference / App No.', value: this.getF('kotakBbgBankRefNA') ? 'NA' : this.getF('kotakBbgBankRef') },
+      { label: 'Purpose of Valuation', value: this.getF('kotakBbgPurpose') || 'Market Value Assessment' },
+    ]);
+    const siteEng = this.getF('kotakBbgSiteEngineerNA') ? 'NA' : (this.getF('kotakBbgSiteEngineer') === 'Custom' ? this.getF('kotakBbgSiteEngineerCustom') : this.getF('kotakBbgSiteEngineer'));
+    this.drawKeyValueRow([
       { label: 'Date of Valuation', value: this.getF('kotakBbgDateOfValuation') },
+      { label: 'Name of the Valuer', value: this.getF('kotakBbgValuerName') || 'Er. S. Mohanty' },
     ]);
     this.drawKeyValueRow([
-      { label: 'Name of the Valuer', value: this.getF('kotakBbgValuerName') },
-      { label: 'Site Engineer Inspecting Property', value: this.getF('kotakBbgSiteEngineer') === 'Custom' ? this.getF('kotakBbgSiteEngineerCustom') : this.getF('kotakBbgSiteEngineer') },
-    ]);
-    this.drawKeyValueRow([
+      { label: 'Site Engineer Inspecting', value: siteEng },
       { label: 'Name of Customer / Borrower', value: this.getF('kotakBbgBorrowerName') },
+    ]);
+    
+    let personMetStr = this.getF('kotakBbgPersonMet') || '';
+    if (personMetStr) {
+       const rel = this.getF('kotakBbgPersonMetRelation') === 'Custom' ? this.getF('kotakBbgPersonMetRelationCustom') : this.getF('kotakBbgPersonMetRelation');
+       if (rel) personMetStr += ` (${rel})`;
+       const phone = this.getF('kotakBbgPersonMetContactNA') ? 'NA' : this.getF('kotakBbgPersonMetContact');
+       if (phone && phone !== 'NA') personMetStr += ` - Ph: ${phone}`;
+    }
+    
+    this.drawKeyValueRow([
       { label: 'Name of Property Owner(s)', value: this.getF('kotakBbgOwnerSameAsBorrower') ? this.getF('kotakBbgBorrowerName') : this.getF('kotakBbgOwnerName') },
+      { label: 'Date of Technical Site Visit', value: this.getF('kotakBbgDateOfSiteVisit') },
     ]);
     this.drawKeyValueRow([
-      { label: 'Date of Technical Site Visit', value: this.getF('kotakBbgDateOfVisit') },
-      { label: 'Person Met at Site & Contact Details', value: this.getF('kotakBbgPersonMetNA') ? 'NA' : this.getF('kotakBbgPersonMet') },
+      { label: 'Person Met at Site & Contact Details', value: personMetStr, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     
     this.drawSectionHeader('2. DETAILS OF PROPERTY BEING APPRAISED');
