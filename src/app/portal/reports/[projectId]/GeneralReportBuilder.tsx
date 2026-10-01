@@ -9,26 +9,9 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFGeneralRenderer } from '@/lib/pdf-general-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
-import {
-  getFloorName,
-  BasePhotographsSection,
-  BaseDocumentsSection,
-  BaseMapsSection,
-  formatReportDate,
-  BaseDateInput,
-  getEarliestFieldVisit,
-  EarliestFieldVisitBadge,
-  getConstructionDetailsForStructure,
-  getNdmaStructureTypeForStructure,
-  getWorkProgressStructureLabel,
-  StructureDerivationBadge,
-} from './banks/BaseBankReportComponents';
-import { reorderAndLabelAnnexures, normalizeMapImages, type AnnexureItem } from '@/lib/bank-fields';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 // @ts-ignore
 import * as XLSX from 'xlsx';
-
-const fmtDate = (d?: string | null) => formatReportDate(d, '________');
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface FloorRow {
@@ -665,6 +648,705 @@ function LandmarkField({ label, rows, disabled }: {
         </div>
       </div>
     </div>
+  );
+}
+
+const DEFAULT_DOCUMENT_LABEL = 'Document';
+
+function normalizeMapImages(input?: string | string[]): string[] {
+  if (!input) return [];
+  if (Array.isArray(input)) return input.filter(Boolean);
+  return typeof input === 'string' && input.trim() ? [input.trim()] : [];
+}
+
+function DocumentsSection({
+  documentImages = [],
+  documentImageNames = [],
+  isReadOnly = false,
+  uploading = false,
+  onUploadDocument,
+  onRemoveDocument,
+  onDocumentNameChange,
+  onReorderDocuments,
+  sectionNumber,
+  sectionId = 'sec-documents',
+  title = 'Documents',
+  defaultOpen = false,
+}: {
+  documentImages?: string[];
+  documentImageNames?: string[];
+  isReadOnly?: boolean;
+  uploading?: boolean | string;
+  onUploadDocument?: (e: React.ChangeEvent<HTMLInputElement>) => void | Promise<void>;
+  onRemoveDocument?: (idx: number) => void;
+  onDocumentNameChange?: (idx: number, name: string) => void;
+  onReorderDocuments?: (newImages: string[], newNames: string[]) => void;
+  sectionNumber?: number | string;
+  sectionId?: string;
+  title?: string;
+  defaultOpen?: boolean;
+}) {
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  const isDocUploading = uploading === true || uploading === 'documents' || uploading === 'documentImages';
+
+  const moveDoc = (fromIdx: number, toIdx: number) => {
+    if (isReadOnly || !onReorderDocuments) return;
+    if (fromIdx < 0 || fromIdx >= documentImages.length) return;
+    if (toIdx < 0 || toIdx >= documentImages.length) return;
+    if (fromIdx === toIdx) return;
+
+    const reorderedImgs = [...documentImages];
+    const reorderedNames = [...(documentImageNames || [])];
+
+    while (reorderedNames.length < reorderedImgs.length) {
+      reorderedNames.push('');
+    }
+
+    const [movedImg] = reorderedImgs.splice(fromIdx, 1);
+    const [movedName] = reorderedNames.splice(fromIdx, 1);
+
+    reorderedImgs.splice(toIdx, 0, movedImg);
+    reorderedNames.splice(toIdx, 0, movedName);
+
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    onReorderDocuments(reorderedImgs, reorderedNames);
+  };
+
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    if (isReadOnly) return;
+    try {
+      e.dataTransfer.setData('text/plain', String(idx));
+      e.dataTransfer.effectAllowed = 'move';
+    } catch {
+      /* ignore */
+    }
+    setDraggedIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    try {
+      e.dataTransfer.dropEffect = 'move';
+    } catch {
+      /* ignore */
+    }
+    if (draggedIdx === null || draggedIdx === idx) return;
+    if (dragOverIdx !== idx) {
+      setDragOverIdx(idx);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIdx(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIdx: number) => {
+    e.preventDefault();
+    let fromIdx = draggedIdx;
+    try {
+      const data = e.dataTransfer.getData('text/plain');
+      if (data !== '') {
+        const parsed = parseInt(data, 10);
+        if (!isNaN(parsed)) fromIdx = parsed;
+      }
+    } catch {
+      /* fallback */
+    }
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+
+    if (fromIdx === null || isNaN(fromIdx) || fromIdx === targetIdx) {
+      return;
+    }
+    moveDoc(fromIdx, targetIdx);
+  };
+
+  return (
+    <Section title={title} number={sectionNumber} id={sectionId} defaultOpen={defaultOpen}>
+      <div className="space-y-4">
+        {documentImages.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {documentImages.map((url, idx) => {
+              const rawLabel = documentImageNames?.[idx];
+              const currentLabel = (rawLabel !== undefined && rawLabel !== null) ? rawLabel : '';
+              const isDragging = draggedIdx === idx;
+              const isDragOver = dragOverIdx === idx;
+              const canDrag = !isReadOnly && documentImages.length > 1;
+
+              return (
+                <div
+                  key={`doc-${url}-${idx}`}
+                  draggable={canDrag}
+                  onDragStart={(e) => handleDragStart(e, idx)}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDragLeave={handleDragLeave}
+                  onDrop={(e) => handleDrop(e, idx)}
+                  onDragEnd={() => {
+                    setDraggedIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  className={`space-y-2 p-3 border rounded-2xl bg-white shadow-xs transition-all duration-200 ${
+                    isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
+                  } ${
+                    isDragOver
+                      ? 'border-2 border-dashed border-accent-500 ring-2 ring-accent-500/20 shadow-md bg-amber-50/20'
+                      : 'border-[#dee2e6] hover:border-slate-300'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-slate-100">
+                    <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                      <span
+                        className="px-2 py-0.5 rounded bg-[#4a6741] text-white text-[11px] font-bold select-none shrink-0 flex items-center gap-1 shadow-2xs"
+                        title="Drag document card to reposition or use arrow buttons"
+                      >
+                        {canDrag && <span className="cursor-grab active:cursor-grabbing text-slate-300">⠿</span>}
+                        <span>📄 #{idx + 1}</span>
+                      </span>
+                      <input
+                        type="text"
+                        className="w-full text-xs font-semibold text-[#0f2038] bg-transparent border-b border-transparent hover:border-slate-300 focus:border-accent-500 focus:bg-slate-50 rounded px-1 py-0.5 outline-none truncate transition-colors"
+                        value={currentLabel}
+                        onChange={(e) => onDocumentNameChange?.(idx, e.target.value)}
+                        placeholder={DEFAULT_DOCUMENT_LABEL}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {!isReadOnly && onRemoveDocument && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        {onReorderDocuments && documentImages.length > 1 && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => moveDoc(idx, idx - 1)}
+                              disabled={idx === 0}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold shadow-2xs cursor-pointer"
+                              title="Move Document Left / Previous"
+                            >
+                              ◀
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => moveDoc(idx, idx + 1)}
+                              disabled={idx === documentImages.length - 1}
+                              className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold shadow-2xs cursor-pointer"
+                              title="Move Document Right / Next"
+                            >
+                              ▶
+                            </button>
+                          </>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => onRemoveDocument(idx)}
+                          className="w-7 h-7 flex items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shadow-2xs cursor-pointer ml-0.5"
+                          title="Remove Document"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-64 flex items-center justify-center cursor-grab active:cursor-grabbing">
+                    <img src={url} alt={currentLabel || `Document ${idx + 1}`} className="w-full h-full object-contain pointer-events-none select-none" />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {!isReadOnly && (
+          <div className={`flex flex-wrap items-center justify-between gap-3 ${documentImages.length > 0 ? 'pt-3 border-t border-slate-100' : ''}`}>
+            <div className="flex flex-wrap items-center gap-3">
+              <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#4a6741] text-[#4a6741] text-sm font-semibold cursor-pointer hover:bg-[#4a6741]/10 transition-all shadow-xs">
+                {isDocUploading ? '⏳ Uploading...' : '📄 Add Document Image'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={onUploadDocument}
+                  disabled={isDocUploading}
+                />
+              </label>
+            </div>
+
+            <div className="text-xs font-semibold text-slate-500">
+              {documentImages.filter(Boolean).length} document(s) uploaded
+            </div>
+          </div>
+        )}
+      </div>
+    </Section>
+  );
+}
+
+function MapImageCategoryCard({
+  images,
+  categoryLabel,
+  isReadOnly = false,
+  uploading = false,
+  icon,
+  title,
+  btnLabel,
+  onUpload,
+  onRemove,
+  onReorder,
+  emptyMessage,
+  headerExtra,
+}: {
+  images: string[];
+  categoryLabel: string;
+  isReadOnly?: boolean;
+  uploading?: boolean;
+  icon: string;
+  title: string;
+  btnLabel: string;
+  onUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemove?: (idx: number) => void;
+  onReorder?: (newImages: string[]) => void;
+  emptyMessage: string;
+  headerExtra?: React.ReactNode;
+}) {
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  const moveMap = (fromIdx: number, toIdx: number) => {
+    if (isReadOnly || !onReorder) return;
+    if (fromIdx < 0 || fromIdx >= images.length) return;
+    if (toIdx < 0 || toIdx >= images.length) return;
+    if (fromIdx === toIdx) return;
+
+    const reordered = [...images];
+    const [moved] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, moved);
+
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    onReorder(reordered);
+  };
+
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    if (isReadOnly) return;
+    try {
+      e.dataTransfer.setData('text/plain', String(idx));
+      e.dataTransfer.effectAllowed = 'move';
+    } catch {
+      /* ignore */
+    }
+    setDraggedIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    try {
+      e.dataTransfer.dropEffect = 'move';
+    } catch {
+      /* ignore */
+    }
+    if (draggedIdx === null || draggedIdx === idx) return;
+    if (dragOverIdx !== idx) {
+      setDragOverIdx(idx);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIdx(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIdx: number) => {
+    e.preventDefault();
+    let fromIdx = draggedIdx;
+    try {
+      const data = e.dataTransfer.getData('text/plain');
+      if (data !== '') {
+        const parsed = parseInt(data, 10);
+        if (!isNaN(parsed)) fromIdx = parsed;
+      }
+    } catch {
+      /* fallback */
+    }
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+
+    if (fromIdx === null || isNaN(fromIdx) || fromIdx === targetIdx) {
+      return;
+    }
+    moveMap(fromIdx, targetIdx);
+  };
+
+  return (
+    <div className="p-3 border border-[#dee2e6] rounded-2xl bg-white shadow-xs space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-slate-100">
+        <div className="flex items-center gap-2">
+          <span className="text-base">{icon}</span>
+          <span className="text-xs font-bold text-[#0f2038] uppercase tracking-wider">{title}</span>
+          {images.length > 0 && (
+            <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[10px] font-bold border border-slate-200">
+              {images.length} {images.length === 1 ? 'map' : 'maps'}
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          {headerExtra}
+          {!isReadOnly && onUpload && (
+            <label className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-accent-500 text-accent-500 text-xs font-bold cursor-pointer hover:bg-amber-50 transition-all shadow-2xs">
+              {uploading ? '⏳ Uploading...' : `+ Add ${btnLabel}`}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={onUpload}
+                disabled={uploading}
+              />
+            </label>
+          )}
+        </div>
+      </div>
+
+      {images.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {images.map((url, idx) => {
+            const isDragging = draggedIdx === idx;
+            const isDragOver = dragOverIdx === idx;
+            const canDrag = !isReadOnly && images.length > 1;
+
+            return (
+              <div
+                key={`${categoryLabel}-${url}-${idx}`}
+                draggable={canDrag}
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, idx)}
+                onDragEnd={() => {
+                  setDraggedIdx(null);
+                  setDragOverIdx(null);
+                }}
+                className={`relative rounded-xl overflow-hidden border bg-slate-50 transition-all duration-200 ${
+                  isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
+                } ${
+                  isDragOver
+                    ? 'border-2 border-dashed border-accent-500 ring-2 ring-accent-500/20 shadow-md bg-amber-50/20'
+                    : 'border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
+                  <span
+                    className="px-2 py-0.5 rounded bg-black/75 backdrop-blur-xs text-white text-[10px] font-bold select-none flex items-center gap-1 shadow-sm"
+                    title="Drag map card to reposition or use arrow buttons"
+                  >
+                    {canDrag && <span className="cursor-grab active:cursor-grabbing text-slate-300">⠿</span>}
+                    <span>Map #{idx + 1}</span>
+                  </span>
+                </div>
+
+                {!isReadOnly && onRemove && (
+                  <div className="absolute top-2 right-2 z-10 flex items-center gap-1 bg-white/90 backdrop-blur-xs p-0.5 rounded-lg shadow-sm border border-slate-200">
+                    {onReorder && images.length > 1 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => moveMap(idx, idx - 1)}
+                          disabled={idx === 0}
+                          className="w-6 h-6 flex items-center justify-center rounded border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold cursor-pointer"
+                          title="Move Map Left / Previous"
+                        >
+                          ◀
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => moveMap(idx, idx + 1)}
+                          disabled={idx === images.length - 1}
+                          className="w-6 h-6 flex items-center justify-center rounded border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold cursor-pointer"
+                          title="Move Map Right / Next"
+                        >
+                          ▶
+                        </button>
+                      </>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => onRemove(idx)}
+                      className="w-6 h-6 flex items-center justify-center rounded border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold cursor-pointer"
+                      title="Remove Map"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+
+                <div className="h-48 flex items-center justify-center p-1 cursor-grab active:cursor-grabbing">
+                  <img
+                    src={url}
+                    alt={`${title} #${idx + 1}`}
+                    className="max-h-full max-w-full object-contain rounded-lg pointer-events-none select-none"
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="text-center py-6 px-4 border border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+          <p className="text-xs text-slate-400 font-medium">{emptyMessage}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MapsSection({
+  locationMapImages,
+  latitude = '',
+  longitude = '',
+  propertyAddress = '',
+  technicalAddress = '',
+  sketchMapImages = [],
+  mouzaMapImages,
+  cadastralMapImages,
+  bdaMapImages,
+  isReadOnly = false,
+  uploading = false,
+  onLatitudeChange,
+  onLongitudeChange,
+  onLocationMapUpload,
+  onLocationMapRemove,
+  onSketchMapUpload,
+  onSketchMapRemove,
+  onMouzaMapUpload,
+  onMouzaMapRemove,
+  onCadastralMapUpload,
+  onCadastralMapRemove,
+  onReorderLocationMap,
+  onReorderMouzaMap,
+  onReorderSketchMap,
+  onReorderCadastralMap,
+  onBdaMapUpload,
+  onBdaMapRemove,
+  onReorderBdaMap,
+  sectionNumber = 10,
+  sectionId = 'section-maps',
+  title = 'Maps',
+  defaultOpen = false,
+}: {
+  locationMapImages?: string[];
+  latitude?: string;
+  longitude?: string;
+  propertyAddress?: string;
+  technicalAddress?: string;
+  sketchMapImages?: string[];
+  mouzaMapImages?: string[];
+  cadastralMapImages?: string[];
+  bdaMapImages?: string[];
+  isReadOnly?: boolean;
+  uploading?: boolean | string;
+  onLatitudeChange?: (val: string) => void;
+  onLongitudeChange?: (val: string) => void;
+  onLocationMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onLocationMapRemove?: (index?: number) => void;
+  onSketchMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSketchMapRemove?: (index: number) => void;
+  onMouzaMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onMouzaMapRemove?: (index?: number) => void;
+  onCadastralMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onCadastralMapRemove?: (index?: number) => void;
+  onReorderLocationMap?: (newImages: string[]) => void;
+  onReorderMouzaMap?: (newImages: string[]) => void;
+  onReorderSketchMap?: (newImages: string[]) => void;
+  onReorderCadastralMap?: (newImages: string[]) => void;
+  onBdaMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onBdaMapRemove?: (index?: number) => void;
+  onReorderBdaMap?: (newImages: string[]) => void;
+  sectionNumber?: number | string;
+  sectionId?: string;
+  title?: string;
+  defaultOpen?: boolean;
+}) {
+  const [localLat, setLocalLat] = useState(latitude || '');
+  const [localLng, setLocalLng] = useState(longitude || '');
+
+  useEffect(() => {
+    setLocalLat(latitude || '');
+  }, [latitude]);
+
+  useEffect(() => {
+    setLocalLng(longitude || '');
+  }, [longitude]);
+
+  const activeLat = onLatitudeChange ? (latitude || '') : localLat;
+  const activeLng = onLongitudeChange ? (longitude || '') : localLng;
+
+  const handleLatChange = (val: string) => {
+    setLocalLat(val);
+    onLatitudeChange?.(val);
+  };
+
+  const handleLngChange = (val: string) => {
+    setLocalLng(val);
+    onLongitudeChange?.(val);
+  };
+
+  const cleanLat = (activeLat || '').trim();
+  const cleanLng = (activeLng || '').trim();
+  const hasCoordinates = Boolean(cleanLat && cleanLng && !isNaN(Number(cleanLat)) && !isNaN(Number(cleanLng)));
+  
+  const cleanTechnicalAddress = (technicalAddress || '').trim();
+  const cleanPropertyAddress = (propertyAddress || '').trim();
+  const effectiveAddress = cleanTechnicalAddress || cleanPropertyAddress;
+
+  const isLocationUploading = typeof uploading === 'string'
+    ? (uploading === 'location' || uploading === 'locationMapImages' || uploading === 'locationMapImage')
+    : Boolean(uploading);
+
+  const isMouzaUploading = typeof uploading === 'string'
+    ? (uploading === 'mouza' || uploading === 'mouzaMapImages' || uploading === 'mouzaMapImage')
+    : Boolean(uploading);
+
+  const isSketchUploading = typeof uploading === 'string'
+    ? (uploading === 'sketch' || uploading === 'sketchMapImages' || uploading === 'sketchMapImage')
+    : Boolean(uploading);
+
+  const isCadastralUploading = typeof uploading === 'string'
+    ? (uploading === 'cadastral' || uploading === 'cadastralMapImages' || uploading === 'cadastralMapImage')
+    : Boolean(uploading);
+
+  const isBdaUploading = typeof uploading === 'string'
+    ? (uploading === 'bda' || uploading === 'bdaMapImages')
+    : Boolean(uploading);
+
+  const googleMapsUrl = hasCoordinates
+    ? `https://www.google.com/maps?q=${cleanLat},${cleanLng}&z=17&t=k`
+    : `https://www.google.com/maps/search/${encodeURIComponent(effectiveAddress)}`;
+
+  const normLocationImages = normalizeMapImages(locationMapImages);
+  const normMouzaImages = normalizeMapImages(mouzaMapImages);
+  const normSketchImages = normalizeMapImages(sketchMapImages);
+  const normCadastralImages = normalizeMapImages(cadastralMapImages);
+  const normBdaImages = normalizeMapImages(bdaMapImages);
+
+  return (
+    <Section title={title} number={sectionNumber} id={sectionId} defaultOpen={defaultOpen}>
+      <div className="space-y-4">
+        {/* Google Satellite Map */}
+        <MapImageCategoryCard
+          images={normLocationImages}
+          categoryLabel="Google Satellite Map"
+          isReadOnly={isReadOnly}
+          uploading={isLocationUploading}
+          icon="🛰️"
+          title="Google Satellite Map"
+          btnLabel="Google Satellite Map"
+          onUpload={onLocationMapUpload}
+          onRemove={onLocationMapRemove}
+          onReorder={onReorderLocationMap}
+          emptyMessage="No Google Satellite Map uploaded yet. Click '+ Add Google Satellite Map' to upload one or more maps."
+          headerExtra={
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">Lat:</span>
+                <input
+                  type="text"
+                  placeholder="20.2961"
+                  value={activeLat}
+                  onChange={(e) => handleLatChange(e.target.value)}
+                  disabled={isReadOnly}
+                  className="w-20 px-2 py-0.5 rounded border border-[#dee2e6] bg-white text-xs font-semibold text-slate-800 disabled:bg-slate-100 disabled:text-slate-500 outline-none focus:ring-1 focus:ring-accent-500"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="text-[10px] font-bold text-slate-500 uppercase">Lng:</span>
+                <input
+                  type="text"
+                  placeholder="85.8245"
+                  value={activeLng}
+                  onChange={(e) => handleLngChange(e.target.value)}
+                  disabled={isReadOnly}
+                  className="w-20 px-2 py-0.5 rounded border border-[#dee2e6] bg-white text-xs font-semibold text-slate-800 disabled:bg-slate-100 disabled:text-slate-500 outline-none focus:ring-1 focus:ring-accent-500"
+                />
+              </div>
+              {(hasCoordinates || effectiveAddress.length > 0) && (
+                <a
+                  href={googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 hover:bg-blue-100 transition-colors"
+                >
+                  <span>📍 Open Satellite</span>
+                </a>
+              )}
+            </div>
+          }
+        />
+
+        {/* Mouza Map */}
+        <MapImageCategoryCard
+          images={normMouzaImages}
+          categoryLabel="Mouza Map"
+          isReadOnly={isReadOnly}
+          uploading={isMouzaUploading}
+          icon="🗺️"
+          title="Mouza Map"
+          btnLabel="Mouza Map"
+          onUpload={onMouzaMapUpload}
+          onRemove={onMouzaMapRemove}
+          onReorder={onReorderMouzaMap}
+          emptyMessage="No Mouza Map uploaded yet. Click '+ Add Mouza Map' to upload one or more maps."
+        />
+
+        {/* Sketch Map */}
+        <MapImageCategoryCard
+          images={normSketchImages}
+          categoryLabel="Sketch Map"
+          isReadOnly={isReadOnly}
+          uploading={isSketchUploading}
+          icon="📐"
+          title="Sketch Map"
+          btnLabel="Sketch Map"
+          onUpload={onSketchMapUpload}
+          onRemove={onSketchMapRemove}
+          onReorder={onReorderSketchMap}
+          emptyMessage="No Sketch Map uploaded yet. Click '+ Add Sketch Map' to upload one or more maps."
+        />
+
+        {/* Cadastral Map */}
+        <MapImageCategoryCard
+          images={normCadastralImages}
+          categoryLabel="Cadastral Map"
+          isReadOnly={isReadOnly}
+          uploading={isCadastralUploading}
+          icon="📜"
+          title="Cadastral Map"
+          btnLabel="Cadastral Map"
+          onUpload={onCadastralMapUpload}
+          onRemove={onCadastralMapRemove}
+          onReorder={onReorderCadastralMap}
+          emptyMessage="No Cadastral Map uploaded yet. Click '+ Add Cadastral Map' to upload one or more maps."
+        />
+
+        {/* BDA / Development Authority Map */}
+        <MapImageCategoryCard
+          images={normBdaImages}
+          categoryLabel="BDA / Development Authority Map"
+          isReadOnly={isReadOnly}
+          uploading={isBdaUploading}
+          icon="🏛️"
+          title="BDA / Development Authority Map"
+          btnLabel="BDA Map"
+          onUpload={onBdaMapUpload}
+          onRemove={onBdaMapRemove}
+          onReorder={onReorderBdaMap}
+          emptyMessage="No BDA / Development Authority Map uploaded yet. Click '+ Add BDA Map' to upload one or more maps."
+        />
+      </div>
+    </Section>
   );
 }
 
@@ -4014,7 +4696,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       )}
 
       {(!isReadOnly || (Array.isArray(fields.documentImages) && fields.documentImages.length > 0)) && (
-        <BaseDocumentsSection
+        <DocumentsSection
           documentImages={fields.documentImages || []}
           documentImageNames={fields.documentImageNames || []}
           isReadOnly={isReadOnly}
@@ -4037,7 +4719,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         ...(fields.cadastralMapImages || (fields.cadastralMapImage ? [fields.cadastralMapImage] : [])),
         ...(fields.bdaMapImages || []),
       ].length > 0) && (
-        <BaseMapsSection
+        <MapsSection
           locationMapImages={fields.locationMapImages || (fields.locationMapImage ? [fields.locationMapImage] : [])}
           mouzaMapImages={fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : [])}
           sketchMapImages={fields.sketchMapImages || []}
