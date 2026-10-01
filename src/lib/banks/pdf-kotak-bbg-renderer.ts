@@ -195,5 +195,28 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       ]);
     }
 
+    this.drawSectionHeader('6. DETAILS OF MEASUREMENTS');
+    const landUnit = this.getF('kotakBbgLandAreaUnit') === 'Custom' ? this.getF('kotakBbgLandAreaUnitCustom') : this.getF('kotakBbgLandAreaUnit');
+    const landArea = this.getF('kotakBbgLandAreaNA') ? 'NA' : `${this.getF('kotakBbgLandArea') || ''} ${landUnit || ''}`.trim();
+    this.drawKeyValueRow([
+      { label: 'Land Area & Physical Features', value: landArea, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    
+    let buaText = 'NA';
+    if (!this.getF('kotakBbgBuildingBuaNA')) {
+      const buaData = Array.isArray(this.getF('kotakBbgBuildingBuaTable')) ? this.getF('kotakBbgBuildingBuaTable') : [];
+      if (buaData.length > 0) {
+        buaText = buaData.map((row: any) => `Floor: ${row.floor || '-'}, Carpet: ${row.carpet || '-'}, Built-up: ${row.builtUp || '-'}, Super Built-up: ${row.superBuiltUp || '-'}`).join('\n');
+      } else {
+        buaText = '';
+      }
+    }
+    this.drawKeyValueRow([
+      { label: 'Building Built-up Area (BUA)', value: buaText, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    
+    this.drawKeyValueRow([
+      { label: 'Deviations / Violations', value: this.getF('kotakBbgDeviationsNA') ? 'NA' : this.getF('kotakBbgDeviations'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
   }
 }
