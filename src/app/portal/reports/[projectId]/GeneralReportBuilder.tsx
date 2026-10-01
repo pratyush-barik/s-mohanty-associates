@@ -12,6 +12,8 @@ import type { Suggestion } from '@/lib/ai/predictor';
 import {
   getFloorName,
   BasePhotographsSection,
+  BaseDocumentsSection,
+  BaseMapsSection,
   formatReportDate,
   BaseDateInput,
   getEarliestFieldVisit,
@@ -21,7 +23,7 @@ import {
   getWorkProgressStructureLabel,
   StructureDerivationBadge,
 } from './banks/BaseBankReportComponents';
-import { reorderAndLabelAnnexures, type AnnexureItem } from '@/lib/bank-fields';
+import { reorderAndLabelAnnexures, normalizeMapImages, type AnnexureItem } from '@/lib/bank-fields';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 // @ts-ignore
 import * as XLSX from 'xlsx';
@@ -32,6 +34,7 @@ const fmtDate = (d?: string | null) => formatReportDate(d, '________');
 interface FloorRow {
   id: string;
   name: string;
+  basisOfValuation?: 'Carpet Area' | 'Built-up Area' | 'Super Built-up Area' | string;
   area: string;
   rate: string;
   yearBuilt: string;
@@ -39,6 +42,44 @@ interface FloorRow {
   ageYears: string;
   depreciationPct: string;
 }
+
+export function deriveApproachRoadWidthRange(actualStr: string): string {
+  if (!actualStr || !actualStr.trim()) return '';
+  const numMatch = actualStr.match(/[\d.]+/);
+  if (!numMatch) return '';
+  let valInFeet = parseFloat(numMatch[0]);
+  if (/m|meter|mtr/i.test(actualStr)) {
+    valInFeet = valInFeet * 3.28084;
+  }
+  if (valInFeet >= 60) return '>=60 Feet Road';
+  if (valInFeet >= 40) return '60-40 Feet Road';
+  if (valInFeet >= 20) return '40-20 Feet Road';
+  return '<20 Feet Road';
+}
+
+export function deriveAgeOfPropertyRange(actualStr: string): string {
+  if (!actualStr || !actualStr.trim()) return '';
+  if (/new|under construction|0/i.test(actualStr.trim())) return '1-10 years';
+  const numMatch = actualStr.match(/[\d.]+/);
+  if (!numMatch) return '';
+  const age = parseFloat(numMatch[0]);
+  if (age <= 10) return '1-10 years';
+  if (age <= 25) return '11-25 years';
+  if (age <= 50) return '26-50 years';
+  return '>50 years';
+}
+
+const STRUCTURE_TYPE_OPTIONS = [
+  'RCC',
+  'Load Bearing',
+  'Steel Structure',
+  'Composite Structure',
+  'Industrial Shed',
+  'A/C Sheet',
+  'G/I Sheet',
+  'Asbestos Roofing',
+  'NA',
+];
 
 const cleanAddressForMap = (rawAddr: string): string => {
   if (!rawAddr || !rawAddr.trim()) return '';
@@ -138,6 +179,7 @@ const sanitizePositiveDecimal = (val: string): string => {
 interface ReportFields {
   // Section 1 – General Details
   propertyType: string;
+  propertyTypeOther?: string;
   ownerName: string;
   ownerAddress: string;
   city: string;
@@ -162,6 +204,7 @@ interface ReportFields {
   vicinity: string;
   classOfLocality: string;
   approachRoadWidth: string;
+  approachRoadWidthActual: string;
   plotDemarcated: string;
   distanceRailwayStation: string;
   distanceBusStop: string;
@@ -184,6 +227,7 @@ interface ReportFields {
 
   // Section 4 – Subject Property Details
   premisesType: string;
+  premisesTypeOther?: string;
   occupiedBy: string;
   isPropertyRented: string;
   rentedOccupants: string;
@@ -248,10 +292,18 @@ interface ReportFields {
   replacementCost: string;
   deviations: string;
 
-  // Abstract
+  // Abstract & Govt Guideline
   realizablePct: string;
   distressPct: string;
   guidelineValue: string;
+  guidelineLandArea: string;
+  guidelineLandRate: string;
+  guidelineBuildingBua: string;
+  guidelineBuildingRate: string;
+  guidelineUdsArea: string;
+  guidelineUdsRate: string;
+  guidelineFlatBua: string;
+  guidelineFlatRate: string;
 
   // Remarks & Declaration
   demarcation: string;
@@ -260,11 +312,19 @@ interface ReportFields {
   representativeName: string;
   representativeFatherName: string;
 
-  // Photos & Maps
+  // Photos & Maps & Documents
   propertyImages: string[];
   propertyImageNames: string[];
-  sketchMapImages: string[];
+  documentImages: string[];
+  documentImageNames: string[];
   locationMapImage: string;
+  locationMapImages?: string[];
+  mouzaMapImage?: string | string[];
+  mouzaMapImages: string[];
+  sketchMapImages: string[];
+  cadastralMapImage?: string | string[];
+  cadastralMapImages: string[];
+  bdaMapImages: string[];
   latitude: string;
   longitude: string;
 
@@ -306,6 +366,7 @@ interface ReportFields {
 const DEFAULT_FIELDS: ReportFields = {
   valuationLayout: 'land_building',
   propertyType: 'Residential',
+  propertyTypeOther: '',
   ownerName: '',
   ownerAddress: '',
   city: '',
@@ -329,6 +390,7 @@ const DEFAULT_FIELDS: ReportFields = {
   vicinity: 'Residential',
   classOfLocality: 'Middle Class',
   approachRoadWidth: '40-20 Feet Road',
+  approachRoadWidthActual: '',
   plotDemarcated: 'Yes',
   distanceRailwayStation: '',
   distanceBusStop: '',
@@ -349,6 +411,7 @@ const DEFAULT_FIELDS: ReportFields = {
   legalStatus: 'Freehold',
 
   premisesType: 'Row House',
+  premisesTypeOther: '',
   occupiedBy: 'Self Occupied',
   isPropertyRented: '',
   rentedOccupants: '',
@@ -393,7 +456,7 @@ const DEFAULT_FIELDS: ReportFields = {
   conformsToByelaws: '',
   documentsVerified: '',
 
-  floors: [{ id: '1', name: 'Ground', area: '', rate: '', yearBuilt: '', lifeYears: '60', ageYears: '', depreciationPct: '' }],
+  floors: [{ id: '1', name: 'Ground', basisOfValuation: 'Built-up Area', area: '', rate: '', yearBuilt: '', lifeYears: '60', ageYears: '', depreciationPct: '' }],
   floorAreaUnit: 'Sqft',
 
   landArea: '',
@@ -411,6 +474,14 @@ const DEFAULT_FIELDS: ReportFields = {
   realizablePct: '90',
   distressPct: '80',
   guidelineValue: '',
+  guidelineLandArea: '',
+  guidelineLandRate: '',
+  guidelineBuildingBua: '',
+  guidelineBuildingRate: '',
+  guidelineUdsArea: '',
+  guidelineUdsRate: '',
+  guidelineFlatBua: '',
+  guidelineFlatRate: '',
 
   demarcation: 'Clear',
   possession: 'With Owner',
@@ -420,8 +491,16 @@ const DEFAULT_FIELDS: ReportFields = {
 
   propertyImages: [],
   propertyImageNames: [],
-  sketchMapImages: [],
+  documentImages: [],
+  documentImageNames: [],
   locationMapImage: '',
+  locationMapImages: [],
+  mouzaMapImage: '',
+  mouzaMapImages: [],
+  sketchMapImages: [],
+  cadastralMapImage: '',
+  cadastralMapImages: [],
+  bdaMapImages: [],
   latitude: '',
   longitude: '',
 
@@ -467,10 +546,11 @@ function computeDepreciation(lifeYears: number, ageYears: number): number {
 }
 
 // ─── UI Components ─────────────────────────────────────────────────
-function Section({ title, number, children, defaultOpen = true }: { title: string; number: number; children: React.ReactNode; defaultOpen?: boolean }) {
+function Section({ title, number, id, children, defaultOpen = true }: { title: string; number: number | string; id?: string; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
+  const sectionId = id || `section-${number}`;
   return (
-    <div id={`section-${number}`} className="card border border-[#e9ecef] overflow-hidden scroll-mt-24">
+    <div id={sectionId} className="card border border-[#e9ecef] overflow-hidden scroll-mt-24">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between px-6 py-4 bg-gradient-to-r from-[#0a1628] to-[#162d4a] text-white hover:from-[#0f1e35] hover:to-[#1e3a5f] transition-all"
@@ -591,21 +671,21 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
 
   const NAV_SECTIONS = [
     { id: 'section-1', title: 'General Details' },
-    { id: 'section-2', title: 'Locality Details' },
+    { id: 'section-2', title: 'Surrounding Locality Details' },
     { id: 'section-3', title: 'Property Details' },
-    { id: 'section-4', title: 'Subject Property' },
+    { id: 'section-4', title: 'Subject Property Details' },
     { id: 'section-5', title: 'Structural Details' },
     { id: 'section-6', title: 'Plan Approvals' },
     { id: 'layout-config', title: 'Layout Structure', special: true },
-    { id: 'section-7', title: 'Area Valuation' },
+    { id: 'section-7', title: isApartmentFlat ? 'Floor-wise Building Valuation (Apartment)' : 'Floor-wise Building Valuation' },
     ...(isApartmentFlat ? [] : [{ id: 'section-8', title: 'Land Valuation' }]),
-    { id: `section-${isApartmentFlat ? 8 : 9}`, title: 'Valuation Abstract' },
-    { id: `section-${isApartmentFlat ? 9 : 10}`, title: 'Remarks' },
-    { id: `section-${isApartmentFlat ? 10 : 11}`, title: 'Certificate' },
-    { id: `section-${isApartmentFlat ? 11 : 12}`, title: 'Photographs' },
-    { id: `section-${isApartmentFlat ? 12 : 13}`, title: 'Sketch Maps' },
-    { id: `section-${isApartmentFlat ? 13 : 14}`, title: 'Location Map' },
-    { id: `section-${isApartmentFlat ? 14 : 15}`, title: 'Annexures' },
+    { id: 'section-abstract', title: 'Abstract of Valuation' },
+    { id: 'section-remarks', title: 'Remarks & Declaration' },
+    { id: 'section-certificate', title: 'Valuation Certificate' },
+    { id: 'section-photographs', title: 'Property Photographs' },
+    { id: 'sec-documents', title: 'Documents' },
+    { id: 'section-maps', title: 'Maps' },
+    { id: 'section-annexures', title: 'Annexures & Schedules' },
   ];
 
   useEffect(() => {
@@ -743,9 +823,18 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     ownerAddress: initialFields?.ownerAddress || prefill?.propertyAddress || DEFAULT_FIELDS.ownerAddress,
     propertyImages: Array.isArray(initialFields?.propertyImages) ? initialFields.propertyImages : (typeof initialFields?.propertyImages === 'string' && initialFields.propertyImages ? [initialFields.propertyImages] : DEFAULT_FIELDS.propertyImages),
     propertyImageNames: Array.isArray(initialFields?.propertyImageNames) ? initialFields.propertyImageNames : DEFAULT_FIELDS.propertyImageNames,
+    documentImages: Array.isArray(initialFields?.documentImages) ? initialFields.documentImages : (typeof initialFields?.documentImages === 'string' && initialFields.documentImages ? [initialFields.documentImages] : DEFAULT_FIELDS.documentImages),
+    documentImageNames: Array.isArray(initialFields?.documentImageNames) ? initialFields.documentImageNames : DEFAULT_FIELDS.documentImageNames,
+    locationMapImage: initialFields?.locationMapImage || DEFAULT_FIELDS.locationMapImage,
+    locationMapImages: Array.isArray(initialFields?.locationMapImages) ? initialFields.locationMapImages : (Array.isArray(initialFields?.locationMapImage) ? initialFields.locationMapImage : (typeof initialFields?.locationMapImage === 'string' && initialFields.locationMapImage ? [initialFields.locationMapImage] : DEFAULT_FIELDS.locationMapImages)),
+    mouzaMapImage: initialFields?.mouzaMapImage || DEFAULT_FIELDS.mouzaMapImage,
+    mouzaMapImages: Array.isArray(initialFields?.mouzaMapImages) ? initialFields.mouzaMapImages : (Array.isArray(initialFields?.mouzaMapImage) ? initialFields.mouzaMapImage : (typeof initialFields?.mouzaMapImage === 'string' && initialFields.mouzaMapImage ? [initialFields.mouzaMapImage] : DEFAULT_FIELDS.mouzaMapImages)),
     sketchMapImages: Array.isArray(initialFields?.sketchMapImages) 
       ? initialFields.sketchMapImages 
       : (typeof initialFields?.sketchMapImage === 'string' && initialFields.sketchMapImage ? [initialFields.sketchMapImage] : DEFAULT_FIELDS.sketchMapImages),
+    cadastralMapImage: initialFields?.cadastralMapImage || DEFAULT_FIELDS.cadastralMapImage,
+    cadastralMapImages: Array.isArray(initialFields?.cadastralMapImages) ? initialFields.cadastralMapImages : (Array.isArray(initialFields?.cadastralMapImage) ? initialFields.cadastralMapImage : (typeof initialFields?.cadastralMapImage === 'string' && initialFields.cadastralMapImage ? [initialFields.cadastralMapImage] : DEFAULT_FIELDS.cadastralMapImages)),
+    bdaMapImages: Array.isArray(initialFields?.bdaMapImages) ? initialFields.bdaMapImages : (typeof initialFields?.bdaMapImage === 'string' && initialFields.bdaMapImage ? [initialFields.bdaMapImage] : DEFAULT_FIELDS.bdaMapImages),
     civicAmenities: Array.isArray(initialFields?.civicAmenities) ? initialFields.civicAmenities : DEFAULT_FIELDS.civicAmenities,
     ageOfPropertyActual: typeof initialFields?.ageOfPropertyActual === 'string' ? initialFields.ageOfPropertyActual : DEFAULT_FIELDS.ageOfPropertyActual,
     valuationLayout: finalValuationLayout,
@@ -758,7 +847,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const [loading, setLoading] = useState(false);
   const [loadingText, setLoadingText] = useState('Loading...');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState<boolean | string>(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Bucket Picker State (Property Photographs only)
@@ -1256,40 +1345,229 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
   const realizableValue = totalPropertyValue * (parseNum(fields.realizablePct || '90') / 100);
   const distressValue = totalPropertyValue * (parseNum(fields.distressPct || '80') / 100);
 
-  // ── File upload (photos + maps) ──
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages' | 'sketchMapImages' | 'locationMapImage') => {
+  const guidelineLandVal = (parseNum(fields.guidelineLandArea) * parseNum(fields.guidelineLandRate)) || 0;
+  const guidelineBldgVal = (parseNum(fields.guidelineBuildingBua) * parseNum(fields.guidelineBuildingRate)) || 0;
+  const guidelineUdsVal = (parseNum(fields.guidelineUdsArea) * parseNum(fields.guidelineUdsRate)) || 0;
+  const guidelineFlatVal = (parseNum(fields.guidelineFlatBua) * parseNum(fields.guidelineFlatRate)) || 0;
+  const computedGuidelineTotal = isApartmentFlat
+    ? (guidelineUdsVal + guidelineFlatVal)
+    : (guidelineLandVal + guidelineBldgVal);
+  // ── Document handlers ──
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const fileList = e.target.files;
+    if (!fileList || fileList.length === 0) return;
+    setUploading('documentImages');
+    setUploadError(null);
+    const newUrls = [...(fields.documentImages || [])];
+    const newNames = [...(fields.documentImageNames || [])];
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      if (file.size > 10 * 1024 * 1024) {
+        setUploadError(`${file.name}: exceeds 10MB.`);
+        continue;
+      }
+      const ext = file.name.split('.').pop();
+      const fileName = `doc-${projectId}-${Math.random().toString(36).substring(2)}.${ext}`;
+      const filePath = `temp-photos/${projectId}/${fileName}`;
+      const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+      if (error) {
+        setUploadError(`Failed: ${error.message}`);
+        continue;
+      }
+      const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+      newUrls.push(data.publicUrl);
+      const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+      newNames.push(nameWithoutExt || 'Document');
+    }
+    setFields(prev => ({
+      ...prev,
+      documentImages: newUrls,
+      documentImageNames: newNames,
+    }));
+    setUploading(false);
+  };
+
+  const handleDocumentRemove = (index: number) => {
+    setFields(prev => ({
+      ...prev,
+      documentImages: (prev.documentImages || []).filter((_, i) => i !== index),
+      documentImageNames: (prev.documentImageNames || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleDocumentNameChange = (index: number, name: string) => {
+    setFields(prev => {
+      const updated = [...(prev.documentImageNames || [])];
+      while (updated.length <= index) {
+        updated.push('');
+      }
+      updated[index] = name;
+      return { ...prev, documentImageNames: updated };
+    });
+  };
+
+  const handleDocumentReorder = (newImages: string[], newNames: string[]) => {
+    setFields(prev => ({
+      ...prev,
+      documentImages: newImages,
+      documentImageNames: newNames,
+    }));
+  };
+
+  // ── Unified Map Upload Handlers ──
+  const handleMapUploadHelper = async (
+    files: FileList | null,
+    fieldKey: 'locationMapImages' | 'mouzaMapImages' | 'sketchMapImages' | 'cadastralMapImages' | 'bdaMapImages',
+    uploadTag: string
+  ) => {
+    if (!files || files.length === 0) return;
+    setUploading(uploadTag);
+    setUploadError(null);
+    const currentImages = normalizeMapImages(fields[fieldKey]);
+    const newUrls = [...currentImages];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      if (file.size > 10 * 1024 * 1024) {
+        setUploadError(`${file.name}: exceeds 10MB.`);
+        continue;
+      }
+      const ext = file.name.split('.').pop();
+      const fileName = `map-${uploadTag}-${projectId}-${Date.now()}-${Math.random().toString(36).substring(2)}.${ext}`;
+      const filePath = `temp-photos/${projectId}/${fileName}`;
+      const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
+      if (error) {
+        setUploadError(`Failed: ${error.message}`);
+        continue;
+      }
+      const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+      newUrls.push(data.publicUrl);
+    }
+    setFields(prev => ({
+      ...prev,
+      [fieldKey]: newUrls,
+      ...(fieldKey === 'locationMapImages' ? { locationMapImage: newUrls[0] || '' } : {}),
+      ...(fieldKey === 'mouzaMapImages' ? { mouzaMapImage: newUrls } : {}),
+      ...(fieldKey === 'cadastralMapImages' ? { cadastralMapImage: newUrls } : {}),
+    }));
+    setUploading(false);
+  };
+
+  const handleLocationMapUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleMapUploadHelper(e.target.files, 'locationMapImages', 'location');
+  };
+  const handleLocationMapRemove = (index?: number) => {
+    const current = normalizeMapImages(fields.locationMapImages || fields.locationMapImage);
+    const updated = typeof index === 'number' ? current.filter((_, i) => i !== index) : [];
+    setFields(prev => ({
+      ...prev,
+      locationMapImages: updated,
+      locationMapImage: updated[0] || '',
+    }));
+  };
+  const handleLocationMapReorder = (newImages: string[]) => {
+    setFields(prev => ({
+      ...prev,
+      locationMapImages: newImages,
+      locationMapImage: newImages[0] || '',
+    }));
+  };
+
+  const handleMouzaMapUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleMapUploadHelper(e.target.files, 'mouzaMapImages', 'mouza');
+  };
+  const handleMouzaMapRemove = (index?: number) => {
+    const current = normalizeMapImages(fields.mouzaMapImages || fields.mouzaMapImage);
+    const updated = typeof index === 'number' ? current.filter((_, i) => i !== index) : [];
+    setFields(prev => ({
+      ...prev,
+      mouzaMapImages: updated,
+      mouzaMapImage: updated,
+    }));
+  };
+  const handleMouzaMapReorder = (newImages: string[]) => {
+    setFields(prev => ({
+      ...prev,
+      mouzaMapImages: newImages,
+      mouzaMapImage: newImages,
+    }));
+  };
+
+  const handleSketchMapUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleMapUploadHelper(e.target.files, 'sketchMapImages', 'sketch');
+  };
+  const handleSketchMapRemove = (index: number) => {
+    const current = normalizeMapImages(fields.sketchMapImages);
+    const updated = current.filter((_, i) => i !== index);
+    setFields(prev => ({
+      ...prev,
+      sketchMapImages: updated,
+    }));
+  };
+  const handleSketchMapReorder = (newImages: string[]) => {
+    setFields(prev => ({
+      ...prev,
+      sketchMapImages: newImages,
+    }));
+  };
+
+  const handleCadastralMapUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleMapUploadHelper(e.target.files, 'cadastralMapImages', 'cadastral');
+  };
+  const handleCadastralMapRemove = (index?: number) => {
+    const current = normalizeMapImages(fields.cadastralMapImages || fields.cadastralMapImage);
+    const updated = typeof index === 'number' ? current.filter((_, i) => i !== index) : [];
+    setFields(prev => ({
+      ...prev,
+      cadastralMapImages: updated,
+      cadastralMapImage: updated,
+    }));
+  };
+  const handleCadastralMapReorder = (newImages: string[]) => {
+    setFields(prev => ({
+      ...prev,
+      cadastralMapImages: newImages,
+      cadastralMapImage: newImages,
+    }));
+  };
+
+  const handleBdaMapUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleMapUploadHelper(e.target.files, 'bdaMapImages', 'bda');
+  };
+  const handleBdaMapRemove = (index?: number) => {
+    const current = normalizeMapImages(fields.bdaMapImages);
+    const updated = typeof index === 'number' ? current.filter((_, i) => i !== index) : [];
+    setFields(prev => ({
+      ...prev,
+      bdaMapImages: updated,
+    }));
+  };
+  const handleBdaMapReorder = (newImages: string[]) => {
+    setFields(prev => ({
+      ...prev,
+      bdaMapImages: newImages,
+    }));
+  };
+
+  // ── File upload (photos) ──
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: 'propertyImages') => {
     const fileList = e.target.files;
     if (!fileList || fileList.length === 0) return;
     setUploading(true);
     setUploadError(null);
 
-    if (fieldName === 'propertyImages' || fieldName === 'sketchMapImages') {
-      const newUrls = [...(fields[fieldName] || [])];
-      for (let i = 0; i < fileList.length; i++) {
-        const file = fileList[i];
-        if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); continue; }
-        const ext = file.name.split('.').pop();
-        const fileName = `${projectId}-${Math.random().toString(36).substring(2)}.${ext}`;
-        const filePath = `temp-photos/${projectId}/${fileName}`;
-        const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
-        if (error) { setUploadError(`Failed: ${error.message}`); continue; }
-        const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-        newUrls.push(data.publicUrl);
-      }
-      handleChange(fieldName, newUrls);
-    } else {
-      const file = fileList[0];
-      if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); setUploading(false); return; }
+    const newUrls = [...(fields[fieldName] || [])];
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      if (file.size > 5 * 1024 * 1024) { setUploadError(`${file.name}: exceeds 5MB.`); continue; }
       const ext = file.name.split('.').pop();
-      const fileName = `${projectId}-${fieldName}-${Date.now()}.${ext}`;
+      const fileName = `${projectId}-${Math.random().toString(36).substring(2)}.${ext}`;
       const filePath = `temp-photos/${projectId}/${fileName}`;
       const { error } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).upload(filePath, file);
-      if (error) { setUploadError(`Failed: ${error.message}`); }
-      else {
-        const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
-        handleChange(fieldName, data.publicUrl);
-      }
+      if (error) { setUploadError(`Failed: ${error.message}`); continue; }
+      const { data } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(filePath);
+      newUrls.push(data.publicUrl);
     }
+    handleChange(fieldName, newUrls);
     setUploading(false);
   };
 
@@ -1298,10 +1576,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     if (fields.propertyImageNames) {
       handleChange('propertyImageNames', fields.propertyImageNames.filter((_, i) => i !== index));
     }
-  };
-
-  const removeSketchMap = (index: number) => {
-    handleChange('sketchMapImages', (fields.sketchMapImages || []).filter((_, i) => i !== index));
   };
 
   // ── Save / Submit / Finalize ──
@@ -1342,18 +1616,33 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       };
 
       const propertyImgs = Array.isArray(fields.propertyImages) ? fields.propertyImages.filter(img => typeof img === 'string' && img.length > 0) : [];
+      const documentImgs = Array.isArray(fields.documentImages) ? fields.documentImages.filter(img => typeof img === 'string' && img.length > 0) : [];
 
-      const imageResults = await Promise.all([
-        ...propertyImgs.map(url => fetchBytes(url)),
-        ...(fields.sketchMapImages && fields.sketchMapImages.length > 0 ? fields.sketchMapImages.map(u => fetchBytes(u)) : []),
-        ...(fields.locationMapImage ? [fetchBytes(fields.locationMapImage)] : []),
+      const locationImgs = normalizeMapImages(fields.locationMapImages || fields.locationMapImage);
+      const mouzaImgs = normalizeMapImages(fields.mouzaMapImages || fields.mouzaMapImage);
+      const sketchImgs = normalizeMapImages(fields.sketchMapImages);
+      const cadastralImgs = normalizeMapImages(fields.cadastralMapImages || fields.cadastralMapImage);
+      const bdaImgs = normalizeMapImages(fields.bdaMapImages);
+
+      const [
+        propImageResults,
+        docImageResults,
+        locationMapResults,
+        mouzaMapResults,
+        sketchMapResults,
+        cadastralMapResults,
+        bdaMapResults,
+      ] = await Promise.all([
+        Promise.all(propertyImgs.map(u => fetchBytes(u))),
+        Promise.all(documentImgs.map(u => fetchBytes(u))),
+        Promise.all(locationImgs.map(u => fetchBytes(u))),
+        Promise.all(mouzaImgs.map(u => fetchBytes(u))),
+        Promise.all(sketchImgs.map(u => fetchBytes(u))),
+        Promise.all(cadastralImgs.map(u => fetchBytes(u))),
+        Promise.all(bdaImgs.map(u => fetchBytes(u))),
       ]);
 
-      const propImageBytes: Uint8Array[] = imageResults.slice(0, propertyImgs.length).filter(Boolean) as Uint8Array[];
-      let imgIdx = propertyImgs.length;
-      const sketchBytesList = fields.sketchMapImages?.length ? imageResults.slice(imgIdx, imgIdx + fields.sketchMapImages.length) : null;
-      if (fields.sketchMapImages?.length) imgIdx += fields.sketchMapImages.length;
-      const locationBytes = fields.locationMapImage ? imageResults[imgIdx++] : null;
+      const propImageBytes: Uint8Array[] = propImageResults.filter(Boolean) as Uint8Array[];
 
       // ── Initialize the renderer (automatically defaults letterhead) ──
       const r = new PDFGeneralRenderer();
@@ -1424,7 +1713,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.drawSimpleRow('Ward No / Municipal Land No', fields.wardNo);
       r.drawOptionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity);
       r.drawOptionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class'], fields.classOfLocality);
-      r.drawOptionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth);
+      r.drawAgeOptionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth, fields.approachRoadWidthActual ? (fields.approachRoadWidthActual.toLowerCase().includes('ft') || fields.approachRoadWidthActual.toLowerCase().includes('feet') ? fields.approachRoadWidthActual : `${fields.approachRoadWidthActual} Feet`) : (fields.approachRoadWidth || 'N/A'));
       r.drawOptionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated);
       r.drawProximityRow('Proximity to Civic Amenities',
         ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital'],
@@ -1447,7 +1736,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
       // ── Subject Property Details ──
       r.drawSectionHeader('SUBJECT PROPERTY DETAILS');
-      r.drawSimpleRow('Type of Premises', fields.premisesType);
+      r.drawSimpleRow('Type of Premises', fields.premisesType === 'Other' ? (fields.premisesTypeOther || 'Other') : fields.premisesType);
       r.drawSimpleRow('Occupied by / Vacant', fields.occupiedBy);
       r.drawSimpleRow('Is Property Rented', fields.isPropertyRented);
       r.drawSimpleRow('If Rented, List of Occupants', fields.rentedOccupants);
@@ -1458,13 +1747,13 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
       // ── Structural Details ──
       r.drawSectionHeader('STRUCTURAL DETAILS');
-      r.drawOptionRow('Type of Structure', ['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing'], fields.structureType);
+      r.drawOptionRow('Type of Structure', ['RCC', 'Load Bearing', 'Steel Structure', 'Composite Structure', 'Industrial Shed', 'A/C Sheet', 'G/I Sheet', 'Asbestos Roofing', 'NA'], fields.structureType);
       r.drawSimpleRow('No. of Floors', fields.numberOfFloors);
       r.drawSimpleRow('No. of Wings', fields.numberOfWings);
       r.drawSimpleRow('No. of Units on Each Floor', fields.unitsPerFloor);
       r.drawSimpleRow('Internal Composition', fields.internalComposition);
       r.drawSimpleRow('No. of Lifts', fields.numberOfLifts);
-      r.drawAgeOptionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], fields.ageOfProperty, fields.ageOfPropertyActual);
+      r.drawAgeOptionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], fields.ageOfProperty, fields.ageOfPropertyActual ? (fields.ageOfPropertyActual.toLowerCase().includes('yr') || fields.ageOfPropertyActual.toLowerCase().includes('year') ? fields.ageOfPropertyActual : `${fields.ageOfPropertyActual} Years`) : (fields.ageOfProperty || 'N/A'));
       r.drawSimpleRow('Estimated Future Life', fields.estimatedFutureLife);
       r.drawSimpleRow('Exteriors', fields.exteriors);
       r.drawOptionRow('Quality of Construction', ['Very Good', 'Good', 'Average', 'Poor'], fields.qualityOfConstruction);
@@ -1501,10 +1790,15 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.drawCenteredTitle(isApartmentFlat ? 'VALUATION OF APARTMENT/FLAT (After Depreciation)' : 'VALUATION OF BUILDING (After Depreciation)');
       r.advanceCursor(4);
       const unit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
+      const floorHeaders = isApartmentFlat
+        ? ['Floor', 'Basis of Valuation', `Area (${unit})`, `Rate (Rs./${unit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)']
+        : ['Floor', `Area (${unit})`, `Rate (Rs./${unit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'];
+
       r.drawFloorTable(
-        ['Floor', `Area (${unit})`, `Rate (Rs./${unit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'],
+        floorHeaders,
         floorValuations.map(f => ({
           name: f.name,
+          basis: f.basisOfValuation || 'Built-up Area',
           area: formatIndianCurrency(f.area),
           rate: `Rs.${formatIndianCurrency(f.rate)}`,
           estimated: `Rs.${formatIndianCurrency(f.estimated)}`,
@@ -1513,7 +1807,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           dep: `${f.depPct}%`,
           netValue: `Rs.${formatIndianCurrency(f.netValue)}`,
         })),
-        'Total Building Value',
+        isApartmentFlat ? 'Total Apartment/Flat Value' : 'Total Building Value',
         `Rs.${formatIndianCurrency(totalBuildingValue)}`,
       );
       r.advanceCursor(8);
@@ -1530,7 +1824,26 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.drawOptionRow('Valuation Result', ['Positive', 'Negative'], fields.valuationResult);
       r.drawSimpleRow('Replacement Cost / Insurance Value', fields.replacementCost ? `Rs.${formatIndianCurrency(fields.replacementCost)}/-` : 'N/A');
       r.drawSimpleRow('Deviations in Property', fields.deviations);
-      if (fields.guidelineValue) r.drawSimpleRow('Govt./Guideline Value', `Rs.${formatIndianCurrency(fields.guidelineValue)}/-`);
+      if (computedGuidelineTotal > 0) {
+        if (!isApartmentFlat) {
+          if (guidelineLandVal > 0) {
+            r.drawSimpleRow('Guideline Value (Land)', `${fields.guidelineLandArea || '0'} ${fields.landAreaUnit || 'Sqft'} \u00D7 Rs.${fields.guidelineLandRate || '0'}/- = Rs.${formatIndianCurrency(guidelineLandVal)}/-`);
+          }
+          if (guidelineBldgVal > 0) {
+            r.drawSimpleRow('Guideline Value (Building)', `${fields.guidelineBuildingBua || '0'} ${fields.floorAreaUnit || 'Sqft'} \u00D7 Rs.${fields.guidelineBuildingRate || '0'}/- = Rs.${formatIndianCurrency(guidelineBldgVal)}/-`);
+          }
+        } else {
+          if (guidelineUdsVal > 0) {
+            r.drawSimpleRow('Guideline Value (Undivided Land Share)', `${fields.guidelineUdsArea || '0'} ${fields.landAreaUnit || 'Sqft'} \u00D7 Rs.${fields.guidelineUdsRate || '0'}/- = Rs.${formatIndianCurrency(guidelineUdsVal)}/-`);
+          }
+          if (guidelineFlatVal > 0) {
+            r.drawSimpleRow('Guideline Value (Flat/Building)', `${fields.guidelineFlatBua || '0'} ${fields.floorAreaUnit || 'Sqft'} \u00D7 Rs.${fields.guidelineFlatRate || '0'}/- = Rs.${formatIndianCurrency(guidelineFlatVal)}/-`);
+          }
+        }
+        r.drawSimpleRow('Total Govt. / Guideline Value', `Rs.${formatIndianCurrency(computedGuidelineTotal)}/- (${rupeesInWords(computedGuidelineTotal)})`);
+      } else if (fields.guidelineValue) {
+        r.drawSimpleRow('Govt./Guideline Value', `Rs.${formatIndianCurrency(fields.guidelineValue)}/-`);
+      }
       r.advanceCursor(8);
 
       // ── Remarks ──
@@ -1600,32 +1913,42 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         }
       }
 
-      // ── Sketch Map ──
-      if (sketchBytesList && sketchBytesList.length > 0) {
-        for (let i = 0; i < sketchBytesList.length; i++) {
-          const sBytes = sketchBytesList[i];
-          if (sBytes) {
-            r.newPage();
-            r.drawCenteredTitle(`SKETCH MAP${sketchBytesList.length > 1 ? ` ${i + 1}` : ''}`);
-            r.advanceCursor(8);
-            await r.drawImageBlock(sBytes, {
-              maxWidth: 450, maxHeight: 500, centered: true,
-            });
-          }
-        }
+      // ── Documents Gallery ──
+      const validDocBytes = docImageResults
+        .map((bytes, idx) => ({
+          bytes,
+          name: fields.documentImageNames?.[idx] || `Document ${idx + 1}`,
+        }))
+        .filter((item): item is { bytes: Uint8Array; name: string } => Boolean(item.bytes && item.bytes.length > 0));
+
+      if (validDocBytes.length > 0) {
+        await r.drawDocumentsGallery(validDocBytes, 'DOCUMENTS', 240, false);
       }
 
-      // ── Location Map ──
-      if (locationBytes && locationBytes.length > 0) {
-        r.newPage();
-        r.drawCenteredTitle('LOCATION MAP');
-        r.advanceCursor(8);
-        await r.drawImageBlock(locationBytes, {
-          maxWidth: 450, maxHeight: 500, centered: true,
-        });
-        if (fields.latitude || fields.longitude) {
-          r.drawTextBlock(`Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}`, { bold: true, align: 'center' });
-        }
+      // ── Maps Gallery ──
+      const validLocation = locationMapResults.filter((b): b is Uint8Array => Boolean(b && b.length > 0));
+      if (validLocation.length > 0) {
+        await r.drawMapGallery(validLocation, 'GOOGLE SATELLITE MAP', 240, false);
+      }
+
+      const validMouza = mouzaMapResults.filter((b): b is Uint8Array => Boolean(b && b.length > 0));
+      if (validMouza.length > 0) {
+        await r.drawMapGallery(validMouza, 'MOUZA MAP', 240, false);
+      }
+
+      const validSketch = sketchMapResults.filter((b): b is Uint8Array => Boolean(b && b.length > 0));
+      if (validSketch.length > 0) {
+        await r.drawMapGallery(validSketch, 'SKETCH MAP', 240, false);
+      }
+
+      const validCadastral = cadastralMapResults.filter((b): b is Uint8Array => Boolean(b && b.length > 0));
+      if (validCadastral.length > 0) {
+        await r.drawMapGallery(validCadastral, 'CADASTRAL MAP', 240, false);
+      }
+
+      const validBda = bdaMapResults.filter((b): b is Uint8Array => Boolean(b && b.length > 0));
+      if (validBda.length > 0) {
+        await r.drawMapGallery(validBda, 'BDA MAP', 240, false);
       }
       // ── Annexure Sections ──
       if (fields.annexures && fields.annexures.length > 0) {
@@ -2274,11 +2597,35 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             </Field>
           </div>
 
-          <Field label="Type of Property">
-            <select className={selectCls} value={fields.propertyType} onChange={e => handleChange('propertyType', e.target.value)} disabled={isReadOnly}>
-              <option>Residential</option><option>Commercial</option><option>Residential cum Commercial</option><option>Industrial</option><option>Vacant Plot</option>
-            </select>
-          </Field>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Type of Property">
+              <select
+                className={selectCls}
+                value={fields.propertyType}
+                onChange={e => handleChange('propertyType', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option>Residential</option>
+                <option>Commercial</option>
+                <option>Residential cum Commercial</option>
+                <option>Industrial</option>
+                <option>Institutional</option>
+                <option>Vacant Plot</option>
+                <option>Other</option>
+              </select>
+            </Field>
+            {fields.propertyType === 'Other' && (
+              <Field label="Specify Other Property Type">
+                <input
+                  className={inputCls}
+                  value={fields.propertyTypeOther || ''}
+                  onChange={e => handleChange('propertyTypeOther', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Enter custom property type (e.g. Educational Hostel)"
+                />
+              </Field>
+            )}
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Name of Customer(s)">
               <input className={inputCls} value={fields.ownerName} onChange={e => handleChange('ownerName', e.target.value)} disabled={isReadOnly} placeholder="Full name of property owner" />
@@ -2612,10 +2959,32 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 <option>Elite/Posh/High Class</option><option>Upper Middle Class</option><option>Middle Class</option><option>Lower Middle Class</option>
               </select>
             </Field>
-            <Field label="Approach Road Width">
-              <select className={selectCls} value={fields.approachRoadWidth} onChange={e => handleChange('approachRoadWidth', e.target.value)} disabled={isReadOnly}>
-                <option>{'>'}=60 Feet Road</option><option>60-40 Feet Road</option><option>40-20 Feet Road</option><option>{'<'}20 Feet Road</option>
-              </select>
+            <Field label="Approach Road Width (Actual Value)">
+              <div className="space-y-1.5">
+                <input
+                  className={inputCls}
+                  value={fields.approachRoadWidthActual || ''}
+                  onChange={e => {
+                    const actualVal = e.target.value;
+                    const range = deriveApproachRoadWidthRange(actualVal);
+                    setFields(prev => ({
+                      ...prev,
+                      approachRoadWidthActual: actualVal,
+                      approachRoadWidth: range || prev.approachRoadWidth,
+                    }));
+                  }}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 40 Feet, 30 ft, 12 m"
+                />
+                {fields.approachRoadWidthActual && (
+                  <div className="flex items-center gap-2 text-xs text-neutral-600 bg-neutral-50 px-2.5 py-1 rounded-md border border-neutral-200">
+                    <span className="font-semibold text-neutral-700">Auto-classified Range:</span>
+                    <span className="font-bold text-[#b8860b] bg-[#fffaf0] px-2 py-0.5 rounded border border-[#b8860b]/30">
+                      {deriveApproachRoadWidthRange(fields.approachRoadWidthActual) || 'Determining...'}
+                    </span>
+                  </div>
+                )}
+              </div>
             </Field>
             <Field label="Plot Demarcated at Site">
               <select className={selectCls} value={fields.plotDemarcated} onChange={e => handleChange('plotDemarcated', e.target.value)} disabled={isReadOnly}>
@@ -2751,11 +3120,41 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       {/* ── Section 4: Subject Property Details ── */}
       <Section title="Subject Property Details" number={4} defaultOpen={false}>
         <div className="space-y-3">
-          <Field label="Type of Premises">
-            <select className={selectCls} value={fields.premisesType} onChange={e => handleChange('premisesType', e.target.value)} disabled={isReadOnly}>
-              <option>Residential Flat</option><option>Gala</option><option>Shop</option><option>Bungalow</option><option>Row House</option><option>Office</option><option>Chawl</option><option>Open Plot</option><option>Showroom</option><option>Duplex Flat</option><option>Pent House</option>
-            </select>
-          </Field>
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Type of Premises">
+              <select
+                className={selectCls}
+                value={fields.premisesType}
+                onChange={e => handleChange('premisesType', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option>Residential Flat</option>
+                <option>Gala</option>
+                <option>Shop</option>
+                <option>Bungalow</option>
+                <option>Row House</option>
+                <option>Office</option>
+                <option>Chawl</option>
+                <option>Open Plot</option>
+                <option>Showroom</option>
+                <option>Duplex Flat</option>
+                <option>Pent House</option>
+                <option>Institutional</option>
+                <option>Other</option>
+              </select>
+            </Field>
+            {fields.premisesType === 'Other' && (
+              <Field label="Specify Other Premises Type">
+                <input
+                  className={inputCls}
+                  value={fields.premisesTypeOther || ''}
+                  onChange={e => handleChange('premisesTypeOther', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Enter custom premises type (e.g. Community Hall)"
+                />
+              </Field>
+            )}
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Occupied by / Is Property Vacant">
               <input className={inputCls} value={fields.occupiedBy} onChange={e => handleChange('occupiedBy', e.target.value)} disabled={isReadOnly} placeholder="e.g. Self Occupied" />
@@ -2796,10 +3195,54 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       {/* ── Section 5: Structural Details ── */}
       <Section title="Structural Details" number={5} defaultOpen={false}>
         <div className="space-y-3">
-          <Field label="Type of Structure">
-            <select className={selectCls} value={fields.structureType} onChange={e => handleChange('structureType', e.target.value)} disabled={isReadOnly}>
-              <option>RCC</option><option>Load Bearing</option><option>Steel Structure</option><option>Composite Structure</option><option>Industrial Shed</option><option>A/C Sheet</option><option>G/I Sheet</option><option>Asbestos Roofing</option>
-            </select>
+          <Field label="Type of Structure (Select all that apply)" span={2}>
+            <div className="flex flex-wrap gap-2 pt-1">
+              {STRUCTURE_TYPE_OPTIONS.map(opt => {
+                const currentList = (fields.structureType || '')
+                  .split(',')
+                  .map(s => s.trim())
+                  .filter(Boolean);
+                const isSelected = opt === 'NA'
+                  ? currentList.includes('NA') || currentList.includes('Not Applicable') || currentList.includes('N/A')
+                  : currentList.includes(opt);
+
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    disabled={isReadOnly}
+                    onClick={() => {
+                      if (isReadOnly) return;
+                      let nextList: string[] = [];
+                      if (opt === 'NA') {
+                        nextList = isSelected ? [] : ['NA'];
+                      } else {
+                        const withoutNA = currentList.filter(s => !['NA', 'Not Applicable', 'N/A'].includes(s));
+                        if (isSelected) {
+                          nextList = withoutNA.filter(s => s !== opt);
+                        } else {
+                          nextList = [...withoutNA, opt];
+                        }
+                      }
+                      handleChange('structureType', nextList.join(', '));
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+                      isSelected
+                        ? 'bg-[#0a1628] text-white border-[#0a1628] shadow-xs'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      readOnly
+                      className="w-3.5 h-3.5 rounded text-[#b8860b] focus:ring-0 pointer-events-none"
+                    />
+                    <span>{opt}</span>
+                  </button>
+                );
+              })}
+            </div>
           </Field>
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="No. of Floors"><input className={inputCls} value={fields.numberOfFloors} onChange={e => handleChange('numberOfFloors', e.target.value)} disabled={isReadOnly} /></Field>
@@ -2807,15 +3250,32 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             <Field label="No. of Units on Each Floor"><input className={inputCls} value={fields.unitsPerFloor} onChange={e => handleChange('unitsPerFloor', e.target.value)} disabled={isReadOnly} placeholder="NA" /></Field>
             <Field label="Internal Composition"><input className={inputCls} value={fields.internalComposition} onChange={e => handleChange('internalComposition', e.target.value)} disabled={isReadOnly} /></Field>
             <Field label="No. of Lifts"><input className={inputCls} value={fields.numberOfLifts} onChange={e => handleChange('numberOfLifts', e.target.value)} disabled={isReadOnly} placeholder="NA" /></Field>
-          </div>
-          <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Age of the Property (Range)">
-              <select className={selectCls} value={fields.ageOfProperty} onChange={e => handleChange('ageOfProperty', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select...</option><option>1-10 years</option><option>11-25 years</option><option>26-50 years</option><option>{'>'}50 years</option>
-              </select>
-            </Field>
             <Field label="Age of the Property (Actual Value)">
-              <input className={inputCls} value={fields.ageOfPropertyActual || ''} onChange={e => handleChange('ageOfPropertyActual', e.target.value)} disabled={isReadOnly} placeholder="e.g. 5 Years" />
+              <div className="space-y-1.5">
+                <input
+                  className={inputCls}
+                  value={fields.ageOfPropertyActual || ''}
+                  onChange={e => {
+                    const actualVal = e.target.value;
+                    const range = deriveAgeOfPropertyRange(actualVal);
+                    setFields(prev => ({
+                      ...prev,
+                      ageOfPropertyActual: actualVal,
+                      ageOfProperty: range || prev.ageOfProperty,
+                    }));
+                  }}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 5 Years, New"
+                />
+                {fields.ageOfPropertyActual && (
+                  <div className="flex items-center gap-2 text-xs text-neutral-600 bg-neutral-50 px-2.5 py-1 rounded-md border border-neutral-200">
+                    <span className="font-semibold text-neutral-700">Auto-classified Range:</span>
+                    <span className="font-bold text-[#b8860b] bg-[#fffaf0] px-2 py-0.5 rounded border border-[#b8860b]/30">
+                      {deriveAgeOfPropertyRange(fields.ageOfPropertyActual) || 'Determining...'}
+                    </span>
+                  </div>
+                )}
+              </div>
             </Field>
           </div>
           <div className="grid md:grid-cols-2 gap-4">
@@ -2906,7 +3366,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       {fields.valuationLayout && (<>
 
       {/* ── Section 7: Floor-wise Area & Building/Apartment Valuation ── */}
-      <Section title={isApartmentFlat ? 'Apartment/Flat Valuation' : 'Floor-wise Area & Building Valuation'} number={7}>
+      <Section title={isApartmentFlat ? 'Floor-wise Building Valuation (Apartment)' : 'Floor-wise Building Valuation'} number={7} id="section-7">
         <div className="flex justify-between items-center mb-4">
           <h4 className="text-sm font-semibold text-[#0f2038]">{isApartmentFlat ? 'Apartment/Flat Valuation Details' : 'Building Valuation Details'}</h4>
           <div className="flex items-center gap-2">
@@ -2926,6 +3386,9 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             <thead>
               <tr className="bg-[#0a1628] text-white">
                 <th className="px-3 py-2.5 text-left font-semibold text-xs">Floor</th>
+                {isApartmentFlat && (
+                  <th className="px-3 py-2.5 text-left font-semibold text-xs">Basis of Valuation</th>
+                )}
                 <th className="px-3 py-2.5 text-right font-semibold text-xs">Area ({fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'})</th>
                 <th className="px-3 py-2.5 text-right font-semibold text-xs">Rate (&#8377;/{fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'})</th>
                 <th className="px-3 py-2.5 text-right font-semibold text-xs">Estimated (&#8377;)</th>
@@ -2942,6 +3405,20 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                     <input className={inputCls + ' !py-1.5 text-xs'} value={f.name || ''} onChange={e => updateFloor(f.id, 'name', e.target.value)} disabled={isReadOnly} />
                   </td>
+                  {isApartmentFlat && (
+                    <td className="px-2 py-1.5 border-b border-[#e9ecef]">
+                      <select
+                        className={selectCls + ' !py-1 text-xs'}
+                        value={f.basisOfValuation || 'Built-up Area'}
+                        onChange={e => updateFloor(f.id, 'basisOfValuation', e.target.value)}
+                        disabled={isReadOnly}
+                      >
+                        <option value="Carpet Area">Carpet Area</option>
+                        <option value="Built-up Area">Built-up Area</option>
+                        <option value="Super Built-up Area">Super Built-up Area</option>
+                      </select>
+                    </td>
+                  )}
                   <td className="px-2 py-1.5 border-b border-[#e9ecef]">
                     <input type="number" min="0" step="any" className={inputCls + ' !py-1.5 text-xs text-right'} value={f.area || ''} onChange={e => updateFloor(f.id, 'area', e.target.value)} onKeyDown={e => ['e', 'E', '+', '-'].includes(e.key) && e.preventDefault()} disabled={isReadOnly} placeholder="0" />
                   </td>
@@ -2979,7 +3456,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 </tr>
               ))}
               <tr className="bg-[#f0ead6] font-bold">
-                <td className="px-3 py-2.5 text-xs">TOTAL</td>
+                <td className="px-3 py-2.5 text-xs" colSpan={isApartmentFlat ? 2 : 1}>TOTAL</td>
                 <td className="px-3 py-2.5 text-right text-xs">{formatIndianCurrency(totalPlinthArea)} {fields.floorAreaUnit || fields.landAreaUnit || 'Sqft'}</td>
                 <td className="px-3 py-2.5" colSpan={5}></td>
                 <td className="px-3 py-2.5 text-right text-xs text-[#0f2038]">&#8377;{formatIndianCurrency(totalBuildingValue)}</td>
@@ -2997,7 +3474,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
       {/* ── Section 8: Valuation of Land (hidden for Apartment/Flat) ── */}
       {!isApartmentFlat && (
-        <Section title="Valuation of Land" number={8} defaultOpen={false}>
+        <Section title="Land Valuation" number={8} id="section-8" defaultOpen={false}>
           <div className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="Land Area">
@@ -3053,7 +3530,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       )}
 
       {/* ── Section 9: Abstract of Valuation ── */}
-      <Section title="Abstract of Valuation" number={isApartmentFlat ? 8 : 9}>
+      <Section title="Abstract of Valuation" number={isApartmentFlat ? 8 : 9} id="section-abstract">
         <div className="space-y-3">
           {isApartmentFlat ? (
             /* Apartment/Flat: single value row */
@@ -3120,16 +3597,193 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               <Field label="Deviations in Property">
                 <input className={inputCls} value={fields.deviations} onChange={e => handleChange('deviations', e.target.value)} disabled={isReadOnly} placeholder="NA" />
               </Field>
-              <Field label="Govt. / Guideline Value (&#8377;)" span={2}>
-                <input className={inputCls} value={fields.guidelineValue} onChange={e => handleChange('guidelineValue', e.target.value)} disabled={isReadOnly} placeholder="As per Govt. record (optional)" />
-              </Field>
+            </div>
+          </div>
+
+          {/* Govt. Guideline Valuation Breakdown */}
+          <div className="mt-4 p-4 bg-[#f8fafc] rounded-xl border border-[#cbd5e1]">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-bold text-[#1e293b] uppercase tracking-wider flex items-center gap-1.5">
+                <span>Govt. Guideline Valuation Breakdown</span>
+                <span className="text-[10px] font-normal text-[#64748b] bg-slate-200 px-2 py-0.5 rounded">
+                  {isApartmentFlat ? 'Undivided Land Share & Flat / Building' : 'Land & Building'}
+                </span>
+              </p>
+              {computedGuidelineTotal > 0 && (
+                <span className="text-xs font-bold text-[#b8860b]">
+                  Total: &#8377; {formatIndianCurrency(computedGuidelineTotal)}
+                </span>
+              )}
+            </div>
+
+            {!isApartmentFlat ? (
+              <div className="space-y-3">
+                {/* Land Guideline */}
+                <div className="p-3 bg-white rounded-lg border border-[#e2e8f0]">
+                  <p className="text-xs font-semibold text-[#334155] mb-2">1. Land Guideline Value (Area &times; Rate)</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                    <Field label={`Land Area (${fields.landAreaUnit || 'Sqft'})`}>
+                      <input
+                        className={inputCls}
+                        type="text"
+                        value={fields.guidelineLandArea}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('guidelineLandArea', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 1500"
+                      />
+                    </Field>
+                    <Field label={`Govt. Land Rate (&#8377;/${fields.landAreaUnit || 'Sqft'})`}>
+                      <input
+                        className={inputCls}
+                        type="text"
+                        value={fields.guidelineLandRate}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('guidelineLandRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 1200"
+                      />
+                    </Field>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">Land Guideline Value</label>
+                      <div className="py-2 px-3 bg-slate-50 rounded border border-slate-200 text-xs font-bold text-[#0f2038]">
+                        &#8377; {formatIndianCurrency(guidelineLandVal)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Building Guideline */}
+                <div className="p-3 bg-white rounded-lg border border-[#e2e8f0]">
+                  <p className="text-xs font-semibold text-[#334155] mb-2">2. Building Guideline Value (Built-up Area &times; Rate)</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                    <Field label={`Built-up Area (${fields.floorAreaUnit || 'Sqft'})`}>
+                      <input
+                        className={inputCls}
+                        type="text"
+                        value={fields.guidelineBuildingBua}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('guidelineBuildingBua', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 2000"
+                      />
+                    </Field>
+                    <Field label={`Govt. Building Rate (&#8377;/${fields.floorAreaUnit || 'Sqft'})`}>
+                      <input
+                        className={inputCls}
+                        type="text"
+                        value={fields.guidelineBuildingRate}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('guidelineBuildingRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 1500"
+                      />
+                    </Field>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">Building Guideline Value</label>
+                      <div className="py-2 px-3 bg-slate-50 rounded border border-slate-200 text-xs font-bold text-[#0f2038]">
+                        &#8377; {formatIndianCurrency(guidelineBldgVal)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* UDS Guideline */}
+                <div className="p-3 bg-white rounded-lg border border-[#e2e8f0]">
+                  <p className="text-xs font-semibold text-[#334155] mb-2">1. Undivided Land Share (UDS) Guideline Value (Area &times; Rate)</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                    <Field label={`UDS Area (${fields.landAreaUnit || 'Sqft'})`}>
+                      <input
+                        className={inputCls}
+                        type="text"
+                        value={fields.guidelineUdsArea}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('guidelineUdsArea', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 350"
+                      />
+                    </Field>
+                    <Field label={`Govt. UDS Rate (&#8377;/${fields.landAreaUnit || 'Sqft'})`}>
+                      <input
+                        className={inputCls}
+                        type="text"
+                        value={fields.guidelineUdsRate}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('guidelineUdsRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 1200"
+                      />
+                    </Field>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">UDS Guideline Value</label>
+                      <div className="py-2 px-3 bg-slate-50 rounded border border-slate-200 text-xs font-bold text-[#0f2038]">
+                        &#8377; {formatIndianCurrency(guidelineUdsVal)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Flat / Building Guideline */}
+                <div className="p-3 bg-white rounded-lg border border-[#e2e8f0]">
+                  <p className="text-xs font-semibold text-[#334155] mb-2">2. Flat / Building Guideline Value (Built-up Area &times; Rate)</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
+                    <Field label={`Built-up Area (${fields.floorAreaUnit || 'Sqft'})`}>
+                      <input
+                        className={inputCls}
+                        type="text"
+                        value={fields.guidelineFlatBua}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('guidelineFlatBua', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 1200"
+                      />
+                    </Field>
+                    <Field label={`Govt. Flat Rate (&#8377;/${fields.floorAreaUnit || 'Sqft'})`}>
+                      <input
+                        className={inputCls}
+                        type="text"
+                        value={fields.guidelineFlatRate}
+                        onKeyDown={blockNegativeKeys}
+                        onChange={e => handleChange('guidelineFlatRate', sanitizePositiveDecimal(e.target.value))}
+                        disabled={isReadOnly}
+                        placeholder="e.g. 2500"
+                      />
+                    </Field>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">Flat Guideline Value</label>
+                      <div className="py-2 px-3 bg-slate-50 rounded border border-slate-200 text-xs font-bold text-[#0f2038]">
+                        &#8377; {formatIndianCurrency(guidelineFlatVal)}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Total Guideline Value Summary */}
+            <div className="mt-3 p-3 bg-gradient-to-r from-[#f0ead6] to-[#fdfcf8] rounded-lg border border-[#d4c5a9] flex flex-col md:flex-row md:items-center justify-between gap-2">
+              <div>
+                <span className="text-xs font-bold text-[#0f2038] uppercase">
+                  Total Govt. / Guideline Value {computedGuidelineTotal > 0 ? `(${isApartmentFlat ? 'UDS + Flat' : 'Land + Building'})` : ''}
+                </span>
+                {computedGuidelineTotal > 0 && (
+                  <p className="text-[11px] text-[#6c757d] italic">{rupeesInWords(computedGuidelineTotal)}</p>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-bold text-[#b8860b]">
+                  &#8377; {formatIndianCurrency(computedGuidelineTotal > 0 ? computedGuidelineTotal : parseNum(fields.guidelineValue))}
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </Section>
 
       {/* ── Section 10: Remarks & Declaration ── */}
-      <Section title="Remarks & Declaration" number={isApartmentFlat ? 9 : 10} defaultOpen={false}>
+      <Section title="Remarks & Declaration" number={isApartmentFlat ? 9 : 10} id="section-remarks" defaultOpen={false}>
         <div className="space-y-4">
           <Field label="Demarcation" span={2}>
             <textarea className={inputCls + ' resize-none'} rows={2} value={fields.demarcation} onChange={e => handleChange('demarcation', e.target.value)} disabled={isReadOnly} placeholder="Demarcation details..." />
@@ -3146,14 +3800,34 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           <Field label="Representative's Father's Name">
             <input className={inputCls} value={fields.representativeFatherName} onChange={e => handleChange('representativeFatherName', e.target.value)} disabled={isReadOnly} placeholder="Father's name of representative" />
           </Field>
+
+          {/* Declaration Box */}
+          <div className="p-4 bg-[#f8fafc] rounded-xl border border-[#cbd5e1] text-xs leading-relaxed text-[#334155]">
+            <p className="font-bold text-sm text-[#0f2038] mb-2">Declaration</p>
+            <p className="mb-2">I hereby declare that:</p>
+            <ul className="space-y-1.5 list-disc pl-5 text-justify">
+              <li>
+                I have deputed my representative{' '}
+                <strong>{fields.representativeName ? `Mr. ${fields.representativeName}` : '______'}</strong>
+                {fields.representativeFatherName ? `, S/o: ${fields.representativeFatherName}` : ''} to inspect the property on{' '}
+                <strong>{fmtDate(fields.dateOfInspection)}</strong>.
+              </li>
+              <li>
+                I have no direct or indirect interest in the property valued.
+              </li>
+              <li>
+                The information furnished is true and correct to the best of my knowledge and belief.
+              </li>
+            </ul>
+          </div>
         </div>
       </Section>
 
-      {/* ── Section 11: Valuation Certificate (Auto-generated) ── */}
-      <Section title="Valuation Certificate (Auto-generated)" number={isApartmentFlat ? 10 : 11} defaultOpen={false}>
+      {/* ── Section 11: Valuation Certificate ── */}
+      <Section title="Valuation Certificate" number={isApartmentFlat ? 10 : 11} id="section-certificate" defaultOpen={false}>
         <div className="bg-[#fdfcf8] border border-[#d4c5a9] rounded-xl p-6 text-sm leading-relaxed text-[#333]">
           <p className="text-center font-bold text-base mb-4 underline">VALUATION CERTIFICATE</p>
-          <p className="mb-3">
+          <p className="mb-3 text-justify">
             This is to certify that the undersigned has personally inspected the property belonging to
             <strong> {fields.ownerName || '________'}</strong> situated at
             <strong> {fields.annexureEnabled && fields.annexures.length > 0 ? `address as provided in Annexure ${(fields.annexures.find(a => a.parsedData) || fields.annexures[0]).label}` : (getFullAddress() || '________')}</strong> on
@@ -3196,189 +3870,73 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
           onOpenBucketPicker={openBucketPicker}
           sectionNumber={isApartmentFlat ? 11 : 12}
-          sectionId="section-12"
+          sectionId="section-photographs"
+          title="Property Photographs"
         />
       )}
 
-      {/* ── Section 13: Sketch Maps ── */}
-      <Section title="Sketch Maps" number={isApartmentFlat ? 12 : 13} defaultOpen={false}>
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-xs font-bold text-[#495057] uppercase tracking-wider">Sketch Maps</p>
-        </div>
-        {!isReadOnly && (
-          <div className="mb-3 flex flex-wrap items-center gap-3">
-            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-sm font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
-              {uploading ? '⏳ Uploading...' : '📷 Upload Sketch Maps'}
-              <input type="file" multiple accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'sketchMapImages')} disabled={uploading} />
-            </label>
-          </div>
-        )}
-        {fields.sketchMapImages && fields.sketchMapImages.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {fields.sketchMapImages.map((url: string, idx: number) => (
-              <div key={idx} className="relative group rounded-lg overflow-hidden border border-[#e9ecef]">
-                <img src={url} alt={`Sketch Map ${idx + 1}`} className="w-full h-32 object-contain bg-[#f8f9fa]" />
-                {!isReadOnly && (
-                  <button onClick={() => removeSketchMap(idx)} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                    Remove
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center p-4 border border-dashed rounded-lg text-gray-500 text-sm">
-            No sketch maps added
-          </div>
-        )}
-      </Section>
+      {(!isReadOnly || (Array.isArray(fields.documentImages) && fields.documentImages.length > 0)) && (
+        <BaseDocumentsSection
+          documentImages={fields.documentImages || []}
+          documentImageNames={fields.documentImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          onUploadDocument={handleDocumentUpload}
+          onRemoveDocument={handleDocumentRemove}
+          onDocumentNameChange={handleDocumentNameChange}
+          onReorderDocuments={handleDocumentReorder}
+          sectionNumber={isApartmentFlat ? 12 : 13}
+          sectionId="sec-documents"
+          title="Documents"
+          defaultOpen={false}
+        />
+      )}
 
-      {/* ── Section 14: Location Map ── */}
-      <Section title="Location Map" number={isApartmentFlat ? 13 : 14} defaultOpen={false}>
-        <div className="space-y-4">
-          {/* Live Google Maps Embed — auto-reads from property address */}
-          {(() => {
-            const latStr = (fields.latitude || '').trim();
-            const lngStr = (fields.longitude || '').trim();
-            const hasCoordinates = Boolean(latStr && lngStr && !isNaN(Number(latStr)) && !isNaN(Number(lngStr)));
-
-            const mainAreaLocation = cleanAddressForMap(getFullAddress());
-            const hasQuery = hasCoordinates || mainAreaLocation.length > 0;
-
-            const queryParam = hasCoordinates
-              ? `loc:${latStr},${lngStr}`
-              : mainAreaLocation;
-
-            const encodedQuery = encodeURIComponent(queryParam);
-            const googleMapsUrl = hasCoordinates
-              ? `https://www.google.com/maps?q=loc:${latStr},${lngStr}&z=17&t=k`
-              : `https://www.google.com/maps/search/${encodeURIComponent(mainAreaLocation)}`;
-
-            return (
-              <div className="space-y-3">
-                {hasQuery ? (
-                  <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-sm">
-                    <div className="bg-[#d5e8f5] px-4 py-2 flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
-                        📍 Live Map Preview {hasCoordinates ? `(Pinned at ${latStr}, ${lngStr})` : '— Auto-loaded from Property Address'}
-                      </span>
-                      <a
-                        href={googleMapsUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-semibold text-[#b8860b] hover:underline"
-                      >
-                        Open in Google Maps &#x2197;
-                      </a>
-                    </div>
-                    <iframe
-                      src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
-                      width="100%"
-                      height="400"
-                      style={{ border: 0 }}
-                      allowFullScreen
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      title="Property Location Map"
-                    />
-                    {hasCoordinates ? (
-                      <div className="bg-emerald-50 border-t border-emerald-200 px-4 py-2.5 text-xs text-slate-800 space-y-1">
-                        <div className="flex items-center justify-between flex-wrap gap-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-emerald-950">📍 Map Referenced From:</span>
-                            <span className="font-semibold text-emerald-800 font-mono bg-emerald-100/80 px-1.5 py-0.5 rounded">
-                              GPS Coordinates ({latStr}, {lngStr})
-                            </span>
-                            <span className="text-[11px] font-medium text-emerald-700">
-                              (Coordinates override from inputs below)
-                            </span>
-                          </div>
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wide">
-                            Coordinates Override Active
-                          </span>
-                        </div>
-                        {mainAreaLocation && (
-                          <div className="text-[11px] text-slate-600 pl-4 truncate" title={mainAreaLocation}>
-                            <span className="font-medium text-slate-700">Overridden Technical Address:</span> {mainAreaLocation}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="bg-blue-50 border-t border-blue-200 px-4 py-2.5 text-xs text-slate-800 space-y-1">
-                        <div className="flex items-center justify-between flex-wrap gap-1.5">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-blue-950">📍 Map Referenced From:</span>
-                            <span className="font-semibold text-blue-800 bg-blue-100/80 px-1.5 py-0.5 rounded">
-                              Technical Address
-                            </span>
-                            <span className="text-[11px] text-blue-700 font-medium">
-                              (Default Address Input)
-                            </span>
-                          </div>
-                          <span className="text-[10px] font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded border border-blue-200">
-                            Enter coordinates below to override for higher accuracy
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-700 pl-4 font-normal truncate" title={mainAreaLocation}>
-                          <span className="font-semibold text-blue-900">Address text:</span> {mainAreaLocation}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="p-6 rounded-xl bg-[#f8f9fa] border border-[#dee2e6] text-center text-sm text-[#6c757d]">
-                    <p className="font-semibold mb-1">No address found.</p>
-                    <p>Fill in the <strong>Property Address</strong> in Section 1 (General Details) or enter Lat/Long below to auto-load the map.</p>
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-
-          {/* Screenshot upload for PDF (iframe can't be captured by html2canvas) */}
-          <div className="space-y-2">
-            <p className="text-xs font-semibold text-[#495057] uppercase tracking-wider">
-              Screenshot for PDF Report
-            </p>
-            <p className="text-xs text-[#6c757d]">
-              The live map above is for reference. To include a map in the PDF, open Google Maps via the link above, take a satellite screenshot with the pin visible, and upload it below.
-            </p>
-            {fields.locationMapImage ? (
-              <div className="relative group rounded-xl overflow-hidden border border-[#e9ecef] max-w-lg">
-                <img src={fields.locationMapImage} alt="Location Map Screenshot" className="w-full object-contain" />
-                {!isReadOnly && (
-                  <button onClick={() => handleChange('locationMapImage', '')} className="absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs opacity-0 group-hover:opacity-100 transition-opacity">Remove</button>
-                )}
-                <div className="absolute bottom-0 left-0 right-0 bg-green-600/90 text-white text-center text-xs py-1 font-semibold">
-                  Screenshot uploaded — will appear in PDF
-                </div>
-              </div>
-            ) : (
-              !isReadOnly && (
-                <div className="flex items-center gap-3 flex-wrap">
-                  <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-sm font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
-                    {uploading ? '⏳ Uploading...' : '📷 Upload Map Screenshot for PDF'}
-                    <input type="file" accept="image/*" className="hidden" onChange={e => handleFileUpload(e, 'locationMapImage')} disabled={uploading} />
-                  </label>
-                </div>
-              )
-            )}
-          </div>
-
-          {/* Lat/Long inputs */}
-          <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Latitude">
-              <input className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <Field label="Longitude">
-              <input className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} />
-            </Field>
-          </div>
-        </div>
-      </Section>
+      {(!isReadOnly || [
+        ...(fields.locationMapImages || (fields.locationMapImage ? [fields.locationMapImage] : [])),
+        ...(fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : [])),
+        ...(fields.sketchMapImages || []),
+        ...(fields.cadastralMapImages || (fields.cadastralMapImage ? [fields.cadastralMapImage] : [])),
+        ...(fields.bdaMapImages || []),
+      ].length > 0) && (
+        <BaseMapsSection
+          locationMapImages={fields.locationMapImages || (fields.locationMapImage ? [fields.locationMapImage] : [])}
+          mouzaMapImages={fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : [])}
+          sketchMapImages={fields.sketchMapImages || []}
+          cadastralMapImages={fields.cadastralMapImages || (fields.cadastralMapImage ? [fields.cadastralMapImage] : [])}
+          bdaMapImages={fields.bdaMapImages || []}
+          latitude={fields.latitude || ''}
+          longitude={fields.longitude || ''}
+          propertyAddress={getFullAddress()}
+          technicalAddress={cleanAddressForMap(getFullAddress())}
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          onLatitudeChange={(val) => handleChange('latitude', val)}
+          onLongitudeChange={(val) => handleChange('longitude', val)}
+          onLocationMapUpload={handleLocationMapUpload}
+          onLocationMapRemove={handleLocationMapRemove}
+          onReorderLocationMap={handleLocationMapReorder}
+          onMouzaMapUpload={handleMouzaMapUpload}
+          onMouzaMapRemove={handleMouzaMapRemove}
+          onReorderMouzaMap={handleMouzaMapReorder}
+          onSketchMapUpload={handleSketchMapUpload}
+          onSketchMapRemove={handleSketchMapRemove}
+          onReorderSketchMap={handleSketchMapReorder}
+          onCadastralMapUpload={handleCadastralMapUpload}
+          onCadastralMapRemove={handleCadastralMapRemove}
+          onReorderCadastralMap={handleCadastralMapReorder}
+          onBdaMapUpload={handleBdaMapUpload}
+          onBdaMapRemove={handleBdaMapRemove}
+          onReorderBdaMap={handleBdaMapReorder}
+          sectionNumber={isApartmentFlat ? 13 : 14}
+          sectionId="section-maps"
+          title="Maps"
+          defaultOpen={false}
+        />
+      )}
 
       {/* ── Section 15: Annexure (Always available) ── */}
-      <Section title="Annexures & Schedules" number={isApartmentFlat ? 14 : 15} defaultOpen={true}>
+      <Section title="Annexures & Schedules" number={isApartmentFlat ? 14 : 15} id="section-annexures" defaultOpen={true}>
         <div className="space-y-4">
           {/* Info banner */}
           <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-[#0a1628]/5 to-[#b8860b]/5 border border-[#b8860b]/20">
@@ -3454,7 +4012,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                         accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
                         className="hidden"
                         onChange={e => handleAnnexureUpload(annexure.id, e)}
-                        disabled={uploading}
+                        disabled={!!uploading}
                       />
                     </label>
                   )

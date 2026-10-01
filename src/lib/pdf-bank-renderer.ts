@@ -586,16 +586,11 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   }
 
   /**
-   * Draw a generic data table, with optional custom column widths.
-   * If customColWidths is provided, uses drawTable; otherwise delegates to super.drawDataTable.
+   * Draw a generic data table with compact/standard bank font size.
    */
-  override drawDataTable(headers: string[], rows: string[][], customColWidths?: number[], customFontSize?: number): void {
+  override drawDataTable(headers: string[], rows: string[][], customFontSize?: number): void {
     const fontSize = customFontSize || (headers.length >= 4 ? FONT_SIZE_TABLE_BANK_COMPACT : FONT_SIZE_TABLE_BANK);
-    if (customColWidths && customColWidths.length === headers.length) {
-      this.drawTable(headers, rows, customColWidths, [], [], [], [], [], [], [], fontSize);
-    } else {
-      super.drawDataTable(headers, rows, fontSize);
-    }
+    super.drawDataTable(headers, rows, fontSize);
   }
 
   /**
@@ -644,18 +639,10 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       color: rgb(0, 0, 0),
     });
 
-    // Remarks Body
-    let lineY = y - pad - fontSize * 0.85 - 18;
-    for (const line of lines) {
-      this.page.drawText(line, {
-        x: MARGIN_L + pad,
-        y: lineY,
-        size: fontSize,
-        font: this.fontRegular,
-        color: rgb(0, 0, 0),
-      });
-      lineY -= fontSize * LINE_HEIGHT;
-    }
+    // Remarks Body (with justified alignment)
+    this.drawWrappedTextAt(text || 'N/A', MARGIN_L + pad, this.cursorY + 18 + pad, CONTENT_W - pad * 2, {
+      fontSize, align: 'justify',
+    });
 
     this.cursorY += totalH;
   }

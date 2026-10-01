@@ -63,6 +63,47 @@ export interface DrawTextOptions {
   maxWidth?: number;
 }
 
+/**
+ * Converts any image format (WebP, AVIF, PNG, etc.) to JPEG Uint8Array via offscreen canvas in the browser.
+ */
+export async function convertToJpgBytes(bytes: Uint8Array): Promise<Uint8Array | null> {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return null;
+  try {
+    const blob = new Blob([bytes as any]);
+    const blobUrl = URL.createObjectURL(blob);
+    return await new Promise<Uint8Array | null>((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth || img.width || 800;
+          canvas.height = img.naturalHeight || img.height || 600;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) { resolve(null); return; }
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0);
+          canvas.toBlob(async (jpgBlob) => {
+            if (!jpgBlob) { resolve(null); return; }
+            const arrayBuf = await jpgBlob.arrayBuffer();
+            resolve(new Uint8Array(arrayBuf));
+          }, 'image/jpeg', 0.92);
+        } catch {
+          resolve(null);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(blobUrl);
+        resolve(null);
+      };
+      img.src = blobUrl;
+    });
+  } catch {
+    return null;
+  }
+}
+
 export class PDFGeneralRenderer {
   protected doc!: PDFDocument;
   protected page!: PDFPage;
@@ -441,8 +482,8 @@ export class PDFGeneralRenderer {
     return lines.length * lineH;
   }
 
-  /** Draw rich text segments (mixed bold/regular) on a single conceptual line, with wrapping */
-  protected drawRichTextAt(segments: TextSegment[], x: number, topY: number, maxWidth: number, fontSize: number): number {
+  /** Draw rich text segments (mixed bold/regular) on a single conceptual line, with wrapping & optional justification */
+  protected drawRichTextAt(segments: TextSegment[], x: number, topY: number, maxWidth: number, fontSize: number, justify: boolean = true): number {
     const lineH = fontSize * LINE_HEIGHT;
 
     // Build a flat list of {word, bold, italic}
@@ -476,11 +517,40 @@ export class PDFGeneralRenderer {
 
     // Draw each line
     for (let li = 0; li < lines.length; li++) {
-      let cx = x;
+      const lineItems = lines[li];
+      const isLastLine = li === lines.length - 1;
       const baselineOffset = fontSize * 0.8;
       const pY = this.pdfY(topY + li * lineH) - baselineOffset;
 
-      for (const item of lines[li]) {
+      const tokens = lineItems.filter(item => !/^\s+$/.test(item.word));
+
+      if (justify && !isLastLine && tokens.length > 1) {
+        let totalTokenW = 0;
+        for (const tok of tokens) {
+          const font = this.getFont(tok.bold, tok.italic);
+          totalTokenW += font.widthOfTextAtSize(this.sanitizeText(tok.word), fontSize);
+        }
+        const spaceCount = tokens.length - 1;
+        const availableSpace = maxWidth - totalTokenW;
+        const spaceW = availableSpace / spaceCount;
+
+        if (spaceW >= 0 && spaceW <= 16) {
+          let cx = x;
+          for (let ti = 0; ti < tokens.length; ti++) {
+            const tok = tokens[ti];
+            const font = this.getFont(tok.bold, tok.italic);
+            const safeWord = this.sanitizeText(tok.word);
+            this.page.drawText(safeWord, {
+              x: cx, y: pY, size: fontSize, font, color: rgb(0, 0, 0),
+            });
+            cx += font.widthOfTextAtSize(safeWord, fontSize) + (ti < tokens.length - 1 ? spaceW : 0);
+          }
+          continue;
+        }
+      }
+
+      let cx = x;
+      for (const item of lineItems) {
         const font = this.getFont(item.bold, item.italic);
         const safeWord = this.sanitizeText(item.word);
         this.page.drawText(safeWord, {
@@ -606,12 +676,14 @@ export class PDFGeneralRenderer {
 
   /**
    * Draw a two-column row: label on left (with background), bold value on right.
+   * Auto-justifies long multi-line values (like remarks, demarcation, legal address).
    * Advances cursor.
    */
-  drawSimpleRow(label: string, value: string): void {
+  drawSimpleRow(label: string, value: string, justifyValue = false): void {
     const labelW = Math.round(CONTENT_W * 0.40);  // 40% for label
     const valueW = CONTENT_W - labelW;             // 60% for value
 
+    const isLongText = (value || '').length > 60 || justifyValue;
     // Measure both sides to get max height
     const labelH = this.cellHeight(label, labelW, { bold: false });
     const valueH = this.cellHeight(value || 'N/A', valueW, { bold: true });
@@ -626,7 +698,7 @@ export class PDFGeneralRenderer {
 
     // Right cell: bold value on white
     this.drawCell(MARGIN_L + labelW, this.cursorY, valueW, h, value || 'N/A', {
-      bold: true, vAlign: 'middle',
+      bold: true, vAlign: 'middle', align: isLongText ? 'justify' : 'left',
     });
 
     this.cursorY += h;
@@ -640,10 +712,25 @@ export class PDFGeneralRenderer {
    *   Text wraps within cells to prevent overflow.
    * Advances cursor.
    */
-  drawOptionRow(label: string, options: string[], selectedValue: string): void {
+  drawOptionRow(label: string, rawOptions: string[], selectedValue: string): void {
     const col1X = MARGIN_L;
     const col2X = MARGIN_L + COL_W[0];
     const col3X = MARGIN_L + COL_W[0] + COL_W[1];
+
+    // Multi-select or custom Other support
+    const selectedList = selectedValue ? selectedValue.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+    
+    // If rawOptions contains 'Other', replace it with custom selectedValue if selectedValue is custom
+    let options = [...rawOptions];
+    const otherIdx = options.findIndex(o => o.toLowerCase() === 'other');
+    if (otherIdx !== -1) {
+      const isPredefined = options.some(o => o.toLowerCase() !== 'other' && (o.toLowerCase() === selectedValue.toLowerCase() || selectedList.includes(o.toLowerCase())));
+      if (!isPredefined && selectedValue && selectedValue !== 'Other') {
+        options[otherIdx] = selectedValue;
+      } else {
+        options.splice(otherIdx, 1);
+      }
+    }
 
     const optionTextW = COL_W[1] - CELL_PAD_X * 2;
     const labelH = this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE });
@@ -674,7 +761,7 @@ export class PDFGeneralRenderer {
     let optY = this.cursorY + CELL_PAD_Y;
     for (let i = 0; i < options.length; i++) {
       const optLines = this.wrapText(options[i], optionTextW, FONT_SIZE);
-      const isBold = options[i] === selectedValue;
+      const isBold = options[i].toLowerCase() === selectedValue.toLowerCase() || selectedList.includes(options[i].toLowerCase());
       const textH = optLines.length * FONT_SIZE * LINE_HEIGHT;
       const textY = optY + (optionHeights[i] - textH) / 2;
       for (let j = 0; j < optLines.length; j++) {
@@ -831,27 +918,40 @@ export class PDFGeneralRenderer {
   }
 
   /**
-   * Draw the 8-column floor valuation table.
+   * Draw the 8-column or 9-column floor valuation table.
    * Advances cursor.
    */
   drawFloorTable(
     headers: string[],
-    rows: { name: string; area: string; rate: string; estimated: string; life: string; age: string; dep: string; netValue: string }[],
+    rows: { name: string; basis?: string; area: string; rate: string; estimated: string; life: string; age: string; dep: string; netValue: string }[],
     totalLabel: string,
     totalValue: string,
   ): void {
-    const numCols = 8;
-    const colWidths = [
-      Math.round(CONTENT_W * 0.12), // Floor
-      Math.round(CONTENT_W * 0.12), // Area
-      Math.round(CONTENT_W * 0.15), // Rate
-      Math.round(CONTENT_W * 0.15), // Estimated
-      Math.round(CONTENT_W * 0.08), // Life
-      Math.round(CONTENT_W * 0.08), // Age
-      Math.round(CONTENT_W * 0.09), // Dep%
-      0, // Net Value (remainder)
-    ];
-    colWidths[7] = CONTENT_W - colWidths.slice(0, 7).reduce((a, b) => a + b, 0);
+    const is9Col = headers.length === 9;
+    const numCols = is9Col ? 9 : 8;
+    const colWidths = is9Col
+      ? [
+          Math.round(CONTENT_W * 0.11), // Floor
+          Math.round(CONTENT_W * 0.14), // Basis of Valuation
+          Math.round(CONTENT_W * 0.10), // Area
+          Math.round(CONTENT_W * 0.14), // Rate
+          Math.round(CONTENT_W * 0.14), // Estimated
+          Math.round(CONTENT_W * 0.07), // Life
+          Math.round(CONTENT_W * 0.07), // Age
+          Math.round(CONTENT_W * 0.08), // Dep%
+          0, // Net Value (remainder)
+        ]
+      : [
+          Math.round(CONTENT_W * 0.12), // Floor
+          Math.round(CONTENT_W * 0.12), // Area
+          Math.round(CONTENT_W * 0.15), // Rate
+          Math.round(CONTENT_W * 0.15), // Estimated
+          Math.round(CONTENT_W * 0.08), // Life
+          Math.round(CONTENT_W * 0.08), // Age
+          Math.round(CONTENT_W * 0.09), // Dep%
+          0, // Net Value (remainder)
+        ];
+    colWidths[numCols - 1] = CONTENT_W - colWidths.slice(0, numCols - 1).reduce((a, b) => a + b, 0);
 
     const rowH = FONT_SIZE_SMALL * LINE_HEIGHT + CELL_PAD_Y * 2;
     const headerRowH = FONT_SIZE_SMALL * LINE_HEIGHT * 2 + CELL_PAD_Y * 2;
@@ -889,10 +989,15 @@ export class PDFGeneralRenderer {
     this.cursorY += headerRowH;
 
     // Data rows
-    const aligns: ('left' | 'right' | 'center')[] = ['left', 'right', 'right', 'right', 'center', 'center', 'center', 'right'];
+    const aligns: ('left' | 'right' | 'center')[] = is9Col
+      ? ['left', 'left', 'right', 'right', 'right', 'center', 'center', 'center', 'right']
+      : ['left', 'right', 'right', 'right', 'center', 'center', 'center', 'right'];
+
     for (let r = 0; r < rows.length; r++) {
       const row = rows[r];
-      const vals = [row.name, row.area, row.rate, row.estimated, row.life, row.age, row.dep, row.netValue];
+      const vals = is9Col
+        ? [row.name, row.basis || 'Built-up Area', row.area, row.rate, row.estimated, row.life, row.age, row.dep, row.netValue]
+        : [row.name, row.area, row.rate, row.estimated, row.life, row.age, row.dep, row.netValue];
       const bgColor = r % 2 === 0 ? '#FFFFFF' : '#F5F5F5';
       cx = MARGIN_L;
       for (let c = 0; c < numCols; c++) {
@@ -905,11 +1010,11 @@ export class PDFGeneralRenderer {
     }
 
     // Total row
-    const totalLabelW = colWidths.slice(0, 7).reduce((a, b) => a + b, 0);
+    const totalLabelW = colWidths.slice(0, numCols - 1).reduce((a, b) => a + b, 0);
     this.drawCell(MARGIN_L, this.cursorY, totalLabelW, rowH, totalLabel, {
       bold: true, fontSize: FONT_SIZE_SMALL, fillColor: LBL_BG, bgOpacity: 0.5,
     });
-    this.drawCell(MARGIN_L + totalLabelW, this.cursorY, colWidths[7], rowH, totalValue, {
+    this.drawCell(MARGIN_L + totalLabelW, this.cursorY, colWidths[numCols - 1], rowH, totalValue, {
       bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'right',
     });
     this.cursorY += rowH;
@@ -918,10 +1023,11 @@ export class PDFGeneralRenderer {
   // ─── High-Level Content Methods ────────────────────────────────
 
   /**
-   * Draw a plain text block (like "To", date, ref).
+   * Draw a plain text block (like "To", date, ref, declarations, bullet points).
+   * Automatically uses justified alignment for multi-line paragraphs and bulleted text.
    * Advances cursor.
    */
-  drawTextBlock(text: string, opts?: DrawTextOptions): void {
+  drawTextBlock(text: string, opts?: DrawTextOptions & { align?: 'left' | 'center' | 'right' | 'justify' }): void {
     const fontSize = opts?.fontSize || FONT_SIZE;
     const maxWidth = opts?.maxWidth || CONTENT_W;
     const lineH = fontSize * LINE_HEIGHT;
@@ -930,11 +1036,10 @@ export class PDFGeneralRenderer {
 
     this.checkPageBreak(totalH);
 
-    for (let i = 0; i < lines.length; i++) {
-      this.drawTextAt(lines[i], MARGIN_L, this.cursorY + i * lineH, {
-        ...opts, maxWidth: CONTENT_W,
-      });
-    }
+    const align = opts?.align ?? (lines.length > 1 ? 'justify' : 'left');
+    this.drawWrappedTextAt(text, MARGIN_L, this.cursorY, maxWidth, {
+      ...opts, align, maxWidth,
+    });
 
     this.cursorY += totalH;
   }
@@ -1016,6 +1121,43 @@ export class PDFGeneralRenderer {
   }
 
   /**
+   * Draw a bordered declaration box with rich text content.
+   * Advances cursor.
+   */
+  drawDeclarationBox(lines: { segments: TextSegment[]; bold?: boolean }[]): void {
+    const boxPad = 8;
+    const fs = FONT_SIZE;
+    const innerW = CONTENT_W - boxPad * 2;
+
+    // Measure total height
+    let totalTextH = 0;
+    for (const line of lines) {
+      if (line.segments.length > 0) {
+        totalTextH += this.measureRichTextHeight(line.segments, innerW, fs);
+      }
+      totalTextH += 2;
+    }
+    const boxH = totalTextH + boxPad * 2;
+
+    this.checkPageBreak(boxH);
+
+    // Draw box border
+    this.drawRect(MARGIN_L, this.cursorY, CONTENT_W, boxH, undefined, '#000000', 1.5);
+
+    // Draw content
+    let yOff = this.cursorY + boxPad;
+    for (const line of lines) {
+      if (line.segments.length > 0) {
+        const consumed = this.drawRichTextAt(line.segments, MARGIN_L + boxPad, yOff, innerW, fs);
+        yOff += consumed;
+      }
+      yOff += 2;
+    }
+
+    this.cursorY += boxH;
+  }
+
+  /**
    * Draw a right-aligned signature block.
    * Advances cursor.
    */
@@ -1034,8 +1176,165 @@ export class PDFGeneralRenderer {
       this.cursorY += fs * LINE_HEIGHT;
     }
   }
+  async embedImgSafe(bytes?: Uint8Array | null): Promise<PDFImage | null> {
+    if (!bytes || bytes.length === 0) return null;
+    try {
+      return await this.doc.embedJpg(bytes);
+    } catch { /* ignore */ }
 
-  // ─── Image Support ─────────────────────────────────────────────
+    try {
+      return await this.doc.embedPng(bytes);
+    } catch { /* ignore */ }
+
+    try {
+      const converted = await convertToJpgBytes(bytes);
+      if (converted && converted.length > 0) {
+        return await this.doc.embedJpg(converted);
+      }
+    } catch { /* ignore */ }
+
+    return null;
+  }
+
+  /**
+   * Draw an Image on the page with an optional caption and bounding border
+   */
+  async drawImageSection(imageBytes: Uint8Array, caption = '', maxH = 260, drawBorder = true): Promise<void> {
+    if (!imageBytes || imageBytes.length === 0) return;
+
+    const hasCaption = !!(caption && caption.trim().length > 0);
+    this.checkPageBreak(maxH + (hasCaption ? 20 : 0));
+    try {
+      const img = await this.embedImgSafe(imageBytes);
+      if (!img) return;
+
+      const scale = Math.min(CONTENT_W / img.width, maxH / img.height, 1);
+      const w = img.width * scale;
+      const h = img.height * scale;
+      const x = MARGIN_L + (CONTENT_W - w) / 2;
+      const y = this.pdfY(this.cursorY) - h;
+
+      if (drawBorder) {
+        this.page.drawRectangle({
+          x: MARGIN_L,
+          y: this.pdfY(this.cursorY) - h,
+          width: CONTENT_W,
+          height: h,
+          borderColor: rgb(0, 0, 0),
+          borderWidth: BORDER_W,
+        });
+      }
+
+      this.page.drawImage(img, { x, y, width: w, height: h });
+
+      if (hasCaption) {
+        const text = this.sanitizeText(caption.trim());
+        const tw = this.fontItalic.widthOfTextAtSize(text, FONT_SIZE_CAPTION);
+        this.page.drawText(text, {
+          x: MARGIN_L + (CONTENT_W - tw) / 2,
+          y: y - 12,
+          size: FONT_SIZE_CAPTION,
+          font: this.fontItalic,
+          color: rgb(0, 0, 0),
+        });
+        this.cursorY += h + 20;
+      } else {
+        this.cursorY += h + 8;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  /**
+   * Draw a Map Gallery for a specific map type (Google Satellite Map, Mouza Map, Sketch Map, Cadastral Map, BDA Map).
+   * Supports 1, 2, or N images.
+   * If images exist, adds a new page (or continues), draws the section header, and lays out images cleanly
+   * with bounding borders, captions, and page break checking.
+   */
+  async drawMapGallery(
+    images: (Uint8Array | { bytes: Uint8Array; caption?: string })[],
+    title: string,
+    maxImageH: number = 230,
+    forceNewPage: boolean = false
+  ): Promise<void> {
+    if (!images || images.length === 0) return;
+
+    const normalized = images.map(item => {
+      if (item instanceof Uint8Array || (item as any)?.byteLength !== undefined) {
+        return { bytes: item as Uint8Array, caption: '' };
+      }
+      return { bytes: (item as any)?.bytes as Uint8Array, caption: (item as any)?.caption || '' };
+    }).filter(i => i.bytes && i.bytes.length > 0);
+
+    if (normalized.length === 0) return;
+
+    const neededForTitleAndImage = 44 + maxImageH + 20;
+
+    if (forceNewPage || this.cursorY === 0 || this.availableHeight < neededForTitleAndImage) {
+      if (this.cursorY > 0) {
+        this.addPage();
+      }
+    } else {
+      this.advanceCursor(14);
+    }
+
+    this.drawSectionHeader(title);
+    this.advanceCursor(8);
+
+    for (let i = 0; i < normalized.length; i++) {
+      const { bytes, caption } = normalized[i];
+      const imgCaption = caption || (normalized.length > 1 ? `${title} — Image ${i + 1} of ${normalized.length}` : '');
+      await this.drawImageSection(bytes, imgCaption, maxImageH, true);
+      this.advanceCursor(10);
+    }
+  }
+
+  /**
+   * Draw unified Documents Gallery (for Section "Documents")
+   * Formats user-uploaded document images with individual user-specified headings/captions.
+   * Default caption is 'Document' (or custom name, or null/empty if omitted).
+   * Fits 2 images per page (maxImageH ~240), with line breaks.
+   */
+  async drawDocumentsGallery(
+    images: (Uint8Array | { bytes: Uint8Array; caption?: string; name?: string })[],
+    title: string = 'DOCUMENTS',
+    maxImageH: number = 240,
+    forceNewPage: boolean = false
+  ): Promise<void> {
+    if (!images || images.length === 0) return;
+
+    const normalized = images.map((item, idx) => {
+      if (item instanceof Uint8Array || (item as any)?.byteLength !== undefined) {
+        return { bytes: item as Uint8Array, caption: '' };
+      }
+      const rawCaption = (item as any)?.caption ?? (item as any)?.name;
+      const caption = rawCaption !== undefined && rawCaption !== null ? String(rawCaption).trim() : '';
+      return { bytes: (item as any)?.bytes as Uint8Array, caption };
+    }).filter(i => i.bytes && i.bytes.length > 0);
+
+    if (normalized.length === 0) return;
+
+    const neededForTitleAndImage = 44 + maxImageH + 20;
+
+    if (forceNewPage || this.cursorY === 0 || this.availableHeight < neededForTitleAndImage) {
+      if (this.cursorY > 0) {
+        this.addPage();
+      }
+    } else {
+      this.advanceCursor(14);
+    }
+
+    this.drawSectionHeader(title);
+    this.advanceCursor(8);
+
+    for (let i = 0; i < normalized.length; i++) {
+      const { bytes, caption } = normalized[i];
+      const imgCaption = caption !== undefined && caption !== null ? caption : '';
+      await this.drawImageSection(bytes, imgCaption, maxImageH, true);
+      this.advanceCursor(10);
+    }
+  }
 
   /**
    * Embed an image (PNG or JPEG bytes) and draw it.
@@ -1070,7 +1369,7 @@ export class PDFGeneralRenderer {
     let w = img.width;
     let h = img.height;
     if (w > maxW) { h = h * (maxW / w); w = maxW; }
-    if (h > maxH) { w = w * (maxH / h); h = maxH; }
+    if (h > maxH) { h = h * (maxH / h); h = maxH; }
 
     const captionH = opts?.caption ? FONT_SIZE_CAPTION * LINE_HEIGHT + 4 : 0;
     const totalH = h + captionH + 8;

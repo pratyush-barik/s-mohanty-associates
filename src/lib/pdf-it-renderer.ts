@@ -376,7 +376,7 @@ export async function generateIncomeTaxPDF(
     return lines;
   };
 
-  const drawText = (text: string, opts?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right'; x?: number; maxW?: number }) => {
+  const drawText = (text: string, opts?: { bold?: boolean; italic?: boolean; underline?: boolean; fontSize?: number; align?: 'left' | 'center' | 'right' | 'justify'; x?: number; maxW?: number }) => {
     const fs = opts?.fontSize || 12;
     const lh = fs * LINE_H;
     const font = opts?.bold && opts?.italic ? fontBI : opts?.bold ? fontB : fontR;
@@ -385,15 +385,35 @@ export async function generateIncomeTaxPDF(
     const lines = wrapText(text, maxW, font, fs);
     const totalH = lines.length * lh;
     ensureSpace(totalH);
+    const shouldJustify = opts?.align === 'justify' || (!opts?.align && lines.length > 1);
+
     for (let i = 0; i < lines.length; i++) {
+      const isLastLine = i === lines.length - 1;
       let dx = x;
       const tw = font.widthOfTextAtSize(lines[i], fs);
+      const textY = pdfY(cy + i * lh) - fs * 0.8;
+
       if (opts?.align === 'center') {
         dx = x + (maxW - tw) / 2;
       } else if (opts?.align === 'right') {
         dx = x + maxW - tw;
+      } else if (shouldJustify && !isLastLine) {
+        const words = lines[i].trim().split(/\s+/);
+        if (words.length > 1) {
+          let wordsW = 0;
+          for (const w of words) wordsW += font.widthOfTextAtSize(w, fs);
+          const spaceW = (maxW - wordsW) / (words.length - 1);
+          if (spaceW >= 0 && spaceW <= 16) {
+            let wx = x;
+            for (const w of words) {
+              page.drawText(w, { x: wx, y: textY, size: fs, font, color: rgb(0, 0, 0) });
+              wx += font.widthOfTextAtSize(w, fs) + spaceW;
+            }
+            continue;
+          }
+        }
       }
-      const textY = pdfY(cy + i * lh) - fs * 0.8;
+
       page.drawText(lines[i], {
         x: dx,
         y: textY,
@@ -416,7 +436,7 @@ export async function generateIncomeTaxPDF(
 
   const drawRichParagraph = (
     segments: { text: string; bold?: boolean; italic?: boolean }[],
-    opts?: { fontSize?: number; align?: 'left' | 'center'; x?: number; maxW?: number }
+    opts?: { fontSize?: number; align?: 'left' | 'center' | 'right' | 'justify'; x?: number; maxW?: number }
   ) => {
     const fs = opts?.fontSize || 11;
     const lh = fs * LINE_H;
@@ -471,17 +491,41 @@ export async function generateIncomeTaxPDF(
     const totalH = lines.length * lh;
     ensureSpace(totalH);
 
+    const shouldJustify = opts?.align === 'justify' || (!opts?.align && lines.length > 1);
+
     for (let i = 0; i < lines.length; i++) {
       const lineTokens = lines[i];
-      let dx = x;
+      const isLastLine = i === lines.length - 1;
+      const nonSpaceTokens = lineTokens.filter(t => t.word.trim().length > 0);
+      const textY = pdfY(cy + i * lh) - fs * 0.8;
+
       if (opts?.align === 'center') {
         const lineW = lineTokens.reduce((sum, t) => sum + t.width, 0);
-        dx = x + (maxW - lineW) / 2;
+        let dx = x + (maxW - lineW) / 2;
+        for (const tok of lineTokens) {
+          page.drawText(tok.word, { x: dx, y: textY, size: fs, font: tok.font, color: rgb(0, 0, 0) });
+          dx += tok.width;
+        }
+      } else if (shouldJustify && !isLastLine && nonSpaceTokens.length > 1) {
+        const totalWordsW = nonSpaceTokens.reduce((sum, t) => sum + t.width, 0);
+        const spaceW = (maxW - totalWordsW) / (nonSpaceTokens.length - 1);
+        if (spaceW >= 0 && spaceW <= 16) {
+          let dx = x;
+          for (let ti = 0; ti < nonSpaceTokens.length; ti++) {
+            const tok = nonSpaceTokens[ti];
+            page.drawText(tok.word, { x: dx, y: textY, size: fs, font: tok.font, color: rgb(0, 0, 0) });
+            dx += tok.width + (ti < nonSpaceTokens.length - 1 ? spaceW : 0);
+          }
+          continue;
+        }
       }
+
+      // Default left-aligned
+      let dx = x;
       for (const tok of lineTokens) {
         page.drawText(tok.word, {
           x: dx,
-          y: pdfY(cy + i * lh) - fs * 0.8,
+          y: textY,
           size: fs,
           font: tok.font,
           color: rgb(0, 0, 0),

@@ -16,6 +16,33 @@ import {
 import { rgb } from 'pdf-lib';
 
 export class PDFClixCapitalRenderer extends PDFBankRenderer {
+  private fields: any;
+
+  constructor(fields?: any) {
+    super();
+    this.fields = fields || {};
+  }
+
+  private getF(key: string, defaultVal: any = ''): any {
+    const val = (this.fields as any)?.[key];
+    if (val === undefined || val === null) return defaultVal;
+    return typeof val === 'string' ? val.replace(/[\t\n\r]+/g, ' ').trim() : val;
+  }
+
+  private stripHtml(html: string): string {
+    return html ? html.replace(/<[^>]*>/g, '') : '';
+  }
+
+  private drawStandardTwoColumnRow(label: string, value: string): void {
+    this.drawSimpleRow(label, value);
+  }
+
+  private async renderMapsAndPhotos(): Promise<void> {
+    if (this.fields?.propertyImages && this.fields.propertyImages.length > 0) {
+      await this.drawPhotoGrid(this.fields.propertyImages);
+    }
+  }
+
   async drawContent(): Promise<void> {
     this.addPage();
     this.drawMainHeader('VALUATION REPORT');

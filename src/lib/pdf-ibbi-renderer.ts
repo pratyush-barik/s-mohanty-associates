@@ -54,7 +54,7 @@ interface DrawTextOptions {
   bold?: boolean;
   italic?: boolean;
   fontSize?: number;
-  align?: 'left' | 'center' | 'right';
+  align?: 'left' | 'center' | 'right' | 'justify';
   maxWidth?: number;
   underline?: boolean;
   indent?: number;
@@ -377,13 +377,43 @@ export class PDFIBBIRenderer {
     const lines = this.wrapText(String(text || ''), maxWidth, fontSize, opts?.bold, opts?.italic);
 
     for (let i = 0; i < lines.length; i++) {
-      this.drawTextAt(lines[i], x, topY + i * lineH, { ...opts, maxWidth });
+      const isLastLine = i === lines.length - 1;
+      if (opts?.align === 'justify' && !isLastLine) {
+        const line = lines[i];
+        const font = this.getFont(opts?.bold, opts?.italic);
+        const baselineOffset = fontSize * 0.8;
+        const pY = this.pdfY(topY + i * lineH) - baselineOffset;
+        const words = this.sanitizeText(line).trim().split(/\s+/);
+        if (words.length > 1) {
+          let wordsW = 0;
+          for (const word of words) {
+            wordsW += font.widthOfTextAtSize(word, fontSize);
+          }
+          const availableSpace = maxWidth - wordsW;
+          const spaceW = availableSpace / (words.length - 1);
+          if (spaceW >= 0 && spaceW <= 16) {
+            let curWordX = x;
+            for (const word of words) {
+              this.page.drawText(word, {
+                x: curWordX,
+                y: pY,
+                size: fontSize,
+                font,
+                color: opts?.textColor ? hexToRgb(opts.textColor) : rgb(0, 0, 0),
+              });
+              curWordX += font.widthOfTextAtSize(word, fontSize) + spaceW;
+            }
+            continue;
+          }
+        }
+      }
+      this.drawTextAt(lines[i], x, topY + i * lineH, { ...opts, align: opts?.align === 'justify' ? 'left' : opts?.align, maxWidth });
     }
     return lines.length * lineH;
   }
 
-  /** Draw rich text segments (mixed bold/regular) on a single conceptual line, with wrapping */
-  private drawRichTextAt(segments: TextSegment[], x: number, topY: number, maxWidth: number, fontSize: number): number {
+  /** Draw rich text segments (mixed bold/regular) on a single conceptual line, with wrapping & justification */
+  private drawRichTextAt(segments: TextSegment[], x: number, topY: number, maxWidth: number, fontSize: number, justify: boolean = true): number {
     const lineH = fontSize * LINE_HEIGHT;
 
     // Build a flat list of {word, bold, italic}
@@ -417,11 +447,40 @@ export class PDFIBBIRenderer {
 
     // Draw each line
     for (let li = 0; li < lines.length; li++) {
-      let cx = x;
+      const lineItems = lines[li];
+      const isLastLine = li === lines.length - 1;
       const baselineOffset = fontSize * 0.8;
       const pY = this.pdfY(topY + li * lineH) - baselineOffset;
 
-      for (const item of lines[li]) {
+      const tokens = lineItems.filter(item => !/^\s+$/.test(item.word));
+
+      if (justify && !isLastLine && tokens.length > 1) {
+        let totalTokenW = 0;
+        for (const tok of tokens) {
+          const font = this.getFont(tok.bold, tok.italic);
+          totalTokenW += font.widthOfTextAtSize(this.sanitizeText(tok.word), fontSize);
+        }
+        const spaceCount = tokens.length - 1;
+        const availableSpace = maxWidth - totalTokenW;
+        const spaceW = availableSpace / spaceCount;
+
+        if (spaceW >= 0 && spaceW <= 16) {
+          let cx = x;
+          for (let ti = 0; ti < tokens.length; ti++) {
+            const tok = tokens[ti];
+            const font = this.getFont(tok.bold, tok.italic);
+            const safeWord = this.sanitizeText(tok.word);
+            this.page.drawText(safeWord, {
+              x: cx, y: pY, size: fontSize, font, color: rgb(0, 0, 0),
+            });
+            cx += font.widthOfTextAtSize(safeWord, fontSize) + (ti < tokens.length - 1 ? spaceW : 0);
+          }
+          continue;
+        }
+      }
+
+      let cx = x;
+      for (const item of lineItems) {
         const font = this.getFont(item.bold, item.italic);
         const safeWord = this.sanitizeText(item.word);
         this.page.drawText(safeWord, {
@@ -445,7 +504,7 @@ export class PDFIBBIRenderer {
     text: string,
     opts?: {
       bold?: boolean; italic?: boolean; fontSize?: number;
-      align?: 'left' | 'center' | 'right';
+      align?: 'left' | 'center' | 'right' | 'justify';
       fillColor?: string; bgOpacity?: number; borderColor?: string;
       textColor?: string;
       vAlign?: 'top' | 'middle';
@@ -473,8 +532,39 @@ export class PDFIBBIRenderer {
     }
 
     for (let i = 0; i < lines.length; i++) {
+      const isLastLine = i === lines.length - 1;
+      if (opts?.align === 'justify' && !isLastLine) {
+        const line = lines[i];
+        const font = this.getFont(opts?.bold, opts?.italic);
+        const baselineOffset = fontSize * 0.8;
+        const pY = this.pdfY(textTopY + i * fontSize * LINE_HEIGHT) - baselineOffset;
+        const words = this.sanitizeText(line).trim().split(/\s+/);
+        if (words.length > 1) {
+          let wordsW = 0;
+          for (const word of words) {
+            wordsW += font.widthOfTextAtSize(word, fontSize);
+          }
+          const availableSpace = textW - wordsW;
+          const spaceW = availableSpace / (words.length - 1);
+          if (spaceW >= 0 && spaceW <= 16) {
+            let curWordX = x + CELL_PAD_X;
+            for (const word of words) {
+              this.page.drawText(word, {
+                x: curWordX,
+                y: pY,
+                size: fontSize,
+                font,
+                color: opts?.textColor ? hexToRgb(opts.textColor) : rgb(0, 0, 0),
+              });
+              curWordX += font.widthOfTextAtSize(word, fontSize) + spaceW;
+            }
+            continue;
+          }
+        }
+      }
+
       this.drawTextAt(lines[i], x + CELL_PAD_X, textTopY + i * fontSize * LINE_HEIGHT, {
-        bold: opts?.bold, italic: opts?.italic, fontSize, align: opts?.align, maxWidth: textW, textColor: opts?.textColor
+        bold: opts?.bold, italic: opts?.italic, fontSize, align: opts?.align === 'justify' ? 'left' : opts?.align, maxWidth: textW, textColor: opts?.textColor
       });
     }
   }
@@ -1020,7 +1110,8 @@ export class PDFIBBIRenderer {
   // ─── High-Level Content Methods ────────────────────────────────
 
   /**
-   * Draw a plain text block (like "To", date, ref).
+   * Draw a plain text block (like "To", date, ref, paragraphs).
+   * Automatically uses justified alignment for multi-line paragraphs.
    * Advances cursor.
    */
   drawTextBlock(text: string, opts?: DrawTextOptions): void {
@@ -1033,11 +1124,10 @@ export class PDFIBBIRenderer {
 
     this.checkPageBreak(totalH);
 
-    for (let i = 0; i < lines.length; i++) {
-      this.drawTextAt(lines[i], MARGIN_L + indent, this.cursorY + i * lineH, {
-        ...opts, maxWidth: maxWidth,
-      });
-    }
+    const align = opts?.align ?? (lines.length > 1 ? 'justify' : 'left');
+    this.drawWrappedTextAt(text, MARGIN_L + indent, this.cursorY, maxWidth, {
+      ...opts, align, maxWidth,
+    });
 
     this.cursorY += totalH;
   }
@@ -1063,7 +1153,7 @@ export class PDFIBBIRenderer {
     this.checkPageBreak(h);
 
     this.drawTextAt(label, MARGIN_L + labelIndent, this.cursorY, { fontSize, bold: false });
-    const consumed = this.drawRichTextAt(segments, MARGIN_L + textIndent, this.cursorY, maxWidth, fontSize);
+    const consumed = this.drawRichTextAt(segments, MARGIN_L + textIndent, this.cursorY, maxWidth, fontSize, true);
     
     this.cursorY += consumed;
   }
@@ -1084,12 +1174,11 @@ export class PDFIBBIRenderer {
       fontSize, bold: false,
     });
 
-    // Draw all text lines at the text indent position
-    for (let i = 0; i < lines.length; i++) {
-      this.drawTextAt(lines[i], MARGIN_L + textIndent, this.cursorY + i * lineH, {
-        ...opts, maxWidth: maxTextWidth,
-      });
-    }
+    // Draw all text lines with justified alignment
+    const align = opts?.align ?? (lines.length > 1 ? 'justify' : 'left');
+    this.drawWrappedTextAt(text, MARGIN_L + textIndent, this.cursorY, maxTextWidth, {
+      ...opts, align, maxWidth: maxTextWidth,
+    });
 
     this.cursorY += totalH;
   }
