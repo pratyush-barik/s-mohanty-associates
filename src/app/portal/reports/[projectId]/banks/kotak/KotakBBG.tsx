@@ -1158,16 +1158,27 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         const fmvExactCalc = totalAssetValue;
         const fmvExactVal = fields.kotakBbgFmvExact || (fmvExactCalc > 0 ? fmvExactCalc.toString() : '');
 
-        let roundedFmvCalc = 0;
-        if (totalAssetValue > 0) {
-           roundedFmvCalc = Math.round(totalAssetValue / 100000) * 100000;
+        const roundingPref = fields.kotakBbgRoundingPreference || 'Nearest 1,00,000';
+        let roundedFmvCalc = fmvExactCalc;
+        if (fmvExactCalc > 0) {
+           if (roundingPref === 'Nearest 1,000') {
+             roundedFmvCalc = Math.round(fmvExactCalc / 1000) * 1000;
+           } else if (roundingPref === 'Nearest 1,00,000') {
+             roundedFmvCalc = Math.round(fmvExactCalc / 100000) * 100000;
+           }
         }
         const fmvRoundedVal = fields.kotakBbgFmvRounded || (roundedFmvCalc > 0 ? roundedFmvCalc.toString() : '');
 
-        const rvCalc = roundedFmvCalc * 0.90;
+        const guidelineRate = parseFloat(fields.kotakBbgGuidelineRate) || 0;
+        const guidelineValCalc = (landArea * guidelineRate);
+        const isFmvLowerThanGuideline = roundedFmvCalc > 0 && guidelineValCalc > 0 && roundedFmvCalc < guidelineValCalc;
+
+        const rvPercent = parseFloat(fields.kotakBbgRvPercent !== undefined ? fields.kotakBbgRvPercent : '90') || 90;
+        const rvCalc = roundedFmvCalc * (rvPercent / 100);
         const rvVal = fields.kotakBbgRv || (rvCalc > 0 ? rvCalc.toString() : '');
 
-        const dvCalc = roundedFmvCalc * 0.80;
+        const dvPercent = parseFloat(fields.kotakBbgDvPercent !== undefined ? fields.kotakBbgDvPercent : '80') || 80;
+        const dvCalc = roundedFmvCalc * (dvPercent / 100);
         const dvVal = fields.kotakBbgDv || (dvCalc > 0 ? dvCalc.toString() : '');
 
         const ivCalc = buildingValue;
@@ -1185,30 +1196,60 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               isReadOnly={isReadOnly}
               tooltip='Prefill from section 7, "Total Asset Value (i + ii)"'
             />
+
+            <Field label="Rounding Preference">
+              <select className={inputCls} value={fields.kotakBbgRoundingPreference || 'Nearest 1,00,000'} onChange={e => handleChange('kotakBbgRoundingPreference', e.target.value)} disabled={isReadOnly}>
+                <option value="Nearest 1,000">Nearest 1,000</option>
+                <option value="Nearest 1,00,000">Nearest 1,00,000</option>
+                <option value="No Rounding">No Rounding</option>
+              </select>
+            </Field>
             
-            <PrefillField
-              label='Rounded Fair Market Value ("Say Value") (₹)'
-              value={fmvRoundedVal}
-              onChange={(val: string) => handleChange('kotakBbgFmvRounded', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Auto calculating from [Round(Exact Fair Market Value (FMV), Nearest Lakh)]"
-            />
+            <div className="space-y-2">
+              <PrefillField
+                label='Rounded Fair Market Value ("Say Value") (₹)'
+                value={fmvRoundedVal}
+                onChange={(val: string) => handleChange('kotakBbgFmvRounded', val)}
+                isReadOnly={isReadOnly}
+                tooltip={`Auto calculating from [Round(Exact Fair Market Value (FMV), ${roundingPref})]`}
+              />
+              {isFmvLowerThanGuideline && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded text-sm font-semibold flex items-start space-x-2">
+                  <span>⚠️</span>
+                  <span>Alert: Rounded Fair Market Value (₹{roundedFmvCalc.toLocaleString()}) is strictly lower than the Guideline Valuation (₹{guidelineValCalc.toLocaleString()}).</span>
+                </div>
+              )}
+            </div>
             
-            <PrefillField
-              label="Realizable Value (RV) (₹)"
-              value={rvVal}
-              onChange={(val: string) => handleChange('kotakBbgRv', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Auto calculating from [0.90 * Rounded Fair Market Value]"
-            />
+            <div className="p-3 bg-white bg-opacity-50 rounded border border-pink-100 space-y-2">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-semibold text-gray-700 w-32">RV Percentage:</span>
+                <input type="number" className={inputCls + ' w-24'} value={fields.kotakBbgRvPercent !== undefined ? fields.kotakBbgRvPercent : '90'} onChange={e => handleChange('kotakBbgRvPercent', e.target.value)} disabled={isReadOnly} />
+                <span className="text-sm text-gray-700">%</span>
+              </div>
+              <PrefillField
+                label="Realizable Value (RV) (₹)"
+                value={rvVal}
+                onChange={(val: string) => handleChange('kotakBbgRv', val)}
+                isReadOnly={isReadOnly}
+                tooltip="Auto calculating from [RV Percentage * Rounded Fair Market Value]"
+              />
+            </div>
             
-            <PrefillField
-              label="Distress Value (DV) (₹)"
-              value={dvVal}
-              onChange={(val: string) => handleChange('kotakBbgDv', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Auto calculating from [0.80 * Rounded Fair Market Value]"
-            />
+            <div className="p-3 bg-white bg-opacity-50 rounded border border-pink-100 space-y-2">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-semibold text-gray-700 w-32">DV Percentage:</span>
+                <input type="number" className={inputCls + ' w-24'} value={fields.kotakBbgDvPercent !== undefined ? fields.kotakBbgDvPercent : '80'} onChange={e => handleChange('kotakBbgDvPercent', e.target.value)} disabled={isReadOnly} />
+                <span className="text-sm text-gray-700">%</span>
+              </div>
+              <PrefillField
+                label="Distress Value (DV) (₹)"
+                value={dvVal}
+                onChange={(val: string) => handleChange('kotakBbgDv', val)}
+                isReadOnly={isReadOnly}
+                tooltip="Auto calculating from [DV Percentage * Rounded Fair Market Value]"
+              />
+            </div>
 
             <div className="space-y-2">
               <label className="flex items-center space-x-2 text-sm text-pink-800">

@@ -289,9 +289,11 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Exact Fair Market Value (FMV)', value: this.getF('kotakBbgFmvExact') },
       { label: 'Rounded Fair Market Value (Say Value)', value: this.getF('kotakBbgFmvRounded') },
     ]);
+    const rvPct = this.getF('kotakBbgRvPercent') !== undefined ? this.getF('kotakBbgRvPercent') : '90';
+    const dvPct = this.getF('kotakBbgDvPercent') !== undefined ? this.getF('kotakBbgDvPercent') : '80';
     this.drawKeyValueRow([
-      { label: 'Realizable Value (RV)', value: this.getF('kotakBbgRv') },
-      { label: 'Distress Value (DV)', value: this.getF('kotakBbgDv') },
+      { label: `Realizable Value (RV) @ ${rvPct}%`, value: this.getF('kotakBbgRv') },
+      { label: `Distress Value (DV) @ ${dvPct}%`, value: this.getF('kotakBbgDv') },
     ]);
     const isVacantLand = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
     const isIvNA = this.getF('kotakBbgIvNA') !== undefined ? this.getF('kotakBbgIvNA') : isVacantLand;
