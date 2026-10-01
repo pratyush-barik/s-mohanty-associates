@@ -2187,13 +2187,13 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     const validDocs = docImages.filter(u => Boolean(u && u.trim()));
 
     if (validDocs.length > 0) {
-      const docBytesList: { bytes: Uint8Array; caption?: string }[] = [];
+      const docBytesList: { bytes: Uint8Array; name?: string }[] = [];
       for (let i = 0; i < validDocs.length; i++) {
         const b = await fetchBytes(validDocs[i]);
         if (b && b.length > 0) {
           const rawName = docNames[i];
-          const caption = (rawName !== undefined && rawName !== null && rawName.trim() !== '') ? rawName.trim() : '';
-          docBytesList.push({ bytes: b, caption });
+          const name = (rawName !== undefined && rawName !== null && rawName.trim() !== '') ? rawName.trim() : '';
+          docBytesList.push({ bytes: b, name });
         }
       }
 
@@ -2202,7 +2202,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
           this.addPage();
           docOrMapPageStarted = true;
         }
-        await this.drawDocumentsGallery(docBytesList, 'ENCLOSURE: DOCUMENTS', 240, false);
+        await this.drawDocumentsGallery(docBytesList, undefined, 240, false);
       }
     }
 

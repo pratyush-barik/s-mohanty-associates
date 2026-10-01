@@ -853,15 +853,16 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
   /**
    * Draw unified Documents Gallery (for Section "Documents")
-   * Formats user-uploaded document images with individual user-specified headings/captions.
-   * Default caption is 'Document' (or custom name, or null/empty if omitted).
+   * Formats user-uploaded document images with individual user-specified headings.
+   * Completely removes static heading and adopts the document name as the individual heading.
+   * Removes captions from below the image.
    * Fits 2 images per page (maxImageH ~240), with line breaks.
    * forceNewPage defaults to false (so documents start cleanly).
    * Does NOT force a trailing page break so maps can continue directly with a line break.
    */
   async drawDocumentsGallery(
-    images: (Uint8Array | { bytes: Uint8Array; caption?: string; name?: string })[],
-    title: string = 'DOCUMENTS',
+    images: (Uint8Array | { bytes: Uint8Array; caption?: string; name?: string; title?: string })[],
+    _title?: string,
     maxImageH: number = 240,
     forceNewPage: boolean = false
   ): Promise<void> {
@@ -869,32 +870,33 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
 
     const normalized = images.map((item, idx) => {
       if (item instanceof Uint8Array || (item as any)?.byteLength !== undefined) {
-        return { bytes: item as Uint8Array, caption: '' };
+        return { bytes: item as Uint8Array, title: `DOCUMENT ${idx + 1}` };
       }
-      const rawCaption = (item as any)?.caption ?? (item as any)?.name;
-      const caption = rawCaption !== undefined && rawCaption !== null ? String(rawCaption).trim() : '';
-      return { bytes: (item as any)?.bytes as Uint8Array, caption };
+      const rawTitle = (item as any)?.name ?? (item as any)?.caption ?? (item as any)?.title;
+      const titleStr = rawTitle !== undefined && rawTitle !== null && String(rawTitle).trim().length > 0
+        ? String(rawTitle).trim()
+        : `DOCUMENT ${idx + 1}`;
+      return { bytes: (item as any)?.bytes as Uint8Array, title: titleStr };
     }).filter(i => i.bytes && i.bytes.length > 0);
 
     if (normalized.length === 0) return;
 
-    const neededForTitleAndImage = 44 + maxImageH + 20;
-
-    if (forceNewPage || this.cursorY === 0 || this.availableHeight < neededForTitleAndImage) {
-      if (this.cursorY > 0) {
-        this.addPage();
-      }
-    } else {
-      this.advanceCursor(14);
-    }
-
-    this.drawSectionHeader(title, false);
-    this.advanceCursor(8);
-
     for (let i = 0; i < normalized.length; i++) {
-      const { bytes, caption } = normalized[i];
-      const imgCaption = caption !== undefined && caption !== null ? caption : '';
-      await this.drawImageSection(bytes, imgCaption, maxImageH, true);
+      const { bytes, title: docTitle } = normalized[i];
+      const neededForTitleAndImage = 44 + maxImageH + 10;
+
+      if ((i === 0 && forceNewPage) || this.cursorY === 0 || this.availableHeight < neededForTitleAndImage) {
+        if (this.cursorY > 0) {
+          this.addPage();
+        }
+      } else {
+        this.advanceCursor(14);
+      }
+
+      this.drawSectionHeader(docTitle, false);
+      this.advanceCursor(8);
+
+      await this.drawImageSection(bytes, '', maxImageH, true);
       this.advanceCursor(10);
     }
   }
