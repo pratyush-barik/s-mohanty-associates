@@ -327,11 +327,15 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     this.drawSectionHeader('10. VALUER DECLARATION & SIGNOFF');
     this.drawKeyValueRow([
-      { label: 'Standard Declaration', value: this.getF('kotakBbgDeclarationText') || `I hereby declare that the information provided in this report is true and correct to the best of my knowledge. The valuation is strictly for bank internal use based on current market trends and visible site conditions as of ${this.getF('kotakBbgDateOfSiteVisit') || '[Date]'}`, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Declaration Confirmed', value: this.getF('kotakBbgDeclarationConfirmed') ? 'Yes (Legally Bound)' : 'No', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     this.drawKeyValueRow([
       { label: 'Report Issue Date', value: this.getF('kotakBbgReportIssueDate') || new Date().toISOString().split('T')[0] },
       { label: 'Report Issue Place', value: this.getF('kotakBbgReportIssuePlace') === 'Custom' ? this.getF('kotakBbgReportIssuePlaceCustom') : (this.getF('kotakBbgReportIssuePlace') || 'Bhubaneswar') },
+    ]);
+    const defaultCredentials = "Name: Er. S. Mohanty\nQualifications: B.Tech (Civil), M.Tech (Structures), FIV\nIBBI Reg No: IBBI/RV/00/0000\nWealth Tax Reg No: CAT-I/000";
+    this.drawKeyValueRow([
+      { label: 'Valuer Credentials', value: this.getF('kotakBbgValuerCredentials') || defaultCredentials, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     this.drawKeyValueRow([
       { label: 'Signature Confirmed', value: this.getF('kotakBbgSignatureConfirmed') ? 'Yes (Verified)' : 'No', labelWidth: 200, valueWidth: CONTENT_W - 200 },

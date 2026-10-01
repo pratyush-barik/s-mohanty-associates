@@ -1363,22 +1363,27 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
         const siteVisitDate = fields.kotakBbgDateOfSiteVisit || '[Date from Section 1]';
-        const defaultDecl = `I hereby declare that the information provided in this report is true and correct to the best of my knowledge. The valuation is strictly for bank internal use based on current market trends and visible site conditions as of ${siteVisitDate}.`;
-        const declVal = fields.kotakBbgDeclarationText || defaultDecl;
+        const clausesText = `I hereby declare that the information provided in this report is true and correct to the best of my knowledge. The valuation is strictly for bank internal use based on current market trends and visible site conditions as of ${siteVisitDate}.\n\n1. I have not withheld any material information that could affect the valuation.\n2. I have personally inspected the property and verified its physical existence.\n3. I have no direct or indirect interest in the property being valued.\n4. My liability is limited as per standard banking terms and the scope of work defined by Kotak Mahindra Bank.`;
         
         const today = new Date().toISOString().split('T')[0];
         const issueDateVal = fields.kotakBbgReportIssueDate || today;
 
+        const defaultCredentials = "Name: Er. S. Mohanty\nQualifications: B.Tech (Civil), M.Tech (Structures), FIV\nIBBI Reg No: IBBI/RV/00/0000\nWealth Tax Reg No: CAT-I/000";
+        const credentialsVal = fields.kotakBbgValuerCredentials || defaultCredentials;
+
         return (
           <div style={{ backgroundColor: '#e8eaf6', padding: '16px', borderRadius: '8px' }} className="space-y-4">
-            <PrefillField
-              label="Standard Declaration Text"
-              value={declVal}
-              onChange={(val: string) => handleChange('kotakBbgDeclarationText', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Auto calculating from [Standard Declaration String + Date of Technical Site Visit]"
-              type="textarea"
-            />
+            <Field label="Standard Declaration & Legal Clauses">
+              <div className="space-y-3">
+                <div className="p-3 bg-white border border-gray-300 rounded text-sm text-gray-700 h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-inner">
+                  {clausesText}
+                </div>
+                <label className="flex items-start space-x-2 text-sm text-indigo-900 font-semibold bg-indigo-50 p-3 rounded border border-indigo-200 cursor-pointer">
+                  <input type="checkbox" className="mt-1" checked={fields.kotakBbgDeclarationConfirmed || false} onChange={e => handleChange('kotakBbgDeclarationConfirmed', e.target.checked)} disabled={isReadOnly} />
+                  <span>I have read and legally bind myself to the above declarations.</span>
+                </label>
+              </div>
+            </Field>
             
             <PrefillField
               label="Report Issue Date"
@@ -1403,6 +1408,15 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             </Field>
 
+            <PrefillField
+              label="Valuer Credentials (Name, Qualifications, Reg No.)"
+              value={credentialsVal}
+              onChange={(val: string) => handleChange('kotakBbgValuerCredentials', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Prefill from Valuer Profile"
+              type="textarea"
+            />
+
             <Field label="Valuer Signature & Official Stamp">
               <div className="space-y-4" title="Prefill from Valuer Profile">
                 <div className="p-4 border-2 border-dashed border-gray-300 rounded bg-white flex flex-col items-center justify-center">
@@ -1418,7 +1432,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                 
                 <label className="flex items-start space-x-2 text-sm text-indigo-900 font-semibold bg-indigo-50 p-3 rounded border border-indigo-200 cursor-pointer">
                   <input type="checkbox" className="mt-1" checked={fields.kotakBbgSignatureConfirmed || false} onChange={e => handleChange('kotakBbgSignatureConfirmed', e.target.checked)} disabled={isReadOnly} />
-                  <span>I confirm and verify that the above signature and official stamp belong to me, and I authorize their application to this final valuation report.</span>
+                  <span>I confirm and verify this signature, stamp, and credential block for final submission.</span>
                 </label>
               </div>
             </Field>
