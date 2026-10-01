@@ -48,7 +48,7 @@ async function processInbox(host: string, port: number, user: string, pass: stri
 
       for (const seq of messages) {
         const messageStream = await client.download(seq);
-        const parsedEmail = await simpleParser(messageStream);
+        const parsedEmail = await simpleParser(messageStream.content as any);
 
         const subject = decodeHtmlEntities(parsedEmail.subject || '');
         const fromEmail = parsedEmail.from?.value[0]?.address || 'unknown@example.com';

@@ -560,7 +560,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'kotak-section-4',
-      title: 'Title, Legal & Statutory Details',
+      title: 'Details of Approvals & Legal Verification',
       number: 4,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
@@ -971,73 +971,154 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'kotak-section-6',
-      title: 'Area Measurement & Calculations',
+      title: 'Details of Measurements',
       number: 6,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
         const isVacantLand = fields.kotakBbgNatureOfProperty === 'Vacant Land';
-        
+        const buaTable: any[] = Array.isArray(fields.kotakBbgBuildingBuaTable) ? fields.kotakBbgBuildingBuaTable : [];
+        const addBuaRow = () => handleChange('kotakBbgBuildingBuaTable', [...buaTable, { floor: '', carpet: '', builtUp: '', superBuiltUp: '' }]);
+        const removeBuaRow = (idx: number) => handleChange('kotakBbgBuildingBuaTable', buaTable.filter((_: any, i: number) => i !== idx));
+        const updateBuaRow = (idx: number, key: string, val: string) => {
+          const updated = buaTable.map((r: any, i: number) => i === idx ? { ...r, [key]: val } : r);
+          handleChange('kotakBbgBuildingBuaTable', updated);
+        };
+
         return (
           <div style={{ backgroundColor: '#e0f7fa', padding: '16px', borderRadius: '8px' }} className="space-y-4">
-            <Field label="Total Plot / Land Area">
-              <div className="flex space-x-4">
-                <input type="number" className={inputCls + ' flex-1'} placeholder="Area" value={fields.kotakBbgLandArea || ''} onChange={e => handleChange('kotakBbgLandArea', e.target.value)} disabled={isReadOnly} />
-                <select className={inputCls + ' w-48'} value={fields.kotakBbgLandAreaUnit || ''} onChange={e => handleChange('kotakBbgLandAreaUnit', e.target.value)} disabled={isReadOnly}>
-                  <option value="">Select Unit</option>
-                  <option value="Sq.Ft">Sq.Ft</option>
-                  <option value="Sq.Mts">Sq.Mts</option>
-                  <option value="Acres">Acres</option>
-                  <option value="Cents">Cents</option>
-                </select>
-              </div>
-            </Field>
-
-            <Field label="Permissible Built-Up Area (FSI/FAR)">
+            {/* Land Area (Primary) */}
+            <Field label="Land Area (Primary)">
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 text-sm">
-                  <input type="checkbox" checked={fields.kotakBbgFsiNA || false} onChange={e => handleChange('kotakBbgFsiNA', e.target.checked)} disabled={isReadOnly} />
+                  <input type="checkbox" checked={fields.kotakBbgLandAreaNA || false} onChange={e => handleChange('kotakBbgLandAreaNA', e.target.checked)} disabled={isReadOnly} />
                   <span>Not Applicable (NA)</span>
                 </label>
-                {!fields.kotakBbgFsiNA && (
-                  <input type="number" className={inputCls} placeholder="e.g. 2.5" value={fields.kotakBbgFsi || ''} onChange={e => handleChange('kotakBbgFsi', e.target.value)} disabled={isReadOnly} />
-                )}
-              </div>
-            </Field>
-
-            <Field label="Actual Built-Up Area">
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm">
-                  <input type="checkbox" checked={fields.kotakBbgActualBuaNA || isVacantLand} onChange={e => handleChange('kotakBbgActualBuaNA', e.target.checked)} disabled={isReadOnly || isVacantLand} />
-                  <span>Not Applicable (NA)</span>
-                </label>
-                {!(fields.kotakBbgActualBuaNA || isVacantLand) && (
-                  <div className="flex space-x-4 mt-2">
-                    <input type="number" className={inputCls + ' flex-1'} placeholder="Built-Up Area" value={fields.kotakBbgActualBua || ''} onChange={e => handleChange('kotakBbgActualBua', e.target.value)} disabled={isReadOnly} />
-                    <select className={inputCls + ' w-48'} value={fields.kotakBbgActualBuaUnit || ''} onChange={e => handleChange('kotakBbgActualBuaUnit', e.target.value)} disabled={isReadOnly}>
+                {!fields.kotakBbgLandAreaNA && (
+                  <div className="flex space-x-4">
+                    <input type="number" className={inputCls + ' flex-1'} placeholder="Area" value={fields.kotakBbgLandArea || ''} onChange={e => handleChange('kotakBbgLandArea', e.target.value)} disabled={isReadOnly} />
+                    <select className={inputCls + ' w-48'} value={fields.kotakBbgLandAreaUnit || ''} onChange={e => handleChange('kotakBbgLandAreaUnit', e.target.value)} disabled={isReadOnly}>
                       <option value="">Select Unit</option>
                       <option value="Sq.Ft">Sq.Ft</option>
                       <option value="Sq.Mts">Sq.Mts</option>
+                      <option value="Acres">Acres</option>
+                      <option value="Cents">Cents</option>
+                      <option value="Custom">Custom</option>
                     </select>
+                    {fields.kotakBbgLandAreaUnit === 'Custom' && (
+                      <input type="text" className={inputCls + ' w-48'} placeholder="Custom unit" value={fields.kotakBbgLandAreaUnitCustom || ''} onChange={e => handleChange('kotakBbgLandAreaUnitCustom', e.target.value)} disabled={isReadOnly} />
+                    )}
                   </div>
                 )}
               </div>
             </Field>
 
-            <Field label="Actual Carpet Area">
+            {/* Land Area (Secondary) */}
+            <Field label="Land Area (Secondary)">
               <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm">
-                  <input type="checkbox" checked={fields.kotakBbgActualCarpetAreaNA || false} onChange={e => handleChange('kotakBbgActualCarpetAreaNA', e.target.checked)} disabled={isReadOnly} />
-                  <span>Not Applicable (NA)</span>
-                </label>
-                {!fields.kotakBbgActualCarpetAreaNA && (
-                  <div className="flex space-x-4 mt-2">
-                    <input type="number" className={inputCls + ' flex-1'} placeholder="Carpet Area" value={fields.kotakBbgActualCarpetArea || ''} onChange={e => handleChange('kotakBbgActualCarpetArea', e.target.value)} disabled={isReadOnly} />
-                    <select className={inputCls + ' w-48'} value={fields.kotakBbgActualCarpetAreaUnit || ''} onChange={e => handleChange('kotakBbgActualCarpetAreaUnit', e.target.value)} disabled={isReadOnly}>
+                {!fields.kotakBbgLandAreaNA && (
+                  <div className="flex space-x-4">
+                    <input type="number" className={inputCls + ' flex-1'} placeholder="Secondary Area" value={fields.kotakBbgLandAreaSecondary || ''} onChange={e => handleChange('kotakBbgLandAreaSecondary', e.target.value)} disabled={isReadOnly} />
+                    <select className={inputCls + ' w-48'} value={fields.kotakBbgLandAreaSecondaryUnit || ''} onChange={e => handleChange('kotakBbgLandAreaSecondaryUnit', e.target.value)} disabled={isReadOnly}>
                       <option value="">Select Unit</option>
                       <option value="Sq.Ft">Sq.Ft</option>
                       <option value="Sq.Mts">Sq.Mts</option>
+                      <option value="Acres">Acres</option>
+                      <option value="Cents">Cents</option>
                     </select>
                   </div>
+                )}
+                {fields.kotakBbgLandAreaNA && (
+                  <span className="text-sm text-gray-500 italic">Disabled — Land Area marked NA</span>
+                )}
+              </div>
+            </Field>
+
+            {/* Documentary Proof Source */}
+            <Field label="Documentary Proof Source">
+              <select className={inputCls} value={fields.kotakBbgLandAreaProofSource || ''} onChange={e => handleChange('kotakBbgLandAreaProofSource', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Source</option>
+                <option value="Sale Deed">Sale Deed</option>
+                <option value="Revenue Records">Revenue Records</option>
+                <option value="Sanctioned Plan">Sanctioned Plan</option>
+                <option value="Measurement Report">Measurement Report</option>
+                <option value="Custom">Custom</option>
+              </select>
+              {fields.kotakBbgLandAreaProofSource === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom proof source" value={fields.kotakBbgLandAreaProofSourceCustom || ''} onChange={e => handleChange('kotakBbgLandAreaProofSourceCustom', e.target.value)} disabled={isReadOnly} />
+              )}
+            </Field>
+
+            {/* Building Built-up Area (BUA) */}
+            <Field label="Building Built-up Area (BUA)">
+              <div className="space-y-3">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgBuildingBuaNA || isVacantLand} onChange={e => handleChange('kotakBbgBuildingBuaNA', e.target.checked)} disabled={isReadOnly || isVacantLand} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!(fields.kotakBbgBuildingBuaNA || isVacantLand) && (
+                  <>
+                    <label className="flex items-center space-x-2 text-sm">
+                      <input type="checkbox" checked={fields.kotakBbgBuildingBuaAnnexure || false} onChange={e => handleChange('kotakBbgBuildingBuaAnnexure', e.target.checked)} disabled={isReadOnly} />
+                      <span>Details attached in Annexure-II</span>
+                    </label>
+                    {!fields.kotakBbgBuildingBuaAnnexure && (
+                      <div className="space-y-2">
+                        {buaTable.map((row: any, idx: number) => (
+                          <div key={idx} className="grid grid-cols-5 gap-2 items-end p-2 bg-white bg-opacity-60 rounded border border-cyan-200">
+                            <div>
+                              <span className="text-xs text-gray-500">Floor</span>
+                              <input type="text" className={inputCls} placeholder="e.g. Ground" value={row.floor || ''} onChange={e => updateBuaRow(idx, 'floor', e.target.value)} disabled={isReadOnly} />
+                            </div>
+                            <div>
+                              <span className="text-xs text-gray-500">Carpet Area</span>
+                              <input type="number" className={inputCls} placeholder="Sq.Ft" value={row.carpet || ''} onChange={e => updateBuaRow(idx, 'carpet', e.target.value)} disabled={isReadOnly} />
+                            </div>
+                            <div>
+                              <span className="text-xs text-gray-500">Built-up Area</span>
+                              <input type="number" className={inputCls} placeholder="Sq.Ft" value={row.builtUp || ''} onChange={e => updateBuaRow(idx, 'builtUp', e.target.value)} disabled={isReadOnly} />
+                            </div>
+                            <div>
+                              <span className="text-xs text-gray-500">Super Built-up</span>
+                              <input type="number" className={inputCls} placeholder="Sq.Ft" value={row.superBuiltUp || ''} onChange={e => updateBuaRow(idx, 'superBuiltUp', e.target.value)} disabled={isReadOnly} />
+                            </div>
+                            <button type="button" onClick={() => removeBuaRow(idx)} disabled={isReadOnly} className="text-red-500 hover:text-red-700 text-sm pb-1">Remove</button>
+                          </div>
+                        ))}
+                        <button type="button" onClick={addBuaRow} disabled={isReadOnly} className="px-3 py-1.5 bg-cyan-600 text-white text-sm rounded hover:bg-cyan-700 transition-colors">+ Add Floor Row</button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </Field>
+
+            {/* Total Built-up Area */}
+            {!(fields.kotakBbgBuildingBuaNA || isVacantLand) && !fields.kotakBbgBuildingBuaAnnexure && (
+              <Field label="Total Built-up Area">
+                <input type="number" className={inputCls} placeholder="Total BUA (Sq.Ft)" value={fields.kotakBbgTotalBua || ''} onChange={e => handleChange('kotakBbgTotalBua', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            )}
+
+            {/* Deviations / Violations */}
+            <Field label="Deviations / Violations">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgDeviationsNA || false} onChange={e => handleChange('kotakBbgDeviationsNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgDeviationsNA && (
+                  <>
+                    <select className={inputCls} value={fields.kotakBbgDeviations || ''} onChange={e => handleChange('kotakBbgDeviations', e.target.value)} disabled={isReadOnly}>
+                      <option value="">Select Deviation</option>
+                      <option value="No Deviation">No Deviation</option>
+                      <option value="Minor Deviation">Minor Deviation</option>
+                      <option value="Major Deviation">Major Deviation</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                    {fields.kotakBbgDeviations === 'Custom' && (
+                      <input type="text" className={inputCls + ' mt-2'} placeholder="Describe deviations/violations" value={fields.kotakBbgDeviationsCustom || ''} onChange={e => handleChange('kotakBbgDeviationsCustom', e.target.value)} disabled={isReadOnly} />
+                    )}
+                  </>
                 )}
               </div>
             </Field>
@@ -1047,119 +1128,217 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'kotak-section-7',
-      title: 'Market Value & Realizable Value Assessment',
+      title: 'Valuation Calculations & Rate Analysis',
       number: 7,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
-        const isVacantLand = fields.kotakBbgNatureOfProperty === 'Vacant Land';
-
-        const landArea = parseFloat(fields.kotakBbgLandArea) || 0;
-        const landRate = parseFloat(fields.kotakBbgPrevailingMarketRateLand) || 0;
-        const fmvLandCalc = landArea * landRate;
-        const fmvLandVal = fields.kotakBbgFmvLand || (fmvLandCalc > 0 ? fmvLandCalc.toString() : '');
-
-        const buildingArea = parseFloat(fields.kotakBbgActualBua) || 0;
-        const replacementCost = parseFloat(fields.kotakBbgReplacementCostBuilding) || 0;
-        const depreciationPercent = parseFloat(fields.kotakBbgDepreciationPercent) || 0;
-        
-        let fmvBuildingCalc = 0;
-        if (!isVacantLand) {
-            const initialBldgVal = buildingArea * replacementCost;
-            fmvBuildingCalc = initialBldgVal - (initialBldgVal * (depreciationPercent / 100));
-        }
-        const fmvBuildingVal = fields.kotakBbgFmvBuilding || (fmvBuildingCalc > 0 ? fmvBuildingCalc.toString() : '');
-        
-        const totalFmvCalc = fmvLandCalc + fmvBuildingCalc;
-        const totalFmvVal = fields.kotakBbgTotalFmv || (totalFmvCalc > 0 ? totalFmvCalc.toString() : '');
+        const bldgRateTable: any[] = Array.isArray(fields.kotakBbgAdoptedBuildingRateTable) ? fields.kotakBbgAdoptedBuildingRateTable : [];
+        const addBldgRate = () => handleChange('kotakBbgAdoptedBuildingRateTable', [...bldgRateTable, { floor: '', rate: '' }]);
+        const removeBldgRate = (idx: number) => handleChange('kotakBbgAdoptedBuildingRateTable', bldgRateTable.filter((_: any, i: number) => i !== idx));
+        const updateBldgRate = (idx: number, key: string, val: string) => {
+          const updated = bldgRateTable.map((r: any, i: number) => i === idx ? { ...r, [key]: val } : r);
+          handleChange('kotakBbgAdoptedBuildingRateTable', updated);
+        };
 
         return (
           <div style={{ backgroundColor: '#f3e5f5', padding: '16px', borderRadius: '8px' }} className="space-y-4">
-            <PrefillField
-              label="Prevailing Market Rate of Land (INR per unit)"
-              value={fields.kotakBbgPrevailingMarketRateLand || ''}
-              onChange={(val: string) => handleChange('kotakBbgPrevailingMarketRateLand', val)}
-              isReadOnly={isReadOnly}
-              isEditableOnly={true}
-            />
+            {/* Valuation Methodology Adopted */}
+            <Field label="Valuation Methodology Adopted">
+              <select className={inputCls} value={fields.kotakBbgValuationMethodology || ''} onChange={e => handleChange('kotakBbgValuationMethodology', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Methodology</option>
+                <option value="Market Approach">Market Approach</option>
+                <option value="Cost Approach">Cost Approach</option>
+                <option value="Income Approach">Income Approach</option>
+                <option value="Combination Approach">Combination Approach</option>
+                <option value="Custom">Custom</option>
+              </select>
+              {fields.kotakBbgValuationMethodology === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom methodology" value={fields.kotakBbgValuationMethodologyCustom || ''} onChange={e => handleChange('kotakBbgValuationMethodologyCustom', e.target.value)} disabled={isReadOnly} />
+              )}
+            </Field>
 
-            <PrefillField
-              label="Estimated Fair Market Value of Land (INR)"
-              value={fmvLandVal}
-              onChange={(val: string) => handleChange('kotakBbgFmvLand', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Auto calculating from [Land Area × Rate]"
-            />
+            {/* Source of Rate Selection */}
+            <Field label="Source of Rate Selection">
+              <input type="text" className={inputCls} placeholder="e.g. Local Enquiry, Ready Reckoner, etc." value={fields.kotakBbgSourceOfRateSelection || ''} onChange={e => handleChange('kotakBbgSourceOfRateSelection', e.target.value)} disabled={isReadOnly} />
+            </Field>
 
-            <Field label="Replacement Cost of Building (INR per Sq.Ft) & Depreciation">
-              <div className="flex space-x-4">
-                <input type="number" className={inputCls + ' flex-1'} placeholder="Replacement Cost (INR per Sq.Ft)" value={fields.kotakBbgReplacementCostBuilding || ''} onChange={e => handleChange('kotakBbgReplacementCostBuilding', e.target.value)} disabled={isReadOnly} />
-                <select className={inputCls + ' w-48'} value={fields.kotakBbgDepreciationPercent || ''} onChange={e => handleChange('kotakBbgDepreciationPercent', e.target.value)} disabled={isReadOnly}>
-                  <option value="">Depreciation %</option>
-                  <option value="0">0%</option>
-                  <option value="5">5%</option>
-                  <option value="10">10%</option>
-                  <option value="15">15%</option>
-                  <option value="20">20%</option>
-                  <option value="30">30%</option>
-                </select>
+            {/* Comparables Relied Upon */}
+            <Field label="Comparables Relied Upon">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgComparablesReliedNA || false} onChange={e => handleChange('kotakBbgComparablesReliedNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgComparablesReliedNA && (
+                  <textarea className={inputCls + ' resize-y'} rows={3} placeholder="List the comparables relied upon..." value={fields.kotakBbgComparablesRelied || ''} onChange={e => handleChange('kotakBbgComparablesRelied', e.target.value)} disabled={isReadOnly} />
+                )}
               </div>
             </Field>
 
-            <div className="space-y-2">
-              <label className="flex items-center space-x-2 text-sm">
-                <input type="checkbox" checked={fields.kotakBbgFmvBuildingNA || isVacantLand} onChange={e => handleChange('kotakBbgFmvBuildingNA', e.target.checked)} disabled={isReadOnly || isVacantLand} />
-                <span>Not Applicable (NA)</span>
-              </label>
-              {!(fields.kotakBbgFmvBuildingNA || isVacantLand) && (
-                <PrefillField
-                  label="Estimated Depreciated Value of Building (INR)"
-                  value={fmvBuildingVal}
-                  onChange={(val: string) => handleChange('kotakBbgFmvBuilding', val)}
-                  isReadOnly={isReadOnly}
-                  tooltip="Auto calculating from [Building Area × Rate - Depreciation]"
-                />
-              )}
-            </div>
+            {/* Analysis of Comparables & Justification */}
+            <Field label="Analysis of Comparables & Justification">
+              <div className="space-y-3">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgAnalysisComparablesNA || false} onChange={e => handleChange('kotakBbgAnalysisComparablesNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgAnalysisComparablesNA && (
+                  <div className="p-3 bg-white bg-opacity-50 border border-gray-200 rounded space-y-3">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-sm text-gray-600 block mb-1">Base Market Rate (Rs / sq. ft.)</span>
+                        <input type="number" className={inputCls} placeholder="e.g. 5000" value={fields.kotakBbgBaseMarketRate || ''} onChange={e => handleChange('kotakBbgBaseMarketRate', e.target.value)} disabled={isReadOnly} />
+                      </div>
+                      <div>
+                        <span className="text-sm text-gray-600 block mb-1">Discount / Premium Adjustment (%)</span>
+                        <input type="number" className={inputCls} placeholder="e.g. -10 or +15" value={fields.kotakBbgDiscountPremium || ''} onChange={e => handleChange('kotakBbgDiscountPremium', e.target.value)} disabled={isReadOnly} />
+                      </div>
+                    </div>
+                    <div>
+                      <span className="text-sm text-gray-600 block mb-1">Justification Narrative</span>
+                      <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Explain justification for rate selection..." value={fields.kotakBbgJustificationNarrative || ''} onChange={e => handleChange('kotakBbgJustificationNarrative', e.target.value)} disabled={isReadOnly} />
+                    </div>
+                  </div>
+                )}
+              </div>
+            </Field>
 
-            <PrefillField
-              label="Total Estimated Fair Market Value (INR)"
-              value={totalFmvVal}
-              onChange={(val: string) => handleChange('kotakBbgTotalFmv', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Auto calculating from [Land Value + Building Value]"
-            />
+            {/* Adopted Land Rate */}
+            <Field label="Adopted Land Rate (Rs / sq. ft.)">
+              <input type="number" className={inputCls} placeholder="e.g. 5000" value={fields.kotakBbgAdoptedLandRate || ''} onChange={e => handleChange('kotakBbgAdoptedLandRate', e.target.value)} disabled={isReadOnly} />
+            </Field>
+
+            {/* Adopted Building Rate(s) */}
+            <Field label="Adopted Building Rate(s) (Rs / sq. ft.)">
+              <div className="space-y-3">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgAdoptedBuildingRateNA || false} onChange={e => handleChange('kotakBbgAdoptedBuildingRateNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgAdoptedBuildingRateNA && (
+                  <div className="space-y-2">
+                    {bldgRateTable.map((row: any, idx: number) => (
+                      <div key={idx} className="grid grid-cols-3 gap-2 items-end p-2 bg-white bg-opacity-60 rounded border border-purple-200">
+                        <div>
+                          <span className="text-xs text-gray-500">Floor / Component</span>
+                          <input type="text" className={inputCls} placeholder="e.g. Ground Floor" value={row.floor || ''} onChange={e => updateBldgRate(idx, 'floor', e.target.value)} disabled={isReadOnly} />
+                        </div>
+                        <div>
+                          <span className="text-xs text-gray-500">Rate (Rs / sq. ft.)</span>
+                          <input type="number" className={inputCls} placeholder="e.g. 2500" value={row.rate || ''} onChange={e => updateBldgRate(idx, 'rate', e.target.value)} disabled={isReadOnly} />
+                        </div>
+                        <button type="button" onClick={() => removeBldgRate(idx)} disabled={isReadOnly} className="text-red-500 hover:text-red-700 text-sm pb-1">Remove</button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={addBldgRate} disabled={isReadOnly} className="px-3 py-1.5 bg-purple-600 text-white text-sm rounded hover:bg-purple-700 transition-colors">+ Add Building Rate Row</button>
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            {/* Valuation Calculations Breakdown */}
+            <Field label="Valuation Calculations Breakdown">
+              <textarea className={inputCls + ' resize-y'} rows={4} placeholder="Detail the calculation steps..." value={fields.kotakBbgValuationBreakdown || ''} onChange={e => handleChange('kotakBbgValuationBreakdown', e.target.value)} disabled={isReadOnly} />
+            </Field>
+
+            {/* Guideline / Circle Rate */}
+            <Field label="Guideline / Circle Rate & Guideline Valuation">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-sm text-gray-600 block mb-1">Guideline / Circle Rate (Rs / sq. ft.)</span>
+                  <div className="space-y-2">
+                    <label className="flex items-center space-x-2 text-sm">
+                      <input type="checkbox" checked={fields.kotakBbgGuidelineRateNA || false} onChange={e => handleChange('kotakBbgGuidelineRateNA', e.target.checked)} disabled={isReadOnly} />
+                      <span>NA</span>
+                    </label>
+                    {!fields.kotakBbgGuidelineRateNA && (
+                      <input type="number" className={inputCls} placeholder="e.g. 3500" value={fields.kotakBbgGuidelineRate || ''} onChange={e => handleChange('kotakBbgGuidelineRate', e.target.value)} disabled={isReadOnly} />
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600 block mb-1">Guideline Valuation (INR)</span>
+                  <input type="number" className={inputCls} placeholder="e.g. 5000000" value={fields.kotakBbgGuidelineValuation || ''} onChange={e => handleChange('kotakBbgGuidelineValuation', e.target.value)} disabled={isReadOnly} />
+                </div>
+              </div>
+            </Field>
           </div>
         );
       }
     },
     {
       id: 'kotak-section-8',
-      title: 'Distress / Forced Sale Value',
+      title: 'Valuation Financial Summary',
       number: 8,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
-        const totalFmvCalc = parseFloat(fields.kotakBbgTotalFmv) || 0;
-        const distressFactor = parseFloat(fields.kotakBbgDistressFactor !== undefined ? fields.kotakBbgDistressFactor : '80') || 80;
-        const fsvCalc = totalFmvCalc * (distressFactor / 100);
-        const fsvVal = fields.kotakBbgFsv || (fsvCalc > 0 ? fsvCalc.toString() : '');
+        const isVacantLand = fields.kotakBbgNatureOfProperty === 'Vacant Land';
+        const isIvNA = fields.kotakBbgIvNA !== undefined ? fields.kotakBbgIvNA : isVacantLand;
 
         return (
           <div style={{ backgroundColor: '#fce4ec', padding: '16px', borderRadius: '8px' }} className="space-y-4">
-            <PrefillField
-              label="Distress Sale Value Factor (%)"
-              value={fields.kotakBbgDistressFactor !== undefined ? fields.kotakBbgDistressFactor : '80'}
-              onChange={(val: string) => handleChange('kotakBbgDistressFactor', val)}
-              isReadOnly={isReadOnly}
-              isEditableOnly={true}
-            />
+            {/* Exact FMV */}
+            <Field label="Exact Fair Market Value (FMV)">
+              <input type="number" className={inputCls} placeholder="INR" value={fields.kotakBbgFmvExact || ''} onChange={e => handleChange('kotakBbgFmvExact', e.target.value)} disabled={isReadOnly} />
+            </Field>
 
-            <PrefillField
-              label="Assessed Forced Sale Value / Realizable Value (INR)"
-              value={fsvVal}
-              onChange={(val: string) => handleChange('kotakBbgFsv', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Auto calculating from [Total Fair Market Value × Distress %]"
-            />
+            {/* Rounded FMV */}
+            <Field label="Rounded Fair Market Value (Say Value)">
+              <input type="number" className={inputCls} placeholder="INR" value={fields.kotakBbgFmvRounded || ''} onChange={e => handleChange('kotakBbgFmvRounded', e.target.value)} disabled={isReadOnly} />
+            </Field>
+
+            {/* Realizable Value */}
+            <Field label="Realizable Value (RV)">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-sm text-gray-600 block mb-1">RV Percentage (%)</span>
+                  <PrefillField
+                    label=""
+                    value={fields.kotakBbgRvPercent !== undefined ? fields.kotakBbgRvPercent : '90'}
+                    onChange={(val: string) => handleChange('kotakBbgRvPercent', val)}
+                    isReadOnly={isReadOnly}
+                    tooltip="Auto calculating from [FMV × RV%]"
+                  />
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600 block mb-1">Realizable Value (INR)</span>
+                  <input type="number" className={inputCls} placeholder="INR" value={fields.kotakBbgRv || ''} onChange={e => handleChange('kotakBbgRv', e.target.value)} disabled={isReadOnly} />
+                </div>
+              </div>
+            </Field>
+
+            {/* Distress Value */}
+            <Field label="Distress Value (DV)">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-sm text-gray-600 block mb-1">DV Percentage (%)</span>
+                  <PrefillField
+                    label=""
+                    value={fields.kotakBbgDvPercent !== undefined ? fields.kotakBbgDvPercent : '80'}
+                    onChange={(val: string) => handleChange('kotakBbgDvPercent', val)}
+                    isReadOnly={isReadOnly}
+                    tooltip="Auto calculating from [FMV × DV%]"
+                  />
+                </div>
+                <div>
+                  <span className="text-sm text-gray-600 block mb-1">Distress Value (INR)</span>
+                  <input type="number" className={inputCls} placeholder="INR" value={fields.kotakBbgDv || ''} onChange={e => handleChange('kotakBbgDv', e.target.value)} disabled={isReadOnly} />
+                </div>
+              </div>
+            </Field>
+
+            {/* Insurable Value */}
+            <Field label="Insurable Value (IV)">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={isIvNA} onChange={e => handleChange('kotakBbgIvNA', e.target.checked)} disabled={isReadOnly || isVacantLand} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!isIvNA && (
+                  <input type="number" className={inputCls} placeholder="INR" value={fields.kotakBbgIv || ''} onChange={e => handleChange('kotakBbgIv', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
           </div>
         );
       }
@@ -1188,7 +1367,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         return (
           <div style={{ backgroundColor: '#e0f2f1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
             <PrefillField
-              label="Standard Disclaimers & Assumptions"
+              label="Standard Disclaimers"
               value={disclaimersVal}
               onChange={(val: string) => handleChange('kotakBbgStandardDisclaimers', val)}
               isReadOnly={isReadOnly}

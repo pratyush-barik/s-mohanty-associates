@@ -87,8 +87,8 @@ export default async function InspectionDetailsPage({ params }: { params: Promis
               <div>
                 <p className="text-[10px] font-bold text-[#adb5bd] uppercase tracking-wider mb-1">Contact</p>
                 <p className="text-sm font-medium text-[#0f2038]">{serviceRequest.contactName}</p>
-                <a href={`tel:${serviceRequest.contactPhone}`} className="text-sm text-[#b8860b] hover:underline block">{serviceRequest.contactPhone}</a>
-                <a href={`mailto:${serviceRequest.contactEmail}`} className="text-sm text-[#b8860b] hover:underline block">{serviceRequest.contactEmail}</a>
+                <a href={`tel:${serviceRequest.contactPhone}`} className="text-sm text-accent-500 hover:underline block">{serviceRequest.contactPhone}</a>
+                <a href={`mailto:${serviceRequest.contactEmail}`} className="text-sm text-accent-500 hover:underline block">{serviceRequest.contactEmail}</a>
               </div>
               <hr className="border-[#e9ecef]" />
               <div>

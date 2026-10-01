@@ -145,7 +145,7 @@ export default function ManagerVerificationView({ projectId, projectCode, report
         {/* PDF Body */}
         <div className="space-y-8">
           <section>
-            <h2 className="text-sm font-bold text-[#b8860b] uppercase tracking-wider mb-3 border-b border-[#b8860b]/20 pb-1">Client & Property</h2>
+            <h2 className="text-sm font-bold text-accent-500 uppercase tracking-wider mb-3 border-b border-accent-500/20 pb-1">Client & Property</h2>
             <div className="grid grid-cols-2 gap-4 text-sm text-[#343a40]">
               <p><strong>Client Name:</strong> {serviceRequest.contactName}</p>
               <p><strong>Property Type:</strong> {serviceRequest.propertyType}</p>
@@ -154,7 +154,7 @@ export default function ManagerVerificationView({ projectId, projectCode, report
           </section>
 
           <section>
-            <h2 className="text-sm font-bold text-[#b8860b] uppercase tracking-wider mb-3 border-b border-[#b8860b]/20 pb-1">Valuation Summary</h2>
+            <h2 className="text-sm font-bold text-accent-500 uppercase tracking-wider mb-3 border-b border-accent-500/20 pb-1">Valuation Summary</h2>
             <div className="grid grid-cols-2 gap-4 text-sm text-[#343a40]">
               <p><strong>Fair Market Value:</strong> ₹{reportFields.marketValue}</p>
               <p><strong>Realizable Value:</strong> ₹{reportFields.realizableValue}</p>
@@ -165,13 +165,13 @@ export default function ManagerVerificationView({ projectId, projectCode, report
           </section>
 
           <section>
-            <h2 className="text-sm font-bold text-[#b8860b] uppercase tracking-wider mb-3 border-b border-[#b8860b]/20 pb-1">Observations</h2>
+            <h2 className="text-sm font-bold text-accent-500 uppercase tracking-wider mb-3 border-b border-accent-500/20 pb-1">Observations</h2>
             <p className="text-sm text-[#343a40] whitespace-pre-wrap">{reportFields.observations}</p>
           </section>
 
           {reportFields.propertyImages && reportFields.propertyImages.length > 0 && (
             <section>
-              <h2 className="text-sm font-bold text-[#b8860b] uppercase tracking-wider mb-3 border-b border-[#b8860b]/20 pb-1">Photographs</h2>
+              <h2 className="text-sm font-bold text-accent-500 uppercase tracking-wider mb-3 border-b border-accent-500/20 pb-1">Photographs</h2>
               <div className="grid grid-cols-2 gap-4">
                 {reportFields.propertyImages.map((img: string, idx: number) => (
                   <img key={idx} src={img} alt="Property" className="w-full h-48 object-cover rounded-md border border-[#e9ecef]" crossOrigin="anonymous" />

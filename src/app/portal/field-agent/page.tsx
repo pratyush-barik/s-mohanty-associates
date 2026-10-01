@@ -42,7 +42,7 @@ export default async function FieldAgentDashboard() {
     },
     include: { 
       serviceRequest: { select: { propertyType: true, contactName: true } },
-      inspection: { select: { completedFieldAgents: true } }
+      inspection: { select: { completedFieldAgents: true, status: true } }
     },
     orderBy: { createdAt: 'desc' },
   });
@@ -72,7 +72,7 @@ export default async function FieldAgentDashboard() {
     <div className="space-y-8">
       <div className="card p-6">
         <div className="flex items-center gap-6">
-          <div className="w-20 h-20 rounded-2xl flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#1e3a5f] to-[#162d4a] flex items-center justify-center">
+          <div className="w-20 h-20 rounded-2xl shrink-0 overflow-hidden bg-linear-to-br from-[#1e3a5f] to-[#162d4a] flex items-center justify-center">
             {user.profilePhoto ? (
               <img src={user.profilePhoto} alt={user.name} className="w-full h-full object-cover" />
             ) : (
@@ -82,7 +82,7 @@ export default async function FieldAgentDashboard() {
           <div className="flex-1">
             <h1 className="text-2xl font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>{user.name}</h1>
             <div className="flex items-center gap-4 mt-1.5">
-              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#b8860b]/10 text-[#b8860b] text-xs font-semibold">
+              <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-accent-500/10 text-accent-500 text-xs font-semibold">
                 {roleLabels[user.role] || user.role}
               </span>
               {user.employeeId && <span className="text-sm text-[#6c757d] font-mono">{user.employeeId}</span>}
@@ -90,7 +90,7 @@ export default async function FieldAgentDashboard() {
             </div>
             <p className="text-xs text-[#adb5bd] mt-1.5">{user.email}</p>
           </div>
-          <Link href="/portal/profile" className="text-sm text-[#b8860b] hover:underline font-medium">Edit Profile →</Link>
+          <Link href="/portal/profile" className="text-sm text-accent-500 hover:underline font-medium">Edit Profile →</Link>
         </div>
       </div>
 
@@ -101,7 +101,7 @@ export default async function FieldAgentDashboard() {
         </div>
         <div className="card p-5">
           <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Pending Inspections</p>
-          <p className="text-3xl font-bold text-[#b8860b]" style={{ fontFamily: 'var(--font-heading)' }}>{stats.active}</p>
+          <p className="text-3xl font-bold text-accent-500" style={{ fontFamily: 'var(--font-heading)' }}>{stats.active}</p>
         </div>
         <div className="card p-5">
           <p className="text-xs font-medium text-[#6c757d] uppercase tracking-wider mb-1">Completed</p>
@@ -113,7 +113,7 @@ export default async function FieldAgentDashboard() {
         <div className="card p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-[#0f2038]" style={{ fontFamily: 'var(--font-heading)' }}>My Inspections</h2>
-            <Link href="/portal/inspections" className="text-sm text-[#b8860b] hover:underline font-medium">View All →</Link>
+            <Link href="/portal/inspections" className="text-sm text-accent-500 hover:underline font-medium">View All →</Link>
           </div>
           <div className="space-y-3">
             {assignedProjects.map((project) => {
@@ -123,7 +123,7 @@ export default async function FieldAgentDashboard() {
               const agentStatusColor = isAgentCompleted ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200';
               
               return (
-              <div key={project.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-[#b8860b]/30 transition-colors">
+              <div key={project.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#f8f9fa] border border-[#e9ecef] hover:border-accent-500/30 transition-colors">
                 <div>
                   <p className="text-sm font-bold text-[#0f2038]">{project.projectCode}</p>
                   <p className="text-xs text-[#6c757d] mt-0.5">{project.serviceRequest.propertyType} • {project.serviceRequest.contactName}</p>
