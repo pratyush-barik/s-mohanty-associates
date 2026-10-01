@@ -130,7 +130,7 @@ export interface BandhanSMEProps {
 const NAV_SECTIONS: NavItem[] = [
   // Section I: Basic Information
   { id: '', title: 'Section I: Basic Information', isHeader: true },
-  { id: 'sec-basic', title: '1. Basic Information (Points A–M)' },
+  { id: 'sec-basic', title: '1. Basic Information' },
 
   // Section II: Valuation of Land
   { id: '', title: 'Section II: Valuation of Land', isHeader: true },
@@ -148,7 +148,7 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-bldg-tech', title: '2. Technical Details of the Building' },
   { id: 'sec-bldg-specs', title: '3. Specifications of Construction' },
   { id: 'sec-bldg-valuation', title: '4. Details of Building Valuation' },
-  { id: 'sec-bldg-subschedules', title: '5. Sub-Schedules (5.1–5.4)' },
+  { id: 'sec-bldg-subschedules', title: '5. Sub-Schedules' },
   { id: 'sec-bldg-abstract-matrix', title: '6. TOTAL ABSTRACT OF THE ENTIRE PROPERTY' },
 
   // Additional Sections
