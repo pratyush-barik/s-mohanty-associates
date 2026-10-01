@@ -46,7 +46,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
   bankId: 'KOTAK MAHINDRA BANK',
   subTemplateId: 'BUSINESS BANKING GROUP',
   displayName: 'Kotak Mahindra Bank — Business Banking Group (BBG)',
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8'],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFKotakBbgRenderer({ ...fields, projectCode }),
   navSections: [
     { id: 'kotak-section-1', title: '1. General Details' },
@@ -56,6 +56,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     { id: 'kotak-section-5', title: '5. Building / Structural Details' },
     { id: 'kotak-section-6', title: '6. Details of Measurements' },
     { id: 'kotak-section-7', title: '7. Valuation Calculations & Rate Analysis' },
+    { id: 'kotak-section-8', title: '8. Valuation Financial Summary' },
   ],
   defaultValues: {
     kotakBbgPurpose: 'To ascertain Market value, Realizable value & Distress value for bank decision-making',
@@ -1122,6 +1123,108 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               isReadOnly={isReadOnly}
               tooltip="Auto calculating from [Primary Land Area * Guideline Land Rate]"
             />
+          </div>
+        );
+      }
+    },
+    {
+      id: 'kotak-section-8',
+      title: 'Valuation Financial Summary',
+      number: 8,
+      defaultOpen: false,
+      render: (fields, handleChange, isReadOnly) => {
+        // Shared calculations from Section 7
+        const landArea = parseFloat(fields.kotakBbgLandArea) || 0;
+        
+        const baseRate = parseFloat(fields.kotakBbgBaseMarketRate) || 0;
+        const discountPremium = parseFloat(fields.kotakBbgDiscountPremium) || 0;
+        const calcLandRate = baseRate + (baseRate * (discountPremium / 100));
+        const adoptedLandRateVal = fields.kotakBbgAdoptedLandRate || (calcLandRate > 0 ? calcLandRate.toString() : '0');
+        const landValue = landArea * parseFloat(adoptedLandRateVal);
+
+        let buildingValue = 0;
+        if (!fields.kotakBbgBuildingBuaNA && !fields.kotakBbgAdoptedBuildingRateNA) {
+          const sec6BuaData = Array.isArray(fields.kotakBbgBuildingBuaTable) ? fields.kotakBbgBuildingBuaTable : [];
+          const adoptedBldgRates = Array.isArray(fields.kotakBbgAdoptedBuildingRateTable) ? fields.kotakBbgAdoptedBuildingRateTable : [];
+          sec6BuaData.forEach((r: any, i: number) => {
+            const area = parseFloat(r.builtUp) || 0;
+            const rate = parseFloat(adoptedBldgRates[i]?.rate) || 0;
+            buildingValue += (area * rate);
+          });
+        }
+        const totalAssetValue = landValue + buildingValue;
+
+        // Section 8 calculations
+        const fmvExactCalc = totalAssetValue;
+        const fmvExactVal = fields.kotakBbgFmvExact || (fmvExactCalc > 0 ? fmvExactCalc.toString() : '');
+
+        let roundedFmvCalc = 0;
+        if (totalAssetValue > 0) {
+           roundedFmvCalc = Math.round(totalAssetValue / 100000) * 100000;
+        }
+        const fmvRoundedVal = fields.kotakBbgFmvRounded || (roundedFmvCalc > 0 ? roundedFmvCalc.toString() : '');
+
+        const rvCalc = roundedFmvCalc * 0.90;
+        const rvVal = fields.kotakBbgRv || (rvCalc > 0 ? rvCalc.toString() : '');
+
+        const dvCalc = roundedFmvCalc * 0.80;
+        const dvVal = fields.kotakBbgDv || (dvCalc > 0 ? dvCalc.toString() : '');
+
+        const ivCalc = buildingValue;
+        const ivVal = fields.kotakBbgIv || (ivCalc > 0 ? ivCalc.toString() : '');
+        
+        const isVacantLand = fields.kotakBbgNatureOfProperty === 'Vacant Land';
+        const isIvNA = fields.kotakBbgIvNA !== undefined ? fields.kotakBbgIvNA : isVacantLand;
+
+        return (
+          <div style={{ backgroundColor: '#fce4ec', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            <PrefillField
+              label="Exact Fair Market Value (FMV) (₹)"
+              value={fmvExactVal}
+              onChange={(val: string) => handleChange('kotakBbgFmvExact', val)}
+              isReadOnly={isReadOnly}
+              tooltip='Prefill from section 7, "Total Asset Value (i + ii)"'
+            />
+            
+            <PrefillField
+              label='Rounded Fair Market Value ("Say Value") (₹)'
+              value={fmvRoundedVal}
+              onChange={(val: string) => handleChange('kotakBbgFmvRounded', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Auto calculating from [Round(Exact Fair Market Value (FMV), Nearest Lakh)]"
+            />
+            
+            <PrefillField
+              label="Realizable Value (RV) (₹)"
+              value={rvVal}
+              onChange={(val: string) => handleChange('kotakBbgRv', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Auto calculating from [0.90 * Rounded Fair Market Value]"
+            />
+            
+            <PrefillField
+              label="Distress Value (DV) (₹)"
+              value={dvVal}
+              onChange={(val: string) => handleChange('kotakBbgDv', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Auto calculating from [0.80 * Rounded Fair Market Value]"
+            />
+
+            <div className="space-y-2">
+              <label className="flex items-center space-x-2 text-sm text-pink-800">
+                <input type="checkbox" checked={isIvNA} onChange={e => handleChange('kotakBbgIvNA', e.target.checked)} disabled={isReadOnly} />
+                <span>Not Applicable (NA) for Insurable Value (e.g. Vacant Land)</span>
+              </label>
+              {!isIvNA && (
+                <PrefillField
+                  label="Insurable Value (IV) (₹)"
+                  value={ivVal}
+                  onChange={(val: string) => handleChange('kotakBbgIv', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip='Prefill from section 7, "Building Value (ii)"'
+                />
+              )}
+            </div>
           </div>
         );
       }

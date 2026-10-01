@@ -283,5 +283,20 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Guideline / Circle Rate (Rs / sq. ft.)', value: this.getF('kotakBbgGuidelineRateNA') ? 'NA' : this.getF('kotakBbgGuidelineRate') },
       { label: 'Guideline Valuation', value: this.getF('kotakBbgGuidelineValuation') },
     ]);
+
+    this.drawSectionHeader('8. VALUATION FINANCIAL SUMMARY');
+    this.drawKeyValueRow([
+      { label: 'Exact Fair Market Value (FMV)', value: this.getF('kotakBbgFmvExact') },
+      { label: 'Rounded Fair Market Value (Say Value)', value: this.getF('kotakBbgFmvRounded') },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Realizable Value (RV)', value: this.getF('kotakBbgRv') },
+      { label: 'Distress Value (DV)', value: this.getF('kotakBbgDv') },
+    ]);
+    const isVacantLand = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
+    const isIvNA = this.getF('kotakBbgIvNA') !== undefined ? this.getF('kotakBbgIvNA') : isVacantLand;
+    this.drawKeyValueRow([
+      { label: 'Insurable Value (IV)', value: isIvNA ? 'NA' : this.getF('kotakBbgIv'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
   }
 }
