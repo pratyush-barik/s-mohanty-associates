@@ -73,24 +73,30 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Person Met at Site & Contact Details', value: personMetStr, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     
-    this.drawSectionHeader('2. DETAILS OF PROPERTY BEING APPRAISED');
+    this.drawSectionHeader('2. NATURE & SCOPE OF PROPERTY');
+    
+    const nature = this.getF('kotakBbgNatureOfProperty') === 'Custom' ? this.getF('kotakBbgNatureOfPropertyCustom') : this.getF('kotakBbgNatureOfProperty');
+    const occupancy = this.getF('kotakBbgOccupancyNA') ? 'NA' : (this.getF('kotakBbgOccupancy') === 'Custom' ? this.getF('kotakBbgOccupancyCustom') : this.getF('kotakBbgOccupancy'));
     this.drawKeyValueRow([
-      { label: 'Technical Address (as per site)', value: this.getF('kotakBbgTechnicalAddress'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Nature of Property', value: nature },
+      { label: 'Present Use / Occupancy Status', value: occupancy },
     ]);
+    
+    const tenureType = this.getF('kotakBbgTenure') === 'Custom' ? this.getF('kotakBbgTenureCustom') : this.getF('kotakBbgTenure');
+    let tenureDetails = tenureType;
+    if (this.getF('kotakBbgTenure') === 'Leasehold') {
+      const remaining = this.getF('kotakBbgLeaseRemainingYears');
+      const expiry = this.getF('kotakBbgLeaseExpiryDate');
+      if (remaining || expiry) tenureDetails += ` (${remaining ? remaining + ' yrs left' : ''}${remaining && expiry ? ', ' : ''}${expiry ? 'Expiry: ' + expiry : ''})`;
+    }
+    
     this.drawKeyValueRow([
-      { label: 'Legal Address (as per documents)', value: this.getF('kotakBbgLegalAddress'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Type of Ownership', value: tenureDetails },
+      { label: 'Scope of Valuation (Share %)', value: this.getF('kotakBbgScopeOfValuation') || '100%' },
     ]);
+    
     this.drawKeyValueRow([
-      { label: 'Google Coordinates', value: this.getF('kotakBbgGoogleCoordinatesNA') ? 'NA' : this.getF('kotakBbgGoogleCoordinates') },
-      { label: 'Nature of Property', value: this.getF('kotakBbgNatureOfProperty') === 'Custom' ? this.getF('kotakBbgNatureOfPropertyCustom') : this.getF('kotakBbgNatureOfProperty') },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Tenure of Property', value: this.getF('kotakBbgTenure') },
-      { label: 'Lease Terms (if applicable)', value: this.getF('kotakBbgLeaseTermsNA') ? 'NA' : this.getF('kotakBbgLeaseTerms') },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Transferability of Leasehold Rights', value: this.getF('kotakBbgTransferability') },
-      { label: 'Occupancy Details', value: this.getF('kotakBbgOccupancy') === 'Custom' ? this.getF('kotakBbgOccupancyCustom') : this.getF('kotakBbgOccupancy') },
+      { label: 'Brief Description of the Property', value: this.getF('kotakBbgPropertyDescriptionNA') ? 'NA' : this.getF('kotakBbgPropertyDescription'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     
     this.drawSectionHeader('3. SITE & SURROUNDING DETAILS');

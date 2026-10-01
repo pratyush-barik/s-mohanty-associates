@@ -50,7 +50,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFKotakBbgRenderer({ ...fields, projectCode }),
   navSections: [
     { id: 'kotak-section-1', title: '1. General Details' },
-    { id: 'kotak-section-2', title: '2. Details of Property Being Appraised' },
+    { id: 'kotak-section-2', title: '2. Nature & Scope of Property' },
     { id: 'kotak-section-3', title: '3. Site & Surrounding Details' },
     { id: 'kotak-section-4', title: '4. Details of Approvals & Legal Verification' },
     { id: 'kotak-section-5', title: '5. Building / Structural Details' },
@@ -240,94 +240,101 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'kotak-section-2',
-      title: 'Details of Property Being Appraised',
+      title: 'Nature & Scope of Property',
       number: 2,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
         return (
           <div style={{ backgroundColor: '#e3f2fd', padding: '16px', borderRadius: '8px' }} className="space-y-4">
-            <Field label="Technical Address (as per site)">
-              <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgTechnicalAddress || ''} onChange={e => handleChange('kotakBbgTechnicalAddress', e.target.value)} disabled={isReadOnly} />
-            </Field>
-            <PrefillField
-              label="Legal Address (as per documents)"
-              value={fields.kotakBbgLegalAddress || ''}
-              onChange={(val: string) => handleChange('kotakBbgLegalAddress', val)}
-              isReadOnly={isReadOnly}
-              type="textarea"
-              tooltip="Prefill from Legal Title Deed"
-            />
-            <Field label="Google Coordinates">
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm">
-                  <input type="checkbox" checked={fields.kotakBbgGoogleCoordinatesNA || false} onChange={e => handleChange('kotakBbgGoogleCoordinatesNA', e.target.checked)} disabled={isReadOnly} />
-                  <span>Not Applicable (NA)</span>
-                </label>
-                {!fields.kotakBbgGoogleCoordinatesNA && (
-                  <div className="flex space-x-2">
-                    <input type="text" className={inputCls + ' flex-1'} value={fields.kotakBbgGoogleCoordinates || ''} onChange={e => handleChange('kotakBbgGoogleCoordinates', e.target.value)} disabled={isReadOnly} />
-                    <button type="button" className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors" disabled={isReadOnly}>Fetch Location</button>
-                  </div>
-                )}
-              </div>
-            </Field>
             <Field label="Nature of Property">
               <select className={inputCls} value={fields.kotakBbgNatureOfProperty || ''} onChange={e => handleChange('kotakBbgNatureOfProperty', e.target.value)} disabled={isReadOnly}>
                 <option value="">Select Nature</option>
                 <option value="Vacant Land">Vacant Land</option>
-                <option value="Residential">Residential</option>
-                <option value="Commercial">Commercial</option>
-                <option value="Industrial">Industrial</option>
-                <option value="Others">Others</option>
+                <option value="Independent House">Independent House</option>
+                <option value="Apartment/Flat">Apartment/Flat</option>
+                <option value="Commercial Shop">Commercial Shop</option>
+                <option value="Industrial Shed">Industrial Shed</option>
                 <option value="Custom">Custom</option>
               </select>
               {fields.kotakBbgNatureOfProperty === 'Custom' && (
                 <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgNatureOfPropertyCustom || ''} onChange={e => handleChange('kotakBbgNatureOfPropertyCustom', e.target.value)} disabled={isReadOnly} />
               )}
             </Field>
-            <Field label="Tenure of Property">
-              <div className="flex space-x-4 mt-2">
-                <label className="flex items-center space-x-2">
-                  <input type="radio" name="kotakBbgTenure" value="Freehold" checked={fields.kotakBbgTenure === 'Freehold'} onChange={e => handleChange('kotakBbgTenure', e.target.value)} disabled={isReadOnly} />
-                  <span>Freehold</span>
-                </label>
-                <label className="flex items-center space-x-2">
-                  <input type="radio" name="kotakBbgTenure" value="Leasehold" checked={fields.kotakBbgTenure === 'Leasehold'} onChange={e => handleChange('kotakBbgTenure', e.target.value)} disabled={isReadOnly} />
-                  <span>Leasehold</span>
-                </label>
-              </div>
-            </Field>
-            <Field label="Lease Terms (if applicable)">
+
+            <Field label="Present Use / Occupancy Status">
               <div className="space-y-2">
                 <label className="flex items-center space-x-2 text-sm">
-                  <input type="checkbox" checked={fields.kotakBbgLeaseTermsNA || false} onChange={e => handleChange('kotakBbgLeaseTermsNA', e.target.checked)} disabled={isReadOnly} />
+                  <input type="checkbox" checked={fields.kotakBbgOccupancyNA || false} onChange={e => handleChange('kotakBbgOccupancyNA', e.target.checked)} disabled={isReadOnly} />
                   <span>Not Applicable (NA)</span>
                 </label>
-                {!fields.kotakBbgLeaseTermsNA && (
-                  <input type="text" className={inputCls} value={fields.kotakBbgLeaseTerms || ''} onChange={e => handleChange('kotakBbgLeaseTerms', e.target.value)} disabled={isReadOnly} />
+                {!fields.kotakBbgOccupancyNA && (
+                  <div className="space-y-2">
+                    <select className={inputCls} value={fields.kotakBbgOccupancy || ''} onChange={e => handleChange('kotakBbgOccupancy', e.target.value)} disabled={isReadOnly}>
+                      <option value="">Select Occupancy</option>
+                      <option value="Self-Occupied">Self-Occupied</option>
+                      <option value="Tenanted">Tenanted</option>
+                      <option value="Vacant">Vacant</option>
+                      <option value="Under Construction">Under Construction</option>
+                      <option value="Industrial Use">Industrial Use</option>
+                      <option value="Custom">Custom</option>
+                    </select>
+                    {fields.kotakBbgOccupancy === 'Custom' && (
+                      <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgOccupancyCustom || ''} onChange={e => handleChange('kotakBbgOccupancyCustom', e.target.value)} disabled={isReadOnly} />
+                    )}
+                  </div>
                 )}
               </div>
             </Field>
-            <Field label="Transferability of Leasehold Rights">
-              <select className={inputCls} value={fields.kotakBbgTransferability || ''} onChange={e => handleChange('kotakBbgTransferability', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select Option</option>
-                <option value="Yes">Yes</option>
-                <option value="No">No</option>
-                <option value="Not Applicable">Not Applicable</option>
-              </select>
+
+            <Field label="Type of Ownership">
+              <div className="p-3 bg-white bg-opacity-50 border border-gray-200 rounded space-y-4">
+                <div className="flex flex-col space-y-2">
+                  <span className="text-sm font-semibold text-gray-700">Primary Ownership Type</span>
+                  <select className={inputCls} value={fields.kotakBbgTenure || ''} onChange={e => handleChange('kotakBbgTenure', e.target.value)} disabled={isReadOnly}>
+                    <option value="">Select Ownership</option>
+                    <option value="Freehold">Freehold</option>
+                    <option value="Leasehold">Leasehold</option>
+                    <option value="Allotment">Allotment</option>
+                    <option value="Custom">Custom</option>
+                  </select>
+                  {fields.kotakBbgTenure === 'Custom' && (
+                    <input type="text" className={inputCls} placeholder="Enter custom ownership" value={fields.kotakBbgTenureCustom || ''} onChange={e => handleChange('kotakBbgTenureCustom', e.target.value)} disabled={isReadOnly} />
+                  )}
+                </div>
+
+                {fields.kotakBbgTenure === 'Leasehold' && (
+                  <>
+                    <div className="flex flex-col space-y-2">
+                      <span className="text-sm font-semibold text-gray-700">Lease Tenure (Remaining Years)</span>
+                      <input type="number" className={inputCls} placeholder="Years" value={fields.kotakBbgLeaseRemainingYears || ''} onChange={e => handleChange('kotakBbgLeaseRemainingYears', e.target.value)} disabled={isReadOnly} />
+                    </div>
+                    <div className="flex flex-col space-y-2">
+                      <span className="text-sm font-semibold text-gray-700">Lease Expiry Date</span>
+                      <input type="date" className={inputCls} value={fields.kotakBbgLeaseExpiryDate || ''} onChange={e => handleChange('kotakBbgLeaseExpiryDate', e.target.value)} disabled={isReadOnly} />
+                    </div>
+                  </>
+                )}
+              </div>
             </Field>
-            <Field label="Occupancy Details">
-              <select className={inputCls} value={fields.kotakBbgOccupancy || ''} onChange={e => handleChange('kotakBbgOccupancy', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select Occupancy</option>
-                <option value="Self Occupied">Self Occupied</option>
-                <option value="Tenanted">Tenanted</option>
-                <option value="Vacant">Vacant</option>
-                <option value="Partly Occupied">Partly Occupied</option>
-                <option value="Custom">Custom</option>
-              </select>
-              {fields.kotakBbgOccupancy === 'Custom' && (
-                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgOccupancyCustom || ''} onChange={e => handleChange('kotakBbgOccupancyCustom', e.target.value)} disabled={isReadOnly} />
-              )}
+
+            <PrefillField
+              label="Scope of Valuation (Property Share %)"
+              value={fields.kotakBbgScopeOfValuation || '100%'}
+              onChange={(val: string) => handleChange('kotakBbgScopeOfValuation', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Prefill from Scope of Work / Mandate"
+            />
+
+            <Field label="Brief Description of the Property">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgPropertyDescriptionNA || false} onChange={e => handleChange('kotakBbgPropertyDescriptionNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgPropertyDescriptionNA && (
+                  <textarea className={inputCls + ' resize-y'} rows={4} placeholder="Enter description..." value={fields.kotakBbgPropertyDescription || ''} onChange={e => handleChange('kotakBbgPropertyDescription', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
             </Field>
           </div>
         );
