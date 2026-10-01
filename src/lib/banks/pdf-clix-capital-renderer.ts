@@ -1,3 +1,5 @@
+import { PDFBankRenderer } from './pdf-bank-renderer';
+import { rgb } from 'pdf-lib';
 import {
   PDFBankRenderer,
   FONT_SIZE,
@@ -12,37 +14,9 @@ import {
   hexToRgb,
   MARGIN_L,
   CONTENT_W,
-} from '../pdf-bank-renderer';
-import { rgb } from 'pdf-lib';
+} from './pdf-bank-renderer';
 
 export class PDFClixCapitalRenderer extends PDFBankRenderer {
-  private fields: any;
-
-  constructor(fields?: any) {
-    super();
-    this.fields = fields || {};
-  }
-
-  private getF(key: string, defaultVal: any = ''): any {
-    const val = (this.fields as any)?.[key];
-    if (val === undefined || val === null) return defaultVal;
-    return typeof val === 'string' ? val.replace(/[\t\n\r]+/g, ' ').trim() : val;
-  }
-
-  private stripHtml(html: string): string {
-    return html ? html.replace(/<[^>]*>/g, '') : '';
-  }
-
-  private drawStandardTwoColumnRow(label: string, value: string): void {
-    this.drawSimpleRow(label, value);
-  }
-
-  private async renderMapsAndPhotos(): Promise<void> {
-    if (this.fields?.propertyImages && this.fields.propertyImages.length > 0) {
-      await this.drawPhotoGrid(this.fields.propertyImages);
-    }
-  }
-
   async drawContent(): Promise<void> {
     this.addPage();
     this.drawMainHeader('VALUATION REPORT');
@@ -107,7 +81,7 @@ export class PDFClixCapitalRenderer extends PDFBankRenderer {
     // Draw Legal Documents Table
     const legalDocs = this.getF('clixLegalDocs') || [];
     if (legalDocs.length > 0) {
-      this.drawStandardTwoColumnRow('Legal Documents:', '');
+      this.drawKeyValueRow([{ label: 'Legal Documents:', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
       for (let i = 0; i < legalDocs.length; i++) {
         const doc = legalDocs[i];
         const docName = doc.docNameNA ? 'NA' : (doc.docName === 'Custom' ? doc.docNameCustom : doc.docName);
@@ -121,7 +95,7 @@ export class PDFClixCapitalRenderer extends PDFBankRenderer {
     
     const accFloors = this.getF('clixAccFloors') || [];
     if (accFloors.length > 0) {
-      this.drawStandardTwoColumnRow('Accommodation Details:', '');
+      this.drawKeyValueRow([{ label: 'Accommodation Details:', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
       for (const floor of accFloors) {
         this.drawKeyValueRow([
           { label: floor.label || 'Floor', value: floor.isNA ? 'Not Constructed/NA' : floor.description, labelWidth: 150, valueWidth: CONTENT_W - 150 },
@@ -185,7 +159,7 @@ export class PDFClixCapitalRenderer extends PDFBankRenderer {
     ]);
 
     this.drawSectionHeader('8. BOUNDARIES AND SET BACKS');
-    this.drawStandardTwoColumnRow('Boundaries Details:', '');
+    this.drawKeyValueRow([{ label: 'Boundaries Details:', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
     this.drawKeyValueRow([
       { label: 'Direction', value: 'As Per Document', labelWidth: 80, valueWidth: (CONTENT_W - 160) / 2, bold: true, labelBold: true },
       { label: 'As Per Site', value: 'Dimension (Ft.)', labelWidth: (CONTENT_W - 160) / 2, valueWidth: 80, bold: true, labelBold: true },
@@ -206,11 +180,9 @@ export class PDFClixCapitalRenderer extends PDFBankRenderer {
       { label: 'Are Demarcations Matching?', value: this.getF('clixS8DemarcationMatchingNA') ? 'NA' : this.getF('clixS8DemarcationMatching') },
       { label: 'Mismatch Explanation', value: this.getF('clixS8DemarcationMismatchExplanation') || '' },
     ]);
-    this.drawKeyValueRow([
-      { label: 'Notes on Demarcation', value: this.getF('clixS8NotesForDemarcationNA') ? 'NA' : this.getF('clixS8NotesForDemarcation'), labelWidth: 150, valueWidth: CONTENT_W - 150 },
-    ]);
+    this.drawKeyValueRow([{ label: 'Notes on Demarcation', value: this.getF('clixS8NotesForDemarcationNA') ? 'NA' : this.getF('clixS8NotesForDemarcation'), labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
 
-    this.drawStandardTwoColumnRow('Setbacks Details:', '');
+    this.drawKeyValueRow([{ label: 'Setbacks Details:', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
     this.drawKeyValueRow([
       { label: 'Direction', value: 'Approved (Ft.)', labelWidth: 80, valueWidth: (CONTENT_W - 180) / 3, bold: true, labelBold: true },
       { label: 'Actual (Ft.)', value: 'Deviations', labelWidth: (CONTENT_W - 180) / 3, valueWidth: (CONTENT_W - 180) / 3, bold: true, labelBold: true },
@@ -296,8 +268,8 @@ export class PDFClixCapitalRenderer extends PDFBankRenderer {
     let genRemarks = this.getF('clixS12GeneralRemarksNA') ? 'NA' : this.getF('clixS12GeneralRemarks');
     if (!genRemarks) genRemarks = this.getF('generalRemarks');
     
-    this.drawStandardTwoColumnRow('General Remarks / Special Observations', this.stripHtml(genRemarks || ''));
-    this.drawStandardTwoColumnRow('Any Legal/Structural Issues Observed', this.getF('clixS12LegalIssuesNA') ? 'NA' : this.stripHtml(this.getF('clixS12LegalIssues') || ''));
+    this.drawKeyValueRow([{ label: 'General Remarks / Special Observations', value: this.stripHtml(genRemarks || ''), labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Any Legal/Structural Issues Observed', value: this.getF('clixS12LegalIssuesNA') ? 'NA' : this.stripHtml(this.getF('clixS12LegalIssues') || ''), labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
     
     const mortgage = this.getF('clixS12MortgageabilityNA') ? 'NA' : (this.getF('clixS12MortgageabilityDropdown') === 'Custom' ? this.getF('clixS12Mortgageability') : this.getF('clixS12MortgageabilityDropdown'));
     this.drawKeyValueRow([
@@ -319,8 +291,5 @@ export class PDFClixCapitalRenderer extends PDFBankRenderer {
       { label: 'Valuer\'s Name / Executed By', value: this.getF('clixS12ValuerNameNA') ? 'NA' : this.getF('clixS12ValuerName'), hideTop: true },
       { label: 'Digital Signature appended?', value: this.getF('clixS12DigitalSignature') ? 'Yes' : 'No (Requires manual wet signature)', hideTop: true },
     ]);
-
-    // Render maps & photos using base class
-    await this.renderMapsAndPhotos();
   }
 }
