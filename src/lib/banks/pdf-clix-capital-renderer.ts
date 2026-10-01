@@ -1,6 +1,5 @@
-import { PDFBankRenderer } from './pdf-bank-renderer';
-import { rgb } from 'pdf-lib';
 import {
+  PDFBankRenderer,
   FONT_SIZE,
   FONT_SIZE_HEADER,
   FONT_SIZE_TITLE,
@@ -13,7 +12,8 @@ import {
   hexToRgb,
   MARGIN_L,
   CONTENT_W,
-} from './pdf-bank-renderer';
+} from '../pdf-bank-renderer';
+import { rgb } from 'pdf-lib';
 
 export class PDFClixCapitalRenderer extends PDFBankRenderer {
   async drawContent(): Promise<void> {
