@@ -75,5 +75,53 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Occupancy Details', value: this.getF('kotakBbgOccupancy') },
     ]);
     
+    this.drawSectionHeader('3. SITE & SURROUNDING DETAILS');
+    this.drawKeyValueRow([{ label: 'Property Boundaries Comparison', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
+    this.drawKeyValueRow([
+      { label: 'Direction', value: 'As Per Document', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2, bold: true, labelBold: true },
+      { label: 'As Per Site', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0, bold: true, labelBold: true },
+    ]);
+    const b = this.getF('kotakBbgBoundariesTable') || {};
+    this.drawKeyValueRow([
+      { label: 'North', value: b.northDoc || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
+      { label: b.northSite || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'South', value: b.southDoc || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
+      { label: b.southSite || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'East', value: b.eastDoc || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
+      { label: b.eastSite || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'West', value: b.westDoc || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
+      { label: b.westSite || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
+    ]);
+
+    this.drawKeyValueRow([
+      { label: 'Boundaries Matching Verification', value: this.getF('kotakBbgBoundariesMatching') },
+      { label: 'Discrepancy in Boundaries', value: this.getF('kotakBbgBoundariesDiscrepancyNA') ? 'NA' : this.getF('kotakBbgBoundariesDiscrepancy') },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Document Basis for Property Identification', value: this.getF('kotakBbgDocumentBasis') },
+      { label: 'Valuer Confirmation', value: this.getF('kotakBbgValuerConfirmation') ? 'Confirmed' : 'Not Confirmed' },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Plot Demarcated at Site', value: this.getF('kotakBbgPlotDemarcated') ? 'Yes' : 'No' },
+      { label: 'Locality Type, Condition & Classification', value: this.getF('kotakBbgLocalityType') },
+    ]);
+    const surr = Array.isArray(this.getF('kotakBbgSurroundingDev')) ? this.getF('kotakBbgSurroundingDev').join(', ') : '';
+    this.drawKeyValueRow([
+      { label: 'Development of Surrounding Areas', value: surr, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Access to Property', value: this.getF('kotakBbgAccess') },
+      { label: 'Approach Road Name & Condition', value: this.getF('kotakBbgApproachRoad') },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Proximity to Civic Amenities', value: this.getF('kotakBbgProximity'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
   }
 }

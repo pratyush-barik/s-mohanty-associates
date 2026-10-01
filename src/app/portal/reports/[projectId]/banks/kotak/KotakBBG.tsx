@@ -46,11 +46,12 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
   bankId: 'KOTAK MAHINDRA BANK',
   subTemplateId: 'BUSINESS BANKING GROUP',
   displayName: 'Kotak Mahindra Bank — Business Banking Group (BBG)',
-  hiddenSections: ['section-1', 'section-2'],
+  hiddenSections: ['section-1', 'section-2', 'section-3'],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFKotakBbgRenderer({ ...fields, projectCode }),
   navSections: [
     { id: 'kotak-section-1', title: '1. General Details' },
     { id: 'kotak-section-2', title: '2. Details of Property Being Appraised' },
+    { id: 'kotak-section-3', title: '3. Site & Surrounding Details' },
   ],
   defaultValues: {
     kotakBbgPurpose: 'To ascertain Market value, Realizable value & Distress value for bank decision-making',
@@ -194,6 +195,134 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                 <option value="Vacant">Vacant</option>
                 <option value="Partly Occupied">Partly Occupied</option>
               </select>
+            </Field>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'kotak-section-3',
+      title: 'Site & Surrounding Details',
+      number: 3,
+      defaultOpen: false,
+      render: (fields, handleChange, isReadOnly) => {
+        const surroundingDev = Array.isArray(fields.kotakBbgSurroundingDev) ? fields.kotakBbgSurroundingDev : [];
+        const toggleSurroundingDev = (val: string) => {
+          if (surroundingDev.includes(val)) {
+            handleChange('kotakBbgSurroundingDev', surroundingDev.filter(v => v !== val));
+          } else {
+            handleChange('kotakBbgSurroundingDev', [...surroundingDev, val]);
+          }
+        };
+
+        const boundaries = fields.kotakBbgBoundariesTable || { northDoc: '', northSite: '', southDoc: '', southSite: '', eastDoc: '', eastSite: '', westDoc: '', westSite: '' };
+        const setBoundary = (key: string, val: string) => {
+          handleChange('kotakBbgBoundariesTable', { ...boundaries, [key]: val });
+        };
+
+        return (
+          <div style={{ backgroundColor: '#e8f5e9', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            <Field label="Property Boundaries Comparison">
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-sm border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="border border-gray-300 p-2 text-left">Direction</th>
+                      <th className="border border-gray-300 p-2 text-left">As per Document</th>
+                      <th className="border border-gray-300 p-2 text-left">As per Site</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {['North', 'South', 'East', 'West'].map(dir => (
+                      <tr key={dir}>
+                        <td className="border border-gray-300 p-2 font-medium">{dir}</td>
+                        <td className="border border-gray-300 p-2">
+                          <input type="text" className={inputCls} value={boundaries[`${dir.toLowerCase()}Doc`] || ''} onChange={e => setBoundary(`${dir.toLowerCase()}Doc`, e.target.value)} disabled={isReadOnly} />
+                        </td>
+                        <td className="border border-gray-300 p-2">
+                          <input type="text" className={inputCls} value={boundaries[`${dir.toLowerCase()}Site`] || ''} onChange={e => setBoundary(`${dir.toLowerCase()}Site`, e.target.value)} disabled={isReadOnly} />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Field>
+
+            <Field label="Boundaries Matching Verification">
+              <div className="flex space-x-4 mt-2">
+                <label className="flex items-center space-x-2">
+                  <input type="radio" name="kotakBbgBoundariesMatching" value="Yes" checked={fields.kotakBbgBoundariesMatching === 'Yes'} onChange={e => handleChange('kotakBbgBoundariesMatching', e.target.value)} disabled={isReadOnly} />
+                  <span>Yes</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input type="radio" name="kotakBbgBoundariesMatching" value="No" checked={fields.kotakBbgBoundariesMatching === 'No'} onChange={e => handleChange('kotakBbgBoundariesMatching', e.target.value)} disabled={isReadOnly} />
+                  <span>No</span>
+                </label>
+              </div>
+            </Field>
+
+            <Field label="Discrepancy in Boundaries">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgBoundariesDiscrepancyNA || false} onChange={e => handleChange('kotakBbgBoundariesDiscrepancyNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgBoundariesDiscrepancyNA && (
+                  <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgBoundariesDiscrepancy || ''} onChange={e => handleChange('kotakBbgBoundariesDiscrepancy', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <Field label="Document Basis for Property Identification">
+              <select className={inputCls} value={fields.kotakBbgDocumentBasis || ''} onChange={e => handleChange('kotakBbgDocumentBasis', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Document Basis</option>
+                <option value="Sale Deed">Sale Deed</option>
+                <option value="Conveyance Deed">Conveyance Deed</option>
+                <option value="Gift Deed">Gift Deed</option>
+                <option value="Others">Others</option>
+              </select>
+            </Field>
+
+            <Field label="Valuer Confirmation of Property Identification">
+              <label className="flex items-center space-x-2">
+                <input type="checkbox" checked={fields.kotakBbgValuerConfirmation || false} onChange={e => handleChange('kotakBbgValuerConfirmation', e.target.checked)} disabled={isReadOnly} />
+                <span>I confirm the property is correctly identified</span>
+              </label>
+            </Field>
+
+            <Field label="Plot Demarcated at Site">
+              <label className="flex items-center space-x-2">
+                <input type="checkbox" checked={fields.kotakBbgPlotDemarcated || false} onChange={e => handleChange('kotakBbgPlotDemarcated', e.target.checked)} disabled={isReadOnly} />
+                <span>Yes, physically demarcated</span>
+              </label>
+            </Field>
+
+            <Field label="Locality Type, Condition & Classification">
+              <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgLocalityType || ''} onChange={e => handleChange('kotakBbgLocalityType', e.target.value)} disabled={isReadOnly} />
+            </Field>
+
+            <Field label="Development of Surrounding Areas">
+              <div className="flex space-x-4 mt-2">
+                {['Industrial', 'Commercial', 'Residential'].map(type => (
+                  <label key={type} className="flex items-center space-x-2">
+                    <input type="checkbox" checked={surroundingDev.includes(type)} onChange={() => toggleSurroundingDev(type)} disabled={isReadOnly} />
+                    <span>{type}</span>
+                  </label>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Access to Property">
+              <input type="text" className={inputCls} value={fields.kotakBbgAccess || ''} onChange={e => handleChange('kotakBbgAccess', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            
+            <Field label="Approach Road Name & Condition">
+              <input type="text" className={inputCls} value={fields.kotakBbgApproachRoad || ''} onChange={e => handleChange('kotakBbgApproachRoad', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            
+            <Field label="Proximity to Civic Amenities">
+              <input type="text" className={inputCls} value={fields.kotakBbgProximity || ''} onChange={e => handleChange('kotakBbgProximity', e.target.value)} disabled={isReadOnly} />
             </Field>
           </div>
         );
