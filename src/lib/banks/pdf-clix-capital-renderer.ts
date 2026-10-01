@@ -1,7 +1,6 @@
-import { PDFBankRenderer } from './pdf-bank-renderer';
+import { PDFBankRenderer } from '../pdf-bank-renderer';
 import { rgb } from 'pdf-lib';
 import {
-  PDFBankRenderer,
   FONT_SIZE,
   FONT_SIZE_HEADER,
   FONT_SIZE_TITLE,
@@ -14,9 +13,26 @@ import {
   hexToRgb,
   MARGIN_L,
   CONTENT_W,
-} from './pdf-bank-renderer';
+} from '../pdf-bank-renderer';
 
 export class PDFClixCapitalRenderer extends PDFBankRenderer {
+  private fields: any;
+  private projectCode?: string;
+
+  constructor(opts: any = {}) {
+    super();
+    this.fields = opts || {};
+    this.projectCode = opts.projectCode;
+  }
+
+  private getF(key: string, defaultVal: any = ''): any {
+    return this.fields[key] ?? defaultVal;
+  }
+
+  private stripHtml(html: string): string {
+    return (html || '').replace(/<[^>]*>?/gm, '');
+  }
+
   async drawContent(): Promise<void> {
     this.addPage();
     this.drawMainHeader('VALUATION REPORT');
