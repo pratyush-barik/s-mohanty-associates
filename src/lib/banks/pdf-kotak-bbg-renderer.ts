@@ -151,32 +151,63 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Proximity to Civic Amenities', value: this.getF('kotakBbgProximityNA') ? 'NA' : this.getF('kotakBbgProximity'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
-    this.drawSectionHeader('4. DETAILS OF APPROVALS & LEGAL VERIFICATION');
+    this.drawSectionHeader('4. TITLE, LEGAL & STATUTORY DETAILS');
+    
+    let natureOfTitleDeed = this.getF('kotakBbgTitleDeedNature');
+    if (natureOfTitleDeed === 'Custom') natureOfTitleDeed = this.getF('kotakBbgTitleDeedNatureCustom');
+    
     this.drawKeyValueRow([
-      { label: 'Non-Agricultural (N.A.) Conversion Status', value: this.getF('kotakBbgNaConversionStatusNA') ? 'NA' : this.getF('kotakBbgNaConversionStatus') },
-      { label: 'Land Zoning / Restrictions', value: this.getF('kotakBbgLandZoningGPLimitNA') ? 'GP Limit / NA' : this.getF('kotakBbgLandZoning') },
+      { label: 'Nature of Title Deed', value: natureOfTitleDeed },
+      { label: 'Title Deed / Document Number', value: this.getF('kotakBbgTitleDeedNoNA') ? 'NA' : this.getF('kotakBbgTitleDeedNo') },
     ]);
+    
     this.drawKeyValueRow([
-      { label: 'Approved Plan Details', value: this.getF('kotakBbgApprovedPlanDetails') === 'Custom' ? this.getF('kotakBbgApprovedPlanDetailsCustom') : this.getF('kotakBbgApprovedPlanDetails') },
-      { label: 'Authority Granting Approval', value: this.getF('kotakBbgAuthorityApprovalNA') ? 'NA' : this.getF('kotakBbgAuthorityApproval') },
+      { label: 'Date of Execution', value: this.getF('kotakBbgExecutionDate') },
+      { label: 'Registration Date', value: this.getF('kotakBbgRegistrationDate') },
     ]);
+    
+    let sro = this.getF('kotakBbgSro');
+    if (sro === 'Custom') sro = this.getF('kotakBbgSroCustom');
+    if (this.getF('kotakBbgSroNA')) sro = 'NA';
+
+    let localAuthority = this.getF('kotakBbgLocalAuthority');
+    if (localAuthority === 'Custom') localAuthority = this.getF('kotakBbgLocalAuthorityCustom');
+    if (this.getF('kotakBbgLocalAuthorityNA')) localAuthority = 'NA';
+
     this.drawKeyValueRow([
-      { label: 'Plans Approved by Competent Authority', value: this.getF('kotakBbgPlansApprovedByCompetentAuthority') },
-      { label: 'Commencement Certificate / Building Permit Details', value: this.getF('kotakBbgCommencementCertificateNA') ? 'NA' : this.getF('kotakBbgCommencementCertificate') },
+      { label: 'Sub-Registrar Office (SRO)', value: sro },
+      { label: 'Town Planning / Local Authority', value: localAuthority },
     ]);
-    this.drawKeyValueRow([
-      { label: 'Occupation / Completion Certificate', value: this.getF('kotakBbgOccupationCertificateNA') ? 'NA' : this.getF('kotakBbgOccupationCertificate') },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Sale / Lease Deed Details', value: this.getF('kotakBbgSaleLeaseDeedDetails'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    const otherDocsList = Array.isArray(this.getF('kotakBbgOtherDocumentsPerused')) ? [...this.getF('kotakBbgOtherDocumentsPerused')] : [];
-    if (this.getF('kotakBbgOtherDocumentsPerusedCustomChecked') && this.getF('kotakBbgOtherDocumentsPerusedCustom')) {
-      otherDocsList.push(this.getF('kotakBbgOtherDocumentsPerusedCustom'));
+
+    let approvedPlanStatus = this.getF('kotakBbgApprovedPlanStatus');
+    let approvedPlanStr = approvedPlanStatus || '';
+    if (approvedPlanStatus === 'Approved') {
+        approvedPlanStr += ` (No: ${this.getF('kotakBbgApprovedPlanNo') || '-'}, Date: ${this.getF('kotakBbgApprovedPlanDate') || '-'})`;
     }
-    const otherDocs = otherDocsList.join(', ');
+    
+    let planDeviation = this.getF('kotakBbgPlanDeviation') || '';
+    if (planDeviation === 'Minor Deviation' || planDeviation === 'Major Deviation') {
+        planDeviation += ` (${this.getF('kotakBbgPlanDeviationPercent') || '0'}%)`;
+    }
+    
     this.drawKeyValueRow([
-      { label: 'Other Documents Perused', value: otherDocs, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Approved Building Plan Details', value: approvedPlanStr },
+      { label: 'Deviation from Approved Plan', value: planDeviation },
+    ]);
+
+    let propertyTaxStr = 'NA';
+    if (!this.getF('kotakBbgPropertyTaxNA')) {
+        let taxYear = this.getF('kotakBbgTaxPaidYear');
+        if (taxYear === 'Custom') taxYear = this.getF('kotakBbgTaxPaidYearCustom');
+        propertyTaxStr = `No: ${this.getF('kotakBbgPropertyTaxNo') || '-'} | Paid Up To: ${taxYear || '-'}`;
+    }
+
+    const isVacantOrIndependent = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land' || this.getF('kotakBbgNatureOfProperty') === 'Independent House';
+    const reraNA = this.getF('kotakBbgReraNA') !== undefined ? this.getF('kotakBbgReraNA') : isVacantOrIndependent;
+
+    this.drawKeyValueRow([
+      { label: 'Property Tax Assessment', value: propertyTaxStr },
+      { label: 'RERA Registration Number', value: reraNA ? 'NA' : this.getF('kotakBbgReraNo') },
     ]);
 
     this.drawSectionHeader('5. BUILDING / STRUCTURAL DETAILS');
