@@ -333,7 +333,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     if (!this.getF('kotakBbgAdoptedBuildingRateNA')) {
       const bRates = Array.isArray(this.getF('kotakBbgAdoptedBuildingRateTable')) ? this.getF('kotakBbgAdoptedBuildingRateTable') : [];
       if (bRates.length > 0) {
-        bldgRateStr = bRates.map((r: any) => `${r.floor || 'Unknown'}: Rs ${r.rate || '0'}`).join('\n');
+        bldgRateStr = bRates.map((r: { floor?: string; rate?: string }) => `${r.floor || 'Unknown'}: Rs ${r.rate || '0'}`).join('\n');
       } else {
         bldgRateStr = 'No rates defined';
       }

@@ -32,7 +32,7 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
           type="button"
           disabled={isReadOnly}
           onClick={() => setIsEdit(!isEdit)}
-          className={`p-1.5 border rounded flex-shrink-0 transition-colors ${isEdit ? 'bg-green-100 border-green-300 text-green-700' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'}`}
+          className={`p-1.5 border rounded shrink-0 transition-colors ${isEdit ? 'bg-green-100 border-green-300 text-green-700' : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'}`}
           title="Toggle Edit"
         >
           {isEdit ? <Unlock size={16} /> : <Lock size={16} />}
@@ -177,7 +177,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                       value={borrowerName} 
                       disabled={true} 
                     />
-                    <button type="button" disabled className="p-1.5 border rounded flex-shrink-0 bg-white border-gray-300 text-gray-500">
+                    <button type="button" disabled className="p-1.5 border rounded shrink-0 bg-white border-gray-300 text-gray-500">
                       <Lock size={16} />
                     </button>
                   </div>
@@ -541,7 +541,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                         {isLocked ? (
                           <div title='Prefill from section 3, "Property Boundaries (As per Deed)"' className="flex items-center space-x-2">
                             <input type="text" className={inputCls + ' flex-1'} value={val || ''} disabled={true} />
-                            <button type="button" disabled className="p-1.5 border rounded flex-shrink-0 bg-white border-gray-300 text-gray-500">
+                            <button type="button" disabled className="p-1.5 border rounded shrink-0 bg-white border-gray-300 text-gray-500">
                               <Lock size={16} />
                             </button>
                           </div>
@@ -1055,7 +1055,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                         <option value="Hectares">Hectares</option>
                       </select>
                       {!isReadOnly && (
-                        <button type="button" onClick={() => handleChange('kotakBbgLandAreaSecondaryEditMode', true)} className="p-1.5 border rounded flex-shrink-0 bg-white border-gray-300 text-gray-500 hover:bg-gray-50">
+                        <button type="button" onClick={() => handleChange('kotakBbgLandAreaSecondaryEditMode', true)} className="p-1.5 border rounded shrink-0 bg-white border-gray-300 text-gray-500 hover:bg-gray-50">
                           <Lock size={16} />
                         </button>
                       )}
@@ -1070,7 +1070,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                         <option value="Hectares">Hectares</option>
                       </select>
                       {!isReadOnly && (
-                        <button type="button" onClick={() => handleChange('kotakBbgLandAreaSecondaryEditMode', false)} className="p-1.5 border rounded flex-shrink-0 bg-green-50 border-green-300 text-green-600 hover:bg-green-100">
+                        <button type="button" onClick={() => handleChange('kotakBbgLandAreaSecondaryEditMode', false)} className="p-1.5 border rounded shrink-0 bg-green-50 border-green-300 text-green-600 hover:bg-green-100">
                           <Unlock size={16} />
                         </button>
                       )}
