@@ -324,5 +324,17 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: 'Detailed Remarks & Additional Observations', value: this.getF('kotakBbgRemarksNA') ? 'NA' : this.getF('kotakBbgRemarks'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
+
+    this.drawSectionHeader('10. VALUER DECLARATION & SIGNOFF');
+    this.drawKeyValueRow([
+      { label: 'Standard Declaration', value: this.getF('kotakBbgDeclarationText') || `I hereby declare that the information provided in this report is true and correct to the best of my knowledge. The valuation is strictly for bank internal use based on current market trends and visible site conditions as of ${this.getF('kotakBbgDateOfSiteVisit') || '[Date]'}`, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Report Issue Date', value: this.getF('kotakBbgReportIssueDate') || new Date().toISOString().split('T')[0] },
+      { label: 'Report Issue Place', value: this.getF('kotakBbgReportIssuePlace') === 'Custom' ? this.getF('kotakBbgReportIssuePlaceCustom') : (this.getF('kotakBbgReportIssuePlace') || 'Bhubaneswar') },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Signature Confirmed', value: this.getF('kotakBbgSignatureConfirmed') ? 'Yes (Verified)' : 'No', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
   }
 }

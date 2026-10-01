@@ -46,7 +46,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
   bankId: 'KOTAK MAHINDRA BANK',
   subTemplateId: 'BUSINESS BANKING GROUP',
   displayName: 'Kotak Mahindra Bank — Business Banking Group (BBG)',
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8', 'section-9'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8', 'section-9', 'section-10'],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFKotakBbgRenderer({ ...fields, projectCode }),
   navSections: [
     { id: 'kotak-section-1', title: '1. General Details' },
@@ -58,6 +58,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     { id: 'kotak-section-7', title: '7. Valuation Calculations & Rate Analysis' },
     { id: 'kotak-section-8', title: '8. Valuation Financial Summary' },
     { id: 'kotak-section-9', title: '9. Remarks / Key Observations' },
+    { id: 'kotak-section-10', title: '10. Valuer Declaration & Signoff' },
   ],
   defaultValues: {
     kotakBbgPurpose: 'To ascertain Market value, Realizable value & Distress value for bank decision-making',
@@ -1349,6 +1350,76 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                 {!fields.kotakBbgRemarksNA && (
                   <textarea className={inputCls + ' resize-y'} rows={4} placeholder="Enter any additional key remarks or observations regarding the property..." value={fields.kotakBbgRemarks || ''} onChange={e => handleChange('kotakBbgRemarks', e.target.value)} disabled={isReadOnly} />
                 )}
+              </div>
+            </Field>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'kotak-section-10',
+      title: 'Valuer Declaration & Signoff',
+      number: 10,
+      defaultOpen: false,
+      render: (fields, handleChange, isReadOnly) => {
+        const siteVisitDate = fields.kotakBbgDateOfSiteVisit || '[Date from Section 1]';
+        const defaultDecl = `I hereby declare that the information provided in this report is true and correct to the best of my knowledge. The valuation is strictly for bank internal use based on current market trends and visible site conditions as of ${siteVisitDate}.`;
+        const declVal = fields.kotakBbgDeclarationText || defaultDecl;
+        
+        const today = new Date().toISOString().split('T')[0];
+        const issueDateVal = fields.kotakBbgReportIssueDate || today;
+
+        return (
+          <div style={{ backgroundColor: '#e8eaf6', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            <PrefillField
+              label="Standard Declaration Text"
+              value={declVal}
+              onChange={(val: string) => handleChange('kotakBbgDeclarationText', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Auto calculating from [Standard Declaration String + Date of Technical Site Visit]"
+              type="textarea"
+            />
+            
+            <PrefillField
+              label="Report Issue Date"
+              value={issueDateVal}
+              onChange={(val: string) => handleChange('kotakBbgReportIssueDate', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Prefill from System Current Date"
+              type="date"
+            />
+
+            <Field label="Report Issue Place">
+              <div title="Prefill from Valuer Profile">
+                <select className={inputCls} value={fields.kotakBbgReportIssuePlace || 'Bhubaneswar'} onChange={e => handleChange('kotakBbgReportIssuePlace', e.target.value)} disabled={isReadOnly}>
+                  <option value="Bhubaneswar">Bhubaneswar</option>
+                  <option value="Cuttack">Cuttack</option>
+                  <option value="Rourkela">Rourkela</option>
+                  <option value="Custom">Custom</option>
+                </select>
+                {fields.kotakBbgReportIssuePlace === 'Custom' && (
+                  <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom place" value={fields.kotakBbgReportIssuePlaceCustom || ''} onChange={e => handleChange('kotakBbgReportIssuePlaceCustom', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <Field label="Valuer Signature & Official Stamp">
+              <div className="space-y-4" title="Prefill from Valuer Profile">
+                <div className="p-4 border-2 border-dashed border-gray-300 rounded bg-white flex flex-col items-center justify-center">
+                  <span className="text-gray-500 mb-2 font-semibold">System Generated Signature & Stamp</span>
+                  <div className="w-64 h-32 bg-gray-100 border border-gray-300 flex items-center justify-center text-gray-400 italic rounded">
+                    [Preview: Profile Signature Image]
+                  </div>
+                  <label className="mt-4 text-sm text-indigo-600 cursor-pointer hover:underline font-medium">
+                    <input type="file" className="hidden" disabled={isReadOnly} />
+                    Override with Manual File Upload
+                  </label>
+                </div>
+                
+                <label className="flex items-start space-x-2 text-sm text-indigo-900 font-semibold bg-indigo-50 p-3 rounded border border-indigo-200 cursor-pointer">
+                  <input type="checkbox" className="mt-1" checked={fields.kotakBbgSignatureConfirmed || false} onChange={e => handleChange('kotakBbgSignatureConfirmed', e.target.checked)} disabled={isReadOnly} />
+                  <span>I confirm and verify that the above signature and official stamp belong to me, and I authorize their application to this final valuation report.</span>
+                </label>
               </div>
             </Field>
           </div>
