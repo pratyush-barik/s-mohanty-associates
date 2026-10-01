@@ -127,5 +127,33 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Proximity to Civic Amenities', value: this.getF('kotakBbgProximityNA') ? 'NA' : this.getF('kotakBbgProximity'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
+    this.drawSectionHeader('4. DETAILS OF APPROVALS & LEGAL VERIFICATION');
+    this.drawKeyValueRow([
+      { label: 'Non-Agricultural (N.A.) Conversion Status', value: this.getF('kotakBbgNaConversionStatusNA') ? 'NA' : this.getF('kotakBbgNaConversionStatus') },
+      { label: 'Land Zoning / Restrictions', value: this.getF('kotakBbgLandZoningGPLimitNA') ? 'GP Limit / NA' : this.getF('kotakBbgLandZoning') },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Approved Plan Details', value: this.getF('kotakBbgApprovedPlanDetails') === 'Custom' ? this.getF('kotakBbgApprovedPlanDetailsCustom') : this.getF('kotakBbgApprovedPlanDetails') },
+      { label: 'Authority Granting Approval', value: this.getF('kotakBbgAuthorityApprovalNA') ? 'NA' : this.getF('kotakBbgAuthorityApproval') },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Plans Approved by Competent Authority', value: this.getF('kotakBbgPlansApprovedByCompetentAuthority') },
+      { label: 'Commencement Certificate / Building Permit Details', value: this.getF('kotakBbgCommencementCertificateNA') ? 'NA' : this.getF('kotakBbgCommencementCertificate') },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Occupation / Completion Certificate', value: this.getF('kotakBbgOccupationCertificateNA') ? 'NA' : this.getF('kotakBbgOccupationCertificate') },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Sale / Lease Deed Details', value: this.getF('kotakBbgSaleLeaseDeedDetails'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    const otherDocsList = Array.isArray(this.getF('kotakBbgOtherDocumentsPerused')) ? [...this.getF('kotakBbgOtherDocumentsPerused')] : [];
+    if (this.getF('kotakBbgOtherDocumentsPerusedCustomChecked') && this.getF('kotakBbgOtherDocumentsPerusedCustom')) {
+      otherDocsList.push(this.getF('kotakBbgOtherDocumentsPerusedCustom'));
+    }
+    const otherDocs = otherDocsList.join(', ');
+    this.drawKeyValueRow([
+      { label: 'Other Documents Perused', value: otherDocs, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
   }
 }

@@ -46,12 +46,13 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
   bankId: 'KOTAK MAHINDRA BANK',
   subTemplateId: 'BUSINESS BANKING GROUP',
   displayName: 'Kotak Mahindra Bank — Business Banking Group (BBG)',
-  hiddenSections: ['section-1', 'section-2', 'section-3'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4'],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFKotakBbgRenderer({ ...fields, projectCode }),
   navSections: [
     { id: 'kotak-section-1', title: '1. General Details' },
     { id: 'kotak-section-2', title: '2. Details of Property Being Appraised' },
     { id: 'kotak-section-3', title: '3. Site & Surrounding Details' },
+    { id: 'kotak-section-4', title: '4. Details of Approvals & Legal Verification' },
   ],
   defaultValues: {
     kotakBbgPurpose: 'To ascertain Market value, Realizable value & Distress value for bank decision-making',
@@ -402,6 +403,133 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   <input type="text" className={inputCls} value={fields.kotakBbgProximity || ''} onChange={e => handleChange('kotakBbgProximity', e.target.value)} disabled={isReadOnly} />
                 )}
               </div>
+            </Field>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'kotak-section-4',
+      title: 'Details of Approvals & Legal Verification',
+      number: 4,
+      defaultOpen: false,
+      render: (fields, handleChange, isReadOnly) => {
+        const otherDocs = Array.isArray(fields.kotakBbgOtherDocumentsPerused) ? fields.kotakBbgOtherDocumentsPerused : [];
+        const toggleOtherDocs = (val: string) => {
+          if (otherDocs.includes(val)) {
+            handleChange('kotakBbgOtherDocumentsPerused', otherDocs.filter(v => v !== val));
+          } else {
+            handleChange('kotakBbgOtherDocumentsPerused', [...otherDocs, val]);
+          }
+        };
+
+        return (
+          <div style={{ backgroundColor: '#fffde7', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            <Field label="Non-Agricultural (N.A.) Conversion Status">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgNaConversionStatusNA || false} onChange={e => handleChange('kotakBbgNaConversionStatusNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgNaConversionStatusNA && (
+                  <input type="text" className={inputCls} value={fields.kotakBbgNaConversionStatus || ''} onChange={e => handleChange('kotakBbgNaConversionStatus', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <Field label="Land Zoning / Restrictions">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgLandZoningGPLimitNA || false} onChange={e => handleChange('kotakBbgLandZoningGPLimitNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>GP Limit / NA</span>
+                </label>
+                {!fields.kotakBbgLandZoningGPLimitNA && (
+                  <input type="text" className={inputCls} value={fields.kotakBbgLandZoning || ''} onChange={e => handleChange('kotakBbgLandZoning', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <Field label="Approved Plan Details">
+              <select className={inputCls} value={fields.kotakBbgApprovedPlanDetails || ''} onChange={e => handleChange('kotakBbgApprovedPlanDetails', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Option</option>
+                <option value="Available">Available</option>
+                <option value="Not Available">Not Available</option>
+                <option value="Custom">Custom</option>
+              </select>
+              {fields.kotakBbgApprovedPlanDetails === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgApprovedPlanDetailsCustom || ''} onChange={e => handleChange('kotakBbgApprovedPlanDetailsCustom', e.target.value)} disabled={isReadOnly} />
+              )}
+            </Field>
+
+            <Field label="Authority Granting Approval">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgAuthorityApprovalNA || false} onChange={e => handleChange('kotakBbgAuthorityApprovalNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgAuthorityApprovalNA && (
+                  <input type="text" className={inputCls} value={fields.kotakBbgAuthorityApproval || ''} onChange={e => handleChange('kotakBbgAuthorityApproval', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <Field label="Plans Approved by Competent Authority">
+              <div className="flex space-x-4 mt-2">
+                <label className="flex items-center space-x-2">
+                  <input type="radio" name="kotakBbgPlansApprovedByCompetentAuthority" value="Yes" checked={fields.kotakBbgPlansApprovedByCompetentAuthority === 'Yes'} onChange={e => handleChange('kotakBbgPlansApprovedByCompetentAuthority', e.target.value)} disabled={isReadOnly} />
+                  <span>Yes</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input type="radio" name="kotakBbgPlansApprovedByCompetentAuthority" value="No" checked={fields.kotakBbgPlansApprovedByCompetentAuthority === 'No'} onChange={e => handleChange('kotakBbgPlansApprovedByCompetentAuthority', e.target.value)} disabled={isReadOnly} />
+                  <span>No</span>
+                </label>
+              </div>
+            </Field>
+
+            <Field label="Commencement Certificate / Building Permit Details">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgCommencementCertificateNA || false} onChange={e => handleChange('kotakBbgCommencementCertificateNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgCommencementCertificateNA && (
+                  <input type="text" className={inputCls} value={fields.kotakBbgCommencementCertificate || ''} onChange={e => handleChange('kotakBbgCommencementCertificate', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <Field label="Occupation / Completion Certificate">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgOccupationCertificateNA || false} onChange={e => handleChange('kotakBbgOccupationCertificateNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgOccupationCertificateNA && (
+                  <input type="text" className={inputCls} value={fields.kotakBbgOccupationCertificate || ''} onChange={e => handleChange('kotakBbgOccupationCertificate', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <Field label="Sale / Lease Deed Details">
+              <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgSaleLeaseDeedDetails || ''} onChange={e => handleChange('kotakBbgSaleLeaseDeedDetails', e.target.value)} disabled={isReadOnly} placeholder="Enter Date, Reg No., Sale consideration, etc." />
+            </Field>
+
+            <Field label="Other Documents Perused">
+              <div className="flex flex-wrap gap-4 mt-2">
+                {['Sale Deed', 'ROR', 'Sketch Map', 'Approved Plan'].map(type => (
+                  <label key={type} className="flex items-center space-x-2">
+                    <input type="checkbox" checked={otherDocs.includes(type)} onChange={() => toggleOtherDocs(type)} disabled={isReadOnly} />
+                    <span>{type}</span>
+                  </label>
+                ))}
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" checked={fields.kotakBbgOtherDocumentsPerusedCustomChecked || false} onChange={e => handleChange('kotakBbgOtherDocumentsPerusedCustomChecked', e.target.checked)} disabled={isReadOnly} />
+                  <span>Custom</span>
+                </label>
+              </div>
+              {fields.kotakBbgOtherDocumentsPerusedCustomChecked && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom value" value={fields.kotakBbgOtherDocumentsPerusedCustom || ''} onChange={e => handleChange('kotakBbgOtherDocumentsPerusedCustom', e.target.value)} disabled={isReadOnly} />
+              )}
             </Field>
           </div>
         );
