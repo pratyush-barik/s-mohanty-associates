@@ -37,6 +37,9 @@ import {
   hexToRgb,
 } from './pdf-general-renderer';
 
+export const FONT_SIZE_TABLE_BANK = 12;
+export const FONT_SIZE_TABLE_BANK_COMPACT = 10;
+
 export const DEFAULT_LETTERHEAD_PATH = PDFGeneralRenderer.DEFAULT_LETTERHEAD_PATH;
 export const fetchDefaultLetterhead = PDFGeneralRenderer.fetchDefaultLetterhead;
 
@@ -421,9 +424,11 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     highlightedCells: { r: number, c: number }[] = [],
     boldCells: { r: number, c: number }[] = [],
     colAligns: ('left' | 'center' | 'right')[] = [],
-    headerAligns: ('left' | 'center' | 'right')[] = []
+    headerAligns: ('left' | 'center' | 'right')[] = [],
+    customFontSize?: number
   ): void {
-    const fontSize = FONT_SIZE;
+    // Smart table font size: Font 12 for standard (<=3 cols), Font 10 for compact (>=4 cols or narrow columns)
+    const fontSize = customFontSize || (colWidths.length >= 4 || colWidths.some(w => w < 85) ? FONT_SIZE_TABLE_BANK_COMPACT : FONT_SIZE_TABLE_BANK);
     const pad = 3;
 
     // Normalize colWidths so sum strictly equals CONTENT_W
@@ -584,11 +589,12 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
    * Draw a generic data table, with optional custom column widths.
    * If customColWidths is provided, uses drawTable; otherwise delegates to super.drawDataTable.
    */
-  override drawDataTable(headers: string[], rows: string[][], customColWidths?: number[]): void {
+  override drawDataTable(headers: string[], rows: string[][], customColWidths?: number[], customFontSize?: number): void {
+    const fontSize = customFontSize || (headers.length >= 4 ? FONT_SIZE_TABLE_BANK_COMPACT : FONT_SIZE_TABLE_BANK);
     if (customColWidths && customColWidths.length === headers.length) {
-      this.drawTable(headers, rows, customColWidths);
+      this.drawTable(headers, rows, customColWidths, [], [], [], [], [], [], [], fontSize);
     } else {
-      super.drawDataTable(headers, rows);
+      super.drawDataTable(headers, rows, fontSize);
     }
   }
 

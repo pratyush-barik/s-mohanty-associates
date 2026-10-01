@@ -43,8 +43,14 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - **Fields & Types**: Inherit from `src/lib/bank-fields.ts` (`BaseReportFields`, `BankConfig`).
 - **PDF Generation**: Extend `PDFBankRenderer` from `src/lib/pdf-bank-renderer.ts`, inheriting table structures, image section boxes, photo grids, coordinate math, and multi-page flows. Override only bank-specific delta methods.
 
-### Performance Guideline: Vercel Free Tier Constraints
-- **NEVER statically import report builders in `BuilderSelector.tsx`**. All builders (core and bank-specific) must use `next/dynamic` lazy imports to keep the main client bundle small (~18 KB instead of ~900+ KB).
-- **Purge old Vercel deployments periodically** — each deploy stores a full copy of the build artifacts. Keep only the latest production + 2-3 preview deployments.
-- **New bank builders** must be added as `dynamic(() => import('./banks/...'))` entries in the `BANK_BUILDER_MAP` object inside `BuilderSelector.tsx`.
+### Typography & Table Font Size Standards (MS Word Alignment)
+- **Table Font Sizes**:
+  - `FONT_SIZE_TABLE` = 12pt (standard: for 2–3 column property grids & comfortable widths)
+  - `FONT_SIZE_TABLE_COMPACT` = 10pt (compact: for wide multi-column tables with ≥4 columns, floor valuation grids, and Excel Annexures)
+- **Constants by Report Type**:
+  - General: `FONT_SIZE_TABLE_GENERAL = 12`, `FONT_SIZE_TABLE_GENERAL_COMPACT = 10` in `src/lib/pdf-general-renderer.ts`
+  - Income Tax: `FONT_SIZE_TABLE_IT = 12`, `FONT_SIZE_TABLE_IT_COMPACT = 10` in `src/lib/pdf-it-renderer.ts`
+  - IBBI: `FONT_SIZE_TABLE_IBBI = 12`, `FONT_SIZE_TABLE_IBBI_COMPACT = 10` in `src/lib/pdf-ibbi-renderer.ts`
+  - Bank Reports: `FONT_SIZE_TABLE_BANK = 12`, `FONT_SIZE_TABLE_BANK_COMPACT = 10` in `src/lib/pdf-bank-renderer.ts` (inherited by all 60+ bank-specific builders).
+- **Uniformity Invariant**: Never mix multiple font sizes within the same table. All column headers (bold) and cell data (regular) in a given table must strictly share the chosen font size (either 12pt or 10pt). Section headers remain untouched at `14pt` (`FONT_SIZE_HEADER`).
 

@@ -29,6 +29,8 @@ import {
   FONT_SIZE_HEADER,
   FONT_SIZE_TITLE,
   FONT_SIZE_SMALL,
+  FONT_SIZE_TABLE_BANK,
+  FONT_SIZE_TABLE_BANK_COMPACT,
   hexToRgb,
   LINE_HEIGHT,
   formatReportDate
@@ -679,7 +681,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     // We pass tableOpts with fontSize: 12 (FONT_SIZE) which mimics drawSimpleRow
     // We adjust widths slightly so "14.1" and "14.2" don't wrap: [0.06, 0.04, 0.35, 0.275, 0.275]
-    this.drawMergedTable(allRows, allMerges, [0.06, 0.04, 0.35, 0.275, 0.275], styleOpts, { fontSize: 12 });
+    this.drawMergedTable(allRows, allMerges, [0.06, 0.04, 0.35, 0.275, 0.275], styleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -740,7 +742,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     };
 
     // Columns: Number (0.06), Label (0.34), Value (0.60)
-    this.drawMergedTable(allRows, [], [0.06, 0.34, 0.60], styleOpts, { fontSize: 12 });
+    this.drawMergedTable(allRows, [], [0.06, 0.34, 0.60], styleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -829,7 +831,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     };
 
     // Columns: Number (0.06), Label (0.44), Value (0.50)
-    this.drawMergedTable(allRows, [], [0.06, 0.44, 0.50], styleOpts, { fontSize: 12 });
+    this.drawMergedTable(allRows, [], [0.06, 0.44, 0.50], styleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -895,7 +897,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       return { align, bold, fillColor, bgOpacity: 0.5, hideBorder };
     };
 
-    this.drawMergedTable(t1Rows, t1Merges, [0.06, 0.04, 0.40, 0.50], t1StyleOpts, { fontSize: 12 });
+    this.drawMergedTable(t1Rows, t1Merges, [0.06, 0.04, 0.40, 0.50], t1StyleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
     this.advanceCursor(5);
 
     // ──────────────────────────────────────────────────────────
@@ -933,7 +935,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       return { align, bold, fillColor, bgOpacity: 0.5 };
     };
 
-    this.drawMergedTable(t2Rows, [], [0.06, 0.34, 0.30, 0.30], t2StyleOpts, { fontSize: 12 });
+    this.drawMergedTable(t2Rows, [], [0.06, 0.34, 0.30, 0.30], t2StyleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
     this.advanceCursor(5);
 
     // ──────────────────────────────────────────────────────────
@@ -1001,7 +1003,7 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       return { align, bold, fillColor, bgOpacity: 0.5, hideBorder };
     };
 
-    this.drawMergedTable(t3Rows, t3Merges, [0.06, 0.04, 0.40, 0.50], t3StyleOpts, { fontSize: 12 });
+    this.drawMergedTable(t3Rows, t3Merges, [0.06, 0.04, 0.40, 0.50], t3StyleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
   }
 
   // ═══════════════════════════════════════════════════════════════════════

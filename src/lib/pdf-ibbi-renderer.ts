@@ -37,6 +37,8 @@ const FONT_SIZE = 12;
 const FONT_SIZE_HEADER = 14;
 const FONT_SIZE_SMALL = 12;
 const FONT_SIZE_CAPTION = 10;
+export const FONT_SIZE_TABLE_IBBI = 12;
+export const FONT_SIZE_TABLE_IBBI_COMPACT = 10;
 const LINE_HEIGHT = 1.25; // multiplier on font size
 const BORDER_W = 0.75;
 const LBL_BG = '#DBE6F0';
@@ -1460,7 +1462,7 @@ export class PDFIBBIRenderer {
    * Draw a generic data table from a 2D string array (headers + rows).
    * Auto-fits column widths proportionally. Handles page breaks.
    */
-  drawDataTable(headers: string[], rows: string[][]): void {
+  drawDataTable(headers: string[], rows: string[][], customFontSize?: number): void {
     if (headers.length === 0) return;
 
     const numCols = headers.length;
@@ -1512,7 +1514,8 @@ export class PDFIBBIRenderer {
     const scale = CONTENT_W / widthSum;
     const finalWidths = colWidths.map(w => w * scale);
 
-    const fontSize = 8;
+    // Smart table font size: Font 12 for standard (<=3 cols), Font 10 for compact (>=4 cols or wide content)
+    const fontSize = customFontSize || (numCols >= 4 || finalWidths.some(w => w < 85) ? FONT_SIZE_TABLE_IBBI_COMPACT : FONT_SIZE_TABLE_IBBI);
     
     
 

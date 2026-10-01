@@ -11,6 +11,9 @@ function hexToRgb(hex: string) {
 
 const LBL_BG = '#DBE6F0';
 
+export const FONT_SIZE_TABLE_IT = 12;
+export const FONT_SIZE_TABLE_IT_COMPACT = 10;
+
 const parseNum = (val: string | number): number => {
   if (typeof val === 'number') return val;
   if (!val) return 0;
@@ -1430,13 +1433,13 @@ export async function generateIncomeTaxPDF(
     drawText(`MODIFICATION IN THE ANNEXURE TO FORM NO–01 DETAILS OF VALUATION (AS ON ${fields.valuationCalcDate || fields.valuationDate})`, { bold: true });
     advanceCursor(6);
 
-    // Header row
+    // Header row (8 columns: compact size 10)
     const calcCols = [CW * 0.16, CW * 0.11, CW * 0.09, CW * 0.09, CW * 0.14, CW * 0.14, CW * 0.14, CW * 0.13];
     const calcHeaders = ['PARTICULARS OF ITEM', 'PLINTH AREA', 'ROOF HEIGHT', 'AGE OF THE BUILDING', 'ESTIMATED REPLACEMENT RATE', 'REPLACEMENT COST', `DEPRECIATION 1.5% P.A. (${fields.depreciationPct}%)`, 'NET VALUE AFTER DEP.'];
     const headerH = 45;
     let cx = ML;
     for (let i = 0; i < calcHeaders.length; i++) {
-      drawCell(cx, cy, calcCols[i], headerH, calcHeaders[i], { bold: true, fontSize: 8, align: 'center', fillColor: LBL_BG });
+      drawCell(cx, cy, calcCols[i], headerH, calcHeaders[i], { bold: true, fontSize: FONT_SIZE_TABLE_IT_COMPACT, align: 'center', fillColor: LBL_BG });
       cx += calcCols[i];
     }
     cy += headerH;
@@ -1447,7 +1450,7 @@ export async function generateIncomeTaxPDF(
       ensureSpace(rowH);
       cx = ML;
       for (let i = 0; i < calcCols.length; i++) {
-        drawCell(cx, cy, calcCols[i], rowH, '--', { fontSize: 8, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+        drawCell(cx, cy, calcCols[i], rowH, '--', { fontSize: FONT_SIZE_TABLE_IT_COMPACT, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
         cx += calcCols[i];
       }
       cy += rowH;
@@ -1467,7 +1470,7 @@ export async function generateIncomeTaxPDF(
           `RS.${formatIndianCurrency(fr.netValue)}/-`,
         ];
         for (let i = 0; i < vals.length; i++) {
-          drawCell(cx, cy, calcCols[i], rowH, vals[i], { fontSize: 8, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+          drawCell(cx, cy, calcCols[i], rowH, vals[i], { fontSize: FONT_SIZE_TABLE_IT_COMPACT, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
           cx += calcCols[i];
         }
         cy += rowH;
@@ -1476,25 +1479,25 @@ export async function generateIncomeTaxPDF(
 
     // Building value summary row
     ensureSpace(22);
-    drawCell(ML, cy, CW, 22, `VALUE OF THE BUILDING: RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: 10, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(ML, cy, CW, 22, `VALUE OF THE BUILDING: RS.${formatIndianCurrency(computedBuildingValue)}/-`, { bold: true, fontSize: FONT_SIZE_TABLE_IT, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     cy += 22;
     advanceCursor(8);
   }
 
-  // TABLE J — EXTRA ITEMS
+  // TABLE J — EXTRA ITEMS (2 columns: standard size 12)
   ensureSpace(40);
-  drawCell(ML, cy, CW, 20, 'EXTRA ITEM', { bold: true, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+  drawCell(ML, cy, CW, 20, 'EXTRA ITEM', { bold: true, fontSize: FONT_SIZE_TABLE_IT, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
   cy += 20;
-  drawCell(ML, cy, CW * 0.7, 18, 'PARTICULARS', { bold: true, fillColor: LBL_BG, bgOpacity: 0.5 });
-  drawCell(ML + CW * 0.7, cy, CW * 0.3, 18, 'AMOUNT', { bold: true, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+  drawCell(ML, cy, CW * 0.7, 18, 'PARTICULARS', { bold: true, fontSize: FONT_SIZE_TABLE_IT, fillColor: LBL_BG, bgOpacity: 0.5 });
+  drawCell(ML + CW * 0.7, cy, CW * 0.3, 18, 'AMOUNT', { bold: true, fontSize: FONT_SIZE_TABLE_IT, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
   cy += 18;
   for (const item of fields.extraItems) {
     ensureSpace(18);
-    drawCell(ML, cy, CW * 0.7, 18, item.description, { fillColor: LBL_BG, bgOpacity: 0.5 });
-    drawCell(ML + CW * 0.7, cy, CW * 0.3, 18, `RS.${formatIndianCurrency(item.amount)}/-`, { align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(ML, cy, CW * 0.7, 18, item.description, { fontSize: FONT_SIZE_TABLE_IT, fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(ML + CW * 0.7, cy, CW * 0.3, 18, `RS.${formatIndianCurrency(item.amount)}/-`, { fontSize: FONT_SIZE_TABLE_IT, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     cy += 18;
   }
-  drawCell(ML, cy, CW * 0.7, 20, 'TOTAL', { bold: true, fillColor: LBL_BG, bgOpacity: 0.5 });
+  drawCell(ML, cy, CW * 0.7, 20, 'TOTAL', { bold: true, fontSize: FONT_SIZE_TABLE_IT, fillColor: LBL_BG, bgOpacity: 0.5 });
   drawCell(ML + CW * 0.7, cy, CW * 0.3, 20, `RS.${formatIndianCurrency(computedExtraTotal)}/-`, { bold: true, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
   cy += 20;
   advanceCursor(8);
@@ -1739,11 +1742,6 @@ export async function generateIncomeTaxPDF(
     if (!allRows || allRows.length === 0) continue;
 
     const numCols = allRows[0]?.length || 0;
-    const FONT_SZ = 9;
-    const PAD_Y = 4;
-    const PAD_X = 4;
-    const DEF_ROW_H = FONT_SZ * LINE_H + PAD_Y * 2 + 2;
-
     let colPx: number[];
     if (colWidths && colWidths.length === numCols) {
       const totalNorm = colWidths.reduce((s: number, w: number) => s + w, 0) || 1;
@@ -1756,6 +1754,12 @@ export async function generateIncomeTaxPDF(
       const scale = CW / pxSum;
       colPx = colPx.map(w => w * scale);
     }
+
+    // Smart table font size: Font 12 for <=3 cols, Font 10 for >=4 cols or narrow widths
+    const FONT_SZ = (numCols >= 4 || colPx.some(w => w < 85)) ? FONT_SIZE_TABLE_IT_COMPACT : FONT_SIZE_TABLE_IT;
+    const PAD_Y = 4;
+    const PAD_X = 4;
+    const DEF_ROW_H = FONT_SZ * LINE_H + PAD_Y * 2 + 2;
 
     const covered = new Set<string>();
     const spanMap = new Map<string, { er: number; ec: number }>();

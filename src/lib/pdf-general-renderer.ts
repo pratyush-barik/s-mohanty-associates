@@ -40,6 +40,8 @@ export const FONT_SIZE_HEADER = 14;
 export const FONT_SIZE_TITLE = 14;
 export const FONT_SIZE_SMALL = 12;
 export const FONT_SIZE_CAPTION = 10;
+export const FONT_SIZE_TABLE_GENERAL = 12;
+export const FONT_SIZE_TABLE_GENERAL_COMPACT = 10;
 export const LINE_HEIGHT = 1.25; // multiplier on font size
 export const BORDER_W = 0.5;
 export const LBL_BG = '#DBE6F0';
@@ -1235,7 +1237,7 @@ export class PDFGeneralRenderer {
    * Draw a generic data table from a 2D string array (headers + rows).
    * Auto-fits column widths proportionally. Handles page breaks.
    */
-  drawDataTable(headers: string[], rows: string[][]): void {
+  drawDataTable(headers: string[], rows: string[][], customFontSize?: number): void {
     if (headers.length === 0) return;
 
     const numCols = headers.length;
@@ -1259,7 +1261,8 @@ export class PDFGeneralRenderer {
     const scale = CONTENT_W / widthSum;
     const finalWidths = colWidths.map(w => w * scale);
 
-    const fontSize = 9;
+    // Smart table font size: Font 12 for standard (<=3 cols), Font 10 for compact (>=4 cols or wide content)
+    const fontSize = customFontSize || (numCols >= 4 || finalWidths.some(w => w < 85) ? FONT_SIZE_TABLE_GENERAL_COMPACT : FONT_SIZE_TABLE_GENERAL);
     const rowPadY = 4;
     const rowPadX = 4;
 
@@ -1339,11 +1342,6 @@ export class PDFGeneralRenderer {
     if (!allRows || allRows.length === 0) return;
 
     const numCols = allRows[0].length;
-    const fontSize = tableOpts?.fontSize || FONT_SIZE;
-    const padX = 4;
-    const padY = 4;
-    const DEFAULT_ROW_H = fontSize * LINE_HEIGHT + padY * 2 + 2;
-
     let colPx: number[];
     if (colWidths && colWidths.length === numCols) {
       const totalNorm = colWidths.reduce((s, w) => s + w, 0) || 1;
@@ -1356,6 +1354,12 @@ export class PDFGeneralRenderer {
       const scale = CONTENT_W / pxSum;
       colPx = colPx.map(w => w * scale);
     }
+
+    // Smart table font size: Font 12 for <=3 cols, Font 10 for >=4 cols or narrow columns
+    const fontSize = tableOpts?.fontSize || (numCols >= 4 || colPx.some(w => w < 85) ? FONT_SIZE_TABLE_GENERAL_COMPACT : FONT_SIZE_TABLE_GENERAL);
+    const padX = 4;
+    const padY = 4;
+    const DEFAULT_ROW_H = fontSize * LINE_HEIGHT + padY * 2 + 2;
 
     const covered = new Set<string>();
     const spanMap = new Map<string, { er: number; ec: number }>();
