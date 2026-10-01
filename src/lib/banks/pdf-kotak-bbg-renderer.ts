@@ -235,5 +235,28 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: 'Deviations / Violations', value: devs, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
+
+    this.drawSectionHeader('7. VALUATION CALCULATIONS & RATE ANALYSIS');
+    const meth = this.getF('kotakBbgValuationMethodology') === 'Custom' ? this.getF('kotakBbgValuationMethodologyCustom') : this.getF('kotakBbgValuationMethodology');
+    this.drawKeyValueRow([
+      { label: 'Valuation Methodology Adopted', value: meth, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Comparables Relied Upon', value: this.getF('kotakBbgComparablesReliedNA') ? 'NA' : this.getF('kotakBbgComparablesRelied'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Analysis of Comparables & Justification', value: this.getF('kotakBbgAnalysisComparablesNA') ? 'NA' : this.getF('kotakBbgAnalysisComparables'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Adopted Land Rate (Rs / sq. ft.)', value: this.getF('kotakBbgAdoptedLandRateNA') ? 'NA' : this.getF('kotakBbgAdoptedLandRate') },
+      { label: 'Adopted Building Rate (Rs / sq. ft.)', value: this.getF('kotakBbgAdoptedBuildingRateNA') ? 'NA' : this.getF('kotakBbgAdoptedBuildingRate') },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Valuation Calculations Breakdown', value: this.getF('kotakBbgValuationBreakdown'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Guideline / Circle / Ready Reckoner Rate (Rs / sq. ft.)', value: this.getF('kotakBbgGuidelineRateNA') ? 'NA' : this.getF('kotakBbgGuidelineRate') },
+      { label: 'Guideline / Circle / Ready Reckoner Valuation', value: this.getF('kotakBbgGuidelineValuation') },
+    ]);
   }
 }

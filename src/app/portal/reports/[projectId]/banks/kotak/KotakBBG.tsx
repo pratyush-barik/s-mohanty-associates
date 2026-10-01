@@ -46,7 +46,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
   bankId: 'KOTAK MAHINDRA BANK',
   subTemplateId: 'BUSINESS BANKING GROUP',
   displayName: 'Kotak Mahindra Bank — Business Banking Group (BBG)',
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7'],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFKotakBbgRenderer({ ...fields, projectCode }),
   navSections: [
     { id: 'kotak-section-1', title: '1. General Details' },
@@ -55,6 +55,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     { id: 'kotak-section-4', title: '4. Details of Approvals & Legal Verification' },
     { id: 'kotak-section-5', title: '5. Building / Structural Details' },
     { id: 'kotak-section-6', title: '6. Details of Measurements' },
+    { id: 'kotak-section-7', title: '7. Valuation Calculations & Rate Analysis' },
   ],
   defaultValues: {
     kotakBbgPurpose: 'To ascertain Market value, Realizable value & Distress value for bank decision-making',
@@ -950,6 +951,135 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                 )}
               </div>
             </Field>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'kotak-section-7',
+      title: 'Valuation Calculations & Rate Analysis',
+      number: 7,
+      defaultOpen: false,
+      render: (fields, handleChange, isReadOnly) => {
+        const landArea = parseFloat(fields.kotakBbgLandArea) || 0;
+        const landRate = parseFloat(fields.kotakBbgAdoptedLandRate) || 0;
+        
+        let totalBua = 0;
+        if (!fields.kotakBbgBuildingBuaNA && !fields.kotakBbgBuildingBuaAnnexure) {
+          const buaData = Array.isArray(fields.kotakBbgBuildingBuaTable) ? fields.kotakBbgBuildingBuaTable : [];
+          buaData.forEach((r: any) => {
+            const val = parseFloat(r.builtUp);
+            if (!isNaN(val)) totalBua += val;
+          });
+        }
+        
+        const buildingRate = parseFloat(fields.kotakBbgAdoptedBuildingRate) || 0;
+        const valuationBreakdownCalc = (landArea * landRate) + (totalBua * buildingRate);
+        const valuationBreakdownVal = fields.kotakBbgValuationBreakdown || (valuationBreakdownCalc > 0 ? valuationBreakdownCalc.toString() : '');
+
+        const guidelineRate = parseFloat(fields.kotakBbgGuidelineRate) || 0;
+        const guidelineValCalc = (landArea * guidelineRate);
+        const guidelineValVal = fields.kotakBbgGuidelineValuation || (guidelineValCalc > 0 ? guidelineValCalc.toString() : '');
+
+        return (
+          <div style={{ backgroundColor: '#fff3e0', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            <Field label="Valuation Methodology Adopted">
+              <select className={inputCls} value={fields.kotakBbgValuationMethodology || ''} onChange={e => handleChange('kotakBbgValuationMethodology', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Option</option>
+                <option value="Sales Comparison Method">Sales Comparison Method</option>
+                <option value="Cost Approach (Land & Building)">Cost Approach (Land & Building)</option>
+                <option value="Income Capitalization">Income Capitalization</option>
+                <option value="Custom">Custom</option>
+              </select>
+              {fields.kotakBbgValuationMethodology === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom methodology" value={fields.kotakBbgValuationMethodologyCustom || ''} onChange={e => handleChange('kotakBbgValuationMethodologyCustom', e.target.value)} disabled={isReadOnly} />
+              )}
+            </Field>
+
+            <Field label="Comparables Relied Upon">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgComparablesReliedNA || false} onChange={e => handleChange('kotakBbgComparablesReliedNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgComparablesReliedNA && (
+                  <textarea className={inputCls + ' resize-y'} rows={3} placeholder="List comparable properties here" value={fields.kotakBbgComparablesRelied || ''} onChange={e => handleChange('kotakBbgComparablesRelied', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <Field label="Analysis of Comparables & Justification">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgAnalysisComparablesNA || false} onChange={e => handleChange('kotakBbgAnalysisComparablesNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgAnalysisComparablesNA && (
+                  <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Provide justification based on comparables" value={fields.kotakBbgAnalysisComparables || ''} onChange={e => handleChange('kotakBbgAnalysisComparables', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
+
+            <Field label="Adopted Land Rate (₹ / sq. ft.)">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgAdoptedLandRateNA || false} onChange={e => handleChange('kotakBbgAdoptedLandRateNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgAdoptedLandRateNA && (
+                  <div className="flex space-x-2">
+                    <span className="flex items-center text-gray-500 font-bold px-2 border rounded bg-gray-50">₹</span>
+                    <input type="number" className={inputCls + ' flex-1'} placeholder="Rate per sq. ft." value={fields.kotakBbgAdoptedLandRate || ''} onChange={e => handleChange('kotakBbgAdoptedLandRate', e.target.value)} disabled={isReadOnly} />
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            <Field label="Adopted Building Rate (₹ / sq. ft.)">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgAdoptedBuildingRateNA || false} onChange={e => handleChange('kotakBbgAdoptedBuildingRateNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA) (e.g., Vacant Land)</span>
+                </label>
+                {!fields.kotakBbgAdoptedBuildingRateNA && (
+                  <div className="flex space-x-2">
+                    <span className="flex items-center text-gray-500 font-bold px-2 border rounded bg-gray-50">₹</span>
+                    <input type="number" className={inputCls + ' flex-1'} placeholder="Rate per sq. ft." value={fields.kotakBbgAdoptedBuildingRate || ''} onChange={e => handleChange('kotakBbgAdoptedBuildingRate', e.target.value)} disabled={isReadOnly} />
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            <PrefillField
+              label="Valuation Calculations Breakdown"
+              value={valuationBreakdownVal}
+              onChange={(val: string) => handleChange('kotakBbgValuationBreakdown', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Auto calculating from [(Primary Land Area * Adopted Land Rate) + (Total BUA * Adopted Building Rate)]"
+            />
+
+            <Field label="Guideline / Circle / Ready Reckoner Rate (₹ / sq. ft.)">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgGuidelineRateNA || false} onChange={e => handleChange('kotakBbgGuidelineRateNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgGuidelineRateNA && (
+                  <div className="flex space-x-2">
+                    <span className="flex items-center text-gray-500 font-bold px-2 border rounded bg-gray-50">₹</span>
+                    <input type="number" className={inputCls + ' flex-1'} placeholder="Guideline Rate" value={fields.kotakBbgGuidelineRate || ''} onChange={e => handleChange('kotakBbgGuidelineRate', e.target.value)} disabled={isReadOnly} />
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            <PrefillField
+              label="Guideline / Circle / Ready Reckoner Valuation Calculation"
+              value={guidelineValVal}
+              onChange={(val: string) => handleChange('kotakBbgGuidelineValuation', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Auto calculating from [Primary Land Area * Guideline / Circle / Ready Reckoner Rate]"
+            />
           </div>
         );
       }
