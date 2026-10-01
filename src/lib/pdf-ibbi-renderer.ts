@@ -832,10 +832,30 @@ export class PDFIBBIRenderer {
    *   Text wraps within cells to prevent overflow.
    * Advances cursor.
    */
-  drawOptionRow(label: string, options: string[], selectedValue: string): void {
+  drawOptionRow(label: string, rawOptions: string[], selectedValue: string): void {
     const col1X = MARGIN_L;
     const col2X = MARGIN_L + COL_W[0];
     const col3X = MARGIN_L + COL_W[0] + COL_W[1];
+
+    // Multi-select or custom Other support
+    const selectedList = selectedValue ? selectedValue.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+    
+    // If rawOptions contains 'Other', replace it with custom selectedValue if selectedValue is custom
+    let options = [...rawOptions];
+    const otherIdx = options.findIndex(o => o.toLowerCase() === 'other');
+    if (otherIdx !== -1) {
+      const isPredefined = options.some(o => o.toLowerCase() !== 'other' && (o.toLowerCase() === selectedValue.toLowerCase() || selectedList.includes(o.toLowerCase())));
+      if (!isPredefined && selectedValue && selectedValue.toLowerCase() !== 'other') {
+        options[otherIdx] = selectedValue;
+      } else {
+        options.splice(otherIdx, 1);
+      }
+    } else {
+      const isPredefined = options.some(o => o.toLowerCase() === selectedValue.toLowerCase() || selectedList.includes(o.toLowerCase()));
+      if (!isPredefined && selectedValue && selectedValue.toLowerCase() !== 'other' && selectedValue !== 'N/A') {
+        options.push(selectedValue);
+      }
+    }
 
     const optionTextW = COL_W[1] - CELL_PAD_X * 2;
     const labelH = this.cellHeight(label, COL_W[0], { bold: true, fontSize: FONT_SIZE });
@@ -866,7 +886,7 @@ export class PDFIBBIRenderer {
     let optY = this.cursorY + CELL_PAD_Y;
     for (let i = 0; i < options.length; i++) {
       const optLines = this.wrapText(options[i], optionTextW, FONT_SIZE);
-      const isBold = options[i] === selectedValue;
+      const isBold = Boolean(selectedValue) && (options[i].toLowerCase() === selectedValue.toLowerCase() || selectedList.includes(options[i].toLowerCase()));
       const textH = optLines.length * FONT_SIZE * LINE_HEIGHT;
       const textY = optY + (optionHeights[i] - textH) / 2;
       for (let j = 0; j < optLines.length; j++) {

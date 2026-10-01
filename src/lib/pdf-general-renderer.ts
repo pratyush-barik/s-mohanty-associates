@@ -725,10 +725,15 @@ export class PDFGeneralRenderer {
     const otherIdx = options.findIndex(o => o.toLowerCase() === 'other');
     if (otherIdx !== -1) {
       const isPredefined = options.some(o => o.toLowerCase() !== 'other' && (o.toLowerCase() === selectedValue.toLowerCase() || selectedList.includes(o.toLowerCase())));
-      if (!isPredefined && selectedValue && selectedValue !== 'Other') {
+      if (!isPredefined && selectedValue && selectedValue.toLowerCase() !== 'other') {
         options[otherIdx] = selectedValue;
       } else {
         options.splice(otherIdx, 1);
+      }
+    } else {
+      const isPredefined = options.some(o => o.toLowerCase() === selectedValue.toLowerCase() || selectedList.includes(o.toLowerCase()));
+      if (!isPredefined && selectedValue && selectedValue.toLowerCase() !== 'other' && selectedValue !== 'N/A') {
+        options.push(selectedValue);
       }
     }
 

@@ -1674,7 +1674,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
       // ── General Details ──
       r.drawSectionHeader('GENERAL DETAILS');
-      r.drawOptionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType);
+      const effectivePropertyType = fields.propertyType === 'Other'
+        ? (fields.propertyTypeOther?.trim() || 'Other')
+        : fields.propertyType;
+      r.drawOptionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Institutional', 'Vacant Plot', 'Other'], effectivePropertyType);
       r.drawSimpleRow('Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`);
       // Property Address & Landmark — show annexure reference if enabled
       if (fields.annexureEnabled && fields.annexures.length > 0 && !fields.annexureRefShowAlso) {
@@ -2172,12 +2175,31 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       return `<tr><td colspan="3" style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${label}: - <b>${val || 'N/A'}</b></td></tr>`;
     };
 
-    // Option row: 3 columns — Label | Options list | Selected value
-    const optionRow = (label: string, opts: string[], val: string) => {
+    // Option row: 3 columns — Label | Options list (matching option is bolded) | Selected value
+    const optionRow = (label: string, rawOpts: string[], val: string) => {
+      const selectedList = val ? val.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+      let opts = [...rawOpts];
+      const otherIdx = opts.findIndex(o => o.toLowerCase() === 'other');
+      if (otherIdx !== -1) {
+        const isPredefined = opts.some(o => o.toLowerCase() !== 'other' && (o.toLowerCase() === val.toLowerCase() || selectedList.includes(o.toLowerCase())));
+        if (!isPredefined && val && val.toLowerCase() !== 'other') {
+          opts[otherIdx] = val;
+        } else {
+          opts.splice(otherIdx, 1);
+        }
+      } else {
+        const isPredefined = opts.some(o => o.toLowerCase() === val.toLowerCase() || selectedList.includes(o.toLowerCase()));
+        if (!isPredefined && val && val.toLowerCase() !== 'other' && val !== 'N/A') {
+          opts.push(val);
+        }
+      }
+
       const n = opts.length;
-      const innerDivs = opts.map((o, i) =>
-        `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;">${o}</div>`
-      ).join('');
+      const innerDivs = opts.map((o, i) => {
+        const isSelected = Boolean(val && (o.toLowerCase() === val.toLowerCase() || selectedList.includes(o.toLowerCase())));
+        const fontStyle = isSelected ? 'font-weight:bold;' : '';
+        return `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;${fontStyle}">${o}</div>`;
+      }).join('');
       return `<tr>
         <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">${innerDivs}</td>
@@ -2226,9 +2248,12 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
     // ── BLOCK: General Details ──
     const loanAppLabel = fields.loanApplicationType ? `${fields.loanApplicationType} Application number` : 'Application number';
+    const effectivePropertyType = fields.propertyType === 'Other'
+      ? (fields.propertyTypeOther?.trim() || 'Other')
+      : fields.propertyType;
     allBlocks.push(wrapTable(`
       ${sectionHeader('GENERAL DETAILS')}
-      ${optionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Vacant Plot'], fields.propertyType)}
+      ${optionRow('Type of property', ['Residential', 'Commercial', 'Residential cum Commercial', 'Industrial', 'Institutional', 'Vacant Plot', 'Other'], effectivePropertyType)}
       ${simpleRow('Name of the Customer(s)', `"${fields.ownerName || 'N/A'}"`)}
       ${fields.annexureEnabled && fields.annexures.length > 0 && !fields.annexureRefShowAlso
         ? (() => {
