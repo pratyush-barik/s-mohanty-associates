@@ -881,7 +881,7 @@ export class PDFGeneralRenderer {
       totalOptionsH += h;
     }
 
-    const valueH = this.cellHeight(actualValue || 'N/A', COL_W[2], { bold: true, fontSize: FONT_SIZE });
+    const valueH = actualValue ? this.cellHeight(actualValue, COL_W[2], { bold: true, fontSize: FONT_SIZE }) : (FONT_SIZE * LINE_HEIGHT + CELL_PAD_Y * 2);
     const rowH = Math.max(labelH, totalOptionsH, valueH);
 
     this.checkPageBreak(rowH);
@@ -896,11 +896,12 @@ export class PDFGeneralRenderer {
     let optY = this.cursorY + CELL_PAD_Y;
     for (let i = 0; i < options.length; i++) {
       const optLines = this.wrapText(options[i], optionTextW, FONT_SIZE);
+      const isBold = Boolean(selectedRange && options[i].toLowerCase() === selectedRange.toLowerCase());
       const textH = optLines.length * FONT_SIZE * LINE_HEIGHT;
       const textY = optY + (optionHeights[i] - textH) / 2;
       for (let j = 0; j < optLines.length; j++) {
         this.drawTextAt(optLines[j], col2X + CELL_PAD_X, textY + j * FONT_SIZE * LINE_HEIGHT, {
-          bold: options[i] === selectedRange, fontSize: FONT_SIZE,
+          bold: isBold, fontSize: FONT_SIZE,
         });
       }
       optY += optionHeights[i];
@@ -909,8 +910,8 @@ export class PDFGeneralRenderer {
       }
     }
 
-    // Col 3: Actual value (with wrapping)
-    this.drawCell(col3X, this.cursorY, COL_W[2], rowH, actualValue || 'N/A', {
+    // Col 3: Actual value (with wrapping) — empty string if no value
+    this.drawCell(col3X, this.cursorY, COL_W[2], rowH, actualValue || '', {
       bold: true, fontSize: FONT_SIZE, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle',
     });
 

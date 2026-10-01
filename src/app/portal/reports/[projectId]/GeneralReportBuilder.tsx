@@ -48,6 +48,7 @@ export function deriveApproachRoadWidthRange(actualStr: string): string {
   const numMatch = actualStr.match(/[\d.]+/);
   if (!numMatch) return '';
   let valInFeet = parseFloat(numMatch[0]);
+  if (isNaN(valInFeet) || valInFeet <= 0) return '';
   if (/m|meter|mtr/i.test(actualStr)) {
     valInFeet = valInFeet * 3.28084;
   }
@@ -59,10 +60,11 @@ export function deriveApproachRoadWidthRange(actualStr: string): string {
 
 export function deriveAgeOfPropertyRange(actualStr: string): string {
   if (!actualStr || !actualStr.trim()) return '';
-  if (/new|under construction|0/i.test(actualStr.trim())) return '1-10 years';
+  if (/new|under construction/i.test(actualStr.trim())) return '1-10 years';
   const numMatch = actualStr.match(/[\d.]+/);
   if (!numMatch) return '';
   const age = parseFloat(numMatch[0]);
+  if (isNaN(age) || age < 0) return '';
   if (age <= 10) return '1-10 years';
   if (age <= 25) return '11-25 years';
   if (age <= 50) return '26-50 years';
@@ -389,7 +391,7 @@ const DEFAULT_FIELDS: ReportFields = {
   wardNo: '',
   vicinity: 'Residential',
   classOfLocality: 'Middle Class',
-  approachRoadWidth: '40-20 Feet Road',
+  approachRoadWidth: '',
   approachRoadWidthActual: '',
   plotDemarcated: 'Yes',
   distanceRailwayStation: '',
@@ -1716,17 +1718,50 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.drawSimpleRow('Ward No / Municipal Land No', fields.wardNo);
       r.drawOptionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity);
       r.drawOptionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class'], fields.classOfLocality);
-      r.drawAgeOptionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth, fields.approachRoadWidthActual ? (fields.approachRoadWidthActual.toLowerCase().includes('ft') || fields.approachRoadWidthActual.toLowerCase().includes('feet') ? fields.approachRoadWidthActual : `${fields.approachRoadWidthActual} Feet`) : (fields.approachRoadWidth || 'N/A'));
+      const roadRange = fields.approachRoadWidthActual
+        ? deriveApproachRoadWidthRange(fields.approachRoadWidthActual)
+        : (fields.approachRoadWidth || '');
+      const roadActualDisplay = fields.approachRoadWidthActual
+        ? (fields.approachRoadWidthActual.toLowerCase().includes('ft') || fields.approachRoadWidthActual.toLowerCase().includes('feet') || fields.approachRoadWidthActual.toLowerCase().includes('m')
+            ? fields.approachRoadWidthActual
+            : `${fields.approachRoadWidthActual} Feet`)
+        : (fields.approachRoadWidth || '');
+      r.drawAgeOptionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], roadRange, roadActualDisplay);
       r.drawOptionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated);
+
+      const formatCivicItem = (num: number, name?: string, dist?: string) => {
+        const n = (name || '').trim();
+        const d = (dist || '').trim();
+        if (!n && !d) return `${num}. `;
+        if (n && d) return `${num}. ${n} — ${d} km`;
+        if (n) return `${num}. ${n}`;
+        return `${num}. ${d} km`;
+      };
+
       r.drawProximityRow('Proximity to Civic Amenities',
         ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital'],
-        [`1. ${fields.railwayStationName || 'Railway Station'}${fields.distanceRailwayStation ? ' — ' + fields.distanceRailwayStation + ' km' : ''}`, `2. ${fields.busStopName || 'Bus Stop'}${fields.distanceBusStop ? ' — ' + fields.distanceBusStop + ' km' : ''}`, `3. ${fields.hospitalName || 'Hospital'}${fields.distanceHospital ? ' — ' + fields.distanceHospital + ' km' : ''}`]
+        [
+          formatCivicItem(1, fields.railwayStationName, fields.distanceRailwayStation),
+          formatCivicItem(2, fields.busStopName, fields.distanceBusStop),
+          formatCivicItem(3, fields.hospitalName, fields.distanceHospital),
+        ]
       );
       r.drawOptionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification);
       r.drawOptionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities);
+
+      const formatLandmarkItem = (num: number, val?: string) => {
+        const v = (val || '').trim();
+        return v ? `${num}. ${v}` : `${num}. `;
+      };
+
       r.drawProximityRow('Landmark Details',
         ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital', 'Nearest Landmark'],
-        [`1. ${fields.landmarkRailway || 'N/A'}`, `2. ${fields.landmarkBusStop || 'N/A'}`, `3. ${fields.landmarkHospital || 'N/A'}`, `4. ${fields.landmarkNearest || fields.landmark || 'N/A'}`]
+        [
+          formatLandmarkItem(1, fields.landmarkRailway),
+          formatLandmarkItem(2, fields.landmarkBusStop),
+          formatLandmarkItem(3, fields.landmarkHospital),
+          formatLandmarkItem(4, fields.landmarkNearest || fields.landmark),
+        ]
       );
       r.advanceCursor(8);
 
@@ -1756,7 +1791,15 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.drawSimpleRow('No. of Units on Each Floor', fields.unitsPerFloor);
       r.drawSimpleRow('Internal Composition', fields.internalComposition);
       r.drawSimpleRow('No. of Lifts', fields.numberOfLifts);
-      r.drawAgeOptionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], fields.ageOfProperty, fields.ageOfPropertyActual ? (fields.ageOfPropertyActual.toLowerCase().includes('yr') || fields.ageOfPropertyActual.toLowerCase().includes('year') ? fields.ageOfPropertyActual : `${fields.ageOfPropertyActual} Years`) : (fields.ageOfProperty || 'N/A'));
+      const ageRange = fields.ageOfPropertyActual
+        ? deriveAgeOfPropertyRange(fields.ageOfPropertyActual)
+        : (fields.ageOfProperty || '');
+      const ageActualDisplay = fields.ageOfPropertyActual
+        ? (fields.ageOfPropertyActual.toLowerCase().includes('yr') || fields.ageOfPropertyActual.toLowerCase().includes('year')
+            ? fields.ageOfPropertyActual
+            : `${fields.ageOfPropertyActual} Years`)
+        : (fields.ageOfProperty || '');
+      r.drawAgeOptionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], ageRange, ageActualDisplay);
       r.drawSimpleRow('Estimated Future Life', fields.estimatedFutureLife);
       r.drawSimpleRow('Exteriors', fields.exteriors);
       r.drawOptionRow('Quality of Construction', ['Very Good', 'Good', 'Average', 'Poor'], fields.qualityOfConstruction);
@@ -2146,14 +2189,14 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     const ageOptionRow = (label: string, opts: string[], selectedOpt: string, actualVal: string) => {
       const n = opts.length;
       const innerDivs = opts.map((o, i) => {
-        const isSelected = o === selectedOpt;
+        const isSelected = Boolean(selectedOpt && o.toLowerCase() === selectedOpt.toLowerCase());
         const fontStyle = isSelected ? 'font-weight:bold;' : '';
         return `<div style="border-bottom:${i === n - 1 ? 'none' : '1px solid #000'};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;background:${optLblBg};word-break:break-word;word-wrap:break-word;overflow:visible;${fontStyle}">${o}</div>`;
       }).join('');
       return `<tr>
         <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">${innerDivs}</td>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${actualVal || 'N/A'}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${actualVal || ''}</td>
       </tr>`;
     };
 
@@ -2209,13 +2252,36 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       }
     `));
 
+    const roadRange = fields.approachRoadWidthActual
+      ? deriveApproachRoadWidthRange(fields.approachRoadWidthActual)
+      : (fields.approachRoadWidth || '');
+    const roadActualDisplay = fields.approachRoadWidthActual
+      ? (fields.approachRoadWidthActual.toLowerCase().includes('ft') || fields.approachRoadWidthActual.toLowerCase().includes('feet') || fields.approachRoadWidthActual.toLowerCase().includes('m')
+          ? fields.approachRoadWidthActual
+          : `${fields.approachRoadWidthActual} Feet`)
+      : (fields.approachRoadWidth || '');
+
+    const formatCivicItem = (num: number, name?: string, dist?: string) => {
+      const n = (name || '').trim();
+      const d = (dist || '').trim();
+      if (!n && !d) return `${num}. `;
+      if (n && d) return `${num}. ${n} — ${d} km`;
+      if (n) return `${num}. ${n}`;
+      return `${num}. ${d} km`;
+    };
+
+    const formatLandmarkItem = (num: number, val?: string) => {
+      const v = (val || '').trim();
+      return v ? `${num}. ${v}` : `${num}. `;
+    };
+
     // ── BLOCK: Surrounding Locality Details ──
     allBlocks.push(wrapTable(`
       ${sectionHeader('SURROUNDING LOCALITY DETAILS')}
       ${simpleRow('Ward No / Municipal Land No', fields.wardNo)}
       ${optionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity)}
       ${optionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class'], fields.classOfLocality)}
-      ${optionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth)}
+      ${ageOptionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], roadRange, roadActualDisplay)}
       ${optionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated)}
       <tr>
         <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">Proximity to Civic Amenities</td>
@@ -2225,9 +2291,9 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Hospital</div>
         </td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="37%">
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.railwayStationName || 'Railway Station'}${fields.distanceRailwayStation ? ' — ' + fields.distanceRailwayStation + ' km' : ''}</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.busStopName || 'Bus Stop'}${fields.distanceBusStop ? ' — ' + fields.distanceBusStop + ' km' : ''}</div>
-          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.hospitalName || 'Hospital'}${fields.distanceHospital ? ' — ' + fields.distanceHospital + ' km' : ''}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatCivicItem(1, fields.railwayStationName, fields.distanceRailwayStation)}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatCivicItem(2, fields.busStopName, fields.distanceBusStop)}</div>
+          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatCivicItem(3, fields.hospitalName, fields.distanceHospital)}</div>
         </td>
       </tr>
       ${optionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification)}
@@ -2241,10 +2307,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">Nearest Landmark</div>
         </td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="37%">
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">1. ${fields.landmarkRailway || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">2. ${fields.landmarkBusStop || 'N/A'}</div>
-          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">3. ${fields.landmarkHospital || 'N/A'}</div>
-          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">4. ${fields.landmarkNearest || fields.landmark || 'N/A'}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatLandmarkItem(1, fields.landmarkRailway)}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatLandmarkItem(2, fields.landmarkBusStop)}</div>
+          <div style="border-bottom:1px solid #000;padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatLandmarkItem(3, fields.landmarkHospital)}</div>
+          <div style="padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;line-height:0.5em;box-sizing:border-box;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatLandmarkItem(4, fields.landmarkNearest || fields.landmark)}</div>
         </td>
       </tr>
     `));
@@ -2269,6 +2335,15 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       ${simpleRow('Boundary (At Site)', `N: ${fields.buildingBoundaryNorth || '-'} &nbsp;|&nbsp; E: ${fields.buildingBoundaryEast || '-'} &nbsp;|&nbsp; S: ${fields.buildingBoundarySouth || '-'} &nbsp;|&nbsp; W: ${fields.buildingBoundaryWest || '-'}`)}
     `));
 
+    const ageRange = fields.ageOfPropertyActual
+      ? deriveAgeOfPropertyRange(fields.ageOfPropertyActual)
+      : (fields.ageOfProperty || '');
+    const ageActualDisplay = fields.ageOfPropertyActual
+      ? (fields.ageOfPropertyActual.toLowerCase().includes('yr') || fields.ageOfPropertyActual.toLowerCase().includes('year')
+          ? fields.ageOfPropertyActual
+          : `${fields.ageOfPropertyActual} Years`)
+      : (fields.ageOfProperty || '');
+
     // ── BLOCK: Structural Details ──
     allBlocks.push(wrapTable(`
       ${sectionHeader('STRUCTURAL DETAILS')}
@@ -2278,7 +2353,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       ${simpleRow('No. of Units on Each Floor', fields.unitsPerFloor)}
       ${simpleRow('Internal Composition', fields.internalComposition)}
       ${simpleRow('No. of Lifts', fields.numberOfLifts)}
-      ${ageOptionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], fields.ageOfProperty, fields.ageOfPropertyActual)}
+      ${ageOptionRow('Age of Property', ['1-10 years', '11-25 years', '26-50 years', '>50 years'], ageRange, ageActualDisplay)}
       ${simpleRow('Estimated Future Life', fields.estimatedFutureLife)}
       ${simpleRow('Exteriors', fields.exteriors)}
       ${optionRow('Quality of Construction', ['Very Good', 'Good', 'Average', 'Poor'], fields.qualityOfConstruction)}
@@ -2975,7 +3050,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     setFields(prev => ({
                       ...prev,
                       approachRoadWidthActual: actualVal,
-                      approachRoadWidth: range || prev.approachRoadWidth,
+                      approachRoadWidth: range,
                     }));
                   }}
                   disabled={isReadOnly}
@@ -3266,7 +3341,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                     setFields(prev => ({
                       ...prev,
                       ageOfPropertyActual: actualVal,
-                      ageOfProperty: range || prev.ageOfProperty,
+                      ageOfProperty: range,
                     }));
                   }}
                   disabled={isReadOnly}

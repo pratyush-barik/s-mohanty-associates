@@ -1346,16 +1346,38 @@ export default function BankReportBuilder({
         r.drawOptionRow('Vicinity', ['Slum', 'Residential', 'Commercial', 'Mixed', 'Industrial'], fields.vicinity);
         r.drawOptionRow('Locality Type', ['Elite/Posh/High Class', 'Upper Middle Class', 'Middle Class', 'Lower Middle Class'], fields.classOfLocality);
         r.drawOptionRow('Approach Road Width', ['>=60 Feet Road', '60-40 Feet Road', '40-20 Feet Road', '<20 Feet Road'], fields.approachRoadWidth);
-        r.drawOptionRow('Plot Demarcated at Site', ['Yes', 'No'], fields.plotDemarcated);
+        const formatCivicItem = (num: number, name?: string, dist?: string) => {
+          const n = (name || '').trim();
+          const d = (dist || '').trim();
+          if (!n && !d) return `${num}. `;
+          if (n && d) return `${num}. ${n} — ${d} km`;
+          if (n) return `${num}. ${n}`;
+          return `${num}. ${d} km`;
+        };
+
+        const formatLandmarkItem = (num: number, val?: string) => {
+          const v = (val || '').trim();
+          return v ? `${num}. ${v}` : `${num}. `;
+        };
+
         r.drawProximityRow('Proximity to Civic Amenities',
           ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital'],
-          [`1. ${fields.railwayStationName || 'Railway Station'}${fields.distanceRailwayStation ? ' — ' + fields.distanceRailwayStation + ' km' : ''}`, `2. ${fields.busStopName || 'Bus Stop'}${fields.distanceBusStop ? ' — ' + fields.distanceBusStop + ' km' : ''}`, `3. ${fields.hospitalName || 'Hospital'}${fields.distanceHospital ? ' — ' + fields.distanceHospital + ' km' : ''}`]
+          [
+            formatCivicItem(1, fields.railwayStationName, fields.distanceRailwayStation),
+            formatCivicItem(2, fields.busStopName, fields.distanceBusStop),
+            formatCivicItem(3, fields.hospitalName, fields.distanceHospital),
+          ]
         );
         r.drawOptionRow('Property Identification', ['Easy to Identify', 'Identification by documents', 'Additional documents required', 'Difficult to identify'], fields.propertyIdentification);
         r.drawOptionRow('Proximity to Facilities', ['<1 Km', '1-3 Kms', '3-5 Kms', '>5 Kms'], fields.proximityToFacilities);
         r.drawProximityRow('Landmark Details',
           ['Nearest Railway Station', 'Nearest Bus Stop', 'Nearest Hospital', 'Nearest Landmark'],
-          [`1. ${fields.landmarkRailway || 'N/A'}`, `2. ${fields.landmarkBusStop || 'N/A'}`, `3. ${fields.landmarkHospital || 'N/A'}`, `4. ${fields.landmarkNearest || fields.landmark || 'N/A'}`]
+          [
+            formatLandmarkItem(1, fields.landmarkRailway),
+            formatLandmarkItem(2, fields.landmarkBusStop),
+            formatLandmarkItem(3, fields.landmarkHospital),
+            formatLandmarkItem(4, fields.landmarkNearest || fields.landmark),
+          ]
         );
         drawExtraPDFFields('section-2');
         r.advanceCursor(8);
