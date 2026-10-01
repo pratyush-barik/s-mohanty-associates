@@ -55,5 +55,25 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Person Met at Site & Contact Details', value: this.getF('kotakBbgPersonMetNA') ? 'NA' : this.getF('kotakBbgPersonMet') },
     ]);
     
+    this.drawSectionHeader('2. DETAILS OF PROPERTY BEING APPRAISED');
+    this.drawKeyValueRow([
+      { label: 'Technical Address (as per site)', value: this.getF('kotakBbgTechnicalAddress'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Legal Address (as per documents)', value: this.getF('kotakBbgLegalAddress'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Google Coordinates', value: this.getF('kotakBbgGoogleCoordinates') },
+      { label: 'Nature of Property', value: this.getF('kotakBbgNatureOfProperty') },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Tenure of Property', value: this.getF('kotakBbgTenure') },
+      { label: 'Lease Terms (if applicable)', value: this.getF('kotakBbgLeaseTermsNA') ? 'NA' : this.getF('kotakBbgLeaseTerms') },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Transferability of Leasehold Rights', value: this.getF('kotakBbgTransferability') },
+      { label: 'Occupancy Details', value: this.getF('kotakBbgOccupancy') },
+    ]);
+    
   }
 }
