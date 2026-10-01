@@ -46,7 +46,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
   bankId: 'KOTAK MAHINDRA BANK',
   subTemplateId: 'BUSINESS BANKING GROUP',
   displayName: 'Kotak Mahindra Bank — Business Banking Group (BBG)',
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8', 'section-9'],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFKotakBbgRenderer({ ...fields, projectCode }),
   navSections: [
     { id: 'kotak-section-1', title: '1. General Details' },
@@ -57,6 +57,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     { id: 'kotak-section-6', title: '6. Details of Measurements' },
     { id: 'kotak-section-7', title: '7. Valuation Calculations & Rate Analysis' },
     { id: 'kotak-section-8', title: '8. Valuation Financial Summary' },
+    { id: 'kotak-section-9', title: '9. Remarks / Key Observations' },
   ],
   defaultValues: {
     kotakBbgPurpose: 'To ascertain Market value, Realizable value & Distress value for bank decision-making',
@@ -1266,6 +1267,90 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                 />
               )}
             </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'kotak-section-9',
+      title: 'Remarks / Key Observations',
+      number: 9,
+      defaultOpen: false,
+      render: (fields, handleChange, isReadOnly) => {
+        const defaultDisclaimers = "The valuer assumes no responsibility for legal title. The valuation is strictly for bank internal use based on current market trends and visible site conditions.";
+        const disclaimersVal = fields.kotakBbgStandardDisclaimers || defaultDisclaimers;
+        
+        const riskOptions = ['High-Tension Line overhead', 'Encroachment', 'Boundary Dispute', 'Road Access Issue', 'Low-Lying Flood Prone', 'Custom'];
+        const currentRisks = Array.isArray(fields.kotakBbgRiskFactors) ? fields.kotakBbgRiskFactors : [];
+        const toggleRisk = (risk: string) => {
+          let newRisks = [...currentRisks];
+          if (newRisks.includes(risk)) {
+            newRisks = newRisks.filter(r => r !== risk);
+          } else {
+            newRisks.push(risk);
+          }
+          handleChange('kotakBbgRiskFactors', newRisks);
+        };
+
+        return (
+          <div style={{ backgroundColor: '#e0f2f1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            <PrefillField
+              label="Standard Disclaimers & Assumptions"
+              value={disclaimersVal}
+              onChange={(val: string) => handleChange('kotakBbgStandardDisclaimers', val)}
+              isReadOnly={isReadOnly}
+              tooltip="Prefill from System Standard Template"
+              type="textarea"
+            />
+
+            <Field label="Key Risk Factors / Alerts">
+              <div className="space-y-4">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgRiskFactorsNA || false} onChange={e => handleChange('kotakBbgRiskFactorsNA', e.target.checked)} disabled={isReadOnly} />
+                  <span className="font-semibold text-gray-800">Not Applicable (NA) (No Risks Identified)</span>
+                </label>
+                {!fields.kotakBbgRiskFactorsNA && (
+                  <div className="space-y-2">
+                    <div className="grid grid-cols-2 gap-2">
+                      {riskOptions.map(risk => (
+                        <label key={risk} className="flex items-center space-x-2 text-sm bg-white bg-opacity-50 p-2 rounded border border-teal-100">
+                          <input type="checkbox" checked={currentRisks.includes(risk)} onChange={() => toggleRisk(risk)} disabled={isReadOnly} />
+                          <span>{risk}</span>
+                        </label>
+                      ))}
+                    </div>
+                    {currentRisks.includes('Custom') && (
+                      <input type="text" className={inputCls} placeholder="Enter custom risk factor" value={fields.kotakBbgRiskFactorsCustom || ''} onChange={e => handleChange('kotakBbgRiskFactorsCustom', e.target.value)} disabled={isReadOnly} />
+                    )}
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            <Field label="Final Recommendation">
+              <select className={inputCls} value={fields.kotakBbgFinalRecommendation || ''} onChange={e => handleChange('kotakBbgFinalRecommendation', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Option</option>
+                <option value="Recommended for Funding">Recommended for Funding</option>
+                <option value="Recommended with Conditions">Recommended with Conditions</option>
+                <option value="Not Recommended">Not Recommended</option>
+                <option value="Custom">Custom</option>
+              </select>
+              {fields.kotakBbgFinalRecommendation === 'Custom' && (
+                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom recommendation" value={fields.kotakBbgFinalRecommendationCustom || ''} onChange={e => handleChange('kotakBbgFinalRecommendationCustom', e.target.value)} disabled={isReadOnly} />
+              )}
+            </Field>
+
+            <Field label="Detailed Remarks & Additional Observations">
+              <div className="space-y-2">
+                <label className="flex items-center space-x-2 text-sm">
+                  <input type="checkbox" checked={fields.kotakBbgRemarksNA || false} onChange={e => handleChange('kotakBbgRemarksNA', e.target.checked)} disabled={isReadOnly} />
+                  <span>Not Applicable (NA)</span>
+                </label>
+                {!fields.kotakBbgRemarksNA && (
+                  <textarea className={inputCls + ' resize-y'} rows={4} placeholder="Enter any additional key remarks or observations regarding the property..." value={fields.kotakBbgRemarks || ''} onChange={e => handleChange('kotakBbgRemarks', e.target.value)} disabled={isReadOnly} />
+                )}
+              </div>
+            </Field>
           </div>
         );
       }

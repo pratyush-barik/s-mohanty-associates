@@ -300,5 +300,29 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: 'Insurable Value (IV)', value: isIvNA ? 'NA' : this.getF('kotakBbgIv'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
+
+    this.drawSectionHeader('9. REMARKS / KEY OBSERVATIONS');
+    this.drawKeyValueRow([
+      { label: 'Standard Disclaimers', value: this.getF('kotakBbgStandardDisclaimers') || "The valuer assumes no responsibility for legal title. The valuation is strictly for bank internal use based on current market trends and visible site conditions.", labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    
+    let risksStr = 'NA';
+    if (!this.getF('kotakBbgRiskFactorsNA')) {
+      const rList = Array.isArray(this.getF('kotakBbgRiskFactors')) ? this.getF('kotakBbgRiskFactors') : [];
+      const mapped = rList.map(r => r === 'Custom' ? this.getF('kotakBbgRiskFactorsCustom') : r).filter(Boolean);
+      risksStr = mapped.length > 0 ? mapped.join(', ') : 'None selected';
+    }
+    this.drawKeyValueRow([
+      { label: 'Key Risk Factors / Alerts', value: risksStr, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    
+    const rec = this.getF('kotakBbgFinalRecommendation') === 'Custom' ? this.getF('kotakBbgFinalRecommendationCustom') : this.getF('kotakBbgFinalRecommendation');
+    this.drawKeyValueRow([
+      { label: 'Final Recommendation', value: rec, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    this.drawKeyValueRow([
+      { label: 'Detailed Remarks & Additional Observations', value: this.getF('kotakBbgRemarksNA') ? 'NA' : this.getF('kotakBbgRemarks'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
   }
 }
