@@ -261,121 +261,64 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       ]);
     }
 
-    this.drawSectionHeader('6. DETAILS OF MEASUREMENTS');
-    const landUnit = this.getF('kotakBbgLandAreaUnit') === 'Custom' ? this.getF('kotakBbgLandAreaUnitCustom') : this.getF('kotakBbgLandAreaUnit');
-    const landArea = this.getF('kotakBbgLandAreaNA') ? 'NA' : `${this.getF('kotakBbgLandArea') || ''} ${landUnit || ''}`.trim();
-    const secLandArea = this.getF('kotakBbgLandAreaNA') ? 'NA' : `${this.getF('kotakBbgLandAreaSecondary') || ''} ${this.getF('kotakBbgLandAreaSecondaryUnit') || ''}`.trim();
-    
+    this.drawSectionHeader('6. AREA MEASUREMENT & CALCULATIONS');
+    const landArea = this.getF('kotakBbgLandArea') || '0';
+    const landUnit = this.getF('kotakBbgLandAreaUnit') || '';
     this.drawKeyValueRow([
-      { label: 'Land Area (Primary)', value: landArea },
-      { label: 'Land Area (Secondary)', value: secLandArea },
-    ]);
-    const proofSource = this.getF('kotakBbgLandAreaProofSource') === 'Custom' ? this.getF('kotakBbgLandAreaProofSourceCustom') : this.getF('kotakBbgLandAreaProofSource');
-    this.drawKeyValueRow([
-      { label: 'Documentary Proof Source', value: proofSource, labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    
-    let buaText = 'NA';
-    if (!this.getF('kotakBbgBuildingBuaNA')) {
-      if (this.getF('kotakBbgBuildingBuaAnnexure')) {
-        buaText = 'Details attached in Annexure-II';
-      } else {
-        const buaData = Array.isArray(this.getF('kotakBbgBuildingBuaTable')) ? this.getF('kotakBbgBuildingBuaTable') : [];
-        if (buaData.length > 0) {
-          buaText = buaData.map((row: any) => `Floor: ${row.floor || '-'}, Carpet: ${row.carpet || '-'}, Built-up: ${row.builtUp || '-'}, Super: ${row.superBuiltUp || '-'}`).join('\n');
-        } else {
-          buaText = '';
-        }
-      }
-    }
-    this.drawKeyValueRow([
-      { label: 'Building Built-up Area (BUA)', value: buaText, labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    if (!this.getF('kotakBbgBuildingBuaNA') && !this.getF('kotakBbgBuildingBuaAnnexure')) {
-       this.drawKeyValueRow([
-         { label: 'Total Built-up Area', value: this.getF('kotakBbgTotalBua'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
-       ]);
-    }
-    
-    const devs = this.getF('kotakBbgDeviationsNA') ? 'NA' : (this.getF('kotakBbgDeviations') === 'Custom' ? this.getF('kotakBbgDeviationsCustom') : this.getF('kotakBbgDeviations'));
-    this.drawKeyValueRow([
-      { label: 'Deviations / Violations', value: devs, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Total Plot / Land Area', value: `${landArea} ${landUnit}`.trim(), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
-    this.drawSectionHeader('7. VALUATION CALCULATIONS & RATE ANALYSIS');
-    const meth = this.getF('kotakBbgValuationMethodology') === 'Custom' ? this.getF('kotakBbgValuationMethodologyCustom') : this.getF('kotakBbgValuationMethodology');
+    const fsiVal = this.getF('kotakBbgFsiNA') ? 'NA' : this.getF('kotakBbgFsi');
     this.drawKeyValueRow([
-      { label: 'Valuation Methodology Adopted', value: meth, labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Source of Rate Selection', value: this.getF('kotakBbgSourceOfRateSelection'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Comparables Relied Upon', value: this.getF('kotakBbgComparablesReliedNA') ? 'NA' : this.getF('kotakBbgComparablesRelied'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    
-    let analysisStr = 'NA';
-    if (!this.getF('kotakBbgAnalysisComparablesNA')) {
-      const br = this.getF('kotakBbgBaseMarketRate');
-      const dp = this.getF('kotakBbgDiscountPremium');
-      const jn = this.getF('kotakBbgJustificationNarrative');
-      analysisStr = `Base Rate: Rs ${br || '0'} | Adj: ${dp || '0'}%\nJustification: ${jn || '-'}`;
-    }
-    this.drawKeyValueRow([
-      { label: 'Analysis of Comparables & Justification', value: analysisStr, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Permissible Built-Up Area (FSI/FAR)', value: fsiVal || '-', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
-    this.drawKeyValueRow([
-      { label: 'Adopted Land Rate (Rs / sq. ft.)', value: this.getF('kotakBbgAdoptedLandRate'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-
-    let bldgRateStr = 'NA';
-    if (!this.getF('kotakBbgAdoptedBuildingRateNA')) {
-      const bRates = Array.isArray(this.getF('kotakBbgAdoptedBuildingRateTable')) ? this.getF('kotakBbgAdoptedBuildingRateTable') : [];
-      if (bRates.length > 0) {
-        bldgRateStr = bRates.map((r: { floor?: string; rate?: string }) => `${r.floor || 'Unknown'}: Rs ${r.rate || '0'}`).join('\n');
-      } else {
-        bldgRateStr = 'No rates defined';
-      }
-    }
-    this.drawKeyValueRow([
-      { label: 'Adopted Building Rate(s) (Rs / sq. ft.)', value: bldgRateStr, labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-
-    this.drawKeyValueRow([
-      { label: 'Valuation Calculations Breakdown', value: this.getF('kotakBbgValuationBreakdown'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Guideline / Circle Rate (Rs / sq. ft.)', value: this.getF('kotakBbgGuidelineRateNA') ? 'NA' : this.getF('kotakBbgGuidelineRate') },
-      { label: 'Guideline Valuation', value: this.getF('kotakBbgGuidelineValuation') },
-    ]);
-
-    this.drawSectionHeader('8. VALUATION FINANCIAL SUMMARY');
-    this.drawKeyValueRow([
-      { label: 'Exact Fair Market Value (FMV)', value: this.getF('kotakBbgFmvExact') },
-      { label: 'Rounded Fair Market Value (Say Value)', value: this.getF('kotakBbgFmvRounded') },
-    ]);
-    const rvPct = this.getF('kotakBbgRvPercent') !== undefined ? this.getF('kotakBbgRvPercent') : '90';
-    const dvPct = this.getF('kotakBbgDvPercent') !== undefined ? this.getF('kotakBbgDvPercent') : '80';
-    this.drawKeyValueRow([
-      { label: `Realizable Value (RV) @ ${rvPct}%`, value: this.getF('kotakBbgRv') },
-      { label: `Distress Value (DV) @ ${dvPct}%`, value: this.getF('kotakBbgDv') },
-    ]);
     const isVacantLand = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
-    const isIvNA = this.getF('kotakBbgIvNA') !== undefined ? this.getF('kotakBbgIvNA') : isVacantLand;
+    const actualBuaNA = this.getF('kotakBbgActualBuaNA') || isVacantLand;
+    const actualBuaVal = actualBuaNA ? 'NA' : `${this.getF('kotakBbgActualBua') || '0'} ${this.getF('kotakBbgActualBuaUnit') || ''}`.trim();
     this.drawKeyValueRow([
-      { label: 'Insurable Value (IV)', value: isIvNA ? 'NA' : this.getF('kotakBbgIv'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Actual Built-Up Area', value: actualBuaVal, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    const actualCarpetNA = this.getF('kotakBbgActualCarpetAreaNA');
+    const actualCarpetVal = actualCarpetNA ? 'NA' : `${this.getF('kotakBbgActualCarpetArea') || '0'} ${this.getF('kotakBbgActualCarpetAreaUnit') || ''}`.trim();
+    this.drawKeyValueRow([
+      { label: 'Actual Carpet Area', value: actualCarpetVal, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    this.drawSectionHeader('7. MARKET VALUE & REALIZABLE VALUE ASSESSMENT');
+    this.drawKeyValueRow([
+      { label: 'Prevailing Market Rate of Land (INR)', value: this.getF('kotakBbgPrevailingMarketRateLand') || '0' },
+      { label: 'Estimated Fair Market Value of Land', value: this.getF('kotakBbgFmvLand') || '0' },
+    ]);
+    
+    const repCost = this.getF('kotakBbgReplacementCostBuilding') || '0';
+    const depPct = this.getF('kotakBbgDepreciationPercent') || '0';
+    this.drawKeyValueRow([
+      { label: 'Replacement Cost of Building & Depr.', value: `Rs ${repCost}/Sq.Ft | Depr: ${depPct}%`, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    const fmvBldgNA = this.getF('kotakBbgFmvBuildingNA') || isVacantLand;
+    this.drawKeyValueRow([
+      { label: 'Estimated Depreciated Value of Bldg', value: fmvBldgNA ? 'NA' : (this.getF('kotakBbgFmvBuilding') || '0') },
+      { label: 'Total Estimated Fair Market Value', value: this.getF('kotakBbgTotalFmv') || '0' },
+    ]);
+
+    this.drawSectionHeader('8. DISTRESS / FORCED SALE VALUE');
+    this.drawKeyValueRow([
+      { label: 'Distress Sale Value Factor (%)', value: this.getF('kotakBbgDistressFactor') || '80' },
+      { label: 'Assessed Forced Sale Value / RV', value: this.getF('kotakBbgFsv') || '0' },
     ]);
 
     this.drawSectionHeader('9. REMARKS / KEY OBSERVATIONS');
     this.drawKeyValueRow([
-      { label: 'Standard Disclaimers', value: this.getF('kotakBbgStandardDisclaimers') || "The valuer assumes no responsibility for legal title. The valuation is strictly for bank internal use based on current market trends and visible site conditions.", labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Standard Disclaimers & Assumptions', value: this.getF('kotakBbgStandardDisclaimers') || "The valuer assumes no responsibility for legal title. The valuation is strictly for bank internal use based on current market trends and visible site conditions.", labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     
     let risksStr = 'NA';
     if (!this.getF('kotakBbgRiskFactorsNA')) {
       const rList = Array.isArray(this.getF('kotakBbgRiskFactors')) ? this.getF('kotakBbgRiskFactors') : [];
-      const mapped = rList.map(r => r === 'Custom' ? this.getF('kotakBbgRiskFactorsCustom') : r).filter(Boolean);
+      const mapped = rList.map((r: string) => r === 'Custom' ? this.getF('kotakBbgRiskFactorsCustom') : r).filter(Boolean);
       risksStr = mapped.length > 0 ? mapped.join(', ') : 'None selected';
     }
     this.drawKeyValueRow([
@@ -384,11 +327,11 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     
     const rec = this.getF('kotakBbgFinalRecommendation') === 'Custom' ? this.getF('kotakBbgFinalRecommendationCustom') : this.getF('kotakBbgFinalRecommendation');
     this.drawKeyValueRow([
-      { label: 'Final Recommendation', value: rec, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Final Recommendation', value: rec || '-', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'Detailed Remarks & Additional Observations', value: this.getF('kotakBbgRemarksNA') ? 'NA' : this.getF('kotakBbgRemarks'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Detailed Remarks & Addl Observations', value: this.getF('kotakBbgRemarksNA') ? 'NA' : this.getF('kotakBbgRemarks'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawSectionHeader('10. VALUER DECLARATION & SIGNOFF');
