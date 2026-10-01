@@ -871,7 +871,20 @@ export class PDFIBBIRenderer {
       totalOptionsH += h;
     }
 
-    const valueH = this.cellHeight(selectedValue || 'N/A', COL_W[2], { bold: true, fontSize: FONT_SIZE });
+    // Format Col 3 display: if comma-separated multiple values, display line by line, comma separated, center aligned
+    const selectedItems = selectedValue ? selectedValue.split(',').map(s => s.trim()).filter(Boolean) : [];
+    let col3Display = selectedValue || 'N/A';
+    if (selectedItems.length > 1) {
+      const sortedSelected = [...selectedItems].sort((a, b) => {
+        const idxA = options.findIndex(o => o.toLowerCase() === a.toLowerCase());
+        const idxB = options.findIndex(o => o.toLowerCase() === b.toLowerCase());
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        return 0;
+      });
+      col3Display = sortedSelected.map((it, idx) => idx < sortedSelected.length - 1 ? `${it},` : it).join('\n');
+    }
+
+    const valueH = this.cellHeight(col3Display, COL_W[2], { bold: true, fontSize: FONT_SIZE });
     const rowH = Math.max(labelH, totalOptionsH, valueH);
 
     this.checkPageBreak(rowH);
@@ -900,8 +913,8 @@ export class PDFIBBIRenderer {
       }
     }
 
-    // Col 3: Selected value (with wrapping)
-    this.drawCell(col3X, this.cursorY, COL_W[2], rowH, selectedValue || 'N/A', {
+    // Col 3: Selected value (with wrapping, one by one, comma separated, center aligned)
+    this.drawCell(col3X, this.cursorY, COL_W[2], rowH, col3Display, {
       bold: true, fontSize: FONT_SIZE, fillColor: OPT_BG, bgOpacity: 0.5, align: 'center', vAlign: 'middle',
     });
 

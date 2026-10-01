@@ -2194,6 +2194,18 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         }
       }
 
+      const selectedItems = val ? val.split(',').map(s => s.trim()).filter(Boolean) : [];
+      let col3HTML = val || 'N/A';
+      if (selectedItems.length > 1) {
+        const sortedSelected = [...selectedItems].sort((a, b) => {
+          const idxA = opts.findIndex(o => o.toLowerCase() === a.toLowerCase());
+          const idxB = opts.findIndex(o => o.toLowerCase() === b.toLowerCase());
+          if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+          return 0;
+        });
+        col3HTML = sortedSelected.map((it, idx) => idx < sortedSelected.length - 1 ? `${it},` : it).join('<br/>');
+      }
+
       const n = opts.length;
       const innerDivs = opts.map((o, i) => {
         const isSelected = Boolean(val && (o.toLowerCase() === val.toLowerCase() || selectedList.includes(o.toLowerCase())));
@@ -2203,7 +2215,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       return `<tr>
         <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;background:${lblBg};line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="28%">${label}</td>
         <td style="border:${cellBorder};padding:0;font-family:${ff};font-size:12pt;vertical-align:top;background:${optLblBg};" width="35%">${innerDivs}</td>
-        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${val || 'N/A'}</td>
+        <td style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;font-weight:bold;text-align:center;background:${optLblBg};line-height:1.2em;word-break:break-word;word-wrap:break-word;overflow:visible;" width="37%">${col3HTML}</td>
       </tr>`;
     };
 
