@@ -106,8 +106,20 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   <input type="checkbox" checked={fields.kotakBbgOwnerSameAsBorrower || false} onChange={e => handleChange('kotakBbgOwnerSameAsBorrower', e.target.checked)} disabled={isReadOnly} />
                   <span>Same as Borrower</span>
                 </label>
-                {!fields.kotakBbgOwnerSameAsBorrower && (
-                  <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgOwnerName || ''} onChange={e => handleChange('kotakBbgOwnerName', e.target.value)} disabled={isReadOnly} />
+                {fields.kotakBbgOwnerSameAsBorrower ? (
+                  <div title='Prefill from section 1, "Name of Customer / Borrower"' className="flex items-center space-x-2">
+                    <textarea 
+                      className={inputCls + ' resize-y flex-1'} 
+                      rows={3} 
+                      value={fields.kotakBbgBorrowerName || ''} 
+                      disabled={true} 
+                    />
+                    <button type="button" disabled className="p-1.5 border rounded flex-shrink-0 bg-white border-gray-300 text-gray-500">
+                      <Lock size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <textarea className={inputCls + ' resize-y w-full'} rows={3} value={fields.kotakBbgOwnerName || ''} onChange={e => handleChange('kotakBbgOwnerName', e.target.value)} disabled={isReadOnly} />
                 )}
               </div>
             </Field>
