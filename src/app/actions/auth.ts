@@ -661,7 +661,7 @@ export async function changePassword(formData: FormData) {
             </div>
             <p style="color: #6c757d; font-size: 12px;">This code is valid for <strong>5 minutes</strong>. If you did not request this password change, please ignore this email and ensure your account is secure.</p>
             <hr style="border: none; border-top: 1px solid #e9ecef; margin: 20px 0;" />
-            <p style="color: #adb5bd; font-size: 11px;">S Mohanty & Associates | Bhubaneswar</p>
+            <p style="color: #adb5bd; font-size: 11px;">S Mohanty Associates | Bhubaneswar</p>
           </div>
         `,
       });

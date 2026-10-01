@@ -1313,7 +1313,7 @@ export async function terminateProject(
               <p>We regret to inform you that your valuation project <strong>${project.projectCode}</strong> has been closed.</p>
               <p>If you have any questions or would like to initiate a new request, please contact us.</p>
               <br/>
-              <p>Regards,<br/>S Mohanty & Associates</p>
+              <p>Regards,<br/>S Mohanty Associates</p>
             </div>
           `,
         });

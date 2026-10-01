@@ -1533,7 +1533,7 @@ export default function BankReportBuilder({
           { text: 'Satyajit Mohanty', bold: true, fontSize: 14 },
           { text: 'B.E.(Civil), M.Tech (Structural)', italic: true },
           { text: 'Registered Valuer \u2014 IBBI/RV/02/2019/10594', italic: true },
-          { text: 'S Mohanty & Associates, Bhubaneswar', italic: true },
+          { text: 'S Mohanty Associates, Bhubaneswar', italic: true },
         ]);
       }
 
