@@ -355,7 +355,7 @@ const FloatingNavigator = ({ sections }: { sections: { id: string; title: string
 
   return (
     <div className="hidden xl:flex flex-col bg-white/90 backdrop-blur-md shadow-[0_0_15px_rgba(0,0,0,0.1)] border border-[#e9ecef] p-2 rounded-2xl w-48 sticky top-24 shrink-0 z-40 max-h-[calc(100vh-120px)] overflow-hidden">
-      <div className="text-[10px] font-black text-emerald-600 mb-2 px-2 uppercase tracking-widest shrink-0">Sections</div>
+      <div className="text-[10px] font-black text-emerald-600 mb-2 px-2 uppercase tracking-widest shrink-0 text-center">Sections</div>
       <div className="flex flex-col gap-1 overflow-y-auto overflow-x-hidden pr-1 custom-scrollbar">
         {sections.map((sec) => {
           const isActive = activeId === sec.id;
@@ -375,16 +375,16 @@ const FloatingNavigator = ({ sections }: { sections: { id: string; title: string
               type="button"
               title={cleanTitle}
               onClick={() => scrollTo(sec.id)}
-              className={`w-full py-1.5 px-2.5 rounded-xl text-center transition-all duration-200 text-xs font-bold my-0.5 shrink-0 ${
+              className={`w-full py-1.5 px-2.5 rounded-xl text-center flex flex-col items-center justify-center transition-all duration-200 text-xs font-bold my-0.5 shrink-0 ${
                 isActive
                   ? 'bg-accent-500 text-white border border-[#96700a] shadow-md font-extrabold'
                   : 'bg-indigo-50/90 text-indigo-900 border border-indigo-100/80 shadow-sm hover:bg-indigo-100 hover:border-indigo-200'
               }`}
             >
-              <span className="leading-snug block w-full whitespace-normal">
+              <span className="leading-snug block w-full whitespace-normal text-center">
                 {mainTitle}
                 {badgeRange && (
-                  <span className={`block text-[10.5px] font-semibold tracking-tight whitespace-nowrap mt-0.5 ${isActive ? 'text-amber-100' : 'text-indigo-700/80'}`}>
+                  <span className={`block text-[10.5px] font-semibold tracking-tight whitespace-nowrap mt-0.5 text-center ${isActive ? 'text-amber-100' : 'text-indigo-700/80'}`}>
                     {badgeRange}
                   </span>
                 )}
