@@ -263,11 +263,13 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                 </div>
 
                 <div className="flex flex-col space-y-2">
-                  <span className="text-sm font-semibold text-gray-700">Phone Number</span>
-                  <label className="flex items-center space-x-2 text-sm">
-                    <input type="checkbox" checked={fields.kotakBbgPersonMetContactNA || false} onChange={e => handleChange('kotakBbgPersonMetContactNA', e.target.checked)} disabled={isReadOnly} />
-                    <span>Not Applicable (NA)</span>
-                  </label>
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-sm font-semibold text-gray-700">Phone Number</span>
+                    <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case">
+                      <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.kotakBbgPersonMetContactNA} onChange={e => handleChange('kotakBbgPersonMetContactNA', e.target.checked)} disabled={isReadOnly} />
+                      <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>
+                    </label>
+                  </div>
                   {!fields.kotakBbgPersonMetContactNA && (
                     <input type="text" maxLength={10} className={inputCls} placeholder="10-digit number" value={fields.kotakBbgPersonMetContact || ''} onChange={e => {
                       const val = e.target.value.replace(/\D/g, '');
