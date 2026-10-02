@@ -61,7 +61,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     { id: 'kotak-section-10', title: '10. Valuer Declaration & Signoff' },
   ],
   defaultValues: {
-    kotakBbgPurpose: 'To ascertain Market value, Realizable value & Distress value for bank decision-making',
+    kotakBbgPurpose: 'To ascertain Market value, Realizable value & Distress value of the property for assisting Kotak Mahindra Bank Limited in making prudent banking decision',
   },
   extraSectionsStart: [
     {
