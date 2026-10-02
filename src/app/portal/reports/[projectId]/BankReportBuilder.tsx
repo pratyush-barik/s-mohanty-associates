@@ -1579,7 +1579,8 @@ export default function BankReportBuilder({
         }
         if (docBytesList.length > 0) {
           // No page break forced after documents; maps follow with line break
-          await r.drawDocumentsGallery(docBytesList, 'DOCUMENTS', 240, false);
+          const docSec = getSectionNumber('documents', '');
+          await r.drawDocumentsGallery(docBytesList, config?.id === 'kotak-bbg' ? '11. DOCUMENTS' : 'DOCUMENTS', 240, false);
         }
       }
 

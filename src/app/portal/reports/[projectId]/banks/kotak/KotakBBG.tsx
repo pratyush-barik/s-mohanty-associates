@@ -62,7 +62,14 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
   bankId: 'KOTAK MAHINDRA BANK',
   subTemplateId: 'BUSINESS BANKING GROUP',
   displayName: 'Kotak Mahindra Bank — Business Banking Group (BBG)',
+  id: 'kotak-bbg',
   hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-8', 'section-9', 'section-10'],
+  sectionNumbers: {
+    'documents': 11,
+    'section-12': 12,
+    'section-11': 13,
+    'section-15': 15,
+  },
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFKotakBbgRenderer({ ...fields, projectCode }),
   navSections: [
     { id: 'kotak-section-1', title: '1. General Details' },
