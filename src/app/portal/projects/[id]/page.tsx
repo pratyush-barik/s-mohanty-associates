@@ -88,9 +88,9 @@ export default async function ProjectDetailsPage({ params }: { params: Promise<{
     let terminationReason = null;
     let terminationNotes = null;
     if (terminationMessage) {
-       const reasonMatch = terminationMessage.content.match(/Reason:\s*(.+?)(?=\n\nNotes:|$)/is);
+       const reasonMatch = terminationMessage.content.match(/Reason:\s*([\s\S]+?)(?=\n\nNotes:|$)/i);
        if (reasonMatch) terminationReason = reasonMatch[1].trim();
-       const notesMatch = terminationMessage.content.match(/Notes:\s*(.+)/is);
+       const notesMatch = terminationMessage.content.match(/Notes:\s*([\s\S]+)/i);
        if (notesMatch) terminationNotes = notesMatch[1].trim();
     }
 

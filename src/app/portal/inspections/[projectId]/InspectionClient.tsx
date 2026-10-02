@@ -172,7 +172,12 @@ export default function InspectionClient({
         if (result.error) {
           setMessage({ type: 'error', text: result.error });
         } else if (result.image) {
-          setBucketImages((prev) => [result.image as BucketImageData, ...prev]);
+          setBucketImages((prev) => [{
+            ...result.image,
+            createdAt: result.image.createdAt instanceof Date 
+              ? result.image.createdAt.toISOString() 
+              : String(result.image.createdAt)
+          } as unknown as BucketImageData, ...prev]);
         }
       } catch (err) {
         console.error('Upload error:', err);

@@ -36,6 +36,7 @@ export default function ManagerVerificationView({ projectId, projectCode, report
     try {
       // 1. Generate PDF locally using html2pdf
       // We dynamically import it because it requires the window object
+      // @ts-ignore
       const html2pdf = (await import('html2pdf.js')).default;
       
       const element = reportRef.current;

@@ -24,6 +24,7 @@ export default async function InspectionDetailsPage({ params }: { params: Promis
     include: {
       project: {
         select: {
+          projectCode: true,
           serviceRequest: true,
           assignedManagerId: true,
         }
@@ -127,7 +128,10 @@ export default async function InspectionDetailsPage({ params }: { params: Promis
             initialStatus={inspection.status}
             initialNotes={inspection.notes}
             initialMeasurements={inspection.measurements}
-            initialBucketImages={bucketImages}
+            initialBucketImages={bucketImages.map(img => ({
+              ...img,
+              createdAt: img.createdAt.toISOString()
+            }))}
             currentUserId={session.user.id}
           />
         </div>
