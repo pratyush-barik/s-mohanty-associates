@@ -1264,6 +1264,9 @@ export default function BankReportBuilder({
         r.drawRichTextBlock([{ text: 'Ref: ' }, { text: fields.refNo || '________', bold: true }]);
       }
       r.advanceCursor(6);
+      if (typeof (r as any).drawContent === 'function') {
+        await (r as any).drawContent();
+      } else {
       r.drawCenteredTitle(titleText);
       r.advanceCursor(8);
 
@@ -1549,6 +1552,7 @@ export default function BankReportBuilder({
           { segments: [{ text: `Distress Sale Value (${fields.distressPct || '80'}%): Rs. ${formatIndianCurrency(distressValue)} (${rupeesInWords(distressValue)})`, bold: true }] },
         ]);
 
+      }
         // ── Signature ──
         r.drawSignatureBlock([
           { text: '_______________________________' },
