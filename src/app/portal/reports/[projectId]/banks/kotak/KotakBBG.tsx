@@ -82,6 +82,9 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     { id: 'kotak-section-8', title: '8. Valuation Financial Summary' },
     { id: 'kotak-section-9', title: '9. Remarks / Key Observations' },
     { id: 'kotak-section-10', title: '10. Valuer Declaration & Signoff' },
+    { id: 'section-documents', title: '11. Documents' },
+    { id: 'section-12', title: '12. Maps' },
+    { id: 'section-11', title: '13. Photographs' },
   ],
   defaultValues: {
     kotakBbgPurpose: 'To ascertain Market value, Realizable value & Distress value of the property for assisting Kotak Mahindra Bank Limited in making prudent banking decision',
