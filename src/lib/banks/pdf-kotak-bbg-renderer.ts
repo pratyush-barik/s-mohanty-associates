@@ -39,13 +39,25 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     this.drawSectionHeader('1. GENERAL DETAILS');
     const bankBranch = this.getF('kotakBbgBankBranch') === 'Custom' ? this.getF('kotakBbgBankBranchCustom') : this.getF('kotakBbgBankBranch');
+    
+    // Ensure legacy pre-fills are overwritten with new text
+    const oldBankName = 'Kotak Mahindra Bank';
+    const newBankName = 'Kotak Mahindra Bank Limited (KMBL)';
+    const bankNameField = this.getF('kotakBbgBankName');
+    const bankNameVal = (!bankNameField || bankNameField === oldBankName) ? newBankName : bankNameField;
+
+    const oldPurpose = 'To ascertain Market value, Realizable value & Distress value for bank decision-making';
+    const newPurpose = 'To ascertain Market value, Realizable value & Distress value of the property for assisting Kotak Mahindra Bank Limited in making prudent banking decision';
+    const purposeField = this.getF('kotakBbgPurpose');
+    const purposeVal = (!purposeField || purposeField === oldPurpose || purposeField === 'Market Value Assessment') ? newPurpose : purposeField;
+
     this.drawKeyValueRow([
-      { label: 'Bank Name', value: this.getF('kotakBbgBankName') || 'Kotak Mahindra Bank Limited (KMBL)' },
+      { label: 'Bank Name', value: bankNameVal },
       { label: 'Bank Branch / IFCS', value: bankBranch },
     ]);
     this.drawKeyValueRow([
       { label: 'Bank Reference / App No.', value: this.getF('kotakBbgBankRefNA') ? 'NA' : this.getF('kotakBbgBankRef') },
-      { label: 'Purpose of Valuation', value: this.getF('kotakBbgPurpose') || 'Market Value Assessment' },
+      { label: 'Purpose of Valuation', value: purposeVal },
     ]);
     const siteEng = this.getF('kotakBbgSiteEngineerNA') ? 'NA' : (this.getF('kotakBbgSiteEngineer') === 'Custom' ? this.getF('kotakBbgSiteEngineerCustom') : this.getF('kotakBbgSiteEngineer'));
     this.drawKeyValueRow([

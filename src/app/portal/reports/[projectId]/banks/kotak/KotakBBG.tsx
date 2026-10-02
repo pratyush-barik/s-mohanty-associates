@@ -74,11 +74,20 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         const valuerName = 'Er. S. Mohanty'; // Mock
         const borrowerName = fields.kotakBbgBorrowerName || '[Borrower Name from App]';
         
+        // Ensure legacy pre-fills are overwritten with new text
+        const oldBankName = 'Kotak Mahindra Bank';
+        const newBankName = 'Kotak Mahindra Bank Limited (KMBL)';
+        const bankNameVal = (!fields.kotakBbgBankName || fields.kotakBbgBankName === oldBankName) ? newBankName : fields.kotakBbgBankName;
+
+        const oldPurpose = 'To ascertain Market value, Realizable value & Distress value for bank decision-making';
+        const newPurpose = 'To ascertain Market value, Realizable value & Distress value of the property for assisting Kotak Mahindra Bank Limited in making prudent banking decision';
+        const purposeVal = (!fields.kotakBbgPurpose || fields.kotakBbgPurpose === oldPurpose || fields.kotakBbgPurpose === 'Market Value Assessment') ? newPurpose : fields.kotakBbgPurpose;
+        
         return (
           <div style={{ backgroundColor: '#f5f5f5', padding: '16px', borderRadius: '8px' }} className="space-y-4">
             <PrefillField
               label="Bank Name"
-              value={fields.kotakBbgBankName || 'Kotak Mahindra Bank Limited (KMBL)'}
+              value={bankNameVal}
               onChange={(val: string) => handleChange('kotakBbgBankName', val)}
               isReadOnly={isReadOnly}
               tooltip="Prefill from Client Mandate Data"
@@ -110,7 +119,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             <PrefillField
               label="Purpose of Valuation"
-              value={fields.kotakBbgPurpose || 'Market Value Assessment'}
+              value={purposeVal}
               onChange={(val: string) => handleChange('kotakBbgPurpose', val)}
               isReadOnly={isReadOnly}
               tooltip="Prefill from System Standard Template"
