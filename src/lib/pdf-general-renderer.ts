@@ -5,6 +5,47 @@
 
 import { PDFDocument, PDFPage, PDFFont, PDFImage, PDFEmbeddedPage, StandardFonts, rgb } from 'pdf-lib';
 
+// ─── Date formatting helper ─────────────────────────────────────────
+export function formatReportDate(d?: string | null | Date, fallback = '________'): string {
+  if (!d) return fallback;
+  if (d instanceof Date) {
+    if (isNaN(d.getTime())) return fallback;
+    const dd = String(d.getDate()).padStart(2, '0');
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  }
+  const t = String(d).trim();
+  if (!t) return fallback;
+
+  // Already DD/MM/YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(t)) return t;
+
+  // DD-MM-YYYY -> DD/MM/YYYY
+  if (/^(\d{1,2})-(\d{1,2})-(\d{4})$/.test(t)) {
+    const match = t.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (match) return `${match[1].padStart(2, '0')}/${match[2].padStart(2, '0')}/${match[3]}`;
+  }
+
+  // YYYY-MM-DD or YYYY/MM/DD (with optional ISO time like 2026-09-10T12:00:00Z)
+  const isoMatch = t.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (isoMatch) {
+    const [, yyyy, mm, dd] = isoMatch;
+    return `${dd.padStart(2, '0')}/${mm.padStart(2, '0')}/${yyyy}`;
+  }
+
+  // Fallback to JS Date parsing
+  const parsed = new Date(t);
+  if (!isNaN(parsed.getTime())) {
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    const yyyy = parsed.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;
+  }
+
+  return t || fallback;
+}
+
 // ─── Color helpers ──────────────────────────────────────────────────
 export function hexToRgb(hex?: string | null) {
   if (!hex || typeof hex !== 'string') return rgb(0, 0, 0);

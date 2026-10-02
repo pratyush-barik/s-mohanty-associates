@@ -6,7 +6,7 @@ import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBu
 import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
-import { PDFGeneralRenderer } from '@/lib/pdf-general-renderer';
+import { PDFGeneralRenderer, formatReportDate } from '@/lib/pdf-general-renderer';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
