@@ -78,7 +78,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
           <div style={{ backgroundColor: '#f5f5f5', padding: '16px', borderRadius: '8px' }} className="space-y-4">
             <PrefillField
               label="Bank Name"
-              value={fields.kotakBbgBankName || 'Kotak Mahindra Bank'}
+              value={fields.kotakBbgBankName || 'Kotak Mahindra Bank Limited (KMBL)'}
               onChange={(val: string) => handleChange('kotakBbgBankName', val)}
               isReadOnly={isReadOnly}
               tooltip="Prefill from Client Mandate Data"
@@ -1434,7 +1434,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
         const siteVisitDate = fields.kotakBbgDateOfSiteVisit || '[Date from Section 1]';
-        const clausesText = `I hereby declare that the information provided in this report is true and correct to the best of my knowledge. The valuation is strictly for bank internal use based on current market trends and visible site conditions as of ${siteVisitDate}.\n\n1. I have not withheld any material information that could affect the valuation.\n2. I have personally inspected the property and verified its physical existence.\n3. I have no direct or indirect interest in the property being valued.\n4. My liability is limited as per standard banking terms and the scope of work defined by Kotak Mahindra Bank.`;
+        const clausesText = `I hereby declare that the information provided in this report is true and correct to the best of my knowledge. The valuation is strictly for bank internal use based on current market trends and visible site conditions as of ${siteVisitDate}.\n\n1. I have not withheld any material information that could affect the valuation.\n2. I have personally inspected the property and verified its physical existence.\n3. I have no direct or indirect interest in the property being valued.\n4. My liability is limited as per standard banking terms and the scope of work defined by Kotak Mahindra Bank Limited (KMBL).`;
         
         const today = new Date().toISOString().split('T')[0];
         const issueDateVal = fields.kotakBbgReportIssueDate || today;

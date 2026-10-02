@@ -40,7 +40,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     this.drawSectionHeader('1. GENERAL DETAILS');
     const bankBranch = this.getF('kotakBbgBankBranch') === 'Custom' ? this.getF('kotakBbgBankBranchCustom') : this.getF('kotakBbgBankBranch');
     this.drawKeyValueRow([
-      { label: 'Bank Name', value: this.getF('kotakBbgBankName') || 'Kotak Mahindra Bank' },
+      { label: 'Bank Name', value: this.getF('kotakBbgBankName') || 'Kotak Mahindra Bank Limited (KMBL)' },
       { label: 'Bank Branch / IFCS', value: bankBranch },
     ]);
     this.drawKeyValueRow([
