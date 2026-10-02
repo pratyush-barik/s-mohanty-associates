@@ -153,14 +153,15 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               tooltip="Prefill from System Standard Template"
             />
             
-            <PrefillField
-              label="Date of Valuation"
-              value={fields.kotakBbgDateOfValuation || today}
-              onChange={(val: string) => handleChange('kotakBbgDateOfValuation', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Prefill from System Current Date"
-              type="date"
-            />
+            <Field label="Date of Valuation">
+              <input
+                type="date"
+                className={inputCls}
+                value={fields.kotakBbgDateOfValuation || today}
+                onChange={e => handleChange('kotakBbgDateOfValuation', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
 
             <PrefillField
               label="Name of the Valuer"
@@ -228,14 +229,15 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             </Field>
 
-            <PrefillField
-              label="Date of Technical Site Visit"
-              value={fields.kotakBbgDateOfSiteVisit || today}
-              onChange={(val: string) => handleChange('kotakBbgDateOfSiteVisit', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Prefill from System Current Date"
-              type="date"
-            />
+            <Field label="Date of Technical Site Visit">
+              <input
+                type="date"
+                className={inputCls}
+                value={fields.kotakBbgDateOfSiteVisit || today}
+                onChange={e => handleChange('kotakBbgDateOfSiteVisit', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
             
             <Field label="Person Met at Site & Contact Details">
               <div className="p-3 bg-white bg-opacity-50 border border-gray-200 rounded space-y-4">
@@ -1598,14 +1600,15 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             </Field>
             
-            <PrefillField
-              label="Report Issue Date"
-              value={issueDateVal}
-              onChange={(val: string) => handleChange('kotakBbgReportIssueDate', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Prefill from System Current Date"
-              type="date"
-            />
+            <Field label="Report Issue Date">
+              <input
+                type="date"
+                className={inputCls}
+                value={issueDateVal}
+                onChange={e => handleChange('kotakBbgReportIssueDate', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
 
             <Field label="Report Issue Place">
               <div title="Prefill from Valuer Profile">
