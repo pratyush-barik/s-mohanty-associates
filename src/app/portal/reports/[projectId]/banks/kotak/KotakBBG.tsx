@@ -132,14 +132,16 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
             </Field>
 
             <Field label="Bank Reference / Application No.">
-              <div className="flex items-center space-x-2" title="Auto-filled from Project Case ID (permanently locked)">
+              <div className="relative mt-1" title="Auto-filled from Project Case ID (permanently locked)">
                 <input
                   type="text"
-                  className={inputCls + ' flex-1 bg-gray-100 cursor-not-allowed'}
+                  className={`${inputCls} pr-8 bg-gray-100 cursor-not-allowed text-gray-700`}
                   value={bankRefVal}
                   disabled
                 />
-                <span className="text-gray-400 text-lg" title="Locked — derived from Project Case ID">🔒</span>
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Locked — derived from Project Case ID">
+                  <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                </div>
               </div>
             </Field>
 
