@@ -56,7 +56,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Bank Branch / IFCS', value: bankBranch },
     ]);
     this.drawKeyValueRow([
-      { label: 'Bank Reference / App No.', value: this.getF('kotakBbgBankRefNA') ? 'NA' : this.getF('kotakBbgBankRef') },
+      { label: 'Bank Reference / App No.', value: this.getF('projectCode') || '' },
       { label: 'Purpose of Valuation', value: purposeVal },
     ]);
     const siteEng = this.getF('kotakBbgSiteEngineerNA') ? 'NA' : (this.getF('kotakBbgSiteEngineer') === 'Custom' ? this.getF('kotakBbgSiteEngineerCustom') : this.getF('kotakBbgSiteEngineer'));

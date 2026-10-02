@@ -69,7 +69,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
       title: 'General Details',
       number: 1,
       defaultOpen: true,
-      render: (fields, handleChange, isReadOnly) => {
+      render: (fields, handleChange, isReadOnly, projectCode) => {
         const today = new Date().toISOString().split('T')[0];
         const valuerName = 'Er. S. Mohanty'; // Mock
         const borrowerName = fields.kotakBbgBorrowerName || '[Borrower Name from App]';
@@ -82,6 +82,9 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         const oldPurpose = 'To ascertain Market value, Realizable value & Distress value for bank decision-making';
         const newPurpose = 'To ascertain Market value, Realizable value & Distress value of the property for assisting Kotak Mahindra Bank Limited in making prudent banking decision';
         const purposeVal = (!fields.kotakBbgPurpose || fields.kotakBbgPurpose === oldPurpose || fields.kotakBbgPurpose === 'Market Value Assessment') ? newPurpose : fields.kotakBbgPurpose;
+
+        // Bank Reference is permanently locked to the project case ID
+        const bankRefVal = projectCode || '';
         
         return (
           <div style={{ backgroundColor: '#f5f5f5', padding: '16px', borderRadius: '8px' }} className="space-y-4">
@@ -106,14 +109,14 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
             </Field>
 
             <Field label="Bank Reference / Application No.">
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm">
-                  <input type="checkbox" checked={fields.kotakBbgBankRefNA || false} onChange={e => handleChange('kotakBbgBankRefNA', e.target.checked)} disabled={isReadOnly} />
-                  <span>Not Applicable (NA)</span>
-                </label>
-                {!fields.kotakBbgBankRefNA && (
-                  <input type="text" className={inputCls} placeholder="Ref/App No." value={fields.kotakBbgBankRef || ''} onChange={e => handleChange('kotakBbgBankRef', e.target.value)} disabled={isReadOnly} />
-                )}
+              <div className="flex items-center space-x-2" title="Auto-filled from Project Case ID (permanently locked)">
+                <input
+                  type="text"
+                  className={inputCls + ' flex-1 bg-gray-100 cursor-not-allowed'}
+                  value={bankRefVal}
+                  disabled
+                />
+                <span className="text-gray-400 text-lg" title="Locked — derived from Project Case ID">🔒</span>
               </div>
             </Field>
 
