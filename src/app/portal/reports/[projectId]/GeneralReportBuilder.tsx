@@ -13,6 +13,172 @@ import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities'
 // @ts-ignore
 import * as XLSX from 'xlsx';
 
+// ─── Annexure Types & Helpers ──────────────────────────────────────────
+export interface AnnexureItem {
+  id: string;
+  label: string;
+  title?: string;
+  category?: string;
+  excelFileUrl: string;
+  excelFileName: string;
+  parsedData?: {
+    headers: string[];
+    rows: string[][];
+    allRows?: string[][];
+    merges?: { sr: number; sc: number; er: number; ec: number }[];
+    colWidths?: number[];
+  };
+}
+
+export function reorderAndLabelAnnexures(
+  annexures: AnnexureItem[],
+  annexureRef?: string,
+  legalAnnexureRef?: string,
+  annexureEnabled?: boolean,
+  legalAnnexureEnabled?: boolean
+): AnnexureItem[] {
+  const technicalItem = (annexureEnabled && annexureRef)
+    ? annexures.find(a => a.id === annexureRef)
+    : undefined;
+
+  const legalItem = (legalAnnexureEnabled && legalAnnexureRef)
+    ? annexures.find(a => a.id === legalAnnexureRef)
+    : undefined;
+
+  const otherItems = (annexures || []).filter(
+    a => a.id !== technicalItem?.id && a.id !== legalItem?.id
+  );
+
+  const ordered: AnnexureItem[] = [];
+  if (technicalItem) ordered.push(technicalItem);
+  if (legalItem) ordered.push(legalItem);
+  ordered.push(...otherItems);
+
+  return ordered.map((item, index) => ({
+    ...item,
+    label: String.fromCharCode(65 + index),
+  }));
+}
+
+// ─── Dynamic Floor Naming ──────────────────────────────────────────────
+const ORDINALS_MAP: Record<number, string> = {
+  1: 'First', 2: 'Second', 3: 'Third', 4: 'Fourth', 5: 'Fifth',
+  6: 'Sixth', 7: 'Seventh', 8: 'Eighth', 9: 'Ninth', 10: 'Tenth',
+  11: 'Eleventh', 12: 'Twelfth', 13: 'Thirteenth', 14: 'Fourteenth', 15: 'Fifteenth',
+  16: 'Sixteenth', 17: 'Seventeenth', 18: 'Eighteenth', 19: 'Nineteenth', 20: 'Twentieth',
+  30: 'Thirtieth', 40: 'Fortieth', 50: 'Fiftieth', 60: 'Sixtieth', 70: 'Seventieth',
+  80: 'Eightieth', 90: 'Ninetieth',
+};
+const TENS_WORDS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+const ONES_WORDS = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+
+export function numberToOrdinalWord(num: number): string {
+  if (num <= 0) return 'Ground';
+  if (ORDINALS_MAP[num]) return ORDINALS_MAP[num];
+
+  if (num < 100) {
+    const tens = Math.floor(num / 10);
+    const units = num % 10;
+    return `${TENS_WORDS[tens]} ${ORDINALS_MAP[units] || `${units}th`}`;
+  }
+
+  if (num < 1000) {
+    const hundreds = Math.floor(num / 100);
+    const remainder = num % 100;
+    if (remainder === 0) return `${ONES_WORDS[hundreds]} Hundredth`;
+    return `${ONES_WORDS[hundreds]} Hundred ${numberToOrdinalWord(remainder)}`;
+  }
+
+  return `${num}th`;
+}
+
+export function getFloorName(index: number): string {
+  if (index <= 0) return 'Ground Floor';
+  return `${numberToOrdinalWord(index)} Floor`;
+}
+
+// ─── Field Visit Info & Helpers ─────────────────────────────────────────
+export interface FieldVisitInfo {
+  dateStr: string;
+  date?: string;
+  rawDate?: Date;
+  engineerName?: string;
+  source: 'first_photo' | 'prefill' | 'today';
+}
+
+export function getEarliestFieldVisit(bucketImages?: any[], prefill?: any): FieldVisitInfo {
+  if (Array.isArray(bucketImages) && bucketImages.length > 0) {
+    const valid = bucketImages
+      .map(img => {
+        const d = img?.createdAt ? new Date(img.createdAt) : null;
+        return {
+          img,
+          date: d && !isNaN(d.getTime()) ? d : null,
+          name: img?.employee?.name || img?.employeeId || ''
+        };
+      })
+      .filter(item => item.date !== null)
+      .sort((a, b) => a.date!.getTime() - b.date!.getTime());
+
+    if (valid.length > 0) {
+      const dateFormatted = formatReportDate(valid[0].date!);
+      return {
+        dateStr: dateFormatted,
+        date: dateFormatted,
+        rawDate: valid[0].date!,
+        engineerName: valid[0].name,
+        source: 'first_photo'
+      };
+    }
+  }
+
+  const preDate = prefill?.fieldVisitDate || prefill?.inspectionDate || prefill?.dateOfInspection || prefill?.dateOfVisit;
+  if (preDate) {
+    const dateFormatted = formatReportDate(preDate);
+    return {
+      dateStr: dateFormatted,
+      date: dateFormatted,
+      engineerName: prefill?.assignedEngineerName || prefill?.visitingEngineer || prefill?.engineerName || '',
+      source: 'prefill'
+    };
+  }
+
+  const todayFormatted = formatReportDate(new Date());
+  return {
+    dateStr: todayFormatted,
+    date: todayFormatted,
+    source: 'today'
+  };
+}
+
+export function toISODate(d?: string | null | Date): string {
+  if (!d) return '';
+  if (d instanceof Date) {
+    if (isNaN(d.getTime())) return '';
+    return d.toISOString().split('T')[0];
+  }
+  const t = String(d).trim();
+  if (!t || t === 'NA' || t === 'N/A') return '';
+  const ddmmyyyy = t.match(/^(\d{1,2})[\/\.](\d{1,2})[\/\.](\d{4})/);
+  if (ddmmyyyy) {
+    const [, dd, mm, yyyy] = ddmmyyyy;
+    return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+  }
+  const dd_mm_yyyy = t.match(/^(\d{1,2})-(\d{1,2})-(\d{4})/);
+  if (dd_mm_yyyy) {
+    const [, dd, mm, yyyy] = dd_mm_yyyy;
+    return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+  }
+  const yyyymmdd = t.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/);
+  if (yyyymmdd) {
+    const [, yyyy, mm, dd] = yyyymmdd;
+    return `${yyyy}-${mm.padStart(2, '0')}-${dd.padStart(2, '0')}`;
+  }
+  return '';
+}
+
+const fmtDate = (d?: string | null) => formatReportDate(d, '________');
+
 // ─── Types ─────────────────────────────────────────────────────────
 interface FloorRow {
   id: string;
@@ -565,6 +731,410 @@ function Field({ label, children, span = 1 }: { label: string; children: React.R
 const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] disabled:bg-[#f1f3f5] disabled:text-[#6c757d] read-only:bg-[#f1f3f5] read-only:text-[#495057] read-only:cursor-not-allowed";
 const selectCls = inputCls;
 
+export function EarliestFieldVisitBadge({
+  fieldVisit,
+  visitInfo,
+  currentValue,
+  onSync,
+  onApply,
+  isReadOnly = false,
+  className = '',
+}: {
+  fieldVisit?: FieldVisitInfo | null;
+  visitInfo?: FieldVisitInfo | null;
+  currentValue?: string;
+  onSync?: (dateStr: string) => void;
+  onApply?: (dateStr: string) => void;
+  isReadOnly?: boolean;
+  className?: string;
+}) {
+  const visit = fieldVisit || visitInfo;
+  if (!visit || (!visit.dateStr && !visit.date)) return null;
+  const targetDate = visit.dateStr || visit.date || '';
+  const isDifferent = currentValue && currentValue.trim() !== targetDate.trim();
+  const syncFn = onSync || onApply;
+
+  return (
+    <div className={`flex flex-wrap items-center gap-1.5 text-[11px] text-blue-700 bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-md font-medium ${className || 'mt-1'}`}>
+      <span>
+        ⚡ Earliest Field Visit: <strong>{targetDate}</strong>
+        {visit.engineerName ? ` (${visit.engineerName})` : ''}
+      </span>
+      {!isReadOnly && isDifferent && syncFn && (
+        <button
+          type="button"
+          onClick={() => syncFn(targetDate)}
+          className="ml-1 text-blue-800 hover:text-blue-950 underline font-semibold cursor-pointer"
+          title="Restore field engineer visit date"
+        >
+          ↺ Use Field Date
+        </button>
+      )}
+    </div>
+  );
+}
+
+export function BaseDateInput({
+  value,
+  onChange,
+  label,
+  placeholder = 'DD/MM/YYYY',
+  disabled = false,
+  span,
+  className = '',
+  max,
+  min,
+}: {
+  value?: string | null;
+  onChange: (val: string) => void;
+  label?: React.ReactNode;
+  placeholder?: string;
+  disabled?: boolean;
+  span?: number;
+  className?: string;
+  max?: string;
+  min?: string;
+}) {
+  const hiddenDateRef = useRef<HTMLInputElement>(null);
+  const strVal = value || '';
+  const isoVal = toISODate(strVal);
+
+  const handleOpenPicker = () => {
+    if (disabled) return;
+    try {
+      if (hiddenDateRef.current && typeof (hiddenDateRef.current as any).showPicker === 'function') {
+        (hiddenDateRef.current as any).showPicker();
+      } else {
+        hiddenDateRef.current?.click();
+      }
+    } catch {
+      hiddenDateRef.current?.click();
+    }
+  };
+
+  const inputContent = (
+    <div className="relative flex items-center w-full group">
+      <input
+        type="text"
+        className={`${inputCls} pr-10 ${className}`.trim()}
+        value={strVal}
+        onChange={e => onChange(e.target.value)}
+        onBlur={() => {
+          if (strVal && strVal.trim() && strVal !== 'NA' && strVal !== 'N/A') {
+            const formatted = formatReportDate(strVal);
+            if (formatted && formatted !== '________' && formatted !== strVal) {
+              onChange(formatted);
+            }
+          }
+        }}
+        disabled={disabled}
+        placeholder={placeholder}
+      />
+      {!disabled ? (
+        <div className="absolute right-1.5 flex items-center">
+          <input
+            ref={hiddenDateRef}
+            type="date"
+            value={isoVal}
+            max={max ? toISODate(max) : undefined}
+            min={min ? toISODate(min) : undefined}
+            tabIndex={-1}
+            aria-hidden="true"
+            className="opacity-0 absolute pointer-events-none w-0 h-0"
+            onChange={e => {
+              if (e.target.value) {
+                onChange(formatReportDate(e.target.value));
+              }
+            }}
+          />
+          <button
+            type="button"
+            onClick={handleOpenPicker}
+            title="Choose date from calendar"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer flex items-center justify-center"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </button>
+        </div>
+      ) : (
+        <div className="absolute right-2.5 flex items-center pointer-events-none text-slate-300">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+      )}
+    </div>
+  );
+
+  if (label) {
+    return (
+      <Field label={typeof label === 'string' ? label : ''} span={span}>
+        {inputContent}
+      </Field>
+    );
+  }
+  return inputContent;
+}
+
+export function BasePhotographsSection({
+  propertyImages = [],
+  propertyImageNames = [],
+  isReadOnly = false,
+  uploading = false,
+  bucketCount = 0,
+  onOpenBucketPicker,
+  onUploadImages,
+  onRemoveImage,
+  onImageNameChange,
+  onReorderImages,
+  sectionNumber = 11,
+  sectionId = 'section-11',
+  title = 'Property Photographs',
+  withoutSectionWrapper = false,
+  defaultOpen = false,
+}: {
+  propertyImages?: string[];
+  propertyImageNames?: string[];
+  isReadOnly?: boolean;
+  uploading?: boolean | string;
+  bucketCount?: number;
+  onOpenBucketPicker?: () => void;
+  onUploadImages?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onRemoveImage?: (idx: number) => void;
+  onImageNameChange?: (idx: number, name: string) => void;
+  onReorderImages?: (newImages: string[], newNames: string[]) => void;
+  sectionNumber?: number | string;
+  sectionId?: string;
+  title?: string;
+  withoutSectionWrapper?: boolean;
+  defaultOpen?: boolean;
+}) {
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  const isPhotosUploading = uploading === true || uploading === 'photos' || uploading === 'propertyImages';
+  const validPhotos = propertyImages.filter(Boolean);
+
+  const movePhoto = (fromIdx: number, toIdx: number) => {
+    if (isReadOnly || !onReorderImages) return;
+    if (fromIdx < 0 || fromIdx >= propertyImages.length) return;
+    if (toIdx < 0 || toIdx >= propertyImages.length) return;
+    if (fromIdx === toIdx) return;
+
+    const reorderedImgs = [...propertyImages];
+    const reorderedNames = [...(propertyImageNames || [])];
+
+    while (reorderedNames.length < reorderedImgs.length) {
+      reorderedNames.push('');
+    }
+
+    const [movedImg] = reorderedImgs.splice(fromIdx, 1);
+    const [movedName] = reorderedNames.splice(fromIdx, 1);
+
+    reorderedImgs.splice(toIdx, 0, movedImg);
+    reorderedNames.splice(toIdx, 0, movedName);
+
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+    onReorderImages(reorderedImgs, reorderedNames);
+  };
+
+  const handleDragStart = (e: React.DragEvent, idx: number) => {
+    if (isReadOnly) return;
+    try {
+      e.dataTransfer.setData('text/plain', String(idx));
+      e.dataTransfer.effectAllowed = 'move';
+    } catch {
+      /* ignore */
+    }
+    setDraggedIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    try {
+      e.dataTransfer.dropEffect = 'move';
+    } catch {
+      /* ignore */
+    }
+    if (draggedIdx === null || draggedIdx === idx) return;
+    if (dragOverIdx !== idx) {
+      setDragOverIdx(idx);
+    }
+  };
+
+  const handleDragLeave = () => {
+    setDragOverIdx(null);
+  };
+
+  const handleDrop = (e: React.DragEvent, targetIdx: number) => {
+    e.preventDefault();
+    let fromIdx = draggedIdx;
+    try {
+      const data = e.dataTransfer.getData('text/plain');
+      if (data !== '') {
+        const parsed = parseInt(data, 10);
+        if (!isNaN(parsed)) fromIdx = parsed;
+      }
+    } catch {
+      /* fallback */
+    }
+    setDraggedIdx(null);
+    setDragOverIdx(null);
+
+    if (fromIdx === null || isNaN(fromIdx) || fromIdx === targetIdx) {
+      return;
+    }
+    movePhoto(fromIdx, targetIdx);
+  };
+
+  const content = (
+    <div className="space-y-4">
+      {propertyImages.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {propertyImages.map((url, idx) => {
+            const rawLabel = propertyImageNames?.[idx];
+            const currentLabel = (rawLabel !== undefined && rawLabel !== null) ? rawLabel : '';
+            const isDragging = draggedIdx === idx;
+            const isDragOver = dragOverIdx === idx;
+            const canDrag = !isReadOnly && propertyImages.length > 1;
+
+            return (
+              <div
+                key={`${url}-${idx}`}
+                draggable={canDrag}
+                onDragStart={(e) => handleDragStart(e, idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e) => handleDrop(e, idx)}
+                onDragEnd={() => {
+                  setDraggedIdx(null);
+                  setDragOverIdx(null);
+                }}
+                className={`space-y-2 p-3 border rounded-2xl bg-white shadow-xs transition-all duration-200 ${
+                  isDragging ? 'opacity-40 scale-[0.98]' : 'opacity-100'
+                } ${
+                  isDragOver
+                    ? 'border-2 border-dashed border-[#b8860b] ring-2 ring-[#b8860b]/20 shadow-md bg-amber-50/20'
+                    : 'border-[#dee2e6] hover:border-slate-300'
+                }`}
+              >
+                <div className="flex items-center justify-between gap-1.5 pb-1 border-b border-slate-100">
+                  <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                    <span
+                      className="px-2 py-0.5 rounded bg-[#1e3a5f] text-white text-[11px] font-bold select-none shrink-0 flex items-center gap-1 shadow-2xs"
+                      title="Drag photo card to reposition or use arrow buttons"
+                    >
+                      {canDrag && <span className="cursor-grab active:cursor-grabbing text-slate-300">⠿</span>}
+                      <span>#{idx + 1}</span>
+                    </span>
+                    <input
+                      type="text"
+                      className="w-full text-xs font-semibold text-[#0f2038] bg-transparent border-b border-transparent hover:border-slate-300 focus:border-[#b8860b] focus:bg-slate-50 rounded px-1 py-0.5 outline-none truncate transition-colors"
+                      value={currentLabel}
+                      onChange={(e) => onImageNameChange?.(idx, e.target.value)}
+                      placeholder="Site Picture"
+                      disabled={isReadOnly}
+                    />
+                  </div>
+
+                  {!isReadOnly && onRemoveImage && (
+                    <div className="flex items-center gap-1 shrink-0">
+                      {onReorderImages && propertyImages.length > 1 && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(idx, idx - 1)}
+                            disabled={idx === 0}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold shadow-2xs cursor-pointer"
+                            title="Move Photo Left / Previous"
+                          >
+                            ◀
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(idx, idx + 1)}
+                            disabled={idx === propertyImages.length - 1}
+                            className="w-7 h-7 flex items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 hover:text-slate-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all text-xs font-bold shadow-2xs cursor-pointer"
+                            title="Move Photo Right / Next"
+                          >
+                            ▶
+                          </button>
+                        </>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => onRemoveImage(idx)}
+                        className="w-7 h-7 flex items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-colors text-xs font-bold shadow-2xs cursor-pointer ml-0.5"
+                        title="Remove Photo"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="relative rounded-xl overflow-hidden border border-[#dee2e6] bg-slate-100 h-52 flex items-center justify-center cursor-grab active:cursor-grabbing">
+                  <img src={url} alt={currentLabel || 'Site Picture'} className="w-full h-full object-cover pointer-events-none select-none" />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {!isReadOnly && (
+        <div className={`flex flex-wrap items-center justify-between gap-3 ${validPhotos.length > 0 ? 'pt-3 border-t border-slate-100' : ''}`}>
+          <div className="flex flex-wrap items-center gap-3">
+            <label className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#b8860b] text-[#b8860b] text-sm font-semibold cursor-pointer hover:bg-[#b8860b]/10 transition-all shadow-xs">
+              {isPhotosUploading ? '⏳ Uploading...' : '📷 Add Property Images'}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={onUploadImages}
+                disabled={isPhotosUploading}
+              />
+            </label>
+
+            {onOpenBucketPicker && (
+              <button
+                type="button"
+                onClick={onOpenBucketPicker}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-[#1e3a5f] text-[#1e3a5f] text-sm font-semibold hover:bg-[#1e3a5f]/10 transition-all cursor-pointer shadow-xs"
+              >
+                📁 Pick from Bucket {bucketCount > 0 ? `(${bucketCount})` : ''}
+              </button>
+            )}
+          </div>
+
+          <div
+            className={`text-xs font-semibold ${
+              validPhotos.length < 2 ? 'text-amber-600' : 'text-green-600'
+            }`}
+          >
+            {validPhotos.length} / 2 minimum uploaded
+            {validPhotos.length < 2 && ' — At least 2 photographs are required to submit.'}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  if (withoutSectionWrapper) {
+    return content;
+  }
+
+  return (
+    <Section title={title} number={sectionNumber} id={sectionId} defaultOpen={defaultOpen}>
+      {content}
+    </Section>
+  );
+}
+
 /** 3-Column Option Field matching sample report format:
  * Col1 = Label | Col2 = All Options (clickable) | Col3 = Selected Value */
 function OptionField({ label, options, value, onChange, disabled, customValue, onCustomChange, showCustomInput = false }: {
@@ -765,7 +1335,7 @@ function DocumentsSection({
   };
 
   return (
-    <Section title={title} number={sectionNumber} id={sectionId} defaultOpen={defaultOpen}>
+    <Section title={title || "DOCUMENTS"} number={sectionNumber ?? 12} id={sectionId} defaultOpen={defaultOpen}>
       <div className="space-y-4">
         {documentImages.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -3277,16 +3847,16 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           if (isFullWidth(annexure.parsedData.headers)) {
             headerCells = `<th colspan="${numCols}" style="border:1px solid #000;padding:4px 6px;font-family:${ff};font-size:10pt;font-weight:bold;background:${lblBg};text-align:left;">${annexure.parsedData.headers[0]}</th>`;
           } else {
-            headerCells = annexure.parsedData.headers.map(h =>
+            headerCells = annexure.parsedData.headers.map((h: string) =>
               `<th style="border:1px solid #000;padding:4px 6px;font-family:${ff};font-size:10pt;font-weight:bold;background:${lblBg};text-align:left;">${h}</th>`
             ).join('');
           }
 
-          const dataRows = annexure.parsedData.rows.map(row => {
+          const dataRows = annexure.parsedData.rows.map((row: string[]) => {
             if (isFullWidth(row)) {
               return `<tr><td colspan="${numCols}" style="border:1px solid #000;padding:3px 6px;font-family:${ff};font-size:10pt;">${row[0]}</td></tr>`;
             } else {
-              return `<tr>${row.map(cell =>
+              return `<tr>${row.map((cell: string) =>
                 `<td style="border:1px solid #000;padding:3px 6px;font-family:${ff};font-size:10pt;">${cell}</td>`
               ).join('')}</tr>`;
             }
@@ -3382,7 +3952,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             <BaseDateInput
               label="Date of Valuation Report"
               value={fields.dateOfValuation || ''}
-              onChange={val => handleChange('dateOfValuation', val)}
+              onChange={(val: string) => handleChange('dateOfValuation', val)}
               disabled={isReadOnly}
             />
             <Field label="Ref No. (Locked)">
@@ -3727,13 +4297,13 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
               <BaseDateInput
                 label="Date of Inspection"
                 value={fields.dateOfInspection || ''}
-                onChange={val => handleChange('dateOfInspection', val)}
+                onChange={(val: string) => handleChange('dateOfInspection', val)}
                 disabled={isReadOnly}
               />
               <EarliestFieldVisitBadge
                 fieldVisit={firstFieldAgentVisit}
                 currentValue={fields.dateOfInspection}
-                onSync={(d) => handleChange('dateOfInspection', d)}
+                onSync={(d: string) => handleChange('dateOfInspection', d)}
                 isReadOnly={isReadOnly}
               />
             </div>
@@ -4674,7 +5244,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           isReadOnly={isReadOnly}
           uploading={uploading}
           bucketCount={bucketImages?.length || 0}
-          onImageNameChange={(idx, name) => {
+          onImageNameChange={(idx: number, name: string) => {
             const updatedNames = [...(fields.propertyImageNames || [])];
             while (updatedNames.length <= idx) {
               updatedNames.push('');
@@ -4683,11 +5253,11 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             handleChange('propertyImageNames', updatedNames);
           }}
           onRemoveImage={removeImage}
-          onReorderImages={(newImages, newNames) => {
+          onReorderImages={(newImages: string[], newNames: string[]) => {
             handleChange('propertyImages', newImages);
             handleChange('propertyImageNames', newNames);
           }}
-          onUploadImages={(e) => handleFileUpload(e, 'propertyImages')}
+          onUploadImages={(e: React.ChangeEvent<HTMLInputElement>) => handleFileUpload(e, 'propertyImages')}
           onOpenBucketPicker={openBucketPicker}
           sectionNumber={isApartmentFlat ? 12 : 13}
           sectionId="section-photographs"

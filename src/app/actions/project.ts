@@ -1129,10 +1129,11 @@ export async function deleteBucketImage(imageId: string) {
     }
 
     // Drafting Lock Constraint
-    const draft = await prisma.reportDraft.findUnique({
+    const report = await prisma.report.findUnique({
       where: { projectId: image.project.id }
     });
-    if (draft) {
+    if (report && report.data) {
+      const draft = report.data as any;
       const isUsedInSketch = draft.sketchMapImage === image.url;
       const isUsedInLocation = draft.locationMapImage === image.url;
       let isUsedInPropertyPhotos = false;

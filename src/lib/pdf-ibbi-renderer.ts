@@ -58,6 +58,7 @@ interface DrawTextOptions {
   maxWidth?: number;
   underline?: boolean;
   indent?: number;
+  textColor?: string;
 }
 
 export class PDFIBBIRenderer {
