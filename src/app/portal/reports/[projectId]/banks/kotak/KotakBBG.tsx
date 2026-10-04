@@ -128,19 +128,8 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             </Field>
 
-            <Field label="Bank Branch / IFCS">
-              <select className={inputCls} value={fields.kotakBbgBankBranch || ''} onChange={e => handleChange('kotakBbgBankBranch', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select Branch</option>
-                <option value="Bhubaneswar Main">Bhubaneswar Main</option>
-                <option value="Cuttack Branch">Cuttack Branch</option>
-                <option value="Custom">Custom</option>
-              </select>
-              {fields.kotakBbgBankBranch === 'Custom' && (
-                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom branch/IFCS" value={fields.kotakBbgBankBranchCustom || ''} onChange={e => handleChange('kotakBbgBankBranchCustom', e.target.value)} disabled={isReadOnly} />
-              )}
-            </Field>
 
-            <Field label="Bank Reference / Application No.">
+            <Field label="Reference / Application No.">
               <div className="relative mt-1" title="Auto-filled from Project Case ID (permanently locked)">
                 <input
                   type="text"
