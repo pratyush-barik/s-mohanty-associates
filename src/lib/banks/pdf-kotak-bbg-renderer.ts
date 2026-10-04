@@ -53,11 +53,10 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: 'Bank Name', value: bankNameVal },
-      { label: 'Bank Branch / IFCS', value: bankBranch },
+      { label: 'Reference / Application No.', value: this.getF('projectCode') || '' },
     ]);
     this.drawKeyValueRow([
-      { label: 'Bank Reference / App No.', value: this.getF('projectCode') || '' },
-      { label: 'Purpose of Valuation', value: purposeVal },
+      { label: 'Purpose of Valuation', value: purposeVal, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     const siteEng = this.getF('kotakBbgSiteEngineerNA') ? 'NA' : (this.getF('kotakBbgSiteEngineer') === 'Custom' ? this.getF('kotakBbgSiteEngineerCustom') : this.getF('kotakBbgSiteEngineer'));
     this.drawKeyValueRow([
@@ -85,30 +84,73 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Person Met at Site & Contact Details', value: personMetStr, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     
-    this.drawSectionHeader('2. NATURE & SCOPE OF PROPERTY');
+    this.drawSectionHeader('2. DETAILS OF THE PROPERTY BEING APPRAISED');
     
-    const nature = this.getF('kotakBbgNatureOfProperty') === 'Custom' ? this.getF('kotakBbgNatureOfPropertyCustom') : this.getF('kotakBbgNatureOfProperty');
-    const occupancy = this.getF('kotakBbgOccupancyNA') ? 'NA' : (this.getF('kotakBbgOccupancy') === 'Custom' ? this.getF('kotakBbgOccupancyCustom') : this.getF('kotakBbgOccupancy'));
+    const tahasil = this.getF('kotakBbgTechTahasil') === 'Custom' ? this.getF('kotakBbgTechTahasilCustom') : this.getF('kotakBbgTechTahasil');
+    const techAddressParts = [];
+    if (this.getF('kotakBbgTechKhataNo')) techAddressParts.push(`Khata No.: ${this.getF('kotakBbgTechKhataNo')}`);
+    if (this.getF('kotakBbgTechPlotNo')) techAddressParts.push(`Plot No.: ${this.getF('kotakBbgTechPlotNo')}`);
+    if (this.getF('kotakBbgTechLandArea')) techAddressParts.push(`Area: ${this.getF('kotakBbgTechLandArea')} ${this.getF('kotakBbgTechLandAreaUnit') || ''}`.trim());
+    if (this.getF('kotakBbgTechMouza')) techAddressParts.push(`Mouza: ${this.getF('kotakBbgTechMouza')}`);
+    if (this.getF('kotakBbgTechPS')) techAddressParts.push(`PS: ${this.getF('kotakBbgTechPS')}`);
+    if (tahasil) techAddressParts.push(`Tahasil: ${tahasil}`);
+    if (this.getF('kotakBbgTechDistrict')) techAddressParts.push(`District: ${this.getF('kotakBbgTechDistrict')}`);
+    if (this.getF('kotakBbgTechState')) techAddressParts.push(`State: ${this.getF('kotakBbgTechState')}`);
+    if (this.getF('kotakBbgTechPinCode')) techAddressParts.push(`Pin Code: ${this.getF('kotakBbgTechPinCode')}`);
+    if (this.getF('kotakBbgTechLandMark')) techAddressParts.push(`Landmark: ${this.getF('kotakBbgTechLandMark')}`);
+    
+    const techAddress = techAddressParts.join(', ') || 'NA';
+    
     this.drawKeyValueRow([
-      { label: 'Nature of Property', value: nature },
-      { label: 'Present Use / Occupancy Status', value: occupancy },
+      { label: 'Technical Address of the Property', value: techAddress, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    let legalAddress = this.getF('kotakBbgLegalAddress');
+    if (this.getF('kotakBbgLegalAddressGenerate')) {
+      // Auto-generate it if the flag is true in the renderer as well
+      const legalParts = [];
+      if (this.getF('kotakBbgTechKhataNo')) legalParts.push(`Khata No. / Record of Rights: ${this.getF('kotakBbgTechKhataNo')}`);
+      if (this.getF('kotakBbgTechPlotNo')) legalParts.push(`Plot No. / Khasra No.: ${this.getF('kotakBbgTechPlotNo')}`);
+      if (this.getF('kotakBbgTechLandArea')) legalParts.push(`Total Land Area: ${this.getF('kotakBbgTechLandArea')} ${this.getF('kotakBbgTechLandAreaUnit') || ''}`.trim());
+      if (this.getF('kotakBbgTechMouza')) legalParts.push(`Mouza / Village: ${this.getF('kotakBbgTechMouza')}`);
+      if (this.getF('kotakBbgTechPS')) legalParts.push(`Police Station (PS): ${this.getF('kotakBbgTechPS')}`);
+      if (tahasil) legalParts.push(`Tahasil / Mandal: ${tahasil}`);
+      if (this.getF('kotakBbgTechDistrict')) legalParts.push(`District: ${this.getF('kotakBbgTechDistrict')}`);
+      if (this.getF('kotakBbgTechState')) legalParts.push(`State: ${this.getF('kotakBbgTechState')}`);
+      if (this.getF('kotakBbgTechPinCode')) legalParts.push(`Pin Code: ${this.getF('kotakBbgTechPinCode')}`);
+      legalAddress = legalParts.join(', ') || 'NA';
+    }
+
+    this.drawKeyValueRow([
+      { label: 'Legal Address of the Property', value: legalAddress || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    
+    const lat = this.getF('kotakBbgLatitude');
+    const lng = this.getF('kotakBbgLongitude');
+    const coords = (lat && lng) ? `${lat}, ${lng}` : 'NA';
+
+    const nature = this.getF('kotakBbgNatureOfProperty') === 'Custom' ? this.getF('kotakBbgNatureOfPropertyCustom') : this.getF('kotakBbgNatureOfProperty');
+    
+    this.drawKeyValueRow([
+      { label: 'Google Coordinates', value: coords },
+      { label: 'Nature of the property', value: nature || 'NA' },
     ]);
     
     const tenureType = this.getF('kotakBbgTenure') === 'Custom' ? this.getF('kotakBbgTenureCustom') : this.getF('kotakBbgTenure');
-    let tenureDetails = tenureType;
-    if (this.getF('kotakBbgTenure') === 'Leasehold') {
-      const remaining = this.getF('kotakBbgLeaseRemainingYears');
-      const expiry = this.getF('kotakBbgLeaseExpiryDate');
-      if (remaining || expiry) tenureDetails += ` (${remaining ? remaining + ' yrs left' : ''}${remaining && expiry ? ', ' : ''}${expiry ? 'Expiry: ' + expiry : ''})`;
-    }
+    const isFreehold = tenureType === 'Freehold';
     
     this.drawKeyValueRow([
-      { label: 'Type of Ownership', value: tenureDetails },
-      { label: 'Scope of Valuation (Share %)', value: this.getF('kotakBbgScopeOfValuation') || '100%' },
+      { label: 'Tenure of the property', value: tenureType || 'NA' },
+      { label: 'Are leasehold rights transferable?', value: isFreehold ? 'NA' : (this.getF('kotakBbgLeaseTransferableNA') ? 'NA' : (this.getF('kotakBbgLeaseTransferable') === 'Custom' ? this.getF('kotakBbgLeaseTransferableCustom') : this.getF('kotakBbgLeaseTransferable'))) },
     ]);
-    
+
     this.drawKeyValueRow([
-      { label: 'Brief Description of the Property', value: this.getF('kotakBbgPropertyDescriptionNA') ? 'NA' : this.getF('kotakBbgPropertyDescription'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Important lease terms', value: isFreehold ? 'NA' : (this.getF('kotakBbgLeaseTermsNA') ? 'NA' : this.getF('kotakBbgLeaseTerms')), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    const occupancy = this.getF('kotakBbgOccupancyNA') ? 'NA' : (this.getF('kotakBbgOccupancy') === 'Custom' ? this.getF('kotakBbgOccupancyCustom') : this.getF('kotakBbgOccupancy'));
+    this.drawKeyValueRow([
+      { label: 'Occupancy details', value: occupancy || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     
     this.drawSectionHeader('3. SITE & SURROUNDING DETAILS');
