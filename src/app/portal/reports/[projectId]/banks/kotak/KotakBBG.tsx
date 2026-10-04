@@ -98,7 +98,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
       render: (fields, handleChange, isReadOnly, projectCode) => {
         const today = new Date().toISOString().split('T')[0];
         const valuerName = 'Er. S. Mohanty'; // Mock
-        const borrowerName = fields.kotakBbgBorrowerName || '[Borrower Name from App]';
+        const borrowerName = fields.kotakBbgBorrowerName != null && fields.kotakBbgBorrowerName !== undefined ? fields.kotakBbgBorrowerName : '[Borrower Name from App]';
         
         // Ensure legacy pre-fills are overwritten with new text
         const oldBankName = 'Kotak Mahindra Bank';
@@ -107,7 +107,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
         const oldPurpose = 'To ascertain Market value, Realizable value & Distress value for bank decision-making';
         const newPurpose = 'To ascertain Market value, Realizable value & Distress value of the property for assisting Kotak Mahindra Bank Limited in making prudent banking decision';
-        const purposeVal = (!fields.kotakBbgPurpose || fields.kotakBbgPurpose === oldPurpose || fields.kotakBbgPurpose === 'Market Value Assessment') ? newPurpose : fields.kotakBbgPurpose;
+        const purposeVal = (fields.kotakBbgPurpose == null || fields.kotakBbgPurpose === undefined || fields.kotakBbgPurpose === oldPurpose || fields.kotakBbgPurpose === 'Market Value Assessment') ? newPurpose : fields.kotakBbgPurpose;
 
         // Bank Reference is permanently locked to the project case ID
         const bankRefVal = projectCode || '';
@@ -185,7 +185,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
             {(() => {
               const siteEngineerPrefillVal = fields.kotakBbgSiteEngineerNA
                 ? 'NA'
-                : (fields.kotakBbgSiteEngineer || fields.nameOfEngineerVisitingProperty || '');
+                : (fields.kotakBbgSiteEngineer != null && fields.kotakBbgSiteEngineer !== undefined ? fields.kotakBbgSiteEngineer : (fields.nameOfEngineerVisitingProperty || ''));
               return (
                 <PrefillField
                   label={
