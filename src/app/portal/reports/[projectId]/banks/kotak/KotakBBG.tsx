@@ -11,7 +11,7 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
 
   const labelWithToggle = (
     <div className="flex justify-between items-center w-full">
-      <span>{label}</span>
+      <div className="flex-1 flex items-center pr-4">{label}</div>
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -172,13 +172,15 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               />
             </Field>
 
-            <PrefillField
-              label="Name of the Valuer"
-              value={fields.kotakBbgValuerName || valuerName}
-              onChange={(val: string) => handleChange('kotakBbgValuerName', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Prefill from Valuer Profile"
-            />
+            <Field label="Name of the Valuer">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.kotakBbgValuerName || ''}
+                onChange={e => handleChange('kotakBbgValuerName', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
 
             <Field label={
     <div className="flex items-center justify-between w-full">
