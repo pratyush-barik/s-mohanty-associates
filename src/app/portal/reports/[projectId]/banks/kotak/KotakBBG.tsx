@@ -182,31 +182,28 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               />
             </Field>
 
-            <Field label={
-    <div className="flex items-center justify-between w-full">
-      <span>Site Engineer Inspecting Property</span>
-      <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case">
-        <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.kotakBbgSiteEngineerNA} onChange={e => handleChange('kotakBbgSiteEngineerNA', e.target.checked)} disabled={isReadOnly} />
-        <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>
-      </label>
-    </div>
-  }>
-  {!fields.kotakBbgSiteEngineerNA ? (
-    <div className="space-y-2">
-                    <select className={inputCls} value={fields.kotakBbgSiteEngineer || ''} onChange={e => handleChange('kotakBbgSiteEngineer', e.target.value)} disabled={isReadOnly}>
-                      <option value="">Select Site Engineer</option>
-                      <option value="Engineer 1">Engineer 1</option>
-                      <option value="Engineer 2">Engineer 2</option>
-                      <option value="Custom">Custom</option>
-                    </select>
-                    {fields.kotakBbgSiteEngineer === 'Custom' && (
-                      <input type="text" className={inputCls} placeholder="Enter custom value" value={fields.kotakBbgSiteEngineerCustom || ''} onChange={e => handleChange('kotakBbgSiteEngineerCustom', e.target.value)} disabled={isReadOnly} />
-                    )}
-                  </div>
-  ) : (
-    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed'} value="NA" disabled />
-  )}
-</Field>
+            {(() => {
+              const siteEngineerPrefillVal = fields.kotakBbgSiteEngineerNA
+                ? 'NA'
+                : (fields.kotakBbgSiteEngineer || fields.nameOfEngineerVisitingProperty || '');
+              return (
+                <PrefillField
+                  label={
+                    <div className="flex items-center justify-between w-full">
+                      <span className="flex-1 pr-4">Name of the qualified/ experienced Site engineer inspecting the property</span>
+                      <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case shrink-0">
+                        <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.kotakBbgSiteEngineerNA} onChange={e => handleChange('kotakBbgSiteEngineerNA', e.target.checked)} disabled={isReadOnly} />
+                        <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>
+                      </label>
+                    </div>
+                  }
+                  value={siteEngineerPrefillVal}
+                  onChange={(val: string) => handleChange('kotakBbgSiteEngineer', val)}
+                  isReadOnly={isReadOnly || !!fields.kotakBbgSiteEngineerNA}
+                  tooltip="Auto-filled from the Field Agent assigned to this project — toggle Edit to override"
+                />
+              );
+            })()}
 
             <PrefillField
               label="Name of Customer / Borrower"
