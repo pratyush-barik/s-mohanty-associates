@@ -205,36 +205,25 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               );
             })()}
 
-            <PrefillField
-              label="Name of Customer / Borrower"
-              value={borrowerName}
-              onChange={(val: string) => handleChange('kotakBbgBorrowerName', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Prefill from Application Data"
-            />
+            <Field label="Name of Customer">
+              <input
+                type="text"
+                className={inputCls}
+                value={borrowerName}
+                onChange={e => handleChange('kotakBbgBorrowerName', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
 
-            <Field label="Name of Property Owner(s)">
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm">
-                  <input type="checkbox" checked={fields.kotakBbgOwnerSameAsBorrower || false} onChange={e => handleChange('kotakBbgOwnerSameAsBorrower', e.target.checked)} disabled={isReadOnly} />
-                  <span>Same as Borrower</span>
-                </label>
-                {fields.kotakBbgOwnerSameAsBorrower ? (
-                  <div title='Prefill from section 1, "Name of Customer / Borrower"' className="flex items-center space-x-2">
-                    <textarea 
-                      className={inputCls + ' resize-y flex-1'} 
-                      rows={2} 
-                      value={borrowerName} 
-                      disabled={true} 
-                    />
-                    <button type="button" disabled className="p-1.5 border rounded shrink-0 bg-white border-gray-300 text-gray-500">
-                      <Lock size={16} />
-                    </button>
-                  </div>
-                ) : (
-                  <textarea className={inputCls + ' resize-y w-full'} rows={2} placeholder="Owner Name(s)" value={fields.kotakBbgOwnerName || ''} onChange={e => handleChange('kotakBbgOwnerName', e.target.value)} disabled={isReadOnly} />
-                )}
-              </div>
+            <Field label="Name of the property owner/owners as per legal docs">
+              <textarea 
+                className={inputCls + ' resize-y w-full'} 
+                rows={2} 
+                placeholder="Owner Name(s)" 
+                value={fields.kotakBbgOwnerName !== undefined ? fields.kotakBbgOwnerName : borrowerName} 
+                onChange={e => handleChange('kotakBbgOwnerName', e.target.value)} 
+                disabled={isReadOnly} 
+              />
             </Field>
 
             <Field label="Date of Technical Site Visit">
@@ -254,21 +243,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   <input type="text" className={inputCls} placeholder="Name" value={fields.kotakBbgPersonMet || ''} onChange={e => handleChange('kotakBbgPersonMet', e.target.value)} disabled={isReadOnly} />
                 </div>
                 
-                <div className="flex flex-col space-y-2">
-                  <span className="text-sm font-semibold text-gray-700">Relationship to Owner</span>
-                  <select className={inputCls} value={fields.kotakBbgPersonMetRelation || ''} onChange={e => handleChange('kotakBbgPersonMetRelation', e.target.value)} disabled={isReadOnly}>
-                    <option value="">Select Relationship</option>
-                    <option value="Self">Self</option>
-                    <option value="Relative">Relative</option>
-                    <option value="Tenant">Tenant</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Site Guard">Site Guard</option>
-                    <option value="Custom">Custom</option>
-                  </select>
-                  {fields.kotakBbgPersonMetRelation === 'Custom' && (
-                    <input type="text" className={inputCls} placeholder="Enter custom relationship" value={fields.kotakBbgPersonMetRelationCustom || ''} onChange={e => handleChange('kotakBbgPersonMetRelationCustom', e.target.value)} disabled={isReadOnly} />
-                  )}
-                </div>
+                {/* Removed Relationship to Owner */}
 
                 <div className="flex flex-col space-y-2">
                   <div className="flex items-center justify-between w-full">
