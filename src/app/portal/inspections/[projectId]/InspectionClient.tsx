@@ -263,7 +263,7 @@ export default function InspectionClient({
 
   return (
     <>
-      <div className="card p-6 border border-[#b8860b]/20 bg-[#b8860b]/5 space-y-6">
+      <div className="card p-6 border border-accent-500/20 bg-accent-500/5 space-y-6">
         <div>
           <h3 className="text-lg font-bold text-[#0f2038] mb-1" style={{ fontFamily: 'var(--font-heading)' }}>
             Inspection Milestones
@@ -288,11 +288,11 @@ export default function InspectionClient({
             return (
               <div key={step.key} className="relative">
                 {/* Checkmark indicator */}
-                <span className={`absolute -left-[35px] top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs font-bold transition-all ${
+                <span className={`absolute -left-8.75 top-1 flex h-6 w-6 items-center justify-center rounded-full border-2 text-xs font-bold transition-all ${
                   isDone 
                     ? 'border-green-600 bg-green-600 text-white' 
                     : canTrigger 
-                    ? 'border-[#b8860b] bg-white text-[#b8860b] animate-pulse' 
+                    ? 'border-accent-500 bg-white text-accent-500 animate-pulse' 
                     : 'border-gray-200 bg-gray-50 text-gray-400'
                 }`}>
                   {isDone ? '✓' : idx + 1}
@@ -341,12 +341,12 @@ export default function InspectionClient({
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
             placeholder="Type notes here..."
-            className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-[#b8860b] transition-all resize-none mb-2"
+            className="w-full px-4 py-3 rounded-xl border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 transition-all resize-none mb-2"
           />
           <button
             onClick={handleSaveNotes}
             disabled={saveNotesLoading}
-            className="px-4 py-2 border border-[#b8860b]/60 rounded-xl text-xs font-bold text-[#b8860b] hover:bg-[#b8860b]/10 transition-colors disabled:opacity-50"
+            className="px-4 py-2 border border-accent-500/60 rounded-xl text-xs font-bold text-accent-500 hover:bg-accent-500/10 transition-colors disabled:opacity-50"
           >
             {saveNotesLoading ? 'Saving Notes...' : 'Save Field Notes'}
           </button>
@@ -356,7 +356,7 @@ export default function InspectionClient({
       {/* ══════════════════════════════════════════ */}
       {/* PHOTO BUCKET SECTION                       */}
       {/* ══════════════════════════════════════════ */}
-      <div className="card p-6 border border-[#1e3a5f]/15 bg-gradient-to-br from-[#f8f9fa] to-[#edf2f7] space-y-5">
+      <div className="card p-6 border border-[#1e3a5f]/15 bg-linear-to-br from-[#f8f9fa] to-[#edf2f7] space-y-5">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-bold text-[#0f2038] flex items-center gap-2" style={{ fontFamily: 'var(--font-heading)' }}>
@@ -476,9 +476,9 @@ export default function InspectionClient({
 
             <button
               onClick={() => { galleryInputRef.current?.click(); }}
-              className="w-full flex items-center gap-4 p-4 rounded-xl border border-[#e9ecef] hover:border-[#b8860b]/40 hover:bg-[#b8860b]/5 transition-all text-left"
+              className="w-full flex items-center gap-4 p-4 rounded-xl border border-[#e9ecef] hover:border-accent-500/40 hover:bg-accent-500/5 transition-all text-left"
             >
-              <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-[#b8860b]/10 text-xl flex-shrink-0">🖼️</span>
+              <span className="flex items-center justify-center w-11 h-11 rounded-xl bg-accent-500/10 text-xl shrink-0">🖼️</span>
               <div>
                 <p className="text-sm font-bold text-[#0f2038]">Choose from Gallery</p>
                 <p className="text-xs text-[#6c757d]">Select existing photos from your device</p>
