@@ -101,8 +101,8 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Legal Address of the Property', value: legalAddress || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     
-    const lat = this.getF('kotakBbgLatitude');
-    const lng = this.getF('kotakBbgLongitude');
+    const lat = this.getF('latitude');
+    const lng = this.getF('longitude');
     const coords = (lat && lng) ? `${lat}, ${lng}` : 'NA';
 
     const nature = this.getF('kotakBbgNatureOfProperty') === 'Custom' ? this.getF('kotakBbgNatureOfPropertyCustom') : this.getF('kotakBbgNatureOfProperty');

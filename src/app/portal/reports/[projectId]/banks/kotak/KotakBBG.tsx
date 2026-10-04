@@ -276,22 +276,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         const leaseTermsNA = isFreehold ? true : !!fields.kotakBbgLeaseTermsNA;
         const leaseTransferableNA = isFreehold ? true : !!fields.kotakBbgLeaseTransferableNA;
 
-        // Fetch location
-        const handleFetchLocation = () => {
-          if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-              (position) => {
-                handleChange('kotakBbgLatitude', position.coords.latitude.toFixed(6));
-                handleChange('kotakBbgLongitude', position.coords.longitude.toFixed(6));
-              },
-              (error) => {
-                alert('Unable to fetch location. Please check your browser permissions.');
-              }
-            );
-          } else {
-            alert('Geolocation is not supported by your browser.');
-          }
-        };
+
 
         return (
           <div style={{ backgroundColor: '#e3f2fd', padding: '16px', borderRadius: '8px' }} className="space-y-4">
@@ -323,12 +308,15 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
             })()}
 
             <Field label="Google Coordinates">
-              <div className="flex space-x-2">
-                <input type="number" className={inputCls + ' flex-1'} placeholder="Latitude" value={fields.kotakBbgLatitude || ''} onChange={e => handleChange('kotakBbgLatitude', e.target.value)} disabled={isReadOnly} />
-                <input type="number" className={inputCls + ' flex-1'} placeholder="Longitude" value={fields.kotakBbgLongitude || ''} onChange={e => handleChange('kotakBbgLongitude', e.target.value)} disabled={isReadOnly} />
-                <button type="button" onClick={handleFetchLocation} disabled={isReadOnly} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium transition-colors shrink-0">
-                  Fetch Current Location
-                </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-1">
+                  <span className="text-xs font-semibold text-gray-600 uppercase">Latitude</span>
+                  <input type="number" className={inputCls} placeholder="Latitude" value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} />
+                </div>
+                <div className="flex flex-col space-y-1">
+                  <span className="text-xs font-semibold text-gray-600 uppercase">Longitude</span>
+                  <input type="number" className={inputCls} placeholder="Longitude" value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} />
+                </div>
               </div>
             </Field>
 
