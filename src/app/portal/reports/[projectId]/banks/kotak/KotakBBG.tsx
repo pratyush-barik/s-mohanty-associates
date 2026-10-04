@@ -6,8 +6,16 @@ import { Field, inputCls } from '../BaseBankReportComponents';
 import { Lock, Unlock } from 'lucide-react';
 import { PDFKotakBbgRenderer } from '@/lib/banks/pdf-kotak-bbg-renderer';
 
-const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text' }: any) => {
+const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue }: any) => {
   const [isEdit, setIsEdit] = useState(false);
+
+  const handleToggle = () => {
+    const newEditState = !isEdit;
+    setIsEdit(newEditState);
+    if (!newEditState && fallbackValue !== undefined) {
+      onChange(fallbackValue);
+    }
+  };
 
   const labelWithToggle = (
     <div className="flex justify-between items-center w-full">
@@ -15,7 +23,7 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
       <div className="flex items-center gap-3">
         <button
           type="button"
-          onClick={() => setIsEdit(!isEdit)}
+          onClick={handleToggle}
           disabled={isReadOnly}
           className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors duration-200 focus:outline-none ${isEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
@@ -149,6 +157,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               onChange={(val: string) => handleChange('kotakBbgPurpose', val)}
               isReadOnly={isReadOnly}
               tooltip="Prefill from System Standard Template"
+              fallbackValue={newPurpose}
             />
             
             <Field label="Date of Valuation">
@@ -190,6 +199,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   onChange={(val: string) => handleChange('kotakBbgSiteEngineer', val)}
                   isReadOnly={isReadOnly || !!fields.kotakBbgSiteEngineerNA}
                   tooltip="Auto-filled from the Field Agent assigned to this project — toggle Edit to override"
+                  fallbackValue={fields.nameOfEngineerVisitingProperty || ''}
                 />
               );
             })()}
