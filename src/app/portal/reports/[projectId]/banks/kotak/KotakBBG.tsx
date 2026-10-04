@@ -114,13 +114,19 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         
         return (
           <div style={{ backgroundColor: '#f5f5f5', padding: '16px', borderRadius: '8px' }} className="space-y-4">
-            <PrefillField
-              label="Bank Name"
-              value={bankNameVal}
-              onChange={(val: string) => handleChange('kotakBbgBankName', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Prefill from Client Mandate Data"
-            />
+            <Field label="Bank Name">
+              <div className="relative mt-1" title="Auto-filled from Bank Configuration (permanently locked)">
+                <input
+                  type="text"
+                  className={`${inputCls} pr-8 bg-gray-100 cursor-not-allowed text-gray-700`}
+                  value={bankNameVal}
+                  disabled
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Locked — derived from Bank configuration">
+                  <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                </div>
+              </div>
+            </Field>
 
             <Field label="Bank Branch / IFCS">
               <select className={inputCls} value={fields.kotakBbgBankBranch || ''} onChange={e => handleChange('kotakBbgBankBranch', e.target.value)} disabled={isReadOnly}>
