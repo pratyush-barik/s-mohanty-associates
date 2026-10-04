@@ -271,27 +271,6 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
       number: 2,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
-        // Compute Legal Address from Technical Address if checked
-        const generateLegalAddress = () => {
-          const parts = [];
-          if (fields.kotakBbgTechKhataNo) parts.push(`Khata No. / Record of Rights: ${fields.kotakBbgTechKhataNo}`);
-          if (fields.kotakBbgTechPlotNo) parts.push(`Plot No. / Khasra No.: ${fields.kotakBbgTechPlotNo}`);
-          if (fields.kotakBbgTechLandArea) parts.push(`Total Land Area: ${fields.kotakBbgTechLandArea} ${fields.kotakBbgTechLandAreaUnit || ''}`.trim());
-          if (fields.kotakBbgTechMouza) parts.push(`Mouza / Village: ${fields.kotakBbgTechMouza}`);
-          if (fields.kotakBbgTechPS) parts.push(`Police Station (PS): ${fields.kotakBbgTechPS}`);
-          
-          const tahasil = fields.kotakBbgTechTahasil === 'Custom' ? fields.kotakBbgTechTahasilCustom : fields.kotakBbgTechTahasil;
-          if (tahasil) parts.push(`Tahasil / Mandal: ${tahasil}`);
-          
-          if (fields.kotakBbgTechDistrict) parts.push(`District: ${fields.kotakBbgTechDistrict}`);
-          if (fields.kotakBbgTechState) parts.push(`State: ${fields.kotakBbgTechState}`);
-          if (fields.kotakBbgTechPinCode) parts.push(`Pin Code: ${fields.kotakBbgTechPinCode}`);
-          
-          return parts.join(', ');
-        };
-
-        const autoLegalAddress = generateLegalAddress();
-        
         // Leasehold logic
         const isFreehold = fields.kotakBbgTenure === 'Freehold';
         const leaseTermsNA = isFreehold ? true : !!fields.kotakBbgLeaseTermsNA;
@@ -317,117 +296,31 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         return (
           <div style={{ backgroundColor: '#e3f2fd', padding: '16px', borderRadius: '8px' }} className="space-y-4">
             <Field label="Technical Address of the Property (Please be descriptive mentioning landmark, road, post code etc)">
-              <div className="p-4 bg-white bg-opacity-70 border border-blue-200 rounded-md space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs font-semibold text-gray-600 uppercase">Khata No. / Record of Rights</span>
-                    <input type="text" className={inputCls} value={fields.kotakBbgTechKhataNo || ''} onChange={e => handleChange('kotakBbgTechKhataNo', e.target.value)} disabled={isReadOnly} />
-                  </div>
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs font-semibold text-gray-600 uppercase">Plot No. / Khasra No.</span>
-                    <input type="text" className={inputCls} value={fields.kotakBbgTechPlotNo || ''} onChange={e => handleChange('kotakBbgTechPlotNo', e.target.value)} disabled={isReadOnly} />
-                  </div>
-                </div>
-                
-                <div className="flex flex-col space-y-1">
-                  <span className="text-xs font-semibold text-gray-600 uppercase">Total Land Area</span>
-                  <div className="flex space-x-2">
-                    <input type="number" className={inputCls + ' flex-1'} placeholder="Area" value={fields.kotakBbgTechLandArea || ''} onChange={e => handleChange('kotakBbgTechLandArea', e.target.value)} disabled={isReadOnly} />
-                    <select className={inputCls + ' w-32'} value={fields.kotakBbgTechLandAreaUnit || ''} onChange={e => handleChange('kotakBbgTechLandAreaUnit', e.target.value)} disabled={isReadOnly}>
-                      <option value="">Unit</option>
-                      <option value="Decs">Decs</option>
-                      <option value="Sq.Ft">Sq.Ft</option>
-                      <option value="Acres">Acres</option>
-                      <option value="Sq.Mts">Sq.Mts</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs font-semibold text-gray-600 uppercase">Mouza / Village</span>
-                    <input type="text" className={inputCls} value={fields.kotakBbgTechMouza || ''} onChange={e => handleChange('kotakBbgTechMouza', e.target.value)} disabled={isReadOnly} />
-                  </div>
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs font-semibold text-gray-600 uppercase">Police Station (PS)</span>
-                    <input type="text" className={inputCls} value={fields.kotakBbgTechPS || ''} onChange={e => handleChange('kotakBbgTechPS', e.target.value)} disabled={isReadOnly} />
-                  </div>
-                </div>
-
-                <div className="flex flex-col space-y-1">
-                  <span className="text-xs font-semibold text-gray-600 uppercase">Tahasil / Mandal</span>
-                  <select className={inputCls} value={fields.kotakBbgTechTahasil || ''} onChange={e => handleChange('kotakBbgTechTahasil', e.target.value)} disabled={isReadOnly}>
-                    <option value="">Select Tahasil</option>
-                    <option value="Bhubaneswar">Bhubaneswar</option>
-                    <option value="Cuttack">Cuttack</option>
-                    <option value="Jatni">Jatni</option>
-                    <option value="Custom">Custom</option>
-                  </select>
-                  {fields.kotakBbgTechTahasil === 'Custom' && (
-                    <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom Tahasil" value={fields.kotakBbgTechTahasilCustom || ''} onChange={e => handleChange('kotakBbgTechTahasilCustom', e.target.value)} disabled={isReadOnly} />
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs font-semibold text-gray-600 uppercase">District</span>
-                    <select className={inputCls} value={fields.kotakBbgTechDistrict || ''} onChange={e => handleChange('kotakBbgTechDistrict', e.target.value)} disabled={isReadOnly}>
-                      <option value="">Select District</option>
-                      <option value="Khurda">Khurda</option>
-                      <option value="Cuttack">Cuttack</option>
-                      <option value="Puri">Puri</option>
-                    </select>
-                  </div>
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs font-semibold text-gray-600 uppercase">State</span>
-                    <select className={inputCls} value={fields.kotakBbgTechState || ''} onChange={e => handleChange('kotakBbgTechState', e.target.value)} disabled={isReadOnly}>
-                      <option value="">Select State</option>
-                      <option value="Odisha">Odisha</option>
-                      <option value="West Bengal">West Bengal</option>
-                      <option value="Andhra Pradesh">Andhra Pradesh</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs font-semibold text-gray-600 uppercase">Pin Code</span>
-                    <input type="text" maxLength={6} className={inputCls} placeholder="6 digits" value={fields.kotakBbgTechPinCode || ''} onChange={e => {
-                      const val = e.target.value.replace(/\D/g, '');
-                      handleChange('kotakBbgTechPinCode', val);
-                    }} disabled={isReadOnly} />
-                  </div>
-                  <div className="flex flex-col space-y-1">
-                    <span className="text-xs font-semibold text-gray-600 uppercase">Land Mark</span>
-                    <input type="text" className={inputCls} value={fields.kotakBbgTechLandMark || ''} onChange={e => handleChange('kotakBbgTechLandMark', e.target.value)} disabled={isReadOnly} />
-                  </div>
-                </div>
-              </div>
+              <textarea 
+                className={inputCls + ' resize-y w-full'} 
+                rows={4} 
+                placeholder="Enter Technical Address..." 
+                value={fields.kotakBbgTechnicalAddress || ''} 
+                onChange={e => handleChange('kotakBbgTechnicalAddress', e.target.value)} 
+                disabled={isReadOnly} 
+              />
             </Field>
 
-            <Field label="Legal Address of the Property">
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm">
-                  <input type="checkbox" checked={fields.kotakBbgLegalAddressGenerate || false} onChange={e => handleChange('kotakBbgLegalAddressGenerate', e.target.checked)} disabled={isReadOnly} />
-                  <span>Generate from Technical Address</span>
-                </label>
-                {fields.kotakBbgLegalAddressGenerate ? (
-                  <div title='Prefill from section 2, "Technical Address"' className="relative">
-                    <textarea 
-                      className={inputCls + ' resize-y w-full bg-gray-100 cursor-not-allowed pr-8'} 
-                      rows={3} 
-                      value={autoLegalAddress} 
-                      disabled={true} 
-                    />
-                    <div className="absolute inset-y-0 right-0 flex py-3 pr-3 cursor-help text-gray-400 hover:text-gray-600">
-                      <Lock size={16} />
-                    </div>
-                  </div>
-                ) : (
-                  <textarea className={inputCls + ' resize-y w-full'} rows={3} placeholder="Enter Legal Address" value={fields.kotakBbgLegalAddress || ''} onChange={e => handleChange('kotakBbgLegalAddress', e.target.value)} disabled={isReadOnly} />
-                )}
-              </div>
-            </Field>
+            {(() => {
+              const techAddr = fields.kotakBbgTechnicalAddress || '';
+              const legalAddrVal = (fields.kotakBbgLegalAddress === undefined || fields.kotakBbgLegalAddress === null) ? techAddr : fields.kotakBbgLegalAddress;
+              return (
+                <PrefillField
+                  label="Legal Address of the Property"
+                  value={legalAddrVal}
+                  onChange={(val: string) => handleChange('kotakBbgLegalAddress', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip='Prefill from section 2, "Technical Address"'
+                  fallbackValue={techAddr}
+                  type="textarea"
+                />
+              );
+            })()}
 
             <Field label="Google Coordinates">
               <div className="flex space-x-2">

@@ -86,39 +86,15 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     
     this.drawSectionHeader('2. DETAILS OF THE PROPERTY BEING APPRAISED');
     
-    const tahasil = this.getF('kotakBbgTechTahasil') === 'Custom' ? this.getF('kotakBbgTechTahasilCustom') : this.getF('kotakBbgTechTahasil');
-    const techAddressParts = [];
-    if (this.getF('kotakBbgTechKhataNo')) techAddressParts.push(`Khata No.: ${this.getF('kotakBbgTechKhataNo')}`);
-    if (this.getF('kotakBbgTechPlotNo')) techAddressParts.push(`Plot No.: ${this.getF('kotakBbgTechPlotNo')}`);
-    if (this.getF('kotakBbgTechLandArea')) techAddressParts.push(`Area: ${this.getF('kotakBbgTechLandArea')} ${this.getF('kotakBbgTechLandAreaUnit') || ''}`.trim());
-    if (this.getF('kotakBbgTechMouza')) techAddressParts.push(`Mouza: ${this.getF('kotakBbgTechMouza')}`);
-    if (this.getF('kotakBbgTechPS')) techAddressParts.push(`PS: ${this.getF('kotakBbgTechPS')}`);
-    if (tahasil) techAddressParts.push(`Tahasil: ${tahasil}`);
-    if (this.getF('kotakBbgTechDistrict')) techAddressParts.push(`District: ${this.getF('kotakBbgTechDistrict')}`);
-    if (this.getF('kotakBbgTechState')) techAddressParts.push(`State: ${this.getF('kotakBbgTechState')}`);
-    if (this.getF('kotakBbgTechPinCode')) techAddressParts.push(`Pin Code: ${this.getF('kotakBbgTechPinCode')}`);
-    if (this.getF('kotakBbgTechLandMark')) techAddressParts.push(`Landmark: ${this.getF('kotakBbgTechLandMark')}`);
-    
-    const techAddress = techAddressParts.join(', ') || 'NA';
+    const techAddress = this.getF('kotakBbgTechnicalAddress') || 'NA';
     
     this.drawKeyValueRow([
       { label: 'Technical Address of the Property', value: techAddress, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     let legalAddress = this.getF('kotakBbgLegalAddress');
-    if (this.getF('kotakBbgLegalAddressGenerate')) {
-      // Auto-generate it if the flag is true in the renderer as well
-      const legalParts = [];
-      if (this.getF('kotakBbgTechKhataNo')) legalParts.push(`Khata No. / Record of Rights: ${this.getF('kotakBbgTechKhataNo')}`);
-      if (this.getF('kotakBbgTechPlotNo')) legalParts.push(`Plot No. / Khasra No.: ${this.getF('kotakBbgTechPlotNo')}`);
-      if (this.getF('kotakBbgTechLandArea')) legalParts.push(`Total Land Area: ${this.getF('kotakBbgTechLandArea')} ${this.getF('kotakBbgTechLandAreaUnit') || ''}`.trim());
-      if (this.getF('kotakBbgTechMouza')) legalParts.push(`Mouza / Village: ${this.getF('kotakBbgTechMouza')}`);
-      if (this.getF('kotakBbgTechPS')) legalParts.push(`Police Station (PS): ${this.getF('kotakBbgTechPS')}`);
-      if (tahasil) legalParts.push(`Tahasil / Mandal: ${tahasil}`);
-      if (this.getF('kotakBbgTechDistrict')) legalParts.push(`District: ${this.getF('kotakBbgTechDistrict')}`);
-      if (this.getF('kotakBbgTechState')) legalParts.push(`State: ${this.getF('kotakBbgTechState')}`);
-      if (this.getF('kotakBbgTechPinCode')) legalParts.push(`Pin Code: ${this.getF('kotakBbgTechPinCode')}`);
-      legalAddress = legalParts.join(', ') || 'NA';
+    if (legalAddress === undefined || legalAddress === null || legalAddress === '') {
+        legalAddress = this.getF('kotakBbgTechnicalAddress') || 'NA';
     }
 
     this.drawKeyValueRow([
