@@ -451,17 +451,9 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         
         const sameAsDoc = !!fields.kotakBbgBoundariesSiteSameAsDoc;
         
-        // b. Whether boundaries matching
-        const matchingDocVal = sameAsDoc ? 'Yes' : (fields.kotakBbgBoundariesMatching || '');
-
         // c. Discrepancy
-        const isDiscrepancyNA = matchingDocVal === 'Yes' || !!fields.kotakBbgBoundariesDiscrepancyNA;
-
-        // d. Documents basis identified
-        const docBasisTemplate = "By Boundaries matching at site as per the sketch map & documents provided";
-
-        // k. Proximity
-        const amenitiesTemplate = "All civic amenities like schools, hospitals, offices, markets, cinemas, etc. are within a radius of 3Kms to 5Kms from our subject property";
+        const matchingVal = fields.kotakBbgBoundariesMatching;
+        const isDiscrepancyNA = matchingVal === 'Yes' || !!fields.kotakBbgBoundariesDiscrepancyNA;
 
         return (
           <div style={{ backgroundColor: '#e8f5e9', padding: '24px', borderRadius: '12px' }} className="space-y-6 shadow-sm border border-[#c8e6c9]">
@@ -513,27 +505,20 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
             </div>
 
             {/* b. Whether Boundaries matching */}
-            <PrefillField
-              label="b. Whether Boundaries matching (actual site verification with Legal docs)"
-              value={fields.kotakBbgBoundariesMatching}
-              onChange={(val: string) => handleChange('kotakBbgBoundariesMatching', val)}
-              isReadOnly={isReadOnly}
-              tooltip={sameAsDoc ? 'Auto calculating from Same as Legal / Sale Deed' : 'Prefill from system'}
-              fallbackValue={matchingDocVal}
-              type="select"
-              options={[
-                { label: 'Select Option', value: '' },
-                { label: 'Yes', value: 'Yes' },
-                { label: 'No', value: 'No' },
-              ]}
-            />
+            <Field label="b. Whether Boundaries matching (actual site verification with Legal docs)">
+              <select className={inputCls} value={fields.kotakBbgBoundariesMatching || ''} onChange={e => handleChange('kotakBbgBoundariesMatching', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select Option</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </Field>
 
             {/* c. Discrepancy found */}
             <Field label={
               <div className="flex items-center justify-between w-full">
                 <span>c. Discrepancy found in Boundaries, if any, pl specify/ elaborate</span>
-                <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" title={matchingDocVal === 'Yes' ? "Auto-checked because boundaries match" : ""}>
-                  <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={isDiscrepancyNA} onChange={e => handleChange('kotakBbgBoundariesDiscrepancyNA', e.target.checked)} disabled={isReadOnly || matchingDocVal === 'Yes'} />
+                <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity" title={matchingVal === 'Yes' ? "Auto-checked because boundaries match" : ""}>
+                  <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={isDiscrepancyNA} onChange={e => handleChange('kotakBbgBoundariesDiscrepancyNA', e.target.checked)} disabled={isReadOnly || matchingVal === 'Yes'} />
                   <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
                 </label>
               </div>
@@ -541,23 +526,17 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               {!isDiscrepancyNA ? (
                 <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Specify discrepancies..." value={fields.kotakBbgBoundariesDiscrepancy || ''} onChange={e => handleChange('kotakBbgBoundariesDiscrepancy', e.target.value)} disabled={isReadOnly} />
               ) : (
-                <div title={matchingDocVal === 'Yes' ? "Auto calculating from field b (Yes)" : ""} className="relative group flex items-center cursor-help">
+                <div title={matchingVal === 'Yes' ? "Auto calculating from field b (Yes)" : ""} className="relative group flex items-center cursor-help">
                   <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed pr-8 text-gray-500'} value="NA" disabled />
-                  {matchingDocVal === 'Yes' && <Lock size={14} className="absolute right-3 text-gray-400 group-hover:text-gray-600" />}
+                  {matchingVal === 'Yes' && <Lock size={14} className="absolute right-3 text-gray-400 group-hover:text-gray-600" />}
                 </div>
               )}
             </Field>
 
             {/* d. Documents basis which property is identified */}
-            <PrefillField
-              label="d. Documents basis which property is identified"
-              value={fields.kotakBbgDocumentsIdentified}
-              onChange={(val: string) => handleChange('kotakBbgDocumentsIdentified', val)}
-              isReadOnly={isReadOnly}
-              tooltip='Prefill from System Template'
-              fallbackValue={docBasisTemplate}
-              type="textarea"
-            />
+            <Field label="d. Documents basis which property is identified">
+              <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Enter documents basis..." value={fields.kotakBbgDocumentsIdentified || ''} onChange={e => handleChange('kotakBbgDocumentsIdentified', e.target.value)} disabled={isReadOnly} />
+            </Field>
 
             {/* e. Confirmation from the valuer that the correct property is identified */}
             <Field label={
@@ -699,15 +678,9 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
             </Field>
 
             {/* k. Proximity to civic amenities */}
-            <PrefillField
-              label="k. Proximity to civic amenities like schools, hospitals, offices, markets, cinemas, etc."
-              value={fields.kotakBbgCivicAmenities}
-              onChange={(val: string) => handleChange('kotakBbgCivicAmenities', val)}
-              isReadOnly={isReadOnly}
-              tooltip='Prefill from System Template'
-              fallbackValue={amenitiesTemplate}
-              type="textarea"
-            />
+            <Field label="k. Proximity to civic amenities like schools, hospitals, offices, markets, cinemas, etc.">
+              <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Enter proximity to civic amenities..." value={fields.kotakBbgCivicAmenities || ''} onChange={e => handleChange('kotakBbgCivicAmenities', e.target.value)} disabled={isReadOnly} />
+            </Field>
           </div>
         );
       }

@@ -154,7 +154,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: bSite.west || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
     ]);
 
-    const matchingVal = this.getF('kotakBbgBoundariesSiteSameAsDoc') ? 'Yes' : this.getF('kotakBbgBoundariesMatching');
+    const matchingVal = this.getF('kotakBbgBoundariesMatching');
     const isDiscrepancyNA = matchingVal === 'Yes' || this.getF('kotakBbgBoundariesDiscrepancyNA');
 
     this.drawKeyValueRow([
