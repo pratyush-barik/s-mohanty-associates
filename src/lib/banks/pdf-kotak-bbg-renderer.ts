@@ -344,44 +344,44 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     }
 
     this.drawSectionHeader('6. DETAILS OF MEASUREMENTS');
-    const landUnit = this.getF('kotakBbgLandAreaUnit') === 'Custom' ? this.getF('kotakBbgLandAreaUnitCustom') : this.getF('kotakBbgLandAreaUnit');
-    const landArea = this.getF('kotakBbgLandAreaNA') ? 'NA' : `${this.getF('kotakBbgLandArea') || ''} ${landUnit || ''}`.trim();
-    const secLandArea = this.getF('kotakBbgLandAreaNA') ? 'NA' : `${this.getF('kotakBbgLandAreaSecondary') || ''} ${this.getF('kotakBbgLandAreaSecondaryUnit') || ''}`.trim();
+    
+    // a. Area of land
+    const docArea = this.getF('kotakBbgLandAreaAcres');
+    const autoSqFt = this.getF('kotakBbgLandAreaSqFt');
+    const shape = this.getF('kotakBbgShapePhysicalFeaturesNA') ? 'NA' : this.getF('kotakBbgShapePhysicalFeatures');
+    const fsi = this.getF('kotakBbgFsiNA') ? 'NA' : `Permissible: ${this.getF('kotakBbgFsiPermissible') || '-'}, Utilized: ${this.getF('kotakBbgFsiUtilized') || '-'}, Balance: ${this.getF('kotakBbgFsiBalance') || '-'}`;
     
     this.drawKeyValueRow([
-      { label: 'Land Area (Primary)', value: landArea },
-      { label: 'Land Area (Secondary)', value: secLandArea },
+      { label: 'Documentary Land Area (Acres/Decs)', value: docArea || 'NA' },
+      { label: 'Auto-Converted Land Area (Sq.Ft)', value: autoSqFt || 'NA' },
     ]);
-    const proofSource = this.getF('kotakBbgLandAreaProofSource') === 'Custom' ? this.getF('kotakBbgLandAreaProofSourceCustom') : this.getF('kotakBbgLandAreaProofSource');
     this.drawKeyValueRow([
-      { label: 'Documentary Proof Source', value: proofSource, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Shape & Physical Features', value: shape || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
-    
-    let buaText = 'NA';
-    if (!this.getF('kotakBbgBuildingBuaNA')) {
-      if (this.getF('kotakBbgBuildingBuaAnnexure')) {
-        buaText = 'Details attached in Annexure-II';
-      } else {
-        const buaData = Array.isArray(this.getF('kotakBbgBuildingBuaTable')) ? this.getF('kotakBbgBuildingBuaTable') : [];
-        if (buaData.length > 0) {
-          buaText = buaData.map((row: any) => `Floor: ${row.floor || '-'}, Carpet: ${row.carpet || '-'}, Built-up: ${row.builtUp || '-'}, Super: ${row.superBuiltUp || '-'}`).join('\n');
-        } else {
-          buaText = '';
-        }
-      }
+    this.drawKeyValueRow([
+      { label: 'FSI Details (Permissible/Utilized/Balance)', value: fsi, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    // b. Building/ flat/ office/ shop/ unit/ showroom area
+    const isVacantLand = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
+    if (isVacantLand) {
+      this.drawKeyValueRow([{ label: 'b. Building Area (Disabled: Nature of Property is Vacant Land)', value: '', labelWidth: CONTENT_W, valueWidth: 0 }]);
+    } else {
+      const bUnit = this.getF('kotakBbgBuildingUnit') || 'Sq.Ft';
+      this.drawKeyValueRow([
+        { label: `Total Measured Built-Up Area (${bUnit})`, value: this.getF('kotakBbgTotalBua') || 'NA' },
+        { label: `Carpet Area (${bUnit})`, value: this.getF('kotakBbgCarpetAreaNA') ? 'NA' : this.getF('kotakBbgCarpetArea') },
+      ]);
+      this.drawKeyValueRow([
+        { label: `Super Built-Up Area (${bUnit})`, value: this.getF('kotakBbgSbaNA') ? 'NA' : this.getF('kotakBbgSba') },
+        { label: 'Basis of building area', value: this.getF('kotakBbgBasisOfBuildingArea') || 'NA' },
+      ]);
     }
-    this.drawKeyValueRow([
-      { label: 'Building Built-up Area (BUA)', value: buaText, labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    if (!this.getF('kotakBbgBuildingBuaNA') && !this.getF('kotakBbgBuildingBuaAnnexure')) {
-       this.drawKeyValueRow([
-         { label: 'Total Built-up Area', value: this.getF('kotakBbgTotalBua'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
-       ]);
-    }
     
+    // c. Deviations/ violations
     const devs = this.getF('kotakBbgDeviationsNA') ? 'NA' : (this.getF('kotakBbgDeviations') === 'Custom' ? this.getF('kotakBbgDeviationsCustom') : this.getF('kotakBbgDeviations'));
     this.drawKeyValueRow([
-      { label: 'Deviations / Violations', value: devs, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'c. Deviations / Violations', value: devs || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawSectionHeader('7. VALUATION CALCULATIONS & RATE ANALYSIS');

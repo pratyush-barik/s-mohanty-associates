@@ -711,6 +711,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
           </div>
         );
       }
+    },
     {
       id: 'kotak-section-4',
       title: 'Details of Approvals verified',
@@ -1011,7 +1012,6 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
           </div>
         );
       }
-    },
     },
     {
       id: 'kotak-section-5',
@@ -1325,165 +1325,178 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'kotak-section-6',
-      title: 'Details of Measurements',
+      title: '6. Details of measurements',
       number: 6,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
         const isVacantLand = fields.kotakBbgNatureOfProperty === 'Vacant Land';
-        const buaTable: any[] = Array.isArray(fields.kotakBbgBuildingBuaTable) ? fields.kotakBbgBuildingBuaTable : [];
-        const addBuaRow = () => handleChange('kotakBbgBuildingBuaTable', [...buaTable, { floor: '', carpet: '', builtUp: '', superBuiltUp: '' }]);
-        const removeBuaRow = (idx: number) => handleChange('kotakBbgBuildingBuaTable', buaTable.filter((_: any, i: number) => i !== idx));
-        const updateBuaRow = (idx: number, key: string, val: string) => {
-          const updated = buaTable.map((r: any, i: number) => i === idx ? { ...r, [key]: val } : r);
-          handleChange('kotakBbgBuildingBuaTable', updated);
-        };
+        
+        let calculatedSqFt = '';
+        if (fields.kotakBbgLandAreaAcres) {
+          const sqft = parseFloat(fields.kotakBbgLandAreaAcres) * 43560;
+          calculatedSqFt = isNaN(sqft) ? '' : sqft.toFixed(2);
+        }
+
+        const basisTemplate = "All details attached in the built-up area Annexure-II";
 
         return (
           <div style={{ backgroundColor: '#e0f7fa', padding: '16px', borderRadius: '8px' }} className="space-y-4">
-            {/* Land Area (Primary) */}
-            <Field label={
-    <div className="flex items-center justify-between w-full">
-      <span>Land Area (Primary)</span>
-      <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case">
-        <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.kotakBbgLandAreaNA} onChange={e => handleChange('kotakBbgLandAreaNA', e.target.checked)} disabled={isReadOnly} />
-        <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>
-      </label>
-    </div>
-  }>
-  {!fields.kotakBbgLandAreaNA ? (
-    <div className="flex space-x-4">
-                    <input type="number" className={inputCls + ' flex-1'} placeholder="Area" value={fields.kotakBbgLandArea || ''} onChange={e => handleChange('kotakBbgLandArea', e.target.value)} disabled={isReadOnly} />
-                    <select className={inputCls + ' w-48'} value={fields.kotakBbgLandAreaUnit || ''} onChange={e => handleChange('kotakBbgLandAreaUnit', e.target.value)} disabled={isReadOnly}>
-                      <option value="">Select Unit</option>
-                      <option value="Sq.Ft">Sq.Ft</option>
-                      <option value="Sq.Mts">Sq.Mts</option>
-                      <option value="Acres">Acres</option>
-                      <option value="Cents">Cents</option>
-                      <option value="Custom">Custom</option>
-                    </select>
-                    {fields.kotakBbgLandAreaUnit === 'Custom' && (
-                      <input type="text" className={inputCls + ' w-48'} placeholder="Custom unit" value={fields.kotakBbgLandAreaUnitCustom || ''} onChange={e => handleChange('kotakBbgLandAreaUnitCustom', e.target.value)} disabled={isReadOnly} />
-                    )}
+            {/* a. Area of land */}
+            <Field label="a. Area of land (if applicable) supported by documentary proof, shape, dimensions and physical features FSI permissible, utilized, balance">
+              <div className="space-y-4 p-4 border border-cyan-200 rounded-lg bg-white/80 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col space-y-1.5">
+                    <span className="text-sm font-medium text-gray-700">Documentary Land Area (Acres/Decs)</span>
+                    <input type="number" className={inputCls} placeholder="e.g. 1.5" value={fields.kotakBbgLandAreaAcres || ''} onChange={e => handleChange('kotakBbgLandAreaAcres', e.target.value)} disabled={isReadOnly} />
                   </div>
-  ) : (
-    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed'} value="NA" disabled />
-  )}
-</Field>
+                  <div>
+                    <PrefillField
+                      label="Auto-Converted Land Area (Sq.Ft)"
+                      value={fields.kotakBbgLandAreaSqFt}
+                      onChange={(val: string) => handleChange('kotakBbgLandAreaSqFt', val)}
+                      isReadOnly={isReadOnly}
+                      tooltip="Auto calculating from [Acres × 43,560 Sq.Ft]"
+                      fallbackValue={calculatedSqFt}
+                      type="text"
+                    />
+                  </div>
+                </div>
 
-            {/* Land Area (Secondary) */}
-            <Field label="Land Area (Secondary)">
-              <div className="space-y-2">
-                {!fields.kotakBbgLandAreaNA && (
-                  <div className="flex space-x-4">
-                    <input type="number" className={inputCls + ' flex-1'} placeholder="Secondary Area" value={fields.kotakBbgLandAreaSecondary || ''} onChange={e => handleChange('kotakBbgLandAreaSecondary', e.target.value)} disabled={isReadOnly} />
-                    <select className={inputCls + ' w-48'} value={fields.kotakBbgLandAreaSecondaryUnit || ''} onChange={e => handleChange('kotakBbgLandAreaSecondaryUnit', e.target.value)} disabled={isReadOnly}>
-                      <option value="">Select Unit</option>
-                      <option value="Sq.Ft">Sq.Ft</option>
-                      <option value="Sq.Mts">Sq.Mts</option>
-                      <option value="Acres">Acres</option>
-                      <option value="Cents">Cents</option>
-                    </select>
+                <div className="flex flex-col space-y-1.5 pt-2 border-t border-cyan-100">
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-sm font-medium text-gray-700">Shape & Physical Features</span>
+                    <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                      <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgShapePhysicalFeaturesNA} onChange={e => handleChange('kotakBbgShapePhysicalFeaturesNA', e.target.checked)} disabled={isReadOnly} />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
+                    </label>
                   </div>
-                )}
-                {fields.kotakBbgLandAreaNA && (
-                  <span className="text-sm text-gray-500 italic">Disabled — Land Area marked NA</span>
-                )}
+                  {!fields.kotakBbgShapePhysicalFeaturesNA ? (
+                    <input type="text" className={inputCls} placeholder="Enter shape and features" value={fields.kotakBbgShapePhysicalFeatures || ''} onChange={e => handleChange('kotakBbgShapePhysicalFeatures', e.target.value)} disabled={isReadOnly} />
+                  ) : (
+                    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
+                  )}
+                </div>
+
+                <div className="flex flex-col space-y-1.5 pt-2 border-t border-cyan-100">
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-sm font-medium text-gray-700">FSI Details</span>
+                    <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                      <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgFsiNA} onChange={e => handleChange('kotakBbgFsiNA', e.target.checked)} disabled={isReadOnly} />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
+                    </label>
+                  </div>
+                  {!fields.kotakBbgFsiNA ? (
+                    <div className="grid grid-cols-3 gap-2">
+                      <input type="text" className={inputCls} placeholder="Permissible" value={fields.kotakBbgFsiPermissible || ''} onChange={e => handleChange('kotakBbgFsiPermissible', e.target.value)} disabled={isReadOnly} />
+                      <input type="text" className={inputCls} placeholder="Utilized" value={fields.kotakBbgFsiUtilized || ''} onChange={e => handleChange('kotakBbgFsiUtilized', e.target.value)} disabled={isReadOnly} />
+                      <input type="text" className={inputCls} placeholder="Balance" value={fields.kotakBbgFsiBalance || ''} onChange={e => handleChange('kotakBbgFsiBalance', e.target.value)} disabled={isReadOnly} />
+                    </div>
+                  ) : (
+                    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
+                  )}
+                </div>
               </div>
             </Field>
 
-            {/* Documentary Proof Source */}
-            <Field label="Documentary Proof Source">
-              <select className={inputCls} value={fields.kotakBbgLandAreaProofSource || ''} onChange={e => handleChange('kotakBbgLandAreaProofSource', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select Source</option>
-                <option value="Sale Deed">Sale Deed</option>
-                <option value="Revenue Records">Revenue Records</option>
-                <option value="Sanctioned Plan">Sanctioned Plan</option>
-                <option value="Measurement Report">Measurement Report</option>
-                <option value="Custom">Custom</option>
-              </select>
-              {fields.kotakBbgLandAreaProofSource === 'Custom' && (
-                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom proof source" value={fields.kotakBbgLandAreaProofSourceCustom || ''} onChange={e => handleChange('kotakBbgLandAreaProofSourceCustom', e.target.value)} disabled={isReadOnly} />
+            {/* b. Building/ flat/ office/ shop/ unit/ showroom area */}
+            <Field label="b. Building/ flat/ office/ shop/ unit/ showroom area (please specify the measurement unit, Area - Carpet, Built up, Super built up and basis of building area)">
+              <div className="space-y-4 p-4 border border-cyan-200 rounded-lg bg-white/80 shadow-sm relative">
+                {isVacantLand && (
+                  <div className="absolute inset-0 bg-gray-50/50 backdrop-blur-[1px] rounded-lg z-10 flex items-center justify-center">
+                    <span className="bg-white/90 text-gray-600 px-3 py-1.5 rounded shadow-sm text-sm font-medium border border-gray-200">
+                      Disabled: Nature of Property is Vacant Land
+                    </span>
+                  </div>
+                )}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col space-y-1.5">
+                    <span className="text-sm font-medium text-gray-700">Measurement Unit</span>
+                    <select className={inputCls} value={fields.kotakBbgBuildingUnit || ''} onChange={e => handleChange('kotakBbgBuildingUnit', e.target.value)} disabled={isReadOnly || isVacantLand}>
+                      <option value="">Select Unit</option>
+                      <option value="Sq.Ft">Sq.Ft</option>
+                      <option value="Sq.M">Sq.M</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <span className="text-sm font-medium text-gray-700">Total Measured Built-Up Area (BUA)</span>
+                    <input type="number" className={inputCls} placeholder="Enter BUA" value={fields.kotakBbgTotalBua || ''} onChange={e => handleChange('kotakBbgTotalBua', e.target.value)} disabled={isReadOnly || isVacantLand} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-cyan-100">
+                  <div className="flex flex-col space-y-1.5">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm font-medium text-gray-700">Carpet Area</span>
+                      <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                        <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgCarpetAreaNA || isVacantLand} onChange={e => handleChange('kotakBbgCarpetAreaNA', e.target.checked)} disabled={isReadOnly || isVacantLand} />
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
+                      </label>
+                    </div>
+                    {!(fields.kotakBbgCarpetAreaNA || isVacantLand) ? (
+                      <input type="number" className={inputCls} placeholder="Enter Carpet Area" value={fields.kotakBbgCarpetArea || ''} onChange={e => handleChange('kotakBbgCarpetArea', e.target.value)} disabled={isReadOnly || isVacantLand} />
+                    ) : (
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
+                    )}
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm font-medium text-gray-700">Super Built-Up Area (SBA)</span>
+                      <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                        <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgSbaNA || isVacantLand} onChange={e => handleChange('kotakBbgSbaNA', e.target.checked)} disabled={isReadOnly || isVacantLand} />
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
+                      </label>
+                    </div>
+                    {!(fields.kotakBbgSbaNA || isVacantLand) ? (
+                      <input type="number" className={inputCls} placeholder="Enter SBA" value={fields.kotakBbgSba || ''} onChange={e => handleChange('kotakBbgSba', e.target.value)} disabled={isReadOnly || isVacantLand} />
+                    ) : (
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-cyan-100">
+                  <PrefillField
+                    label="Basis of building area"
+                    value={fields.kotakBbgBasisOfBuildingArea}
+                    onChange={(val: string) => handleChange('kotakBbgBasisOfBuildingArea', val)}
+                    isReadOnly={isReadOnly || isVacantLand}
+                    tooltip='Prefill from standard template'
+                    fallbackValue={isVacantLand ? 'NA' : basisTemplate}
+                    type="text"
+                  />
+                </div>
+              </div>
+            </Field>
+
+            {/* c. Deviations/ violations (if any, please elaborate) */}
+            <Field label={
+              <div className="flex items-center justify-between w-full">
+                <span>c. Deviations/ violations (if any, please elaborate)</span>
+                <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                  <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgDeviationsNA} onChange={e => handleChange('kotakBbgDeviationsNA', e.target.checked)} disabled={isReadOnly} />
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
+                </label>
+              </div>
+            }>
+              {!fields.kotakBbgDeviationsNA ? (
+                <div className="space-y-2">
+                  <select className={inputCls} value={fields.kotakBbgDeviations || ''} onChange={e => handleChange('kotakBbgDeviations', e.target.value)} disabled={isReadOnly}>
+                    <option value="">Select Option</option>
+                    <option value="Approved Plan not Available">Approved Plan not Available</option>
+                    <option value="No Deviations">No Deviations</option>
+                    <option value="Minor Deviations">Minor Deviations</option>
+                    <option value="Major Deviations">Major Deviations</option>
+                    <option value="Custom">Custom</option>
+                  </select>
+                  {fields.kotakBbgDeviations === 'Custom' && (
+                    <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Describe deviations/violations" value={fields.kotakBbgDeviationsCustom || ''} onChange={e => handleChange('kotakBbgDeviationsCustom', e.target.value)} disabled={isReadOnly} />
+                  )}
+                </div>
+              ) : (
+                <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
             </Field>
-
-            {/* Building Built-up Area (BUA) */}
-            <Field label="Building Built-up Area (BUA)">
-              <div className="space-y-3">
-                <label className="flex items-center space-x-2 text-sm">
-                  <input type="checkbox" checked={fields.kotakBbgBuildingBuaNA || isVacantLand} onChange={e => handleChange('kotakBbgBuildingBuaNA', e.target.checked)} disabled={isReadOnly || isVacantLand} />
-                  <span>Not Applicable (NA)</span>
-                </label>
-                {!(fields.kotakBbgBuildingBuaNA || isVacantLand) && (
-                  <>
-                    <label className="flex items-center space-x-2 text-sm">
-                      <input type="checkbox" checked={fields.kotakBbgBuildingBuaAnnexure || false} onChange={e => handleChange('kotakBbgBuildingBuaAnnexure', e.target.checked)} disabled={isReadOnly} />
-                      <span>Details attached in Annexure-II</span>
-                    </label>
-                    {!fields.kotakBbgBuildingBuaAnnexure && (
-                      <div className="space-y-2">
-                        {buaTable.map((row: any, idx: number) => (
-                          <div key={idx} className="grid grid-cols-5 gap-2 items-end p-2 bg-white bg-opacity-60 rounded border border-cyan-200">
-                            <div>
-                              <span className="text-xs text-gray-500">Floor</span>
-                              <input type="text" className={inputCls} placeholder="e.g. Ground" value={row.floor || ''} onChange={e => updateBuaRow(idx, 'floor', e.target.value)} disabled={isReadOnly} />
-                            </div>
-                            <div>
-                              <span className="text-xs text-gray-500">Carpet Area</span>
-                              <input type="number" className={inputCls} placeholder="Sq.Ft" value={row.carpet || ''} onChange={e => updateBuaRow(idx, 'carpet', e.target.value)} disabled={isReadOnly} />
-                            </div>
-                            <div>
-                              <span className="text-xs text-gray-500">Built-up Area</span>
-                              <input type="number" className={inputCls} placeholder="Sq.Ft" value={row.builtUp || ''} onChange={e => updateBuaRow(idx, 'builtUp', e.target.value)} disabled={isReadOnly} />
-                            </div>
-                            <div>
-                              <span className="text-xs text-gray-500">Super Built-up</span>
-                              <input type="number" className={inputCls} placeholder="Sq.Ft" value={row.superBuiltUp || ''} onChange={e => updateBuaRow(idx, 'superBuiltUp', e.target.value)} disabled={isReadOnly} />
-                            </div>
-                            <button type="button" onClick={() => removeBuaRow(idx)} disabled={isReadOnly} className="text-red-500 hover:text-red-700 text-sm pb-1">Remove</button>
-                          </div>
-                        ))}
-                        <button type="button" onClick={addBuaRow} disabled={isReadOnly} className="px-3 py-1.5 bg-cyan-600 text-white text-sm rounded hover:bg-cyan-700 transition-colors">+ Add Floor Row</button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-            </Field>
-
-            {/* Total Built-up Area */}
-            {!(fields.kotakBbgBuildingBuaNA || isVacantLand) && !fields.kotakBbgBuildingBuaAnnexure && (
-              <Field label="Total Built-up Area">
-                <input type="number" className={inputCls} placeholder="Total BUA (Sq.Ft)" value={fields.kotakBbgTotalBua || ''} onChange={e => handleChange('kotakBbgTotalBua', e.target.value)} disabled={isReadOnly} />
-              </Field>
-            )}
-
-            {/* Deviations / Violations */}
-            <Field label={
-    <div className="flex items-center justify-between w-full">
-      <span>Deviations / Violations</span>
-      <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case">
-        <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.kotakBbgDeviationsNA} onChange={e => handleChange('kotakBbgDeviationsNA', e.target.checked)} disabled={isReadOnly} />
-        <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>
-      </label>
-    </div>
-  }>
-  {!fields.kotakBbgDeviationsNA ? (
-    <>
-                    <select className={inputCls} value={fields.kotakBbgDeviations || ''} onChange={e => handleChange('kotakBbgDeviations', e.target.value)} disabled={isReadOnly}>
-                      <option value="">Select Deviation</option>
-                      <option value="No Deviation">No Deviation</option>
-                      <option value="Minor Deviation">Minor Deviation</option>
-                      <option value="Major Deviation">Major Deviation</option>
-                      <option value="Custom">Custom</option>
-                    </select>
-                    {fields.kotakBbgDeviations === 'Custom' && (
-                      <input type="text" className={inputCls + ' mt-2'} placeholder="Describe deviations/violations" value={fields.kotakBbgDeviationsCustom || ''} onChange={e => handleChange('kotakBbgDeviationsCustom', e.target.value)} disabled={isReadOnly} />
-                    )}
-                  </>
-  ) : (
-    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed'} value="NA" disabled />
-  )}
-</Field>
           </div>
         );
       }
