@@ -93,7 +93,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFKotakBbgRenderer({ ...fields, projectCode }),
   navSections: [
     { id: 'kotak-section-1', title: '1. General Details' },
-    { id: 'kotak-section-2', title: '2. Details of the Property Being Appraised', shortName: '2. Property Details' },
+    { id: 'kotak-section-2', title: '2. Details of the Property Being Appraised', shortName: 'Property Details' },
     { id: 'kotak-section-3', title: '3. Site & Surrounding' },
     { id: 'kotak-section-4', title: '4. Details of Approvals verified' },
     { id: 'kotak-section-5', title: '5. Building / Structural Details' },
