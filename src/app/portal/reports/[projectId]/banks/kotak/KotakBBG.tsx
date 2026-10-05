@@ -292,7 +292,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
         return (
           <div style={{ backgroundColor: '#e3f2fd', padding: '16px', borderRadius: '8px' }} className="space-y-4">
-            <Field label="Technical Address of the Property (Please be descriptive mentioning landmark, road, post code etc)">
+            <Field label="a. Technical Address of the Property (Please be descriptive mentioning landmark, road, post code etc)">
               <textarea 
                 className={inputCls + ' resize-y w-full'} 
                 rows={4} 
@@ -308,7 +308,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               const legalAddrVal = (fields.kotakBbgLegalAddress === undefined || fields.kotakBbgLegalAddress === null) ? techAddr : fields.kotakBbgLegalAddress;
               return (
                 <PrefillField
-                  label="Legal Address of the Property"
+                  label="b. Legal Address of the Property"
                   value={legalAddrVal}
                   onChange={(val: string) => handleChange('kotakBbgLegalAddress', val)}
                   isReadOnly={isReadOnly}
@@ -319,7 +319,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               );
             })()}
 
-            <Field label="Google Coordinates">
+            <Field label="c. Google Coordinates">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-1">
                   <span className="text-xs font-semibold text-gray-600 uppercase">Latitude</span>
@@ -332,7 +332,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             </Field>
 
-            <Field label="Nature of the property">
+            <Field label="d. Nature of the property">
               <div className="space-y-2">
                 <select className={inputCls} value={fields.kotakBbgNatureOfProperty || ''} onChange={e => handleChange('kotakBbgNatureOfProperty', e.target.value)} disabled={isReadOnly}>
                   <option value="">Select Nature</option>
@@ -348,7 +348,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             </Field>
 
-            <Field label="Tenure of the property (Freehold/leasehold)">
+            <Field label="e. Tenure of the property (Freehold/leasehold)">
               <div className="space-y-2">
                 <select className={inputCls} value={fields.kotakBbgTenure || ''} onChange={e => handleChange('kotakBbgTenure', e.target.value)} disabled={isReadOnly}>
                   <option value="">Select Tenure</option>
@@ -365,7 +365,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             <Field label={
               <div className="flex items-center justify-between w-full">
-                <span>If leasehold please stipulate important lease terms</span>
+                <span>f. If leasehold please stipulate important lease terms</span>
                 <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case" title={isFreehold ? "Auto-checked because Tenure is Freehold" : ""}>
                   <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={leaseTermsNA} onChange={e => handleChange('kotakBbgLeaseTermsNA', e.target.checked)} disabled={isReadOnly || isFreehold} />
                   <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>
@@ -381,7 +381,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             <Field label={
               <div className="flex items-center justify-between w-full">
-                <span>Are the leasehold rights transferable?</span>
+                <span>g. Are the leasehold rights transferable?</span>
                 <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case" title={isFreehold ? "Auto-checked because Tenure is Freehold" : ""}>
                   <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={leaseTransferableNA} onChange={e => handleChange('kotakBbgLeaseTransferableNA', e.target.checked)} disabled={isReadOnly || isFreehold} />
                   <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>
@@ -407,7 +407,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             <Field label={
               <div className="flex items-center justify-between w-full">
-                <span>Occupancy details (Details if rented)</span>
+                <span>h. Occupancy details (Details if rented)</span>
                 <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case">
                   <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.kotakBbgOccupancyNA} onChange={e => handleChange('kotakBbgOccupancyNA', e.target.checked)} disabled={isReadOnly} />
                   <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>

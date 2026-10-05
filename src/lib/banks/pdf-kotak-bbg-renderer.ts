@@ -93,7 +93,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     const techAddress = this.getF('kotakBbgTechnicalAddress') || 'NA';
     
     this.drawKeyValueRow([
-      { label: 'Technical Address of the Property', value: techAddress, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'a. Technical Address of the Property (Please be descriptive mentioning landmark, road, post code etc)', value: techAddress, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     let legalAddress = this.getF('kotakBbgLegalAddress');
@@ -102,35 +102,35 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     }
 
     this.drawKeyValueRow([
-      { label: 'Legal Address of the Property', value: legalAddress || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'b. Legal Address of the Property', value: legalAddress || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     
     const lat = this.getF('latitude');
     const lng = this.getF('longitude');
-    const coords = (lat && lng) ? `${lat}, ${lng}` : 'NA';
+    const coords = (lat && lng) ? `Latitude : ${lat},Longitude: ${lng}` : 'NA';
 
     const nature = this.getF('kotakBbgNatureOfProperty') === 'Custom' ? this.getF('kotakBbgNatureOfPropertyCustom') : this.getF('kotakBbgNatureOfProperty');
     
     this.drawKeyValueRow([
-      { label: 'Google Coordinates', value: coords },
-      { label: 'Nature of the property', value: nature || 'NA' },
+      { label: 'c. Google Coordinates', value: coords },
+      { label: 'd. Nature of the property', value: nature || 'NA' },
     ]);
     
     const tenureType = this.getF('kotakBbgTenure') === 'Custom' ? this.getF('kotakBbgTenureCustom') : this.getF('kotakBbgTenure');
     const isFreehold = tenureType === 'Freehold';
     
     this.drawKeyValueRow([
-      { label: 'Tenure of the property', value: tenureType || 'NA' },
-      { label: 'Are leasehold rights transferable?', value: isFreehold ? 'NA' : (this.getF('kotakBbgLeaseTransferableNA') ? 'NA' : (this.getF('kotakBbgLeaseTransferable') === 'Custom' ? this.getF('kotakBbgLeaseTransferableCustom') : this.getF('kotakBbgLeaseTransferable'))) },
+      { label: 'e. Tenure of the property (Freehold/leasehold)', value: tenureType || 'NA' },
+      { label: 'f. If leasehold please stipulate important lease terms', value: isFreehold ? 'NA' : (this.getF('kotakBbgLeaseTermsNA') ? 'NA' : this.getF('kotakBbgLeaseTerms')) },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'Important lease terms', value: isFreehold ? 'NA' : (this.getF('kotakBbgLeaseTermsNA') ? 'NA' : this.getF('kotakBbgLeaseTerms')), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'g. Are the leasehold rights transferable?', value: isFreehold ? 'NA' : (this.getF('kotakBbgLeaseTransferableNA') ? 'NA' : (this.getF('kotakBbgLeaseTransferable') === 'Custom' ? this.getF('kotakBbgLeaseTransferableCustom') : this.getF('kotakBbgLeaseTransferable'))), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     const occupancy = this.getF('kotakBbgOccupancyNA') ? 'NA' : (this.getF('kotakBbgOccupancy') === 'Custom' ? this.getF('kotakBbgOccupancyCustom') : this.getF('kotakBbgOccupancy'));
     this.drawKeyValueRow([
-      { label: 'Occupancy details', value: occupancy || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'h. Occupancy details (Details if rented)', value: occupancy || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     
     this.drawSectionHeader('3. SITE & SURROUNDING DETAILS');
