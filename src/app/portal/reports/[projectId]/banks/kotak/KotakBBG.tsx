@@ -338,6 +338,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   <option value="">Select Nature</option>
                   <option value="Vacant Land">Vacant Land</option>
                   <option value="Industrial">Industrial</option>
+                  <option value="Industrial(Flour Mill)">Industrial(Flour Mill)</option>
                   <option value="Residential">Residential</option>
                   <option value="Commercial">Commercial</option>
                   <option value="Custom">Custom</option>
