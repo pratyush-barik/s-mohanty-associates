@@ -459,7 +459,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
           <div style={{ backgroundColor: '#e8f5e9', padding: '24px', borderRadius: '12px' }} className="space-y-6 shadow-sm border border-[#c8e6c9]">
             {/* a. Boundaries as per legal / Sale Deed & Boundaries As Per Site */}
             <div className="p-4 bg-white/80 rounded-xl border border-[#c8e6c9] shadow-sm space-y-4">
-              <h3 className="font-semibold text-gray-800">a. Boundaries as per legal / Sale Deed & Boundaries As Per Site</h3>
+              <h3 className="font-semibold text-gray-800 uppercase">a. BOUNDARIES AS PER LEGAL / SALE DEED & BOUNDARIES AS PER SITE</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Legal Boundaries */}
                 <div className="space-y-3">
