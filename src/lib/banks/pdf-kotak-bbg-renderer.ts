@@ -310,10 +310,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       let residual = this.getF('kotakBbgResidualStructuralAge');
 
       // e. No of Floors
-      let floors = this.getF('kotakBbgNumberOfFloors');
-      let elevation = this.getF('kotakBbgElevationProfile') === 'Custom' ? this.getF('kotakBbgElevationProfileCustom') : this.getF('kotakBbgElevationProfile');
-      let floorsStr = [floors ? `${floors} Floors` : null, elevation].filter(Boolean).join(' (');
-      if (floorsStr && elevation) floorsStr += ')';
+      let floorsStr = this.getF('kotakBbgNumberOfFloors');
 
       this.drawKeyValueRow([
         { label: 'd. Residual age of the Property', value: residual || 'NA' },

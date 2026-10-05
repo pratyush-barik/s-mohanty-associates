@@ -1160,28 +1160,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             {/* e. No of Floors */}
             <Field label="e. No of Floors">
-              <div className="space-y-4 p-4 border border-orange-200 rounded-lg bg-white/80 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col space-y-1.5">
-                    <span className="text-sm font-medium text-gray-700">Number of Floors</span>
-                    <input type="number" className={inputCls} min="1" value={fields.kotakBbgNumberOfFloors || ''} onChange={e => handleChange('kotakBbgNumberOfFloors', e.target.value)} disabled={isReadOnly} />
-                  </div>
-                  <div className="flex flex-col space-y-1.5">
-                    <span className="text-sm font-medium text-gray-700">Elevation Profile</span>
-                    <select className={inputCls} value={fields.kotakBbgElevationProfile || ''} onChange={e => handleChange('kotakBbgElevationProfile', e.target.value)} disabled={isReadOnly}>
-                      <option value="">Select Option</option>
-                      <option value="G+1 Storied">G+1 Storied</option>
-                      <option value="G+2 Storied">G+2 Storied</option>
-                      <option value="G+3 Storied">G+3 Storied</option>
-                      <option value="Stilt+G+4 Storied">Stilt+G+4 Storied</option>
-                      <option value="Custom">Custom</option>
-                    </select>
-                    {fields.kotakBbgElevationProfile === 'Custom' && (
-                      <input type="text" className={`${inputCls} mt-2`} placeholder="Enter custom elevation" value={fields.kotakBbgElevationProfileCustom || ''} onChange={e => handleChange('kotakBbgElevationProfileCustom', e.target.value)} disabled={isReadOnly} />
-                    )}
-                  </div>
-                </div>
-              </div>
+              <input type="text" className={inputCls} placeholder="Enter no of floors" value={fields.kotakBbgNumberOfFloors || ''} onChange={e => handleChange('kotakBbgNumberOfFloors', e.target.value)} disabled={isReadOnly} />
             </Field>
 
             {/* f. Quality of The Construction */}
