@@ -171,9 +171,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'f. Property Demarcated at Site', value: this.getF('kotakBbgDemarcatedNA') ? 'NA' : (this.getF('kotakBbgDemarcated') || 'NA') },
     ]);
 
-    let localityType = this.getF('kotakBbgLocalityClassification') === 'Custom' ? this.getF('kotakBbgLocalityClassificationCustom') : this.getF('kotakBbgLocalityClassification');
-    let localityCond = this.getF('kotakBbgLocalityCondition');
-    let localityStr = [localityType, localityCond].filter(Boolean).join(' - ');
+    let localityStr = this.getF('kotakBbgLocalityClassification');
 
     this.drawKeyValueRow([
       { label: 'g. Type, Condition, Classification of the Locality', value: localityStr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
@@ -184,9 +182,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'h. Development of surrounding areas', value: surrDev || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
-    let accessWidth = this.getF('kotakBbgAccessWidth') ? `${this.getF('kotakBbgAccessWidth')} ${this.getF('kotakBbgAccessWidthUnit') || ''}`.trim() : '';
-    let accessType = this.getF('kotakBbgAccessType') === 'Custom' ? this.getF('kotakBbgAccessTypeCustom') : this.getF('kotakBbgAccessType');
-    let accessStr = [accessWidth, accessType].filter(Boolean).join(', ');
+    let accessStr = this.getF('kotakBbgAccessType');
     
     let approachName = this.getF('kotakBbgApproachRoadName');
     let approachCond = this.getF('kotakBbgApproachRoadCondition') === 'Custom' ? this.getF('kotakBbgApproachRoadConditionCustom') : this.getF('kotakBbgApproachRoadCondition');

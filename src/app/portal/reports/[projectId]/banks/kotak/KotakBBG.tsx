@@ -582,27 +582,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             {/* g. Type, Condition, Classification of the Locality */}
             <Field label="g. Type, Condition, Classification of the Locality">
-              <div className="p-4 bg-white/80 rounded-xl border border-[#c8e6c9] shadow-sm space-y-4">
-                <div className="flex flex-col space-y-1.5">
-                  <span className="text-sm font-medium text-gray-700">Classification</span>
-                  <select className={inputCls} value={fields.kotakBbgLocalityClassification || ''} onChange={e => handleChange('kotakBbgLocalityClassification', e.target.value)} disabled={isReadOnly}>
-                    <option value="">Select Classification</option>
-                    <option value="Developing Gram Panchayat">Developing Gram Panchayat</option>
-                    <option value="Developed Residential">Developed Residential</option>
-                    <option value="Urban Commercial">Urban Commercial</option>
-                    <option value="Industrial Hub">Industrial Hub</option>
-                    <option value="Mixed">Mixed</option>
-                    <option value="Custom">Custom</option>
-                  </select>
-                  {fields.kotakBbgLocalityClassification === 'Custom' && (
-                    <input type="text" className={`${inputCls} mt-2 border-emerald-300 focus:ring-emerald-500`} placeholder="Enter custom classification" value={fields.kotakBbgLocalityClassificationCustom || ''} onChange={e => handleChange('kotakBbgLocalityClassificationCustom', e.target.value)} disabled={isReadOnly} />
-                  )}
-                </div>
-                <div className="flex flex-col space-y-1.5">
-                  <span className="text-sm font-medium text-gray-700">Detailed Condition Description</span>
-                  <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Describe the condition..." value={fields.kotakBbgLocalityCondition || ''} onChange={e => handleChange('kotakBbgLocalityCondition', e.target.value)} disabled={isReadOnly} />
-                </div>
-              </div>
+              <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Enter type, condition, classification..." value={fields.kotakBbgLocalityClassification || ''} onChange={e => handleChange('kotakBbgLocalityClassification', e.target.value)} disabled={isReadOnly} />
             </Field>
 
             {/* h. Development of surrounding areas */}
@@ -625,32 +605,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             {/* i. Access to property */}
             <Field label="i. Access to property">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white/80 rounded-xl border border-[#c8e6c9] shadow-sm">
-                <div className="flex flex-col space-y-1.5">
-                  <span className="text-sm font-medium text-gray-700">Width</span>
-                  <div className="flex space-x-2">
-                    <input type="number" className={inputCls + ' flex-1'} placeholder="Width" value={fields.kotakBbgAccessWidth || ''} onChange={e => handleChange('kotakBbgAccessWidth', e.target.value)} disabled={isReadOnly} />
-                    <select className={inputCls + ' w-28 bg-gray-50 border-gray-200'} value={fields.kotakBbgAccessWidthUnit || 'Feet'} onChange={e => handleChange('kotakBbgAccessWidthUnit', e.target.value)} disabled={isReadOnly}>
-                      <option value="Feet">Feet</option>
-                      <option value="Meters">Meters</option>
-                    </select>
-                  </div>
-                </div>
-                <div className="flex flex-col space-y-1.5">
-                  <span className="text-sm font-medium text-gray-700">Road Type/Ownership</span>
-                  <select className={inputCls} value={fields.kotakBbgAccessType || ''} onChange={e => handleChange('kotakBbgAccessType', e.target.value)} disabled={isReadOnly}>
-                    <option value="">Select Road Type</option>
-                    <option value="Govt. Road">Govt. Road</option>
-                    <option value="Private Road">Private Road</option>
-                    <option value="NH">NH</option>
-                    <option value="SH">SH</option>
-                    <option value="Custom">Custom</option>
-                  </select>
-                  {fields.kotakBbgAccessType === 'Custom' && (
-                    <input type="text" className={`${inputCls} mt-2 border-emerald-300 focus:ring-emerald-500`} placeholder="Enter custom type" value={fields.kotakBbgAccessTypeCustom || ''} onChange={e => handleChange('kotakBbgAccessTypeCustom', e.target.value)} disabled={isReadOnly} />
-                  )}
-                </div>
-              </div>
+              <input type="text" className={inputCls} placeholder="Enter access to property details" value={fields.kotakBbgAccessType || ''} onChange={e => handleChange('kotakBbgAccessType', e.target.value)} disabled={isReadOnly} />
             </Field>
 
             {/* j. Name and condition of Approach Road */}
