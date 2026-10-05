@@ -975,7 +975,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'kotak-section-5',
-      title: '5. Building/ Flat/ Office/ Shop Details',
+      title: 'Building/ Flat/ Office/ Shop Details',
       number: 5,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
@@ -1285,7 +1285,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'kotak-section-6',
-      title: '6. Details of measurements',
+      title: 'Details of measurements',
       number: 6,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
