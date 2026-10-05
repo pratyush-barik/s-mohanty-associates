@@ -363,8 +363,8 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     ]);
 
     // b. Building/ flat/ office/ shop/ unit/ showroom area
-    const isVacantLand = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
-    if (isVacantLand) {
+    const isVacantLand6 = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
+    if (isVacantLand6) {
       this.drawKeyValueRow([{ label: 'b. Building Area (Disabled: Nature of Property is Vacant Land)', value: '', labelWidth: CONTENT_W, valueWidth: 0 }]);
     } else {
       const bUnit = this.getF('kotakBbgBuildingUnit') || 'Sq.Ft';
