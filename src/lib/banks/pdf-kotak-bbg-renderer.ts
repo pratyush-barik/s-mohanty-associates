@@ -321,15 +321,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       let quality = this.getF('kotakBbgQualityOfConstructionNA') ? 'NA' : (this.getF('kotakBbgQualityOfConstruction') === 'Custom' ? this.getF('kotakBbgQualityOfConstructionCustom') : this.getF('kotakBbgQualityOfConstruction'));
 
       // g. Technical details (Finishing, interiors)
-      let flooring = 'NA';
-      const floorList = Array.isArray(this.getF('kotakBbgFlooringSystem')) ? [...this.getF('kotakBbgFlooringSystem')] : [];
-      if (this.getF('kotakBbgFlooringSystemCustomChecked') && this.getF('kotakBbgFlooringSystemCustom')) {
-        floorList.push(this.getF('kotakBbgFlooringSystemCustom'));
-      }
-      if (floorList.length > 0) flooring = floorList.join(', ');
-
-      let fittings = this.getF('kotakBbgFittingsFixtures') === 'Custom' ? this.getF('kotakBbgFittingsFixturesCustom') : this.getF('kotakBbgFittingsFixtures');
-      let interiorStr = [flooring !== 'NA' ? `Flooring: ${flooring}` : null, fittings ? `Fittings: ${fittings}` : null, this.getF('kotakBbgExteriorInteriorFinishing')].filter(Boolean).join(' | ');
+      let interiorStr = this.getF('kotakBbgTechnicalDetails');
 
       this.drawKeyValueRow([
         { label: 'f. Quality of Construction', value: quality || 'NA' },
