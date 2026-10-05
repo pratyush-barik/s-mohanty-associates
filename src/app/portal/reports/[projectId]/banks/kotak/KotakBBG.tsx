@@ -6,16 +6,24 @@ import { Field, inputCls } from '../BaseBankReportComponents';
 import { Lock, Unlock } from 'lucide-react';
 import { PDFKotakBbgRenderer } from '@/lib/banks/pdf-kotak-bbg-renderer';
 
-const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue, options }: any) => {
+const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue, options, customInputProps }: any) => {
   const [isEdit, setIsEdit] = useState(false);
 
-  const handleToggle = () => {
-    const newEditState = !isEdit;
-    setIsEdit(newEditState);
-    if (!newEditState && fallbackValue !== undefined) {
+  // When in edit-off mode, always sync stored value to fallbackValue so the
+  // dependent field dynamically tracks the source field in real time.
+  React.useEffect(() => {
+    if (!isEdit && fallbackValue !== undefined && value !== fallbackValue) {
       onChange(fallbackValue);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, fallbackValue]);
+
+  const handleToggle = () => {
+    setIsEdit(!isEdit);
   };
+
+  // The displayed value: when edit is off, always show fallbackValue (live-tracking)
+  const displayValue = isEdit ? (value || '') : (fallbackValue !== undefined ? (fallbackValue || '') : (value || ''));
 
   const labelWithToggle = (
     <div className="flex justify-between items-center w-full">
@@ -42,28 +50,40 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
         {type === 'textarea' ? (
            <textarea
              className={`${inputCls} pr-8 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
-             value={value || ''}
+             value={displayValue}
              onChange={e => onChange(e.target.value)}
              disabled={isReadOnly || !isEdit}
              rows={3}
            />
         ) : type === 'select' ? (
-          <select
-             className={`${inputCls} pr-8 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
-             value={value || ''}
-             onChange={e => onChange(e.target.value)}
-             disabled={isReadOnly || !isEdit}
-          >
-            {/* @ts-ignore */}
-            {options?.map((opt: any, i: number) => (
-              <option key={i} value={opt.value}>{opt.label}</option>
-            ))}
-          </select>
+          <>
+            <select
+               className={`${inputCls} pr-8 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
+               value={displayValue}
+               onChange={e => onChange(e.target.value)}
+               disabled={isReadOnly || !isEdit}
+            >
+              {/* @ts-ignore */}
+              {options?.map((opt: any, i: number) => (
+                <option key={i} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {displayValue === 'Custom' && customInputProps && (
+              <input
+                type="text"
+                className={`${inputCls} mt-2 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
+                placeholder={customInputProps.placeholder}
+                value={customInputProps.value || ''}
+                onChange={e => customInputProps.onChange(e.target.value)}
+                disabled={isReadOnly || !isEdit}
+              />
+            )}
+          </>
         ) : (
           <input
             type="text"
             className={`${inputCls} pr-8 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
-            value={value || ''}
+            value={displayValue}
             onChange={e => onChange(e.target.value)}
             disabled={isReadOnly || !isEdit}
           />
