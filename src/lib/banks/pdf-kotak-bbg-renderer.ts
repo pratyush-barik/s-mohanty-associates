@@ -56,16 +56,18 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Reference / Application No.', value: this.getF('projectCode') || '' },
     ]);
     this.drawKeyValueRow([
-      { label: 'Purpose of Valuation', value: purposeVal, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'a. Purpose of Valuation', value: purposeVal, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     const siteEng = this.getF('kotakBbgSiteEngineerNA') ? 'NA' : (this.getF('kotakBbgSiteEngineer') === 'Custom' ? this.getF('kotakBbgSiteEngineerCustom') : this.getF('kotakBbgSiteEngineer'));
     this.drawKeyValueRow([
-      { label: 'Date of Valuation', value: this.getF('kotakBbgDateOfValuation') },
-      { label: 'Name of the Valuer', value: this.getF('kotakBbgValuerName') || 'Er. S. Mohanty' },
+      { label: 'b. Date of valuation', value: this.getF('kotakBbgDateOfValuation') },
+      { label: 'c. Name of the Valuer', value: this.getF('kotakBbgValuerName') || 'Er. S. Mohanty' },
     ]);
     this.drawKeyValueRow([
-      { label: 'Site Engineer Inspecting', value: siteEng },
-      { label: 'Name of Customer / Borrower', value: this.getF('kotakBbgBorrowerName') },
+      { label: 'd. Name of the qualified/ experienced Site engineer inspecting the property', value: siteEng, labelWidth: 250, valueWidth: CONTENT_W - 250 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'e. Name of the customer', value: this.getF('kotakBbgBorrowerName'), labelWidth: 250, valueWidth: CONTENT_W - 250 },
     ]);
     
     let personMetStr = this.getF('kotakBbgPersonMet') || '';
@@ -77,11 +79,13 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     }
     
     this.drawKeyValueRow([
-      { label: 'Name of Property Owner(s)', value: this.getF('kotakBbgOwnerSameAsBorrower') ? this.getF('kotakBbgBorrowerName') : this.getF('kotakBbgOwnerName') },
-      { label: 'Date of Technical Site Visit', value: this.getF('kotakBbgDateOfSiteVisit') },
+      { label: 'f. Name of the property owner/owners as per legal docs', value: this.getF('kotakBbgOwnerSameAsBorrower') ? this.getF('kotakBbgBorrowerName') : this.getF('kotakBbgOwnerName'), labelWidth: 250, valueWidth: CONTENT_W - 250 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Person Met at Site & Contact Details', value: personMetStr, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'g. Date of Technical Visit', value: this.getF('kotakBbgDateOfSiteVisit'), labelWidth: 250, valueWidth: CONTENT_W - 250 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'h. Person met at the time of site visit', value: personMetStr, labelWidth: 250, valueWidth: CONTENT_W - 250 },
     ]);
     
     this.drawSectionHeader('2. DETAILS OF THE PROPERTY BEING APPRAISED');

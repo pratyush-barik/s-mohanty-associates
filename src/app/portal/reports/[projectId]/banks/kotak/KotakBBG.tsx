@@ -164,7 +164,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
             </Field>
 
             <PrefillField
-              label="Purpose of Valuation"
+              label="a. Purpose of Valuation"
               value={purposeVal}
               onChange={(val: string) => handleChange('kotakBbgPurpose', val)}
               isReadOnly={isReadOnly}
@@ -172,7 +172,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               fallbackValue={newPurpose}
             />
             
-            <Field label="Date of Valuation">
+            <Field label="b. Date of valuation">
               <input
                 type="date"
                 className={inputCls}
@@ -182,7 +182,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               />
             </Field>
 
-            <Field label="Name of the Valuer">
+            <Field label="c. Name of the Valuer">
               <input
                 type="text"
                 className={inputCls}
@@ -200,7 +200,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                 <PrefillField
                   label={
                     <div className="flex items-center justify-between w-full">
-                      <span className="flex-1 pr-4">Name of the qualified/ experienced Site engineer inspecting the property</span>
+                      <span className="flex-1 pr-4">d. Name of the qualified/ experienced Site engineer inspecting the property</span>
                       <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case shrink-0">
                         <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.kotakBbgSiteEngineerNA} onChange={e => handleChange('kotakBbgSiteEngineerNA', e.target.checked)} disabled={isReadOnly} />
                         <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>
@@ -216,7 +216,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               );
             })()}
 
-            <Field label="Name of Customer">
+            <Field label="e. Name of the customer">
               <input
                 type="text"
                 className={inputCls}
@@ -226,7 +226,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               />
             </Field>
 
-            <Field label="Name of the property owner/owners as per legal docs">
+            <Field label="f. Name of the property owner/owners as per legal docs">
               <textarea 
                 className={inputCls + ' resize-y w-full'} 
                 rows={2} 
@@ -237,7 +237,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               />
             </Field>
 
-            <Field label="Date of Technical Site Visit">
+            <Field label="g. Date of Technical Visit">
               <input
                 type="date"
                 className={inputCls}
@@ -247,7 +247,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               />
             </Field>
             
-            <Field label="Person Met at Site & Contact Details">
+            <Field label="h. Person met at the time of site visit">
               <div className="p-3 bg-white bg-opacity-50 border border-gray-200 rounded space-y-4">
                 <div className="flex flex-col space-y-2">
                   <span className="text-sm font-semibold text-gray-700">Name</span>
