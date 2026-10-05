@@ -479,9 +479,8 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         return (
           <div style={{ backgroundColor: '#e8f5e9', padding: '24px', borderRadius: '12px' }} className="space-y-6 shadow-sm border border-[#c8e6c9]">
             {/* a. Boundaries as per legal / Sale Deed & Boundaries As Per Site */}
-            <div className="p-4 bg-white/80 rounded-xl border border-[#c8e6c9] shadow-sm space-y-4">
-              <h3 className="font-semibold text-gray-800 uppercase">a. BOUNDARIES AS PER LEGAL / SALE DEED & BOUNDARIES AS PER SITE</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Field label="a. BOUNDARIES AS PER LEGAL / SALE DEED & BOUNDARIES AS PER SITE">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border border-[#c8e6c9] rounded-lg bg-white/80 shadow-sm">
                 {/* Legal Boundaries */}
                 <div className="space-y-3">
                   <h4 className="text-sm font-semibold text-emerald-800 bg-emerald-50 p-2 rounded border border-emerald-100">Legal / Sale Deed Boundaries</h4>
@@ -523,7 +522,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   </div>
                 </div>
               </div>
-            </div>
+            </Field>
 
             {/* b. Whether Boundaries matching */}
             <Field label="b. Whether Boundaries matching (actual site verification with Legal docs)">
