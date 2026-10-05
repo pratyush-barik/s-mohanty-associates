@@ -6,7 +6,7 @@ import { Field, inputCls } from '../BaseBankReportComponents';
 import { Lock, Unlock } from 'lucide-react';
 import { PDFKotakBbgRenderer } from '@/lib/banks/pdf-kotak-bbg-renderer';
 
-const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue, options, customInputProps }: any) => {
+const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue, fallbackCustomValue, options, customInputProps }: any) => {
   const [isEdit, setIsEdit] = useState(false);
 
   // When in edit-off mode, always sync stored value to fallbackValue so the
@@ -17,6 +17,14 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEdit, fallbackValue]);
+
+  // When in edit-off mode and the source field is Custom, also sync the custom text
+  React.useEffect(() => {
+    if (!isEdit && fallbackCustomValue !== undefined && customInputProps?.onChange) {
+      customInputProps.onChange(fallbackCustomValue);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, fallbackCustomValue]);
 
   const handleToggle = () => {
     setIsEdit(!isEdit);
@@ -1258,11 +1266,13 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               onChange={(val: string) => handleChange('kotakBbgUsageOfProperty', val)}
               isReadOnly={isReadOnly}
               tooltip='Prefill from section 2, "Nature of the property"'
-              fallbackValue={fields.kotakBbgNatureOfProperty === 'Custom' ? fields.kotakBbgNatureOfPropertyCustom : fields.kotakBbgNatureOfProperty}
+              fallbackValue={fields.kotakBbgNatureOfProperty === 'Custom' ? 'Custom' : fields.kotakBbgNatureOfProperty}
+              fallbackCustomValue={fields.kotakBbgNatureOfProperty === 'Custom' ? fields.kotakBbgNatureOfPropertyCustom : undefined}
               type="select"
               options={[
                 { label: 'Select Option', value: '' },
                 { label: 'Industrial', value: 'Industrial' },
+                { label: 'Industrial(Flour Mill)', value: 'Industrial(Flour Mill)' },
                 { label: 'Commercial', value: 'Commercial' },
                 { label: 'Residential', value: 'Residential' },
                 { label: 'Custom', value: 'Custom' }
