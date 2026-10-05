@@ -1041,37 +1041,71 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               <div className="space-y-4 p-4 border border-orange-200 rounded-lg bg-white/80 shadow-sm">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col space-y-1.5">
-                    <span className="text-sm font-medium text-gray-700">Type of Construction</span>
-                    <select className={inputCls} value={fields.kotakBbgConstructionType || ''} onChange={e => handleChange('kotakBbgConstructionType', e.target.value)} disabled={isReadOnly}>
-                      <option value="">Select Option</option>
-                      <option value="RCC Framed Structure">RCC Framed Structure</option>
-                      <option value="Load Bearing Walls">Load Bearing Walls</option>
-                      <option value="Composite">Composite</option>
-                      <option value="Shed">Shed</option>
-                      <option value="Custom">Custom</option>
-                    </select>
-                    {fields.kotakBbgConstructionType === 'Custom' && (
-                      <input type="text" className={`${inputCls} mt-2`} placeholder="Enter custom type" value={fields.kotakBbgConstructionTypeCustom || ''} onChange={e => handleChange('kotakBbgConstructionTypeCustom', e.target.value)} disabled={isReadOnly} />
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm font-medium text-gray-700">Type of Construction</span>
+                      <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                        <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgConstructionTypeNA} onChange={e => handleChange('kotakBbgConstructionTypeNA', e.target.checked)} disabled={isReadOnly} />
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
+                      </label>
+                    </div>
+                    {!fields.kotakBbgConstructionTypeNA ? (
+                      <div className="space-y-2">
+                        <select className={inputCls} value={fields.kotakBbgConstructionType || ''} onChange={e => handleChange('kotakBbgConstructionType', e.target.value)} disabled={isReadOnly}>
+                          <option value="">Select Option</option>
+                          <option value="RCC Framed Structure">RCC Framed Structure</option>
+                          <option value="Load Bearing Walls">Load Bearing Walls</option>
+                          <option value="Composite">Composite</option>
+                          <option value="Shed">Shed</option>
+                          <option value="Custom">Custom</option>
+                        </select>
+                        {fields.kotakBbgConstructionType === 'Custom' && (
+                          <input type="text" className={`${inputCls} mt-2`} placeholder="Enter custom type" value={fields.kotakBbgConstructionTypeCustom || ''} onChange={e => handleChange('kotakBbgConstructionTypeCustom', e.target.value)} disabled={isReadOnly} />
+                        )}
+                      </div>
+                    ) : (
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
                     )}
                   </div>
                   <div className="flex flex-col space-y-1.5">
-                    <span className="text-sm font-medium text-gray-700">Roofing</span>
-                    <select className={inputCls} value={fields.kotakBbgRoofingSystem || ''} onChange={e => handleChange('kotakBbgRoofingSystem', e.target.value)} disabled={isReadOnly}>
-                      <option value="">Select Option</option>
-                      <option value="RCC Slab">RCC Slab</option>
-                      <option value="GCI Sheets">GCI Sheets</option>
-                      <option value="Asbestos Sheets">Asbestos Sheets</option>
-                      <option value="Mangalore Tiles">Mangalore Tiles</option>
-                      <option value="Custom">Custom</option>
-                    </select>
-                    {fields.kotakBbgRoofingSystem === 'Custom' && (
-                      <input type="text" className={`${inputCls} mt-2`} placeholder="Enter custom roofing" value={fields.kotakBbgRoofingSystemCustom || ''} onChange={e => handleChange('kotakBbgRoofingSystemCustom', e.target.value)} disabled={isReadOnly} />
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-sm font-medium text-gray-700">Roofing</span>
+                      <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                        <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgRoofingSystemNA} onChange={e => handleChange('kotakBbgRoofingSystemNA', e.target.checked)} disabled={isReadOnly} />
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
+                      </label>
+                    </div>
+                    {!fields.kotakBbgRoofingSystemNA ? (
+                      <div className="space-y-2">
+                        <select className={inputCls} value={fields.kotakBbgRoofingSystem || ''} onChange={e => handleChange('kotakBbgRoofingSystem', e.target.value)} disabled={isReadOnly}>
+                          <option value="">Select Option</option>
+                          <option value="RCC Slab">RCC Slab</option>
+                          <option value="GCI Sheets">GCI Sheets</option>
+                          <option value="Asbestos Sheets">Asbestos Sheets</option>
+                          <option value="Mangalore Tiles">Mangalore Tiles</option>
+                          <option value="Custom">Custom</option>
+                        </select>
+                        {fields.kotakBbgRoofingSystem === 'Custom' && (
+                          <input type="text" className={`${inputCls} mt-2`} placeholder="Enter custom roofing" value={fields.kotakBbgRoofingSystemCustom || ''} onChange={e => handleChange('kotakBbgRoofingSystemCustom', e.target.value)} disabled={isReadOnly} />
+                        )}
+                      </div>
+                    ) : (
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
                     )}
                   </div>
                 </div>
                 <div className="flex flex-col space-y-1.5">
-                  <span className="text-sm font-medium text-gray-700">Special Architectural Features</span>
-                  <input type="text" className={inputCls} placeholder="Enter special features if any" value={fields.kotakBbgSpecialFeatures || ''} onChange={e => handleChange('kotakBbgSpecialFeatures', e.target.value)} disabled={isReadOnly} />
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-sm font-medium text-gray-700">Special Architectural Features</span>
+                    <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                      <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgSpecialFeaturesNA} onChange={e => handleChange('kotakBbgSpecialFeaturesNA', e.target.checked)} disabled={isReadOnly} />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
+                    </label>
+                  </div>
+                  {!fields.kotakBbgSpecialFeaturesNA ? (
+                    <input type="text" className={inputCls} placeholder="Enter special features if any" value={fields.kotakBbgSpecialFeatures || ''} onChange={e => handleChange('kotakBbgSpecialFeatures', e.target.value)} disabled={isReadOnly} />
+                  ) : (
+                    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
+                  )}
                 </div>
               </div>
             </Field>

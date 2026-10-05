@@ -281,10 +281,15 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       this.drawKeyValueRow([{ label: 'This section is auto-disabled because Nature of Property is "Vacant Land".', value: '', labelWidth: CONTENT_W, valueWidth: 0 }]);
     } else {
       // a. Type of Construction/ Roofing/ Special architectural features
-      let consType = this.getF('kotakBbgConstructionType') === 'Custom' ? this.getF('kotakBbgConstructionTypeCustom') : this.getF('kotakBbgConstructionType');
-      let roofSystem = this.getF('kotakBbgRoofingSystem') === 'Custom' ? this.getF('kotakBbgRoofingSystemCustom') : this.getF('kotakBbgRoofingSystem');
-      let specialFeatures = this.getF('kotakBbgSpecialFeatures');
-      let constrStr = [consType, roofSystem ? `Roof: ${roofSystem}` : null, specialFeatures ? `Features: ${specialFeatures}` : null].filter(Boolean).join(', ');
+      let consType = this.getF('kotakBbgConstructionTypeNA') ? 'NA' : (this.getF('kotakBbgConstructionType') === 'Custom' ? this.getF('kotakBbgConstructionTypeCustom') : this.getF('kotakBbgConstructionType'));
+      let roofSystem = this.getF('kotakBbgRoofingSystemNA') ? 'NA' : (this.getF('kotakBbgRoofingSystem') === 'Custom' ? this.getF('kotakBbgRoofingSystemCustom') : this.getF('kotakBbgRoofingSystem'));
+      let specialFeatures = this.getF('kotakBbgSpecialFeaturesNA') ? 'NA' : this.getF('kotakBbgSpecialFeatures');
+      
+      let constrParts = [];
+      if (consType) constrParts.push(consType);
+      if (roofSystem) constrParts.push(roofSystem === 'NA' ? 'Roof: NA' : `Roof: ${roofSystem}`);
+      if (specialFeatures) constrParts.push(specialFeatures === 'NA' ? 'Features: NA' : `Features: ${specialFeatures}`);
+      let constrStr = constrParts.length > 0 ? constrParts.join(', ') : '';
 
       this.drawKeyValueRow([
         { label: 'a. Type of Construction / Roofing', value: constrStr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
