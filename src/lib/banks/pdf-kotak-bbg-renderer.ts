@@ -130,146 +130,189 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     ]);
     
     this.drawSectionHeader('3. SITE & SURROUNDING DETAILS');
-    this.drawKeyValueRow([{ label: 'Property Boundaries Comparison', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
+    this.drawKeyValueRow([{ label: 'a. Property Boundaries Comparison', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
     this.drawKeyValueRow([
       { label: 'Direction', value: 'As Per Document', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2, bold: true, labelBold: true },
       { label: 'As Per Site', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0, bold: true, labelBold: true },
     ]);
-    const b = this.getF('kotakBbgBoundariesTable') || {};
+    const bDoc = this.getF('kotakBbgBoundariesDoc') || {};
+    const bSite = this.getF('kotakBbgBoundariesSiteSameAsDoc') ? bDoc : (this.getF('kotakBbgBoundariesSite') || {});
     this.drawKeyValueRow([
-      { label: 'North', value: b.northDoc || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
-      { label: b.northSite || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
+      { label: 'North', value: bDoc.north || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
+      { label: bSite.north || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
     ]);
     this.drawKeyValueRow([
-      { label: 'South', value: b.southDoc || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
-      { label: b.southSite || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
+      { label: 'South', value: bDoc.south || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
+      { label: bSite.south || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
     ]);
     this.drawKeyValueRow([
-      { label: 'East', value: b.eastDoc || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
-      { label: b.eastSite || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
+      { label: 'East', value: bDoc.east || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
+      { label: bSite.east || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
     ]);
     this.drawKeyValueRow([
-      { label: 'West', value: b.westDoc || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
-      { label: b.westSite || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
+      { label: 'West', value: bDoc.west || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
+      { label: bSite.west || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
+    ]);
+
+    const matchingVal = this.getF('kotakBbgBoundariesSiteSameAsDoc') ? 'Yes' : this.getF('kotakBbgBoundariesMatching');
+    const isDiscrepancyNA = matchingVal === 'Yes' || this.getF('kotakBbgBoundariesDiscrepancyNA');
+
+    this.drawKeyValueRow([
+      { label: 'b. Boundaries Matching Verification', value: matchingVal || 'NA' },
+      { label: 'c. Discrepancy in Boundaries', value: isDiscrepancyNA ? 'NA' : (this.getF('kotakBbgBoundariesDiscrepancy') || 'NA') },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'Boundaries Matching Verification', value: this.getF('kotakBbgBoundariesMatching') },
-      { label: 'Discrepancy in Boundaries', value: this.getF('kotakBbgBoundariesDiscrepancyNA') ? 'NA' : this.getF('kotakBbgBoundariesDiscrepancy') },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Document Basis for Property Identification', value: this.getF('kotakBbgDocumentBasis') === 'Custom' ? this.getF('kotakBbgDocumentBasisCustom') : this.getF('kotakBbgDocumentBasis') },
-      { label: 'Valuer Confirmation', value: this.getF('kotakBbgValuerConfirmation') ? 'Confirmed' : 'Not Confirmed' },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Plot Demarcated at Site', value: this.getF('kotakBbgPlotDemarcated') ? 'Yes' : 'No' },
-      { label: 'Locality Type, Condition & Classification', value: this.getF('kotakBbgLocalityTypeNA') ? 'NA' : this.getF('kotakBbgLocalityType') },
-    ]);
-    const surrList = Array.isArray(this.getF('kotakBbgSurroundingDev')) ? [...this.getF('kotakBbgSurroundingDev')] : [];
-    if (this.getF('kotakBbgSurroundingDevCustomChecked') && this.getF('kotakBbgSurroundingDevCustom')) {
-      surrList.push(this.getF('kotakBbgSurroundingDevCustom'));
-    }
-    const surr = surrList.join(', ');
-    this.drawKeyValueRow([
-      { label: 'Development of Surrounding Areas', value: surr, labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Access to Property', value: this.getF('kotakBbgAccessNA') ? 'NA' : this.getF('kotakBbgAccess') },
-      { label: 'Approach Road Name & Condition', value: this.getF('kotakBbgApproachRoadNA') ? 'NA' : this.getF('kotakBbgApproachRoad') },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Proximity to Civic Amenities', value: this.getF('kotakBbgProximityNA') ? 'NA' : this.getF('kotakBbgProximity'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'd. Document Basis for Property Identification', value: this.getF('kotakBbgDocumentsIdentified') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
-    this.drawSectionHeader('4. TITLE, LEGAL & STATUTORY DETAILS');
+    this.drawKeyValueRow([
+      { label: 'e. Confirmation from the valuer', value: this.getF('kotakBbgValuerConfirmationNA') ? 'NA' : (this.getF('kotakBbgValuerConfirmation') || 'NA') },
+      { label: 'f. Property Demarcated at Site', value: this.getF('kotakBbgDemarcatedNA') ? 'NA' : (this.getF('kotakBbgDemarcated') || 'NA') },
+    ]);
+
+    let localityType = this.getF('kotakBbgLocalityClassification') === 'Custom' ? this.getF('kotakBbgLocalityClassificationCustom') : this.getF('kotakBbgLocalityClassification');
+    let localityCond = this.getF('kotakBbgLocalityCondition');
+    let localityStr = [localityType, localityCond].filter(Boolean).join(' - ');
+
+    this.drawKeyValueRow([
+      { label: 'g. Type, Condition, Classification of the Locality', value: localityStr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    let surrDev = this.getF('kotakBbgSurroundingDev') === 'Custom' ? this.getF('kotakBbgSurroundingDevCustom') : this.getF('kotakBbgSurroundingDev');
+    this.drawKeyValueRow([
+      { label: 'h. Development of surrounding areas', value: surrDev || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    let accessWidth = this.getF('kotakBbgAccessWidth') ? `${this.getF('kotakBbgAccessWidth')} ${this.getF('kotakBbgAccessWidthUnit') || ''}`.trim() : '';
+    let accessType = this.getF('kotakBbgAccessType') === 'Custom' ? this.getF('kotakBbgAccessTypeCustom') : this.getF('kotakBbgAccessType');
+    let accessStr = [accessWidth, accessType].filter(Boolean).join(', ');
     
-    let natureOfTitleDeed = this.getF('kotakBbgTitleDeedNature');
-    if (natureOfTitleDeed === 'Custom') natureOfTitleDeed = this.getF('kotakBbgTitleDeedNatureCustom');
-    
-    this.drawKeyValueRow([
-      { label: 'Nature of Title Deed', value: natureOfTitleDeed },
-      { label: 'Title Deed / Document Number', value: this.getF('kotakBbgTitleDeedNoNA') ? 'NA' : this.getF('kotakBbgTitleDeedNo') },
-    ]);
-    
-    this.drawKeyValueRow([
-      { label: 'Date of Execution', value: this.getF('kotakBbgExecutionDate') },
-      { label: 'Registration Date', value: this.getF('kotakBbgRegistrationDate') },
-    ]);
-    
-    let sro = this.getF('kotakBbgSro');
-    if (sro === 'Custom') sro = this.getF('kotakBbgSroCustom');
-    if (this.getF('kotakBbgSroNA')) sro = 'NA';
-
-    let localAuthority = this.getF('kotakBbgLocalAuthority');
-    if (localAuthority === 'Custom') localAuthority = this.getF('kotakBbgLocalAuthorityCustom');
-    if (this.getF('kotakBbgLocalAuthorityNA')) localAuthority = 'NA';
+    let approachName = this.getF('kotakBbgApproachRoadName');
+    let approachCond = this.getF('kotakBbgApproachRoadCondition') === 'Custom' ? this.getF('kotakBbgApproachRoadConditionCustom') : this.getF('kotakBbgApproachRoadCondition');
+    let approachStr = [approachName, approachCond].filter(Boolean).join(' - ');
 
     this.drawKeyValueRow([
-      { label: 'Sub-Registrar Office (SRO)', value: sro },
-      { label: 'Town Planning / Local Authority', value: localAuthority },
+      { label: 'i. Access to Property', value: accessStr || 'NA' },
+      { label: 'j. Name and condition of Approach Road', value: approachStr || 'NA' },
     ]);
-
-    let approvedPlanStatus = this.getF('kotakBbgApprovedPlanStatus');
-    let approvedPlanStr = approvedPlanStatus || '';
-    if (approvedPlanStatus === 'Approved') {
-        approvedPlanStr += ` (No: ${this.getF('kotakBbgApprovedPlanNo') || '-'}, Date: ${this.getF('kotakBbgApprovedPlanDate') || '-'})`;
-    }
-    
-    let planDeviation = this.getF('kotakBbgPlanDeviation') || '';
-    if (planDeviation === 'Minor Deviation' || planDeviation === 'Major Deviation') {
-        planDeviation += ` (${this.getF('kotakBbgPlanDeviationPercent') || '0'}%)`;
-    }
-    
-    this.drawKeyValueRow([
-      { label: 'Approved Building Plan Details', value: approvedPlanStr },
-      { label: 'Deviation from Approved Plan', value: planDeviation },
-    ]);
-
-    let propertyTaxStr = 'NA';
-    if (!this.getF('kotakBbgPropertyTaxNA')) {
-        let taxYear = this.getF('kotakBbgTaxPaidYear');
-        if (taxYear === 'Custom') taxYear = this.getF('kotakBbgTaxPaidYearCustom');
-        propertyTaxStr = `No: ${this.getF('kotakBbgPropertyTaxNo') || '-'} | Paid Up To: ${taxYear || '-'}`;
-    }
-
-    const isVacantOrIndependent = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land' || this.getF('kotakBbgNatureOfProperty') === 'Independent House';
-    const reraNA = this.getF('kotakBbgReraNA') !== undefined ? this.getF('kotakBbgReraNA') : isVacantOrIndependent;
 
     this.drawKeyValueRow([
-      { label: 'Property Tax Assessment', value: propertyTaxStr },
-      { label: 'RERA Registration Number', value: reraNA ? 'NA' : this.getF('kotakBbgReraNo') },
+      { label: 'k. Proximity to Civic Amenities', value: this.getF('kotakBbgCivicAmenities') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
-    this.drawSectionHeader('5. BUILDING / STRUCTURAL DETAILS');
+    this.drawSectionHeader('4. DETAILS OF APPROVALS VERIFIED');
+    
+    // a. Land Non Agricultural/ conversion permission
+    let landConv = this.getF('kotakBbgLandConversionNA') ? 'NA' : (this.getF('kotakBbgLandConversion') === 'Custom' ? this.getF('kotakBbgLandConversionCustom') : this.getF('kotakBbgLandConversion'));
+    
+    // b. Land Zoning/ Restrictions
+    let landZoning = this.getF('kotakBbgLandZoningNA') ? 'NA' : (this.getF('kotakBbgLandZoning') === 'Custom' ? this.getF('kotakBbgLandZoningCustom') : this.getF('kotakBbgLandZoning'));
+
+    this.drawKeyValueRow([
+      { label: 'a. Land Non Agricultural/ conversion permission', value: landConv || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+    this.drawKeyValueRow([
+      { label: 'b. Land Zoning/ Restrictions (if any)', value: landZoning || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    // c. Approved plans Details
+    let planStatus = this.getF('kotakBbgApprovedPlanStatus');
+    let planNotAvail = planStatus === 'Approved Plan not available';
+    let planDetails = planNotAvail ? 'NA' : this.getF('kotakBbgApprovedPlanDetails');
+    let planStr = [planStatus, planDetails].filter(Boolean).join(' - ');
+    this.drawKeyValueRow([
+      { label: 'c. Approved plans Details', value: planStr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    // d. Name of the Authority granting approvals
+    let auth = this.getF('kotakBbgAuthorityApprovalsNA') ? 'NA' : (this.getF('kotakBbgAuthorityApprovals') === 'Custom' ? this.getF('kotakBbgAuthorityApprovalsCustom') : this.getF('kotakBbgAuthorityApprovals'));
+    
+    // e. Are the plans approved from competent authority?
+    let plansApproved = (planNotAvail || this.getF('kotakBbgPlansApprovedNA')) ? 'NA' : this.getF('kotakBbgPlansApproved');
+
+    this.drawKeyValueRow([
+      { label: 'd. Name of the Authority granting approvals', value: auth || 'NA' },
+      { label: 'e. Are the plans approved?', value: plansApproved || 'NA' },
+    ]);
+
+    // f. Commencement Certificate
+    let commencementStatus = this.getF('kotakBbgCommencementStatus');
+    let commencementStr = commencementStatus === 'Provided' ? `No: ${this.getF('kotakBbgCommencementNo') || '-'}, Date: ${this.getF('kotakBbgCommencementDate') || '-'}` : (commencementStatus || 'NA');
+
+    // g. Occupation Certificate
+    let occupationStatus = this.getF('kotakBbgOccupationStatus');
+    let occupationStr = occupationStatus === 'Provided' ? `No: ${this.getF('kotakBbgOccupationNo') || '-'}, Date: ${this.getF('kotakBbgOccupationDate') || '-'}` : (occupationStatus || 'NA');
+
+    this.drawKeyValueRow([
+      { label: 'f. Commencement Certificate', value: commencementStr },
+      { label: 'g. Occupation/Completion certificate', value: occupationStr },
+    ]);
+
+    // h. Sale/lease deed details
+    let deedType = this.getF('kotakBbgDeedType') === 'Custom' ? this.getF('kotakBbgDeedTypeCustom') : this.getF('kotakBbgDeedType');
+    let deedNo = this.getF('kotakBbgDeedNo');
+    let deedDate = this.getF('kotakBbgDeedDate');
+    let deedSale = this.getF('kotakBbgDeedSaleConsiderationNA') ? 'NA' : this.getF('kotakBbgDeedSaleConsideration');
+    let deedStr = [deedType, deedNo ? `No: ${deedNo}` : null, deedDate ? `Date: ${deedDate}` : null, deedSale ? `INR ${deedSale}` : null].filter(Boolean).join(', ');
+
+    this.drawKeyValueRow([
+      { label: 'h. Sale/lease deed details', value: deedStr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    // i. Details of other documents perused
+    let otherDocs = this.getF('kotakBbgOtherDocsNA') ? 'NA' : [
+      ...(this.getF('kotakBbgOtherDocsList') || []),
+      this.getF('kotakBbgOtherDocsCustomChecked') ? this.getF('kotakBbgOtherDocsCustom') : null
+    ].filter(Boolean).join(', ');
+
+    this.drawKeyValueRow([
+      { label: 'i. Details of other documents perused', value: otherDocs || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
+
+    this.drawSectionHeader('5. BUILDING/ FLAT/ OFFICE/ SHOP DETAILS');
     if (this.getF('kotakBbgNatureOfProperty') === 'Vacant Land' && !this.getF('kotakBbgSection5Override')) {
       this.drawKeyValueRow([{ label: 'This section is auto-disabled because Nature of Property is "Vacant Land".', value: '', labelWidth: CONTENT_W, valueWidth: 0 }]);
     } else {
-      this.drawKeyValueRow([
-        { label: 'Year of Construction', value: this.getF('kotakBbgYearOfConstruction') || 'NA' },
-        { label: 'Age of Building (Years)', value: this.getF('kotakBbgAgeOfBuilding') || 'NA' },
-      ]);
-      
-      let elevation = this.getF('kotakBbgElevationProfile');
-      if (elevation === 'Custom') elevation = this.getF('kotakBbgElevationProfileCustom');
-      
-      this.drawKeyValueRow([
-        { label: 'Number of Floors', value: this.getF('kotakBbgNumberOfFloors') || 'NA' },
-        { label: 'Elevation Profile', value: elevation || 'NA' },
-      ]);
-
-      let consType = this.getF('kotakBbgConstructionType');
-      if (consType === 'Custom') consType = this.getF('kotakBbgConstructionTypeCustom');
-      if (this.getF('kotakBbgConstructionTypeNA')) consType = 'NA';
-
-      let roofSystem = this.getF('kotakBbgRoofingSystem');
-      if (roofSystem === 'Custom') roofSystem = this.getF('kotakBbgRoofingSystemCustom');
-      if (this.getF('kotakBbgRoofingSystemNA')) roofSystem = 'NA';
+      // a. Type of Construction/ Roofing/ Special architectural features
+      let consType = this.getF('kotakBbgConstructionType') === 'Custom' ? this.getF('kotakBbgConstructionTypeCustom') : this.getF('kotakBbgConstructionType');
+      let roofSystem = this.getF('kotakBbgRoofingSystem') === 'Custom' ? this.getF('kotakBbgRoofingSystemCustom') : this.getF('kotakBbgRoofingSystem');
+      let specialFeatures = this.getF('kotakBbgSpecialFeatures');
+      let constrStr = [consType, roofSystem ? `Roof: ${roofSystem}` : null, specialFeatures ? `Features: ${specialFeatures}` : null].filter(Boolean).join(', ');
 
       this.drawKeyValueRow([
-        { label: 'Type of Construction', value: consType || 'NA' },
-        { label: 'Roofing System', value: roofSystem || 'NA' },
+        { label: 'a. Type of Construction / Roofing', value: constrStr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
       ]);
 
+      // b. Year of construction
+      let yearConst = this.getF('kotakBbgYearOfConstructionNA') ? 'NA' : this.getF('kotakBbgYearOfConstruction');
+
+      // c. Stage of construction in %
+      let stage = this.getF('kotakBbgStageOfConstructionNA') ? 'NA' : `${this.getF('kotakBbgStageOfConstruction') || '100'}%`;
+
+      this.drawKeyValueRow([
+        { label: 'b. Year of construction', value: yearConst || 'NA' },
+        { label: 'c. Stage of construction', value: stage },
+      ]);
+
+      // d. Residual age of the Property
+      let residual = this.getF('kotakBbgResidualStructuralAge');
+
+      // e. No of Floors
+      let floors = this.getF('kotakBbgNumberOfFloors');
+      let elevation = this.getF('kotakBbgElevationProfile') === 'Custom' ? this.getF('kotakBbgElevationProfileCustom') : this.getF('kotakBbgElevationProfile');
+      let floorsStr = [floors ? `${floors} Floors` : null, elevation].filter(Boolean).join(' (');
+      if (floorsStr && elevation) floorsStr += ')';
+
+      this.drawKeyValueRow([
+        { label: 'd. Residual age of the Property', value: residual || 'NA' },
+        { label: 'e. No of Floors', value: floorsStr || 'NA' },
+      ]);
+
+      // f. Quality of The Construction
+      let quality = this.getF('kotakBbgQualityOfConstructionNA') ? 'NA' : (this.getF('kotakBbgQualityOfConstruction') === 'Custom' ? this.getF('kotakBbgQualityOfConstructionCustom') : this.getF('kotakBbgQualityOfConstruction'));
+
+      // g. Technical details (Finishing, interiors)
       let flooring = 'NA';
       const floorList = Array.isArray(this.getF('kotakBbgFlooringSystem')) ? [...this.getF('kotakBbgFlooringSystem')] : [];
       if (this.getF('kotakBbgFlooringSystemCustomChecked') && this.getF('kotakBbgFlooringSystemCustom')) {
@@ -277,17 +320,26 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       }
       if (floorList.length > 0) flooring = floorList.join(', ');
 
-      this.drawKeyValueRow([
-        { label: 'Flooring System', value: flooring, labelWidth: 200, valueWidth: CONTENT_W - 200 },
-      ]);
+      let fittings = this.getF('kotakBbgFittingsFixtures') === 'Custom' ? this.getF('kotakBbgFittingsFixturesCustom') : this.getF('kotakBbgFittingsFixtures');
+      let interiorStr = [flooring !== 'NA' ? `Flooring: ${flooring}` : null, fittings ? `Fittings: ${fittings}` : null, this.getF('kotakBbgExteriorInteriorFinishing')].filter(Boolean).join(' | ');
 
       this.drawKeyValueRow([
-        { label: 'Exterior / Interior Finishing', value: this.getF('kotakBbgExteriorInteriorFinishingNA') ? 'NA' : this.getF('kotakBbgExteriorInteriorFinishing'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+        { label: 'f. Quality of Construction', value: quality || 'NA' },
+        { label: 'g. Technical details', value: interiorStr || 'NA' },
       ]);
-      
+
+      // h. Amenities provided in building/ Complex
+      let amenitiesList = this.getF('kotakBbgAmenitiesNA') ? 'NA' : [
+        ...(Array.isArray(this.getF('kotakBbgAmenities')) ? this.getF('kotakBbgAmenities') : []),
+        this.getF('kotakBbgAmenitiesCustomChecked') ? this.getF('kotakBbgAmenitiesCustom') : null
+      ].filter(Boolean).join(', ');
+
+      // i. Usage of the property
+      let usage = this.getF('kotakBbgUsageOfProperty') === 'Custom' ? this.getF('kotakBbgUsageOfPropertyCustom') : this.getF('kotakBbgUsageOfProperty');
+
       this.drawKeyValueRow([
-        { label: 'Quality of Construction', value: this.getF('kotakBbgQualityOfConstructionNA') ? 'NA' : this.getF('kotakBbgQualityOfConstruction') },
-        { label: 'Residual / Remaining Life', value: this.getF('kotakBbgResidualStructuralAge') || 'NA' },
+        { label: 'h. Amenities provided', value: amenitiesList || 'NA' },
+        { label: 'i. Usage of the property', value: usage || 'NA' },
       ]);
     }
 

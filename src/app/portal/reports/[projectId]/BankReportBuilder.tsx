@@ -323,7 +323,7 @@ function Field({ label, children, span = 1 }: { label: string; children: React.R
 const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-[#b8860b]/30 focus:border-accent-500 disabled:bg-[#f1f3f5] disabled:text-[#6c757d] read-only:bg-[#f1f3f5] read-only:text-[#495057] read-only:cursor-not-allowed";
 const selectCls = inputCls;
 
-const FloatingNavigator = ({ sections }: { sections: { id: string; title: string; special?: boolean }[] }) => {
+const FloatingNavigator = ({ sections }: { sections: { id: string; title: string; shortName?: string; special?: boolean }[] }) => {
   const [activeId, setActiveId] = useState<string>('');
 
   useEffect(() => {
@@ -366,7 +366,7 @@ const FloatingNavigator = ({ sections }: { sections: { id: string; title: string
             .replace(/^\([0-9a-zivxlcdm]+\)[\.\s\-:]*\s*/i, '')
             .trim();
           const match = cleanTitle.match(/^(.*?)\s*(\([^\)]+\))$/);
-          const mainTitle = match ? match[1] : cleanTitle;
+          const mainTitle = (sec as any).shortName || (match ? match[1] : cleanTitle);
           const badgeRange = match ? match[2] : null;
 
           return (
