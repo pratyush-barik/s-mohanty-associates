@@ -250,11 +250,17 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     ]);
 
     // h. Sale/lease deed details
-    let deedType = this.getF('kotakBbgDeedType') === 'Custom' ? this.getF('kotakBbgDeedTypeCustom') : this.getF('kotakBbgDeedType');
-    let deedNo = this.getF('kotakBbgDeedNo');
-    let deedDate = this.getF('kotakBbgDeedDate');
+    let deedType = this.getF('kotakBbgDeedTypeNA') ? 'NA' : (this.getF('kotakBbgDeedType') === 'Custom' ? this.getF('kotakBbgDeedTypeCustom') : this.getF('kotakBbgDeedType'));
+    let deedNo = this.getF('kotakBbgDeedNoNA') ? 'NA' : this.getF('kotakBbgDeedNo');
+    let deedDate = this.getF('kotakBbgDeedDateNA') ? 'NA' : this.getF('kotakBbgDeedDate');
     let deedSale = this.getF('kotakBbgDeedSaleConsiderationNA') ? 'NA' : this.getF('kotakBbgDeedSaleConsideration');
-    let deedStr = [deedType, deedNo ? `No: ${deedNo}` : null, deedDate ? `Date: ${deedDate}` : null, deedSale ? `INR ${deedSale}` : null].filter(Boolean).join(', ');
+    
+    let deedParts = [];
+    if (deedType) deedParts.push(deedType);
+    if (deedNo) deedParts.push(deedNo === 'NA' ? 'No: NA' : `No: ${deedNo}`);
+    if (deedDate) deedParts.push(deedDate === 'NA' ? 'Date: NA' : `Date: ${deedDate}`);
+    if (deedSale) deedParts.push(deedSale === 'NA' ? 'Sale Consideration: NA' : `INR ${deedSale}`);
+    let deedStr = deedParts.length > 0 ? deedParts.join(', ') : '';
 
     this.drawKeyValueRow([
       { label: 'h. Sale/lease deed details', value: deedStr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },

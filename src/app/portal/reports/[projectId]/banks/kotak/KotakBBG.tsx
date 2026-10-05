@@ -846,27 +846,59 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
             <Field label="h. Sale/lease deed details (Date, Reg No., Sale consideration etc)">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border border-[#c8e6c9] rounded-lg bg-white/80 shadow-sm">
                 <div className="flex flex-col space-y-1.5">
-                  <span className="text-sm font-medium text-gray-700">Document Type</span>
-                  <select className={inputCls} value={fields.kotakBbgDeedType || ''} onChange={e => handleChange('kotakBbgDeedType', e.target.value)} disabled={isReadOnly}>
-                    <option value="">Select Option</option>
-                    <option value="Net ROR(Bhu-Naksha)">Net ROR(Bhu-Naksha)</option>
-                    <option value="Sale Deed">Sale Deed</option>
-                    <option value="Lease Deed">Lease Deed</option>
-                    <option value="Gift Deed">Gift Deed</option>
-                    <option value="Allotment Letter">Allotment Letter</option>
-                    <option value="Custom">Custom</option>
-                  </select>
-                  {fields.kotakBbgDeedType === 'Custom' && (
-                    <input type="text" className={`${inputCls} mt-2`} placeholder="Enter custom value" value={fields.kotakBbgDeedTypeCustom || ''} onChange={e => handleChange('kotakBbgDeedTypeCustom', e.target.value)} disabled={isReadOnly} />
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-sm font-medium text-gray-700">Document Type</span>
+                    <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                      <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgDeedTypeNA} onChange={e => handleChange('kotakBbgDeedTypeNA', e.target.checked)} disabled={isReadOnly} />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
+                    </label>
+                  </div>
+                  {!fields.kotakBbgDeedTypeNA ? (
+                    <div className="space-y-2">
+                      <select className={inputCls} value={fields.kotakBbgDeedType || ''} onChange={e => handleChange('kotakBbgDeedType', e.target.value)} disabled={isReadOnly}>
+                        <option value="">Select Option</option>
+                        <option value="Net ROR(Bhu-Naksha)">Net ROR(Bhu-Naksha)</option>
+                        <option value="Sale Deed">Sale Deed</option>
+                        <option value="Lease Deed">Lease Deed</option>
+                        <option value="Gift Deed">Gift Deed</option>
+                        <option value="Allotment Letter">Allotment Letter</option>
+                        <option value="Custom">Custom</option>
+                      </select>
+                      {fields.kotakBbgDeedType === 'Custom' && (
+                        <input type="text" className={`${inputCls} mt-2`} placeholder="Enter custom value" value={fields.kotakBbgDeedTypeCustom || ''} onChange={e => handleChange('kotakBbgDeedTypeCustom', e.target.value)} disabled={isReadOnly} />
+                      )}
+                    </div>
+                  ) : (
+                    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
                   )}
                 </div>
                 <div className="flex flex-col space-y-1.5">
-                  <span className="text-sm font-medium text-gray-700">Registration / Document Number</span>
-                  <input type="text" className={inputCls} value={fields.kotakBbgDeedNo || ''} onChange={e => handleChange('kotakBbgDeedNo', e.target.value)} disabled={isReadOnly} />
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-sm font-medium text-gray-700">Registration / Document Number</span>
+                    <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                      <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgDeedNoNA} onChange={e => handleChange('kotakBbgDeedNoNA', e.target.checked)} disabled={isReadOnly} />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
+                    </label>
+                  </div>
+                  {!fields.kotakBbgDeedNoNA ? (
+                    <input type="text" className={inputCls} value={fields.kotakBbgDeedNo || ''} onChange={e => handleChange('kotakBbgDeedNo', e.target.value)} disabled={isReadOnly} />
+                  ) : (
+                    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
+                  )}
                 </div>
                 <div className="flex flex-col space-y-1.5">
-                  <span className="text-sm font-medium text-gray-700">Date</span>
-                  <input type="date" className={inputCls} value={fields.kotakBbgDeedDate || ''} onChange={e => handleChange('kotakBbgDeedDate', e.target.value)} disabled={isReadOnly} />
+                  <div className="flex items-center justify-between w-full">
+                    <span className="text-sm font-medium text-gray-700">Date</span>
+                    <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
+                      <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgDeedDateNA} onChange={e => handleChange('kotakBbgDeedDateNA', e.target.checked)} disabled={isReadOnly} />
+                      <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
+                    </label>
+                  </div>
+                  {!fields.kotakBbgDeedDateNA ? (
+                    <input type="date" className={inputCls} value={fields.kotakBbgDeedDate || ''} onChange={e => handleChange('kotakBbgDeedDate', e.target.value)} disabled={isReadOnly} />
+                  ) : (
+                    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
+                  )}
                 </div>
                 <div className="flex flex-col space-y-1.5">
                   <div className="flex items-center justify-between w-full">
