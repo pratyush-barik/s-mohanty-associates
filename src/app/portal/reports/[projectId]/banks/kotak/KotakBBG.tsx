@@ -6,7 +6,7 @@ import { Field, inputCls } from '../BaseBankReportComponents';
 import { Lock, Unlock } from 'lucide-react';
 import { PDFKotakBbgRenderer } from '@/lib/banks/pdf-kotak-bbg-renderer';
 
-const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue, fallbackCustomValue, options, customInputProps }: any) => {
+const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue, options, customInputProps }: any) => {
   const [isEdit, setIsEdit] = useState(false);
 
   // When in edit-off mode, always sync stored value to fallbackValue so the
@@ -17,14 +17,6 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEdit, fallbackValue]);
-
-  // When in edit-off mode and the source field is Custom, also sync the custom text
-  React.useEffect(() => {
-    if (!isEdit && fallbackCustomValue !== undefined && customInputProps?.onChange) {
-      customInputProps.onChange(fallbackCustomValue);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEdit, fallbackCustomValue]);
 
   const handleToggle = () => {
     setIsEdit(!isEdit);
@@ -64,29 +56,46 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
              rows={3}
            />
         ) : type === 'select' ? (
-          <>
-            <select
-               className={`${inputCls} pr-8 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
-               value={displayValue}
-               onChange={e => onChange(e.target.value)}
-               disabled={isReadOnly || !isEdit}
-            >
-              {/* @ts-ignore */}
-              {options?.map((opt: any, i: number) => (
-                <option key={i} value={opt.value}>{opt.label}</option>
-              ))}
-            </select>
-            {displayValue === 'Custom' && customInputProps && (
-              <input
-                type="text"
-                className={`${inputCls} mt-2 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
-                placeholder={customInputProps.placeholder}
-                value={customInputProps.value || ''}
-                onChange={e => customInputProps.onChange(e.target.value)}
-                disabled={isReadOnly || !isEdit}
-              />
-            )}
-          </>
+          (() => {
+            // When edit is off and the value doesn't match any option, show as plain text input
+            const optionValues = options?.map((opt: any) => opt.value) || [];
+            const isKnownOption = optionValues.includes(displayValue);
+            if (!isEdit && !isKnownOption && displayValue) {
+              return (
+                <input
+                  type="text"
+                  className={`${inputCls} pr-8 bg-gray-100 cursor-not-allowed text-gray-700`}
+                  value={displayValue}
+                  disabled
+                />
+              );
+            }
+            return (
+              <>
+                <select
+                   className={`${inputCls} pr-8 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
+                   value={displayValue}
+                   onChange={e => onChange(e.target.value)}
+                   disabled={isReadOnly || !isEdit}
+                >
+                  {/* @ts-ignore */}
+                  {options?.map((opt: any, i: number) => (
+                    <option key={i} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+                {displayValue === 'Custom' && customInputProps && (
+                  <input
+                    type="text"
+                    className={`${inputCls} mt-2 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
+                    placeholder={customInputProps.placeholder}
+                    value={customInputProps.value || ''}
+                    onChange={e => customInputProps.onChange(e.target.value)}
+                    disabled={isReadOnly || !isEdit}
+                  />
+                )}
+              </>
+            );
+          })()
         ) : (
           <input
             type="text"
@@ -1266,8 +1275,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               onChange={(val: string) => handleChange('kotakBbgUsageOfProperty', val)}
               isReadOnly={isReadOnly}
               tooltip='Prefill from section 2, "Nature of the property"'
-              fallbackValue={fields.kotakBbgNatureOfProperty === 'Custom' ? 'Custom' : fields.kotakBbgNatureOfProperty}
-              fallbackCustomValue={fields.kotakBbgNatureOfProperty === 'Custom' ? fields.kotakBbgNatureOfPropertyCustom : undefined}
+              fallbackValue={fields.kotakBbgNatureOfProperty === 'Custom' ? fields.kotakBbgNatureOfPropertyCustom : fields.kotakBbgNatureOfProperty}
               type="select"
               options={[
                 { label: 'Select Option', value: '' },
