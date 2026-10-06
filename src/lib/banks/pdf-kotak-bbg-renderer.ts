@@ -422,21 +422,26 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'h. Guideline/ Circle/ Ready Reckoner Valuation', value: this.getF('kotakBbgGuidelineSummary') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
-    this.drawSectionHeader('8. VALUATION FINANCIAL SUMMARY');
+    this.drawSectionHeader('8. SUMMARY');
+    
+    // a. Fair Market Value
     this.drawKeyValueRow([
-      { label: 'Exact Fair Market Value (FMV)', value: this.getF('kotakBbgFmvExact') },
-      { label: 'Rounded Fair Market Value (Say Value)', value: this.getF('kotakBbgFmvRounded') },
+      { label: 'a. Fair Market Value (FMV)', value: this.getF('kotakBbgFmvSummary') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
+
+    // b & c. Realizable & Distress Values
     const rvPct = this.getF('kotakBbgRvPercent') !== undefined ? this.getF('kotakBbgRvPercent') : '90';
     const dvPct = this.getF('kotakBbgDvPercent') !== undefined ? this.getF('kotakBbgDvPercent') : '80';
     this.drawKeyValueRow([
-      { label: `Realizable Value (RV) @ ${rvPct}%`, value: this.getF('kotakBbgRv') },
-      { label: `Distress Value (DV) @ ${dvPct}%`, value: this.getF('kotakBbgDv') },
+      { label: `b. Realizable Value (RV) @ ${rvPct}%`, value: this.getF('kotakBbgRvRounded') ? `Rs.${this.getF('kotakBbgRvRounded')}/-` : 'NA' },
+      { label: `c. Distress Value (DV) @ ${dvPct}%`, value: this.getF('kotakBbgDvRounded') ? `Rs.${this.getF('kotakBbgDvRounded')}/-` : 'NA' },
     ]);
-    const isVacantLand = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
-    const isIvNA = this.getF('kotakBbgIvNA') !== undefined ? this.getF('kotakBbgIvNA') : isVacantLand;
+
+    // d. Insurable Value
+    const isVacantLand8 = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
+    const isIvNA = this.getF('kotakBbgIvNA') !== undefined ? this.getF('kotakBbgIvNA') : isVacantLand8;
     this.drawKeyValueRow([
-      { label: 'Insurable Value (IV)', value: isIvNA ? 'NA' : this.getF('kotakBbgIv'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'd. Insurable Value (IV)', value: isIvNA ? 'NA' : (this.getF('kotakBbgIvRounded') ? `Rs.${this.getF('kotakBbgIvRounded')}/-` : 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawSectionHeader('9. REMARKS / KEY OBSERVATIONS');

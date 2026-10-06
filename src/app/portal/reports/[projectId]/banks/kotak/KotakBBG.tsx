@@ -1636,77 +1636,159 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'kotak-section-8',
-      title: 'Valuation Financial Summary',
+      title: 'Summary',
       number: 8,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
         const isVacantLand = fields.kotakBbgNatureOfProperty === 'Vacant Land';
-        const isIvNA = fields.kotakBbgIvNA !== undefined ? fields.kotakBbgIvNA : isVacantLand;
+        
+        // Recalculate values from previous sections
+        let extractedSqFt = 0;
+        if (fields.kotakBbgLandAreaDescriptiveDetails && !fields.kotakBbgLandAreaDescriptiveDetailsNA) {
+          const match = fields.kotakBbgLandAreaDescriptiveDetails.match(/[\d,]+(\.\d+)?/);
+          if (match) {
+            extractedSqFt = parseFloat(match[0].replace(/,/g, '')) || 0;
+          }
+        }
+        const landRate = parseFloat(fields.kotakBbgAdoptedLandRate) || 0;
+        const calculatedLandValue = extractedSqFt * landRate;
+        const buildingValue = parseFloat(fields.kotakBbgBuildingValue) || 0;
+        const exactBuildingValue = fields.kotakBbgBuildingValueNA || isVacantLand ? 0 : buildingValue;
+        const exactFmv = calculatedLandValue + exactBuildingValue;
+        
+        const roundedFmv = parseFloat(fields.kotakBbgFmvRounded) || 0;
+        const fmvSummary = `Rs.${exactFmv.toLocaleString('en-IN')}/- or Say Rs.${roundedFmv.toLocaleString('en-IN')}/-`;
+
+        const rvPercent = fields.kotakBbgRvPercent !== undefined ? parseFloat(fields.kotakBbgRvPercent) : 90;
+        const calcRv = (roundedFmv * rvPercent) / 100;
+        
+        const dvPercent = fields.kotakBbgDvPercent !== undefined ? parseFloat(fields.kotakBbgDvPercent) : 80;
+        const calcDv = (roundedFmv * dvPercent) / 100;
 
         return (
           <div style={{ backgroundColor: '#fce4ec', padding: '16px', borderRadius: '8px' }} className="space-y-4">
-            {/* Exact FMV */}
-            <Field label="Exact Fair Market Value (FMV)">
-              <input type="number" className={inputCls} placeholder="INR" value={fields.kotakBbgFmvExact || ''} onChange={e => handleChange('kotakBbgFmvExact', e.target.value)} disabled={isReadOnly} />
-            </Field>
-
-            {/* Rounded FMV */}
-            <Field label="Rounded Fair Market Value (Say Value)">
-              <input type="number" className={inputCls} placeholder="INR" value={fields.kotakBbgFmvRounded || ''} onChange={e => handleChange('kotakBbgFmvRounded', e.target.value)} disabled={isReadOnly} />
-            </Field>
-
-            {/* Realizable Value */}
-            <Field label="Realizable Value (RV)">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-sm text-gray-600 block mb-1">RV Percentage (%)</span>
-                  <PrefillField
-                    label=""
-                    value={fields.kotakBbgRvPercent !== undefined ? fields.kotakBbgRvPercent : '90'}
-                    onChange={(val: string) => handleChange('kotakBbgRvPercent', val)}
-                    isReadOnly={isReadOnly}
-                    tooltip="Auto calculating from [FMV × RV%]"
-                  />
+            
+            {/* a. Fair Market Value */}
+            <Field label="a. Fair Market Value (To be rounded to the nearest Cr/Lakh)">
+              <div className="space-y-4 p-4 border border-pink-200 rounded-lg bg-white/80 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex flex-col space-y-1.5">
+                    <span className="text-sm font-medium text-gray-700">Exact FMV (INR)</span>
+                    <div className="relative">
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={exactFmv ? `₹ ${exactFmv.toLocaleString('en-IN')}` : ''} disabled title='Prefill from section 7, "f. Total Valuation (INR)"' />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from section 7, "f. Total Valuation (INR)"'>
+                        <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <span className="text-sm font-medium text-gray-700">Rounded FMV (Say Value) (INR)</span>
+                    <input type="number" className={inputCls} placeholder="e.g. 310900000" value={fields.kotakBbgFmvRounded || ''} onChange={e => handleChange('kotakBbgFmvRounded', e.target.value)} disabled={isReadOnly} />
+                  </div>
                 </div>
-                <div>
-                  <span className="text-sm text-gray-600 block mb-1">Realizable Value (INR)</span>
-                  <input type="number" className={inputCls} placeholder="INR" value={fields.kotakBbgRv || ''} onChange={e => handleChange('kotakBbgRv', e.target.value)} disabled={isReadOnly} />
+                <div className="pt-2 border-t border-pink-100">
+                  <PrefillField
+                    label="Generated FMV Summary"
+                    value={fields.kotakBbgFmvSummary}
+                    onChange={(val: string) => handleChange('kotakBbgFmvSummary', val)}
+                    isReadOnly={isReadOnly}
+                    tooltip="Auto-generated from FMV values"
+                    fallbackValue={fmvSummary}
+                    type="textarea"
+                  />
                 </div>
               </div>
             </Field>
 
-            {/* Distress Value */}
-            <Field label="Distress Value (DV)">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <span className="text-sm text-gray-600 block mb-1">DV Percentage (%)</span>
-                  <PrefillField
-                    label=""
-                    value={fields.kotakBbgDvPercent !== undefined ? fields.kotakBbgDvPercent : '80'}
-                    onChange={(val: string) => handleChange('kotakBbgDvPercent', val)}
-                    isReadOnly={isReadOnly}
-                    tooltip="Auto calculating from [FMV × DV%]"
-                  />
-                </div>
-                <div>
-                  <span className="text-sm text-gray-600 block mb-1">Distress Value (INR)</span>
-                  <input type="number" className={inputCls} placeholder="INR" value={fields.kotakBbgDv || ''} onChange={e => handleChange('kotakBbgDv', e.target.value)} disabled={isReadOnly} />
+            {/* b. Realizable Value */}
+            <Field label="b. Realizable Value (To be rounded to the nearest Cr/Lakh)">
+              <div className="space-y-4 p-4 border border-pink-200 rounded-lg bg-white/80 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex flex-col space-y-1.5">
+                    <span className="text-sm font-medium text-gray-700">Realizable Value Factor (%)</span>
+                    <div className="relative">
+                      <input type="number" className={inputCls + ' pr-8'} placeholder="90" value={fields.kotakBbgRvPercent !== undefined ? fields.kotakBbgRvPercent : '90'} onChange={e => handleChange('kotakBbgRvPercent', e.target.value)} disabled={isReadOnly} />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <span className="text-sm font-medium text-gray-700">Calculated RV (INR)</span>
+                    <div className="relative">
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={calcRv ? `₹ ${calcRv.toLocaleString('en-IN')}` : ''} disabled title="Auto calculating from [Rounded FMV × RV %]" />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Auto calculating from [Rounded FMV × RV %]">
+                        <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <span className="text-sm font-medium text-gray-700">Rounded RV (Say Value) (INR)</span>
+                    <input type="number" className={inputCls} placeholder="Enter rounded RV" value={fields.kotakBbgRvRounded || ''} onChange={e => handleChange('kotakBbgRvRounded', e.target.value)} disabled={isReadOnly} />
+                  </div>
                 </div>
               </div>
             </Field>
 
-            {/* Insurable Value */}
-            <Field label="Insurable Value (IV)">
-              <div className="space-y-2">
-                <label className="flex items-center space-x-2 text-sm">
-                  <input type="checkbox" checked={isIvNA} onChange={e => handleChange('kotakBbgIvNA', e.target.checked)} disabled={isReadOnly || isVacantLand} />
-                  <span>Not Applicable (NA)</span>
+            {/* c. Distress Value */}
+            <Field label="c. Distress Value (To be rounded to the nearest Cr/Lakh)">
+              <div className="space-y-4 p-4 border border-pink-200 rounded-lg bg-white/80 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="flex flex-col space-y-1.5">
+                    <span className="text-sm font-medium text-gray-700">Distress Value Factor (%)</span>
+                    <div className="relative">
+                      <input type="number" className={inputCls + ' pr-8'} placeholder="80" value={fields.kotakBbgDvPercent !== undefined ? fields.kotakBbgDvPercent : '80'} onChange={e => handleChange('kotakBbgDvPercent', e.target.value)} disabled={isReadOnly} />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <span className="text-sm font-medium text-gray-700">Calculated DV (INR)</span>
+                    <div className="relative">
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={calcDv ? `₹ ${calcDv.toLocaleString('en-IN')}` : ''} disabled title="Auto calculating from [Rounded FMV × DV %]" />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Auto calculating from [Rounded FMV × DV %]">
+                        <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col space-y-1.5">
+                    <span className="text-sm font-medium text-gray-700">Rounded DV (Say Value) (INR)</span>
+                    <input type="number" className={inputCls} placeholder="Enter rounded DV" value={fields.kotakBbgDvRounded || ''} onChange={e => handleChange('kotakBbgDvRounded', e.target.value)} disabled={isReadOnly} />
+                  </div>
+                </div>
+              </div>
+            </Field>
+
+            {/* d. Insurable Value */}
+            <Field label={
+              <div className="flex items-center justify-between w-full">
+                <span>d. Insurable Value (To be rounded to the nearest Cr/Lakh)</span>
+                <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case" title={isVacantLand ? "Auto-checked because Nature of Property is Vacant Land" : ""}>
+                  <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgIvNA || isVacantLand} onChange={e => handleChange('kotakBbgIvNA', e.target.checked)} disabled={isReadOnly || isVacantLand} />
+                  <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
                 </label>
-                {!isIvNA && (
-                  <input type="number" className={inputCls} placeholder="INR" value={fields.kotakBbgIv || ''} onChange={e => handleChange('kotakBbgIv', e.target.value)} disabled={isReadOnly} />
-                )}
               </div>
+            }>
+              {!(fields.kotakBbgIvNA || isVacantLand) ? (
+                <div className="space-y-4 p-4 border border-pink-200 rounded-lg bg-white/80 shadow-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex flex-col space-y-1.5">
+                      <span className="text-sm font-medium text-gray-700">Exact Insurable Value (INR)</span>
+                      <div className="relative">
+                        <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={exactBuildingValue ? `₹ ${exactBuildingValue.toLocaleString('en-IN')}` : ''} disabled title='Prefill from section 7, "f. Building Value (INR)"' />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from section 7, "f. Building Value (INR)"'>
+                          <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col space-y-1.5">
+                      <span className="text-sm font-medium text-gray-700">Rounded Insurable Value (Say Value) (INR)</span>
+                      <input type="number" className={inputCls} placeholder="Enter rounded IV" value={fields.kotakBbgIvRounded || ''} onChange={e => handleChange('kotakBbgIvRounded', e.target.value)} disabled={isReadOnly} />
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
+              )}
             </Field>
+
           </div>
         );
       }
