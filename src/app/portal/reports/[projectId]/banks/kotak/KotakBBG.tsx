@@ -1406,7 +1406,6 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
         const isVacantLand = fields.kotakBbgNatureOfProperty === 'Vacant Land';
-        const valMethodologyTemplate = "The Cost or Land and Building Method of valuation, also known as the Cost Approach, determines a property's value by summing the market value of the land and the depreciated reproduction or replacement cost of the building. It is most appropriate for valuing new or unique properties for which there is a significant variation between the market value and the benchmark value of the property because sale deeds are often executed at lower rates to avoid higher stamp duty.";
 
         // Extract SqFt from Section 6a descriptive text
         let extractedSqFt = 0;
@@ -1453,7 +1452,8 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               <textarea
                 className={`${inputCls} resize-y bg-white`}
                 rows={4}
-                value={fields.kotakBbgValuationMethodology || valMethodologyTemplate}
+                value={fields.kotakBbgValuationMethodology || ''}
+                placeholder="Enter details of valuation methodology and reason..."
                 onChange={e => handleChange('kotakBbgValuationMethodology', e.target.value)}
                 disabled={isReadOnly}
               />
