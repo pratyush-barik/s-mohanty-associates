@@ -1889,85 +1889,108 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'kotak-section-10',
-      title: 'Valuer Declaration & Signoff',
+      title: 'Declaration',
       number: 10,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
-        const siteVisitDate = fields.kotakBbgDateOfSiteVisit || '[Date from Section 1]';
-        const clausesText = `I hereby declare that the information provided in this report is true and correct to the best of my knowledge. The valuation is strictly for bank internal use based on current market trends and visible site conditions as of ${siteVisitDate}.\n\n1. I have not withheld any material information that could affect the valuation.\n2. I have personally inspected the property and verified its physical existence.\n3. I have no direct or indirect interest in the property being valued.\n4. My liability is limited as per standard banking terms and the scope of work defined by Kotak Mahindra Bank Limited (KMBL).`;
+        const siteVisitDate = fields.kotakBbgDateOfVisit || '[Date from Section 1]';
+        const clausesText = `I hereby declare that -
+(a) the Valuation Report prepared and the information contained herein is true and correct to the best of my knowledge and belief :
+(b) I have no direct or indirect interest in the property valued;
+(c) I have personally inspected the property on / I have deputed my employed qualified/ experienced site engineer for inspecting the property on ${siteVisitDate}`;
         
         const today = new Date().toISOString().split('T')[0];
-        const issueDateVal = fields.kotakBbgReportIssueDate || today;
-
-        const defaultCredentials = "Name: Er. S. Mohanty\nQualifications: B.Tech (Civil), M.Tech (Structures), FIV\nIBBI Reg No: IBBI/RV/00/0000\nWealth Tax Reg No: CAT-I/000";
-        const credentialsVal = fields.kotakBbgValuerCredentials || defaultCredentials;
 
         return (
           <div style={{ backgroundColor: '#e8eaf6', padding: '16px', borderRadius: '8px' }} className="space-y-4">
-            <Field label="Standard Declaration & Legal Clauses">
-              <div className="space-y-3">
-                <div className="p-3 bg-white border border-gray-300 rounded text-sm text-gray-700 h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-inner">
+            
+            {/* a. Standard Declaration Legal Clauses */}
+            <Field label="a. Standard Declaration Legal Clauses">
+              <div className="space-y-4 p-4 border border-indigo-200 rounded-lg bg-white/80 shadow-sm relative group">
+                <div className="p-3 bg-gray-50 border border-gray-300 rounded text-sm text-gray-700 h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-inner cursor-not-allowed">
                   {clausesText}
                 </div>
-                <label className="flex items-start space-x-2 text-sm text-indigo-900 font-semibold bg-indigo-50 p-3 rounded border border-indigo-200 cursor-pointer">
-                  <input type="checkbox" className="mt-1" checked={fields.kotakBbgDeclarationConfirmed || false} onChange={e => handleChange('kotakBbgDeclarationConfirmed', e.target.checked)} disabled={isReadOnly} />
-                  <span>I have read and legally bind myself to the above declarations.</span>
+                <div className="absolute top-2 right-2 cursor-help" title="Auto calculating from [Section 1 Inspection Date]">
+                  <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
+                </div>
+                <label className="flex items-start space-x-2 text-sm text-indigo-900 font-semibold bg-indigo-50 p-3 rounded border border-indigo-200 cursor-pointer hover:bg-indigo-100 transition-colors">
+                  <input type="checkbox" className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" checked={fields.kotakBbgDeclarationConfirmed || false} onChange={e => handleChange('kotakBbgDeclarationConfirmed', e.target.checked)} disabled={isReadOnly} />
+                  <span>I have read and legally bind myself to the above declarations</span>
                 </label>
               </div>
             </Field>
             
-            <Field label="Report Issue Date">
-              <input
-                type="date"
-                className={inputCls}
-                value={issueDateVal}
-                onChange={e => handleChange('kotakBbgReportIssueDate', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
-
-            <Field label="Report Issue Place">
-              <div title="Prefill from Valuer Profile">
-                <select className={inputCls} value={fields.kotakBbgReportIssuePlace || 'Bhubaneswar'} onChange={e => handleChange('kotakBbgReportIssuePlace', e.target.value)} disabled={isReadOnly}>
-                  <option value="Bhubaneswar">Bhubaneswar</option>
-                  <option value="Cuttack">Cuttack</option>
-                  <option value="Rourkela">Rourkela</option>
-                  <option value="Custom">Custom</option>
-                </select>
-                {fields.kotakBbgReportIssuePlace === 'Custom' && (
-                  <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom place" value={fields.kotakBbgReportIssuePlaceCustom || ''} onChange={e => handleChange('kotakBbgReportIssuePlaceCustom', e.target.value)} disabled={isReadOnly} />
-                )}
-              </div>
-            </Field>
-
-            <PrefillField
-              label="Valuer Credentials (Name, Qualifications, Reg No.)"
-              value={credentialsVal}
-              onChange={(val: string) => handleChange('kotakBbgValuerCredentials', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Prefill from Valuer Profile"
-              type="textarea"
-            />
-
-            <Field label="Valuer Signature & Official Stamp">
-              <div className="space-y-4" title="Prefill from Valuer Profile">
-                <div className="p-4 border-2 border-dashed border-gray-300 rounded bg-white flex flex-col items-center justify-center">
-                  <span className="text-gray-500 mb-2 font-semibold">System Generated Signature & Stamp</span>
-                  <div className="w-64 h-32 bg-gray-100 border border-gray-300 flex items-center justify-center text-gray-400 italic rounded">
-                    [Preview: Profile Signature Image]
+            {/* b. Date & Place of Issue */}
+            <Field label="b. Date & Place of Issue">
+              <div className="space-y-4 p-4 border border-indigo-200 rounded-lg bg-white/80 shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-sm text-gray-600 block mb-1">Date</span>
+                    <PrefillField
+                      label=""
+                      value={fields.kotakBbgReportIssueDate !== undefined ? fields.kotakBbgReportIssueDate : today}
+                      onChange={(val: string) => handleChange('kotakBbgReportIssueDate', val)}
+                      isReadOnly={isReadOnly}
+                      tooltip="Prefill from System Current Date"
+                      type="date"
+                    />
                   </div>
-                  <label className="mt-4 text-sm text-indigo-600 cursor-pointer hover:underline font-medium">
-                    <input type="file" className="hidden" disabled={isReadOnly} />
-                    Override with Manual File Upload
-                  </label>
+                  <div>
+                    <span className="text-sm text-gray-600 block mb-1">Place</span>
+                    <PrefillField
+                      label=""
+                      value={fields.kotakBbgReportIssuePlace !== undefined ? fields.kotakBbgReportIssuePlace : 'Bhubaneswar'}
+                      onChange={(val: string) => handleChange('kotakBbgReportIssuePlace', val)}
+                      isReadOnly={isReadOnly}
+                      tooltip="Prefill from Valuer Profile"
+                      type="select"
+                      options={[
+                        { label: 'Bhubaneswar', value: 'Bhubaneswar' },
+                        { label: 'Cuttack', value: 'Cuttack' },
+                        { label: 'Rourkela', value: 'Rourkela' },
+                        { label: 'Custom', value: 'Custom' }
+                      ]}
+                    />
+                    {fields.kotakBbgReportIssuePlace === 'Custom' && (
+                      <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom place" value={fields.kotakBbgReportIssuePlaceCustom || ''} onChange={e => handleChange('kotakBbgReportIssuePlaceCustom', e.target.value)} disabled={isReadOnly} />
+                    )}
+                  </div>
                 </div>
-                
-                <label className="flex items-start space-x-2 text-sm text-indigo-900 font-semibold bg-indigo-50 p-3 rounded border border-indigo-200 cursor-pointer">
-                  <input type="checkbox" className="mt-1" checked={fields.kotakBbgSignatureConfirmed || false} onChange={e => handleChange('kotakBbgSignatureConfirmed', e.target.checked)} disabled={isReadOnly} />
-                  <span>I confirm and verify this signature, stamp, and credential block for final submission.</span>
-                </label>
               </div>
             </Field>
+
+            {/* c. Signature / Stamp of empanelled valuer */}
+            <Field label="c. Signature / Stamp of empanelled valuer">
+              <div className="space-y-4 p-4 border border-indigo-200 rounded-lg bg-white/80 shadow-sm">
+                <PrefillField
+                  label="System Generated Signature & Stamp"
+                  value={fields.kotakBbgSignatureConfirmed ? 'Confirmed' : ''}
+                  onChange={() => handleChange('kotakBbgSignatureConfirmed', !fields.kotakBbgSignatureConfirmed)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Prefill from Valuer Profile"
+                  type="text" 
+                  renderCustomInput={(isLocked) => (
+                    <div className="space-y-4">
+                      {isLocked ? (
+                        <div className="w-full h-32 bg-gray-50 border border-gray-200 flex flex-col items-center justify-center text-gray-400 italic rounded shadow-inner cursor-not-allowed">
+                          <span className="text-gray-500 mb-2 font-semibold">Digitized Signature & Stamp</span>
+                          [Preview: Profile Signature Image]
+                        </div>
+                      ) : (
+                        <div className="w-full p-4 border-2 border-dashed border-indigo-300 rounded bg-white flex flex-col items-center justify-center hover:bg-indigo-50 transition-colors">
+                          <span className="text-gray-600 mb-2 font-medium">Override with Manual File Upload</span>
+                          <label className="text-sm text-white bg-indigo-600 px-4 py-2 rounded cursor-pointer hover:bg-indigo-700 transition-colors shadow-sm">
+                            <input type="file" className="hidden" disabled={isReadOnly} />
+                            Choose File
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+            </Field>
+
           </div>
         );
       }

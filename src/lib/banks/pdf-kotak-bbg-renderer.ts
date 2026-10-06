@@ -468,20 +468,31 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'Detailed Remarks & Additional Observations', value: this.getF('kotakBbgRemarksNA') ? 'NA' : this.getF('kotakBbgRemarks'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
-    this.drawSectionHeader('10. VALUER DECLARATION & SIGNOFF');
+    this.drawSectionHeader('10. DECLARATION');
+
+    // a. Standard Declaration Legal Clauses
+    const siteVisitDate = this.getF('kotakBbgDateOfVisit') || '[Date from Section 1]';
+    const clausesText = `I hereby declare that -
+(a) the Valuation Report prepared and the information contained herein is true and correct to the best of my knowledge and belief :
+(b) I have no direct or indirect interest in the property valued;
+(c) I have personally inspected the property on / I have deputed my employed qualified/ experienced site engineer for inspecting the property on ${siteVisitDate}`;
+    
+    this.drawKeyValueRow([
+      { label: 'a. Standard Declaration Legal Clauses', value: clausesText, labelWidth: 200, valueWidth: CONTENT_W - 200 },
+    ]);
     this.drawKeyValueRow([
       { label: 'Declaration Confirmed', value: this.getF('kotakBbgDeclarationConfirmed') ? 'Yes (Legally Bound)' : 'No', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
+
+    // b. Date & Place of Issue
     this.drawKeyValueRow([
-      { label: 'Report Issue Date', value: this.getF('kotakBbgReportIssueDate') || new Date().toISOString().split('T')[0] },
+      { label: 'b. Report Issue Date', value: this.getF('kotakBbgReportIssueDate') || new Date().toISOString().split('T')[0] },
       { label: 'Report Issue Place', value: this.getF('kotakBbgReportIssuePlace') === 'Custom' ? this.getF('kotakBbgReportIssuePlaceCustom') : (this.getF('kotakBbgReportIssuePlace') || 'Bhubaneswar') },
     ]);
-    const defaultCredentials = "Name: Er. S. Mohanty\nQualifications: B.Tech (Civil), M.Tech (Structures), FIV\nIBBI Reg No: IBBI/RV/00/0000\nWealth Tax Reg No: CAT-I/000";
+
+    // c. Signature / Stamp
     this.drawKeyValueRow([
-      { label: 'Valuer Credentials', value: this.getF('kotakBbgValuerCredentials') || defaultCredentials, labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Signature Confirmed', value: this.getF('kotakBbgSignatureConfirmed') ? 'Yes (Verified)' : 'No', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'c. Signature Confirmed', value: this.getF('kotakBbgSignatureConfirmed') ? 'Yes (Verified)' : 'No', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
   }
 }
