@@ -1888,90 +1888,47 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
       number: 9,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
-        const defaultDisclaimers = "The valuer assumes no responsibility for legal title. The valuation is strictly for bank internal use based on current market trends and visible site conditions.";
-        const disclaimersVal = fields.kotakBbgStandardDisclaimers || defaultDisclaimers;
-        
-        const riskOptions = ['High-Tension Line overhead', 'Encroachment', 'Boundary Dispute', 'Road Access Issue', 'Low-Lying Flood Prone', 'Custom'];
-        const currentRisks = Array.isArray(fields.kotakBbgRiskFactors) ? fields.kotakBbgRiskFactors : [];
-        const toggleRisk = (risk: string) => {
-          let newRisks = [...currentRisks];
-          if (newRisks.includes(risk)) {
-            newRisks = newRisks.filter(r => r !== risk);
-          } else {
-            newRisks.push(risk);
-          }
-          handleChange('kotakBbgRiskFactors', newRisks);
+        const getV = (key: string, defaultVal = '') => {
+          if (fields[`${key}NA`]) return 'NA';
+          return fields[key] || defaultVal;
         };
+
+        const execSummary = `The subject property is a ${getV('kotakBbgNatureOfProperty', '[Nature]')} premises with a total land area of ${getV('kotakBbgLandAreaDescriptiveDetails', '[Land Area]')} and a measured built-up area of ${getV('kotakBbgBuildingAreaDetails', '[BUA]')}, constructed approximately ${getV('kotakBbgYearOfConstruction', '[Age]')} years ago. 
+${getV('kotakBbgApprovedPlansDetails', '[Approved plans Details]')}. 
+The entire premises is currently being used as a ${getV('kotakBbgUsageOfProperty', '[Usage]')} operating under the name "${getV('kotakBbgBorrowerName', '[Customer Name]')}". 
+The property was identified by the customer representative, ${getV('nameOfPersonMetAtSite', '[Person Met]')}, with the assistance of the documents provided. 
+It is located within a ${getV('kotakBbgLocalityClassification', '[Locality Classification]')} area of ${getV('kotakBbgDistrict', '[District]')} and is accessible via the ${getV('kotakBbgApproachRoadWidth', '[Approach Road]')}. 
+${getV('kotakBbgProximityToCivicAmenities', '[Proximity]')}. 
+The property falls under the ${getV('kotakBbgAuthorityGrantingApprovals', '[Authority]')} jurisdiction, and the surrounding area consists of ${getV('kotakBbgSurroundingDevelopment', '[Surrounding Development]')} developments. 
+The valuation has been carried out for both the land and the measured built-up area of the entire premises.`;
 
         return (
           <div style={{ backgroundColor: '#e0f2f1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
             <PrefillField
-              label="Standard Disclaimers"
-              value={disclaimersVal}
-              onChange={(val: string) => handleChange('kotakBbgStandardDisclaimers', val)}
+              label="Master Executive Summary Generator"
+              value={fields.kotakBbgExecSummary}
+              onChange={(val: string) => handleChange('kotakBbgExecSummary', val)}
               isReadOnly={isReadOnly}
-              tooltip="Prefill from System Standard Template"
+              tooltip="Auto calculating from [Combined Report Variables]"
+              fallbackValue={execSummary}
               type="textarea"
             />
 
             <Field label={
-    <div className="flex items-center justify-between w-full">
-      <span>Key Risk Factors / Alerts</span>
-      <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case">
-        <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.kotakBbgRiskFactorsNA} onChange={e => handleChange('kotakBbgRiskFactorsNA', e.target.checked)} disabled={isReadOnly} />
-        <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>
-      </label>
-    </div>
-  }>
-  {!fields.kotakBbgRiskFactorsNA ? (
-    <div className="space-y-4 rounded-lg bg-white bg-opacity-50">
-      <div className="space-y-2">
-                    <div className="grid grid-cols-2 gap-2">
-                      {riskOptions.map(risk => (
-                        <label key={risk} className="flex items-center space-x-2 text-sm bg-white bg-opacity-50 p-2 rounded border border-teal-100">
-                          <input type="checkbox" checked={currentRisks.includes(risk)} onChange={() => toggleRisk(risk)} disabled={isReadOnly} />
-                          <span>{risk}</span>
-                        </label>
-                      ))}
-                    </div>
-                    {currentRisks.includes('Custom') && (
-                      <input type="text" className={inputCls} placeholder="Enter custom risk factor" value={fields.kotakBbgRiskFactorsCustom || ''} onChange={e => handleChange('kotakBbgRiskFactorsCustom', e.target.value)} disabled={isReadOnly} />
-                    )}
-                  </div>
-    </div>
-  ) : (
-    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed'} value="NA" disabled />
-  )}
-</Field>
-
-            <Field label="Final Recommendation">
-              <select className={inputCls} value={fields.kotakBbgFinalRecommendation || ''} onChange={e => handleChange('kotakBbgFinalRecommendation', e.target.value)} disabled={isReadOnly}>
-                <option value="">Select Option</option>
-                <option value="Recommended for Funding">Recommended for Funding</option>
-                <option value="Recommended with Conditions">Recommended with Conditions</option>
-                <option value="Not Recommended">Not Recommended</option>
-                <option value="Custom">Custom</option>
-              </select>
-              {fields.kotakBbgFinalRecommendation === 'Custom' && (
-                <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom recommendation" value={fields.kotakBbgFinalRecommendationCustom || ''} onChange={e => handleChange('kotakBbgFinalRecommendationCustom', e.target.value)} disabled={isReadOnly} />
+              <div className="flex items-center justify-between w-full">
+                <span>Specific Risk Factors / Important Notes</span>
+                <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case">
+                  <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.kotakBbgSpecificRiskFactorsNA} onChange={e => handleChange('kotakBbgSpecificRiskFactorsNA', e.target.checked)} disabled={isReadOnly} />
+                  <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>
+                </label>
+              </div>
+            }>
+              {!fields.kotakBbgSpecificRiskFactorsNA ? (
+                <textarea className={inputCls + ' resize-y'} rows={6} placeholder="Note: 1. Approved Building Plan: The approved building plan was not available..." value={fields.kotakBbgSpecificRiskFactors || ''} onChange={e => handleChange('kotakBbgSpecificRiskFactors', e.target.value)} disabled={isReadOnly} />
+              ) : (
+                <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
             </Field>
-
-            <Field label={
-    <div className="flex items-center justify-between w-full">
-      <span>Detailed Remarks & Additional Observations</span>
-      <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case">
-        <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.kotakBbgRemarksNA} onChange={e => handleChange('kotakBbgRemarksNA', e.target.checked)} disabled={isReadOnly} />
-        <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>
-      </label>
-    </div>
-  }>
-  {!fields.kotakBbgRemarksNA ? (
-    <textarea className={inputCls + ' resize-y'} rows={4} placeholder="Enter any additional key remarks or observations regarding the property..." value={fields.kotakBbgRemarks || ''} onChange={e => handleChange('kotakBbgRemarks', e.target.value)} disabled={isReadOnly} />
-  ) : (
-    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed'} value="NA" disabled />
-  )}
-</Field>
           </div>
         );
       }
