@@ -1714,15 +1714,13 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </div>
                   </div>
                   <div className="flex flex-col space-y-1.5">
-                    <PrefillField
-                      label="Auto-Rounded FMV (Say Value) (INR)"
-                      value={fields.kotakBbgFmvRounded}
-                      onChange={(val: string) => handleChange('kotakBbgFmvRounded', val)}
-                      isReadOnly={isReadOnly}
-                      tooltip="Auto calculating from [Rounded to nearest Lakh]"
-                      fallbackValue={autoRoundedFmv.toString()}
-                      type="text"
-                    />
+                    <span className="text-sm font-medium text-gray-700">Auto-Rounded FMV (Say Value) (INR)</span>
+                    <div className="relative">
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={`Rs. ${autoRoundedFmv.toLocaleString('en-IN')}`} disabled title="Auto calculating from [Rounded to nearest Lakh]" />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Auto calculating from [Rounded to nearest Lakh]">
+                        <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="pt-2 border-t border-pink-100">
@@ -1761,15 +1759,13 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </div>
                   </div>
                   <div className="flex flex-col space-y-1.5">
-                    <PrefillField
-                      label="Auto-Rounded RV (Say Value) (INR)"
-                      value={fields.kotakBbgRvRounded}
-                      onChange={(val: string) => handleChange('kotakBbgRvRounded', val)}
-                      isReadOnly={isReadOnly}
-                      tooltip="Auto calculating from [Rounded to nearest Lakh]"
-                      fallbackValue={autoRoundedRv.toString()}
-                      type="text"
-                    />
+                    <span className="text-sm font-medium text-gray-700">Auto-Rounded RV (Say Value) (INR)</span>
+                    <div className="relative">
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={`Rs. ${autoRoundedRv.toLocaleString('en-IN')}`} disabled title="Auto calculating from [Rounded to nearest Lakh]" />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Auto calculating from [Rounded to nearest Lakh]">
+                        <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="pt-2 border-t border-pink-100">
@@ -1808,15 +1804,13 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </div>
                   </div>
                   <div className="flex flex-col space-y-1.5">
-                    <PrefillField
-                      label="Auto-Rounded DV (Say Value) (INR)"
-                      value={fields.kotakBbgDvRounded}
-                      onChange={(val: string) => handleChange('kotakBbgDvRounded', val)}
-                      isReadOnly={isReadOnly}
-                      tooltip="Auto calculating from [Rounded to nearest Lakh]"
-                      fallbackValue={autoRoundedDv.toString()}
-                      type="text"
-                    />
+                    <span className="text-sm font-medium text-gray-700">Auto-Rounded DV (Say Value) (INR)</span>
+                    <div className="relative">
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={`Rs. ${autoRoundedDv.toLocaleString('en-IN')}`} disabled title="Auto calculating from [Rounded to nearest Lakh]" />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Auto calculating from [Rounded to nearest Lakh]">
+                        <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="pt-2 border-t border-pink-100">
@@ -1857,15 +1851,13 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                       </div>
                     </div>
                     <div className="flex flex-col space-y-1.5">
-                      <PrefillField
-                        label="Auto-Rounded IV (Say Value) (INR)"
-                        value={fields.kotakBbgIvRounded}
-                        onChange={(val: string) => handleChange('kotakBbgIvRounded', val)}
-                        isReadOnly={isReadOnly}
-                        tooltip="Auto calculating from [Rounded to nearest Lakh]"
-                        fallbackValue={autoRoundedIv.toString()}
-                        type="text"
-                      />
+                      <span className="text-sm font-medium text-gray-700">Auto-Rounded IV (Say Value) (INR)</span>
+                      <div className="relative">
+                        <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={`Rs. ${autoRoundedIv.toLocaleString('en-IN')}`} disabled title="Auto calculating from [Rounded to nearest Lakh]" />
+                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Auto calculating from [Rounded to nearest Lakh]">
+                          <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                   <div className="pt-2 border-t border-pink-100">
