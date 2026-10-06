@@ -6,7 +6,7 @@ import { Field, inputCls } from '../BaseBankReportComponents';
 import { Lock, Unlock } from 'lucide-react';
 import { PDFKotakBbgRenderer } from '@/lib/banks/pdf-kotak-bbg-renderer';
 
-const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue, options, customInputProps }: any) => {
+const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue, options, customInputProps, hideEditToggle = false }: any) => {
   const [isEdit, setIsEdit] = useState(false);
 
   // When in edit-off mode, always sync stored value to fallbackValue so the
@@ -28,19 +28,21 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
   const labelWithToggle = (
     <div className="flex justify-between items-center w-full">
       <div className="flex-1 flex items-center pr-4">{label}</div>
-      <div className="flex items-center gap-3">
-        <button
-          type="button"
-          onClick={handleToggle}
-          disabled={isReadOnly}
-          className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors duration-200 focus:outline-none ${isEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${isEdit ? 'translate-x-4' : 'translate-x-1'}`} />
-        </button>
-        <span className={`text-[10px] font-bold uppercase ${isEdit ? 'text-emerald-700' : 'text-gray-400'}`}>
-          {isEdit ? 'Edit On' : 'Edit Off'}
-        </span>
-      </div>
+      {!hideEditToggle && (
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleToggle}
+            disabled={isReadOnly}
+            className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors duration-200 focus:outline-none ${isEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${isEdit ? 'translate-x-4' : 'translate-x-1'}`} />
+          </button>
+          <span className={`text-[10px] font-bold uppercase ${isEdit ? 'text-emerald-700' : 'text-gray-400'}`}>
+            {isEdit ? 'Edit On' : 'Edit Off'}
+          </span>
+        </div>
+      )}
     </div>
   );
 
@@ -1579,6 +1581,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     tooltip="Auto-generated from valuation calculations"
                     fallbackValue={calcSummary}
                     type="textarea"
+                    hideEditToggle={true}
                   />
                 </div>
               </div>
@@ -1625,6 +1628,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     tooltip="Auto-generated from guideline calculations"
                     fallbackValue={guidelineSummary}
                     type="textarea"
+                    hideEditToggle={true}
                   />
                 </div>
               </div>
