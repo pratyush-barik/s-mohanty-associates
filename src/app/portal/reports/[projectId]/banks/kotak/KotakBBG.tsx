@@ -1661,25 +1661,41 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         // Recalculate values from previous sections
         let extractedSqFt = 0;
         if (fields.kotakBbgLandAreaDescriptiveDetails && !fields.kotakBbgLandAreaDescriptiveDetailsNA) {
-          const match = fields.kotakBbgLandAreaDescriptiveDetails.match(/[\d,]+(\.\d+)?/);
+          const match = String(fields.kotakBbgLandAreaDescriptiveDetails).match(/[\d,]+(\.\d+)?/);
           if (match) {
             extractedSqFt = parseFloat(match[0].replace(/,/g, '')) || 0;
           }
         }
-        const landRate = parseFloat(fields.kotakBbgAdoptedLandRate) || 0;
+        
+        let landRate = 0;
+        if (fields.kotakBbgAdoptedLandRate && !fields.kotakBbgAdoptedLandRateNA) {
+          const match = String(fields.kotakBbgAdoptedLandRate).match(/[\d,]+(\.\d+)?/);
+          if (match) {
+            landRate = parseFloat(match[0].replace(/,/g, '')) || 0;
+          }
+        }
+
         const calculatedLandValue = extractedSqFt * landRate;
         const buildingValue = parseFloat(fields.kotakBbgBuildingValue) || 0;
         const exactBuildingValue = fields.kotakBbgBuildingValueNA || isVacantLand ? 0 : buildingValue;
         const exactFmv = calculatedLandValue + exactBuildingValue;
         
-        const roundedFmv = parseFloat(fields.kotakBbgFmvRounded) || 0;
-        const fmvSummary = `Rs.${exactFmv.toLocaleString('en-IN')}/- or Say Rs.${roundedFmv.toLocaleString('en-IN')}/-`;
+        const autoRoundedFmv = Math.round(exactFmv / 100000) * 100000;
+        const fmvSummary = `Rs.${exactFmv.toLocaleString('en-IN')}/- or Say Rs.${autoRoundedFmv.toLocaleString('en-IN')}/-`;
 
         const rvPercent = fields.kotakBbgRvPercent !== undefined ? parseFloat(fields.kotakBbgRvPercent) : 90;
-        const calcRv = (roundedFmv * rvPercent) / 100;
+        const exactRv = (exactFmv * rvPercent) / 100;
+        const autoRoundedRv = Math.round(exactRv / 100000) * 100000;
+        const rvSummary = `Rs.${autoRoundedRv.toLocaleString('en-IN')}/-`;
         
         const dvPercent = fields.kotakBbgDvPercent !== undefined ? parseFloat(fields.kotakBbgDvPercent) : 80;
-        const calcDv = (roundedFmv * dvPercent) / 100;
+        const exactDv = (exactFmv * dvPercent) / 100;
+        const autoRoundedDv = Math.round(exactDv / 100000) * 100000;
+        const dvSummary = `Rs.${autoRoundedDv.toLocaleString('en-IN')}/-`;
+
+        const exactIv = exactBuildingValue;
+        const autoRoundedIv = Math.round(exactIv / 100000) * 100000;
+        const ivSummary = `Rs.${autoRoundedIv.toLocaleString('en-IN')}/-`;
 
         return (
           <div style={{ backgroundColor: '#fce4ec', padding: '16px', borderRadius: '8px' }} className="space-y-4">
@@ -1698,8 +1714,15 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </div>
                   </div>
                   <div className="flex flex-col space-y-1.5">
-                    <span className="text-sm font-medium text-gray-700">Rounded FMV (Say Value) (INR)</span>
-                    <input type="number" className={inputCls} placeholder="e.g. 310900000" value={fields.kotakBbgFmvRounded || ''} onChange={e => handleChange('kotakBbgFmvRounded', e.target.value)} disabled={isReadOnly} />
+                    <PrefillField
+                      label="Auto-Rounded FMV (Say Value) (INR)"
+                      value={fields.kotakBbgFmvRounded}
+                      onChange={(val: string) => handleChange('kotakBbgFmvRounded', val)}
+                      isReadOnly={isReadOnly}
+                      tooltip="Auto calculating from [Rounded to nearest Lakh]"
+                      fallbackValue={autoRoundedFmv.toString()}
+                      type="text"
+                    />
                   </div>
                 </div>
                 <div className="pt-2 border-t border-pink-100">
@@ -1711,6 +1734,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     tooltip="Auto-generated from FMV values"
                     fallbackValue={fmvSummary}
                     type="textarea"
+                    hideEditToggle={true}
                   />
                 </div>
               </div>
@@ -1728,18 +1752,37 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </div>
                   </div>
                   <div className="flex flex-col space-y-1.5">
-                    <span className="text-sm font-medium text-gray-700">Calculated RV (INR)</span>
+                    <span className="text-sm font-medium text-gray-700">Exact RV (INR)</span>
                     <div className="relative">
-                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={calcRv ? `₹ ${calcRv.toLocaleString('en-IN')}` : ''} disabled title="Auto calculating from [Rounded FMV × RV %]" />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Auto calculating from [Rounded FMV × RV %]">
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={exactRv ? `₹ ${exactRv.toLocaleString('en-IN')}` : ''} disabled title="Auto calculating from [Exact FMV × RV %]" />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Auto calculating from [Exact FMV × RV %]">
                         <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                       </div>
                     </div>
                   </div>
                   <div className="flex flex-col space-y-1.5">
-                    <span className="text-sm font-medium text-gray-700">Rounded RV (Say Value) (INR)</span>
-                    <input type="number" className={inputCls} placeholder="Enter rounded RV" value={fields.kotakBbgRvRounded || ''} onChange={e => handleChange('kotakBbgRvRounded', e.target.value)} disabled={isReadOnly} />
+                    <PrefillField
+                      label="Auto-Rounded RV (Say Value) (INR)"
+                      value={fields.kotakBbgRvRounded}
+                      onChange={(val: string) => handleChange('kotakBbgRvRounded', val)}
+                      isReadOnly={isReadOnly}
+                      tooltip="Auto calculating from [Rounded to nearest Lakh]"
+                      fallbackValue={autoRoundedRv.toString()}
+                      type="text"
+                    />
                   </div>
+                </div>
+                <div className="pt-2 border-t border-pink-100">
+                  <PrefillField
+                    label="Generated RV Summary"
+                    value={fields.kotakBbgRvSummary}
+                    onChange={(val: string) => handleChange('kotakBbgRvSummary', val)}
+                    isReadOnly={isReadOnly}
+                    tooltip="Auto-generated from RV value"
+                    fallbackValue={rvSummary}
+                    type="textarea"
+                    hideEditToggle={true}
+                  />
                 </div>
               </div>
             </Field>
@@ -1756,18 +1799,37 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </div>
                   </div>
                   <div className="flex flex-col space-y-1.5">
-                    <span className="text-sm font-medium text-gray-700">Calculated DV (INR)</span>
+                    <span className="text-sm font-medium text-gray-700">Exact DV (INR)</span>
                     <div className="relative">
-                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={calcDv ? `₹ ${calcDv.toLocaleString('en-IN')}` : ''} disabled title="Auto calculating from [Rounded FMV × DV %]" />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Auto calculating from [Rounded FMV × DV %]">
+                      <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={exactDv ? `₹ ${exactDv.toLocaleString('en-IN')}` : ''} disabled title="Auto calculating from [Exact FMV × DV %]" />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Auto calculating from [Exact FMV × DV %]">
                         <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                       </div>
                     </div>
                   </div>
                   <div className="flex flex-col space-y-1.5">
-                    <span className="text-sm font-medium text-gray-700">Rounded DV (Say Value) (INR)</span>
-                    <input type="number" className={inputCls} placeholder="Enter rounded DV" value={fields.kotakBbgDvRounded || ''} onChange={e => handleChange('kotakBbgDvRounded', e.target.value)} disabled={isReadOnly} />
+                    <PrefillField
+                      label="Auto-Rounded DV (Say Value) (INR)"
+                      value={fields.kotakBbgDvRounded}
+                      onChange={(val: string) => handleChange('kotakBbgDvRounded', val)}
+                      isReadOnly={isReadOnly}
+                      tooltip="Auto calculating from [Rounded to nearest Lakh]"
+                      fallbackValue={autoRoundedDv.toString()}
+                      type="text"
+                    />
                   </div>
+                </div>
+                <div className="pt-2 border-t border-pink-100">
+                  <PrefillField
+                    label="Generated DV Summary"
+                    value={fields.kotakBbgDvSummary}
+                    onChange={(val: string) => handleChange('kotakBbgDvSummary', val)}
+                    isReadOnly={isReadOnly}
+                    tooltip="Auto-generated from DV value"
+                    fallbackValue={dvSummary}
+                    type="textarea"
+                    hideEditToggle={true}
+                  />
                 </div>
               </div>
             </Field>
@@ -1788,16 +1850,35 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     <div className="flex flex-col space-y-1.5">
                       <span className="text-sm font-medium text-gray-700">Exact Insurable Value (INR)</span>
                       <div className="relative">
-                        <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={exactBuildingValue ? `₹ ${exactBuildingValue.toLocaleString('en-IN')}` : ''} disabled title='Prefill from section 7, "f. Building Value (INR)"' />
+                        <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={exactIv ? `₹ ${exactIv.toLocaleString('en-IN')}` : ''} disabled title='Prefill from section 7, "f. Building Value (INR)"' />
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title='Prefill from section 7, "f. Building Value (INR)"'>
                           <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
                         </div>
                       </div>
                     </div>
                     <div className="flex flex-col space-y-1.5">
-                      <span className="text-sm font-medium text-gray-700">Rounded Insurable Value (Say Value) (INR)</span>
-                      <input type="number" className={inputCls} placeholder="Enter rounded IV" value={fields.kotakBbgIvRounded || ''} onChange={e => handleChange('kotakBbgIvRounded', e.target.value)} disabled={isReadOnly} />
+                      <PrefillField
+                        label="Auto-Rounded IV (Say Value) (INR)"
+                        value={fields.kotakBbgIvRounded}
+                        onChange={(val: string) => handleChange('kotakBbgIvRounded', val)}
+                        isReadOnly={isReadOnly}
+                        tooltip="Auto calculating from [Rounded to nearest Lakh]"
+                        fallbackValue={autoRoundedIv.toString()}
+                        type="text"
+                      />
                     </div>
+                  </div>
+                  <div className="pt-2 border-t border-pink-100">
+                    <PrefillField
+                      label="Generated IV Summary"
+                      value={fields.kotakBbgIvSummary}
+                      onChange={(val: string) => handleChange('kotakBbgIvSummary', val)}
+                      isReadOnly={isReadOnly}
+                      tooltip="Auto-generated from IV value"
+                      fallbackValue={ivSummary}
+                      type="textarea"
+                      hideEditToggle={true}
+                    />
                   </div>
                 </div>
               ) : (

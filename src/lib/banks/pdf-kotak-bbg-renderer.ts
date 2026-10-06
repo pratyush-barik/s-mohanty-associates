@@ -433,15 +433,15 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     const rvPct = this.getF('kotakBbgRvPercent') !== undefined ? this.getF('kotakBbgRvPercent') : '90';
     const dvPct = this.getF('kotakBbgDvPercent') !== undefined ? this.getF('kotakBbgDvPercent') : '80';
     this.drawKeyValueRow([
-      { label: `b. Realizable Value (RV) @ ${rvPct}%`, value: this.getF('kotakBbgRvRounded') ? `Rs.${this.getF('kotakBbgRvRounded')}/-` : 'NA' },
-      { label: `c. Distress Value (DV) @ ${dvPct}%`, value: this.getF('kotakBbgDvRounded') ? `Rs.${this.getF('kotakBbgDvRounded')}/-` : 'NA' },
+      { label: `b. Realizable Value (RV) @ ${rvPct}%`, value: this.getF('kotakBbgRvSummary') || 'NA' },
+      { label: `c. Distress Value (DV) @ ${dvPct}%`, value: this.getF('kotakBbgDvSummary') || 'NA' },
     ]);
 
     // d. Insurable Value
     const isVacantLand8 = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
     const isIvNA = this.getF('kotakBbgIvNA') !== undefined ? this.getF('kotakBbgIvNA') : isVacantLand8;
     this.drawKeyValueRow([
-      { label: 'd. Insurable Value (IV)', value: isIvNA ? 'NA' : (this.getF('kotakBbgIvRounded') ? `Rs.${this.getF('kotakBbgIvRounded')}/-` : 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'd. Insurable Value (IV)', value: isIvNA ? 'NA' : (this.getF('kotakBbgIvSummary') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawSectionHeader('9. REMARKS / KEY OBSERVATIONS');
