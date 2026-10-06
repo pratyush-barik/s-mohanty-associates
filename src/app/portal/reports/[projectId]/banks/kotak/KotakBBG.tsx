@@ -1418,7 +1418,13 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         }
 
         // d. Land Rate
-        const landRate = parseFloat(fields.kotakBbgAdoptedLandRate) || 0;
+        let landRate = 0;
+        if (fields.kotakBbgAdoptedLandRate && !fields.kotakBbgAdoptedLandRateNA) {
+          const match = String(fields.kotakBbgAdoptedLandRate).match(/[\d,]+(\.\d+)?/);
+          if (match) {
+            landRate = parseFloat(match[0].replace(/,/g, '')) || 0;
+          }
+        }
 
         // f. Calculated values
         const calculatedLandValue = extractedSqFt * landRate;
@@ -1429,7 +1435,13 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         const calcSummary = `Land = ${extractedSqFt.toLocaleString('en-IN')}sqft @ Rs.${landRate.toLocaleString('en-IN')}/- per Sqft = Rs.${calculatedLandValue.toLocaleString('en-IN')}/-...........(i)\nBuilding=Rs.${(fields.kotakBbgBuildingValueNA || isVacantLand ? 0 : buildingValue).toLocaleString('en-IN')}/-...........(ii)\nTotal(i+ii)=Rs.${totalValuation.toLocaleString('en-IN')}/-`;
 
         // g. Guideline Rate
-        const guidelineRate = parseFloat(fields.kotakBbgGuidelineRate) || 0;
+        let guidelineRate = 0;
+        if (fields.kotakBbgGuidelineRate && !fields.kotakBbgGuidelineRateNA) {
+          const match = String(fields.kotakBbgGuidelineRate).match(/[\d,]+(\.\d+)?/);
+          if (match) {
+            guidelineRate = parseFloat(match[0].replace(/,/g, '')) || 0;
+          }
+        }
         const calculatedGuidelineValuation = extractedSqFt * guidelineRate;
         const guidelineSummary = `Land = ${extractedSqFt.toLocaleString('en-IN')}sqft @ Rs.${guidelineRate.toLocaleString('en-IN')}/- per Sqft = Rs.${calculatedGuidelineValuation.toLocaleString('en-IN')}/-`;
 
@@ -1492,7 +1504,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!fields.kotakBbgAdoptedLandRateNA ? (
-                <input type="number" className={inputCls} placeholder="e.g. 1260" value={fields.kotakBbgAdoptedLandRate || ''} onChange={e => handleChange('kotakBbgAdoptedLandRate', e.target.value)} disabled={isReadOnly} />
+                <input type="text" className={inputCls} placeholder="e.g. Rs.1260/- Per Sqft of Land" value={fields.kotakBbgAdoptedLandRate || ''} onChange={e => handleChange('kotakBbgAdoptedLandRate', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
@@ -1598,7 +1610,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!fields.kotakBbgGuidelineRateNA ? (
-                <input type="number" className={inputCls} placeholder="e.g. 161" value={fields.kotakBbgGuidelineRate || ''} onChange={e => handleChange('kotakBbgGuidelineRate', e.target.value)} disabled={isReadOnly} />
+                <input type="text" className={inputCls} placeholder="e.g. Rs.161/- per Sqft of Land" value={fields.kotakBbgGuidelineRate || ''} onChange={e => handleChange('kotakBbgGuidelineRate', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}

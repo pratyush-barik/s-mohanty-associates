@@ -398,7 +398,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     // d. Land Rate Adopted
     this.drawKeyValueRow([
-      { label: 'd. Land Rate Adopted (INR/Sq.Ft)', value: this.getF('kotakBbgAdoptedLandRateNA') ? 'NA' : (`Rs.${this.getF('kotakBbgAdoptedLandRate') || '0'}/- Per Sqft of Land`), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'd. Land Rate Adopted (if applicable)', value: this.getF('kotakBbgAdoptedLandRateNA') ? 'NA' : (this.getF('kotakBbgAdoptedLandRate') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // e. Building rate
@@ -414,7 +414,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     // g. Guideline rate
     this.drawKeyValueRow([
-      { label: 'g. Guideline/ Circle/ Ready Reckoner Rate', value: this.getF('kotakBbgGuidelineRateNA') ? 'NA' : (`Rs.${this.getF('kotakBbgGuidelineRate') || '0'}/- per Sqft of Land`), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'g. Guideline/ Circle/ Ready Reckoner Rate', value: this.getF('kotakBbgGuidelineRateNA') ? 'NA' : (this.getF('kotakBbgGuidelineRate') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // h. Guideline valuation
