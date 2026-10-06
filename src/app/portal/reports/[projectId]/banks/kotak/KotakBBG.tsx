@@ -1305,9 +1305,12 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         const isVacantLand = fields.kotakBbgNatureOfProperty === 'Vacant Land';
         
         let calculatedAcres = '';
-        if (fields.kotakBbgLandAreaSqFt) {
-          const acres = parseFloat(fields.kotakBbgLandAreaSqFt) / 43560;
-          calculatedAcres = isNaN(acres) ? '' : acres.toFixed(3);
+        if (fields.kotakBbgLandAreaDescriptiveDetails && !fields.kotakBbgLandAreaDescriptiveDetailsNA) {
+          const match = fields.kotakBbgLandAreaDescriptiveDetails.match(/\d+(\.\d+)?/);
+          if (match) {
+            const acres = parseFloat(match[0]) / 43560;
+            calculatedAcres = isNaN(acres) ? '' : acres.toFixed(3);
+          }
         }
 
         return (
@@ -1315,38 +1318,32 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
             {/* a. Area of land */}
             <Field label="a. Area of land (if applicable) supported by documentary proof, shape, dimensions and physical features FSI permissible, utilized, balance">
               <div className="space-y-4 p-4 border border-cyan-200 rounded-lg bg-white/80 shadow-sm">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex flex-col space-y-1.5">
-                    <span className="text-sm font-medium text-gray-700">Input Sq.Ft Value</span>
-                    <input type="number" className={inputCls} placeholder="e.g. 137214" value={fields.kotakBbgLandAreaSqFt || ''} onChange={e => handleChange('kotakBbgLandAreaSqFt', e.target.value)} disabled={isReadOnly} />
-                  </div>
-                  <div>
-                    <PrefillField
-                      label="Auto-Converted Land Area (Acres/Decs)"
-                      value={fields.kotakBbgLandAreaAcres}
-                      onChange={(val: string) => handleChange('kotakBbgLandAreaAcres', val)}
-                      isReadOnly={isReadOnly}
-                      tooltip="Auto calculating from [Sq.Ft / 43,560]"
-                      fallbackValue={calculatedAcres}
-                      type="text"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex flex-col space-y-1.5 pt-2 border-t border-cyan-100">
+                
+                <div className="flex flex-col space-y-1.5">
                   <div className="flex items-center justify-between w-full">
-                    <span className="text-sm font-medium text-gray-700">Descriptive Details (Proof, Shape, FSI)</span>
+                    <span className="text-sm font-medium text-gray-700">Land Area (Sq.Ft) & Descriptive Details</span>
                     <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity">
                       <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500 disabled:opacity-50" checked={!!fields.kotakBbgLandAreaDescriptiveDetailsNA} onChange={e => handleChange('kotakBbgLandAreaDescriptiveDetailsNA', e.target.checked)} disabled={isReadOnly} />
                       <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">NA</span>
                     </label>
                   </div>
                   {!fields.kotakBbgLandAreaDescriptiveDetailsNA ? (
-                    <textarea className={inputCls + ' resize-y'} rows={3} placeholder="As per Sale Deed/ROR, shape, physical features..." value={fields.kotakBbgLandAreaDescriptiveDetails || ''} onChange={e => handleChange('kotakBbgLandAreaDescriptiveDetails', e.target.value)} disabled={isReadOnly} />
+                    <textarea className={inputCls + ' resize-y'} rows={3} placeholder='e.g. "137214 As per Sale Deed/ROR", shape, physical features...' value={fields.kotakBbgLandAreaDescriptiveDetails || ''} onChange={e => handleChange('kotakBbgLandAreaDescriptiveDetails', e.target.value)} disabled={isReadOnly} />
                   ) : (
                     <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
                   )}
                 </div>
+
+                <div className="flex flex-col space-y-1.5 pt-2 border-t border-cyan-100">
+                  <span className="text-sm font-medium text-gray-700">Auto-Converted Land Area (Acres/Decs)</span>
+                  <div className="relative">
+                    <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-700 pr-8'} value={calculatedAcres} disabled />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title="Auto calculating from [Sq.Ft / 43,560]">
+                      <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+                    </div>
+                  </div>
+                </div>
+
               </div>
             </Field>
 

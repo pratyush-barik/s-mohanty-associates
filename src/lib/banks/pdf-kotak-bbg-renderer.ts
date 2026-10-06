@@ -346,16 +346,23 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     this.drawSectionHeader('6. DETAILS OF MEASUREMENTS');
     
     // a. Area of land
-    const autoAcres = this.getF('kotakBbgLandAreaAcres');
-    const inputSqFt = this.getF('kotakBbgLandAreaSqFt');
-    const landDetails = this.getF('kotakBbgLandAreaDescriptiveDetailsNA') ? 'NA' : this.getF('kotakBbgLandAreaDescriptiveDetails');
+    const landDetailsNA = this.getF('kotakBbgLandAreaDescriptiveDetailsNA');
+    const landDetails = landDetailsNA ? 'NA' : this.getF('kotakBbgLandAreaDescriptiveDetails');
+    
+    let autoAcres = '';
+    if (landDetails && !landDetailsNA) {
+      const match = landDetails.match(/\d+(\.\d+)?/);
+      if (match) {
+        const acres = parseFloat(match[0]) / 43560;
+        autoAcres = isNaN(acres) ? '' : acres.toFixed(3);
+      }
+    }
     
     this.drawKeyValueRow([
-      { label: 'Input Land Area (Sq.Ft)', value: inputSqFt || 'NA' },
-      { label: 'Auto-Converted Land Area (Acres/Decs)', value: autoAcres || 'NA' },
+      { label: 'a. Land Area (Sq.Ft) & Descriptive Details', value: landDetails || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Descriptive Details (Proof, Shape, FSI)', value: landDetails || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Auto-Converted Land Area (Acres/Decs)', value: autoAcres || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // b. Building/ flat/ office/ shop/ unit/ showroom area
