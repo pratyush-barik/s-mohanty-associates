@@ -1437,15 +1437,15 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
           <div style={{ backgroundColor: '#f3e5f5', padding: '16px', borderRadius: '8px' }} className="space-y-4">
 
             {/* a. Details of Valuation methodology */}
-            <PrefillField
-              label="a. Details of Valuation methodology and reason for the same"
-              value={fields.kotakBbgValuationMethodology}
-              onChange={(val: string) => handleChange('kotakBbgValuationMethodology', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Prefill from System Standard Template"
-              fallbackValue={valMethodologyTemplate}
-              type="textarea"
-            />
+            <Field label="a. Details of Valuation methodology and reason for the same">
+              <textarea
+                className={`${inputCls} resize-y bg-white`}
+                rows={4}
+                value={fields.kotakBbgValuationMethodology || valMethodologyTemplate}
+                onChange={e => handleChange('kotakBbgValuationMethodology', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
 
             {/* b. Comparables relied upon (Minimum three) */}
             <Field label={
