@@ -351,9 +351,10 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     
     let autoAcres = '';
     if (landDetails && !landDetailsNA) {
-      const match = landDetails.match(/\d+(\.\d+)?/);
+      const match = landDetails.match(/[\d,]+(\.\d+)?/);
       if (match) {
-        const acres = parseFloat(match[0]) / 43560;
+        const numStr = match[0].replace(/,/g, '');
+        const acres = parseFloat(numStr) / 43560;
         autoAcres = isNaN(acres) ? '' : acres.toFixed(3);
       }
     }

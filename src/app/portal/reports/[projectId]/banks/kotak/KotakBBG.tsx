@@ -1306,9 +1306,10 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
         
         let calculatedAcres = '';
         if (fields.kotakBbgLandAreaDescriptiveDetails && !fields.kotakBbgLandAreaDescriptiveDetailsNA) {
-          const match = fields.kotakBbgLandAreaDescriptiveDetails.match(/\d+(\.\d+)?/);
+          const match = fields.kotakBbgLandAreaDescriptiveDetails.match(/[\d,]+(\.\d+)?/);
           if (match) {
-            const acres = parseFloat(match[0]) / 43560;
+            const numStr = match[0].replace(/,/g, '');
+            const acres = parseFloat(numStr) / 43560;
             calculatedAcres = isNaN(acres) ? '' : acres.toFixed(3);
           }
         }
