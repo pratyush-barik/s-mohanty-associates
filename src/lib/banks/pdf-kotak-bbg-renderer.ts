@@ -34,26 +34,53 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
   }
 
   async drawContent(): Promise<void> {
-    this.drawMainHeader('VALUATION REPORT');
+    const bankNameField = this.getF('kotakBbgBankName');
+    const oldBankName = 'Kotak Mahindra Bank';
+    const newBankName = 'Kotak Mahindra Bank Limited (KMBL)';
+    const bankNameVal = (!bankNameField || bankNameField === oldBankName) ? newBankName : bankNameField;
+
+    // Draw Reference and Date on top left/right
+    const refText = `Reference/ Application No.: ${this.getF('projectCode') || ''}`;
+    let dateStr = this.getF('kotakBbgDateOfValuation') || '';
+    if (dateStr.trim() && /^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim())) {
+      const [y,m,d] = dateStr.trim().split('-');
+      dateStr = `${d}/${m}/${y}`;
+    }
+    const dateText = `Date of valuation report: ${dateStr}`;
+
+    const font = this.fontBold;
+    
+    // Draw top left (Ref)
+    this.page.drawText(refText, {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY) - 5,
+      size: FONT_SIZE,
+      font,
+      color: rgb(0, 0, 0),
+    });
+
+    // Draw top right (Date)
+    const tw = font.widthOfTextAtSize(dateText, FONT_SIZE);
+    this.page.drawText(dateText, {
+      x: MARGIN_L + CONTENT_W - tw,
+      y: this.pdfY(this.cursorY) - 5,
+      size: FONT_SIZE,
+      font,
+      color: rgb(0, 0, 0),
+    });
+
+    this.cursorY += 15;
+
+    this.drawMainHeader(`VALUATION REPORT FOR ${bankNameVal.toUpperCase()}`);
 
     this.drawSectionHeader('1. GENERAL DETAILS');
     const bankBranch = this.getF('kotakBbgBankBranch') === 'Custom' ? this.getF('kotakBbgBankBranchCustom') : this.getF('kotakBbgBankBranch');
     
-    // Ensure legacy pre-fills are overwritten with new text
-    const oldBankName = 'Kotak Mahindra Bank';
-    const newBankName = 'Kotak Mahindra Bank Limited (KMBL)';
-    const bankNameField = this.getF('kotakBbgBankName');
-    const bankNameVal = (!bankNameField || bankNameField === oldBankName) ? newBankName : bankNameField;
-
     const oldPurpose = 'To ascertain Market value, Realizable value & Distress value for bank decision-making';
     const newPurpose = 'To ascertain Market value, Realizable value & Distress value of the property for assisting Kotak Mahindra Bank Limited in making prudent banking decision';
     const purposeField = this.getF('kotakBbgPurpose');
     const purposeVal = (!purposeField || purposeField === oldPurpose || purposeField === 'Market Value Assessment') ? newPurpose : purposeField;
 
-    this.drawKeyValueRow([
-      { label: 'Bank Name', value: bankNameVal },
-      { label: 'Reference / Application No.', value: this.getF('projectCode') || '' },
-    ]);
     this.drawKeyValueRow([
       { label: 'a. Purpose of Valuation', value: purposeVal, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
