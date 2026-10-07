@@ -1159,7 +1159,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!fields.kotakBbgYearOfConstructionNA ? (
-                <input type="number" className={inputCls} min="1800" max={currentYear} value={fields.kotakBbgYearOfConstruction || ''} onChange={e => handleChange('kotakBbgYearOfConstruction', e.target.value)} disabled={isReadOnly} />
+                <input type="number" className={inputCls} min="1000" max={currentYear} value={fields.kotakBbgYearOfConstruction || ''} onChange={e => handleChange('kotakBbgYearOfConstruction', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
