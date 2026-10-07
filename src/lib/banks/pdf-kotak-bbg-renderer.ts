@@ -310,7 +310,9 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       let residual = this.getF('kotakBbgResidualStructuralAge');
 
       // e. No of Floors
-      let floorsStr = this.getF('kotakBbgNumberOfFloors');
+      let floorsCount = this.getF('kotakBbgNumberOfFloors');
+      let elevation = this.getF('kotakBbgElevationProfile') === 'Custom' ? this.getF('kotakBbgElevationProfileCustom') : this.getF('kotakBbgElevationProfile');
+      let floorsStr = [floorsCount ? `${floorsCount} Floors` : null, elevation].filter(Boolean).join(', ');
 
       this.drawKeyValueRow([
         { label: 'd. Residual age of the Property', value: residual || 'NA' },
@@ -321,7 +323,18 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       let quality = this.getF('kotakBbgQualityOfConstructionNA') ? 'NA' : (this.getF('kotakBbgQualityOfConstruction') === 'Custom' ? this.getF('kotakBbgQualityOfConstructionCustom') : this.getF('kotakBbgQualityOfConstruction'));
 
       // g. Technical details (Finishing, interiors)
-      let interiorStr = this.getF('kotakBbgTechnicalDetails');
+      let flooringList = [
+        ...(Array.isArray(this.getF('kotakBbgFlooringSystem')) ? this.getF('kotakBbgFlooringSystem') : []),
+        this.getF('kotakBbgFlooringSystemCustomChecked') ? this.getF('kotakBbgFlooringSystemCustom') : null
+      ].filter(Boolean).join(', ');
+      let fittings = this.getF('kotakBbgFittingsFixtures') === 'Custom' ? this.getF('kotakBbgFittingsFixturesCustom') : this.getF('kotakBbgFittingsFixtures');
+      let detailsText = this.getF('kotakBbgTechnicalDetails');
+      
+      let techParts = [];
+      if (flooringList) techParts.push(`Flooring: ${flooringList}`);
+      if (fittings) techParts.push(`Fittings: ${fittings}`);
+      if (detailsText) techParts.push(detailsText);
+      let interiorStr = techParts.length > 0 ? techParts.join(' | ') : '';
 
       this.drawKeyValueRow([
         { label: 'f. Quality of Construction', value: quality || 'NA' },
