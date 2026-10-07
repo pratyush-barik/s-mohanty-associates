@@ -687,7 +687,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     this.drawSectionHeader('10. DECLARATION');
 
-    const isDeclared = this.getF('kotakBbgDeclarationConfirmed') !== false;
+    const isDeclared = this.getF('kotakBbgDeclarationConfirmed') === false || this.getF('kotakBbgDeclarationConfirmed') === 'false' ? false : true;
     if (isDeclared) {
       const siteVisitDate = fmtDate(this.getF('kotakBbgDateOfValuation')) || '[Date from Section 1]';
       const clausesText = `I hereby declare that -\n(a) the Valuation Report prepared and the information contained herein is true and correct to the best of my knowledge and belief :\n(b) I have no direct or indirect interest in the property valued;\n(c) I have personally inspected the property on / I have deputed my employed qualified/ experienced site engineer for inspecting the property on ${siteVisitDate}`;

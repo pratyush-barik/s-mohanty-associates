@@ -1961,7 +1961,7 @@ The valuation has been carried out for both the land and the measured built-up a
                   <Lock className="w-5 h-5 text-gray-400 group-hover:text-gray-600" />
                 </div>
                 <label className="flex items-start space-x-2 text-sm text-indigo-900 font-semibold bg-indigo-50 p-3 rounded border border-indigo-200 cursor-pointer hover:bg-indigo-100 transition-colors">
-                  <input type="checkbox" className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" checked={fields.kotakBbgDeclarationConfirmed !== false} onChange={e => handleChange('kotakBbgDeclarationConfirmed', e.target.checked)} disabled={isReadOnly} />
+                  <input type="checkbox" className="mt-1 w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" checked={fields.kotakBbgDeclarationConfirmed === false || fields.kotakBbgDeclarationConfirmed === 'false' ? false : true} onChange={e => handleChange('kotakBbgDeclarationConfirmed', e.target.checked)} disabled={isReadOnly} />
                   <span>I have read and legally bind myself to the above declarations</span>
                 </label>
               </div>
