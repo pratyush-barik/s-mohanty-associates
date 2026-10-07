@@ -444,7 +444,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'd. Insurable Value (IV)', value: isIvNA ? 'NA' : (this.getF('kotakBbgIvSummary') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
-    this.drawSectionHeader('9. REMARKS / KEY OBSERVATIONS');
+    this.drawSectionHeader('9. REMARKS / OBSERVATIONS');
     this.drawKeyValueRow([
       { label: 'Executive Summary', value: this.getF('kotakBbgExecSummary') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);

@@ -138,7 +138,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     { id: 'kotak-section-6', title: 'Details of measurements' },
     { id: 'kotak-section-7', title: 'Valuation' },
     { id: 'kotak-section-8', title: 'Summary' },
-    { id: 'kotak-section-9', title: 'Remarks / Key Observations' },
+    { id: 'kotak-section-9', title: 'Remarks / Observations' },
     { id: 'kotak-section-10', title: 'Declaration' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
@@ -1883,7 +1883,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'kotak-section-9',
-      title: 'Remarks / Key Observations',
+      title: 'Remarks / Observations',
       number: 9,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
