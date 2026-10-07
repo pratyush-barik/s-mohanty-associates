@@ -18,6 +18,7 @@ import {
 export class PDFKotakBbgRenderer extends PDFBankRenderer {
   private fields: any;
   private projectCode?: string;
+  private currentSection: string = '';
 
   constructor(opts: any = {}) {
     super();
@@ -38,7 +39,11 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     const match = title.match(/^([0-9]+)\.\s*([\s\S]*)/);
     let index = '';
     let text = title;
-    if (match) { index = match[1]; text = match[2]; }
+    if (match) { 
+      index = match[1]; 
+      text = match[2]; 
+      this.currentSection = index;
+    }
     if (!preserveCase) text = text.toUpperCase();
 
     const w1 = index ? 30 : 0;
@@ -100,7 +105,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
         const y = this.pdfY(this.cursorY);
         
         if (w1 > 0) {
-          this.page.drawRectangle({ x: MARGIN_L, y: y - rowH, width: w1, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W });
+          this.page.drawRectangle({ x: MARGIN_L, y: y - rowH, width: w1, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W, color: hexToRgb(LBL_BG) });
           let lineY = y - pad - fontSize * 0.85;
           for (const line of iLines) {
             this.page.drawText(line, { x: MARGIN_L + pad, y: lineY, size: fontSize, font: this.fontBold, color: rgb(0,0,0) });
@@ -108,7 +113,8 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
           }
         }
         
-        this.page.drawRectangle({ x: MARGIN_L + w1, y: y - rowH, width: w2, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W });
+        const w2Color = this.currentSection === '3' ? undefined : hexToRgb(LBL_BG);
+        this.page.drawRectangle({ x: MARGIN_L + w1, y: y - rowH, width: w2, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W, color: w2Color });
         let lineY2 = y - pad - fontSize * 0.85;
         for (const line of tLines) {
           this.page.drawText(line, { x: MARGIN_L + w1 + pad, y: lineY2, size: fontSize, font: c.labelBold !== false ? this.fontBold : this.fontRegular, color: rgb(0,0,0) });
@@ -140,14 +146,15 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       this.checkPageBreak(rowH);
       const y = this.pdfY(this.cursorY);
       
-      this.page.drawRectangle({ x: MARGIN_L, y: y - rowH, width: w1, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W });
+      this.page.drawRectangle({ x: MARGIN_L, y: y - rowH, width: w1, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W, color: hexToRgb(LBL_BG) });
       let lineY = y - pad - fontSize * 0.85;
       for (const line of iLines) {
         this.page.drawText(line, { x: MARGIN_L + pad, y: lineY, size: fontSize, font: this.fontBold, color: rgb(0,0,0) });
         lineY -= fontSize * LINE_HEIGHT;
       }
       
-      this.page.drawRectangle({ x: MARGIN_L + w1, y: y - rowH, width: w2, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W });
+      const w2Color = this.currentSection === '3' ? undefined : hexToRgb(LBL_BG);
+      this.page.drawRectangle({ x: MARGIN_L + w1, y: y - rowH, width: w2, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W, color: w2Color });
       lineY = y - pad - fontSize * 0.85;
       for (const line of lLines) {
         this.page.drawText(line, { x: MARGIN_L + w1 + pad, y: lineY, size: fontSize, font: c.labelBold !== false ? this.fontBold : this.fontRegular, color: rgb(0,0,0) });
