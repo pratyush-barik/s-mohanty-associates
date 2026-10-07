@@ -89,7 +89,6 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
                   <input
                     type="text"
                     className={`${inputCls} mt-2 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
-                    placeholder={customInputProps.placeholder}
                     value={customInputProps.value || ''}
                     onChange={e => customInputProps.onChange(e.target.value)}
                     disabled={isReadOnly || !isEdit}
@@ -269,7 +268,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               <textarea 
                 className={inputCls + ' resize-y w-full'} 
                 rows={2} 
-                placeholder="Owner Name(s)" 
+                
                 value={fields.kotakBbgOwnerName !== undefined ? fields.kotakBbgOwnerName : borrowerName} 
                 onChange={e => handleChange('kotakBbgOwnerName', e.target.value)} 
                 disabled={isReadOnly} 
@@ -290,7 +289,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               <div className="p-3 bg-white bg-opacity-50 border border-gray-200 rounded space-y-4">
                 <div className="flex flex-col space-y-2">
                   <span className="text-sm font-semibold text-gray-700">Name</span>
-                  <input type="text" className={inputCls} placeholder="Name" value={fields.kotakBbgPersonMet || ''} onChange={e => handleChange('kotakBbgPersonMet', e.target.value)} disabled={isReadOnly} />
+                  <input type="text" className={inputCls} value={fields.kotakBbgPersonMet || ''} onChange={e => handleChange('kotakBbgPersonMet', e.target.value)} disabled={isReadOnly} />
                 </div>
                 
                 {/* Removed Relationship to Owner */}
@@ -304,7 +303,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </label>
                   </div>
                   {!fields.kotakBbgPersonMetContactNA && (
-                    <input type="text" maxLength={10} className={inputCls} placeholder="10-digit number" value={fields.kotakBbgPersonMetContact || ''} onChange={e => {
+                    <input type="text" maxLength={10} className={inputCls} value={fields.kotakBbgPersonMetContact || ''} onChange={e => {
                       const val = e.target.value.replace(/\D/g, '');
                       handleChange('kotakBbgPersonMetContact', val);
                     }} disabled={isReadOnly} />
@@ -335,7 +334,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               <textarea 
                 className={inputCls + ' resize-y w-full'} 
                 rows={4} 
-                placeholder="Enter Technical Address..." 
+                
                 value={fields.kotakBbgTechnicalAddress || ''} 
                 onChange={e => handleChange('kotakBbgTechnicalAddress', e.target.value)} 
                 disabled={isReadOnly} 
@@ -362,11 +361,11 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex flex-col space-y-1">
                   <span className="text-xs font-semibold text-gray-600 uppercase">Latitude</span>
-                  <input type="number" className={inputCls} placeholder="Latitude" value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} />
+                  <input type="number" className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} />
                 </div>
                 <div className="flex flex-col space-y-1">
                   <span className="text-xs font-semibold text-gray-600 uppercase">Longitude</span>
-                  <input type="number" className={inputCls} placeholder="Longitude" value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} />
+                  <input type="number" className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} />
                 </div>
               </div>
             </Field>
@@ -383,7 +382,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   <option value="Custom">Custom</option>
                 </select>
                 {fields.kotakBbgNatureOfProperty === 'Custom' && (
-                  <input type="text" className={inputCls} placeholder="Enter custom nature" value={fields.kotakBbgNatureOfPropertyCustom || ''} onChange={e => handleChange('kotakBbgNatureOfPropertyCustom', e.target.value)} disabled={isReadOnly} />
+                  <input type="text" className={inputCls} value={fields.kotakBbgNatureOfPropertyCustom || ''} onChange={e => handleChange('kotakBbgNatureOfPropertyCustom', e.target.value)} disabled={isReadOnly} />
                 )}
               </div>
             </Field>
@@ -398,7 +397,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   <option value="Custom">Custom</option>
                 </select>
                 {fields.kotakBbgTenure === 'Custom' && (
-                  <input type="text" className={inputCls} placeholder="Enter custom tenure" value={fields.kotakBbgTenureCustom || ''} onChange={e => handleChange('kotakBbgTenureCustom', e.target.value)} disabled={isReadOnly} />
+                  <input type="text" className={inputCls} value={fields.kotakBbgTenureCustom || ''} onChange={e => handleChange('kotakBbgTenureCustom', e.target.value)} disabled={isReadOnly} />
                 )}
               </div>
             </Field>
@@ -413,7 +412,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!leaseTermsNA ? (
-                <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Enter lease terms..." value={fields.kotakBbgLeaseTerms || ''} onChange={e => handleChange('kotakBbgLeaseTerms', e.target.value)} disabled={isReadOnly} />
+                <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgLeaseTerms || ''} onChange={e => handleChange('kotakBbgLeaseTerms', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed'} value="NA" disabled />
               )}
@@ -437,7 +436,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     <option value="Custom">Custom</option>
                   </select>
                   {fields.kotakBbgLeaseTransferable === 'Custom' && (
-                    <input type="text" className={inputCls} placeholder="Enter custom value" value={fields.kotakBbgLeaseTransferableCustom || ''} onChange={e => handleChange('kotakBbgLeaseTransferableCustom', e.target.value)} disabled={isReadOnly} />
+                    <input type="text" className={inputCls} value={fields.kotakBbgLeaseTransferableCustom || ''} onChange={e => handleChange('kotakBbgLeaseTransferableCustom', e.target.value)} disabled={isReadOnly} />
                   )}
                 </div>
               ) : (
@@ -465,7 +464,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     <option value="Custom">Custom</option>
                   </select>
                   {fields.kotakBbgOccupancy === 'Custom' && (
-                    <input type="text" className={inputCls} placeholder="Enter custom value" value={fields.kotakBbgOccupancyCustom || ''} onChange={e => handleChange('kotakBbgOccupancyCustom', e.target.value)} disabled={isReadOnly} />
+                    <input type="text" className={inputCls} value={fields.kotakBbgOccupancyCustom || ''} onChange={e => handleChange('kotakBbgOccupancyCustom', e.target.value)} disabled={isReadOnly} />
                   )}
                 </div>
               ) : (
@@ -563,7 +562,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!isDiscrepancyNA ? (
-                <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Specify discrepancies..." value={fields.kotakBbgBoundariesDiscrepancy || ''} onChange={e => handleChange('kotakBbgBoundariesDiscrepancy', e.target.value)} disabled={isReadOnly} />
+                <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgBoundariesDiscrepancy || ''} onChange={e => handleChange('kotakBbgBoundariesDiscrepancy', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <div title={matchingVal === 'Yes' ? "Auto calculating from field b (Yes)" : ""} className="relative group flex items-center cursor-help">
                   <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed pr-8 text-gray-500'} value="NA" disabled />
@@ -574,7 +573,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             {/* d. Documents basis which property is identified */}
             <Field label="d. Documents basis which property is identified">
-              <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Enter documents basis..." value={fields.kotakBbgDocumentsIdentified || ''} onChange={e => handleChange('kotakBbgDocumentsIdentified', e.target.value)} disabled={isReadOnly} />
+              <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgDocumentsIdentified || ''} onChange={e => handleChange('kotakBbgDocumentsIdentified', e.target.value)} disabled={isReadOnly} />
             </Field>
 
             {/* e. Confirmation from the valuer that the correct property is identified */}
@@ -621,7 +620,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             {/* g. Type, Condition, Classification of the Locality */}
             <Field label="g. Type, Condition, Classification of the Locality">
-              <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Enter type, condition, classification..." value={fields.kotakBbgLocalityClassification || ''} onChange={e => handleChange('kotakBbgLocalityClassification', e.target.value)} disabled={isReadOnly} />
+              <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgLocalityClassification || ''} onChange={e => handleChange('kotakBbgLocalityClassification', e.target.value)} disabled={isReadOnly} />
             </Field>
 
             {/* h. Development of surrounding areas */}
@@ -637,14 +636,14 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   <option value="Custom">Custom</option>
                 </select>
                 {fields.kotakBbgSurroundingDev === 'Custom' && (
-                  <input type="text" className={`${inputCls} border-emerald-300 focus:ring-emerald-500`} placeholder="Enter custom development" value={fields.kotakBbgSurroundingDevCustom || ''} onChange={e => handleChange('kotakBbgSurroundingDevCustom', e.target.value)} disabled={isReadOnly} />
+                  <input type="text" className={`${inputCls} border-emerald-300 focus:ring-emerald-500`} value={fields.kotakBbgSurroundingDevCustom || ''} onChange={e => handleChange('kotakBbgSurroundingDevCustom', e.target.value)} disabled={isReadOnly} />
                 )}
               </div>
             </Field>
 
             {/* i. Access to property */}
             <Field label="i. Access to property">
-              <input type="text" className={inputCls} placeholder="Enter access to property details" value={fields.kotakBbgAccessType || ''} onChange={e => handleChange('kotakBbgAccessType', e.target.value)} disabled={isReadOnly} />
+              <input type="text" className={inputCls} value={fields.kotakBbgAccessType || ''} onChange={e => handleChange('kotakBbgAccessType', e.target.value)} disabled={isReadOnly} />
             </Field>
 
             {/* j. Name and condition of Approach Road */}
@@ -652,7 +651,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-white/80 rounded-xl border border-[#c8e6c9] shadow-sm">
                 <div className="flex flex-col space-y-1.5">
                   <span className="text-sm font-medium text-gray-700">Name</span>
-                  <input type="text" className={inputCls} placeholder="e.g. NH-16" value={fields.kotakBbgApproachRoadName || ''} onChange={e => handleChange('kotakBbgApproachRoadName', e.target.value)} disabled={isReadOnly} />
+                  <input type="text" className={inputCls} value={fields.kotakBbgApproachRoadName || ''} onChange={e => handleChange('kotakBbgApproachRoadName', e.target.value)} disabled={isReadOnly} />
                 </div>
                 <div className="flex flex-col space-y-1.5">
                   <span className="text-sm font-medium text-gray-700">Condition</span>
@@ -665,7 +664,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     <option value="Custom">Custom</option>
                   </select>
                   {fields.kotakBbgApproachRoadCondition === 'Custom' && (
-                    <input type="text" className={`${inputCls} mt-2 border-emerald-300 focus:ring-emerald-500`} placeholder="Enter custom condition" value={fields.kotakBbgApproachRoadConditionCustom || ''} onChange={e => handleChange('kotakBbgApproachRoadConditionCustom', e.target.value)} disabled={isReadOnly} />
+                    <input type="text" className={`${inputCls} mt-2 border-emerald-300 focus:ring-emerald-500`} value={fields.kotakBbgApproachRoadConditionCustom || ''} onChange={e => handleChange('kotakBbgApproachRoadConditionCustom', e.target.value)} disabled={isReadOnly} />
                   )}
                 </div>
               </div>
@@ -673,7 +672,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             {/* k. Proximity to civic amenities */}
             <Field label="k. Proximity to civic amenities like schools, hospitals, offices, markets, cinemas, etc.">
-              <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Enter proximity to civic amenities..." value={fields.kotakBbgCivicAmenities || ''} onChange={e => handleChange('kotakBbgCivicAmenities', e.target.value)} disabled={isReadOnly} />
+              <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgCivicAmenities || ''} onChange={e => handleChange('kotakBbgCivicAmenities', e.target.value)} disabled={isReadOnly} />
             </Field>
           </div>
         );
@@ -712,7 +711,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     <option value="Custom">Custom</option>
                   </select>
                   {fields.kotakBbgLandConversion === 'Custom' && (
-                    <input type="text" className={inputCls} placeholder="Enter custom value" value={fields.kotakBbgLandConversionCustom || ''} onChange={e => handleChange('kotakBbgLandConversionCustom', e.target.value)} disabled={isReadOnly} />
+                    <input type="text" className={inputCls} value={fields.kotakBbgLandConversionCustom || ''} onChange={e => handleChange('kotakBbgLandConversionCustom', e.target.value)} disabled={isReadOnly} />
                   )}
                 </div>
               ) : (
@@ -741,7 +740,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     <option value="Custom">Custom</option>
                   </select>
                   {fields.kotakBbgLandZoning === 'Custom' && (
-                    <input type="text" className={inputCls} placeholder="Enter custom value" value={fields.kotakBbgLandZoningCustom || ''} onChange={e => handleChange('kotakBbgLandZoningCustom', e.target.value)} disabled={isReadOnly} />
+                    <input type="text" className={inputCls} value={fields.kotakBbgLandZoningCustom || ''} onChange={e => handleChange('kotakBbgLandZoningCustom', e.target.value)} disabled={isReadOnly} />
                   )}
                 </div>
               ) : (
@@ -769,7 +768,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                       <Lock size={14} className="absolute right-3 text-gray-400 group-hover:text-gray-600" />
                     </div>
                   ) : (
-                    <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Enter plan details..." value={fields.kotakBbgApprovedPlanDetails || ''} onChange={e => handleChange('kotakBbgApprovedPlanDetails', e.target.value)} disabled={isReadOnly} />
+                    <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgApprovedPlanDetails || ''} onChange={e => handleChange('kotakBbgApprovedPlanDetails', e.target.value)} disabled={isReadOnly} />
                   )}
                 </div>
               </div>
@@ -796,7 +795,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     <option value="Custom">Custom</option>
                   </select>
                   {fields.kotakBbgAuthorityApprovals === 'Custom' && (
-                    <input type="text" className={inputCls} placeholder="Enter custom authority" value={fields.kotakBbgAuthorityApprovalsCustom || ''} onChange={e => handleChange('kotakBbgAuthorityApprovalsCustom', e.target.value)} disabled={isReadOnly} />
+                    <input type="text" className={inputCls} value={fields.kotakBbgAuthorityApprovalsCustom || ''} onChange={e => handleChange('kotakBbgAuthorityApprovalsCustom', e.target.value)} disabled={isReadOnly} />
                   )}
                 </div>
               ) : (
@@ -904,7 +903,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                         <option value="Custom">Custom</option>
                       </select>
                       {fields.kotakBbgDeedType === 'Custom' && (
-                        <input type="text" className={`${inputCls} mt-2`} placeholder="Enter custom value" value={fields.kotakBbgDeedTypeCustom || ''} onChange={e => handleChange('kotakBbgDeedTypeCustom', e.target.value)} disabled={isReadOnly} />
+                        <input type="text" className={`${inputCls} mt-2`} value={fields.kotakBbgDeedTypeCustom || ''} onChange={e => handleChange('kotakBbgDeedTypeCustom', e.target.value)} disabled={isReadOnly} />
                       )}
                     </div>
                   ) : (
@@ -1000,7 +999,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </label>
                   </div>
                   {fields.kotakBbgOtherDocsCustomChecked && (
-                    <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Enter other custom documents perused..." value={fields.kotakBbgOtherDocsCustom || ''} onChange={e => handleChange('kotakBbgOtherDocsCustom', e.target.value)} disabled={isReadOnly} />
+                    <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgOtherDocsCustom || ''} onChange={e => handleChange('kotakBbgOtherDocsCustom', e.target.value)} disabled={isReadOnly} />
                   )}
                 </div>
               ) : (
@@ -1098,7 +1097,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                           <option value="Custom">Custom</option>
                         </select>
                         {fields.kotakBbgConstructionType === 'Custom' && (
-                          <input type="text" className={`${inputCls} mt-2`} placeholder="Enter custom type" value={fields.kotakBbgConstructionTypeCustom || ''} onChange={e => handleChange('kotakBbgConstructionTypeCustom', e.target.value)} disabled={isReadOnly} />
+                          <input type="text" className={`${inputCls} mt-2`} value={fields.kotakBbgConstructionTypeCustom || ''} onChange={e => handleChange('kotakBbgConstructionTypeCustom', e.target.value)} disabled={isReadOnly} />
                         )}
                       </div>
                     ) : (
@@ -1124,7 +1123,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                           <option value="Custom">Custom</option>
                         </select>
                         {fields.kotakBbgRoofingSystem === 'Custom' && (
-                          <input type="text" className={`${inputCls} mt-2`} placeholder="Enter custom roofing" value={fields.kotakBbgRoofingSystemCustom || ''} onChange={e => handleChange('kotakBbgRoofingSystemCustom', e.target.value)} disabled={isReadOnly} />
+                          <input type="text" className={`${inputCls} mt-2`} value={fields.kotakBbgRoofingSystemCustom || ''} onChange={e => handleChange('kotakBbgRoofingSystemCustom', e.target.value)} disabled={isReadOnly} />
                         )}
                       </div>
                     ) : (
@@ -1141,7 +1140,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </label>
                   </div>
                   {!fields.kotakBbgSpecialFeaturesNA ? (
-                    <input type="text" className={inputCls} placeholder="Enter special features if any" value={fields.kotakBbgSpecialFeatures || ''} onChange={e => handleChange('kotakBbgSpecialFeatures', e.target.value)} disabled={isReadOnly} />
+                    <input type="text" className={inputCls} value={fields.kotakBbgSpecialFeatures || ''} onChange={e => handleChange('kotakBbgSpecialFeatures', e.target.value)} disabled={isReadOnly} />
                   ) : (
                     <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
                   )}
@@ -1160,7 +1159,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!fields.kotakBbgYearOfConstructionNA ? (
-                <input type="number" className={inputCls} placeholder="YYYY" min="1800" max={currentYear} value={fields.kotakBbgYearOfConstruction || ''} onChange={e => handleChange('kotakBbgYearOfConstruction', e.target.value)} disabled={isReadOnly} />
+                <input type="number" className={inputCls} min="1800" max={currentYear} value={fields.kotakBbgYearOfConstruction || ''} onChange={e => handleChange('kotakBbgYearOfConstruction', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
@@ -1178,7 +1177,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
             }>
               {!fields.kotakBbgStageOfConstructionNA ? (
                 <div className="relative">
-                  <input type="number" className={inputCls + ' pr-8'} placeholder="100" min="0" max="100" value={fields.kotakBbgStageOfConstruction !== undefined ? fields.kotakBbgStageOfConstruction : '100'} onChange={e => handleChange('kotakBbgStageOfConstruction', e.target.value)} disabled={isReadOnly} />
+                  <input type="number" className={inputCls + ' pr-8'} min="0" max="100" value={fields.kotakBbgStageOfConstruction !== undefined ? fields.kotakBbgStageOfConstruction : '100'} onChange={e => handleChange('kotakBbgStageOfConstruction', e.target.value)} disabled={isReadOnly} />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
                 </div>
               ) : (
@@ -1199,7 +1198,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             {/* e. No of Floors */}
             <Field label="e. No of Floors">
-              <input type="text" className={inputCls} placeholder="Enter no of floors" value={fields.kotakBbgNumberOfFloors || ''} onChange={e => handleChange('kotakBbgNumberOfFloors', e.target.value)} disabled={isReadOnly} />
+              <input type="text" className={inputCls} value={fields.kotakBbgNumberOfFloors || ''} onChange={e => handleChange('kotakBbgNumberOfFloors', e.target.value)} disabled={isReadOnly} />
             </Field>
 
             {/* f. Quality of The Construction */}
@@ -1224,7 +1223,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     <option value="Custom">Custom</option>
                   </select>
                   {fields.kotakBbgQualityOfConstruction === 'Custom' && (
-                    <input type="text" className={inputCls} placeholder="Enter custom quality" value={fields.kotakBbgQualityOfConstructionCustom || ''} onChange={e => handleChange('kotakBbgQualityOfConstructionCustom', e.target.value)} disabled={isReadOnly} />
+                    <input type="text" className={inputCls} value={fields.kotakBbgQualityOfConstructionCustom || ''} onChange={e => handleChange('kotakBbgQualityOfConstructionCustom', e.target.value)} disabled={isReadOnly} />
                   )}
                 </div>
               ) : (
@@ -1234,7 +1233,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
 
             {/* g. Technical details (Finishing, interiors) */}
             <Field label="g. Technical details (Finishing, interiors)">
-              <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Enter technical details..." value={fields.kotakBbgTechnicalDetails || ''} onChange={e => handleChange('kotakBbgTechnicalDetails', e.target.value)} disabled={isReadOnly} />
+              <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgTechnicalDetails || ''} onChange={e => handleChange('kotakBbgTechnicalDetails', e.target.value)} disabled={isReadOnly} />
             </Field>
 
             {/* h. Amenities provided in building/ Complex (lifts, parking etc) */}
@@ -1262,7 +1261,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </label>
                   </div>
                   {fields.kotakBbgAmenitiesCustomChecked && (
-                    <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Enter other custom amenities..." value={fields.kotakBbgAmenitiesCustom || ''} onChange={e => handleChange('kotakBbgAmenitiesCustom', e.target.value)} disabled={isReadOnly} />
+                    <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgAmenitiesCustom || ''} onChange={e => handleChange('kotakBbgAmenitiesCustom', e.target.value)} disabled={isReadOnly} />
                   )}
                 </div>
               ) : (
@@ -1331,7 +1330,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     </label>
                   </div>
                   {!fields.kotakBbgLandAreaDescriptiveDetailsNA ? (
-                    <textarea className={inputCls + ' resize-y'} rows={3} placeholder='e.g. "137214 As per Sale Deed/ROR", shape, physical features...' value={fields.kotakBbgLandAreaDescriptiveDetails || ''} onChange={e => handleChange('kotakBbgLandAreaDescriptiveDetails', e.target.value)} disabled={isReadOnly} />
+                    <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgLandAreaDescriptiveDetails || ''} onChange={e => handleChange('kotakBbgLandAreaDescriptiveDetails', e.target.value)} disabled={isReadOnly} />
                   ) : (
                     <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
                   )}
@@ -1361,7 +1360,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!(fields.kotakBbgBuildingAreaDetailsNA || isVacantLand) ? (
-                <textarea className={inputCls + ' resize-y'} rows={4} placeholder="Enter building area details..." value={fields.kotakBbgBuildingAreaDetails || ''} onChange={e => handleChange('kotakBbgBuildingAreaDetails', e.target.value)} disabled={isReadOnly} />
+                <textarea className={inputCls + ' resize-y'} rows={4} value={fields.kotakBbgBuildingAreaDetails || ''} onChange={e => handleChange('kotakBbgBuildingAreaDetails', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
@@ -1388,7 +1387,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                     <option value="Custom">Custom</option>
                   </select>
                   {fields.kotakBbgDeviations === 'Custom' && (
-                    <textarea className={inputCls + ' resize-y'} rows={3} placeholder="Describe deviations/violations" value={fields.kotakBbgDeviationsCustom || ''} onChange={e => handleChange('kotakBbgDeviationsCustom', e.target.value)} disabled={isReadOnly} />
+                    <textarea className={inputCls + ' resize-y'} rows={3} value={fields.kotakBbgDeviationsCustom || ''} onChange={e => handleChange('kotakBbgDeviationsCustom', e.target.value)} disabled={isReadOnly} />
                   )}
                 </div>
               ) : (
@@ -1453,7 +1452,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                 className={`${inputCls} resize-y bg-white`}
                 rows={4}
                 value={fields.kotakBbgValuationMethodology || ''}
-                placeholder="Enter details of valuation methodology and reason..."
+               
                 onChange={e => handleChange('kotakBbgValuationMethodology', e.target.value)}
                 disabled={isReadOnly}
               />
@@ -1470,7 +1469,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!fields.kotakBbgComparablesReliedNA ? (
-                <textarea className={inputCls + ' resize-y'} rows={4} placeholder="List the comparables relied upon..." value={fields.kotakBbgComparablesRelied || ''} onChange={e => handleChange('kotakBbgComparablesRelied', e.target.value)} disabled={isReadOnly} />
+                <textarea className={inputCls + ' resize-y'} rows={4} value={fields.kotakBbgComparablesRelied || ''} onChange={e => handleChange('kotakBbgComparablesRelied', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
@@ -1487,7 +1486,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!fields.kotakBbgAnalysisComparablesNA ? (
-                <textarea className={inputCls + ' resize-y'} rows={4} placeholder="Explain justification for rate selection..." value={fields.kotakBbgAnalysisComparables || ''} onChange={e => handleChange('kotakBbgAnalysisComparables', e.target.value)} disabled={isReadOnly} />
+                <textarea className={inputCls + ' resize-y'} rows={4} value={fields.kotakBbgAnalysisComparables || ''} onChange={e => handleChange('kotakBbgAnalysisComparables', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
@@ -1504,7 +1503,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!fields.kotakBbgAdoptedLandRateNA ? (
-                <input type="text" className={inputCls} placeholder="e.g. Rs.1260/- Per Sqft of Land" value={fields.kotakBbgAdoptedLandRate || ''} onChange={e => handleChange('kotakBbgAdoptedLandRate', e.target.value)} disabled={isReadOnly} />
+                <input type="text" className={inputCls} value={fields.kotakBbgAdoptedLandRate || ''} onChange={e => handleChange('kotakBbgAdoptedLandRate', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
@@ -1521,7 +1520,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!(fields.kotakBbgAdoptedBuildingRateNA || isVacantLand) ? (
-                <textarea className={inputCls + ' resize-y'} rows={4} placeholder="Enter building rate details and reasoning..." value={fields.kotakBbgAdoptedBuildingRateDetails || ''} onChange={e => handleChange('kotakBbgAdoptedBuildingRateDetails', e.target.value)} disabled={isReadOnly} />
+                <textarea className={inputCls + ' resize-y'} rows={4} value={fields.kotakBbgAdoptedBuildingRateDetails || ''} onChange={e => handleChange('kotakBbgAdoptedBuildingRateDetails', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
@@ -1565,7 +1564,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                       </label>
                     </div>
                     {!(fields.kotakBbgBuildingValueNA || isVacantLand) ? (
-                      <input type="number" className={inputCls} placeholder="Enter building value" value={fields.kotakBbgBuildingValue || ''} onChange={e => handleChange('kotakBbgBuildingValue', e.target.value)} disabled={isReadOnly} />
+                      <input type="number" className={inputCls} value={fields.kotakBbgBuildingValue || ''} onChange={e => handleChange('kotakBbgBuildingValue', e.target.value)} disabled={isReadOnly} />
                     ) : (
                       <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
                     )}
@@ -1610,7 +1609,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
               </div>
             }>
               {!fields.kotakBbgGuidelineRateNA ? (
-                <input type="text" className={inputCls} placeholder="e.g. Rs.161/- per Sqft of Land" value={fields.kotakBbgGuidelineRate || ''} onChange={e => handleChange('kotakBbgGuidelineRate', e.target.value)} disabled={isReadOnly} />
+                <input type="text" className={inputCls} value={fields.kotakBbgGuidelineRate || ''} onChange={e => handleChange('kotakBbgGuidelineRate', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
@@ -1745,7 +1744,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   <div className="flex flex-col space-y-1.5">
                     <span className="text-sm font-medium text-gray-700">Realizable Value Factor (%)</span>
                     <div className="relative">
-                      <input type="number" className={inputCls + ' pr-8'} placeholder="90" value={fields.kotakBbgRvPercent !== undefined ? fields.kotakBbgRvPercent : '90'} onChange={e => handleChange('kotakBbgRvPercent', e.target.value)} disabled={isReadOnly} />
+                      <input type="number" className={inputCls + ' pr-8'} value={fields.kotakBbgRvPercent !== undefined ? fields.kotakBbgRvPercent : '90'} onChange={e => handleChange('kotakBbgRvPercent', e.target.value)} disabled={isReadOnly} />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
                     </div>
                   </div>
@@ -1790,7 +1789,7 @@ export const KOTAK_BBG_CONFIG: BankConfig = {
                   <div className="flex flex-col space-y-1.5">
                     <span className="text-sm font-medium text-gray-700">Distress Value Factor (%)</span>
                     <div className="relative">
-                      <input type="number" className={inputCls + ' pr-8'} placeholder="80" value={fields.kotakBbgDvPercent !== undefined ? fields.kotakBbgDvPercent : '80'} onChange={e => handleChange('kotakBbgDvPercent', e.target.value)} disabled={isReadOnly} />
+                      <input type="number" className={inputCls + ' pr-8'} value={fields.kotakBbgDvPercent !== undefined ? fields.kotakBbgDvPercent : '80'} onChange={e => handleChange('kotakBbgDvPercent', e.target.value)} disabled={isReadOnly} />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">%</span>
                     </div>
                   </div>
@@ -1925,7 +1924,7 @@ The valuation has been carried out for both the land and the measured built-up a
               </div>
             }>
               {!fields.kotakBbgSpecificRiskFactorsNA ? (
-                <textarea className={inputCls + ' resize-y'} rows={6} placeholder="Note: 1. Approved Building Plan: The approved building plan was not available..." value={fields.kotakBbgSpecificRiskFactors || ''} onChange={e => handleChange('kotakBbgSpecificRiskFactors', e.target.value)} disabled={isReadOnly} />
+                <textarea className={inputCls + ' resize-y'} rows={6} value={fields.kotakBbgSpecificRiskFactors || ''} onChange={e => handleChange('kotakBbgSpecificRiskFactors', e.target.value)} disabled={isReadOnly} />
               ) : (
                 <input type="text" className={inputCls + ' bg-gray-100 cursor-not-allowed text-gray-500'} value="NA" disabled />
               )}
@@ -1995,7 +1994,7 @@ The valuation has been carried out for both the land and the measured built-up a
                       <option value="Custom">Custom</option>
                     </select>
                     {fields.kotakBbgReportIssuePlace === 'Custom' && (
-                      <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom place" value={fields.kotakBbgReportIssuePlaceCustom || ''} onChange={e => handleChange('kotakBbgReportIssuePlaceCustom', e.target.value)} disabled={isReadOnly} />
+                      <input type="text" className={inputCls + ' mt-2'} value={fields.kotakBbgReportIssuePlaceCustom || ''} onChange={e => handleChange('kotakBbgReportIssuePlaceCustom', e.target.value)} disabled={isReadOnly} />
                     )}
                   </div>
                 </div>
