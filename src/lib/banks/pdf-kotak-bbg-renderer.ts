@@ -33,6 +33,184 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     return (html || '').replace(/<[^>]*>?/gm, '');
   }
 
+  override drawSectionHeader(title: string, addSpaceBefore = true, preserveCase = false): void {
+    if (addSpaceBefore && this.cursorY > 10) this.cursorY += 10;
+    const match = title.match(/^([0-9]+)\.\s*(.*)/);
+    let index = '';
+    let text = title;
+    if (match) { index = match[1]; text = match[2]; }
+    if (!preserveCase) text = text.toUpperCase();
+
+    const w1 = index ? 30 : 0;
+    const w2 = CONTENT_W - w1;
+    const pad = 3;
+    const fontSize = FONT_SIZE_HEADER;
+
+    const iLines = index ? this.wrapText(index, w1 - pad * 2, fontSize, true) : [];
+    const tLines = this.wrapText(text, w2 - pad * 2, fontSize, true);
+    
+    const maxLines = Math.max(iLines.length, tLines.length, 1);
+    const rowH = Math.max(20 + (maxLines - 1) * 14, maxLines * fontSize * LINE_HEIGHT + pad * 2);
+    
+    this.checkPageBreak(rowH + 30);
+    const y = this.pdfY(this.cursorY);
+    
+    this.page.drawRectangle({ x: MARGIN_L, y: y - rowH, width: CONTENT_W, height: rowH, color: hexToRgb(OPT_BG), opacity: BG_OPACITY });
+    
+    if (w1 > 0) {
+      this.page.drawRectangle({ x: MARGIN_L, y: y - rowH, width: w1, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W });
+      let lineY = y - pad - fontSize * 0.85;
+      for (const line of iLines) {
+        this.page.drawText(line, { x: MARGIN_L + pad, y: lineY, size: fontSize, font: this.fontBold, color: rgb(0,0,0) });
+        lineY -= fontSize * LINE_HEIGHT;
+      }
+    }
+    
+    this.page.drawRectangle({ x: MARGIN_L + w1, y: y - rowH, width: w2, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W });
+    let lineY2 = y - pad - fontSize * 0.85;
+    for (const line of tLines) {
+      const tw = this.fontBold.widthOfTextAtSize(line, fontSize);
+      this.page.drawText(line, { x: MARGIN_L + w1 + (w2 - tw) / 2, y: lineY2, size: fontSize, font: this.fontBold, color: rgb(0,0,0) });
+      lineY2 -= fontSize * LINE_HEIGHT;
+    }
+    
+    this.cursorY += rowH;
+  }
+
+  override drawKeyValueRow(cols: { label: string; value: string; labelWidth?: number; valueWidth?: number; highlight?: boolean; bold?: boolean; labelBold?: boolean; valueBold?: boolean; hideTop?: boolean; hideBottom?: boolean }[]): void {
+    const pad = 3;
+    const fontSize = FONT_SIZE;
+    
+    for (const c of cols) {
+      if (c.valueWidth === 0) {
+        const match = c.label.match(/^([a-z0-9]+)\.\s*(.*)/i);
+        let index = '';
+        let text = c.label;
+        if (match) { index = match[1]; text = match[2]; }
+        
+        const w1 = index ? 30 : 0;
+        const w2 = CONTENT_W - w1;
+        
+        const iLines = index ? this.wrapText(index, w1 - pad * 2, fontSize, true) : [];
+        const tLines = this.wrapText(text, w2 - pad * 2, fontSize, c.labelBold !== false);
+        const maxLines = Math.max(iLines.length, tLines.length, 1);
+        const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
+        
+        this.checkPageBreak(rowH);
+        const y = this.pdfY(this.cursorY);
+        
+        if (w1 > 0) {
+          this.page.drawRectangle({ x: MARGIN_L, y: y - rowH, width: w1, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W });
+          let lineY = y - pad - fontSize * 0.85;
+          for (const line of iLines) {
+            this.page.drawText(line, { x: MARGIN_L + pad, y: lineY, size: fontSize, font: this.fontBold, color: rgb(0,0,0) });
+            lineY -= fontSize * LINE_HEIGHT;
+          }
+        }
+        
+        this.page.drawRectangle({ x: MARGIN_L + w1, y: y - rowH, width: w2, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W });
+        let lineY2 = y - pad - fontSize * 0.85;
+        for (const line of tLines) {
+          this.page.drawText(line, { x: MARGIN_L + w1 + pad, y: lineY2, size: fontSize, font: c.labelBold !== false ? this.fontBold : this.fontRegular, color: rgb(0,0,0) });
+          lineY2 -= fontSize * LINE_HEIGHT;
+        }
+        this.cursorY += rowH;
+        continue;
+      }
+      
+      let index = '';
+      let text = c.label;
+      const match = c.label.match(/^([a-z0-9]+)\.\s*(.*)/i);
+      if (match) {
+        index = match[1];
+        text = match[2];
+      }
+      
+      const w1 = 30;
+      const w2 = c.labelWidth ? (c.labelWidth > 30 ? c.labelWidth - 30 : c.labelWidth) : 180;
+      const w3 = CONTENT_W - w1 - w2;
+
+      const iLines = this.wrapText(index, w1 - pad * 2, fontSize, true);
+      const lLines = this.wrapText(text, w2 - pad * 2, fontSize, c.labelBold !== false);
+      const vLines = this.wrapText(c.value, w3 - pad * 2, fontSize, c.valueBold || c.bold);
+      
+      const maxLines = Math.max(iLines.length, lLines.length, vLines.length, 1);
+      const rowH = Math.max(18, maxLines * fontSize * LINE_HEIGHT + pad * 2);
+      
+      this.checkPageBreak(rowH);
+      const y = this.pdfY(this.cursorY);
+      
+      this.page.drawRectangle({ x: MARGIN_L, y: y - rowH, width: w1, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W });
+      let lineY = y - pad - fontSize * 0.85;
+      for (const line of iLines) {
+        this.page.drawText(line, { x: MARGIN_L + pad, y: lineY, size: fontSize, font: this.fontBold, color: rgb(0,0,0) });
+        lineY -= fontSize * LINE_HEIGHT;
+      }
+      
+      this.page.drawRectangle({ x: MARGIN_L + w1, y: y - rowH, width: w2, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W });
+      lineY = y - pad - fontSize * 0.85;
+      for (const line of lLines) {
+        this.page.drawText(line, { x: MARGIN_L + w1 + pad, y: lineY, size: fontSize, font: c.labelBold !== false ? this.fontBold : this.fontRegular, color: rgb(0,0,0) });
+        lineY -= fontSize * LINE_HEIGHT;
+      }
+      
+      if (c.highlight) {
+        this.page.drawRectangle({ x: MARGIN_L + w1 + w2, y: y - rowH, width: w3, height: rowH, color: hexToRgb(VAL_BG), opacity: BG_OPACITY });
+      }
+      this.page.drawRectangle({ x: MARGIN_L + w1 + w2, y: y - rowH, width: w3, height: rowH, borderColor: rgb(0,0,0), borderWidth: BORDER_W });
+      lineY = y - pad - fontSize * 0.85;
+      for (const line of vLines) {
+        this.page.drawText(line, { x: MARGIN_L + w1 + w2 + pad, y: lineY, size: fontSize, font: (c.valueBold || c.bold) ? this.fontBold : this.fontRegular, color: rgb(0,0,0) });
+        lineY -= fontSize * LINE_HEIGHT;
+      }
+      
+      this.cursorY += rowH;
+    }
+  }
+
+  override drawTable(
+    headers: string[],
+    rows: (string | number)[][],
+    colWidths: number[],
+    highlightedCols: number[] = [],
+    labelCols: number[] = [],
+    boldCols: number[] = [],
+    highlightedCells: { r: number, c: number }[] = [],
+    boldCells: { r: number, c: number }[] = [],
+    colAligns: ('left' | 'center' | 'right')[] = [],
+    headerAligns: ('left' | 'center' | 'right')[] = [],
+    customFontSize?: number
+  ): void {
+    const newHeaders = headers.length > 0 ? ['', ...headers] : [];
+    const newRows = rows.map(r => ['', ...r]);
+    const tableW = CONTENT_W - 30;
+    const oldTotalW = colWidths.reduce((a, b) => a + b, 0);
+    const scaledColWidths = colWidths.map(w => (w / oldTotalW) * tableW);
+    const newColWidths = [30, ...scaledColWidths];
+
+    const newHighlightedCols = highlightedCols.map(c => c + 1);
+    const newLabelCols = labelCols.map(c => c + 1);
+    const newBoldCols = boldCols.map(c => c + 1);
+    const newHighlightedCells = highlightedCells.map(c => ({ r: c.r, c: c.c + 1 }));
+    const newBoldCells = boldCells.map(c => ({ r: c.r, c: c.c + 1 }));
+    const newColAligns = colAligns.length > 0 ? (['left', ...colAligns] as ('left' | 'center' | 'right')[]) : [];
+    const newHeaderAligns = headerAligns.length > 0 ? (['left', ...headerAligns] as ('left' | 'center' | 'right')[]) : [];
+    
+    super.drawTable(
+      newHeaders,
+      newRows,
+      newColWidths,
+      newHighlightedCols,
+      newLabelCols,
+      newBoldCols,
+      newHighlightedCells,
+      newBoldCells,
+      newColAligns,
+      newHeaderAligns,
+      customFontSize
+    );
+  }
+
   async drawContent(): Promise<void> {
     const bankNameField = this.getF('kotakBbgBankName');
     const oldBankName = 'Kotak Mahindra Bank';
