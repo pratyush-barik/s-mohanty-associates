@@ -456,7 +456,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     this.drawSectionHeader('10. DECLARATION');
 
     // a. Standard Declaration Legal Clauses
-    const siteVisitDate = this.getF('kotakBbgDateOfVisit') || '[Date from Section 1]';
+    const siteVisitDate = this.getF('kotakBbgDateOfValuation') || '[Date from Section 1]';
     const clausesText = `I hereby declare that -
 (a) the Valuation Report prepared and the information contained herein is true and correct to the best of my knowledge and belief :
 (b) I have no direct or indirect interest in the property valued;
@@ -477,7 +477,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     // c. Signature / Stamp
     this.drawKeyValueRow([
-      { label: 'c. Signature Confirmed', value: this.getF('kotakBbgSignatureConfirmed') ? 'Yes (Verified)' : 'No', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'c. Signature File Attached', value: this.getF('kotakBbgSignatureFile') ? 'Yes' : 'No', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
   }
 }

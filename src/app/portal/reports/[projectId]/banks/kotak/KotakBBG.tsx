@@ -1939,7 +1939,7 @@ The valuation has been carried out for both the land and the measured built-up a
       number: 10,
       defaultOpen: false,
       render: (fields, handleChange, isReadOnly) => {
-        const siteVisitDate = fields.kotakBbgDateOfVisit || '[Date from Section 1]';
+        const siteVisitDate = fields.kotakBbgDateOfValuation || '[Date from Section 1]';
         const clausesText = `I hereby declare that -
 (a) the Valuation Report prepared and the information contained herein is true and correct to the best of my knowledge and belief :
 (b) I have no direct or indirect interest in the property valued;
@@ -1972,31 +1972,27 @@ The valuation has been carried out for both the land and the measured built-up a
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <span className="text-sm text-gray-600 block mb-1">Date</span>
-                    <PrefillField
-                      label=""
-                      value={fields.kotakBbgReportIssueDate !== undefined ? fields.kotakBbgReportIssueDate : today}
-                      onChange={(val: string) => handleChange('kotakBbgReportIssueDate', val)}
-                      isReadOnly={isReadOnly}
-                      tooltip="Prefill from System Current Date"
+                    <input
                       type="date"
+                      className={inputCls}
+                      value={fields.kotakBbgReportIssueDate || today}
+                      onChange={e => handleChange('kotakBbgReportIssueDate', e.target.value)}
+                      disabled={isReadOnly}
                     />
                   </div>
                   <div>
                     <span className="text-sm text-gray-600 block mb-1">Place</span>
-                    <PrefillField
-                      label=""
-                      value={fields.kotakBbgReportIssuePlace !== undefined ? fields.kotakBbgReportIssuePlace : 'Bhubaneswar'}
-                      onChange={(val: string) => handleChange('kotakBbgReportIssuePlace', val)}
-                      isReadOnly={isReadOnly}
-                      tooltip="Prefill from Valuer Profile"
-                      type="select"
-                      options={[
-                        { label: 'Bhubaneswar', value: 'Bhubaneswar' },
-                        { label: 'Cuttack', value: 'Cuttack' },
-                        { label: 'Rourkela', value: 'Rourkela' },
-                        { label: 'Custom', value: 'Custom' }
-                      ]}
-                    />
+                    <select
+                      className={inputCls}
+                      value={fields.kotakBbgReportIssuePlace || 'Bhubaneswar'}
+                      onChange={e => handleChange('kotakBbgReportIssuePlace', e.target.value)}
+                      disabled={isReadOnly}
+                    >
+                      <option value="Bhubaneswar">Bhubaneswar</option>
+                      <option value="Cuttack">Cuttack</option>
+                      <option value="Rourkela">Rourkela</option>
+                      <option value="Custom">Custom</option>
+                    </select>
                     {fields.kotakBbgReportIssuePlace === 'Custom' && (
                       <input type="text" className={inputCls + ' mt-2'} placeholder="Enter custom place" value={fields.kotakBbgReportIssuePlaceCustom || ''} onChange={e => handleChange('kotakBbgReportIssuePlaceCustom', e.target.value)} disabled={isReadOnly} />
                     )}
@@ -2008,31 +2004,16 @@ The valuation has been carried out for both the land and the measured built-up a
             {/* c. Signature / Stamp of empanelled valuer */}
             <Field label="c. Signature / Stamp of empanelled valuer">
               <div className="space-y-4 p-4 border border-indigo-200 rounded-lg bg-white/80 shadow-sm">
-                <PrefillField
-                  label="System Generated Signature & Stamp"
-                  value={fields.kotakBbgSignatureConfirmed ? 'Confirmed' : ''}
-                  onChange={() => handleChange('kotakBbgSignatureConfirmed', !fields.kotakBbgSignatureConfirmed)}
-                  isReadOnly={isReadOnly}
-                  tooltip="Prefill from Valuer Profile"
-                  type="text" 
-                  renderCustomInput={(isLocked) => (
-                    <div className="space-y-4">
-                      {isLocked ? (
-                        <div className="w-full h-32 bg-gray-50 border border-gray-200 flex flex-col items-center justify-center text-gray-400 italic rounded shadow-inner cursor-not-allowed">
-                          <span className="text-gray-500 mb-2 font-semibold">Digitized Signature & Stamp</span>
-                          [Preview: Profile Signature Image]
-                        </div>
-                      ) : (
-                        <div className="w-full p-4 border-2 border-dashed border-indigo-300 rounded bg-white flex flex-col items-center justify-center hover:bg-indigo-50 transition-colors">
-                          <span className="text-gray-600 mb-2 font-medium">Override with Manual File Upload</span>
-                          <label className="text-sm text-white bg-indigo-600 px-4 py-2 rounded cursor-pointer hover:bg-indigo-700 transition-colors shadow-sm">
-                            <input type="file" className="hidden" disabled={isReadOnly} />
-                            Choose File
-                          </label>
-                        </div>
-                      )}
-                    </div>
-                  )}
+                <input
+                  type="file"
+                  className={inputCls + ' p-2'}
+                  onChange={e => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      handleChange('kotakBbgSignatureFile', file);
+                    }
+                  }}
+                  disabled={isReadOnly}
                 />
               </div>
             </Field>
