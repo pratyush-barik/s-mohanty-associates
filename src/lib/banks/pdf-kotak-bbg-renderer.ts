@@ -40,36 +40,55 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     const bankNameVal = (!bankNameField || bankNameField === oldBankName) ? newBankName : bankNameField;
 
     // Draw Reference and Date on top left/right
-    const refText = `Reference/ Application No.: ${this.getF('projectCode') || ''}`;
+    const refLabel = 'Reference No :';
+    const refValue = this.getF('projectCode') || '';
     let dateStr = this.getF('kotakBbgDateOfValuation') || '';
     if (dateStr.trim() && /^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim())) {
       const [y,m,d] = dateStr.trim().split('-');
       dateStr = `${d}/${m}/${y}`;
     }
-    const dateText = `Date of valuation report: ${dateStr}`;
+    const dateLabel = 'Date of valuation report:';
+    const dateValue = dateStr;
 
     const font = this.fontBold;
     
     // Draw top left (Ref)
-    this.page.drawText(refText, {
+    this.page.drawText(refLabel, {
       x: MARGIN_L,
       y: this.pdfY(this.cursorY) - 5,
       size: FONT_SIZE,
       font,
       color: rgb(0, 0, 0),
     });
-
-    // Draw top right (Date)
-    const tw = font.widthOfTextAtSize(dateText, FONT_SIZE);
-    this.page.drawText(dateText, {
-      x: MARGIN_L + CONTENT_W - tw,
-      y: this.pdfY(this.cursorY) - 5,
+    this.page.drawText(refValue, {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY) - 5 - 14,
       size: FONT_SIZE,
       font,
       color: rgb(0, 0, 0),
     });
 
-    this.cursorY += 15;
+    // Draw top right (Date)
+    const tl1 = font.widthOfTextAtSize(dateLabel, FONT_SIZE);
+    this.page.drawText(dateLabel, {
+      x: MARGIN_L + CONTENT_W - tl1,
+      y: this.pdfY(this.cursorY) - 5,
+      size: FONT_SIZE,
+      font,
+      color: rgb(0, 0, 0),
+    });
+    
+    const tl2 = font.widthOfTextAtSize(dateValue, FONT_SIZE);
+    this.page.drawText(dateValue, {
+      x: MARGIN_L + CONTENT_W - tl2,
+      y: this.pdfY(this.cursorY) - 5 - 14,
+      size: FONT_SIZE,
+      font,
+      color: rgb(0, 0, 0),
+    });
+
+    // Extra vertical space before VALUATION REPORT
+    this.cursorY += 15 + 14 + 15;
 
     this.drawMainHeader(`VALUATION REPORT FOR ${bankNameVal.toUpperCase()}`);
 
