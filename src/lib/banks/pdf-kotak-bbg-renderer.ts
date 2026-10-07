@@ -579,11 +579,18 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       }
     }
     
+    let combinedLandValue = landDetails || 'NA';
+    if (autoAcres && autoAcres !== 'NA' && combinedLandValue !== 'NA') {
+      const acresText = `- AC.${autoAcres}Decs`;
+      if (combinedLandValue.trim().endsWith(')')) {
+        combinedLandValue = combinedLandValue.trim().slice(0, -1) + acresText + ')';
+      } else {
+        combinedLandValue += ` ${acresText}`;
+      }
+    }
+
     this.drawKeyValueRow([
-      { label: 'a. Land Area (Sq.Ft) & Descriptive Details', value: landDetails || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Auto-Converted Land Area (Acres/Decs)', value: autoAcres || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'a. Area of land (if applicable) supported by documentary proof, shape, dimensions and physical features FSI permissible, utilized, balance', value: combinedLandValue, labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // b. Building/ flat/ office/ shop/ unit/ showroom area
