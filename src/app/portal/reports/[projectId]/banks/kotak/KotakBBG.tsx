@@ -6,7 +6,7 @@ import { Field, inputCls } from '../BaseBankReportComponents';
 import { Lock, Unlock } from 'lucide-react';
 import { PDFKotakBbgRenderer } from '@/lib/banks/pdf-kotak-bbg-renderer';
 
-const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue, options, customInputProps, hideEditToggle = false }: any) => {
+const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue, options, customInputProps, hideEditToggle = false, rows = 3 }: any) => {
   const [isEdit, setIsEdit] = useState(false);
 
   // When in edit-off mode, always sync stored value to fallbackValue so the
@@ -55,7 +55,7 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
              value={displayValue}
              onChange={e => onChange(e.target.value)}
              disabled={isReadOnly || !isEdit}
-             rows={3}
+             rows={rows}
            />
         ) : type === 'select' ? (
           (() => {
@@ -1912,11 +1912,12 @@ The valuation has been carried out for both the land and the measured built-up a
               tooltip="Auto calculating from [Combined Report Variables]"
               fallbackValue={execSummary}
               type="textarea"
+              rows={8}
             />
 
             <Field label={
               <div className="flex items-center justify-between w-full">
-                <span>Specific Risk Factors / Important Notes</span>
+                <span>Important Notes</span>
                 <label className="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity font-normal normal-case">
                   <input type="checkbox" className="w-3.5 h-3.5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" checked={!!fields.kotakBbgSpecificRiskFactorsNA} onChange={e => handleChange('kotakBbgSpecificRiskFactorsNA', e.target.checked)} disabled={isReadOnly} />
                   <span className="text-[10px] font-bold text-gray-500 tracking-wider">NA</span>

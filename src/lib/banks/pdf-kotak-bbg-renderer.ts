@@ -450,7 +450,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     ]);
     
     this.drawKeyValueRow([
-      { label: 'Specific Risk Factors / Important Notes', value: this.getF('kotakBbgSpecificRiskFactorsNA') ? 'NA' : this.getF('kotakBbgSpecificRiskFactors') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'Important Notes', value: this.getF('kotakBbgSpecificRiskFactorsNA') ? 'NA' : this.getF('kotakBbgSpecificRiskFactors') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawSectionHeader('10. DECLARATION');
