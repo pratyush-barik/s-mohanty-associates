@@ -34,7 +34,6 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
   }
 
   async drawContent(): Promise<void> {
-    this.addPage();
     this.drawMainHeader('VALUATION REPORT');
 
     this.drawSectionHeader('1. GENERAL DETAILS');
