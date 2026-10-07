@@ -39,16 +39,21 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     const newBankName = 'Kotak Mahindra Bank Limited (KMBL)';
     const bankNameVal = (!bankNameField || bankNameField === oldBankName) ? newBankName : bankNameField;
 
+    const fmtDate = (d: string): string => {
+      if (!d) return '';
+      const t = d.trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(t)) {
+        const [y,m,dd] = t.split('-');
+        return `${dd}/${m}/${y}`;
+      }
+      return t;
+    };
+
     // Draw Reference and Date on top left/right
     const refLabel = 'Reference No :';
     const refValue = this.getF('projectCode') || '';
-    let dateStr = this.getF('kotakBbgDateOfValuation') || '';
-    if (dateStr.trim() && /^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim())) {
-      const [y,m,d] = dateStr.trim().split('-');
-      dateStr = `${d}/${m}/${y}`;
-    }
     const dateLabel = 'Date of valuation report:';
-    const dateValue = dateStr;
+    const dateValue = fmtDate(this.getF('kotakBbgDateOfValuation'));
 
     const font = this.fontBold;
     
@@ -105,7 +110,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     ]);
     const siteEng = this.getF('kotakBbgSiteEngineerNA') ? 'NA' : (this.getF('kotakBbgSiteEngineer') === 'Custom' ? this.getF('kotakBbgSiteEngineerCustom') : this.getF('kotakBbgSiteEngineer'));
     this.drawKeyValueRow([
-      { label: 'b. Date of valuation', value: this.getF('kotakBbgDateOfValuation') },
+      { label: 'b. Date of valuation', value: fmtDate(this.getF('kotakBbgDateOfValuation')) },
       { label: 'c. Name of the Valuer', value: this.getF('kotakBbgValuerName') || 'Er. S. Mohanty' },
     ]);
     this.drawKeyValueRow([
@@ -127,7 +132,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       { label: 'f. Name of the property owner/owners as per legal docs', value: this.getF('kotakBbgOwnerSameAsBorrower') ? this.getF('kotakBbgBorrowerName') : this.getF('kotakBbgOwnerName'), labelWidth: 250, valueWidth: CONTENT_W - 250 },
     ]);
     this.drawKeyValueRow([
-      { label: 'g. Date of Technical Visit', value: this.getF('kotakBbgDateOfSiteVisit'), labelWidth: 250, valueWidth: CONTENT_W - 250 },
+      { label: 'g. Date of Technical Visit', value: fmtDate(this.getF('kotakBbgDateOfSiteVisit')), labelWidth: 250, valueWidth: CONTENT_W - 250 },
     ]);
     this.drawKeyValueRow([
       { label: 'h. Person met at the time of site visit', value: personMetStr, labelWidth: 250, valueWidth: CONTENT_W - 250 },
@@ -283,11 +288,11 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     // f. Commencement Certificate
     let commencementStatus = this.getF('kotakBbgCommencementStatus');
-    let commencementStr = commencementStatus === 'Provided' ? `No: ${this.getF('kotakBbgCommencementNo') || '-'}, Date: ${this.getF('kotakBbgCommencementDate') || '-'}` : (commencementStatus || 'NA');
+    let commencementStr = commencementStatus === 'Provided' ? `No: ${this.getF('kotakBbgCommencementNo') || '-'}, Date: ${fmtDate(this.getF('kotakBbgCommencementDate')) || '-'}` : (commencementStatus || 'NA');
 
     // g. Occupation Certificate
     let occupationStatus = this.getF('kotakBbgOccupationStatus');
-    let occupationStr = occupationStatus === 'Provided' ? `No: ${this.getF('kotakBbgOccupationNo') || '-'}, Date: ${this.getF('kotakBbgOccupationDate') || '-'}` : (occupationStatus || 'NA');
+    let occupationStr = occupationStatus === 'Provided' ? `No: ${this.getF('kotakBbgOccupationNo') || '-'}, Date: ${fmtDate(this.getF('kotakBbgOccupationDate')) || '-'}` : (occupationStatus || 'NA');
 
     this.drawKeyValueRow([
       { label: 'f. Commencement Certificate', value: commencementStr },
@@ -297,7 +302,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     // h. Sale/lease deed details
     let deedType = this.getF('kotakBbgDeedTypeNA') ? 'NA' : (this.getF('kotakBbgDeedType') === 'Custom' ? this.getF('kotakBbgDeedTypeCustom') : this.getF('kotakBbgDeedType'));
     let deedNo = this.getF('kotakBbgDeedNoNA') ? 'NA' : this.getF('kotakBbgDeedNo');
-    let deedDate = this.getF('kotakBbgDeedDateNA') ? 'NA' : this.getF('kotakBbgDeedDate');
+    let deedDate = this.getF('kotakBbgDeedDateNA') ? 'NA' : fmtDate(this.getF('kotakBbgDeedDate'));
     let deedSale = this.getF('kotakBbgDeedSaleConsiderationNA') ? 'NA' : this.getF('kotakBbgDeedSaleConsideration');
     
     let deedParts = [];
@@ -501,7 +506,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     this.drawSectionHeader('10. DECLARATION');
 
     // a. Standard Declaration Legal Clauses
-    const siteVisitDate = this.getF('kotakBbgDateOfValuation') || '[Date from Section 1]';
+    const siteVisitDate = fmtDate(this.getF('kotakBbgDateOfValuation')) || '[Date from Section 1]';
     const clausesText = `I hereby declare that -
 (a) the Valuation Report prepared and the information contained herein is true and correct to the best of my knowledge and belief :
 (b) I have no direct or indirect interest in the property valued;
@@ -516,7 +521,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     // b. Date & Place of Issue
     this.drawKeyValueRow([
-      { label: 'b. Report Issue Date', value: this.getF('kotakBbgReportIssueDate') || new Date().toISOString().split('T')[0] },
+      { label: 'b. Report Issue Date', value: fmtDate(this.getF('kotakBbgReportIssueDate')) || fmtDate(new Date().toISOString().split('T')[0]) },
       { label: 'Report Issue Place', value: this.getF('kotakBbgReportIssuePlace') === 'Custom' ? this.getF('kotakBbgReportIssuePlaceCustom') : (this.getF('kotakBbgReportIssuePlace') || 'Bhubaneswar') },
     ]);
 
