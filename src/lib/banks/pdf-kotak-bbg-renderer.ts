@@ -382,17 +382,17 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     const isDiscrepancyNA = matchingVal === 'Yes' || this.getF('kotakBbgBoundariesDiscrepancyNA');
 
     this.drawKeyValueRow([
-      { label: 'b. Boundaries Matching Verification', value: matchingVal || 'NA' },
-      { label: 'c. Discrepancy in Boundaries', value: isDiscrepancyNA ? 'NA' : (this.getF('kotakBbgBoundariesDiscrepancy') || 'NA') },
+      { label: 'b. Whether Boundaries matching (actual site verification with Legal docs)', value: matchingVal || 'NA' },
+      { label: 'c. Discrepancy found in Boundaries, if any, pl specify/ elaborate', value: isDiscrepancyNA ? 'NA' : (this.getF('kotakBbgBoundariesDiscrepancy') || 'NA') },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'd. Document Basis for Property Identification', value: this.getF('kotakBbgDocumentsIdentified') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'd. Documents basis which property is identified', value: this.getF('kotakBbgDocumentsIdentified') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'e. Confirmation from the valuer', value: this.getF('kotakBbgValuerConfirmationNA') ? 'NA' : (this.getF('kotakBbgValuerConfirmation') || 'NA') },
-      { label: 'f. Property Demarcated at Site', value: this.getF('kotakBbgDemarcatedNA') ? 'NA' : (this.getF('kotakBbgDemarcated') || 'NA') },
+      { label: 'e. Confirmation from the valuer that the correct property is identified', value: this.getF('kotakBbgValuerConfirmationNA') ? 'NA' : (this.getF('kotakBbgValuerConfirmation') || 'NA') },
+      { label: 'f. Plot/ Property Demarcated at Site', value: this.getF('kotakBbgDemarcatedNA') ? 'NA' : (this.getF('kotakBbgDemarcated') || 'NA') },
     ]);
 
     let localityStr = this.getF('kotakBbgLocalityClassification');
@@ -413,12 +413,12 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     let approachStr = [approachName, approachCond].filter(Boolean).join(' - ');
 
     this.drawKeyValueRow([
-      { label: 'i. Access to Property', value: accessStr || 'NA' },
+      { label: 'i. Access to property', value: accessStr || 'NA' },
       { label: 'j. Name and condition of Approach Road', value: approachStr || 'NA' },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'k. Proximity to Civic Amenities', value: this.getF('kotakBbgCivicAmenities') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'k. Proximity to civic amenities like schools, hospitals, offices, markets, cinemas, etc.', value: this.getF('kotakBbgCivicAmenities') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawSectionHeader('4. DETAILS OF APPROVALS VERIFIED');
@@ -453,7 +453,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: 'd. Name of the Authority granting approvals', value: auth || 'NA' },
-      { label: 'e. Are the plans approved?', value: plansApproved || 'NA' },
+      { label: 'e. Are the plans approved from competent authority?', value: plansApproved || 'NA' },
     ]);
 
     // f. Commencement Certificate
@@ -465,8 +465,8 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     let occupationStr = occupationStatus === 'Provided' ? `No: ${this.getF('kotakBbgOccupationNo') || '-'}, Date: ${fmtDate(this.getF('kotakBbgOccupationDate')) || '-'}` : (occupationStatus || 'NA');
 
     this.drawKeyValueRow([
-      { label: 'f. Commencement Certificate', value: commencementStr },
-      { label: 'g. Occupation/Completion certificate', value: occupationStr },
+      { label: 'f. Commencement Certificate / Building Permit Details.', value: commencementStr },
+      { label: 'g. Occupation/Completion certificate details.', value: occupationStr },
     ]);
 
     // h. Sale/lease deed details
@@ -483,7 +483,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     let deedStr = deedParts.length > 0 ? deedParts.join(', ') : '';
 
     this.drawKeyValueRow([
-      { label: 'h. Sale/lease deed details', value: deedStr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'h. Sale/lease deed details (Date, Reg No., Sale consideration etc)', value: deedStr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // i. Details of other documents perused
@@ -493,7 +493,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     ].filter(Boolean).join(', ');
 
     this.drawKeyValueRow([
-      { label: 'i. Details of other documents perused', value: otherDocs || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'i. Details of other documents perused (pl list)', value: otherDocs || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawSectionHeader('5. BUILDING/ FLAT/ OFFICE/ SHOP DETAILS');
@@ -512,7 +512,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       let constrStr = constrParts.length > 0 ? constrParts.join(', ') : '';
 
       this.drawKeyValueRow([
-        { label: 'a. Type of Construction / Roofing', value: constrStr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+        { label: 'a. Type of Construction/ Roofing/ Special architectural features', value: constrStr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
       ]);
 
       // b. Year of construction
@@ -523,7 +523,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
       this.drawKeyValueRow([
         { label: 'b. Year of construction', value: yearConst || 'NA' },
-        { label: 'c. Stage of construction', value: stage },
+        { label: 'c. Stage of construction in % (if applicable)', value: stage },
       ]);
 
       // d. Residual age of the Property
@@ -544,8 +544,8 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       let interiorStr = this.getF('kotakBbgTechnicalDetails');
 
       this.drawKeyValueRow([
-        { label: 'f. Quality of Construction', value: quality || 'NA' },
-        { label: 'g. Technical details', value: interiorStr || 'NA' },
+        { label: 'f. Quality of The Construction', value: quality || 'NA' },
+        { label: 'g. Technical details (Finishing, interiors)', value: interiorStr || 'NA' },
       ]);
 
       // h. Amenities provided in building/ Complex
@@ -558,7 +558,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       let usage = this.getF('kotakBbgUsageOfProperty') === 'Custom' ? this.getF('kotakBbgUsageOfPropertyCustom') : this.getF('kotakBbgUsageOfProperty');
 
       this.drawKeyValueRow([
-        { label: 'h. Amenities provided', value: amenitiesList || 'NA' },
+        { label: 'h. Amenities provided in building/ Complex (lifts, parking etc)', value: amenitiesList || 'NA' },
         { label: 'i. Usage of the property', value: usage || 'NA' },
       ]);
     }
@@ -597,41 +597,41 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     const isVacantLand6 = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
     const buildingDetails = this.getF('kotakBbgBuildingAreaDetailsNA') || isVacantLand6 ? 'NA' : this.getF('kotakBbgBuildingAreaDetails');
     this.drawKeyValueRow([
-      { label: 'b. Building/ flat/ office/ shop/ unit/ showroom area', value: buildingDetails || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'b. Building/ flat/ office/ shop/ unit/ showroom area (please specify the measurement unit, Area - Carpet, Built up, Super built up and basis of building area)', value: buildingDetails || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
     
     // c. Deviations/ violations
     const devs = this.getF('kotakBbgDeviationsNA') ? 'NA' : (this.getF('kotakBbgDeviations') === 'Custom' ? this.getF('kotakBbgDeviationsCustom') : this.getF('kotakBbgDeviations'));
     this.drawKeyValueRow([
-      { label: 'c. Deviations / Violations', value: devs || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'c. Deviations/ violations (if any, please elaborate)', value: devs || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawSectionHeader('7. VALUATION');
     
     // a. Details of Valuation methodology
     this.drawKeyValueRow([
-      { label: 'a. Details of Valuation methodology', value: this.getF('kotakBbgValuationMethodology') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'a. Details of Valuation methodology and reason for the same', value: this.getF('kotakBbgValuationMethodology') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // b. Comparables relied upon
     this.drawKeyValueRow([
-      { label: 'b. Comparables relied upon', value: this.getF('kotakBbgComparablesReliedNA') ? 'NA' : (this.getF('kotakBbgComparablesRelied') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'b. Comparables relied upon (Minimum three)', value: this.getF('kotakBbgComparablesReliedNA') ? 'NA' : (this.getF('kotakBbgComparablesRelied') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // c. Analysis of comparables
     this.drawKeyValueRow([
-      { label: 'c. Analysis of comparables', value: this.getF('kotakBbgAnalysisComparablesNA') ? 'NA' : (this.getF('kotakBbgAnalysisComparables') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'c. Analysis of comparables and basis for adopting a particular rate (Please exhaustively elaborate)', value: this.getF('kotakBbgAnalysisComparablesNA') ? 'NA' : (this.getF('kotakBbgAnalysisComparables') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // d. Land Rate Adopted
     this.drawKeyValueRow([
-      { label: 'd. Land Rate Adopted (if applicable)', value: this.getF('kotakBbgAdoptedLandRateNA') ? 'NA' : (this.getF('kotakBbgAdoptedLandRate') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'd. Land Rate Adopted (if applicable) (INR per Sq.Ft)', value: this.getF('kotakBbgAdoptedLandRateNA') ? 'NA' : (this.getF('kotakBbgAdoptedLandRate') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // e. Building rate
     const isVacantLand7 = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
     this.drawKeyValueRow([
-      { label: 'e. Building rate adopted', value: (this.getF('kotakBbgAdoptedBuildingRateNA') || isVacantLand7) ? 'NA' : (this.getF('kotakBbgAdoptedBuildingRateDetails') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'e. Building/ flat/ office/ shop/ unit/ showroom rate (depreciated/ composite) adopted and reason for the same (Please exhaustively elaborate)', value: (this.getF('kotakBbgAdoptedBuildingRateNA') || isVacantLand7) ? 'NA' : (this.getF('kotakBbgAdoptedBuildingRateDetails') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // f. Valuation calculations
@@ -641,34 +641,32 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     // g. Guideline rate
     this.drawKeyValueRow([
-      { label: 'g. Guideline/ Circle/ Ready Reckoner Rate', value: this.getF('kotakBbgGuidelineRateNA') ? 'NA' : (this.getF('kotakBbgGuidelineRate') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'g. Guideline/ Circle/ Ready Reckoner Rate (INR per Sq.Ft)', value: this.getF('kotakBbgGuidelineRateNA') ? 'NA' : (this.getF('kotakBbgGuidelineRate') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // h. Guideline valuation
     this.drawKeyValueRow([
-      { label: 'h. Guideline/ Circle/ Ready Reckoner Valuation', value: this.getF('kotakBbgGuidelineSummary') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'h. Guideline/ Circle/ Ready Reckoner Valuation (please elaborate)', value: this.getF('kotakBbgGuidelineSummary') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawSectionHeader('8. SUMMARY');
     
     // a. Fair Market Value
     this.drawKeyValueRow([
-      { label: 'a. Fair Market Value (FMV)', value: this.getF('kotakBbgFmvSummary') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'a. Fair Market Value (To be rounded to the nearest Cr/Lakh)', value: this.getF('kotakBbgFmvSummary') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     // b & c. Realizable & Distress Values
-    const rvPct = this.getF('kotakBbgRvPercent') !== undefined ? this.getF('kotakBbgRvPercent') : '90';
-    const dvPct = this.getF('kotakBbgDvPercent') !== undefined ? this.getF('kotakBbgDvPercent') : '80';
     this.drawKeyValueRow([
-      { label: `b. Realizable Value (RV) @ ${rvPct}%`, value: this.getF('kotakBbgRvSummary') || 'NA' },
-      { label: `c. Distress Value (DV) @ ${dvPct}%`, value: this.getF('kotakBbgDvSummary') || 'NA' },
+      { label: 'b. Realizable Value (To be rounded to the nearest Cr/Lakh)', value: this.getF('kotakBbgRvSummary') || 'NA' },
+      { label: 'c. Distress Value (To be rounded to the nearest Cr/Lakh)', value: this.getF('kotakBbgDvSummary') || 'NA' },
     ]);
 
     // d. Insurable Value
     const isVacantLand8 = this.getF('kotakBbgNatureOfProperty') === 'Vacant Land';
     const isIvNA = this.getF('kotakBbgIvNA') !== undefined ? this.getF('kotakBbgIvNA') : isVacantLand8;
     this.drawKeyValueRow([
-      { label: 'd. Insurable Value (IV)', value: isIvNA ? 'NA' : (this.getF('kotakBbgIvSummary') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: 'd. Insurable Value (To be rounded to the nearest Cr/Lakh)', value: isIvNA ? 'NA' : (this.getF('kotakBbgIvSummary') || 'NA'), labelWidth: 200, valueWidth: CONTENT_W - 200 },
     ]);
 
     this.drawSectionHeader('9. REMARKS / OBSERVATIONS');
