@@ -35,7 +35,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
   override drawSectionHeader(title: string, addSpaceBefore = true, preserveCase = false): void {
     if (addSpaceBefore && this.cursorY > 10) this.cursorY += 10;
-    const match = title.match(/^([0-9]+)\.\s*(.*)/);
+    const match = title.match(/^([0-9]+)\.\s*([\s\S]*)/);
     let index = '';
     let text = title;
     if (match) { index = match[1]; text = match[2]; }
@@ -83,7 +83,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     
     for (const c of cols) {
       if (c.valueWidth === 0) {
-        const match = c.label.match(/^([a-z0-9]+)\.\s*(.*)/i);
+        const match = c.label.match(/^([a-z0-9]+)\.\s*([\s\S]*)/i);
         let index = '';
         let text = c.label;
         if (match) { index = match[1]; text = match[2]; }
@@ -120,7 +120,7 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
       
       let index = '';
       let text = c.label;
-      const match = c.label.match(/^([a-z0-9]+)\.\s*(.*)/i);
+      const match = c.label.match(/^([a-z0-9]+)\.\s*([\s\S]*)/i);
       if (match) {
         index = match[1];
         text = match[2];
@@ -682,29 +682,22 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
 
     this.drawSectionHeader('10. DECLARATION');
 
-    // a. Standard Declaration Legal Clauses
-    const siteVisitDate = fmtDate(this.getF('kotakBbgDateOfValuation')) || '[Date from Section 1]';
-    const clausesText = `I hereby declare that -
-(a) the Valuation Report prepared and the information contained herein is true and correct to the best of my knowledge and belief :
-(b) I have no direct or indirect interest in the property valued;
-(c) I have personally inspected the property on / I have deputed my employed qualified/ experienced site engineer for inspecting the property on ${siteVisitDate}`;
+    const isDeclared = this.getF('kotakBbgDeclarationConfirmed');
+    if (isDeclared) {
+      const siteVisitDate = fmtDate(this.getF('kotakBbgDateOfValuation')) || '[Date from Section 1]';
+      const clausesText = `I hereby declare that -\n(a) the Valuation Report prepared and the information contained herein is true and correct to the best of my knowledge and belief :\n(b) I have no direct or indirect interest in the property valued;\n(c) I have personally inspected the property on / I have deputed my employed qualified/ experienced site engineer for inspecting the property on ${siteVisitDate}`;
+      
+      this.drawKeyValueRow([
+        { label: 'a. ' + clausesText, value: '', labelWidth: CONTENT_W - 30, valueWidth: 0 }
+      ]);
+    }
+    
+    const issueDate = fmtDate(this.getF('kotakBbgReportIssueDate')) || fmtDate(new Date().toISOString().split('T')[0]);
+    const issuePlace = this.getF('kotakBbgReportIssuePlace') === 'Custom' ? this.getF('kotakBbgReportIssuePlaceCustom') : (this.getF('kotakBbgReportIssuePlace') || 'Bhubaneswar');
+    const datePlaceText = `Date : ${issueDate}\nPlace : ${issuePlace}`;
     
     this.drawKeyValueRow([
-      { label: 'a. Standard Declaration Legal Clauses', value: clausesText, labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'Declaration Confirmed', value: this.getF('kotakBbgDeclarationConfirmed') ? 'Yes (Legally Bound)' : 'No', labelWidth: 200, valueWidth: CONTENT_W - 200 },
-    ]);
-
-    // b. Date & Place of Issue
-    this.drawKeyValueRow([
-      { label: 'b. Report Issue Date', value: fmtDate(this.getF('kotakBbgReportIssueDate')) || fmtDate(new Date().toISOString().split('T')[0]) },
-      { label: 'Report Issue Place', value: this.getF('kotakBbgReportIssuePlace') === 'Custom' ? this.getF('kotakBbgReportIssuePlaceCustom') : (this.getF('kotakBbgReportIssuePlace') || 'Bhubaneswar') },
-    ]);
-
-    // c. Signature / Stamp
-    this.drawKeyValueRow([
-      { label: 'c. Signature File Attached', value: this.getF('kotakBbgSignatureFile') ? 'Yes' : 'No', labelWidth: 200, valueWidth: CONTENT_W - 200 },
+      { label: datePlaceText, value: 'Signature / Stamp of empanelled valuer', labelWidth: (CONTENT_W - 30) / 2 }
     ]);
   }
 }
