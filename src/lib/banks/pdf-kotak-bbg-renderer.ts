@@ -362,28 +362,20 @@ export class PDFKotakBbgRenderer extends PDFBankRenderer {
     ]);
     
     this.drawSectionHeader('3. SITE & SURROUNDING DETAILS');
-    this.drawKeyValueRow([{ label: 'a. Property Boundaries Comparison', value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true }]);
+    
+    const boundaryHalfW = (CONTENT_W - 30) / 2;
+    const boundaryLabelW = boundaryHalfW + 30;
+    
     this.drawKeyValueRow([
-      { label: 'Direction', value: 'As Per Document', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2, bold: true, labelBold: true },
-      { label: 'As Per Site', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0, bold: true, labelBold: true },
+      { label: 'a. Boundaries as per legal /Sale Deed', value: 'Boundaries As Per Site', labelWidth: boundaryLabelW, bold: true, labelBold: true }
     ]);
     const bDoc = this.getF('kotakBbgBoundariesDoc') || {};
     const bSite = this.getF('kotakBbgBoundariesSiteSameAsDoc') ? bDoc : (this.getF('kotakBbgBoundariesSite') || {});
     this.drawKeyValueRow([
-      { label: 'North', value: bDoc.north || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
-      { label: bSite.north || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'South', value: bDoc.south || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
-      { label: bSite.south || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'East', value: bDoc.east || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
-      { label: bSite.east || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
-    ]);
-    this.drawKeyValueRow([
-      { label: 'West', value: bDoc.west || '', labelWidth: 80, valueWidth: (CONTENT_W - 80) / 2 },
-      { label: bSite.west || '', value: '', labelWidth: (CONTENT_W - 80) / 2, valueWidth: 0 },
+      { label: `North : ${bDoc.north || ''}`, value: `North : ${bSite.north || ''}`, labelWidth: boundaryLabelW },
+      { label: `South : ${bDoc.south || ''}`, value: `South : ${bSite.south || ''}`, labelWidth: boundaryLabelW },
+      { label: `East : ${bDoc.east || ''}`, value: `East : ${bSite.east || ''}`, labelWidth: boundaryLabelW },
+      { label: `West : ${bDoc.west || ''}`, value: `West : ${bSite.west || ''}`, labelWidth: boundaryLabelW },
     ]);
 
     const matchingVal = this.getF('kotakBbgBoundariesMatching');
