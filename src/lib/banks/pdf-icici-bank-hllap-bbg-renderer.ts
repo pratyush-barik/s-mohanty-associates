@@ -128,7 +128,7 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
     this.drawSectionHeader('4 PHYSICAL DETAILS');
     
     // Boundaries
-    this.drawSectionHeader('Boundaries on Site', { bg: rgb(0.9, 0.9, 0.9), fontSize: FONT_SIZE });
+    this.drawSectionHeader('Boundaries on Site');
     this.drawKeyValueRow([{ label: '', value: 'As per Sale Deed', labelWidth: 100, valueWidth: 150 }, { label: '', value: 'Actual at site', labelWidth: 0, valueWidth: 150 }]);
     
     const boundsMatchSiteAndDeed = this.getF('iciciBbgBoundsMatchToggle');
@@ -160,7 +160,7 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([{ label: 'Type of Property', value: this.getF('iciciBbgPropType') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
 
     // Unit Details Grid
-    this.drawSectionHeader('Unit Details Grid', { bg: rgb(0.9, 0.9, 0.9), fontSize: FONT_SIZE });
+    this.drawSectionHeader('Unit Details Grid');
     this.drawKeyValueRow([{ label: 'Detail', value: 'Rooms | Kitchen | Bath | Others', labelWidth: 100, valueWidth: CONTENT_W - 100 }]);
     ['Basement', 'Ground Floor', 'FIRST Floor', 'SECOND Floor', 'THIRD FLOOR', 'FOURTH FLOOR'].forEach(floor => {
       const fKey = floor.replace(/\s+/g, '');
@@ -196,7 +196,7 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
     const superBuiltUpAmount = getNum(this.getF('iciciBbgValSuperArea')) * getNum(this.getF('iciciBbgValSuperRate'));
     const totalAmount = landAmount + carpetAmount + builtUpAmount + superBuiltUpAmount;
 
-    this.drawSectionHeader('Valuation Grid', { bg: rgb(0.9, 0.9, 0.9), fontSize: FONT_SIZE });
+    this.drawSectionHeader('Valuation Grid');
     this.drawKeyValueRow([{ label: 'Description', value: 'Area | Rate | Amount', labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
     this.drawKeyValueRow([{ label: 'Land Area', value: `${this.getF('iciciBbgValLandArea') || '-'} | ${this.getF('iciciBbgValLandRate') || '-'} | ${this.getF('iciciBbgValLandAmount') || (landAmount || '-')}`, labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
     this.drawKeyValueRow([{ label: 'Carpet area', value: `${this.getF('iciciBbgValCarpetArea') || '-'} | ${this.getF('iciciBbgValCarpetRate') || '-'} | ${this.getF('iciciBbgValCarpetAmount') || (carpetAmount || '-')}`, labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
@@ -209,7 +209,7 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([{ label: 'Total Current Value (P+C)', value: this.getF('iciciBbgValTotalCurrent') || (totalAmount || 'NA').toString(), labelWidth: 250, valueWidth: CONTENT_W - 250 }]);
 
     this.cursorY += 10;
-    this.drawSectionHeader('Stage of Construction if Applicable (Builder Case)', { bg: rgb(0.9, 0.9, 0.9), fontSize: FONT_SIZE });
+    this.drawSectionHeader('Stage of Construction if Applicable (Builder Case)');
     this.drawKeyValueRow([{ label: 'Stage of Const.', value: this.getF('iciciBbgStageConst') || 'NA', labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
     this.drawKeyValueRow([{ label: 'Structure Desc.', value: this.getF('iciciBbgStageDesc') || 'NA', labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
     this.drawKeyValueRow([{ label: '% Completed', value: this.getF('iciciBbgStageComp') || 'NA', labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
