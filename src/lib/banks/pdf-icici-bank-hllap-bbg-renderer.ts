@@ -83,5 +83,45 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
       { label: 'Nearby landmark', value: this.getF('iciciBbgNearbyLandmark') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
     ]);
     this.cursorY += 10;
+
+    // SECTION 3
+    this.drawSectionHeader('3 DOCUMENT DETAILS');
+    this.drawKeyValueRow([
+      { label: 'Layout Plan Provided', value: this.getF('iciciBbgLayoutProvided') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Approving Authority', value: this.getF('iciciBbgLayoutAuth') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Approval Number', value: this.getF('iciciBbgLayoutApprovalNo') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Building Plan Provided', value: this.getF('iciciBbgBldgPlanProvided') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Approving Authority', value: this.getF('iciciBbgBldgPlanAuth') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Number of Floors', value: this.getF('iciciBbgBldgPlanFloors') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Construction Permission', value: this.getF('iciciBbgConstPermProvided') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Approving Authority', value: this.getF('iciciBbgConstPermAuth') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Number of Floors', value: this.getF('iciciBbgConstPermFloors') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    
+    let docsArr = [];
+    if (this.getF('iciciBbgDocRor')) docsArr.push('COPY OF ROR');
+    if (this.getF('iciciBbgDocSaleDeed')) docsArr.push('SALE DEED');
+    if (this.getF('iciciBbgDocOther') && this.getF('iciciBbgDocOtherText')) docsArr.push(this.getF('iciciBbgDocOtherText'));
+    const legalDocs = docsArr.length > 0 ? docsArr.join(', ') : 'NA';
+    this.drawKeyValueRow([
+      { label: 'Legal Document (Resale/LAP)', value: legalDocs, labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.cursorY += 10;
   }
 }

@@ -114,6 +114,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
   navSections: [
     { id: 'icici-section-1', title: '1 CUSTOMER DETAILS' },
     { id: 'icici-section-2', title: '2 PROPERTY DETAILS' },
+    { id: 'icici-section-3', title: '3 DOCUMENT DETAILS' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankHlLapBbgRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -271,6 +272,103 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
                 onChange={e => handleChange('iciciBbgNearbyLandmark', e.target.value)}
                 disabled={isReadOnly}
               />
+            </Field>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'icici-section-3',
+      title: '3 DOCUMENT DETAILS',
+      number: 3,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        return (
+          <div style={{ backgroundColor: '#e8f5e9', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            <Field label="Layout Plan Provided">
+              <div className="flex gap-4">
+                {['YES', 'NO', 'NA'].map(opt => (
+                  <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                    <input type="radio" name="iciciBbgLayoutProvided" value={opt} checked={fields.iciciBbgLayoutProvided === opt} onChange={e => handleChange('iciciBbgLayoutProvided', e.target.value)} disabled={isReadOnly} className="text-indigo-600 focus:ring-indigo-500 h-4 w-4" />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            </Field>
+            
+            <Field label="Approving Authority">
+              <input type="text" className={inputCls} value={fields.iciciBbgLayoutAuth || ''} onChange={e => handleChange('iciciBbgLayoutAuth', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            
+            <Field label="Approval Number">
+              <input type="text" className={inputCls} value={fields.iciciBbgLayoutApprovalNo || ''} onChange={e => handleChange('iciciBbgLayoutApprovalNo', e.target.value)} disabled={isReadOnly} />
+            </Field>
+
+            <Field label="Building Plan Provided">
+              <div className="flex gap-4">
+                {['YES', 'NO', 'NA'].map(opt => (
+                  <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                    <input type="radio" name="iciciBbgBldgPlanProvided" value={opt} checked={fields.iciciBbgBldgPlanProvided === opt} onChange={e => handleChange('iciciBbgBldgPlanProvided', e.target.value)} disabled={isReadOnly} className="text-indigo-600 focus:ring-indigo-500 h-4 w-4" />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            </Field>
+            
+            <Field label="Approving Authority">
+              <input type="text" className={inputCls} value={fields.iciciBbgBldgPlanAuth || ''} onChange={e => handleChange('iciciBbgBldgPlanAuth', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            
+            <Field label="Number of Floors">
+              <input type="number" className={inputCls} value={fields.iciciBbgBldgPlanFloors || ''} onChange={e => handleChange('iciciBbgBldgPlanFloors', e.target.value)} disabled={isReadOnly} />
+            </Field>
+
+            <Field label="Construction Permission">
+              <div className="flex gap-4">
+                {['YES', 'NO', 'NA'].map(opt => (
+                  <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                    <input type="radio" name="iciciBbgConstPermProvided" value={opt} checked={fields.iciciBbgConstPermProvided === opt} onChange={e => handleChange('iciciBbgConstPermProvided', e.target.value)} disabled={isReadOnly} className="text-indigo-600 focus:ring-indigo-500 h-4 w-4" />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            </Field>
+            
+            <Field label="Approving Authority">
+              <input type="text" className={inputCls} value={fields.iciciBbgConstPermAuth || ''} onChange={e => handleChange('iciciBbgConstPermAuth', e.target.value)} disabled={isReadOnly} />
+            </Field>
+            
+            <Field label="Number of Floors">
+              <input type="number" className={inputCls} value={fields.iciciBbgConstPermFloors || ''} onChange={e => handleChange('iciciBbgConstPermFloors', e.target.value)} disabled={isReadOnly} />
+            </Field>
+
+            <Field label="Legal Document (Resale/LAP)">
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-4">
+                  <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                    <input type="checkbox" className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" checked={!!fields.iciciBbgDocRor} onChange={e => handleChange('iciciBbgDocRor', e.target.checked)} disabled={isReadOnly} />
+                    COPY OF ROR
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                    <input type="checkbox" className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" checked={!!fields.iciciBbgDocSaleDeed} onChange={e => handleChange('iciciBbgDocSaleDeed', e.target.checked)} disabled={isReadOnly} />
+                    SALE DEED
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                    <input type="checkbox" className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500" checked={!!fields.iciciBbgDocOther} onChange={e => handleChange('iciciBbgDocOther', e.target.checked)} disabled={isReadOnly} />
+                    OTHER
+                  </label>
+                </div>
+                {fields.iciciBbgDocOther && (
+                  <textarea
+                    className={`${inputCls} resize-y mt-2`}
+                    rows={2}
+                    placeholder="Enter other documents..."
+                    value={fields.iciciBbgDocOtherText || ''}
+                    onChange={e => handleChange('iciciBbgDocOtherText', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                )}
+              </div>
             </Field>
           </div>
         );
