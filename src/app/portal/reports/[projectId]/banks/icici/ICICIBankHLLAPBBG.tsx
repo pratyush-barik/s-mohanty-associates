@@ -79,6 +79,15 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
               </>
             );
           })()
+        ) : type === 'radio' ? (
+          <div className="flex gap-4 items-center h-full pt-2 pl-2">
+            {options?.map((opt: string) => (
+              <label key={opt} className={`flex items-center gap-2 text-sm font-medium ${!isEdit ? 'cursor-not-allowed text-gray-500' : 'cursor-pointer text-gray-700'}`}>
+                <input type="radio" value={opt} checked={displayValue === opt} onChange={e => onChange(e.target.value)} disabled={isReadOnly || !isEdit} className="text-indigo-600 focus:ring-indigo-500 h-4 w-4 disabled:opacity-50" />
+                {opt}
+              </label>
+            ))}
+          </div>
         ) : (
           <input
             type="text"
@@ -115,6 +124,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     { id: 'icici-section-1', title: '1 CUSTOMER DETAILS' },
     { id: 'icici-section-2', title: '2 PROPERTY DETAILS' },
     { id: 'icici-section-3', title: '3 DOCUMENT DETAILS' },
+    { id: 'icici-section-4', title: '4 PHYSICAL DETAILS' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankHlLapBbgRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -370,6 +380,218 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
                 )}
               </div>
             </Field>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'icici-section-4',
+      title: '4 PHYSICAL DETAILS',
+      number: 4,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const boundsMatchSiteAndDeed = (
+          fields.iciciBbgBoundEastDeed === fields.iciciBbgBoundEastSite &&
+          fields.iciciBbgBoundNorthDeed === fields.iciciBbgBoundNorthSite &&
+          fields.iciciBbgBoundWestDeed === fields.iciciBbgBoundWestSite &&
+          fields.iciciBbgBoundSouthDeed === fields.iciciBbgBoundSouthSite &&
+          !!fields.iciciBbgBoundEastDeed
+        );
+
+        return (
+          <div style={{ backgroundColor: '#fffde7', padding: '16px', borderRadius: '8px' }} className="space-y-6">
+            <div>
+              <h4 className="font-semibold text-gray-800 mb-2">Boundaries on Site (Grid)</h4>
+              <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 mb-4">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                  checked={!!fields.iciciBbgBoundsMatchToggle}
+                  onChange={e => handleChange('iciciBbgBoundsMatchToggle', e.target.checked)}
+                  disabled={isReadOnly}
+                />
+                Actual at site boundaries match As per Sale Deed
+              </label>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Field label="East (As per Sale Deed)"><input type="text" className={inputCls} value={fields.iciciBbgBoundEastDeed || ''} onChange={e => handleChange('iciciBbgBoundEastDeed', e.target.value)} disabled={isReadOnly} /></Field>
+                <PrefillField label="East (Actual at site)" type="text" value={fields.iciciBbgBoundEastSite} onChange={(val: string) => handleChange('iciciBbgBoundEastSite', val)} isReadOnly={isReadOnly} tooltip={fields.iciciBbgBoundsMatchToggle ? 'Prefill from section 4, "East (As per Sale Deed)"' : ''} fallbackValue={fields.iciciBbgBoundsMatchToggle ? fields.iciciBbgBoundEastDeed : undefined} />
+                
+                <Field label="North (As per Sale Deed)"><input type="text" className={inputCls} value={fields.iciciBbgBoundNorthDeed || ''} onChange={e => handleChange('iciciBbgBoundNorthDeed', e.target.value)} disabled={isReadOnly} /></Field>
+                <PrefillField label="North (Actual at site)" type="text" value={fields.iciciBbgBoundNorthSite} onChange={(val: string) => handleChange('iciciBbgBoundNorthSite', val)} isReadOnly={isReadOnly} tooltip={fields.iciciBbgBoundsMatchToggle ? 'Prefill from section 4, "North (As per Sale Deed)"' : ''} fallbackValue={fields.iciciBbgBoundsMatchToggle ? fields.iciciBbgBoundNorthDeed : undefined} />
+                
+                <Field label="West (As per Sale Deed)"><input type="text" className={inputCls} value={fields.iciciBbgBoundWestDeed || ''} onChange={e => handleChange('iciciBbgBoundWestDeed', e.target.value)} disabled={isReadOnly} /></Field>
+                <PrefillField label="West (Actual at site)" type="text" value={fields.iciciBbgBoundWestSite} onChange={(val: string) => handleChange('iciciBbgBoundWestSite', val)} isReadOnly={isReadOnly} tooltip={fields.iciciBbgBoundsMatchToggle ? 'Prefill from section 4, "West (As per Sale Deed)"' : ''} fallbackValue={fields.iciciBbgBoundsMatchToggle ? fields.iciciBbgBoundWestDeed : undefined} />
+                
+                <Field label="South (As per Sale Deed)"><input type="text" className={inputCls} value={fields.iciciBbgBoundSouthDeed || ''} onChange={e => handleChange('iciciBbgBoundSouthDeed', e.target.value)} disabled={isReadOnly} /></Field>
+                <PrefillField label="South (Actual at site)" type="text" value={fields.iciciBbgBoundSouthSite} onChange={(val: string) => handleChange('iciciBbgBoundSouthSite', val)} isReadOnly={isReadOnly} tooltip={fields.iciciBbgBoundsMatchToggle ? 'Prefill from section 4, "South (As per Sale Deed)"' : ''} fallbackValue={fields.iciciBbgBoundsMatchToggle ? fields.iciciBbgBoundSouthDeed : undefined} />
+              </div>
+            </div>
+
+            <PrefillField
+              label="Boundaries Matching"
+              type="radio"
+              options={['YES', 'NO']}
+              value={fields.iciciBbgBoundariesMatching}
+              onChange={(val: string) => handleChange('iciciBbgBoundariesMatching', val)}
+              isReadOnly={isReadOnly}
+              tooltip='Auto calculating from [(East, North, West, South Actual) == (East, North, West, South Sale Deed)]'
+              fallbackValue={boundsMatchSiteAndDeed ? 'YES' : (fields.iciciBbgBoundEastDeed ? 'NO' : undefined)}
+            />
+
+            <Field label="Remarks">
+              <textarea className={`${inputCls} resize-y`} rows={2} value={fields.iciciBbgPhysRemarks || ''} onChange={e => handleChange('iciciBbgPhysRemarks', e.target.value)} disabled={isReadOnly} />
+            </Field>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Plot Area">
+                <input type="number" className={inputCls} value={fields.iciciBbgPlotArea || ''} onChange={e => handleChange('iciciBbgPlotArea', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Plot Area Unit">
+                <select className={inputCls} value={fields.iciciBbgPlotAreaUnit || ''} onChange={e => handleChange('iciciBbgPlotAreaUnit', e.target.value)} disabled={isReadOnly}>
+                  <option value="">Select...</option>
+                  <option value="SQFT">SQFT</option>
+                  <option value="SQMTR">SQMTR</option>
+                </select>
+              </Field>
+            </div>
+
+            <Field label="Plot demarcated at site">
+              <div className="flex gap-4">
+                {['YES', 'NO'].map(opt => (
+                  <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                    <input type="radio" name="iciciBbgPlotDemarcated" value={opt} checked={fields.iciciBbgPlotDemarcated === opt} onChange={e => handleChange('iciciBbgPlotDemarcated', e.target.value)} disabled={isReadOnly} className="text-indigo-600 focus:ring-indigo-500 h-4 w-4" />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Approved Land Use">
+              <div className="flex gap-4">
+                {['YES', 'NO'].map(opt => (
+                  <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm text-gray-700">
+                    <input type="radio" name="iciciBbgApprovedLandUse" value={opt} checked={fields.iciciBbgApprovedLandUse === opt} onChange={e => handleChange('iciciBbgApprovedLandUse', e.target.value)} disabled={isReadOnly} className="text-indigo-600 focus:ring-indigo-500 h-4 w-4" />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            </Field>
+
+            <Field label="Nature of Locality">
+              <select className={inputCls} value={fields.iciciBbgLocalityNature || ''} onChange={e => handleChange('iciciBbgLocalityNature', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select...</option>
+                <option value="DEVELOPING">DEVELOPING</option>
+                <option value="DEVELOPED">DEVELOPED</option>
+                <option value="UNDER-DEVELOPED">UNDER-DEVELOPED</option>
+              </select>
+            </Field>
+
+            <Field label="Class of Locality">
+              <select className={inputCls} value={fields.iciciBbgLocalityClass || ''} onChange={e => handleChange('iciciBbgLocalityClass', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select...</option>
+                <option value="HIGH">HIGH</option>
+                <option value="MIDDLE">MIDDLE</option>
+                <option value="LOW">LOW</option>
+                <option value="DEVELOPING">DEVELOPING</option>
+              </select>
+            </Field>
+
+            <Field label="Property Location (Distance from City Centre (Km))">
+              <textarea className={`${inputCls} resize-y`} rows={2} value={fields.iciciBbgPropLocation || ''} onChange={e => handleChange('iciciBbgPropLocation', e.target.value)} disabled={isReadOnly} />
+            </Field>
+
+            <Field label="Type of Property">
+              <select className={inputCls} value={fields.iciciBbgPropType || ''} onChange={e => handleChange('iciciBbgPropType', e.target.value)} disabled={isReadOnly}>
+                <option value="">Select...</option>
+                <option value="Residential">Residential</option>
+                <option value="Commercial">Commercial</option>
+                <option value="Industrial">Industrial</option>
+                <option value="Open Land">Open Land</option>
+                <option value="Other">Other</option>
+              </select>
+            </Field>
+
+            <div>
+              <h4 className="font-semibold text-gray-800 mb-2">Unit Details Grid</h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-500">
+                  <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2">Detail</th>
+                      <th className="px-4 py-2">No. of Rooms</th>
+                      <th className="px-4 py-2">No. of Kitchen</th>
+                      <th className="px-4 py-2">No. of Bathrooms</th>
+                      <th className="px-4 py-2">Others</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {['Basement', 'Ground Floor', 'FIRST Floor', 'SECOND Floor', 'THIRD FLOOR', 'FOURTH FLOOR'].map((floor, idx) => {
+                      const fKey = floor.replace(/\s+/g, '');
+                      return (
+                        <tr key={idx} className="bg-white border-b">
+                          <td className="px-4 py-2 font-medium text-gray-900">{floor}</td>
+                          <td className="px-4 py-2"><input type="number" className={inputCls} value={fields[`iciciBbgUnit${fKey}Rooms`] || ''} onChange={e => handleChange(`iciciBbgUnit${fKey}Rooms`, e.target.value)} disabled={isReadOnly} /></td>
+                          <td className="px-4 py-2"><input type="number" className={inputCls} value={fields[`iciciBbgUnit${fKey}Kitchen`] || ''} onChange={e => handleChange(`iciciBbgUnit${fKey}Kitchen`, e.target.value)} disabled={isReadOnly} /></td>
+                          <td className="px-4 py-2"><input type="number" className={inputCls} value={fields[`iciciBbgUnit${fKey}Bath`] || ''} onChange={e => handleChange(`iciciBbgUnit${fKey}Bath`, e.target.value)} disabled={isReadOnly} /></td>
+                          <td className="px-4 py-2"><textarea className={`${inputCls} resize-y`} rows={1} value={fields[`iciciBbgUnit${fKey}Others`] || ''} onChange={e => handleChange(`iciciBbgUnit${fKey}Others`, e.target.value)} disabled={isReadOnly} /></td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Structure">
+                <select className={inputCls} value={fields.iciciBbgStructure || ''} onChange={e => handleChange('iciciBbgStructure', e.target.value)} disabled={isReadOnly}>
+                  <option value="">Select...</option>
+                  <option value="RCC">RCC</option>
+                  <option value="Load Bearing">Load Bearing</option>
+                </select>
+              </Field>
+
+              <Field label="Interiors">
+                <select className={inputCls} value={fields.iciciBbgInteriors || ''} onChange={e => handleChange('iciciBbgInteriors', e.target.value)} disabled={isReadOnly}>
+                  <option value="">Select...</option>
+                  <option value="GOOD">GOOD</option>
+                  <option value="AVERAGE">AVERAGE</option>
+                  <option value="POOR">POOR</option>
+                </select>
+              </Field>
+
+              <Field label="Exteriors">
+                <select className={inputCls} value={fields.iciciBbgExteriors || ''} onChange={e => handleChange('iciciBbgExteriors', e.target.value)} disabled={isReadOnly}>
+                  <option value="">Select...</option>
+                  <option value="GOOD">GOOD</option>
+                  <option value="AVERAGE">AVERAGE</option>
+                  <option value="POOR">POOR</option>
+                </select>
+              </Field>
+
+              <Field label="Maintenance level">
+                <select className={inputCls} value={fields.iciciBbgMaintenance || ''} onChange={e => handleChange('iciciBbgMaintenance', e.target.value)} disabled={isReadOnly}>
+                  <option value="">Select...</option>
+                  <option value="GOOD">GOOD</option>
+                  <option value="AVERAGE">AVERAGE</option>
+                  <option value="POOR">POOR</option>
+                </select>
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Field label="Approx. Age of Property">
+                <input type="number" className={inputCls} value={fields.iciciBbgAge || ''} onChange={e => handleChange('iciciBbgAge', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Age Unit">
+                <select className={inputCls} value={fields.iciciBbgAgeUnit || ''} onChange={e => handleChange('iciciBbgAgeUnit', e.target.value)} disabled={isReadOnly}>
+                  <option value="">Select...</option>
+                  <option value="YEARS">YEARS</option>
+                  <option value="MONTHS">MONTHS</option>
+                </select>
+              </Field>
+            </div>
           </div>
         );
       }

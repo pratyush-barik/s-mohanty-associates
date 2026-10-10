@@ -123,5 +123,62 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
       { label: 'Legal Document (Resale/LAP)', value: legalDocs, labelWidth: 200, valueWidth: CONTENT_W - 200 }
     ]);
     this.cursorY += 10;
+
+    // SECTION 4
+    this.drawSectionHeader('4 PHYSICAL DETAILS');
+    
+    // Boundaries
+    this.drawSectionHeader('Boundaries on Site', { bg: rgb(0.9, 0.9, 0.9), fontSize: FONT_SIZE });
+    this.drawKeyValueRow([{ label: '', value: 'As per Sale Deed', labelWidth: 100, valueWidth: 150 }, { label: '', value: 'Actual at site', labelWidth: 0, valueWidth: 150 }]);
+    
+    const boundsMatchSiteAndDeed = this.getF('iciciBbgBoundsMatchToggle');
+    const eDeed = this.getF('iciciBbgBoundEastDeed');
+    const eSite = boundsMatchSiteAndDeed ? eDeed : this.getF('iciciBbgBoundEastSite');
+    this.drawKeyValueRow([{ label: 'East', value: eDeed || 'NA', labelWidth: 100, valueWidth: 150 }, { label: '', value: eSite || 'NA', labelWidth: 0, valueWidth: 150 }]);
+    const nDeed = this.getF('iciciBbgBoundNorthDeed');
+    const nSite = boundsMatchSiteAndDeed ? nDeed : this.getF('iciciBbgBoundNorthSite');
+    this.drawKeyValueRow([{ label: 'North', value: nDeed || 'NA', labelWidth: 100, valueWidth: 150 }, { label: '', value: nSite || 'NA', labelWidth: 0, valueWidth: 150 }]);
+    const wDeed = this.getF('iciciBbgBoundWestDeed');
+    const wSite = boundsMatchSiteAndDeed ? wDeed : this.getF('iciciBbgBoundWestSite');
+    this.drawKeyValueRow([{ label: 'West', value: wDeed || 'NA', labelWidth: 100, valueWidth: 150 }, { label: '', value: wSite || 'NA', labelWidth: 0, valueWidth: 150 }]);
+    const sDeed = this.getF('iciciBbgBoundSouthDeed');
+    const sSite = boundsMatchSiteAndDeed ? sDeed : this.getF('iciciBbgBoundSouthSite');
+    this.drawKeyValueRow([{ label: 'South', value: sDeed || 'NA', labelWidth: 100, valueWidth: 150 }, { label: '', value: sSite || 'NA', labelWidth: 0, valueWidth: 150 }]);
+    
+    const boundsMatchResult = (eDeed === eSite && nDeed === nSite && wDeed === wSite && sDeed === sSite && !!eDeed) ? 'YES' : 'NO';
+    const boundsMatchVal = this.getF('iciciBbgBoundariesMatching') || boundsMatchResult;
+    this.drawKeyValueRow([{ label: 'Boundaries Matching', value: boundsMatchVal, labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Remarks', value: this.getF('iciciBbgPhysRemarks') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+
+    const plotAreaStr = `${this.getF('iciciBbgPlotArea') || ''} ${this.getF('iciciBbgPlotAreaUnit') || ''}`.trim() || 'NA';
+    this.drawKeyValueRow([{ label: 'Plot Area', value: plotAreaStr, labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Plot demarcated at site', value: this.getF('iciciBbgPlotDemarcated') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Approved Land Use', value: this.getF('iciciBbgApprovedLandUse') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Nature of Locality', value: this.getF('iciciBbgLocalityNature') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Class of Locality', value: this.getF('iciciBbgLocalityClass') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Property Location (Distance from City Centre (Km))', value: this.getF('iciciBbgPropLocation') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Type of Property', value: this.getF('iciciBbgPropType') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+
+    // Unit Details Grid
+    this.drawSectionHeader('Unit Details Grid', { bg: rgb(0.9, 0.9, 0.9), fontSize: FONT_SIZE });
+    this.drawKeyValueRow([{ label: 'Detail', value: 'Rooms | Kitchen | Bath | Others', labelWidth: 100, valueWidth: CONTENT_W - 100 }]);
+    ['Basement', 'Ground Floor', 'FIRST Floor', 'SECOND Floor', 'THIRD FLOOR', 'FOURTH FLOOR'].forEach(floor => {
+      const fKey = floor.replace(/\s+/g, '');
+      const rooms = this.getF(`iciciBbgUnit${fKey}Rooms`);
+      const kit = this.getF(`iciciBbgUnit${fKey}Kitchen`);
+      const bath = this.getF(`iciciBbgUnit${fKey}Bath`);
+      const others = this.getF(`iciciBbgUnit${fKey}Others`);
+      if (rooms || kit || bath || others) {
+        this.drawKeyValueRow([{ label: floor, value: `${rooms || '-'} | ${kit || '-'} | ${bath || '-'} | ${others || '-'}`, labelWidth: 100, valueWidth: CONTENT_W - 100 }]);
+      }
+    });
+
+    this.drawKeyValueRow([{ label: 'Structure', value: this.getF('iciciBbgStructure') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Interiors', value: this.getF('iciciBbgInteriors') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Exteriors', value: this.getF('iciciBbgExteriors') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Maintenance level', value: this.getF('iciciBbgMaintenance') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    const ageStr = `${this.getF('iciciBbgAge') || ''} ${this.getF('iciciBbgAgeUnit') || ''}`.trim() || 'NA';
+    this.drawKeyValueRow([{ label: 'Approx. Age of Property', value: ageStr, labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.cursorY += 10;
   }
 }
