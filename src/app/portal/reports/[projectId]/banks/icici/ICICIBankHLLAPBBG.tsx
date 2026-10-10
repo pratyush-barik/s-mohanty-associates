@@ -128,6 +128,8 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     { id: 'icici-section-6', title: '6 VIOLATIONS OBSERVED IF' },
     { id: 'icici-section-7', title: '7 VALUATION' },
     { id: 'icici-section-8', title: '8 BUILDING USAGE DETAILS' },
+    { id: 'icici-section-9', title: '9 REMARKS' },
+    { id: 'icici-section-declarations', title: 'DECLARATIONS' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankHlLapBbgRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -789,6 +791,54 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
                 </div>
               </div>
             </Field>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'icici-section-9',
+      title: '9 REMARKS',
+      number: 9,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        return (
+          <div style={{ backgroundColor: '#e0f2f1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            <Field label="Remarks">
+              <textarea className={`${inputCls} resize-y`} rows={6} value={fields.iciciBbgRemarks || ''} onChange={e => handleChange('iciciBbgRemarks', e.target.value)} disabled={isReadOnly} />
+            </Field>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'icici-section-declarations',
+      title: 'DECLARATIONS',
+      number: 10,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        return (
+          <div style={{ backgroundColor: '#f1f8e9', padding: '16px', borderRadius: '8px' }} className="space-y-6">
+            <div className="space-y-2">
+              <label className="flex items-start gap-2">
+                <input type="checkbox" className="mt-1" checked={fields.iciciBbgDecl1 || false} onChange={e => handleChange('iciciBbgDecl1', e.target.checked)} disabled={isReadOnly} />
+                <span className="text-sm text-gray-700">1. The property was inspected by us</span>
+              </label>
+              <label className="flex items-start gap-2">
+                <input type="checkbox" className="mt-1" checked={fields.iciciBbgDecl2 || false} onChange={e => handleChange('iciciBbgDecl2', e.target.checked)} disabled={isReadOnly} />
+                <span className="text-sm text-gray-700">2. We have no direct or Indirect Interest in the property valued</span>
+              </label>
+              <label className="flex items-start gap-2">
+                <input type="checkbox" className="mt-1" checked={fields.iciciBbgDecl3 || false} onChange={e => handleChange('iciciBbgDecl3', e.target.checked)} disabled={isReadOnly} />
+                <span className="text-sm text-gray-700">3. The information furnished above is true and correct to my knowledge.</span>
+              </label>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <PrefillField label="Signature with seal (Valuer Name)" type="text" value={fields.iciciBbgValuerName} onChange={(val: string) => handleChange('iciciBbgValuerName', val)} isReadOnly={isReadOnly} tooltip="System profile prefill" fallbackValue={fields.valuerName} />
+              <PrefillField label="Valuer Qualifications & Title" type="text" value={fields.iciciBbgValuerQual} onChange={(val: string) => handleChange('iciciBbgValuerQual', val)} isReadOnly={isReadOnly} tooltip="System profile prefill" fallbackValue={fields.valuerQualifications} />
+              <PrefillField label="Date" type="date" value={fields.iciciBbgDeclDate} onChange={(val: string) => handleChange('iciciBbgDeclDate', val)} isReadOnly={isReadOnly} tooltip='Prefill from section 1, "Date"' fallbackValue={fields.dateOfValuation} />
+              <PrefillField label="Place" type="text" value={fields.iciciBbgDeclPlace} onChange={(val: string) => handleChange('iciciBbgDeclPlace', val)} isReadOnly={isReadOnly} tooltip="System profile prefill" fallbackValue={fields.valuerCity || 'Bhubaneswar'} />
+            </div>
           </div>
         );
       }

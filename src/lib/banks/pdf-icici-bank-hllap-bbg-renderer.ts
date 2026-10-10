@@ -221,5 +221,26 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([{ label: 'Floor wise Details of Usage', value: this.getF('iciciBbgUsageDetails') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
     this.drawKeyValueRow([{ label: 'GOOGLE (Latitude & Longitude)', value: `Lat: ${this.getF('latitude') || 'NA'}, Long: ${this.getF('longitude') || 'NA'}`, labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
     this.cursorY += 10;
+
+    // SECTION 9
+    this.drawSectionHeader('9 REMARKS');
+    this.drawKeyValueRow([{ label: 'Remarks', value: this.getF('iciciBbgRemarks') || 'NA', labelWidth: 100, valueWidth: CONTENT_W - 100 }]);
+    this.cursorY += 10;
+
+    // DECLARATIONS
+    this.drawSectionHeader('DECLARATIONS');
+    const d1 = this.getF('iciciBbgDecl1') ? '[X]' : '[ ]';
+    const d2 = this.getF('iciciBbgDecl2') ? '[X]' : '[ ]';
+    const d3 = this.getF('iciciBbgDecl3') ? '[X]' : '[ ]';
+    this.drawKeyValueRow([{ label: `${d1} 1. The property was inspected by us`, value: '', labelWidth: CONTENT_W, valueWidth: 0 }]);
+    this.drawKeyValueRow([{ label: `${d2} 2. We have no direct or Indirect Interest in the property valued`, value: '', labelWidth: CONTENT_W, valueWidth: 0 }]);
+    this.drawKeyValueRow([{ label: `${d3} 3. The information furnished above is true and correct to my knowledge.`, value: '', labelWidth: CONTENT_W, valueWidth: 0 }]);
+    this.cursorY += 10;
+
+    this.drawKeyValueRow([{ label: 'Signature with seal (Valuer Name)', value: this.getF('iciciBbgValuerName') || 'NA', labelWidth: 250, valueWidth: CONTENT_W - 250 }]);
+    this.drawKeyValueRow([{ label: 'Valuer Qualifications & Title', value: this.getF('iciciBbgValuerQual') || 'NA', labelWidth: 250, valueWidth: CONTENT_W - 250 }]);
+    this.drawKeyValueRow([{ label: 'Date', value: this.getF('iciciBbgDeclDate') || 'NA', labelWidth: 250, valueWidth: CONTENT_W - 250 }]);
+    this.drawKeyValueRow([{ label: 'Place', value: this.getF('iciciBbgDeclPlace') || 'NA', labelWidth: 250, valueWidth: CONTENT_W - 250 }]);
+    this.cursorY += 10;
   }
 }
