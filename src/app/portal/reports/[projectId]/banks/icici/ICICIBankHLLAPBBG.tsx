@@ -113,6 +113,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
   },
   navSections: [
     { id: 'icici-section-1', title: '1 CUSTOMER DETAILS' },
+    { id: 'icici-section-2', title: '2 PROPERTY DETAILS' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankHlLapBbgRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -215,6 +216,61 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
                   disabled={isReadOnly}
                 />
               )}
+            </Field>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'icici-section-2',
+      title: '2 PROPERTY DETAILS',
+      number: 2,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        return (
+          <div style={{ backgroundColor: '#e3f2fd', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            <Field label="Address of Property">
+              <textarea
+                className={`${inputCls} resize-y`}
+                rows={3}
+                value={fields.iciciBbgAddressOfProperty || ''}
+                onChange={e => handleChange('iciciBbgAddressOfProperty', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <Field label="">
+              <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                  checked={!!fields.iciciBbgLegalAddressSame}
+                  onChange={e => handleChange('iciciBbgLegalAddressSame', e.target.checked)}
+                  disabled={isReadOnly}
+                />
+                Legal Address is same as Address of Property
+              </label>
+            </Field>
+
+            <PrefillField
+              label="Legal Address (Survey No. / FP No. / Khasra No./ Plot No)"
+              type="textarea"
+              rows={3}
+              value={fields.iciciBbgLegalAddress}
+              onChange={(val: string) => handleChange('iciciBbgLegalAddress', val)}
+              isReadOnly={isReadOnly}
+              tooltip={fields.iciciBbgLegalAddressSame ? 'Prefill from section 2, "Address of Property"' : ''}
+              fallbackValue={fields.iciciBbgLegalAddressSame ? fields.iciciBbgAddressOfProperty : undefined}
+            />
+
+            <Field label="Nearby landmark">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.iciciBbgNearbyLandmark || ''}
+                onChange={e => handleChange('iciciBbgNearbyLandmark', e.target.value)}
+                disabled={isReadOnly}
+              />
             </Field>
           </div>
         );

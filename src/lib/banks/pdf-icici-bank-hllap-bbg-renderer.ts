@@ -69,5 +69,19 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
     ]);
     
     this.cursorY += 10;
+
+    // SECTION 2
+    this.drawSectionHeader('2 PROPERTY DETAILS');
+    this.drawKeyValueRow([
+      { label: 'Address of Property', value: this.getF('iciciBbgAddressOfProperty') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const legalAddr = this.getF('iciciBbgLegalAddressSame') ? this.getF('iciciBbgAddressOfProperty') : this.getF('iciciBbgLegalAddress');
+    this.drawKeyValueRow([
+      { label: 'Legal Address (Survey No. / FP No. / Khasra No./ Plot No)', value: legalAddr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Nearby landmark', value: this.getF('iciciBbgNearbyLandmark') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.cursorY += 10;
   }
 }
