@@ -127,6 +127,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     { id: 'icici-section-4', title: '4 PHYSICAL DETAILS' },
     { id: 'icici-section-6', title: '6 VIOLATIONS OBSERVED IF' },
     { id: 'icici-section-7', title: '7 VALUATION' },
+    { id: 'icici-section-8', title: '8 BUILDING USAGE DETAILS' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankHlLapBbgRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -760,6 +761,34 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
                 </table>
               </div>
             </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'icici-section-8',
+      title: '8 BUILDING USAGE DETAILS',
+      number: 8,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        return (
+          <div style={{ backgroundColor: '#fce4ec', padding: '16px', borderRadius: '8px' }} className="space-y-6">
+            <Field label="Floor wise Details of Usage">
+              <textarea className={`${inputCls} resize-y`} rows={3} value={fields.iciciBbgUsageDetails || ''} onChange={e => handleChange('iciciBbgUsageDetails', e.target.value)} disabled={isReadOnly} />
+            </Field>
+
+            <Field label="GOOGLE (Latitude & Longitude)">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex flex-col space-y-1">
+                  <span className="text-xs font-semibold text-gray-600 uppercase">Latitude</span>
+                  <input type="number" className={inputCls} value={fields.latitude || ''} onChange={e => handleChange('latitude', e.target.value)} disabled={isReadOnly} />
+                </div>
+                <div className="flex flex-col space-y-1">
+                  <span className="text-xs font-semibold text-gray-600 uppercase">Longitude</span>
+                  <input type="number" className={inputCls} value={fields.longitude || ''} onChange={e => handleChange('longitude', e.target.value)} disabled={isReadOnly} />
+                </div>
+              </div>
+            </Field>
           </div>
         );
       }

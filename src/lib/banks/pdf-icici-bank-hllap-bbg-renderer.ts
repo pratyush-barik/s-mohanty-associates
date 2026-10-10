@@ -215,5 +215,11 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([{ label: '% Completed', value: this.getF('iciciBbgStageComp') || 'NA', labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
     this.drawKeyValueRow([{ label: '% Recommended', value: this.getF('iciciBbgStageRec') || 'NA', labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
     this.cursorY += 10;
+
+    // SECTION 8
+    this.drawSectionHeader('8 BUILDING USAGE DETAILS');
+    this.drawKeyValueRow([{ label: 'Floor wise Details of Usage', value: this.getF('iciciBbgUsageDetails') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'GOOGLE (Latitude & Longitude)', value: `Lat: ${this.getF('latitude') || 'NA'}, Long: ${this.getF('longitude') || 'NA'}`, labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.cursorY += 10;
   }
 }
