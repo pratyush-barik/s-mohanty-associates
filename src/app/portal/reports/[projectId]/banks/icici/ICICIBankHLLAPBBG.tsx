@@ -126,6 +126,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     { id: 'icici-section-3', title: '3 DOCUMENT DETAILS' },
     { id: 'icici-section-4', title: '4 PHYSICAL DETAILS' },
     { id: 'icici-section-6', title: '6 VIOLATIONS OBSERVED IF' },
+    { id: 'icici-section-7', title: '7 VALUATION' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankHlLapBbgRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -614,6 +615,151 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
               isReadOnly={isReadOnly}
               fallbackValue="NA"
             />
+          </div>
+        );
+      }
+    },
+    {
+      id: 'icici-section-7',
+      title: '7 VALUATION',
+      number: 7,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const getNum = (val: any) => parseFloat(val) || 0;
+
+        const landAmount = getNum(fields.iciciBbgValLandArea) * getNum(fields.iciciBbgValLandRate);
+        const carpetAmount = getNum(fields.iciciBbgValCarpetArea) * getNum(fields.iciciBbgValCarpetRate);
+        const builtUpAmount = getNum(fields.iciciBbgValBuiltUpArea) * getNum(fields.iciciBbgValBuiltUpRate);
+        const superBuiltUpAmount = getNum(fields.iciciBbgValSuperArea) * getNum(fields.iciciBbgValSuperRate);
+        
+        const totalAmount = landAmount + carpetAmount + builtUpAmount + superBuiltUpAmount;
+
+        return (
+          <div style={{ backgroundColor: '#fff3e0', padding: '16px', borderRadius: '8px' }} className="space-y-6">
+            <div>
+              <h4 className="font-semibold text-gray-800 mb-2">Valuation Grid</h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-500 border border-gray-200 bg-white">
+                  <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 border-r">Description</th>
+                      <th className="px-4 py-2 border-r">Area (Sqft)</th>
+                      <th className="px-4 py-2 border-r">Rate</th>
+                      <th className="px-4 py-2">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium text-gray-900 border-r">Land Area</td>
+                      <td className="px-4 py-2 border-r min-w-[200px]">
+                        <PrefillField type="number" hideEditToggle={false} label="" value={fields.iciciBbgValLandArea} onChange={(val: string) => handleChange('iciciBbgValLandArea', val)} isReadOnly={isReadOnly} tooltip='Prefill from section 4, "Plot Area"' fallbackValue={fields.iciciBbgPlotArea} />
+                      </td>
+                      <td className="px-4 py-2 border-r">
+                        <input type="number" className={inputCls} value={fields.iciciBbgValLandRate || ''} onChange={e => handleChange('iciciBbgValLandRate', e.target.value)} disabled={isReadOnly} />
+                      </td>
+                      <td className="px-4 py-2 min-w-[200px]">
+                        <PrefillField type="number" hideEditToggle={false} label="" value={fields.iciciBbgValLandAmount} onChange={(val: string) => handleChange('iciciBbgValLandAmount', val)} isReadOnly={isReadOnly} tooltip='Auto calculating from [Land Area (Area) * Land Area (Rate)]' fallbackValue={landAmount ? landAmount.toString() : undefined} />
+                      </td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium text-gray-900 border-r">Carpet area</td>
+                      <td className="px-4 py-2 border-r">
+                        <input type="number" className={inputCls} value={fields.iciciBbgValCarpetArea || ''} onChange={e => handleChange('iciciBbgValCarpetArea', e.target.value)} disabled={isReadOnly} />
+                      </td>
+                      <td className="px-4 py-2 border-r">
+                        <input type="number" className={inputCls} value={fields.iciciBbgValCarpetRate || ''} onChange={e => handleChange('iciciBbgValCarpetRate', e.target.value)} disabled={isReadOnly} />
+                      </td>
+                      <td className="px-4 py-2 min-w-[200px]">
+                        <PrefillField type="number" hideEditToggle={false} label="" value={fields.iciciBbgValCarpetAmount} onChange={(val: string) => handleChange('iciciBbgValCarpetAmount', val)} isReadOnly={isReadOnly} tooltip='Auto calculating from [Carpet area (Area) * Carpet area (Rate)]' fallbackValue={carpetAmount ? carpetAmount.toString() : undefined} />
+                      </td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium text-gray-900 border-r">Built up area</td>
+                      <td className="px-4 py-2 border-r">
+                        <input type="number" className={inputCls} value={fields.iciciBbgValBuiltUpArea || ''} onChange={e => handleChange('iciciBbgValBuiltUpArea', e.target.value)} disabled={isReadOnly} />
+                      </td>
+                      <td className="px-4 py-2 border-r">
+                        <input type="number" className={inputCls} value={fields.iciciBbgValBuiltUpRate || ''} onChange={e => handleChange('iciciBbgValBuiltUpRate', e.target.value)} disabled={isReadOnly} />
+                      </td>
+                      <td className="px-4 py-2 min-w-[200px]">
+                        <PrefillField type="number" hideEditToggle={false} label="" value={fields.iciciBbgValBuiltUpAmount} onChange={(val: string) => handleChange('iciciBbgValBuiltUpAmount', val)} isReadOnly={isReadOnly} tooltip='Auto calculating from [Built up area (Area) * Built up area (Rate)]' fallbackValue={builtUpAmount ? builtUpAmount.toString() : undefined} />
+                      </td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="px-4 py-2 font-medium text-gray-900 border-r">Super Built up area/ Saleable area</td>
+                      <td className="px-4 py-2 border-r">
+                        <input type="number" className={inputCls} value={fields.iciciBbgValSuperArea || ''} onChange={e => handleChange('iciciBbgValSuperArea', e.target.value)} disabled={isReadOnly} />
+                      </td>
+                      <td className="px-4 py-2 border-r">
+                        <input type="number" className={inputCls} value={fields.iciciBbgValSuperRate || ''} onChange={e => handleChange('iciciBbgValSuperRate', e.target.value)} disabled={isReadOnly} />
+                      </td>
+                      <td className="px-4 py-2 min-w-[200px]">
+                        <PrefillField type="number" hideEditToggle={false} label="" value={fields.iciciBbgValSuperAmount} onChange={(val: string) => handleChange('iciciBbgValSuperAmount', val)} isReadOnly={isReadOnly} tooltip='Auto calculating from [Super Built up area/ Saleable area (Area) * Super Built up area/ Saleable area (Rate)]' fallbackValue={superBuiltUpAmount ? superBuiltUpAmount.toString() : undefined} />
+                      </td>
+                    </tr>
+                    <tr className="bg-gray-50 font-bold">
+                      <td className="px-4 py-2 text-right border-r text-gray-900" colSpan={3}>Total</td>
+                      <td className="px-4 py-2 min-w-[200px]">
+                        <PrefillField type="number" hideEditToggle={false} label="" value={fields.iciciBbgValTotalAmount} onChange={(val: string) => handleChange('iciciBbgValTotalAmount', val)} isReadOnly={isReadOnly} tooltip='Auto calculating from [Sum of all Area Amounts]' fallbackValue={totalAmount ? totalAmount.toString() : undefined} />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <PrefillField
+                label="Total Value of property Post Completion"
+                type="number"
+                value={fields.iciciBbgValTotalPostComp}
+                onChange={(val: string) => handleChange('iciciBbgValTotalPostComp', val)}
+                isReadOnly={isReadOnly}
+                tooltip='Auto calculating from [Total]'
+                fallbackValue={totalAmount ? totalAmount.toString() : undefined}
+              />
+              <PrefillField
+                label="Total Current Value (P+C)"
+                type="number"
+                value={fields.iciciBbgValTotalCurrent}
+                onChange={(val: string) => handleChange('iciciBbgValTotalCurrent', val)}
+                isReadOnly={isReadOnly}
+                tooltip='Auto calculating from [Total]'
+                fallbackValue={totalAmount ? totalAmount.toString() : undefined}
+              />
+            </div>
+
+            <div>
+              <h4 className="font-semibold text-gray-800 mb-2 uppercase">Stage of Construction if Applicable (Builder Case)</h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-gray-500 border border-gray-200">
+                  <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-2 border-r">Stage of Construction</th>
+                      <th className="px-4 py-2 border-r">Structure Description (Description of stage)</th>
+                      <th className="px-4 py-2 border-r">% Completed</th>
+                      <th className="px-4 py-2">% Recommended</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="bg-white border-b">
+                      <td className="px-4 py-2 border-r min-w-[200px]">
+                        <textarea className={`${inputCls} resize-y`} rows={2} value={fields.iciciBbgStageConst || ''} onChange={e => handleChange('iciciBbgStageConst', e.target.value)} disabled={isReadOnly} />
+                      </td>
+                      <td className="px-4 py-2 border-r min-w-[200px]">
+                        <textarea className={`${inputCls} resize-y`} rows={2} value={fields.iciciBbgStageDesc || ''} onChange={e => handleChange('iciciBbgStageDesc', e.target.value)} disabled={isReadOnly} />
+                      </td>
+                      <td className="px-4 py-2 border-r w-[120px]">
+                        <input type="number" max={100} className={inputCls} value={fields.iciciBbgStageComp || ''} onChange={e => handleChange('iciciBbgStageComp', e.target.value)} disabled={isReadOnly} />
+                      </td>
+                      <td className="px-4 py-2 w-[120px]">
+                        <input type="number" max={100} className={inputCls} value={fields.iciciBbgStageRec || ''} onChange={e => handleChange('iciciBbgStageRec', e.target.value)} disabled={isReadOnly} />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
         );
       }

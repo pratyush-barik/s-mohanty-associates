@@ -185,5 +185,35 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
     this.drawSectionHeader('6 VIOLATIONS OBSERVED IF');
     this.drawKeyValueRow([{ label: 'Violations observed if', value: this.getF('iciciBbgViolations') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
     this.cursorY += 10;
+
+    // SECTION 7
+    this.drawSectionHeader('7 VALUATION');
+    
+    const getNum = (val: any) => parseFloat(val) || 0;
+    const landAmount = getNum(this.getF('iciciBbgValLandArea')) * getNum(this.getF('iciciBbgValLandRate'));
+    const carpetAmount = getNum(this.getF('iciciBbgValCarpetArea')) * getNum(this.getF('iciciBbgValCarpetRate'));
+    const builtUpAmount = getNum(this.getF('iciciBbgValBuiltUpArea')) * getNum(this.getF('iciciBbgValBuiltUpRate'));
+    const superBuiltUpAmount = getNum(this.getF('iciciBbgValSuperArea')) * getNum(this.getF('iciciBbgValSuperRate'));
+    const totalAmount = landAmount + carpetAmount + builtUpAmount + superBuiltUpAmount;
+
+    this.drawSectionHeader('Valuation Grid', { bg: rgb(0.9, 0.9, 0.9), fontSize: FONT_SIZE });
+    this.drawKeyValueRow([{ label: 'Description', value: 'Area | Rate | Amount', labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
+    this.drawKeyValueRow([{ label: 'Land Area', value: `${this.getF('iciciBbgValLandArea') || '-'} | ${this.getF('iciciBbgValLandRate') || '-'} | ${this.getF('iciciBbgValLandAmount') || (landAmount || '-')}`, labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
+    this.drawKeyValueRow([{ label: 'Carpet area', value: `${this.getF('iciciBbgValCarpetArea') || '-'} | ${this.getF('iciciBbgValCarpetRate') || '-'} | ${this.getF('iciciBbgValCarpetAmount') || (carpetAmount || '-')}`, labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
+    this.drawKeyValueRow([{ label: 'Built up area', value: `${this.getF('iciciBbgValBuiltUpArea') || '-'} | ${this.getF('iciciBbgValBuiltUpRate') || '-'} | ${this.getF('iciciBbgValBuiltUpAmount') || (builtUpAmount || '-')}`, labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
+    this.drawKeyValueRow([{ label: 'Super Built up area', value: `${this.getF('iciciBbgValSuperArea') || '-'} | ${this.getF('iciciBbgValSuperRate') || '-'} | ${this.getF('iciciBbgValSuperAmount') || (superBuiltUpAmount || '-')}`, labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
+    this.drawKeyValueRow([{ label: 'Total', value: this.getF('iciciBbgValTotalAmount') || (totalAmount || '-').toString(), labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
+    
+    this.cursorY += 5;
+    this.drawKeyValueRow([{ label: 'Total Value of property Post Completion', value: this.getF('iciciBbgValTotalPostComp') || (totalAmount || 'NA').toString(), labelWidth: 250, valueWidth: CONTENT_W - 250 }]);
+    this.drawKeyValueRow([{ label: 'Total Current Value (P+C)', value: this.getF('iciciBbgValTotalCurrent') || (totalAmount || 'NA').toString(), labelWidth: 250, valueWidth: CONTENT_W - 250 }]);
+
+    this.cursorY += 10;
+    this.drawSectionHeader('Stage of Construction if Applicable (Builder Case)', { bg: rgb(0.9, 0.9, 0.9), fontSize: FONT_SIZE });
+    this.drawKeyValueRow([{ label: 'Stage of Const.', value: this.getF('iciciBbgStageConst') || 'NA', labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
+    this.drawKeyValueRow([{ label: 'Structure Desc.', value: this.getF('iciciBbgStageDesc') || 'NA', labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
+    this.drawKeyValueRow([{ label: '% Completed', value: this.getF('iciciBbgStageComp') || 'NA', labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
+    this.drawKeyValueRow([{ label: '% Recommended', value: this.getF('iciciBbgStageRec') || 'NA', labelWidth: 150, valueWidth: CONTENT_W - 150 }]);
+    this.cursorY += 10;
   }
 }
