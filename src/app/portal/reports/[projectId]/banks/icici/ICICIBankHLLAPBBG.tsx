@@ -125,6 +125,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     { id: 'icici-section-2', title: '2 PROPERTY DETAILS' },
     { id: 'icici-section-3', title: '3 DOCUMENT DETAILS' },
     { id: 'icici-section-4', title: '4 PHYSICAL DETAILS' },
+    { id: 'icici-section-6', title: '6 VIOLATIONS OBSERVED IF' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankHlLapBbgRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -592,6 +593,27 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
                 </select>
               </Field>
             </div>
+          </div>
+        );
+      }
+    },
+    {
+      id: 'icici-section-6',
+      title: '6 VIOLATIONS OBSERVED IF',
+      number: 6,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        return (
+          <div style={{ backgroundColor: '#e0f7fa', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            <PrefillField
+              label="Violations observed if"
+              type="textarea"
+              rows={3}
+              value={fields.iciciBbgViolations}
+              onChange={(val: string) => handleChange('iciciBbgViolations', val)}
+              isReadOnly={isReadOnly}
+              fallbackValue="NA"
+            />
           </div>
         );
       }

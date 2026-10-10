@@ -180,5 +180,10 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
     const ageStr = `${this.getF('iciciBbgAge') || ''} ${this.getF('iciciBbgAgeUnit') || ''}`.trim() || 'NA';
     this.drawKeyValueRow([{ label: 'Approx. Age of Property', value: ageStr, labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
     this.cursorY += 10;
+
+    // SECTION 6
+    this.drawSectionHeader('6 VIOLATIONS OBSERVED IF');
+    this.drawKeyValueRow([{ label: 'Violations observed if', value: this.getF('iciciBbgViolations') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.cursorY += 10;
   }
 }
