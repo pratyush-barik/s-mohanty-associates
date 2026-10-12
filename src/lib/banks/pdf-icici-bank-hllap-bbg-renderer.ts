@@ -3,6 +3,7 @@ import { rgb } from 'pdf-lib';
 import {
   FONT_SIZE,
   FONT_SIZE_HEADER,
+  FONT_SIZE_TITLE,
   LINE_HEIGHT,
   BORDER_W,
   LBL_BG,
@@ -28,53 +29,41 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
   }
 
   async drawContent(): Promise<void> {
-    // Draw Title
-    this.page.drawRectangle({
-      x: MARGIN_L, y: this.pdfY(this.cursorY) - 25, width: CONTENT_W, height: 25,
-      color: rgb(1, 1, 1), borderColor: rgb(0,0,0), borderWidth: BORDER_W
-    });
-    this.page.drawText('VALUATION REPORT FOR ICICI BANK LIMITED', {
-      x: MARGIN_L + CONTENT_W / 2 - 140, y: this.pdfY(this.cursorY) - 17,
-      size: FONT_SIZE_HEADER + 1, font: this.fontBold, color: rgb(0,0,0)
-    });
-    this.cursorY += 25;
+    // Draw Title (matching format shown in Image 1)
+    this.cursorY += 5;
+    this.drawCenteredTitle('VALUATION REPORT', FONT_SIZE_TITLE, false);
+    this.drawCenteredTitle('FOR ICICI BANK LIMITED', FONT_SIZE_TITLE, true);
+    this.cursorY += 15;
 
-    // Ref No and Date above Section 1 (shown in Image 2: "Ref No: IND-2947483  Date: 14-04-2023")
+    // Report Ref & Date of Report (justified left and right across page width as shown in Image 1)
     const refNo = this.getF('iciciBbgRefNo') || this.projectCode || 'NA';
     const dateRaw = this.getF('iciciBbgDate') || '';
-    let formattedDate = 'NA';
+    let formattedDate = '';
     if (dateRaw) {
       const m = dateRaw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
       formattedDate = m ? `${m[3]}-${m[2]}-${m[1]}` : dateRaw;
     }
 
-    this.checkPageBreak(80);
-    this.cursorY += 6;
-    const refNoLabel = 'Ref No: ';
-    const refNoVal = refNo + '   ';
-    const dateLabel = 'Date: ';
-    const dateVal = formattedDate;
+    const refText = `REPORT REF: ${refNo}`;
+    const dateText = formattedDate ? `DATE OF REPORT: ${formattedDate}` : 'DATE OF REPORT:';
 
-    const yHeader = this.pdfY(this.cursorY);
-    let curX = MARGIN_L;
-    this.page.drawText(refNoLabel, {
-      x: curX, y: yHeader - 10, size: FONT_SIZE + 0.5, font: this.fontBold, color: rgb(0, 0, 0)
+    this.page.drawText(refText, {
+      x: MARGIN_L,
+      y: this.pdfY(this.cursorY),
+      size: FONT_SIZE_HEADER,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
     });
-    curX += this.fontBold.widthOfTextAtSize(refNoLabel, FONT_SIZE + 0.5);
-    this.page.drawText(refNoVal, {
-      x: curX, y: yHeader - 10, size: FONT_SIZE + 0.5, font: this.fontRegular, color: rgb(0, 0, 0)
-    });
-    curX += this.fontRegular.widthOfTextAtSize(refNoVal, FONT_SIZE + 0.5) + 15;
-
-    this.page.drawText(dateLabel, {
-      x: curX, y: yHeader - 10, size: FONT_SIZE + 0.5, font: this.fontBold, color: rgb(0, 0, 0)
-    });
-    curX += this.fontBold.widthOfTextAtSize(dateLabel, FONT_SIZE + 0.5);
-    this.page.drawText(dateVal, {
-      x: curX, y: yHeader - 10, size: FONT_SIZE + 0.5, font: this.fontRegular, color: rgb(0, 0, 0)
+    const dateW = this.fontBold.widthOfTextAtSize(dateText, FONT_SIZE_HEADER);
+    this.page.drawText(dateText, {
+      x: MARGIN_L + CONTENT_W - dateW,
+      y: this.pdfY(this.cursorY),
+      size: FONT_SIZE_HEADER,
+      font: this.fontBold,
+      color: rgb(0, 0, 0),
     });
 
-    this.cursorY += 16;
+    this.cursorY += 15;
 
     // Hardcoded heading banner just above section 1
     this.drawSectionHeader('Format for Resale / LAP / Builder (if non APF) / Balance Transfer/ Land Loan', false, true);
