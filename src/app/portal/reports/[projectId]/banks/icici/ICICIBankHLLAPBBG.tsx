@@ -139,45 +139,29 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
       number: 1,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly, projectCode) => {
-        const today = new Date().toISOString().split('T')[0];
         const refNoVal = projectCode || '';
         
         return (
           <div style={{ backgroundColor: '#f5f5f5', padding: '16px', borderRadius: '8px' }} className="space-y-4">
-            <PrefillField
-              label="Ref No"
-              value={fields.iciciBbgRefNo}
-              onChange={(val: string) => handleChange('iciciBbgRefNo', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Prefill from Project Case ID"
-              fallbackValue={refNoVal}
-            />
-            <PrefillField
-              label="Date"
-              type="text" // Date picker simulation
-              value={fields.iciciBbgDate}
-              onChange={(val: string) => handleChange('iciciBbgDate', val)}
-              isReadOnly={isReadOnly}
-              tooltip="Prefill from System Current Date"
-              fallbackValue={today}
-              customInputProps={{ type: 'date' }} // Can handle in UI, but standard input type=text fallback is fine if not explicitly implemented in PrefillField date type. Let's adapt below.
-            />
-            {/* The PrefillField doesn't natively support type=date beautifully, let's fix the Date field manually to match specs */}
-            <Field label="Format for Resale / LAP / Builder (if non APF) / Balance Transfer/ Land Loan">
-              <select
-                className={inputCls}
-                value={fields.iciciBbgFormat || ''}
-                onChange={e => handleChange('iciciBbgFormat', e.target.value)}
-                disabled={isReadOnly}
-              >
-                <option value="">Select Format...</option>
-                <option value="Resale">Resale</option>
-                <option value="LAP">LAP</option>
-                <option value="Builder">Builder</option>
-                <option value="Balance Transfer">Balance Transfer</option>
-                <option value="Land Loan">Land Loan</option>
-              </select>
-            </Field>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <PrefillField
+                label="Ref No"
+                value={fields.iciciBbgRefNo}
+                onChange={(val: string) => handleChange('iciciBbgRefNo', val)}
+                isReadOnly={isReadOnly}
+                tooltip="Prefill from Project Case ID"
+                fallbackValue={refNoVal}
+              />
+              <Field label="Date">
+                <input
+                  type="date"
+                  className={inputCls}
+                  value={fields.iciciBbgDate || ''}
+                  onChange={e => handleChange('iciciBbgDate', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
 
             <Field label="Customer Name">
               <textarea
@@ -836,7 +820,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <PrefillField label="Signature with seal (Valuer Name)" type="text" value={fields.iciciBbgValuerName} onChange={(val: string) => handleChange('iciciBbgValuerName', val)} isReadOnly={isReadOnly} tooltip="System profile prefill" fallbackValue={fields.valuerName} />
               <PrefillField label="Valuer Qualifications & Title" type="text" value={fields.iciciBbgValuerQual} onChange={(val: string) => handleChange('iciciBbgValuerQual', val)} isReadOnly={isReadOnly} tooltip="System profile prefill" fallbackValue={fields.valuerQualifications} />
-              <PrefillField label="Date" type="date" value={fields.iciciBbgDeclDate} onChange={(val: string) => handleChange('iciciBbgDeclDate', val)} isReadOnly={isReadOnly} tooltip='Prefill from section 1, "Date"' fallbackValue={fields.dateOfValuation} />
+              <PrefillField label="Date" type="date" value={fields.iciciBbgDeclDate} onChange={(val: string) => handleChange('iciciBbgDeclDate', val)} isReadOnly={isReadOnly} tooltip='Prefill from section 1, "Date"' fallbackValue={fields.iciciBbgDate || fields.dateOfValuation} />
               <PrefillField label="Place" type="text" value={fields.iciciBbgDeclPlace} onChange={(val: string) => handleChange('iciciBbgDeclPlace', val)} isReadOnly={isReadOnly} tooltip="System profile prefill" fallbackValue={fields.valuerCity || 'Bhubaneswar'} />
             </div>
           </div>

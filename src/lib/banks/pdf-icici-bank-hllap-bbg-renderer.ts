@@ -39,33 +39,58 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
     });
     this.cursorY += 25;
 
+    // Ref No and Date above Section 1 (shown in Image 2: "Ref No: IND-2947483  Date: 14-04-2023")
+    const refNo = this.getF('iciciBbgRefNo') || this.projectCode || 'NA';
+    const dateRaw = this.getF('iciciBbgDate') || '';
+    let formattedDate = 'NA';
+    if (dateRaw) {
+      const m = dateRaw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      formattedDate = m ? `${m[3]}-${m[2]}-${m[1]}` : dateRaw;
+    }
+
+    this.checkPageBreak(80);
+    this.cursorY += 6;
+    const refNoLabel = 'Ref No: ';
+    const refNoVal = refNo + '   ';
+    const dateLabel = 'Date: ';
+    const dateVal = formattedDate;
+
+    const yHeader = this.pdfY(this.cursorY);
+    let curX = MARGIN_L;
+    this.page.drawText(refNoLabel, {
+      x: curX, y: yHeader - 10, size: FONT_SIZE + 0.5, font: this.fontBold, color: rgb(0, 0, 0)
+    });
+    curX += this.fontBold.widthOfTextAtSize(refNoLabel, FONT_SIZE + 0.5);
+    this.page.drawText(refNoVal, {
+      x: curX, y: yHeader - 10, size: FONT_SIZE + 0.5, font: this.fontRegular, color: rgb(0, 0, 0)
+    });
+    curX += this.fontRegular.widthOfTextAtSize(refNoVal, FONT_SIZE + 0.5) + 15;
+
+    this.page.drawText(dateLabel, {
+      x: curX, y: yHeader - 10, size: FONT_SIZE + 0.5, font: this.fontBold, color: rgb(0, 0, 0)
+    });
+    curX += this.fontBold.widthOfTextAtSize(dateLabel, FONT_SIZE + 0.5);
+    this.page.drawText(dateVal, {
+      x: curX, y: yHeader - 10, size: FONT_SIZE + 0.5, font: this.fontRegular, color: rgb(0, 0, 0)
+    });
+
+    this.cursorY += 16;
+
+    // Hardcoded heading banner just above section 1
+    this.drawSectionHeader('Format for Resale / LAP / Builder (if non APF) / Balance Transfer/ Land Loan', false, true);
+
     // SECTION 1
-    this.drawSectionHeader('1 CUSTOMER DETAILS');
-    
-    this.drawKeyValueRow([
-      { label: 'Ref No', value: this.getF('iciciBbgRefNo') || 'NA' },
-      { label: 'Date', value: this.getF('iciciBbgDate') || 'NA' }
-    ]);
-    
-    this.drawKeyValueRow([
-      { label: 'Format for Resale / LAP / Builder (if non APF) / Balance Transfer/ Land Loan', value: this.getF('iciciBbgFormat') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
-    ]);
+    this.drawSectionHeader('1 CUSTOMER DETAILS', false);
 
     this.drawKeyValueRow([
-      { label: 'Customer Name', value: this.getF('iciciBbgCustomerName') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
-    ]);
-
-    this.drawKeyValueRow([
-      { label: 'Application Number', value: this.getF('iciciBbgAppNo') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
-    ]);
-    
-    this.drawKeyValueRow([
-      { label: 'DMA/ Nodal Point', value: this.getF('iciciBbgDmaNodal') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+      { label: 'Customer Name', value: this.getF('iciciBbgCustomerName') || 'NA' },
+      { label: 'Application Number', value: this.getF('iciciBbgAppNo') || 'NA' }
     ]);
 
     const caseType = this.getF('iciciBbgCaseType') === 'Custom' ? this.getF('iciciBbgCaseTypeCustom') : this.getF('iciciBbgCaseType');
     this.drawKeyValueRow([
-      { label: 'Case Type', value: caseType || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+      { label: 'DMA/ Nodal Point', value: this.getF('iciciBbgDmaNodal') || '' },
+      { label: 'Case Type', value: caseType || 'NA' }
     ]);
     
     this.cursorY += 10;
