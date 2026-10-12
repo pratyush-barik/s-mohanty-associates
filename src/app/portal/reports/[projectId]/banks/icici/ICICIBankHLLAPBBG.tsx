@@ -22,7 +22,10 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
     <div className="flex justify-between items-center w-full">
       <div className="flex-1 flex items-center pr-4">{label}</div>
       {!hideEditToggle && (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] font-bold uppercase ${isEdit ? 'text-emerald-700' : 'text-gray-400'}`}>
+            {isEdit ? 'Edit On' : 'Edit Off'}
+          </span>
           <button
             type="button"
             onClick={handleToggle}
@@ -31,9 +34,6 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
           >
             <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${isEdit ? 'translate-x-4' : 'translate-x-1'}`} />
           </button>
-          <span className={`text-[10px] font-bold uppercase ${isEdit ? 'text-emerald-700' : 'text-gray-400'}`}>
-            {isEdit ? 'Edit On' : 'Edit Off'}
-          </span>
         </div>
       )}
     </div>
