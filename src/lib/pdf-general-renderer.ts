@@ -843,6 +843,58 @@ export class PDFGeneralRenderer {
   }
 
   /**
+   * Draw a single full-width bordered table row with inline slash-separated options,
+   * where only the selected option (or filled-in Other value) is bolded.
+   * Advances cursor.
+   */
+  drawInlineSlashOptionRow(
+    prefix: string,
+    options: string[],
+    selectedValue: string,
+    otherValue?: string,
+    separator: string = '/ '
+  ): void {
+    const fontSize = FONT_SIZE;
+    const innerPadX = CELL_PAD_X + 2;
+    const innerPadY = CELL_PAD_Y + 1;
+    const textW = CONTENT_W - innerPadX * 2;
+    const selLower = (selectedValue || '').trim().toLowerCase();
+    const isOther = selLower === 'other' || (!options.some(o => o.toLowerCase() === selLower) && Boolean(selectedValue && selectedValue !== 'N/A'));
+    const customVal = isOther ? (otherValue?.trim() || (selLower !== 'other' ? selectedValue.trim() : '')) : '';
+
+    const segments: TextSegment[] = [
+      { text: prefix, bold: false },
+    ];
+
+    for (let i = 0; i < options.length; i++) {
+      const opt = options[i];
+      const isSelected = !isOther && opt.toLowerCase() === selLower;
+      if (i > 0) {
+        segments.push({ text: separator, bold: false });
+      }
+      segments.push({ text: opt, bold: isSelected });
+    }
+
+    if (customVal) {
+      segments.push({ text: separator, bold: false });
+      segments.push({ text: customVal, bold: true });
+    }
+
+    const textH = this.measureRichTextHeight(segments, textW, fontSize);
+    const rowH = Math.max(22, textH + innerPadY * 2);
+
+    this.checkPageBreak(rowH);
+
+    // Full-width cell border
+    this.drawRect(MARGIN_L, this.cursorY, CONTENT_W, rowH, undefined, '#000000', BORDER_W);
+
+    // Draw rich text segments inside cell
+    this.drawRichTextAt(segments, MARGIN_L + innerPadX, this.cursorY + innerPadY, textW, fontSize, false);
+
+    this.cursorY += rowH;
+  }
+
+  /**
    * Draw a 3-column proximity/landmark row:
    *   Col 1: Bold label with LBL_BG
    *   Col 2: Stacked sub-labels (text wraps)

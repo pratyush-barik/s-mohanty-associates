@@ -1389,7 +1389,13 @@ export default function BankReportBuilder({
       // ── Property Details ──
       if (!isSectionHidden('section-3')) {
         r.drawSectionHeader(getSectionTitle('section-3', 'PROPERTY DETAILS').toUpperCase());
-        r.drawSimpleRow('Type of Usage of Entire Property', fields.usageType);
+        r.drawInlineSlashOptionRow(
+          'Type of Usage of entire property- ',
+          ['Institutional', 'Residential', 'Commercial', 'Commercial cum Residential', 'Industrial', 'Vacant Plot'],
+          fields.usageType,
+          (fields as any).usageTypeOther,
+          '/ '
+        );
         r.drawSimpleRow('Additional Amenities', fields.additionalAmenities || 'N/A');
         r.drawOptionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus);
         drawExtraPDFFields('section-3');
@@ -1399,7 +1405,13 @@ export default function BankReportBuilder({
       // ── Subject Property Details ──
       if (!isSectionHidden('section-4')) {
         r.drawSectionHeader('SUBJECT PROPERTY DETAILS');
-        r.drawSimpleRow('Type of Premises', fields.premisesType);
+        r.drawInlineSlashOptionRow(
+          'Type of Premises-',
+          ['Residential flat', 'Gala', 'Shop', 'Bungalow', 'Row House', 'Office', 'Chawl', 'Open Plot', 'Showroom', 'Duplex Flat', 'Pent House', 'Factory', 'Hotel', 'Lodge'],
+          fields.premisesType,
+          (fields as any).premisesTypeOther,
+          '/ '
+        );
         r.drawSimpleRow('Occupied by / Vacant', fields.occupiedBy);
         r.drawSimpleRow('Is Property Rented', fields.isPropertyRented);
         r.drawSimpleRow('If Rented, List of Occupants', fields.rentedOccupants);

@@ -373,6 +373,7 @@ interface ReportFields {
 
   // Section 3 – Property Details
   usageType: string;
+  usageTypeOther?: string;
   additionalAmenities: string;
   legalStatus: string;
 
@@ -558,6 +559,7 @@ const DEFAULT_FIELDS: ReportFields = {
   landmarkNearest: '',
 
   usageType: 'Residential',
+  usageTypeOther: '',
   additionalAmenities: 'Not Applicable',
   legalStatus: 'Freehold',
 
@@ -3022,14 +3024,26 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
       // ── Property Details ──
       r.drawSectionHeader('PROPERTY DETAILS');
-      r.drawSimpleRow('Type of Usage of Entire Property', fields.usageType);
+      r.drawInlineSlashOptionRow(
+        'Type of Usage of entire property- ',
+        ['Institutional', 'Residential', 'Commercial', 'Commercial cum Residential', 'Industrial', 'Vacant Plot'],
+        fields.usageType,
+        fields.usageTypeOther,
+        '/ '
+      );
       r.drawSimpleRow('Additional Amenities', fields.additionalAmenities || 'N/A');
       r.drawOptionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus);
       r.advanceCursor(8);
 
       // ── Subject Property Details ──
       r.drawSectionHeader('SUBJECT PROPERTY DETAILS');
-      r.drawSimpleRow('Type of Premises', fields.premisesType === 'Other' ? (fields.premisesTypeOther || 'Other') : fields.premisesType);
+      r.drawInlineSlashOptionRow(
+        'Type of Premises-',
+        ['Residential flat', 'Gala', 'Shop', 'Bungalow', 'Row House', 'Office', 'Chawl', 'Open Plot', 'Showroom', 'Duplex Flat', 'Pent House', 'Factory', 'Hotel', 'Lodge'],
+        fields.premisesType,
+        fields.premisesTypeOther,
+        '/ '
+      );
       r.drawSimpleRow('Occupied by / Vacant', fields.occupiedBy);
       r.drawSimpleRow('Is Property Rented', fields.isPropertyRented);
       r.drawSimpleRow('If Rented, List of Occupants', fields.rentedOccupants);
@@ -3427,6 +3441,29 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       return `<tr><td colspan="3" style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${label}: - <b>${val || 'N/A'}</b></td></tr>`;
     };
 
+    // Inline slash option row: full-width bordered box with slash-separated options, only selected bolded
+    const inlineSlashOptionRow = (
+      prefix: string,
+      options: string[],
+      selectedVal: string,
+      otherVal?: string,
+      separator: string = '/ '
+    ) => {
+      const selLower = (selectedVal || '').trim().toLowerCase();
+      const isOther = selLower === 'other' || (!options.some(o => o.toLowerCase() === selLower) && Boolean(selectedVal && selectedVal !== 'N/A'));
+      const customVal = isOther ? (otherVal?.trim() || (selLower !== 'other' ? selectedVal.trim() : '')) : '';
+
+      const partsHtml = options.map((opt, i) => {
+        const isSelected = !isOther && opt.toLowerCase() === selLower;
+        const boldTag = isSelected ? `<b>${opt}</b>` : opt;
+        return (i > 0 ? separator : '') + boldTag;
+      }).join('');
+
+      const otherHtml = customVal ? `${separator}<b>${customVal}</b>` : '';
+
+      return `<tr><td colspan="3" style="border:${cellBorder};padding:${cellPad};font-family:${ff};font-size:12pt;vertical-align:middle;line-height:1.25em;word-break:break-word;word-wrap:break-word;overflow:visible;">${prefix}${partsHtml}${otherHtml}</td></tr>`;
+    };
+
     // Option row: 3 columns — Label | Options list (matching option is bolded) | Selected value
     const optionRow = (label: string, rawOpts: string[], val: string) => {
       const selectedList = val ? val.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
@@ -3607,7 +3644,13 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     // ── BLOCK: Property Details ──
     allBlocks.push(wrapTable(`
       ${sectionHeader('PROPERTY DETAILS')}
-      ${simpleRow('Type of Usage of Entire Property', fields.usageType)}
+      ${inlineSlashOptionRow(
+        'Type of Usage of entire property- ',
+        ['Institutional', 'Residential', 'Commercial', 'Commercial cum Residential', 'Industrial', 'Vacant Plot'],
+        fields.usageType,
+        fields.usageTypeOther,
+        '/ '
+      )}
       ${simpleRow('Additional Amenities', fields.additionalAmenities || 'N/A')}
       ${optionRow('Legal Status of Property', ['Freehold', 'Lease hold >30 yrs.', 'Lease hold 15-30 yrs.', 'Lease hold <15 yrs.'], fields.legalStatus)}
     `));
@@ -3615,7 +3658,13 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     // ── BLOCK: Subject Property Details ──
     allBlocks.push(wrapTable(`
       ${sectionHeader('SUBJECT PROPERTY DETAILS')}
-      ${simpleRow('Type of Premises', fields.premisesType)}
+      ${inlineSlashOptionRow(
+        'Type of Premises-',
+        ['Residential flat', 'Gala', 'Shop', 'Bungalow', 'Row House', 'Office', 'Chawl', 'Open Plot', 'Showroom', 'Duplex Flat', 'Pent House', 'Factory', 'Hotel', 'Lodge'],
+        fields.premisesType,
+        fields.premisesTypeOther,
+        '/ '
+      )}
       ${simpleRow('Occupied by / Vacant', fields.occupiedBy)}
       ${simpleRow('Is Property Rented', fields.isPropertyRented)}
       ${simpleRow('If Rented, List of Occupants', fields.rentedOccupants)}
@@ -4409,9 +4458,26 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="Type of Usage of Entire Property">
               <select className={selectCls} value={fields.usageType} onChange={e => handleChange('usageType', e.target.value)} disabled={isReadOnly}>
-                <option>Residential</option><option>Commercial</option><option>Residential cum Commercial</option><option>Industrial</option><option>Vacant Plot</option>
+                <option>Institutional</option>
+                <option>Residential</option>
+                <option>Commercial</option>
+                <option>Residential cum Commercial</option>
+                <option>Industrial</option>
+                <option>Vacant Plot</option>
+                <option>Other</option>
               </select>
             </Field>
+            {fields.usageType === 'Other' && (
+              <Field label="Specify Other Usage Type">
+                <input
+                  className={inputCls}
+                  value={fields.usageTypeOther || ''}
+                  onChange={e => handleChange('usageTypeOther', e.target.value)}
+                  placeholder="e.g. Commercial (Hotel)"
+                  disabled={isReadOnly}
+                />
+              </Field>
+            )}
             <Field label="Additional Amenities" span={2}>
               <div className="p-4 bg-[#f8f9fa] border border-[#dee2e6] rounded-xl space-y-3">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -4497,7 +4563,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 onChange={e => handleChange('premisesType', e.target.value)}
                 disabled={isReadOnly}
               >
-                <option>Residential Flat</option>
+                <option>Residential flat</option>
                 <option>Gala</option>
                 <option>Shop</option>
                 <option>Bungalow</option>
@@ -4508,7 +4574,9 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                 <option>Showroom</option>
                 <option>Duplex Flat</option>
                 <option>Pent House</option>
-                <option>Institutional</option>
+                <option>Factory</option>
+                <option>Hotel</option>
+                <option>Lodge</option>
                 <option>Other</option>
               </select>
             </Field>
@@ -4519,7 +4587,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
                   value={fields.premisesTypeOther || ''}
                   onChange={e => handleChange('premisesTypeOther', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="Enter custom premises type (e.g. Community Hall)"
+                  placeholder="Enter custom premises type (e.g. Institutional (School))"
                 />
               </Field>
             )}
