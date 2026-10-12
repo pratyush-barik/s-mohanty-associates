@@ -3089,42 +3089,113 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.drawSimpleRow('Other Documents Verified', fields.documentsVerified);
       r.advanceCursor(8);
 
-      // ── Land Valuation (skip for Apartment/Flat) ──
+      // ── 1. Flat & Apartment Valuation Table (Always rendered first in PDF) ──
+      r.drawCenteredTitle('VALUATION OF APARTMENT/FLAT (After Depreciation)');
+      r.advanceCursor(4);
+      const aptUnit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
+      const aptHeaders = ['Floor', 'Basis of Valuation', `Area (${aptUnit})`, `Rate (Rs./${aptUnit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'];
+
+      if (isApartmentFlat) {
+        // Active mode: render actual floor valuations
+        r.drawFloorTable(
+          aptHeaders,
+          floorValuations.map(f => ({
+            name: f.name,
+            basis: f.basisOfValuation || 'Built-up Area',
+            area: formatIndianCurrency(f.area),
+            rate: `Rs.${formatIndianCurrency(f.rate)}`,
+            estimated: `Rs.${formatIndianCurrency(f.estimated)}`,
+            life: String(f.lifeYears),
+            age: String(f.ageYears),
+            dep: `${f.depPct}%`,
+            netValue: `Rs.${formatIndianCurrency(f.netValue)}`,
+          })),
+          'Total Apartment/Flat Value',
+          `Rs.${formatIndianCurrency(totalBuildingValue)}`,
+        );
+      } else {
+        // Toggled off: auto-fill with NA
+        r.drawFloorTable(
+          aptHeaders,
+          [{
+            name: 'Ground',
+            basis: 'NA',
+            area: 'NA',
+            rate: 'NA',
+            estimated: 'NA',
+            life: 'NA',
+            age: 'NA',
+            dep: 'NA',
+            netValue: 'NA',
+          }],
+          'Total Apartment/Flat Value',
+          'NA',
+        );
+      }
+      r.advanceCursor(8);
+
+      // ── 2. Land Valuation (Rendered second in PDF) ──
+      r.drawSectionHeader('VALUATION \u2014 Land');
       if (!isApartmentFlat) {
-        r.drawSectionHeader('VALUATION \u2014 Land');
+        // Active mode: render actual land values
         r.drawSimpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`);
         r.drawSimpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`);
         r.drawSimpleRow('Recommended Rate & Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`);
         r.drawSimpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`);
         r.drawSimpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`);
         if (fields.buaAsPerApprovals) r.drawSimpleRow('BUA as per Approvals', fields.buaAsPerApprovals);
-        r.advanceCursor(8);
+      } else {
+        // Toggled off: auto-fill with NA
+        r.drawSimpleRow('Land Area', 'NA');
+        r.drawSimpleRow('Current Govt. Approved Rates for Land', 'NA');
+        r.drawSimpleRow('Recommended Rate & Basis', 'NA');
+        r.drawSimpleRow('Land Value', 'NA');
+        r.drawSimpleRow('Actual BUA of Premises', 'NA');
+        r.drawSimpleRow('BUA as per Approvals', 'NA');
       }
+      r.advanceCursor(8);
 
-      // ── Building / Apartment Valuation Table ──
-      r.drawCenteredTitle(isApartmentFlat ? 'VALUATION OF APARTMENT/FLAT (After Depreciation)' : 'VALUATION OF BUILDING (After Depreciation)');
+      // ── 3. Building Valuation Table ──
+      r.drawCenteredTitle('VALUATION OF BUILDING (After Depreciation)');
       r.advanceCursor(4);
-      const unit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
-      const floorHeaders = isApartmentFlat
-        ? ['Floor', 'Basis of Valuation', `Area (${unit})`, `Rate (Rs./${unit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)']
-        : ['Floor', `Area (${unit})`, `Rate (Rs./${unit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'];
+      const bldgUnit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
+      const bldgHeaders = ['Floor', `Area (${bldgUnit})`, `Rate (Rs./${bldgUnit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'];
 
-      r.drawFloorTable(
-        floorHeaders,
-        floorValuations.map(f => ({
-          name: f.name,
-          basis: f.basisOfValuation || 'Built-up Area',
-          area: formatIndianCurrency(f.area),
-          rate: `Rs.${formatIndianCurrency(f.rate)}`,
-          estimated: `Rs.${formatIndianCurrency(f.estimated)}`,
-          life: String(f.lifeYears),
-          age: String(f.ageYears),
-          dep: `${f.depPct}%`,
-          netValue: `Rs.${formatIndianCurrency(f.netValue)}`,
-        })),
-        isApartmentFlat ? 'Total Apartment/Flat Value' : 'Total Building Value',
-        `Rs.${formatIndianCurrency(totalBuildingValue)}`,
-      );
+      if (!isApartmentFlat) {
+        // Active mode: render actual floor valuations
+        r.drawFloorTable(
+          bldgHeaders,
+          floorValuations.map(f => ({
+            name: f.name,
+            area: formatIndianCurrency(f.area),
+            rate: `Rs.${formatIndianCurrency(f.rate)}`,
+            estimated: `Rs.${formatIndianCurrency(f.estimated)}`,
+            life: String(f.lifeYears),
+            age: String(f.ageYears),
+            dep: `${f.depPct}%`,
+            netValue: `Rs.${formatIndianCurrency(f.netValue)}`,
+          })),
+          'Total Building Value',
+          `Rs.${formatIndianCurrency(totalBuildingValue)}`,
+        );
+      } else {
+        // Toggled off: auto-fill with NA
+        r.drawFloorTable(
+          bldgHeaders,
+          [{
+            name: 'Ground',
+            area: 'NA',
+            rate: 'NA',
+            estimated: 'NA',
+            life: 'NA',
+            age: 'NA',
+            dep: 'NA',
+            netValue: 'NA',
+          }],
+          'Total Building Value',
+          'NA',
+        );
+      }
       r.advanceCursor(8);
 
       // ── Abstract of Valuation ──
@@ -3713,7 +3784,57 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       ${simpleRow('Other Documents Verified', fields.documentsVerified)}
     `));
 
-    // ── BLOCK: Land Valuation (skip for Apartment/Flat) ──
+    // ── BLOCK: 1. Flat & Apartment Valuation (Always rendered first in PDF) ──
+    const aptRowsHTML = isApartmentFlat
+      ? floorValuations.map((f, idx) => {
+          const bg = idx % 2 === 0 ? '#FFF' : '#F5F5F5';
+          return `<tr style="background:${bg};">
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.name}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.basisOfValuation || 'Built-up Area'}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatIndianCurrency(f.area)}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.rate)}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.estimated)}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.lifeYears}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.ageYears}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.depPct}%</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.netValue)}</td>
+          </tr>`;
+        }).join('')
+      : `<tr style="background:#FFF;">
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;">Ground</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;">NA</td>
+        </tr>`;
+
+    allBlocks.push(`
+      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">VALUATION OF APARTMENT/FLAT (After Depreciation)</p>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:10px;font-family:${ff};font-size:12pt;">
+        <tr style="background:#000;">
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;">Floor</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:left;">Basis of Valuation</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;">Area</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;">Rate (\u20B9)</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;">Estimated (\u20B9)</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;">Life</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;">Age</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;">Dep%</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;">Net Value (\u20B9)</th>
+        </tr>
+        ${aptRowsHTML}
+        <tr style="font-weight:bold;">
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;" colspan="8"><b>Total Apartment/Flat Value</b></td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;"><b>${isApartmentFlat ? `\u20B9${formatIndianCurrency(totalBuildingValue)}` : 'NA'}</b></td>
+        </tr>
+      </table>
+    `);
+
+    // ── BLOCK: 2. Land Valuation (Rendered second in PDF) ──
     if (!isApartmentFlat) {
       allBlocks.push(wrapTable(`
         ${sectionHeader('VALUATION \u2014 Land')}
@@ -3724,40 +3845,61 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         ${simpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`)}
         ${fields.buaAsPerApprovals ? simpleRow('BUA as per Approvals', fields.buaAsPerApprovals) : ''}
       `));
+    } else {
+      allBlocks.push(wrapTable(`
+        ${sectionHeader('VALUATION \u2014 Land')}
+        ${simpleRow('Land Area', 'NA')}
+        ${simpleRow('Current Govt. Approved Rates for Land', 'NA')}
+        ${simpleRow('Recommended Rate &amp; Basis', 'NA')}
+        ${simpleRow('Land Value', 'NA')}
+        ${simpleRow('Actual BUA of Premises', 'NA')}
+        ${simpleRow('BUA as per Approvals', 'NA')}
+      `));
     }
 
-    // ── BLOCK: Building Valuation ──
-    const floorRowsHTML = floorValuations.map((f, idx) => {
-      const bg = idx % 2 === 0 ? '#FFF' : '#F5F5F5';
-      return `<tr style="background:${bg};">
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.name}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatIndianCurrency(f.area)}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.rate)}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.estimated)}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.lifeYears}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.ageYears}</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.depPct}%</td>
-        <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.netValue)}</td>
-      </tr>`;
-    }).join('');
+    // ── BLOCK: 3. Building Valuation ──
+    const bldgRowsHTML = !isApartmentFlat
+      ? floorValuations.map((f, idx) => {
+          const bg = idx % 2 === 0 ? '#FFF' : '#F5F5F5';
+          return `<tr style="background:${bg};">
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.name}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${formatIndianCurrency(f.area)}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.rate)}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.estimated)}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.lifeYears}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.ageYears}</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${f.depPct}%</td>
+            <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">\u20B9${formatIndianCurrency(f.netValue)}</td>
+          </tr>`;
+        }).join('')
+      : `<tr style="background:#FFF;">
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;">Ground</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:center;">NA</td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;">NA</td>
+        </tr>`;
 
     allBlocks.push(`
-      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">${isApartmentFlat ? 'VALUATION OF APARTMENT/FLAT (After Depreciation)' : 'VALUATION OF BUILDING (After Depreciation)'}</p>
+      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">VALUATION OF BUILDING (After Depreciation)</p>
       <table style="width:100%;border-collapse:collapse;margin-bottom:10px;font-family:${ff};font-size:12pt;">
         <tr style="background:#000;">
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">Floor</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">Area</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">Rate (\u20B9)</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">Estimated (\u20B9)</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">Life</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">Age</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:center;font-family:${ff};vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">Dep%</th>
-          <th style="border:${cellBorder};padding:4px 6px 4px 6px;color:#FFF;font-weight:bold;text-align:right;font-family:${ff};vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">Net Value (\u20B9)</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;">Floor</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;">Area</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;">Rate (\u20B9)</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;">Estimated (\u20B9)</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;">Life</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;">Age</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;">Dep%</th>
+          <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:right;">Net Value (\u20B9)</th>
         </tr>
-        ${floorRowsHTML}
+        ${bldgRowsHTML}
         <tr style="font-weight:bold;">
-          <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;" colspan="7"><b>Total Building Value</b></td>
-          <td style="border:${cellBorder};padding:4px 6px 4px 6px;font-family:${ff};font-size:12pt;text-align:right;vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;"><b>\u20B9${formatIndianCurrency(totalBuildingValue)}</b></td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;" colspan="7"><b>Total Building Value</b></td>
+          <td style="border:${cellBorder};padding:4px 6px;font-family:${ff};font-size:12pt;text-align:right;"><b>${!isApartmentFlat ? `\u20B9${formatIndianCurrency(totalBuildingValue)}` : 'NA'}</b></td>
         </tr>
       </table>
     `);
@@ -4776,17 +4918,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         <div className="flex bg-[#f1f3f5] p-1 rounded-lg border border-[#dee2e6] shrink-0">
           <button
             type="button"
-            onClick={() => handleChange('valuationLayout', 'land_building')}
-            className={`px-4 py-2 rounded-md text-xs font-bold uppercase transition-all ${
-              fields.valuationLayout === 'land_building' || !fields.valuationLayout
-                ? 'bg-[#1e3a5f] text-white shadow-sm'
-                : 'text-[#6c757d] hover:text-[#0f2038]'
-            }`}
-          >
-            Land & Building
-          </button>
-          <button
-            type="button"
             onClick={() => handleChange('valuationLayout', 'apartment')}
             className={`px-4 py-2 rounded-md text-xs font-bold uppercase transition-all ${
               fields.valuationLayout === 'apartment'
@@ -4795,6 +4926,17 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             }`}
           >
             Flat / Apartment
+          </button>
+          <button
+            type="button"
+            onClick={() => handleChange('valuationLayout', 'land_building')}
+            className={`px-4 py-2 rounded-md text-xs font-bold uppercase transition-all ${
+              fields.valuationLayout === 'land_building' || !fields.valuationLayout
+                ? 'bg-[#1e3a5f] text-white shadow-sm'
+                : 'text-[#6c757d] hover:text-[#0f2038]'
+            }`}
+          >
+            Land & Building
           </button>
         </div>
       </div>

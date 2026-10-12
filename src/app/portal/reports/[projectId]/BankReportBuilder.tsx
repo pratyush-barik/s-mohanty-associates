@@ -1457,40 +1457,93 @@ export default function BankReportBuilder({
         r.advanceCursor(8);
       }
 
-      // ── Land Valuation ──
-      if (!isApartmentFlat && !isSectionHidden('section-7b')) {
+      // ── 1. Flat & Apartment Valuation Table (Always rendered first in PDF) ──
+      if (!isSectionHidden('section-7')) {
+        r.drawCenteredTitle('VALUATION OF APARTMENT/FLAT (After Depreciation)');
+        r.advanceCursor(4);
+        const unit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
+        const aptHeaders = ['Floor', 'Basis of Valuation', `Area (${unit})`, `Rate (Rs./${unit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'];
+        if (isApartmentFlat) {
+          r.drawFloorTable(
+            aptHeaders,
+            floorValuations.map(f => ({
+              name: f.name,
+              basis: f.basisOfValuation || 'Built-up Area',
+              area: formatIndianCurrency(f.area),
+              rate: `Rs.${formatIndianCurrency(f.rate)}`,
+              estimated: `Rs.${formatIndianCurrency(f.estimated)}`,
+              life: String(f.lifeYears),
+              age: String(f.ageYears),
+              dep: `${f.depPct}%`,
+              netValue: `Rs.${formatIndianCurrency(f.netValue)}`,
+            })),
+            'Total Apartment/Flat Value',
+            `Rs.${formatIndianCurrency(totalBuildingValue)}`,
+          );
+        } else {
+          r.drawFloorTable(
+            aptHeaders,
+            [{ name: 'Ground', basis: 'NA', area: 'NA', rate: 'NA', estimated: 'NA', life: 'NA', age: 'NA', dep: 'NA', netValue: 'NA' }],
+            'Total Apartment/Flat Value',
+            'NA',
+          );
+        }
+        drawExtraPDFFields('section-7');
+        r.advanceCursor(8);
+      }
+
+      // ── 2. Land Valuation (Rendered second in PDF) ──
+      if (!isSectionHidden('section-7b')) {
         r.drawSectionHeader('VALUATION \u2014 Land');
-        r.drawSimpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`);
-        r.drawSimpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`);
-        r.drawSimpleRow('Recommended Rate & Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`);
-        r.drawSimpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`);
-        r.drawSimpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`);
-        if (fields.buaAsPerApprovals) r.drawSimpleRow('BUA as per Approvals', fields.buaAsPerApprovals);
+        if (!isApartmentFlat) {
+          r.drawSimpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`);
+          r.drawSimpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`);
+          r.drawSimpleRow('Recommended Rate & Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`);
+          r.drawSimpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`);
+          r.drawSimpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`);
+          if (fields.buaAsPerApprovals) r.drawSimpleRow('BUA as per Approvals', fields.buaAsPerApprovals);
+        } else {
+          r.drawSimpleRow('Land Area', 'NA');
+          r.drawSimpleRow('Current Govt. Approved Rates for Land', 'NA');
+          r.drawSimpleRow('Recommended Rate & Basis', 'NA');
+          r.drawSimpleRow('Land Value', 'NA');
+          r.drawSimpleRow('Actual BUA of Premises', 'NA');
+          if (fields.buaAsPerApprovals) r.drawSimpleRow('BUA as per Approvals', 'NA');
+        }
         drawExtraPDFFields('section-8');
         r.advanceCursor(8);
       }
 
-      // ── Building / Apartment Valuation Table ──
+      // ── 3. Building Valuation Table ──
       if (!isSectionHidden('section-7')) {
-        r.drawCenteredTitle(isApartmentFlat ? 'VALUATION OF APARTMENT/FLAT (After Depreciation)' : 'VALUATION OF BUILDING (After Depreciation)');
+        r.drawCenteredTitle('VALUATION OF BUILDING (After Depreciation)');
         r.advanceCursor(4);
         const unit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
-        r.drawFloorTable(
-          ['Floor', `Area (${unit})`, `Rate (Rs./${unit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'],
-          floorValuations.map(f => ({
-            name: f.name,
-            area: formatIndianCurrency(f.area),
-            rate: `Rs.${formatIndianCurrency(f.rate)}`,
-            estimated: `Rs.${formatIndianCurrency(f.estimated)}`,
-            life: String(f.lifeYears),
-            age: String(f.ageYears),
-            dep: `${f.depPct}%`,
-            netValue: `Rs.${formatIndianCurrency(f.netValue)}`,
-          })),
-          'Total Building Value',
-          `Rs.${formatIndianCurrency(totalBuildingValue)}`,
-        );
-        drawExtraPDFFields('section-7');
+        const bldgHeaders = ['Floor', `Area (${unit})`, `Rate (Rs./${unit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'];
+        if (!isApartmentFlat) {
+          r.drawFloorTable(
+            bldgHeaders,
+            floorValuations.map(f => ({
+              name: f.name,
+              area: formatIndianCurrency(f.area),
+              rate: `Rs.${formatIndianCurrency(f.rate)}`,
+              estimated: `Rs.${formatIndianCurrency(f.estimated)}`,
+              life: String(f.lifeYears),
+              age: String(f.ageYears),
+              dep: `${f.depPct}%`,
+              netValue: `Rs.${formatIndianCurrency(f.netValue)}`,
+            })),
+            'Total Building Value',
+            `Rs.${formatIndianCurrency(totalBuildingValue)}`,
+          );
+        } else {
+          r.drawFloorTable(
+            bldgHeaders,
+            [{ name: 'Ground', area: 'NA', rate: 'NA', estimated: 'NA', life: 'NA', age: 'NA', dep: 'NA', netValue: 'NA' }],
+            'Total Building Value',
+            'NA',
+          );
+        }
         r.advanceCursor(8);
       }
 
