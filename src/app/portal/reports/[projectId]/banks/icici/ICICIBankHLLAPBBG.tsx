@@ -121,21 +121,21 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     'section-15': 15,
   },
   navSections: [
-    { id: 'icici-section-1', title: '1 CUSTOMER DETAILS' },
-    { id: 'icici-section-2', title: '2 PROPERTY DETAILS' },
-    { id: 'icici-section-3', title: '3 DOCUMENT DETAILS' },
-    { id: 'icici-section-4', title: '4 PHYSICAL DETAILS' },
-    { id: 'icici-section-6', title: '6 VIOLATIONS OBSERVED IF' },
-    { id: 'icici-section-7', title: '7 VALUATION' },
-    { id: 'icici-section-8', title: '8 BUILDING USAGE DETAILS' },
-    { id: 'icici-section-9', title: '9 REMARKS' },
+    { id: 'icici-section-1', title: 'CUSTOMER DETAILS' },
+    { id: 'icici-section-2', title: 'PROPERTY DETAILS' },
+    { id: 'icici-section-3', title: 'DOCUMENT DETAILS' },
+    { id: 'icici-section-4', title: 'PHYSICAL DETAILS' },
+    { id: 'icici-section-6', title: 'VIOLATIONS OBSERVED IF' },
+    { id: 'icici-section-7', title: 'VALUATION' },
+    { id: 'icici-section-8', title: 'BUILDING USAGE DETAILS' },
+    { id: 'icici-section-9', title: 'REMARKS' },
     { id: 'icici-section-declarations', title: 'DECLARATIONS' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankHlLapBbgRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
     {
       id: 'icici-section-1',
-      title: '1 CUSTOMER DETAILS',
+      title: 'CUSTOMER DETAILS',
       number: 1,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly, projectCode) => {
@@ -224,7 +224,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'icici-section-2',
-      title: '2 PROPERTY DETAILS',
+      title: 'PROPERTY DETAILS',
       number: 2,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
@@ -279,7 +279,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'icici-section-3',
-      title: '3 DOCUMENT DETAILS',
+      title: 'DOCUMENT DETAILS',
       number: 3,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
@@ -376,7 +376,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'icici-section-4',
-      title: '4 PHYSICAL DETAILS',
+      title: 'PHYSICAL DETAILS',
       number: 4,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
@@ -588,7 +588,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'icici-section-6',
-      title: '6 VIOLATIONS OBSERVED IF',
+      title: 'VIOLATIONS OBSERVED IF',
       number: 6,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
@@ -609,7 +609,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'icici-section-7',
-      title: '7 VALUATION',
+      title: 'VALUATION',
       number: 7,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
@@ -754,7 +754,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'icici-section-8',
-      title: '8 BUILDING USAGE DETAILS',
+      title: 'BUILDING USAGE DETAILS',
       number: 8,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
@@ -782,7 +782,7 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
     },
     {
       id: 'icici-section-9',
-      title: '9 REMARKS',
+      title: 'REMARKS',
       number: 9,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
