@@ -33,7 +33,7 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
     this.cursorY += 5;
     this.drawCenteredTitle('VALUATION REPORT', FONT_SIZE_TITLE, false);
     this.drawCenteredTitle('FOR ICICI BANK LIMITED', FONT_SIZE_TITLE, true);
-    this.cursorY += 15;
+    this.cursorY += 35;
 
     // Report Ref & Date of Report (justified left and right across page width as shown in Image 1)
     const refNo = this.getF('iciciBbgRefNo') || this.projectCode || 'NA';
@@ -63,7 +63,7 @@ export class PDFIciciBankHlLapBbgRenderer extends PDFBankRenderer {
       color: rgb(0, 0, 0),
     });
 
-    this.cursorY += 15;
+    this.cursorY += 35;
 
     // Hardcoded heading banner just above section 1
     this.drawSectionHeader('Format for Resale / LAP / Builder (if non APF) / Balance Transfer/ Land Loan', false, true);
