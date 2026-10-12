@@ -144,14 +144,15 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
         return (
           <div style={{ backgroundColor: '#f5f5f5', padding: '16px', borderRadius: '8px' }} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <PrefillField
-                label="Ref No"
-                value={fields.iciciBbgRefNo}
-                onChange={(val: string) => handleChange('iciciBbgRefNo', val)}
-                isReadOnly={isReadOnly}
-                tooltip="Prefill from Project Case ID"
-                fallbackValue={refNoVal}
-              />
+              <Field label="Ref No">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.iciciBbgRefNo !== undefined ? fields.iciciBbgRefNo : refNoVal}
+                  onChange={e => handleChange('iciciBbgRefNo', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
               <Field label="Date">
                 <input
                   type="date"
