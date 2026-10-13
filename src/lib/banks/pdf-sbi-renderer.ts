@@ -34,6 +34,7 @@ import {
   LBL_BG,
   OPT_BG,
   LINE_HEIGHT,
+  fetchBytes,
 } from '../pdf-bank-renderer';
 
 export interface SBIFlatReportFields {
@@ -235,7 +236,8 @@ export interface SBIFlatReportFields {
   justificationLetterBody?: string;
 
   // Base inherited attachments
-  documents?: { label: string; url: string }[];
+  documentImages?: string[];
+  documentImageNames?: string[];
   locationMapImages?: string[];
   mouzaMapImages?: string[];
   sketchMapImages?: string[];
@@ -248,6 +250,15 @@ export interface SBIFlatReportFields {
 }
 
 export class PDFSBIRenderer extends PDFBankRenderer {
+  private reportFields: SBIFlatReportFields;
+  private projectCode?: string;
+
+  constructor(fields?: any, projectCode?: string) {
+    super();
+    this.reportFields = fields || {};
+    this.projectCode = projectCode;
+  }
+
   async render(): Promise<Uint8Array> {
     await this.init();
 
@@ -276,7 +287,7 @@ export class PDFSBIRenderer extends PDFBankRenderer {
   // 1. Main Questionnaire
   // ──────────────────────────────────────────────────────────────────────────
   private drawCoverAndQuestionnaire(): void {
-    const d = this.data as SBIFlatReportFields;
+    const d = this.reportFields;
 
     // Header Address
     this.cursorY = 20;
@@ -288,10 +299,9 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     ];
 
     for (const line of toLines) {
-      this.drawText(line, MARGIN_L, this.cursorY, {
-        font: this.fontBold,
-        size: FONT_SIZE_SMALL + 1,
-        color: rgb(0, 0, 0),
+      this.drawTextAt(line, MARGIN_L, this.cursorY, {
+        bold: true,
+        fontSize: FONT_SIZE_SMALL + 1,
       });
       this.cursorY += 13;
     }
@@ -303,14 +313,14 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     this.cursorY += 8;
 
     // Reference & Date Banner
-    const refNo = d.refNo || d.reportRefNo || 'SMA/08/2026/01';
+    const refNo = d.refNo || d.reportRefNo || this.projectCode || 'SMA/08/2026/01';
     const repDate = d.reportDate || d.dateOfValuation || '06.08.2026';
     const refText = `REF. NO: ${refNo}`;
     const dateText = `DATE: ${repDate}`;
 
-    this.drawText(refText, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE });
+    this.drawTextAt(refText, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     const dtW = this.fontBold.widthOfTextAtSize(dateText, FONT_SIZE);
-    this.drawText(dateText, MARGIN_L + CONTENT_W - dtW, this.cursorY, { font: this.fontBold, size: FONT_SIZE });
+    this.drawTextAt(dateText, MARGIN_L + CONTENT_W - dtW, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.cursorY += 18;
 
     // ── SECTION I. GENERAL ──
@@ -507,10 +517,10 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     const wDoc = CONTENT_W - wSl - wTitle - wVerif;
 
     // Header row
-    this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, '13.', { bold: true, align: 'center', bg: LBL_BG });
-    this.drawCell(MARGIN_L + wSl, this.cursorY, wTitle, rowH, 'Boundaries of the property', { bold: true, bg: LBL_BG });
-    this.drawCell(MARGIN_L + wSl + wTitle, this.cursorY, wVerif, rowH, 'As per Verification', { bold: true, align: 'center', bg: OPT_BG });
-    this.drawCell(MARGIN_L + wSl + wTitle + wVerif, this.cursorY, wDoc, rowH, 'As per Document', { bold: true, align: 'center', bg: OPT_BG });
+    this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, '13.', { bold: true, align: 'center', fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wSl, this.cursorY, wTitle, rowH, 'Boundaries of the property', { bold: true, fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wSl + wTitle, this.cursorY, wVerif, rowH, 'As per Verification', { bold: true, align: 'center', fillColor: OPT_BG });
+    this.drawCell(MARGIN_L + wSl + wTitle + wVerif, this.cursorY, wDoc, rowH, 'As per Document', { bold: true, align: 'center', fillColor: OPT_BG });
     this.cursorY += rowH;
 
     const rows = [
@@ -521,7 +531,7 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     ];
 
     for (const r of rows) {
-      this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, '', { bg: LBL_BG });
+      this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, '', { fillColor: LBL_BG });
       this.drawCell(MARGIN_L + wSl, this.cursorY, wTitle, rowH, r.dir, { bold: false });
       this.drawCell(MARGIN_L + wSl + wTitle, this.cursorY, wVerif, rowH, r.verif, { align: 'left' });
       this.drawCell(MARGIN_L + wSl + wTitle + wVerif, this.cursorY, wDoc, rowH, r.doc, { align: 'left' });
@@ -542,17 +552,17 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     const wAct = CONTENT_W - wSl - wTitle - wDeed;
 
     // Header 1: Letters A and B
-    this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, '14.1', { bold: true, align: 'center', bg: LBL_BG });
-    this.drawCell(MARGIN_L + wSl, this.cursorY, wTitle, rowH, 'Dimensions of the site', { bold: true, bg: LBL_BG });
-    this.drawCell(MARGIN_L + wSl + wTitle, this.cursorY, wDeed, rowH, 'A', { bold: true, align: 'center', bg: OPT_BG });
-    this.drawCell(MARGIN_L + wSl + wTitle + wDeed, this.cursorY, wAct, rowH, 'B', { bold: true, align: 'center', bg: OPT_BG });
+    this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, '14.1', { bold: true, align: 'center', fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wSl, this.cursorY, wTitle, rowH, 'Dimensions of the site', { bold: true, fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wSl + wTitle, this.cursorY, wDeed, rowH, 'A', { bold: true, align: 'center', fillColor: OPT_BG });
+    this.drawCell(MARGIN_L + wSl + wTitle + wDeed, this.cursorY, wAct, rowH, 'B', { bold: true, align: 'center', fillColor: OPT_BG });
     this.cursorY += rowH;
 
     // Header 2: Subtitles
-    this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, '', { bg: LBL_BG });
-    this.drawCell(MARGIN_L + wSl, this.cursorY, wTitle, rowH, '', { bg: LBL_BG });
-    this.drawCell(MARGIN_L + wSl + wTitle, this.cursorY, wDeed, rowH, 'As per the Deed', { bold: true, align: 'center', bg: OPT_BG });
-    this.drawCell(MARGIN_L + wSl + wTitle + wDeed, this.cursorY, wAct, rowH, 'Actual', { bold: true, align: 'center', bg: OPT_BG });
+    this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, '', { fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wSl, this.cursorY, wTitle, rowH, '', { fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wSl + wTitle, this.cursorY, wDeed, rowH, 'As per the Deed', { bold: true, align: 'center', fillColor: OPT_BG });
+    this.drawCell(MARGIN_L + wSl + wTitle + wDeed, this.cursorY, wAct, rowH, 'Actual', { bold: true, align: 'center', fillColor: OPT_BG });
     this.cursorY += rowH;
 
     const rows = [
@@ -563,7 +573,7 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     ];
 
     for (const r of rows) {
-      this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, '', { bg: LBL_BG });
+      this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, '', { fillColor: LBL_BG });
       this.drawCell(MARGIN_L + wSl, this.cursorY, wTitle, rowH, r.dir, { bold: false });
       this.drawCell(MARGIN_L + wSl + wTitle, this.cursorY, wDeed, rowH, r.deed, { align: 'left' });
       this.drawCell(MARGIN_L + wSl + wTitle + wDeed, this.cursorY, wAct, rowH, r.act, { align: 'left' });
@@ -576,7 +586,7 @@ export class PDFSBIRenderer extends PDFBankRenderer {
   // ──────────────────────────────────────────────────────────────────────────
   private drawDetailsOfValuationTable(d: SBIFlatReportFields): void {
     this.cursorY += 10;
-    this.drawText('Details of valuation', MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE + 1 });
+    this.drawTextAt('Details of valuation', MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE + 1 });
     this.cursorY += 16;
 
     const headers = ['Sl. No', 'Description', 'Area', 'Rate per unit in Rs.', 'Estimated Value in Rs'];
@@ -599,8 +609,8 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     // Total Row
     const rowH = 18;
     const totalW = colW[0] + colW[1] + colW[2] + colW[3];
-    this.drawCell(MARGIN_L, this.cursorY, totalW, rowH, 'Total', { bold: true, align: 'right', bg: LBL_BG });
-    this.drawCell(MARGIN_L + totalW, this.cursorY, colW[4], rowH, d.valTotalEstimated || 'Rs. 0.00', { bold: true, align: 'right', bg: OPT_BG });
+    this.drawCell(MARGIN_L, this.cursorY, totalW, rowH, 'Total', { bold: true, align: 'right', fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + totalW, this.cursorY, colW[4], rowH, d.valTotalEstimated || 'Rs. 0.00', { bold: true, align: 'right', fillColor: OPT_BG });
     this.cursorY += rowH + 10;
   }
 
@@ -655,13 +665,13 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     this.checkPageBreak(220);
 
     // Remarks Header
-    this.drawText('REMARKS', MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL + 1 });
+    this.drawTextAt('REMARKS', MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL + 1 });
     this.cursorY += 12;
 
     const remarks = d.remarksText || `SUBJECT PROPERTY IS A 2 BHK FLAT, HAVING SUPER BUILT UP AREA: ${d.superBuiltUpArea || 'NA'}. PROPERTY LOCATED IN A DEVELOPED RESIDENTIAL AREA. ALL CIVIC AMENITIES ARE PRESENT WITHIN 2-3 KMS FROM THE PROPERTY. VALUATION HAS BEEN DONE FOR FLAT ONLY.`;
     const rLines = this.wrapText(remarks, CONTENT_W, FONT_SIZE_SMALL);
     for (const l of rLines) {
-      this.drawText(l, MARGIN_L, this.cursorY, { font: this.fontRegular, size: FONT_SIZE_SMALL });
+      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
       this.cursorY += 11;
     }
     this.cursorY += 8;
@@ -670,7 +680,7 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     const opP = `• As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is ${d.abstractOrSayMarket || d.abstractMarketValue || 'NA'} (${d.opinionMarketValueWords || 'Rupees ...'}). The Realizable Value of the above Property is ${d.abstractOrSayRealizable || d.abstractRealizableValue || 'NA'} (${d.opinionRealizableValueWords || 'Rupees ...'}). The book value of the above property as of Land is ${d.abstractOrSayGovtLand || d.abstractGovtValueLand || 'NA'} (${d.opinionGovtLandValueWords || 'Rupees ...'}) and the distress value ${d.abstractOrSayDistress || d.abstractDistressValue || 'NA'} (${d.opinionDistressValueWords || 'Rupees ...'}).`;
     const opLines = this.wrapText(opP, CONTENT_W, FONT_SIZE_SMALL);
     for (const l of opLines) {
-      this.drawText(l, MARGIN_L, this.cursorY, { font: this.fontRegular, size: FONT_SIZE_SMALL });
+      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
       this.cursorY += 11;
     }
     this.cursorY += 24;
@@ -678,11 +688,11 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     // Signature Block 1: Approved Valuer
     const valuerSig = '(Name and Official seal of the Approved Valuer)';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE_SMALL);
-    this.drawText(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
-    this.drawText('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { font: this.fontBold, size: FONT_SIZE_SMALL });
-    this.drawText(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
+    this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 12;
-    this.drawText(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
+    this.drawTextAt(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
 
     this.cursorY += 40;
 
@@ -690,16 +700,16 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     const bmP = `The undersigned has inspected the property detailed in the Valuation Report on dated ${d.bmInspectionDate || '___________'}. We are satisfied that the fair and reasonable market value of the property is Rs.${d.bmSatisfiedValue || '___________'} (Rupees ${d.bmSatisfiedWords || '__________________________________________________'}).`;
     const bmL = this.wrapText(bmP, CONTENT_W, FONT_SIZE_SMALL);
     for (const l of bmL) {
-      this.drawText(l, MARGIN_L, this.cursorY, { font: this.fontRegular, size: FONT_SIZE_SMALL });
+      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
       this.cursorY += 11;
     }
     this.cursorY += 20;
 
     const bmSig = '(Name of the Branch Manager with Official seal)';
     const bmSigW = this.fontBold.widthOfTextAtSize(bmSig, FONT_SIZE_SMALL);
-    this.drawText(`Date: ${d.bmSignatureDate || '__________'}`, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
-    this.drawText('Signature', MARGIN_L + CONTENT_W - bmSigW, this.cursorY - 14, { font: this.fontBold, size: FONT_SIZE_SMALL });
-    this.drawText(bmSig, MARGIN_L + CONTENT_W - bmSigW, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
+    this.drawTextAt(`Date: ${d.bmSignatureDate || '__________'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt('Signature', MARGIN_L + CONTENT_W - bmSigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(bmSig, MARGIN_L + CONTENT_W - bmSigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 30;
   }
 
@@ -707,7 +717,7 @@ export class PDFSBIRenderer extends PDFBankRenderer {
   // 2. Declaration from Valuers (Clauses a to z)
   // ──────────────────────────────────────────────────────────────────────────
   private drawValuerDeclaration(): void {
-    const d = this.data as SBIFlatReportFields;
+    const d = this.reportFields;
     this.addPage();
     this.cursorY = 20;
 
@@ -717,7 +727,7 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     const vName = d.valuerName || 'Mr. Satyajit Mohanty';
     const vFather = d.valuerFatherName || 'Mr. Nityananda Mohanty';
     const intro = `I ${vName}, S/o: ${vFather} do hereby solemnly affirm and state that:`;
-    this.drawText(intro, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
+    this.drawTextAt(intro, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 16;
 
     const panNo = d.valuerPan || 'AONPM6997B';
@@ -763,10 +773,10 @@ export class PDFSBIRenderer extends PDFBankRenderer {
 
     // Col 1
     for (const c of col1) {
-      this.drawText(c.id, MARGIN_L, y1, { font: this.fontBold, size: FONT_SIZE_CAPTION });
+      this.drawTextAt(c.id, MARGIN_L, y1, { bold: true, fontSize: FONT_SIZE_CAPTION });
       const lines = this.wrapText(c.text, colW - 14, FONT_SIZE_CAPTION);
       for (const l of lines) {
-        this.drawText(l, MARGIN_L + 14, y1, { font: this.fontRegular, size: FONT_SIZE_CAPTION });
+        this.drawTextAt(l, MARGIN_L + 14, y1, { fontSize: FONT_SIZE_CAPTION });
         y1 += 9.5;
       }
       y1 += 4;
@@ -776,10 +786,10 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     let y2 = startY;
     const col2X = MARGIN_L + colW + 20;
     for (const c of col2) {
-      this.drawText(c.id, col2X, y2, { font: this.fontBold, size: FONT_SIZE_CAPTION });
+      this.drawTextAt(c.id, col2X, y2, { bold: true, fontSize: FONT_SIZE_CAPTION });
       const lines = this.wrapText(c.text, colW - 14, FONT_SIZE_CAPTION);
       for (const l of lines) {
-        this.drawText(l, col2X + 14, y2, { font: this.fontRegular, size: FONT_SIZE_CAPTION });
+        this.drawTextAt(l, col2X + 14, y2, { fontSize: FONT_SIZE_CAPTION });
         y2 += 9.5;
       }
       y2 += 4;
@@ -790,18 +800,18 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     // Valuer Sign-off
     const valuerSig = '(Name and Official seal of the Approved Valuer)';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE_SMALL);
-    this.drawText(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
-    this.drawText('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { font: this.fontBold, size: FONT_SIZE_SMALL });
-    this.drawText(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
+    this.drawTextAt(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 12;
-    this.drawText(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
+    this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
   }
 
   // ──────────────────────────────────────────────────────────────────────────
   // 3. Particulars / Valuers Comment (11-point matrix)
   // ──────────────────────────────────────────────────────────────────────────
   private drawParticularsMatrix(): void {
-    const d = this.data as SBIFlatReportFields;
+    const d = this.reportFields;
     this.addPage();
     this.cursorY = 20;
 
@@ -849,7 +859,7 @@ export class PDFSBIRenderer extends PDFBankRenderer {
   // 4. Model Code of Conduct for Valuers (Clauses 1 to 30)
   // ──────────────────────────────────────────────────────────────────────────
   private drawCodeOfConduct(): void {
-    const d = this.data as SBIFlatReportFields;
+    const d = this.reportFields;
     this.addPage();
     this.cursorY = 20;
 
@@ -859,7 +869,7 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     this.cursorY += 10;
 
     const sub = 'All Valuers empanelled with bank shall strictly adhere to the following code of conduct:';
-    this.drawText(sub, MARGIN_L, this.cursorY, { font: this.fontRegular, size: FONT_SIZE_CAPTION });
+    this.drawTextAt(sub, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += 12;
 
     const colW = (CONTENT_W - 20) / 2;
@@ -946,13 +956,13 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     // Render Col 1
     for (const sec of col1Sections) {
       if (sec.header) {
-        this.drawText(sec.header, MARGIN_L, y1, { font: this.fontBold, size: FONT_SIZE_CAPTION + 0.5 });
+        this.drawTextAt(sec.header, MARGIN_L, y1, { bold: true, fontSize: FONT_SIZE_CAPTION + 0.5 });
         y1 += 12;
       }
       for (const it of sec.items) {
         const lines = this.wrapText(it, colW, FONT_SIZE_CAPTION);
         for (const l of lines) {
-          this.drawText(l, MARGIN_L, y1, { font: this.fontRegular, size: FONT_SIZE_CAPTION });
+          this.drawTextAt(l, MARGIN_L, y1, { fontSize: FONT_SIZE_CAPTION });
           y1 += 9.5;
         }
         y1 += 4;
@@ -965,13 +975,13 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     const col2X = MARGIN_L + colW + 20;
     for (const sec of col2Sections) {
       if (sec.header) {
-        this.drawText(sec.header, col2X, y2, { font: this.fontBold, size: FONT_SIZE_CAPTION + 0.5 });
+        this.drawTextAt(sec.header, col2X, y2, { bold: true, fontSize: FONT_SIZE_CAPTION + 0.5 });
         y2 += 12;
       }
       for (const it of sec.items) {
         const lines = this.wrapText(it, colW, FONT_SIZE_CAPTION);
         for (const l of lines) {
-          this.drawText(l, col2X, y2, { font: this.fontRegular, size: FONT_SIZE_CAPTION });
+          this.drawTextAt(l, col2X, y2, { fontSize: FONT_SIZE_CAPTION });
           y2 += 9.5;
         }
         y2 += 4;
@@ -984,18 +994,18 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     // Sign off
     const valuerSig = 'Signature of the Approved Valuer and Seal';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE_SMALL);
-    this.drawText(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
-    this.drawText('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { font: this.fontBold, size: FONT_SIZE_SMALL });
-    this.drawText(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
+    this.drawTextAt(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 12;
-    this.drawText(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL });
+    this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
   }
 
   // ──────────────────────────────────────────────────────────────────────────
   // 5. Justification of Valuation Report Letter
   // ──────────────────────────────────────────────────────────────────────────
   private drawJustificationLetter(): void {
-    const d = this.data as SBIFlatReportFields;
+    const d = this.reportFields;
     this.addPage();
     this.cursorY = 25;
 
@@ -1007,23 +1017,23 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     ];
 
     for (const line of toLines) {
-      this.drawText(line, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE_SMALL + 1 });
+      this.drawTextAt(line, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL + 1 });
       this.cursorY += 14;
     }
 
     this.cursorY += 14;
 
     const sub = d.justificationLetterSubject || `Sub: - Justification of valuation Report of ${d.ownerNameAndAddress ? d.ownerNameAndAddress.split(',')[0] : 'Borrower'}.`;
-    this.drawText(sub, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE });
+    this.drawTextAt(sub, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.cursorY += 22;
 
-    this.drawText('Dear Sir,', MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE });
+    this.drawTextAt('Dear Sir,', MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.cursorY += 18;
 
     const bodyP1 = `The subject property bearing ${d.propertyDescription || 'Khata No: ... Plot No: ...'} having Super Built up Area: ${d.superBuiltUpArea || 'NA'} in Mouza: ${d.tsNoVillage || 'NA'}, Ts: Bhubaneswar, Dist-Khurda, Odisha.`;
     const p1Lines = this.wrapText(bodyP1, CONTENT_W, FONT_SIZE);
     for (const l of p1Lines) {
-      this.drawText(l, MARGIN_L, this.cursorY, { font: this.fontRegular, size: FONT_SIZE });
+      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE });
       this.cursorY += 16;
     }
     this.cursorY += 12;
@@ -1033,7 +1043,7 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     for (const p of p2Paragraphs) {
       const lines = this.wrapText(p, CONTENT_W, FONT_SIZE);
       for (const l of lines) {
-        this.drawText(l, MARGIN_L, this.cursorY, { font: this.fontRegular, size: FONT_SIZE });
+        this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE });
         this.cursorY += 16;
       }
       this.cursorY += 10;
@@ -1044,18 +1054,18 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     // Bottom Sign-off
     const valuerSig = 'Er. Satyajit Mohanty';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE);
-    this.drawText(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE });
-    this.drawText('Valuer', MARGIN_L + CONTENT_W - sigW, this.cursorY - 20, { font: this.fontBold, size: FONT_SIZE });
-    this.drawText(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { font: this.fontBold, size: FONT_SIZE });
+    this.drawTextAt(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt('Valuer', MARGIN_L + CONTENT_W - sigW, this.cursorY - 20, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.cursorY += 14;
-    this.drawText(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { font: this.fontBold, size: FONT_SIZE });
+    this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
   }
 
   // ──────────────────────────────────────────────────────────────────────────
   // 6. Inherited Enclosures: Photographs, Maps, Documents
   // ──────────────────────────────────────────────────────────────────────────
   private async drawEnclosures(): Promise<void> {
-    const d = this.data as SBIFlatReportFields;
+    const d = this.reportFields;
 
     // Property Photographs
     if (d.propertyImages && d.propertyImages.length > 0) {
@@ -1072,11 +1082,11 @@ export class PDFSBIRenderer extends PDFBankRenderer {
       for (let i = 0; i < imgs.length; i += 2) {
         this.checkPageBreak(imgH + 30);
         await this.drawImageSafely(imgs[i], MARGIN_L, this.cursorY, imgW, imgH);
-        this.drawText(names[i] || `Photo ${i + 1}`, MARGIN_L, this.cursorY + imgH + 10, { font: this.fontRegular, size: FONT_SIZE_CAPTION });
+        this.drawTextAt(names[i] || `Photo ${i + 1}`, MARGIN_L, this.cursorY + imgH + 10, { fontSize: FONT_SIZE_CAPTION });
 
         if (i + 1 < imgs.length) {
           await this.drawImageSafely(imgs[i + 1], MARGIN_L + imgW + 20, this.cursorY, imgW, imgH);
-          this.drawText(names[i + 1] || `Photo ${i + 2}`, MARGIN_L + imgW + 20, this.cursorY + imgH + 10, { font: this.fontRegular, size: FONT_SIZE_CAPTION });
+          this.drawTextAt(names[i + 1] || `Photo ${i + 2}`, MARGIN_L + imgW + 20, this.cursorY + imgH + 10, { fontSize: FONT_SIZE_CAPTION });
         }
 
         this.cursorY += imgH + 25;
@@ -1107,14 +1117,16 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     }
 
     // Legal Documents (Sale Deed, ROR, etc.)
-    if (d.documents && d.documents.length > 0) {
-      for (const doc of d.documents) {
-        if (doc.url) {
+    if (d.documentImages && d.documentImages.length > 0) {
+      for (let i = 0; i < d.documentImages.length; i++) {
+        const url = d.documentImages[i];
+        const label = (d.documentImageNames && d.documentImageNames[i]) || 'DOCUMENT ATTACHMENT';
+        if (url) {
           this.addPage();
           this.cursorY = 20;
-          this.drawCenteredTitle(doc.label || 'DOCUMENT ATTACHMENT', FONT_SIZE_HEADER);
+          this.drawCenteredTitle(label, FONT_SIZE_HEADER);
           this.cursorY += 16;
-          await this.drawImageSafely(doc.url, MARGIN_L, this.cursorY, CONTENT_W, 600);
+          await this.drawImageSafely(url, MARGIN_L, this.cursorY, CONTENT_W, 600);
           this.cursorY += 610;
         }
       }
@@ -1127,8 +1139,8 @@ export class PDFSBIRenderer extends PDFBankRenderer {
   private drawSectionHeaderRow(roman: string, title: string): void {
     const rowH = 18;
     this.checkPageBreak(rowH + 20);
-    this.drawCell(MARGIN_L, this.cursorY, 24, rowH, roman, { bold: true, align: 'center', bg: LBL_BG });
-    this.drawCell(MARGIN_L + 24, this.cursorY, CONTENT_W - 24, rowH, title, { bold: true, bg: LBL_BG });
+    this.drawCell(MARGIN_L, this.cursorY, 24, rowH, roman, { bold: true, align: 'center', fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + 24, this.cursorY, CONTENT_W - 24, rowH, title, { bold: true, fillColor: LBL_BG });
     this.cursorY += rowH;
   }
 
@@ -1144,8 +1156,8 @@ export class PDFSBIRenderer extends PDFBankRenderer {
 
     this.checkPageBreak(rowH);
 
-    this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, slNo, { bold: true, align: 'center', bg: LBL_BG });
-    this.drawCell(MARGIN_L + wSl, this.cursorY, wLbl, rowH, label, { bold: false, bg: LBL_BG });
+    this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, slNo, { bold: true, align: 'center', fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wSl, this.cursorY, wLbl, rowH, label, { bold: false, fillColor: LBL_BG });
     this.drawCell(MARGIN_L + wSl + wLbl, this.cursorY, wVal, rowH, value || 'NA', { bold: false });
 
     this.cursorY += rowH;
@@ -1163,9 +1175,9 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     if (mainLabel) {
       const rowH = 18;
       this.checkPageBreak(rowH);
-      this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, slNo, { bold: true, align: 'center', bg: LBL_BG });
-      this.drawCell(MARGIN_L + wSl, this.cursorY, wLbl, rowH, mainLabel, { bold: true, bg: LBL_BG });
-      this.drawCell(MARGIN_L + wSl + wLbl, this.cursorY, wVal, rowH, '', { bg: LBL_BG });
+      this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, slNo, { bold: true, align: 'center', fillColor: LBL_BG });
+      this.drawCell(MARGIN_L + wSl, this.cursorY, wLbl, rowH, mainLabel, { bold: true, fillColor: LBL_BG });
+      this.drawCell(MARGIN_L + wSl + wLbl, this.cursorY, wVal, rowH, '', { fillColor: LBL_BG });
       this.cursorY += rowH;
     }
 
@@ -1179,8 +1191,8 @@ export class PDFSBIRenderer extends PDFBankRenderer {
       this.checkPageBreak(rowH);
 
       const slText = !mainLabel && i === 0 ? slNo : '';
-      this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, slText, { bold: true, align: 'center', bg: LBL_BG });
-      this.drawCell(MARGIN_L + wSl, this.cursorY, wLbl, rowH, it.label, { bold: false, bg: LBL_BG });
+      this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, slText, { bold: true, align: 'center', fillColor: LBL_BG });
+      this.drawCell(MARGIN_L + wSl, this.cursorY, wLbl, rowH, it.label, { bold: false, fillColor: LBL_BG });
       this.drawCell(MARGIN_L + wSl + wLbl, this.cursorY, wVal, rowH, it.value || 'NA', { bold: false });
 
       this.cursorY += rowH;
@@ -1190,7 +1202,9 @@ export class PDFSBIRenderer extends PDFBankRenderer {
   private async drawImageSafely(url: string, x: number, y: number, w: number, h: number): Promise<void> {
     try {
       if (!url) return;
-      const img = await this.embedImageFromUrl(url);
+      const bytes = await fetchBytes(url);
+      if (!bytes || bytes.length === 0) return;
+      const img = await this.embedImgSafe(bytes);
       if (img) {
         this.page.drawImage(img, {
           x,

@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
@@ -25,44 +27,59 @@ export const SBI_CONFIG: BankConfig = {
   },
 };
 
+export interface SBIProps extends BankReportBuilderProps {
+  initialData?: any;
+  isReadOnly?: boolean;
+}
+
 export default function StateBankOfIndia({
-  project,
-  prefill,
-  user,
-  onSave,
-  saving,
-  onDownloadPdf,
-  generatingPdf,
-  isReadOnly = false,
-}: BankReportBuilderProps) {
-  // ── Initial State with Pure Project Prefill (No Dummy Hardcoded Strings) ──
+  projectId,
+  projectCode,
+  initialFields: rawInitialFields,
+  initialData,
+  status,
+  userRole = 'field_engineer',
+  isReadOnly: isReadOnlyProp = false,
+  bucketImages = [],
+  prefill = {},
+  config,
+  onResetWizard,
+}: SBIProps) {
+  const router = useRouter();
+  const isReadOnly = isReadOnlyProp || status === 'COMPLETED';
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // ── Initial State with Pure Project Prefill ──
   const initialFields = useMemo(() => {
-    const saved = project?.reportData || {};
+    const saved = rawInitialFields || initialData?.reportData || {};
+    const pf = (prefill || {}) as any;
+
     return {
       // Header Address
       toAuthority: saved.toAuthority !== undefined ? saved.toAuthority : 'THE ASST. GENERAL MANAGER,',
       bankName: saved.bankName !== undefined ? saved.bankName : 'STATE BANK OF INDIA,',
       rboOffice: saved.rboOffice !== undefined ? saved.rboOffice : 'RBO, PURI, DIST: PURI, ODISHA',
-      refNo: saved.refNo !== undefined ? saved.refNo : (project?.projectCode || ''),
-      reportDate: saved.reportDate !== undefined ? saved.reportDate : (prefill?.reportDate || ''),
+      refNo: saved.refNo !== undefined ? saved.refNo : (projectCode || projectId || ''),
+      reportDate: saved.reportDate !== undefined ? saved.reportDate : (pf.reportDate || ''),
 
       // I. GENERAL
-      purposeOfValuation: saved.purposeOfValuation !== undefined ? saved.purposeOfValuation : 'To assess the present Market Value of the Property for Loan purpose',
-      inspectionDate: saved.inspectionDate !== undefined ? saved.inspectionDate : (prefill?.fieldVisitDate || prefill?.dateOfInspection || ''),
-      valuationDate: saved.valuationDate !== undefined ? saved.valuationDate : (prefill?.reportDate || ''),
+      purposeOfValuation: saved.purposeOfValuation !== undefined ? saved.purposeOfValuation : (pf.purpose || 'To assess the present Market Value of the Property for Loan purpose'),
+      inspectionDate: saved.inspectionDate !== undefined ? saved.inspectionDate : (pf.fieldVisitDate || pf.dateOfInspection || ''),
+      valuationDate: saved.valuationDate !== undefined ? saved.valuationDate : (pf.reportDate || ''),
       doc1: saved.doc1 !== undefined ? saved.doc1 : 'Sale Deed',
       doc2: saved.doc2 !== undefined ? saved.doc2 : '',
       doc3: saved.doc3 !== undefined ? saved.doc3 : '',
-      ownerNameAndAddress: saved.ownerNameAndAddress !== undefined ? saved.ownerNameAndAddress : (prefill?.contactName ? `${prefill.contactName}, At: ${prefill.propertyAddress || ''}` : ''),
-      propertyDescription: saved.propertyDescription !== undefined ? saved.propertyDescription : (prefill?.propertyAddress || ''),
+      ownerNameAndAddress: saved.ownerNameAndAddress !== undefined ? saved.ownerNameAndAddress : (pf.contactName ? `${pf.contactName}, At: ${pf.propertyAddress || ''}` : ''),
+      propertyDescription: saved.propertyDescription !== undefined ? saved.propertyDescription : (pf.propertyAddress || ''),
 
       // Location of property
       plotNo: saved.plotNo !== undefined ? saved.plotNo : '',
       doorNo: saved.doorNo !== undefined ? saved.doorNo : '',
-      tsNoVillage: saved.tsNoVillage !== undefined ? saved.tsNoVillage : (prefill?.serviceRequest?.city || ''),
-      wardTaluka: saved.wardTaluka !== undefined ? saved.wardTaluka : (prefill?.serviceRequest?.city || ''),
+      tsNoVillage: saved.tsNoVillage !== undefined ? saved.tsNoVillage : (pf.serviceRequest?.city || ''),
+      wardTaluka: saved.wardTaluka !== undefined ? saved.wardTaluka : (pf.serviceRequest?.city || ''),
       mandalDistrict: saved.mandalDistrict !== undefined ? saved.mandalDistrict : 'Khurda, Odisha',
-      postalAddress: saved.postalAddress !== undefined ? saved.postalAddress : (prefill?.propertyAddress || ''),
+      postalAddress: saved.postalAddress !== undefined ? saved.postalAddress : (pf.propertyAddress || ''),
 
       cityTown: saved.cityTown !== undefined ? saved.cityTown : 'City',
       residentialArea: saved.residentialArea !== undefined ? saved.residentialArea : 'Residential Area',
@@ -95,8 +112,8 @@ export default function StateBankOfIndia({
       dimensionSouthActual: saved.dimensionSouthActual !== undefined ? saved.dimensionSouthActual : '',
 
       // Coordinates
-      latitude: saved.latitude !== undefined ? saved.latitude : (prefill?.latitude || ''),
-      longitude: saved.longitude !== undefined ? saved.longitude : (prefill?.longitude || ''),
+      latitude: saved.latitude !== undefined ? saved.latitude : (pf.latitude || ''),
+      longitude: saved.longitude !== undefined ? saved.longitude : (pf.longitude || ''),
       coordinatesText: saved.coordinatesText !== undefined ? saved.coordinatesText : '',
 
       extentOfProjectSite: saved.extentOfProjectSite !== undefined ? saved.extentOfProjectSite : '',
@@ -145,7 +162,7 @@ export default function StateBankOfIndia({
       electricityConnectionNo: saved.electricityConnectionNo !== undefined ? saved.electricityConnectionNo : 'Not Verified',
       meterCardName: saved.meterCardName !== undefined ? saved.meterCardName : 'Not Verified',
       flatMaintenanceCondition: saved.flatMaintenanceCondition !== undefined ? saved.flatMaintenanceCondition : 'Good',
-      saleDeedExecutedName: saved.saleDeedExecutedName !== undefined ? saved.saleDeedExecutedName : (prefill?.contactName || ''),
+      saleDeedExecutedName: saved.saleDeedExecutedName !== undefined ? saved.saleDeedExecutedName : (pf.contactName || ''),
       undividedLandArea: saved.undividedLandArea !== undefined ? saved.undividedLandArea : '',
       superBuiltUpArea: saved.superBuiltUpArea !== undefined ? saved.superBuiltUpArea : '',
       floorSpaceIndex: saved.floorSpaceIndex !== undefined ? saved.floorSpaceIndex : 'As per approval plan',
@@ -212,14 +229,15 @@ export default function StateBankOfIndia({
       opinionGovtLandValueWords: saved.opinionGovtLandValueWords !== undefined ? saved.opinionGovtLandValueWords : '',
       opinionDistressValueWords: saved.opinionDistressValueWords !== undefined ? saved.opinionDistressValueWords : '',
 
-      valuerName: saved.valuerName !== undefined ? saved.valuerName : (user?.name || 'Mr. Satyajit Mohanty'),
+      valuerName: saved.valuerName !== undefined ? saved.valuerName : 'Mr. Satyajit Mohanty',
       valuerFatherName: saved.valuerFatherName !== undefined ? saved.valuerFatherName : 'Mr. Nityananda Mohanty',
       valuerPan: saved.valuerPan !== undefined ? saved.valuerPan : 'AONPM6997B',
       signaturePlace: saved.signaturePlace !== undefined ? saved.signaturePlace : 'Bhubaneswar',
-      signatureDate: saved.signatureDate !== undefined ? saved.signatureDate : (prefill?.reportDate || ''),
+      signatureDate: saved.signatureDate !== undefined ? saved.signatureDate : (pf.reportDate || ''),
 
       // Enclosures
-      documents: saved.documents || [],
+      documentImages: saved.documentImages || [],
+      documentImageNames: saved.documentImageNames || [],
       locationMapImages: saved.locationMapImages || [],
       mouzaMapImages: saved.mouzaMapImages || [],
       sketchMapImages: saved.sketchMapImages || [],
@@ -228,7 +246,7 @@ export default function StateBankOfIndia({
       propertyImages: saved.propertyImages || [],
       propertyImageNames: saved.propertyImageNames || [],
     };
-  }, [project, prefill, user]);
+  }, [rawInitialFields, initialData, projectCode, projectId, prefill]);
 
   const [fields, setFields] = useState<any>(initialFields);
 
@@ -288,9 +306,36 @@ export default function StateBankOfIndia({
     fields.abstractDistressPct,
   ]);
 
-  const handleSaveInternal = () => {
-    if (onSave) {
-      onSave(fields);
+  const handleSaveInternal = async () => {
+    if (!projectId || isReadOnly) return;
+    setSaving(true);
+    try {
+      await saveReportDraft(projectId, {
+        reportData: fields,
+      });
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    } catch (e) {
+      console.error('Failed to save report draft', e);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDownloadPdfInternal = async () => {
+    try {
+      const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-renderer');
+      const renderer = new PDFSBIRenderer(fields, projectCode);
+      const pdfBytes = await renderer.render();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `SBI_Valuation_${projectCode || projectId}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Error generating SBI PDF:', e);
     }
   };
 
@@ -315,18 +360,15 @@ export default function StateBankOfIndia({
             disabled={saving || isReadOnly}
             className="px-5 py-2.5 rounded-xl bg-slate-900 text-white font-medium text-sm hover:bg-slate-800 disabled:opacity-50 transition-all cursor-pointer shadow-xs"
           >
-            {saving ? 'Saving...' : 'Save Draft'}
+            {saving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Draft'}
           </button>
-          {onDownloadPdf && (
-            <button
-              type="button"
-              onClick={() => onDownloadPdf()}
-              disabled={generatingPdf}
-              className="px-5 py-2.5 rounded-xl bg-accent-600 text-white font-medium text-sm hover:bg-accent-700 disabled:opacity-50 transition-all cursor-pointer shadow-xs flex items-center gap-2"
-            >
-              {generatingPdf ? 'Generating PDF...' : 'Download PDF'}
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={handleDownloadPdfInternal}
+            className="px-5 py-2.5 rounded-xl bg-accent-600 text-white font-medium text-sm hover:bg-accent-700 disabled:opacity-50 transition-all cursor-pointer shadow-xs flex items-center gap-2"
+          >
+            Download PDF
+          </button>
         </div>
       </div>
 
@@ -1136,12 +1178,10 @@ export default function StateBankOfIndia({
       {/* ── Section 6: Base Documents (Inherited Directly) ── */}
       <BaseDocumentsSection
         title="Documents"
-        documents={fields.documents || []}
+        documentImages={fields.documentImages || []}
+        documentImageNames={fields.documentImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        onDocumentUpload={() => {}}
-        onDocumentRemove={() => {}}
-        onDocumentLabelChange={() => {}}
         sectionNumber={6}
         sectionId="section-documents"
       />
@@ -1160,21 +1200,6 @@ export default function StateBankOfIndia({
         propertyAddress={fields.propertyDescription || ''}
         isReadOnly={isReadOnly}
         uploading={false}
-        onLocationMapUpload={() => {}}
-        onLocationMapRemove={() => {}}
-        onMouzaMapUpload={() => {}}
-        onMouzaMapRemove={() => {}}
-        onSketchMapUpload={() => {}}
-        onSketchMapRemove={() => {}}
-        onCadastralMapUpload={() => {}}
-        onCadastralMapRemove={() => {}}
-        onBdaMapUpload={() => {}}
-        onBdaMapRemove={() => {}}
-        onReorderLocationMap={() => {}}
-        onReorderMouzaMap={() => {}}
-        onReorderSketchMap={() => {}}
-        onReorderCadastralMap={() => {}}
-        onReorderBdaMap={() => {}}
         sectionNumber={7}
         sectionId="section-maps"
       />
@@ -1186,10 +1211,6 @@ export default function StateBankOfIndia({
         propertyImageNames={fields.propertyImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        onImageUpload={() => {}}
-        onImageRemove={() => {}}
-        onImageNameChange={() => {}}
-        onReorderImages={() => {}}
         sectionNumber={8}
         sectionId="section-photographs"
       />
