@@ -123,10 +123,7 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'ICICI BANK::NPA': dynamic(() => import('./banks/icici/ICICIBankNPA')),
   'ICICI BANK': dynamic(() => import('./banks/icici/ICICIBankHLLAPBBG')),
 
-  // IDBI, IDFC, IKF, Indian, IndusInd, ISFC, Jana
-  'IDBI BANK::ABOVE 5CR': dynamic(() => import('./banks/idbi/IDBIBankAbove5CR')),
-  'IDBI BANK::BELOW 5CR': dynamic(() => import('./banks/idbi/IDBIBankBelow5CR')),
-  'IDBI BANK': dynamic(() => import('./banks/idbi/IDBIBankAbove5CR')),
+  // IDFC, IKF, Indian, IndusInd, ISFC, Jana
   'IDFC FIRST BANK': dynamic(() => import('./banks/idfc/IDFCFirstBank')),
   'IKF FINANCE': dynamic(() => import('./banks/ikf/IKFFinance')),
   'INDIAN BANK': dynamic(() => import('./banks/indian-bank/IndianBank')),
