@@ -201,27 +201,39 @@ export default function StateBankOfIndiaBelow5CR({
     setFields((prev: any) => ({ ...prev, [key]: value }));
   };
 
+  // Helper to parse numeric inputs supporting decimals and currency signs safely
+  const parseNum = (val: any): number => {
+    if (val === undefined || val === null || val === '') return 0;
+    const str = String(val).replace(/,/g, '').replace(/[^0-9.-]/g, '');
+    const n = parseFloat(str);
+    return isNaN(n) ? 0 : n;
+  };
+
+  // Helper to parse percentage where empty/null defaults to 100%, and '0' is 0%
+  const parsePct = (val: any, fallback = 100): number => {
+    if (val === undefined || val === null || String(val).trim() === '') return fallback;
+    const n = parseFloat(String(val).replace(/[^0-9.]/g, ''));
+    return isNaN(n) ? fallback : Math.min(100, Math.max(0, n));
+  };
+
   // ── Auto-Calculate Valuation Computations & Totals ──
   useEffect(() => {
-    const area = parseFloat(String(fields.plinthAreaVal).replace(/[^0-9.]/g, '')) || 0;
-    const rate = parseFloat(String(fields.replacementRateVal).replace(/[^0-9.]/g, '')) || 0;
-    const dep = parseFloat(String(fields.depreciationVal).replace(/[^0-9.]/g, '')) || 0;
+    const area = parseNum(fields.plinthAreaVal);
+    const rate = parseNum(fields.replacementRateVal);
+    const dep = parseNum(fields.depreciationVal);
 
-    const bldgCost = Math.round(area * rate);
-    const bldgNet = Math.max(0, bldgCost - dep);
+    const bldgCost = Math.round(area * rate * 100) / 100;
+    const bldgNet = Math.max(0, Math.round((bldgCost - dep) * 100) / 100);
 
-    const landMarket = parseFloat(String(fields.abstractMarketLand).replace(/[^0-9.]/g, '')) || 0;
-    const landGovt = parseFloat(String(fields.abstractGovtLand).replace(/[^0-9.]/g, '')) || 0;
+    const landMarket = parseNum(fields.abstractMarketLand);
+    const landGovt = parseNum(fields.abstractGovtLand);
 
-    const totalMarket = landMarket + bldgNet;
-    const totalGovt = landGovt;
+    const totalMarket = Math.round((landMarket + bldgNet) * 100) / 100;
+    const totalGovt = Math.round(landGovt * 100) / 100;
 
     // Realizable & Distress percentages (Fallback to 100% if empty, or 0% if '0')
-    const rPctStr = fields.abstractRealizablePct;
-    const rPct = (rPctStr === '' || rPctStr === null || rPctStr === undefined) ? 100 : (parseFloat(rPctStr) || 0);
-
-    const dPctStr = fields.abstractDistressPct;
-    const dPct = (dPctStr === '' || dPctStr === null || dPctStr === undefined) ? 100 : (parseFloat(dPctStr) || 0);
+    const rPct = parsePct(fields.abstractRealizablePct, 100);
+    const dPct = parsePct(fields.abstractDistressPct, 100);
 
     const realLand = Math.round((landMarket * rPct) / 100);
     const realBldg = Math.round((bldgNet * rPct) / 100);
@@ -240,10 +252,10 @@ export default function StateBankOfIndiaBelow5CR({
       abstractGovtTotal: totalGovt > 0 ? `Rs. ${formatIndianCurrency(totalGovt)}` : '',
       abstractRealizableTotal: totalReal > 0 ? `Rs. ${formatIndianCurrency(totalReal)}` : '',
       abstractDistressTotal: totalDist > 0 ? `Rs. ${formatIndianCurrency(totalDist)}` : '',
-      opinionMarketWords: totalMarket > 0 ? rupeesInWords(totalMarket) : '',
-      opinionRealizableWords: totalReal > 0 ? rupeesInWords(totalReal) : '',
-      opinionGovtLandWords: totalGovt > 0 ? rupeesInWords(totalGovt) : '',
-      opinionDistressWords: totalDist > 0 ? rupeesInWords(totalDist) : '',
+      opinionMarketWords: totalMarket > 0 ? rupeesInWords(Math.round(totalMarket)) : '',
+      opinionRealizableWords: totalReal > 0 ? rupeesInWords(Math.round(totalReal)) : '',
+      opinionGovtLandWords: totalGovt > 0 ? rupeesInWords(Math.round(totalGovt)) : '',
+      opinionDistressWords: totalDist > 0 ? rupeesInWords(Math.round(totalDist)) : '',
     }));
   }, [
     fields.plinthAreaVal,

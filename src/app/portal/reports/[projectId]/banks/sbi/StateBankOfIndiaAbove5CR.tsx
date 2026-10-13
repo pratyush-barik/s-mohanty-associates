@@ -254,34 +254,46 @@ export default function StateBankOfIndia({
     setFields((prev: any) => ({ ...prev, [key]: value }));
   };
 
+  // Helper to parse numeric inputs supporting decimals and currency signs safely
+  const parseNum = (val: any): number => {
+    if (val === undefined || val === null || val === '') return 0;
+    const str = String(val).replace(/,/g, '').replace(/[^0-9.-]/g, '');
+    const n = parseFloat(str);
+    return isNaN(n) ? 0 : n;
+  };
+
+  // Helper to parse percentage where empty/null defaults to 100%, and '0' is 0%
+  const parsePct = (val: any, fallback = 100): number => {
+    if (val === undefined || val === null || String(val).trim() === '') return fallback;
+    const n = parseFloat(String(val).replace(/[^0-9.]/g, ''));
+    return isNaN(n) ? fallback : Math.min(100, Math.max(0, n));
+  };
+
   // ── Auto-Calculate Composite Rates & Valuation Totals ──
   useEffect(() => {
-    const sba = parseFloat(String(fields.superBuiltUpArea).replace(/[^0-9.]/g, '')) || 0;
-    const bldgRate = parseFloat(String(fields.finalDepreciatedBuildingRate).replace(/[^0-9.]/g, '')) || 0;
-    const landRate = parseFloat(String(fields.finalRateLandOther).replace(/[^0-9.]/g, '')) || 0;
+    const sba = parseNum(fields.superBuiltUpArea);
+    const bldgRate = parseNum(fields.finalDepreciatedBuildingRate);
+    const landRate = parseNum(fields.finalRateLandOther);
 
-    const compRate = bldgRate + landRate;
-    const flatVal = Math.round(sba * (compRate > 0 ? compRate : (parseFloat(String(fields.finalTotalCompositeRate).replace(/[^0-9.]/g, '')) || 0)));
+    const compRate = Math.round((bldgRate + landRate) * 100) / 100;
+    const flatVal = Math.round(sba * (compRate > 0 ? compRate : parseNum(fields.finalTotalCompositeRate)));
 
     const extraTotal =
-      (parseFloat(String(fields.valCarParking).replace(/[^0-9.]/g, '')) || 0) +
-      (parseFloat(String(fields.valWardrobes).replace(/[^0-9.]/g, '')) || 0) +
-      (parseFloat(String(fields.valModularKitchen).replace(/[^0-9.]/g, '')) || 0) +
-      (parseFloat(String(fields.valCupboard).replace(/[^0-9.]/g, '')) || 0) +
-      (parseFloat(String(fields.valInteriorDecorations).replace(/[^0-9.]/g, '')) || 0) +
-      (parseFloat(String(fields.valElectricityDeposits).replace(/[^0-9.]/g, '')) || 0) +
-      (parseFloat(String(fields.valExtraGrillCollapsible).replace(/[^0-9.]/g, '')) || 0) +
-      (parseFloat(String(fields.valPotentialValue).replace(/[^0-9.]/g, '')) || 0) +
-      (parseFloat(String(fields.valOthers).replace(/[^0-9.]/g, '')) || 0);
+      parseNum(fields.valCarParking) +
+      parseNum(fields.valWardrobes) +
+      parseNum(fields.valModularKitchen) +
+      parseNum(fields.valCupboard) +
+      parseNum(fields.valInteriorDecorations) +
+      parseNum(fields.valElectricityDeposits) +
+      parseNum(fields.valExtraGrillCollapsible) +
+      parseNum(fields.valPotentialValue) +
+      parseNum(fields.valOthers);
 
     const totalEst = flatVal + extraTotal;
 
     // Realizable & Distress percentages (Nullable fallback to 100% if empty, or 0% if '0')
-    const rPctStr = fields.abstractRealizablePct;
-    const rPct = (rPctStr === '' || rPctStr === null || rPctStr === undefined) ? 100 : (parseFloat(rPctStr) || 0);
-
-    const dPctStr = fields.abstractDistressPct;
-    const dPct = (dPctStr === '' || dPctStr === null || dPctStr === undefined) ? 100 : (parseFloat(dPctStr) || 0);
+    const rPct = parsePct(fields.abstractRealizablePct, 100);
+    const dPct = parsePct(fields.abstractDistressPct, 100);
 
     const realVal = Math.round((totalEst * rPct) / 100);
     const distVal = Math.round((totalEst * dPct) / 100);
