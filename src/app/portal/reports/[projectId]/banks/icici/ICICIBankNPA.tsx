@@ -118,6 +118,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
   hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10', 'section-15', 'annexures'],
   navSections: [
     { id: 'icicinpa-section-1', title: 'VALUATION OF IMMOVABLE PROPERTY' },
+    { id: 'icicinpa-section-2', title: 'INDIVIDUAL TECHNICAL REPORT' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankNpaRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -236,6 +237,196 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
               tooltip='Prefill from logged-in valuer profile'
               fallbackValue={fields.valuerName}
             />
+          </div>
+        );
+      }
+    },
+    // ── SECTION 2: INDIVIDUAL TECHNICAL REPORT ─────────────────────
+    {
+      id: 'icicinpa-section-2',
+      title: 'INDIVIDUAL TECHNICAL REPORT',
+      number: 2,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        return (
+          <div style={{ backgroundColor: '#e3f2fd', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            {/* Container: Request Details */}
+            <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-blue-200 pb-1">
+              Request Details
+            </h4>
+
+            {/* Request ID */}
+            <Field label="Request ID">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.icicinpaRequestId || ''}
+                onChange={e => handleChange('icicinpaRequestId', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            {/* Customer Name */}
+            <Field label="Customer Name">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.icicinpaCustomerName || ''}
+                onChange={e => handleChange('icicinpaCustomerName', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            {/* Channel Name — Dropdown */}
+            <Field label="Channel Name">
+              <select
+                className={inputCls}
+                value={fields.icicinpaChannelName || ''}
+                onChange={e => handleChange('icicinpaChannelName', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="">Select Channel...</option>
+                <option value="DSMG">DSMG</option>
+                <option value="DSA">DSA</option>
+                <option value="BRANCH">BRANCH</option>
+                <option value="DIGITAL">DIGITAL</option>
+                <option value="DIRECT">DIRECT</option>
+                <option value="Custom">Custom / Other</option>
+              </select>
+              {fields.icicinpaChannelName === 'Custom' && (
+                <input
+                  type="text"
+                  placeholder="Enter custom channel name..."
+                  className={`${inputCls} mt-2`}
+                  value={fields.icicinpaChannelNameCustom || ''}
+                  onChange={e => handleChange('icicinpaChannelNameCustom', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              )}
+            </Field>
+
+            {/* Report Type — Dropdown */}
+            <Field label="Report Type">
+              <select
+                className={inputCls}
+                value={fields.icicinpaReportType || ''}
+                onChange={e => handleChange('icicinpaReportType', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="">Select Report Type...</option>
+                <option value="Valuation Report">Valuation Report</option>
+                <option value="Technical Report">Technical Report</option>
+                <option value="NPA Valuation Report">NPA Valuation Report</option>
+                <option value="Desktop Valuation">Desktop Valuation</option>
+                <option value="Custom">Custom / Other</option>
+              </select>
+              {fields.icicinpaReportType === 'Custom' && (
+                <input
+                  type="text"
+                  placeholder="Enter custom report type..."
+                  className={`${inputCls} mt-2`}
+                  value={fields.icicinpaReportTypeCustom || ''}
+                  onChange={e => handleChange('icicinpaReportTypeCustom', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              )}
+            </Field>
+
+            {/* Product Type — Dropdown */}
+            <Field label="Product Type">
+              <select
+                className={inputCls}
+                value={fields.icicinpaProductType || ''}
+                onChange={e => handleChange('icicinpaProductType', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="">Select Product Type...</option>
+                <option value="HL">HL</option>
+                <option value="LAP">LAP</option>
+                <option value="BL">BL</option>
+                <option value="CV">CV</option>
+                <option value="NPA">NPA</option>
+                <option value="Custom">Custom / Other</option>
+              </select>
+              {fields.icicinpaProductType === 'Custom' && (
+                <input
+                  type="text"
+                  placeholder="Enter custom product type..."
+                  className={`${inputCls} mt-2`}
+                  value={fields.icicinpaProductTypeCustom || ''}
+                  onChange={e => handleChange('icicinpaProductTypeCustom', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              )}
+            </Field>
+
+            {/* Application No */}
+            <Field label="Application No">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.icicinpaApplicationNo || ''}
+                onChange={e => handleChange('icicinpaApplicationNo', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            {/* Business Group — Dropdown */}
+            <Field label="Business Group">
+              <select
+                className={inputCls}
+                value={fields.icicinpaBusinessGroup || ''}
+                onChange={e => handleChange('icicinpaBusinessGroup', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="">Select Business Group...</option>
+                <option value="DSMG">DSMG</option>
+                <option value="RETAIL">RETAIL</option>
+                <option value="SME">SME</option>
+                <option value="CORPORATE">CORPORATE</option>
+                <option value="NPA">NPA</option>
+                <option value="Custom">Custom / Other</option>
+              </select>
+              {fields.icicinpaBusinessGroup === 'Custom' && (
+                <input
+                  type="text"
+                  placeholder="Enter custom business group..."
+                  className={`${inputCls} mt-2`}
+                  value={fields.icicinpaBusinessGroupCustom || ''}
+                  onChange={e => handleChange('icicinpaBusinessGroupCustom', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              )}
+            </Field>
+
+            {/* Product Name — Dropdown */}
+            <Field label="Product Name">
+              <select
+                className={inputCls}
+                value={fields.icicinpaProductName || ''}
+                onChange={e => handleChange('icicinpaProductName', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="">Select Product Name...</option>
+                <option value="HL">HL</option>
+                <option value="Home Loan">Home Loan</option>
+                <option value="LAP">LAP</option>
+                <option value="Loan Against Property">Loan Against Property</option>
+                <option value="Business Loan">Business Loan</option>
+                <option value="NPA Recovery">NPA Recovery</option>
+                <option value="Custom">Custom / Other</option>
+              </select>
+              {fields.icicinpaProductName === 'Custom' && (
+                <input
+                  type="text"
+                  placeholder="Enter custom product name..."
+                  className={`${inputCls} mt-2`}
+                  value={fields.icicinpaProductNameCustom || ''}
+                  onChange={e => handleChange('icicinpaProductNameCustom', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              )}
+            </Field>
           </div>
         );
       }

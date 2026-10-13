@@ -97,6 +97,27 @@ export class PDFIciciBankNpaRenderer extends PDFBankRenderer {
 
     this.cursorY += 10;
 
+    // ── SECTION 2: INDIVIDUAL TECHNICAL REPORT ───────────────────────
+    this.drawSectionHeader('2. INDIVIDUAL TECHNICAL REPORT', false);
+    this.drawSectionHeader('Request Details', false);
+
+    this.drawKeyValueRow([{ label: 'Request ID', value: this.getF('icicinpaRequestId') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Customer Name', value: this.getF('icicinpaCustomerName') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    const channelName = this.getF('icicinpaChannelName') === 'Custom' ? this.getF('icicinpaChannelNameCustom') : this.getF('icicinpaChannelName');
+    this.drawKeyValueRow([{ label: 'Channel Name', value: channelName || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    const reportType = this.getF('icicinpaReportType') === 'Custom' ? this.getF('icicinpaReportTypeCustom') : this.getF('icicinpaReportType');
+    this.drawKeyValueRow([{ label: 'Report Type', value: reportType || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    const productType = this.getF('icicinpaProductType') === 'Custom' ? this.getF('icicinpaProductTypeCustom') : this.getF('icicinpaProductType');
+    this.drawKeyValueRow([{ label: 'Product Type', value: productType || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Application No', value: this.getF('icicinpaApplicationNo') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    const businessGroup = this.getF('icicinpaBusinessGroup') === 'Custom' ? this.getF('icicinpaBusinessGroupCustom') : this.getF('icicinpaBusinessGroup');
+    this.drawKeyValueRow([{ label: 'Business Group', value: businessGroup || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    const productName = this.getF('icicinpaProductName') === 'Custom' ? this.getF('icicinpaProductNameCustom') : this.getF('icicinpaProductName');
+    this.drawKeyValueRow([{ label: 'Product Name', value: productName || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+
+    this.cursorY += 10;
+
     // ── (Additional sections will be added here as prompts are provided) ──
+
   }
 }
