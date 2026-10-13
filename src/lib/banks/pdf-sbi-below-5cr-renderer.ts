@@ -1,29 +1,32 @@
 /**
- * pdf-sbi-below-5cr-renderer.ts — Dedicated PDF Renderer for State Bank of India (SBI) — BELOW 5CR
+ * pdf-sbi-below-5cr-renderer.ts — Dedicated PDF Renderer for State Bank of India & IDBI (BELOW 5CR)
  *
  * Implements:
- * - TO: THE CHIEF MANAGER, STATE BANK OF INDIA, Branch, Dist...
+ * - TO: THE CHIEF MANAGER / BRANCH HEAD, Bank Name, Branch, Dist...
  * - REF. NO & DATE Banner
- * - Name of Customer(s)/Borrowal Unit
- * - Section 1: Customer Details (Name of Owner, Appl. No.)
+ * - Section 1: Customer Details (Name of Owner, Appl. No., Case Type, Identified by & Mob No)
  * - Section 2: Property Details (Address, Nearby Landmark/Google Map Independent access)
- * - Section 3: Document Details (Layout plan, Building plan, Construction permission, Legal documents, List of documents)
- * - Section 4: Physical Details (Boundaries as per Document vs Verification, Matching, Demarcated, Land use, Type of property, Rooms, Plinth areas, Life, Structure)
- * - Section 5: Tenure/ Occupancy Details (Status of tenure, Number of years of occupancy, Relationship of tenant)
+ * - Section 3: Document Details (Layout plan, Building plan, Construction permission, Legal documents, Approving authority, Approval No & Date, List of documents)
+ * - Section 4: Physical Details (Boundaries as per Agreement vs Sketch Map, Matching, Demarcated, Land use, Type of property, Rooms, Plinth areas, Life, Structure)
+ * - Section 5: Tenure/ Occupancy Details (Status of tenure, Number of years of occupancy, Relationship of tenant to owner)
  * - Section 6: Stage of construction (Stage of construction, extent of completion)
- * - Section 7: Violations, if any, observed (Nature and extent of violations)
- * - Section 8: Area details of the property (Site Area, Carpet Area, Saleable Area, Plinth Area per Approval & Actual)
+ * - Section 7: Violations, if any, observed (Nature and extent of violations e.g. Horizontal Deviation-93%)
+ * - Section 8: Area details of the property (Site Area, Carpet Area, Saleable Area, Plinth Area per Approval Block-1 & 2 vs Actual)
  * - Section 9: Valuation (THE LAND RATE ADOPTED IN THIS VALUATION breakdown)
- * - Assumptions or remarks (Points i to vii with detailed marketability / variation notes)
- * - Section 11: Declaration
+ * - Section 10: Assumptions or remarks (REMARKS block)
+ * - Section 11: Declaration (Clauses 1 to 3)
  * - Section 12: Name, Address and signature of the valuer
- * - DETAILS OF VALUATION (Table with Plinth Area, Roof Height, Age, Replacement Rate, Estimated Replacement Cost, Depreciation, Net Value)
- * - TOTAL ABSTRACT FOR THE ENTIRE PROPERTY Table (Land, Building, Extra Items, Amenities, Misc, Services, Total, Or Say)
+ * - Section 13: List of documents enclosed
+ * - Section 14: List of photos enclosed
+ * - Section 15: Marketability of the property (Standard procedural perception & Land/Building methodology narrative)
+ * - DETAILS OF VALUATION (Floor-wise / Block-wise Plinth Area, Roof Height, Age, Replacement Rate, Cost, Depreciation, Net Value)
+ * - VALUE OF THE PROPERTY (4-Row x 4-Column Table: Govt Guideline Value, Market Value, Realisable Value 95%, Distress Value 85% for Land, Building, Total, Or Say)
  * - Enclosures Checklist (a to i)
- * - Opinion Paragraph & Date/Place Sign-off
+ * - Valuation Opinion Paragraph & Official Signatures
  * - DECLARATION CUM UNDERTAKING FROM VALUERS (Clauses a to z)
  * - MODEL CODE OF CONDUCT FOR VALUERS (Clauses 1 to 17+)
- * - Inherited Attachments: Photographs, Maps, Documents
+ * - Justification Letter to Chief Manager / Branch Head
+ * - Inherited Enclosures: Photographs, Maps, Documents
  */
 
 import { rgb } from 'pdf-lib';
@@ -54,6 +57,8 @@ export interface SBIBelow5CRFields {
   // 1. Customer Details
   ownerNameAndAddress?: string;
   applicationNo?: string;
+  caseType?: string;
+  identifiedByAndMobNo?: string;
 
   // 2. Property Details
   propertyAddress?: string;
@@ -101,7 +106,7 @@ export interface SBIBelow5CRFields {
   residualLifeProperty?: string;
   typeOfStructure?: string;
 
-  // 5. Tenure / Occupancy
+  // 5. Tenure / Occupancy Details
   statusOfTenure?: string;
   numberOfYearsOccupancy?: string;
   relationshipTenantOwner?: string;
@@ -120,20 +125,13 @@ export interface SBIBelow5CRFields {
   plinthAreaApprovalText?: string;
   plinthAreaActualText?: string;
 
-  // 9. Valuation (Land Rate Adopted)
+  // 9. Valuation
   landRateAdoptedText?: string;
 
-  // Assumptions or remarks (i to vii)
-  remarkQualificationsTIR?: string;
-  remarkSarfaesiCompliant?: string;
-  remarkSocialInfrastructure?: string;
-  remarkEntirePieceMortgaged?: string;
-  remarkLastTwoTransactions?: string;
-  remarkVariationJustification?: string;
-  remarkMarketabilityAnyOther?: string;
+  // 10. Remarks
   generalRemarksText?: string;
 
-  // 11. Declaration text
+  // 11. Declaration
   declarationText?: string;
 
   // 12. Valuer Details
@@ -141,6 +139,13 @@ export interface SBIBelow5CRFields {
   valuerWealthTaxReg?: string;
   signaturePlace?: string;
   signatureDate?: string;
+
+  // 13 & 14 Enclosed lists
+  listDocumentsEnclosed?: string;
+  listPhotosEnclosed?: string;
+
+  // 15 Marketability
+  marketabilityNarrative?: string;
 
   // Valuation Computation Table
   valItems?: Array<{
@@ -157,40 +162,26 @@ export interface SBIBelow5CRFields {
   valTotalDepreciation?: string;
   valTotalNetValue?: string;
 
-  // Total Abstract Table
+  // Final Value of Property Abstract (4 Rows x 4 Cols)
   abstractGovtLand?: string;
   abstractGovtBldg?: string;
-  abstractGovtExtra?: string;
-  abstractGovtAmenities?: string;
-  abstractGovtMisc?: string;
-  abstractGovtServices?: string;
   abstractGovtTotal?: string;
   abstractGovtOrSay?: string;
 
   abstractMarketLand?: string;
   abstractMarketBldg?: string;
-  abstractMarketExtra?: string;
-  abstractMarketAmenities?: string;
-  abstractMarketMisc?: string;
-  abstractMarketServices?: string;
   abstractMarketTotal?: string;
   abstractMarketOrSay?: string;
 
+  abstractRealizablePct?: string;
   abstractRealizableLand?: string;
   abstractRealizableBldg?: string;
-  abstractRealizableExtra?: string;
-  abstractRealizableAmenities?: string;
-  abstractRealizableMisc?: string;
-  abstractRealizableServices?: string;
   abstractRealizableTotal?: string;
   abstractRealizableOrSay?: string;
 
+  abstractDistressPct?: string;
   abstractDistressLand?: string;
   abstractDistressBldg?: string;
-  abstractDistressExtra?: string;
-  abstractDistressAmenities?: string;
-  abstractDistressMisc?: string;
-  abstractDistressServices?: string;
   abstractDistressTotal?: string;
   abstractDistressOrSay?: string;
 
@@ -205,14 +196,16 @@ export interface SBIBelow5CRFields {
   encGuidelineRateEvidence?: string;
   encOtherDocuments?: string;
 
-  // Final Opinion Paragraph Words
+  // Opinion Words
   opinionMarketWords?: string;
   opinionRealizableWords?: string;
   opinionGovtLandWords?: string;
   opinionDistressWords?: string;
 
-  // Valuer Declaration PAN
+  // Valuer PAN & Justification
   valuerPan?: string;
+  justificationLetterSubject?: string;
+  justificationLetterBody?: string;
 
   // Images
   documentImages?: string[];
@@ -228,7 +221,7 @@ export interface SBIBelow5CRFields {
   [key: string]: any;
 }
 
-const SECTION_BANNER_BG = '#8B4500'; // Dark golden-brown matching the reference format headers
+const SECTION_BANNER_BG = '#C26B2B'; // Standard warm reddish-brown matching the reference sample
 
 export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
   private reportFields: SBIBelow5CRFields;
@@ -243,10 +236,10 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
   async render(): Promise<Uint8Array> {
     await this.init();
 
-    // 1. Cover & Main Technical Schedule (Pages 1 & 2)
+    // 1. Cover & Main Technical Schedule (Pages 1 & 2: Points 1 to 15)
     this.drawCoverAndTechnicalSchedule();
 
-    // 2. Details of Valuation, Abstract & Enclosures Checklist (Page 3)
+    // 2. Details of Valuation, Value of Property Table & Enclosures (Page 3)
     this.drawValuationAbstractAndEnclosures();
 
     // 3. Declaration Cum Undertaking From Valuers (Clauses a to z)
@@ -255,7 +248,7 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     // 4. Model Code of Conduct For Valuers (Clauses 1 to 17+)
     this.drawCodeOfConduct();
 
-    // 5. Justification Letter to Chief Manager
+    // 5. Justification Letter
     this.drawJustificationLetter();
 
     // 6. Inherited Attachments: Photographs, Maps, Documents
@@ -271,38 +264,19 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     const d = this.reportFields;
     this.cursorY = 20;
 
-    // Top To Address
-    const toLines = [
-      'TO,',
-      d.toAuthority || 'THE CHIEF MANAGER,',
-      d.bankName || 'STATE BANK OF INDIA,',
-      d.branchAddress || 'BALUGAON BRANCH, DIST: KHURDA, ODISHA',
-    ];
-    for (const line of toLines) {
-      this.drawTextAt(line, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL + 0.5 });
-      this.cursorY += 13;
-    }
-    this.cursorY += 8;
-
-    // Ref No & Date
-    const refNo = d.refNo || this.projectCode || 'SMA/03/2026/10';
-    const repDate = d.reportDate || '20.03.2026';
+    // Ref No & Date Header Banner
+    const refNo = d.refNo || this.projectCode || 'SMA/IDBI/07-2026/09';
+    const repDate = d.reportDate || '24.07.2026';
     const refText = `REF. NO: ${refNo}`;
     const dateText = `DATE: ${repDate}`;
     this.drawTextAt(refText, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     const dtW = this.fontBold.widthOfTextAtSize(dateText, FONT_SIZE);
     this.drawTextAt(dateText, MARGIN_L + CONTENT_W - dtW, this.cursorY, { bold: true, fontSize: FONT_SIZE });
-    this.cursorY += 18;
-
-    // Borrower Name
-    const bName = `Name of Customer(s)/Borrowal Unit: ${d.borrowerName || 'Mrs. Sunita Kumari Nahak & Mr. Brundabana Nayak'}`;
-    this.drawTextAt(bName, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL + 1 });
-    this.cursorY += 18;
+    this.cursorY += 16;
 
     // ── SECTION 1: Customer Details ──
     this.drawBrownSectionHeader('1', 'Customer Details');
-    this.draw2ColRowCustom(120, 'Name of the Owner', d.ownerNameAndAddress || 'NA', true);
-    this.draw2ColRowCustom(120, 'Appl. No.', d.applicationNo || 'Not Available');
+    this.drawSection1CustomerDetails(d);
 
     // ── SECTION 2: Property Details ──
     this.drawBrownSectionHeader('2', 'Property Details');
@@ -310,12 +284,12 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     const lm = d.nearbyLandmark || 'The subject property is situated nearer to landmark.';
     const coords = d.coordinatesText || (d.latitude && d.longitude ? `Latitude: ${d.latitude}, Longitude: ${d.longitude}` : '');
     const fullLm = coords ? `${lm}\n\n${coords}` : lm;
-    this.draw2ColRowCustom(120, 'Nearby Landmark/ Google Map Independent access to the property', fullLm);
+    this.draw2ColRowCustom(120, 'Nearby landmark', fullLm);
 
     // ── SECTION 3: Document Details ──
     this.drawBrownSectionHeader('3', 'Document Details');
     this.drawDocumentDetailsTable(d);
-    this.draw2ColRowCustom(120, 'List of documents', d.listOfDocuments || 'Xerox copy of Sale Deed, ROR, Approval Plan & Sketch Map');
+    this.draw2ColRowCustom(120, 'List of documents', d.listOfDocuments || 'Xerox copy of Agreement for Sale, Sketch Map, Patta, Approval Letter');
 
     // ── SECTION 4: Physical Details ──
     this.drawBrownSectionHeader('4', 'Physical Details');
@@ -324,7 +298,7 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     this.drawRoomsMatrix(d);
     this.drawFloorsAndStructureMatrix(d);
 
-    // Page Break for Page 2 continuation if needed
+    // Check page break for continuation
     this.checkPageBreak(120);
 
     // ── SECTION 5: Tenure/ Occupancy Details ──
@@ -337,12 +311,11 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
 
     // ── SECTION 6: Stage of construction ──
     this.drawBrownSectionHeader('6', 'Stage of construction');
-    this.draw2ColRowCustom(140, 'Stage of construction', d.stageOfConstruction || 'Completed (45%)');
-    this.draw2ColRowCustom(140, 'If under construction, extent of completion:', d.underConstructionExtent || 'Not Applicable');
+    this.draw2ColRowCustom(140, 'Stage of construction', d.stageOfConstruction || 'Ground Floor Completed (85%), First Floor Completed (80%)');
 
     // ── SECTION 7: Violations, if any, observed ──
     this.drawBrownSectionHeader('7', 'Violations, if any, observed');
-    this.draw2ColRowCustom(140, 'Nature and extent of violations', d.natureExtentViolations || 'Nothing Observed');
+    this.draw2ColRowCustom(140, 'Nature and extent of violations', d.natureExtentViolations || 'Horizontal Deviation-93%');
 
     // ── SECTION 8: Area details of the property ──
     this.drawBrownSectionHeader('8', 'Area details of the property');
@@ -350,24 +323,58 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
 
     // ── SECTION 9: Valuation ──
     this.drawBrownSectionHeader('9', 'Valuation');
-    const landRateDesc = d.landRateAdoptedText || `THE LAND RATE ADOPTED IN THIS VALUATION:\n• GOVT. BENCHMARK VALUE: RS.3,44,30,000/- PER ACRE I.E. RS.790/- PER SFT\n• TOTAL LAND AREA: AC.0.031 DEC I.E. 1350.00 SFT\n• GUIDELINE VALUE OF LAND= 1350.00 SFT X RS.790/- PER SFT = RS.10,66,500/-\n• THE PREVAILING MARKET RATE OF THE LAND IS RS.1700/- TO RS.1900/- PER SFT.\n• THE ADOPTED MARKET RATE OF THE LAND IS RS.1800/- PER SFT FOR VALUATION PURPOSE.\n• TOTAL MARKET VALUE: 1350.00 SFT X RS.1800/- PER SFT = RS.24,30,000/-`;
-    this.drawTextBlockRow(landRateDesc);
+    this.drawValuationNarrativeRow(d);
 
-    // Assumptions or remarks (i to vii)
-    this.drawBrownSectionHeader('', 'Assumptions or remarks');
-    this.drawAssumptionsList(d);
-
-    // Remarks box
+    // ── SECTION 10: Assumptions or remarks ──
+    this.drawBrownSectionHeader('10', 'Assumptions or remarks');
     this.drawFullRemarksBlock(d);
 
     // ── SECTION 11: Declaration ──
     this.drawBrownSectionHeader('11', 'Declaration');
-    const declText = d.declarationText || `1) The property was inspected by the under signed on ${d.signatureDate || '19.02.2026'}\n2) The undersigned does not have any direct/indirect interest in the above property.\n3) The information furnished herein is true and correct to the best of our knowledge.\n4) I have submitted Valuation report directly to the Bank`;
-    this.drawTextBlockRow(declText);
+    this.drawDeclaration3Points(d);
 
-    // ── SECTION 12: Valuer Details & Signature ──
+    // ── SECTION 12: Name, Address and signature of the valuer ──
     this.drawBrownSectionHeader('12', 'Name, Address and signature of the valuer');
     this.drawValuerSignatureRow(d);
+
+    // ── SECTION 13: List of documents enclosed ──
+    this.drawBrownSectionHeader('13', 'List of documents enclosed');
+    this.drawTextBlockRow(d.listDocumentsEnclosed || 'Valuation Report, Benchmark Valuation, GPS Map, Photographs');
+
+    // ── SECTION 14: List of photos enclosed ──
+    this.drawBrownSectionHeader('14', 'List of photos enclosed');
+    this.drawTextBlockRow(d.listPhotosEnclosed || 'Bed Room, Dinning, Drawing, Kitchen, Building with Road');
+
+    // ── SECTION 15: Marketability of the property ──
+    this.drawBrownSectionHeader('15', 'Marketability of the property');
+    this.drawTextBlockRow(d.marketabilityNarrative || 'Valuation of the assets under consideration is carried out on the basis of our perception about the macro & micro economic factors presently governing the real estate industry, location of property, existing market conditions, degree of development of infrastructure in the area, Demand-supply conditions, internal amenities, common amenities etc.\n\nLand & building method of valuation has been adopted for finding the fair market value of the property.');
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Sub-table: Section 1 Customer Details (4-box layout)
+  // ──────────────────────────────────────────────────────────────────────────
+  private drawSection1CustomerDetails(d: SBIBelow5CRFields): void {
+    const rowH = 34;
+    this.checkPageBreak(rowH * 2 + 10);
+
+    const wLbl1 = 110;
+    const wVal1 = 195;
+    const wLbl2 = 90;
+    const wVal2 = CONTENT_W - wLbl1 - wVal1 - wLbl2;
+
+    // Row 1: Name of the Owner & Appl. No.
+    this.drawCell(MARGIN_L, this.cursorY, wLbl1, rowH, 'Name of the Owner', { bold: true });
+    this.drawCell(MARGIN_L + wLbl1, this.cursorY, wVal1, rowH, d.ownerNameAndAddress || 'NA');
+    this.drawCell(MARGIN_L + wLbl1 + wVal1, this.cursorY, wLbl2, rowH, 'Appl. No.', { bold: true });
+    this.drawCell(MARGIN_L + wLbl1 + wVal1 + wLbl2, this.cursorY, wVal2, rowH, d.applicationNo || 'Not Available');
+    this.cursorY += rowH;
+
+    // Row 2: Case Type & Identified by & Mob No
+    this.drawCell(MARGIN_L, this.cursorY, wLbl1, rowH, 'Case Type', { bold: true });
+    this.drawCell(MARGIN_L + wLbl1, this.cursorY, wVal1, rowH, d.caseType || 'Fresh Valuation');
+    this.drawCell(MARGIN_L + wLbl1 + wVal1, this.cursorY, wLbl2, rowH, 'Identified by & Mob No:', { bold: true, fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLbl1 + wVal1 + wLbl2, this.cursorY, wVal2, rowH, d.identifiedByAndMobNo || "Mr. Dalai (Owner's Representative), Mob-9178156885", { fontSize: FONT_SIZE_CAPTION });
+    this.cursorY += rowH;
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -378,24 +385,24 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
       {
         item: 'Layout plan',
         avail: d.layoutPlanAvailable || 'Yes/ No',
-        auth: d.layoutPlanAuthority || 'Sarapanch Kanamana Gram Panchayat',
-        appNo: d.layoutPlanApprovalNo || 'Vide Letter No: 115/26 on dated 02.03.2026 for construction of a G+2 Storied Residential Building.',
+        auth: d.layoutPlanAuthority || 'Bhubaneswar Development Authority',
+        appNo: d.layoutPlanApprovalNo || 'Vide Letter No: BP/BDA/009678 on dated 07.05.2024 for construction of a G+2 storied (Block-1 & 2) Residential Building',
       },
       {
         item: 'Building plan',
         avail: d.buildingPlanAvailable || 'Yes/ No',
-        auth: d.buildingPlanAuthority || '',
-        appNo: d.buildingPlanApprovalNo || '',
+        auth: d.buildingPlanAuthority || 'Bhubaneswar Development Authority',
+        appNo: d.buildingPlanApprovalNo || 'BP/BDA/009678',
       },
       {
         item: 'Construction permission',
         avail: d.constructionPermissionAvailable || 'Yes/ No',
-        auth: d.constructionPermissionAuthority || '',
-        appNo: d.constructionPermissionApprovalNo || '',
+        auth: d.constructionPermissionAuthority || 'Bhubaneswar Development Authority',
+        appNo: d.constructionPermissionApprovalNo || 'BP/BDA/009678',
       },
       {
         item: 'Legal documents',
-        avail: d.legalDocumentsAvailable || 'Yes/No',
+        avail: d.legalDocumentsAvailable || 'Yes/ No',
         auth: d.legalDocumentsAuthority || '',
         appNo: d.legalDocumentsApprovalNo || '',
       },
@@ -403,17 +410,17 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
 
     const wItem = 110;
     const wAvail = 60;
-    const wAuth = 150;
+    const wAuth = 135;
     const wAppNo = CONTENT_W - wItem - wAvail - wAuth;
-    const rowH = 18;
+    const rowH = 26;
 
     this.checkPageBreak(rowH * 4 + 10);
 
     for (const r of rows) {
       this.drawCell(MARGIN_L, this.cursorY, wItem, rowH, r.item, { bold: false, fillColor: LBL_BG });
       this.drawCell(MARGIN_L + wItem, this.cursorY, wAvail, rowH, r.avail, { align: 'center', fillColor: OPT_BG });
-      this.drawCell(MARGIN_L + wItem + wAvail, this.cursorY, wAuth, rowH, r.auth, { align: 'left' });
-      this.drawCell(MARGIN_L + wItem + wAvail + wAuth, this.cursorY, wAppNo, rowH, r.appNo, { align: 'left' });
+      this.drawCell(MARGIN_L + wItem + wAvail, this.cursorY, wAuth, rowH, r.auth, { align: 'left', fontSize: FONT_SIZE_CAPTION });
+      this.drawCell(MARGIN_L + wItem + wAvail + wAuth, this.cursorY, wAppNo, rowH, r.appNo, { align: 'left', fontSize: FONT_SIZE_CAPTION });
       this.cursorY += rowH;
     }
   }
@@ -429,16 +436,15 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     const wDir = 45;
     const wVal = wHalf - wDir;
 
-    // Header row
-    this.drawCell(MARGIN_L, this.cursorY, wHalf, rowH, 'Boundaries as per Document', { bold: true, align: 'center', fillColor: LBL_BG });
-    this.drawCell(MARGIN_L + wHalf, this.cursorY, wHalf, rowH, 'Boundaries as per Verification', { bold: true, align: 'center', fillColor: OPT_BG });
+    this.drawCell(MARGIN_L, this.cursorY, wHalf, rowH, 'Boundaries as per Agreement', { bold: true, align: 'center', fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wHalf, this.cursorY, wHalf, rowH, 'Boundaries as per Sketch Map', { bold: true, align: 'center', fillColor: OPT_BG });
     this.cursorY += rowH;
 
     const dirs = [
-      { dir: 'East:', doc: d.boundaryEastDoc || 'Road', verif: d.boundaryEastVerif || 'Road' },
-      { dir: 'West:', doc: d.boundaryWestDoc || 'Part of Plot No-338', verif: d.boundaryWestVerif || 'Vacant Plot' },
-      { dir: 'North:', doc: d.boundaryNorthDoc || 'Land of Asha Kumari & Santosh Kumar Choudhury', verif: d.boundaryNorthVerif || 'Building of Asha Kumari & Santosh Kumar Choudhury' },
-      { dir: 'South:', doc: d.boundarySouthDoc || 'Land of Rajeswari Nahak & Mithun Kumar Nahak', verif: d.boundarySouthVerif || 'Building of Rajeswari Nahak & Mithun Kumar Nahak' },
+      { dir: 'East:', doc: d.boundaryEastDoc || 'Sub Plot No-1153', verif: d.boundaryEastVerif || 'Sub Plot No-1153' },
+      { dir: 'West:', doc: d.boundaryWestDoc || 'Road', verif: d.boundaryWestVerif || 'Road' },
+      { dir: 'North:', doc: d.boundaryNorthDoc || 'Revenue Plot No-767', verif: d.boundaryNorthVerif || 'Revenue Plot No-767' },
+      { dir: 'South:', doc: d.boundarySouthDoc || 'Road', verif: d.boundarySouthVerif || 'Road' },
     ];
 
     for (const r of dirs) {
@@ -468,7 +474,7 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     this.drawCell(MARGIN_L + w1 + w2 + w3, this.cursorY, w4, rowH, d.plotDemarcated || 'Yes/ No', { align: 'center', fontSize: FONT_SIZE_CAPTION });
     this.drawCell(MARGIN_L + w1 + w2 + w3 + w4, this.cursorY, w5, rowH, 'Approved land use', { fontSize: FONT_SIZE_CAPTION });
     this.drawCell(MARGIN_L + w1 + w2 + w3 + w4 + w5, this.cursorY, w6, rowH, d.approvedLandUse || 'Residential', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + w1 + w2 + w3 + w4 + w5 + w6, this.cursorY, w7, rowH, d.typeOfProperty || 'Plotted / Flat', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + w1 + w2 + w3 + w4 + w5 + w6, this.cursorY, w7, rowH, d.typeOfProperty || 'Land & Building', { align: 'center', fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
   }
 
@@ -478,105 +484,96 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     const colW = CONTENT_W / 5;
 
     this.drawCell(MARGIN_L, this.cursorY, colW, rowH, 'Number of rooms', { bold: true, fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + colW, this.cursorY, colW, rowH, `Living/Dining: ${d.numberOfRoomsLiving || '1 Nos'}`, { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + colW * 2, this.cursorY, colW, rowH, `Bed rooms: ${d.numberOfRoomsBed || '3 Nos'}`, { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + colW * 3, this.cursorY, colW, rowH, `Toilets: ${d.numberOfRoomsToilets || '1 Nos'}`, { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + colW, this.cursorY, colW, rowH, `Living/ Dining: ${d.numberOfRoomsLiving || '2 Nos'}`, { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + colW * 2, this.cursorY, colW, rowH, `Bed rooms: ${d.numberOfRoomsBed || '5 Nos'}`, { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + colW * 3, this.cursorY, colW, rowH, `Toilets: ${d.numberOfRoomsToilets || '3 Nos'}`, { fontSize: FONT_SIZE_CAPTION });
     this.drawCell(MARGIN_L + colW * 4, this.cursorY, colW, rowH, `Kitchens: ${d.numberOfRoomsKitchens || '1 Nos'}`, { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
   }
 
   private drawFloorsAndStructureMatrix(d: SBIBelow5CRFields): void {
-    const rowH = 24;
+    const rowH = 22;
     this.checkPageBreak(rowH + 10);
     const colW = CONTENT_W / 5;
 
-    this.drawCell(MARGIN_L, this.cursorY, colW, rowH, `Total number of floors: ${d.totalNumberOfFloors || 'Ground Floor'}`, { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + colW, this.cursorY, colW, rowH, `Area on which located: ${d.areaPropertyLocated || 'Palia, Chhatrapur'}`, { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L, this.cursorY, colW, rowH, `Total number of floors: ${d.totalNumberOfFloors || 'G+1 Storied'}`, { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + colW, this.cursorY, colW, rowH, `Area on which located: ${d.areaPropertyLocated || 'Kalyani Vihar Scheme'}`, { fontSize: FONT_SIZE_CAPTION });
     this.drawCell(MARGIN_L + colW * 2, this.cursorY, colW, rowH, `Approx. age: ${d.approxAgeProperty || 'New'}`, { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + colW * 3, this.cursorY, colW, rowH, `Residual life: ${d.residualLifeProperty || '65 Yrs'}`, { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + colW * 3, this.cursorY, colW, rowH, `Residential age: ${d.residualLifeProperty || '65 Yrs'}`, { fontSize: FONT_SIZE_CAPTION });
     this.drawCell(MARGIN_L + colW * 4, this.cursorY, colW, rowH, `Type of structure: ${d.typeOfStructure || 'RCC Frame'}`, { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
   }
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // Sub-table: Area details (Section 8 with Multi-Block Approval Support)
+  // ──────────────────────────────────────────────────────────────────────────
   private drawAreaDetailsTable(d: SBIBelow5CRFields): void {
-    const rowH = 22;
-    this.checkPageBreak(rowH * 3 + 10);
+    const rowH1 = 68;
+    const rowH2 = 42;
+    const rowH3 = 22;
+    this.checkPageBreak(rowH1 + rowH2 + rowH3 + 10);
 
     const wLbl = 100;
     const wVal1 = 140;
     const wLbl2 = 100;
     const wVal2 = CONTENT_W - wLbl - wVal1 - wLbl2;
 
-    // Row 1
-    this.drawCell(MARGIN_L, this.cursorY, wLbl, rowH, 'Site Area', { bold: true });
-    this.drawCell(MARGIN_L + wLbl, this.cursorY, wVal1, rowH, d.siteAreaText || 'Ac.0.031 Dec i.e. 1350.00 Sft');
-    this.drawCell(MARGIN_L + wLbl + wVal1, this.cursorY, wLbl2, rowH, 'Plinth Area (As per Approval)', { bold: true, fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLbl + wVal1 + wLbl2, this.cursorY, wVal2, rowH, d.plinthAreaApprovalText || 'GF: 1275 Sft | FF: 1275 Sft | SF: 1275 Sft (Total= 3825 Sft)', { fontSize: FONT_SIZE_CAPTION });
-    this.cursorY += rowH;
+    // Row 1: Site Area vs Plinth Area (As per Approval)
+    this.drawCell(MARGIN_L, this.cursorY, wLbl, rowH1, 'Site Area', { bold: true });
+    this.drawCell(MARGIN_L + wLbl, this.cursorY, wVal1, rowH1, d.siteAreaText || 'Ac.0.055 Dec i.e. 2400.00 Sft');
+    this.drawCell(MARGIN_L + wLbl + wVal1, this.cursorY, wLbl2, rowH1, 'Plinth Area (As per Approval)', { bold: true, fontSize: FONT_SIZE_CAPTION });
+    const appText = d.plinthAreaApprovalText || 'Block-1: Ground: 746 Sft, First: 746 Sft, Second: 746 Sft\nBlock-2: Ground: 746 Sft, First: 746 Sft, Second: 746 Sft';
+    this.drawCell(MARGIN_L + wLbl + wVal1 + wLbl2, this.cursorY, wVal2, rowH1, appText, { fontSize: FONT_SIZE_CAPTION });
+    this.cursorY += rowH1;
 
-    // Row 2
-    this.drawCell(MARGIN_L, this.cursorY, wLbl, rowH, 'Carpet Area', { bold: true });
-    this.drawCell(MARGIN_L + wLbl, this.cursorY, wVal1, rowH, d.carpetAreaText || '1142.00 Sft (Approx.)');
-    this.drawCell(MARGIN_L + wLbl + wVal1, this.cursorY, wLbl2, rowH, 'Plinth Area (As per Actual)', { bold: true, fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLbl + wVal1 + wLbl2, this.cursorY, wVal2, rowH, d.plinthAreaActualText || 'Ground Floor Plinth Area: 1313.00 Sft', { fontSize: FONT_SIZE_CAPTION });
-    this.cursorY += rowH;
+    // Row 2: Carpet Area vs Plinth Area (As per Actual)
+    this.drawCell(MARGIN_L, this.cursorY, wLbl, rowH2, 'Carpet Area', { bold: true });
+    this.drawCell(MARGIN_L + wLbl, this.cursorY, wVal1, rowH2, d.carpetAreaText || '2440.00 Sft (Approx.)');
+    this.drawCell(MARGIN_L + wLbl + wVal1, this.cursorY, wLbl2, rowH2, 'Plinth Area (As per Actual)', { bold: true, fontSize: FONT_SIZE_CAPTION });
+    const actText = d.plinthAreaActualText || 'Block-1: Ground: 1440.00 Sft, First: 1440.00 Sft\nTotal: 2880.00 Sft';
+    this.drawCell(MARGIN_L + wLbl + wVal1 + wLbl2, this.cursorY, wVal2, rowH2, actText, { fontSize: FONT_SIZE_CAPTION });
+    this.cursorY += rowH2;
 
-    // Row 3
-    this.drawCell(MARGIN_L, this.cursorY, wLbl, rowH, 'Saleable Area', { bold: true });
-    this.drawCell(MARGIN_L + wLbl, this.cursorY, CONTENT_W - wLbl, rowH, d.saleableAreaText || '1350.00 Sft (Land) & 1313.00 Sft (Building)');
-    this.cursorY += rowH;
+    // Row 3: Saleable Area
+    this.drawCell(MARGIN_L, this.cursorY, wLbl, rowH3, 'Saleable Area', { bold: true });
+    this.drawCell(MARGIN_L + wLbl, this.cursorY, CONTENT_W - wLbl, rowH3, d.saleableAreaText || '2400.00 Sft (Land) & 2880.00 Sft (Building)');
+    this.cursorY += rowH3;
   }
 
-  private drawAssumptionsList(d: SBIBelow5CRFields): void {
-    const items = [
-      { id: 'i)', q: 'Qualifications in TIR/Mitigation suggested, if any', a: d.remarkQualificationsTIR || 'Not Applicable' },
-      { id: 'ii)', q: 'Property is SARFAESI compliant', a: d.remarkSarfaesiCompliant || 'Yes' },
-      { id: 'iii)', q: 'Whether property belongs to social infrastructure like hospital, school, old age home etc.', a: d.remarkSocialInfrastructure || 'No' },
-      { id: 'iv)', q: 'Whether entire piece of land on which the unit is set up / property is situated has been mortgaged or to be mortgaged', a: d.remarkEntirePieceMortgaged || 'Not Applicable' },
-      { id: 'v)', q: 'Details of last two transactions in the locality/area to be provided, if available', a: d.remarkLastTwoTransactions || 'The two transactions of the property are not available in the locality. But the present market rate of land confirmed through local enquiry and property dealers and found to be acceptable' },
-      { id: 'vi)', q: 'In case of variation of 20% or more in the valuation proposed by the valuer and the Guideline value provided in the State Govt. notification or Income Tax Gazette justification on variation has to be given', a: d.remarkVariationJustification || 'There is variation between Market value and Guideline value because Guideline rates are not revised regularly and to avoid high stamp duty/registration charges sale deed executed in under-valued rate. Generally Guideline rates are fixed for an area whereas actual market rate of specific land in same area are different as per size, location, approach road, landmarks, surrounding developments, site developments Etc. The market is higher due to the property is situated in a Residential area of Palia, Chhatrapur, Ganjam' },
-      { id: 'vii)', q: 'Any other aspect which has relevance on the value or marketability of the property', a: d.remarkMarketabilityAnyOther || 'Not Observed' },
-    ];
-
-    const wQ = 230;
-    const wA = CONTENT_W - wQ;
-
-    for (const it of items) {
-      const qText = `${it.id} ${it.q}`;
-      const qLines = this.wrapText(qText, wQ - 8, FONT_SIZE_CAPTION);
-      const aLines = this.wrapText(it.a, wA - 8, FONT_SIZE_CAPTION);
-      const maxL = Math.max(qLines.length, aLines.length);
-      const rowH = Math.max(16, maxL * FONT_SIZE_CAPTION * LINE_HEIGHT + 4);
-
-      this.checkPageBreak(rowH);
-      this.drawCell(MARGIN_L, this.cursorY, wQ, rowH, qText, { fontSize: FONT_SIZE_CAPTION, fillColor: LBL_BG });
-      this.drawCell(MARGIN_L + wQ, this.cursorY, wA, rowH, it.a, { fontSize: FONT_SIZE_CAPTION });
-      this.cursorY += rowH;
-    }
+  private drawValuationNarrativeRow(d: SBIBelow5CRFields): void {
+    const text = d.landRateAdoptedText || `THE LAND RATE ADOPTED IN THIS VALUATION:\n• GOVT. BENCHMARK VALUE: RS.1,69,65,000/- PER ACRE I.E. RS.389/- PER SFT\n• TOTAL LAND AREA: AC.0.055 DEC I.E. 2400.00 SFT\n• GUIDELINE VALUE OF LAND= 2400.00 SFT X RS.389/- PER SFT =RS.9,33,600/-\n• THE PREVAILING MARKET RATE OF THE LAND IS RS.2400/- TO RS.2600/- PER SFT.\n• THE ADOPTED MARKET RATE OF THE LAND IS RS.2500/- PER SFT FOR VALUATION PURPOSE.\n• TOTAL MARKET VALUE: 2400.00 SFT X RS.2500/- PER SFT = RS.60,00,000/-`;
+    this.drawTextBlockRow(text);
   }
 
   private drawFullRemarksBlock(d: SBIBelow5CRFields): void {
-    const text = d.generalRemarksText || `REMARKS:\nSUBJECT PROPERTY IS AN UNDER CONSTRUCTED GROUND FLOOR RESIDENTIAL BUILDING, LAND EXTENT OF (AC.0.031 DEC I.E. 1350.00 SFT). PROPERTY LOCATED IN A DEVELOPED RESIDENTIAL AREA OF PALIA, CHHATRAPUR, GANJAM. THIS PROPERTY IS COMING UNDER KANAMANA GRAM PANCHAYAT AREA LIMIT. ALL CIVIC AMENITIES ARE PRESENT WITHIN 2-3 KMS FROM THE PROPERTY. VALUATION HAS BEEN DONE FOR LAND & APPROVED BUA OF THE GROUND FLOOR BUILDING.`;
+    const text = d.generalRemarksText || `REMARKS:\nSUBJECT PROPERTY IS AN UNDER CONSTRUCTED G+1 STORIED BUILDING, LAND EXTENT OF AC.0.055 DEC I.E. 2400.00 SFT. PROPERTY LOCATED IN A GOOD DEVELOPED RESIDENTIAL AREA OF KALYANI VIHAR, KANTILO, BHUBANESWAR. THIS PROPERTY IS COMING UNDER BHUBANESWAR DEVELOPMENT AUTHORITY AREA LIMIT. ALL CIVIC AMENITIES ARE PRESENT 2-3 KM FROM THE PROPERTY. VALUATION HAS BEEN DONE FOR LAND & APPROVED BUA OF THE G+1 STORIED BUILDING (BLOCK-1).`;
+    this.drawTextBlockRow(text);
+  }
+
+  private drawDeclaration3Points(d: SBIBelow5CRFields): void {
+    const text = d.declarationText || `1) The property was inspected by the undersigned on ${d.signatureDate || '24.07.2026'}\n2) The undersigned does not have any direct/indirect interest in the above property.\n3) The information furnished herein is true and correct to the best of our knowledge.`;
     this.drawTextBlockRow(text);
   }
 
   private drawValuerSignatureRow(d: SBIBelow5CRFields): void {
-    const rowH = 60;
+    const rowH = 46;
     this.checkPageBreak(rowH + 10);
 
-    const wLeft = CONTENT_W - 140;
-    const wRight = 140;
+    const wLbl = 100;
+    const wVal = CONTENT_W - wLbl - 130;
+    const wSig = 130;
 
-    const valuerDetails = `Name: ${d.valuerNameAndAddress || 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)\nPlot No: 858 (P) & 859 (P), Near Astha Binodini Apartment, Siba Nagar, Rajarani, Tankapani Road, Bhubaneswar-751018'}\n\nWealth Tax Registration No: ${d.valuerWealthTaxReg || '107/2016-17 of Category-I'}`;
-    this.drawCell(MARGIN_L, this.cursorY, wLeft, rowH, valuerDetails, { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L, this.cursorY, wLbl, rowH, 'Name and Address', { bold: true });
+    const valuerDetails = d.valuerNameAndAddress || 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)\nPlot No: 858 (P) & 859 (P), Near Astha Binodini Apartment, Siba Nagar, Rajarani, Tankapani Road, Bhubaneswar-751018';
+    this.drawCell(MARGIN_L + wLbl, this.cursorY, wVal, rowH, valuerDetails, { fontSize: FONT_SIZE_CAPTION });
 
-    this.drawCell(MARGIN_L + wLeft, this.cursorY, wRight, rowH / 2, 'Signature', { bold: true, align: 'center' });
-    this.drawCell(MARGIN_L + wLeft, this.cursorY + rowH / 2, wRight, rowH / 2, `Date: ${d.signatureDate || '21.03.2026'}`, { align: 'center' });
+    this.drawCell(MARGIN_L + wLbl + wVal, this.cursorY, wSig, rowH / 2, 'Signature', { bold: true, align: 'center' });
+    this.drawCell(MARGIN_L + wLbl + wVal, this.cursorY + rowH / 2, wSig, rowH / 2, `Date: ${d.signatureDate || '24.07.2026'}`, { align: 'center', fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 2. Details of Valuation, Abstract & Enclosures Checklist (Page 3)
+  // 2. Details of Valuation, Value of Property Table & Enclosures (Page 3)
   // ──────────────────────────────────────────────────────────────────────────
   private drawValuationAbstractAndEnclosures(): void {
     const d = this.reportFields;
@@ -587,7 +584,6 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     this.drawCenteredTitle('DETAILS OF VALUATION', FONT_SIZE_HEADER);
     this.cursorY += 10;
 
-    // Valuation breakdown table
     const headers = [
       'PARTICULARS OF ITEMS',
       'PLINTH AREA IN SQFT',
@@ -595,13 +591,14 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
       'AGE OF THE BUILDING IN YEARS',
       'REPLACEMENT RATE OF CONSTRUCTION',
       'ESTIMATED REPLACEMENT COST OF CONSTRUCTION',
-      'DEPRECIATION AMOUNT IN RS. (1.5% per Anm)',
+      'DEPRECIATION AMOUNT IN RS. (1% per Anm)',
       'NET VALUE AFTER DEPRECIATION',
     ];
     const colW = [75, 45, 40, 45, 65, 75, 65, 77.28];
 
     const defaultItems = [
-      ['RCC GROUND FLOOR', '1,275.00', '10\' 6"', 'New', 'Rs. 900.00', 'Rs. 11,47,500.00', 'Rs. 0.00', 'Rs. 11,47,500.00'],
+      ['RCC GROUND FLOOR (BLOCK-1)', '746.00', "10'-6\"", 'New', 'Rs. 2,000.00', 'Rs. 1,492,000.00', 'Rs. 0.00', 'Rs. 1,492,000.00'],
+      ['RCC FIRST FLOOR (BLOCK-1)', '746.00', "10'-6\"", 'New', 'Rs. 1,500.00', 'Rs. 1,119,000.00', 'Rs. 0.00', 'Rs. 1,119,000.00'],
     ];
 
     const rows = d.valItems && d.valItems.length > 0
@@ -614,34 +611,51 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     const rowH = 18;
     const totW = colW[0] + colW[1] + colW[2] + colW[3] + colW[4];
     this.drawCell(MARGIN_L, this.cursorY, totW, rowH, 'TOTAL :', { bold: true, align: 'right', fillColor: LBL_BG });
-    this.drawCell(MARGIN_L + totW, this.cursorY, colW[5] + colW[6] + colW[7], rowH, d.valTotalNetValue || 'Rs. 11,47,500.00', { bold: true, align: 'right', fillColor: OPT_BG });
-    this.cursorY += rowH + 16;
+    this.drawCell(MARGIN_L + totW, this.cursorY, colW[5] + colW[6] + colW[7], rowH, d.valTotalNetValue || 'Rs. 2,611,000.00', { bold: true, align: 'right', fillColor: OPT_BG });
+    this.cursorY += rowH + 20;
 
-    // ── TOTAL ABSTRACT FOR THE ENTIRE PROPERTY ──
-    this.drawCenteredTitle('TOTAL ABSTRACT FOR THE ENTIRE PROPERTY', FONT_SIZE_HEADER);
+    // ── VALUE OF THE PROPERTY (4-Row x 4-Column Table) ──
+    this.drawCenteredTitle('VALUE OF THE PROPERTY', FONT_SIZE_HEADER);
     this.cursorY += 8;
 
-    const absHeaders = [
-      'PARTICULARS',
-      'GOVT. VALUE IN RS.',
-      'MARKET VALUE IN RS.',
-      'REALIZABLE VALUE (95%)',
-      'DISTRESS VALUE (85%)',
-    ];
-    const absColW = [105, 96, 96, 95.28, 95];
+    const rPct = d.abstractRealizablePct || '95';
+    const dPct = d.abstractDistressPct || '85';
 
-    const absRows = [
-      ['LAND', d.abstractGovtLand || 'Rs. 10,66,500.00', d.abstractMarketLand || 'Rs. 24,30,000.00', d.abstractRealizableLand || 'Rs. 23,08,500.00', d.abstractDistressLand || 'Rs. 20,65,500.00'],
-      ['BUILDING', d.abstractGovtBldg || 'Rs. 0.00', d.abstractMarketBldg || 'Rs. 11,47,500.00', d.abstractRealizableBldg || 'Rs. 10,90,125.00', d.abstractDistressBldg || 'Rs. 9,75,375.00'],
-      ['EXTRA ITEMS', d.abstractGovtExtra || 'Rs. 0.00', d.abstractMarketExtra || 'Rs. 0.00', d.abstractRealizableExtra || 'Rs. 0.00', d.abstractDistressExtra || 'Rs. 0.00'],
-      ['AMENITIES', d.abstractGovtAmenities || 'Rs. 0.00', d.abstractMarketAmenities || 'Rs. 0.00', d.abstractRealizableAmenities || 'Rs. 0.00', d.abstractDistressAmenities || 'Rs. 0.00'],
-      ['MISCELLANEOUS', d.abstractGovtMisc || 'Rs. 0.00', d.abstractMarketMisc || 'Rs. 0.00', d.abstractRealizableMisc || 'Rs. 0.00', d.abstractDistressMisc || 'Rs. 0.00'],
-      ['SERVICES', d.abstractGovtServices || 'Rs. 0.00', d.abstractMarketServices || 'Rs. 0.00', d.abstractRealizableServices || 'Rs. 0.00', d.abstractDistressServices || 'Rs. 0.00'],
-      ['TOTAL', d.abstractGovtTotal || 'Rs. 10,66,500.00', d.abstractMarketTotal || 'Rs. 35,77,500.00', d.abstractRealizableTotal || 'Rs. 33,98,625.00', d.abstractDistressTotal || 'Rs. 30,40,875.00'],
-      ['OR SAY', d.abstractGovtOrSay || 'Rs. 10,67,000.00', d.abstractMarketOrSay || 'Rs. 35,78,000.00', d.abstractRealizableOrSay || 'Rs. 33,99,000.00', d.abstractDistressOrSay || 'Rs. 30,41,000.00'],
+    const valHeaders = ['', 'LAND', 'BUILDING', 'TOTAL IN RS', 'OR SAY'];
+    const valColW = [140, 85, 85, 87.28, 90];
+
+    const valRows = [
+      [
+        'GOVT. GUIDE LINE VALUE',
+        d.abstractGovtLand || 'Rs. 933,600.00',
+        d.abstractGovtBldg || 'Rs. 1,958,250.00',
+        d.abstractGovtTotal || 'Rs. 2,891,850.00',
+        d.abstractGovtOrSay || 'Rs. 2,892,000.00',
+      ],
+      [
+        'MARKET VALUE IN RS',
+        d.abstractMarketLand || 'Rs. 6,000,000.00',
+        d.abstractMarketBldg || 'Rs. 2,611,000.00',
+        d.abstractMarketTotal || 'Rs. 8,611,000.00',
+        d.abstractMarketOrSay || 'Rs. 8,611,000.00',
+      ],
+      [
+        `REALISABLE VALUE (${rPct}%)`,
+        d.abstractRealizableLand || 'Rs. 5,700,000.00',
+        d.abstractRealizableBldg || 'Rs. 2,480,450.00',
+        d.abstractRealizableTotal || 'Rs. 8,180,450.00',
+        d.abstractRealizableOrSay || 'Rs. 8,180,000.00',
+      ],
+      [
+        `DISTRESS/FORCED SALE VALUE (${dPct}%)`,
+        d.abstractDistressLand || 'Rs. 5,100,000.00',
+        d.abstractDistressBldg || 'Rs. 2,219,350.00',
+        d.abstractDistressTotal || 'Rs. 7,319,350.00',
+        d.abstractDistressOrSay || 'Rs. 7,319,000.00',
+      ],
     ];
 
-    this.drawTable(absHeaders, absRows, absColW, [0, 6, 7], [0, 1], [], [], [], ['left', 'right', 'right', 'right', 'right'], ['center', 'center', 'center', 'center', 'center']);
+    this.drawTable(valHeaders, valRows, valColW, [0, 1, 2, 3], [0], [], [], [], ['left', 'right', 'right', 'right', 'right'], ['center', 'center', 'center', 'center', 'center']);
     this.cursorY += 16;
 
     // ── Enclosures Checklist Table ──
@@ -681,14 +695,14 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
   private drawOpinionAndSignatures(d: SBIBelow5CRFields): void {
     this.checkPageBreak(120);
 
-    const mVal = d.abstractMarketOrSay || d.abstractMarketTotal || 'Rs.35,78,000/-';
-    const mWords = d.opinionMarketWords || 'Thirty Five Lakhs Seventy Eight Thousand only';
-    const rVal = d.abstractRealizableOrSay || d.abstractRealizableTotal || 'Rs.33,99,000/-';
-    const rWords = d.opinionRealizableWords || 'Thirty Three Lakhs Ninety Nine Thousand only';
-    const gVal = d.abstractGovtOrSay || d.abstractGovtTotal || 'Rs.10,67,000/-';
-    const gWords = d.opinionGovtLandWords || 'Ten Lakhs Sixty Seven Thousand only';
-    const dVal = d.abstractDistressOrSay || d.abstractDistressTotal || 'Rs.30,41,000/-';
-    const dWords = d.opinionDistressWords || 'Thirty Lakhs Forty One Thousand only';
+    const mVal = d.abstractMarketOrSay || d.abstractMarketTotal || 'Rs.8,611,000/-';
+    const mWords = d.opinionMarketWords || 'Eighty Six Lakhs Eleven Thousand only';
+    const rVal = d.abstractRealizableOrSay || d.abstractRealizableTotal || 'Rs.8,180,000/-';
+    const rWords = d.opinionRealizableWords || 'Eighty One Lakhs Eighty Thousand only';
+    const gVal = d.abstractGovtOrSay || d.abstractGovtTotal || 'Rs.2,892,000/-';
+    const gWords = d.opinionGovtLandWords || 'Twenty Eight Lakhs Ninety Two Thousand only';
+    const dVal = d.abstractDistressOrSay || d.abstractDistressTotal || 'Rs.7,319,000/-';
+    const dWords = d.opinionDistressWords || 'Seventy Three Lakhs Nineteen Thousand only';
 
     const opP = `As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is ${mVal} (Rupees ${mWords}). The Realizable Value of the above Property is ${rVal} (Rupees ${rWords}). The book value of the above property as of Land is ${gVal} (Rupees ${gWords}) and the distress value ${dVal} (Rupees ${dWords}).`;
 
@@ -699,10 +713,9 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     }
     this.cursorY += 24;
 
-    // Date/Place and Signature
     const valuerSig = 'Signature of the Approved Valuer and Seal';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE_SMALL);
-    this.drawTextAt(`Date: ${d.signatureDate || '21.03.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Date: ${d.signatureDate || '24.07.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 12;
@@ -729,8 +742,8 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     const clauses = [
       { id: 'a.', text: 'I am citizen of India.' },
       { id: 'b.', text: 'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.' },
-      { id: 'c.', text: `The information furnished in my valuation report dated ${d.reportDate || '21.03.2026'} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.` },
-      { id: 'd.', text: `I have personally inspected the property on ${d.signatureDate || '19.02.2026'} & I have valued the property which is identified by documents& help of customer. The work is not sub-contracted to any other valuer& carried out by myself.` },
+      { id: 'c.', text: `The information furnished in my valuation report dated ${d.reportDate || '24.07.2026'} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.` },
+      { id: 'd.', text: `I have personally inspected the property on ${d.signatureDate || '24.07.2026'} & I have valued the property which is identified by documents & help of customer. The work is not sub-contracted to any other valuer & carried out by myself.` },
       { id: 'e.', text: 'Valuation report is submitted in the format as prescribed by the bank.' },
       { id: 'f.', text: 'I have not been depanelled by any other bank and in case any such depanelment by other banks during my empanelment with you, I will inform you within three days of such depanelment.' },
       { id: 'g.', text: 'I have not been removed from service earlier.' },
@@ -739,15 +752,15 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
       { id: 'j.', text: 'I have not been found guilty of misconduct in my professional capacity.' },
       { id: 'k.', text: 'I am not an undischarged bankrupt, or have not applied to be adjudicated as a bankrupt.' },
       { id: 'l.', text: 'I have not undischarged insolvent.' },
-      { id: 'm.', text: 'I have not been levied a penalty under section 271J of Income-Tax Act,1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.' },
+      { id: 'm.', text: 'I have not been levied a penalty under section 271J of Income-Tax Act, 1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.' },
       { id: 'n.', text: 'I have not been convicted of an offence connected with any proceeding under the Income-Tax Act 1961, wealth Tax Act 1957 or Gift Tax Act 1958.' },
       { id: 'o.', text: `My PAN Card number as applicable is ${panNo}.` },
       { id: 'p.', text: 'I undertake to keep you informed of any events or happenings which would make me ineligible for empanelment as a valuer.' },
-      { id: 'q.', text: 'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure' },
-      { id: 'r.', text: 'I have read the hand book on policy, standards & procedure for real Estate valuation,2011 of the IBA & this report is in conformity to the "Standards" enshrined for valuation in the part -B of the above handbook to the best of my knowledge.' },
+      { id: 'q.', text: 'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure.' },
+      { id: 'r.', text: 'I have read the hand book on policy, standards & procedure for real Estate valuation, 2011 of the IBA & this report is in conformity to the "Standards" enshrined for valuation in the part -B of the above handbook to the best of my knowledge.' },
       { id: 's.', text: 'I have read the International Valuation Standards (IVS) & the report submitted to the Bank for the respective asset class is in conformity to the "Standards" enshrined for valuation in the IVS in "General Standards" & "Asset Standards" as applicable.' },
       { id: 't.', text: 'I abide by the Model Code of Conduct for empanelment of valuer in the Bank.' },
-      { id: 'u.', text: 'I am registered under Section 34 AB of the Wealth Tax Act,1957.' },
+      { id: 'u.', text: 'I am registered under Section 34 AB of the Wealth Tax Act, 1957.' },
       { id: 'v.', text: 'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI)' },
       { id: 'w.', text: "My CIBIL Score and credit worthiness is as per Bank's guidelines." },
       { id: 'x.', text: 'I am the authorized official of the firm who is competent to sign this valuation report' },
@@ -755,23 +768,39 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
       { id: 'z.', text: 'Further, I hereby provide the following information.' },
     ];
 
-    for (const c of clauses) {
-      const cLines = this.wrapText(c.text, CONTENT_W - 20, FONT_SIZE_CAPTION);
-      const rowH = Math.max(14, cLines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 2);
-      this.checkPageBreak(rowH);
-      this.drawTextAt(c.id, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_CAPTION });
-      for (let i = 0; i < cLines.length; i++) {
-        this.drawTextAt(cLines[i], MARGIN_L + 18, this.cursorY + i * FONT_SIZE_CAPTION * LINE_HEIGHT, { fontSize: FONT_SIZE_CAPTION });
+    const colW = (CONTENT_W - 20) / 2;
+    const startY = this.cursorY;
+
+    let y1 = startY;
+    for (let i = 0; i < 13; i++) {
+      const c = clauses[i];
+      this.drawTextAt(c.id, MARGIN_L, y1, { bold: true, fontSize: FONT_SIZE_CAPTION });
+      const lines = this.wrapText(c.text, colW - 14, FONT_SIZE_CAPTION);
+      for (const l of lines) {
+        this.drawTextAt(l, MARGIN_L + 14, y1, { fontSize: FONT_SIZE_CAPTION });
+        y1 += 9.5;
       }
-      this.cursorY += rowH;
+      y1 += 4;
     }
 
-    this.cursorY += 20;
+    let y2 = startY;
+    const col2X = MARGIN_L + colW + 20;
+    for (let i = 13; i < clauses.length; i++) {
+      const c = clauses[i];
+      this.drawTextAt(c.id, col2X, y2, { bold: true, fontSize: FONT_SIZE_CAPTION });
+      const lines = this.wrapText(c.text, colW - 14, FONT_SIZE_CAPTION);
+      for (const l of lines) {
+        this.drawTextAt(l, col2X + 14, y2, { fontSize: FONT_SIZE_CAPTION });
+        y2 += 9.5;
+      }
+      y2 += 4;
+    }
 
-    // Sign-off
-    const valuerSig = '(Name and Official seal of the Approved Valuer)';
+    this.cursorY = Math.max(y1, y2) + 20;
+
+    const valuerSig = 'Signature of the Approved Valuer and Seal';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE_SMALL);
-    this.drawTextAt(`Date:${d.signatureDate || '21.03.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Date: ${d.signatureDate || '24.07.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 12;
@@ -779,119 +808,111 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 4. Model Code of Conduct For Valuers (Clauses 1 to 17+)
+  // 4. Model Code of Conduct (Points 1 to 17+)
   // ──────────────────────────────────────────────────────────────────────────
   private drawCodeOfConduct(): void {
+    const d = this.reportFields;
     this.addPage();
     this.cursorY = 20;
 
     this.drawCenteredTitle('MODEL CODE OF CONDUCT FOR VALUERS', FONT_SIZE_HEADER);
     this.cursorY += 4;
     this.drawCenteredTitle('{Adopted in line with Companies (Registered Valuers and Valuation Rules, 2017)}', FONT_SIZE_CAPTION);
-    this.cursorY += 8;
+    this.cursorY += 10;
 
     const sub = 'All Valuers empanelled with bank shall strictly adhere to the following code of conduct:';
     this.drawTextAt(sub, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += 12;
 
-    const sections = [
+    const colW = (CONTENT_W - 20) / 2;
+
+    const col1Sections = [
       {
-        title: 'Integrity and Fairness',
+        header: 'Integrity and Fairness',
         items: [
           '1. A Valuer shall, in the conduct of his/its business, follow high standards of integrity and fairness in all his/its dealings with his/its clients and other Valuers.',
           '2. A Valuer shall maintain integrity by being honest, straightforward, and forthright in all professional relationships.',
           '3. A Valuer shall endeavor to ensure that he/it provides true and adequate information and shall not misrepresent any facts or situations.',
           '4. A Valuer shall refrain from being involved in any action that would bring disrepute to the profession.',
-          '5 A Valuer shall keep public interest foremost while delivering his services.',
+          '5. A Valuer shall keep public interest foremost while delivering his services.',
         ],
       },
       {
-        title: 'Professional Competence and Due Care',
+        header: 'Professional Competence and Due Care',
         items: [
           '6. A Valuer shall render at all times high standards of service, exercise due diligence, ensure proper care and exercise independent professional judgment.',
           '7. A Valuer shall carry out professional services in accordance with the relevant technical and professional standards that may be specified from time to time',
           '8. A Valuer shall continuously maintain professional knowledge and skill to provide competent professional service based on up-to-date developments in practice, prevailing regulations/guidelines and techniques.',
           '9. In the preparation of a valuation report, the Valuer shall not disclaim liability for his/its expertise or deny his/its duty of care, except to the extent that the assumptions are based on statements of fact provided by the company or its auditors or consultants or information available in public domain and not generated by the Valuer.',
-          '10. A Valuer shall not carry out any instruction of the client insofar as they are incompatible with the requirements of integrity, objectivity and independence.',
-          '11. A Valuer shall clearly state to his client the services that he would be competent to provide and the services for which he would be relying on other Valuers or professionals or for which the client can have a separate arrangement with other Valuers.',
-        ],
-      },
-      {
-        title: 'Independence and Disclosure of Interest',
-        items: [
-          '12. A Valuer shall act with objectivity in his/its professional dealings by ensuring that his/its decisions are made without the presence of any bias, conflict of interest, coercion, or undue influence of any party, whether directly connected to the valuation assignment or not.',
-          '13. A Valuer shall not take up an assignment if he/it or any of his/its relatives or associates is not independent in terms of association to the company.',
-          '14. A Valuer shall maintain complete independence in his/its professional relationships and shall conduct the valuation independent of external influences.',
-          '15. A Valuer shall wherever necessary disclose to the clients, possible sources of conflicts of duties and interests, while providing unbiased services.',
-          '16. A Valuer shall not deal in securities of any subject company after any time when he/it first becomes aware of the possibility of his/its association with the valuation, and in accordance with the Securities and Exchange Board of India (Prohibition of Insider Trading) Regulations, 2015 or till the time the valuation report becomes public, whichever is earlier.',
-          '17. A Valuer shall not indulge in "mandate snatching" or offering "convenience valuations" in order to cater to a company or client\'s needs.',
-          '18. As an independent Valuer, the Valuer shall not charge success fee (Success fees may be defined as a compensation / incentive paid to any third party for successful closure of transaction. In this case, approval of credit proposals).',
-          '19. In any fairness opinion or independent expert opinion submitted by a Valuer, if there has been a prior engagement in an unconnected transaction, the Valuer shall declare the association with the company during the last five years.',
-        ],
-      },
-      {
-        title: 'Confidentiality',
-        items: [
-          '20. A Valuer shall not use or divulge to other clients or any other party any confidential information about the subject company, which has come to his/its knowledge without proper and specific authority or unless there is a legal or professional right or duty to disclose.',
-          '21. A Valuer shall ensure that he/ it maintains written contemporaneous records for any decision taken, the reasons for taking the decision, and the information and evidence in support of such decision. This shall be maintained so as to sufficiently enable a reasonable person to take a view on the appropriateness of his/its decisions and actions.',
-          '22. A Valuer shall appear, co-operate and be available for inspections and investigations carried out by the authority, any person authorized by the authority, the registered values\' organization with which he/it is registered or any other statutory regulatory body.',
-          '23. A Valuer shall provide all information and records as may be required by the authority, the Tribunal, Appellate Tribunal, the registered valuers organization with which he/it is registered, or any other statutory regulatory body.',
-          '24. A Valuer while respecting the confidentiality of information acquired during the course of performing professional services, shall maintain proper working papers for a period of three years or such longer period as required in its contract for a specific valuation, for production before a regulatory authority or for a peer review. In the event of a pending case before the Tribunal or Appellate Tribunal, the record shall be maintained till the disposal of the case.',
-        ],
-      },
-      {
-        title: 'Gifts and hospitality:',
-        items: [
-          '25. A Valuer or his/its relative shall not accept gifts or hospitality which undermines or affects his independence as a Valuer.\nExplanation — For the purposes of this code the term "relative" shall have the same meaning as Defined in clause (77) of Section 2 of the Companies Act, 2013 (18 of 2013).',
-          '26. A Valuer shall not offer gifts or hospitality or a financial or any other advantage to a public servant or any other person with a view to obtain or retain work for himself/ itself, or to obtain or retain an advantage in the conduct of profession for himself/ itself.',
-        ],
-      },
-      {
-        title: 'Remuneration and Costs.',
-        items: [
-          '27. A Valuer shall provide services for remuneration which is charged in a transparent manner, is a reasonable reflection of the work necessarily and properly undertaken, and is not inconsistent with the applicable rules.',
-          '28. A Valuer shall not accept any fees or charges other than those which are disclosed in a written contract with the person to whom he would be rendering service.',
-        ],
-      },
-      {
-        title: 'Occupation, employability and restrictions.',
-        items: [
-          '29. A Valuer shall refrain from accepting too many assignments, if he/it is unlikely to be able to devote adequate time to each of his/ its assignments.',
-          '30. A Valuer shall not conduct business which in the opinion of the authority or the registered Valuer organization discredits the profession.',
         ],
       },
     ];
 
-    for (const sec of sections) {
-      this.drawTextAt(sec.title, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_CAPTION + 0.5 });
-      this.cursorY += 12;
+    const col2Sections = [
+      {
+        header: 'Independence and Disclosure of Interest',
+        items: [
+          '10. A Valuer shall not carry out any instruction of the client insofar as they are incompatible with the requirements of integrity, objectivity and independence.',
+          '11. A Valuer shall act with objectivity in his/its professional dealings by ensuring that his/its decisions are made without the presence of any bias, conflict of interest, coercion, or undue influence of any party.',
+          '12. A Valuer shall not take up an assignment if he/it or any of his/its relatives or associates is not independent.',
+          '13. A Valuer shall maintain complete independence in his/its professional relationships and shall conduct the valuation independent of external influences.',
+          '14. A Valuer shall wherever necessary disclose to the clients, possible sources of conflicts of duties and interests.',
+          '15. A Valuer shall not deal in securities of any subject company after any time when he/it first becomes aware of the possibility of his/its association with the valuation.',
+          '16. A Valuer shall not indulge in "mandate snatching" or offering "convenience valuations" in order to cater to a company or client\'s needs.',
+          '17. As an independent Valuer, the Valuer shall not charge success fee.',
+        ],
+      },
+    ];
 
-      for (const it of sec.items) {
-        const lines = this.wrapText(it, CONTENT_W, FONT_SIZE_CAPTION);
-        const rowH = lines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 2;
-        this.checkPageBreak(rowH);
-        for (let i = 0; i < lines.length; i++) {
-          this.drawTextAt(lines[i], MARGIN_L, this.cursorY + i * FONT_SIZE_CAPTION * LINE_HEIGHT, { fontSize: FONT_SIZE_CAPTION });
-        }
-        this.cursorY += rowH;
+    const startY = this.cursorY;
+    let y1 = startY;
+    for (const sec of col1Sections) {
+      if (sec.header) {
+        this.drawTextAt(sec.header, MARGIN_L, y1, { bold: true, fontSize: FONT_SIZE_CAPTION + 0.5 });
+        y1 += 12;
       }
-      this.cursorY += 4;
+      for (const it of sec.items) {
+        const lines = this.wrapText(it, colW, FONT_SIZE_CAPTION);
+        for (const l of lines) {
+          this.drawTextAt(l, MARGIN_L, y1, { fontSize: FONT_SIZE_CAPTION });
+          y1 += 9.5;
+        }
+        y1 += 4;
+      }
+      y1 += 4;
     }
 
-    this.cursorY += 14;
+    let y2 = startY;
+    const col2X = MARGIN_L + colW + 20;
+    for (const sec of col2Sections) {
+      if (sec.header) {
+        this.drawTextAt(sec.header, col2X, y2, { bold: true, fontSize: FONT_SIZE_CAPTION + 0.5 });
+        y2 += 12;
+      }
+      for (const it of sec.items) {
+        const lines = this.wrapText(it, colW, FONT_SIZE_CAPTION);
+        for (const l of lines) {
+          this.drawTextAt(l, col2X, y2, { fontSize: FONT_SIZE_CAPTION });
+          y2 += 9.5;
+        }
+        y2 += 4;
+      }
+      y2 += 4;
+    }
 
-    // Code of conduct sign-off
+    this.cursorY = Math.max(y1, y2) + 20;
+
     const valuerSig = 'Signature of the Approved Valuer and Seal';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE_SMALL);
-    this.drawTextAt(`Date: 21.03.2026`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Date: ${d.signatureDate || '24.07.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 12;
-    this.drawTextAt(`Place: Bhubaneswar`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 5. Justification of Valuation Report Letter
+  // 5. Justification Letter
   // ──────────────────────────────────────────────────────────────────────────
   private drawJustificationLetter(): void {
     const d = this.reportFields;
@@ -900,60 +921,41 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
 
     const toLines = [
       'TO,',
-      d.toAuthority || 'THE CHIEF MANAGER,',
+      d.toAuthority || 'THE CHIEF MANAGER / BRANCH HEAD,',
       d.bankName || 'STATE BANK OF INDIA,',
-      d.branchAddress || 'BALUGAON BRANCH, DIST: KHURDA, ODISHA',
+      d.branchAddress || 'JHARSUGUDA BRANCH, DIST: JHARSUGUDA, ODISHA',
     ];
 
     for (const line of toLines) {
       this.drawTextAt(line, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL + 1 });
-      this.cursorY += 14;
+      this.cursorY += 13;
     }
     this.cursorY += 14;
 
-    const sub = `Sub: - Justification of valuation Report of ${d.borrowerName || 'Mrs. Sunita Kumari Nahak, W/o: Mr. Brundabana Nayak & Mr. Brundabana Nayak'}`;
+    const sub = d.justificationLetterSubject || `Sub: - Justification of valuation Report of ${d.borrowerName || d.ownerNameAndAddress || 'Customer'}.`;
     this.drawTextAt(sub, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 20;
 
     this.drawTextAt('Dear Sir,', MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.cursorY += 16;
 
-    const p1 = `The subject property bearing ${d.propertyAddress || 'Khata No: 441/7666, Plot No: 338/7776, Total Area: Ac.0.031 Dec i.e. 1350.00 Sft, Kissam: Gharabari in Mz: Chhatrapur, Ps: Chhatrapur No-52, Ts: Chhatrapur No-184, Dist: Ganjam, Odisha.'} We consider the Market Value Rs.1800/- Per Sft & Govt. Value Rs.790/- Per Sft.`;
-    const p1Lines = this.wrapText(p1, CONTENT_W, FONT_SIZE_SMALL);
-    for (const l of p1Lines) {
-      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
-      this.cursorY += 14;
-    }
-    this.cursorY += 12;
+    const defaultBody = d.justificationLetterBody || `The subject property is located in a developed residential area. There is variation between Market value and Guideline value because Guideline rates are not revised regularly and to avoid high stamp duty/registration charges sale deeds are executed at under-valued rates.\n\nSo, the value given by us is justified considering the present market scenario.`;
 
-    const p2 = 'There is a very high difference between Govt. Value and market Value. Govt. Benchmark Value is not revised for that locality recently and to avoid high stamp Duty/Registration Charges Sale Deed are generally executed in under-valued rate.';
-    const p2Lines = this.wrapText(p2, CONTENT_W, FONT_SIZE_SMALL);
-    for (const l of p2Lines) {
-      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
-      this.cursorY += 14;
+    const bodyParagraphs = defaultBody.split('\n\n');
+    for (const para of bodyParagraphs) {
+      const pLines = this.wrapText(para, CONTENT_W, FONT_SIZE_SMALL);
+      for (const l of pLines) {
+        this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
+        this.cursorY += 13;
+      }
+      this.cursorY += 10;
     }
-    this.cursorY += 12;
 
-    const p3 = 'The property is situated within a developed Residential area of Palia, Chhatrapur, Ganjam, Khurda. All the civic amenities like Bus Stop, Hotel, School, College, Market Place and Hospital are located within 2-3 Km radious from the property. So, it has a good force sale value. Some web screenshot attach for your reference.';
-    const p3Lines = this.wrapText(p3, CONTENT_W, FONT_SIZE_SMALL);
-    for (const l of p3Lines) {
-      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
-      this.cursorY += 14;
-    }
-    this.cursorY += 12;
+    this.cursorY += 30;
 
-    const p4 = 'So, the value given by us is justified considering the present market scenario.';
-    const p4Lines = this.wrapText(p4, CONTENT_W, FONT_SIZE_SMALL);
-    for (const l of p4Lines) {
-      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
-      this.cursorY += 14;
-    }
-    this.cursorY += 40;
-
-    // Bottom Sign-off
     const valuerSig = 'Er. Satyajit Mohanty';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE);
-    this.drawTextAt(`Date: ${d.signatureDate || '21.03.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`Date: ${d.signatureDate || '24.07.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.drawTextAt('Valuer', MARGIN_L + CONTENT_W - sigW, this.cursorY - 18, { bold: true, fontSize: FONT_SIZE });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.cursorY += 14;
@@ -966,7 +968,6 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
   private async drawEnclosures(): Promise<void> {
     const d = this.reportFields;
 
-    // Property Photographs
     if (d.propertyImages && d.propertyImages.length > 0) {
       this.addPage();
       this.cursorY = 20;
@@ -987,12 +988,10 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
           await this.drawImageSafely(imgs[i + 1], MARGIN_L + imgW + 20, this.cursorY, imgW, imgH);
           this.drawTextAt(names[i + 1] || `Photo ${i + 2}`, MARGIN_L + imgW + 20, this.cursorY + imgH + 10, { fontSize: FONT_SIZE_CAPTION });
         }
-
         this.cursorY += imgH + 25;
       }
     }
 
-    // Maps (Location, Mouza, Sketch, Cadastral, BDA)
     const mapList = [
       { title: 'LAYOUT / LOCATION MAP', imgs: d.locationMapImages },
       { title: 'MOUZA MAP', imgs: d.mouzaMapImages },
@@ -1015,7 +1014,6 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
       }
     }
 
-    // Legal Documents (Sale Deed, ROR, etc.)
     if (d.documentImages && d.documentImages.length > 0) {
       for (let i = 0; i < d.documentImages.length; i++) {
         const url = d.documentImages[i];
@@ -1033,58 +1031,60 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // Grid / Row Drawing Helpers
+  // Helper Table & Cell Drawing
   // ──────────────────────────────────────────────────────────────────────────
-  private drawBrownSectionHeader(num: string, title: string): void {
+  private drawBrownSectionHeader(secNum: string, title: string): void {
     const rowH = 18;
     this.checkPageBreak(rowH + 10);
-
-    const wNum = num ? 24 : 0;
+    const wNum = 20;
     const wTitle = CONTENT_W - wNum;
 
-    if (num) {
-      this.drawCell(MARGIN_L, this.cursorY, wNum, rowH, num, { bold: true, align: 'center', fillColor: SECTION_BANNER_BG, textColor: '#FFFFFF' });
-    }
+    this.drawCell(MARGIN_L, this.cursorY, wNum, rowH, secNum, { bold: true, align: 'center', fillColor: SECTION_BANNER_BG, textColor: '#FFFFFF' });
     this.drawCell(MARGIN_L + wNum, this.cursorY, wTitle, rowH, title, { bold: true, fillColor: SECTION_BANNER_BG, textColor: '#FFFFFF' });
     this.cursorY += rowH;
   }
 
-  private draw2ColRowCustom(wLbl: number, label: string, value: string, boldValue = false): void {
-    const wVal = CONTENT_W - wLbl;
-    const lblLines = this.wrapText(label, wLbl - 6, FONT_SIZE_SMALL);
-    const valLines = this.wrapText(value || 'NA', wVal - 6, FONT_SIZE_SMALL);
-    const maxL = Math.max(lblLines.length, valLines.length, 1);
-    const rowH = Math.max(18, maxL * FONT_SIZE_SMALL * LINE_HEIGHT + 6);
+  private draw2ColRowCustom(wTitle: number, title: string, value: string, boldTitle = false): void {
+    const wVal = CONTENT_W - wTitle;
+    const titleLines = this.wrapText(title, wTitle - 8, FONT_SIZE_CAPTION);
+    const valLines = this.wrapText(value || 'NA', wVal - 8, FONT_SIZE_CAPTION);
+    const maxL = Math.max(titleLines.length, valLines.length);
+    const rowH = Math.max(18, maxL * FONT_SIZE_CAPTION * LINE_HEIGHT + 6);
 
     this.checkPageBreak(rowH);
-    this.drawCell(MARGIN_L, this.cursorY, wLbl, rowH, label, { bold: false, fillColor: LBL_BG, fontSize: FONT_SIZE_SMALL });
-    this.drawCell(MARGIN_L + wLbl, this.cursorY, wVal, rowH, value || 'NA', { bold: boldValue, fontSize: FONT_SIZE_SMALL });
+    this.drawCell(MARGIN_L, this.cursorY, wTitle, rowH, title, { bold: boldTitle, fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wTitle, this.cursorY, wVal, rowH, value || 'NA');
     this.cursorY += rowH;
   }
 
-  private draw3ColRow(
-    c1: { label: string; val: string },
-    c2: { label: string; val: string },
-    c3: { label: string; val: string }
-  ): void {
-    const colW = CONTENT_W / 3;
+  private draw3ColRow(col1: { label: string; val: string }, col2: { label: string; val: string }, col3: { label: string; val: string }): void {
     const rowH = 28;
     this.checkPageBreak(rowH + 10);
 
-    const renderBlock = (x: number, c: { label: string; val: string }) => {
-      this.drawCell(x, this.cursorY, colW, rowH, `${c.label}:\n${c.val}`, { fontSize: FONT_SIZE_CAPTION });
-    };
+    const wLbl1 = 80;
+    const wVal1 = 110;
+    const wLbl2 = 90;
+    const wVal2 = 50;
+    const wLbl3 = 90;
+    const wVal3 = CONTENT_W - wLbl1 - wVal1 - wLbl2 - wVal2 - wLbl3;
 
-    renderBlock(MARGIN_L, c1);
-    renderBlock(MARGIN_L + colW, c2);
-    renderBlock(MARGIN_L + colW * 2, c3);
+    this.drawCell(MARGIN_L, this.cursorY, wLbl1, rowH, col1.label, { fontSize: FONT_SIZE_CAPTION, fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wLbl1, this.cursorY, wVal1, rowH, col1.val, { fontSize: FONT_SIZE_CAPTION });
+
+    this.drawCell(MARGIN_L + wLbl1 + wVal1, this.cursorY, wLbl2, rowH, col2.label, { fontSize: FONT_SIZE_CAPTION, fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wLbl1 + wVal1 + wLbl2, this.cursorY, wVal2, rowH, col2.val, { align: 'center', fontSize: FONT_SIZE_CAPTION });
+
+    this.drawCell(MARGIN_L + wLbl1 + wVal1 + wLbl2 + wVal2, this.cursorY, wLbl3, rowH, col3.label, { fontSize: FONT_SIZE_CAPTION, fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wLbl1 + wVal1 + wLbl2 + wVal2 + wLbl3, this.cursorY, wVal3, rowH, col3.val, { align: 'center', fontSize: FONT_SIZE_CAPTION });
+
     this.cursorY += rowH;
   }
 
   private drawTextBlockRow(text: string): void {
-    const lines = this.wrapText(text, CONTENT_W - 10, FONT_SIZE_CAPTION);
-    const rowH = Math.max(20, lines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 8);
-    this.checkPageBreak(rowH);
+    const lines = this.wrapText(text, CONTENT_W - 12, FONT_SIZE_CAPTION);
+    const rowH = Math.max(22, lines.length * FONT_SIZE_CAPTION * LINE_HEIGHT + 8);
+    this.checkPageBreak(rowH + 6);
+
     this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, rowH, text, { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
   }
