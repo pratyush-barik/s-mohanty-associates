@@ -253,5 +253,6 @@ export const BANK_SUB_TEMPLATES: Record<string, string[]> = {
     'PVR-4(LAND PURCHSASE ONLY)',
     'PVR-5 (SUBSEQUENT VALUATION REPORT)'
   ],
+  'STATE BANK OF INDIA-SBI': ['BELOW 5CR', 'ABOVE 5CR'],
   'TATA CAPITAL LTD': ['SME-BLG'],
 };

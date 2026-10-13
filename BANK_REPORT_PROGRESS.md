@@ -87,7 +87,9 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | **45** | **SAMMUNATI FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **46** | **SHRIRAM FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **47** | **SMFG INDIA-FULLERTON** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **48** | **STATE BANK OF INDIA-SBI** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **48** | **STATE BANK OF INDIA-SBI** | | | | | |
+| 48.1 | STATE BANK OF INDIA-SBI | `BELOW 5CR` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| 48.2 | STATE BANK OF INDIA-SBI | `ABOVE 5CR` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **49** | **SURYODAY SMALL FINANCE BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **50** | **SWARNA FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **51** | **TATA CAPITAL LTD** | `SME-BLG` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |

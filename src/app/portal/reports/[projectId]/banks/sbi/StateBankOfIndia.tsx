@@ -18,8 +18,8 @@ import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 
 export const SBI_CONFIG: BankConfig = {
   bankId: 'STATE BANK OF INDIA-SBI',
-  subTemplateId: '',
-  displayName: 'State Bank of India (SBI)',
+  subTemplateId: 'ABOVE 5CR',
+  displayName: 'State Bank of India (SBI) — ABOVE 5CR',
   defaultValues: {},
   getPDFRenderer: (data, projectCode) => {
     const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-renderer');
@@ -345,7 +345,7 @@ export default function StateBankOfIndia({
       <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            STATE BANK OF INDIA (SBI)
+            STATE BANK OF INDIA (SBI) — ABOVE 5CR
           </span>
           <h2 className="text-xl font-bold text-slate-900 mt-2">Valuation Report Questionnaire</h2>
           <p className="text-xs text-slate-500">
