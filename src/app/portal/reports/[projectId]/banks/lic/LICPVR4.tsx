@@ -4,7 +4,7 @@ import { BankConfig } from '@/lib/bank-fields';
 
 export const LIC_PVR4_CONFIG: BankConfig = {
   bankId: 'LIC HOUSING FINANCE LTD',
-  subTemplateId: 'PVR-4(LAND PURCHSASE ONLY)',
+  subTemplateId: 'PVR-4(LAND PURCHASE ONLY)',
   displayName: 'LIC Housing Finance Ltd — PVR-4 (Land Purchase Only)',
   defaultValues: {
     purpose: 'Land Purchase Only Valuation (PVR-4)',

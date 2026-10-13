@@ -139,9 +139,11 @@ const BANK_BUILDER_MAP: Record<string, any> = {
 
   // LIC
   'LIC HOUSING FINANCE LTD::NPA-DEFAULT CASES': dynamic(() => import('./banks/lic/LICNPA')),
+  'LIC HOUSING FINANCE LTD::PVR-1(SELF CONSTRUCTION-L & B)': dynamic(() => import('./banks/lic/LICPVR1')),
   'LIC HOUSING FINANCE LTD::PVR-1(SELF CONSTRUCTIONLA-L & B)': dynamic(() => import('./banks/lic/LICPVR1')),
   'LIC HOUSING FINANCE LTD::PVR-2(FLAT-UNDERCONSTRUCTION)': dynamic(() => import('./banks/lic/LICPVR2')),
   'LIC HOUSING FINANCE LTD::PVR-3(LAP-RENNOVATION-BOTH L&B-FLAT)': dynamic(() => import('./banks/lic/LICPVR3')),
+  'LIC HOUSING FINANCE LTD::PVR-4(LAND PURCHASE ONLY)': dynamic(() => import('./banks/lic/LICPVR4')),
   'LIC HOUSING FINANCE LTD::PVR-4(LAND PURCHSASE ONLY)': dynamic(() => import('./banks/lic/LICPVR4')),
   'LIC HOUSING FINANCE LTD::PVR-5 (SUBSEQUENT VALUATION REPORT)': dynamic(() => import('./banks/lic/LICPVR5')),
   'LIC HOUSING FINANCE LTD': dynamic(() => import('./banks/lic/LICPVR1')),
