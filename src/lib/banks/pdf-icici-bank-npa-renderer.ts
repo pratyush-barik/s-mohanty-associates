@@ -196,6 +196,48 @@ export class PDFIciciBankNpaRenderer extends PDFBankRenderer {
 
     this.cursorY += 10;
 
+    // ── SECTION 6: BOUNDARIES ON SITE ───────────────────────────────
+    this.drawSectionHeader('6. BOUNDARIES ON SITE', false);
+    this.drawSectionHeader('Site Directions & Verification', false);
+
+    const boundaryHeaders = ['Direction', 'As Per Sale Deed', 'Actual at Site'];
+    const boundaryRows = [
+      ['North', this.getF('icicinpaNorthDeed') || 'NA', this.getF('icicinpaNorthActual') || 'NA'],
+      ['South', this.getF('icicinpaSouthDeed') || 'NA', this.getF('icicinpaSouthActual') || 'NA'],
+      ['East', this.getF('icicinpaEastDeed') || 'NA', this.getF('icicinpaEastActual') || 'NA'],
+      ['West', this.getF('icicinpaWestDeed') || 'NA', this.getF('icicinpaWestActual') || 'NA'],
+    ];
+
+    const dirW = 90;
+    const eachValW = (CONTENT_W - dirW) / 2;
+
+    this.drawTable(
+      boundaryHeaders,
+      boundaryRows,
+      [dirW, eachValW, eachValW],
+      [],
+      [0],
+      [],
+      [],
+      [],
+      ['left', 'left', 'left'],
+      ['left', 'left', 'left']
+    );
+
+    // Auto-compute boundary matching fallback if not set
+    const northM = (this.getF('icicinpaNorthDeed') || '').trim().toLowerCase() === (this.getF('icicinpaNorthActual') || '').trim().toLowerCase() && !!(this.getF('icicinpaNorthDeed') || '').trim();
+    const southM = (this.getF('icicinpaSouthDeed') || '').trim().toLowerCase() === (this.getF('icicinpaSouthActual') || '').trim().toLowerCase() && !!(this.getF('icicinpaSouthDeed') || '').trim();
+    const eastM = (this.getF('icicinpaEastDeed') || '').trim().toLowerCase() === (this.getF('icicinpaEastActual') || '').trim().toLowerCase() && !!(this.getF('icicinpaEastDeed') || '').trim();
+    const westM = (this.getF('icicinpaWestDeed') || '').trim().toLowerCase() === (this.getF('icicinpaWestActual') || '').trim().toLowerCase() && !!(this.getF('icicinpaWestDeed') || '').trim();
+    const autoM = (northM && southM && eastM && westM) ? 'Yes' : ((this.getF('icicinpaNorthDeed') || this.getF('icicinpaSouthDeed')) ? 'No' : 'NA');
+
+    const boundaryMatching = this.getF('icicinpaBoundaryMatching') || autoM;
+    this.drawKeyValueRow([
+      { label: 'Boundary Matching', value: boundaryMatching, labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+
+    this.cursorY += 10;
+
     // ── (Additional sections will be added here as prompts are provided) ──
 
   }

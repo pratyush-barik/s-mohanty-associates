@@ -122,6 +122,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
     { id: 'icicinpa-section-3', title: 'PROPERTY DETAILS' },
     { id: 'icicinpa-section-4', title: 'CONTACT DETAILS' },
     { id: 'icicinpa-section-5', title: 'ATTACHED DOCUMENT DETAILS' },
+    { id: 'icicinpa-section-6', title: 'BOUNDARIES ON SITE' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankNpaRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -899,6 +900,91 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        );
+      }
+    },
+    // ── SECTION 6: BOUNDARIES ON SITE ───────────────────────────
+    {
+      id: 'icicinpa-section-6',
+      title: 'BOUNDARIES ON SITE',
+      number: 6,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const northMatch = (fields.icicinpaNorthDeed || '').trim().toLowerCase() === (fields.icicinpaNorthActual || '').trim().toLowerCase() && !!(fields.icicinpaNorthDeed || '').trim();
+        const southMatch = (fields.icicinpaSouthDeed || '').trim().toLowerCase() === (fields.icicinpaSouthActual || '').trim().toLowerCase() && !!(fields.icicinpaSouthDeed || '').trim();
+        const eastMatch = (fields.icicinpaEastDeed || '').trim().toLowerCase() === (fields.icicinpaEastActual || '').trim().toLowerCase() && !!(fields.icicinpaEastDeed || '').trim();
+        const westMatch = (fields.icicinpaWestDeed || '').trim().toLowerCase() === (fields.icicinpaWestActual || '').trim().toLowerCase() && !!(fields.icicinpaWestDeed || '').trim();
+
+        const isAllMatching = northMatch && southMatch && eastMatch && westMatch;
+        const autoMatching = isAllMatching ? 'Yes' : ((fields.icicinpaNorthDeed || fields.icicinpaSouthDeed || fields.icicinpaEastDeed || fields.icicinpaWestDeed) ? 'No' : 'NA');
+
+        const directions = [
+          { dir: 'North', deedKey: 'icicinpaNorthDeed', actualKey: 'icicinpaNorthActual' },
+          { dir: 'South', deedKey: 'icicinpaSouthDeed', actualKey: 'icicinpaSouthActual' },
+          { dir: 'East', deedKey: 'icicinpaEastDeed', actualKey: 'icicinpaEastActual' },
+          { dir: 'West', deedKey: 'icicinpaWestDeed', actualKey: 'icicinpaWestActual' },
+        ];
+
+        return (
+          <div style={{ backgroundColor: '#e0f7fa', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            {/* Table/Container: Site Directions & Verification */}
+            <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-cyan-200 pb-1">
+              Site Directions & Verification
+            </h4>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm border-collapse bg-white/80 rounded-md overflow-hidden border border-cyan-200">
+                <thead>
+                  <tr className="bg-cyan-100/70 text-gray-700 text-xs uppercase">
+                    <th className="py-2.5 px-4 text-left font-semibold border-b border-cyan-200 w-1/4">Direction</th>
+                    <th className="py-2.5 px-4 text-left font-semibold border-b border-cyan-200 w-3/8">As Per Sale Deed</th>
+                    <th className="py-2.5 px-4 text-left font-semibold border-b border-cyan-200 w-3/8">Actual at Site</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-cyan-100">
+                  {directions.map(({ dir, deedKey, actualKey }) => (
+                    <tr key={dir} className="hover:bg-cyan-50/50">
+                      <td className="py-2.5 px-4 font-semibold text-gray-700">{dir}</td>
+                      <td className="py-2 px-4">
+                        <input
+                          type="text"
+                          placeholder={`${dir} (As Per Deed)`}
+                          className={inputCls}
+                          value={fields[deedKey] || ''}
+                          onChange={e => handleChange(deedKey, e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="py-2 px-4">
+                        <input
+                          type="text"
+                          placeholder={`${dir} (Actual at Site)`}
+                          className={inputCls}
+                          value={fields[actualKey] || ''}
+                          onChange={e => handleChange(actualKey, e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Boundary Matching */}
+            <div className="pt-2">
+              <PrefillField
+                label="Boundary Matching"
+                type="radio"
+                options={['Yes', 'No', 'NA']}
+                value={fields.icicinpaBoundaryMatching}
+                onChange={(val: string) => handleChange('icicinpaBoundaryMatching', val)}
+                isReadOnly={isReadOnly}
+                tooltip="Auto-calculates to 'Yes' if Deed and Site strings match"
+                fallbackValue={autoMatching}
+              />
             </div>
           </div>
         );
