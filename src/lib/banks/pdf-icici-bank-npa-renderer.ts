@@ -117,6 +117,31 @@ export class PDFIciciBankNpaRenderer extends PDFBankRenderer {
 
     this.cursorY += 10;
 
+    // ── SECTION 3: PROPERTY DETAILS ──────────────────────────────────
+    this.drawSectionHeader('3. PROPERTY DETAILS', false);
+    this.drawSectionHeader('Project & Address Info', false);
+
+    this.drawKeyValueRow([{ label: 'Project Name', value: this.getF('icicinpaProjectName') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Building Name', value: this.getF('icicinpaBuildingName') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Images', value: this.getF('icicinpaImagesEnclosed') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Property Type', value: this.getF('icicinpaPropertyType') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    const unitType = this.getF('icicinpaUnitType') === 'Custom' ? this.getF('icicinpaUnitTypeCustom') : this.getF('icicinpaUnitType');
+    this.drawKeyValueRow([{ label: 'Unit Type', value: unitType || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Unit No', value: this.getF('icicinpaUnitNo') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Images (Documents)', value: this.getF('icicinpaDocsAttached') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Property Address', value: this.getF('icicinpaPropertyAddress') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Country', value: this.getF('icicinpaCountry') || 'India', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    const state = this.getF('icicinpaState') === 'Custom' ? this.getF('icicinpaStateCustom') : this.getF('icicinpaState');
+    this.drawKeyValueRow([{ label: 'State', value: state || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    const city = this.getF('icicinpaCity') === 'Custom' ? this.getF('icicinpaCityCustom') : this.getF('icicinpaCity');
+    this.drawKeyValueRow([{ label: 'City', value: city || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Nearby Landmark', value: this.getF('icicinpaNearbyLandmark') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Pincode', value: this.getF('icicinpaPincode') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    const legalAddr = this.getF('icicinpaLegalAddressSame') ? this.getF('icicinpaPropertyAddress') : this.getF('icicinpaLegalAddress');
+    this.drawKeyValueRow([{ label: 'Legal Address', value: legalAddr || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+
+    this.cursorY += 10;
+
     // ── (Additional sections will be added here as prompts are provided) ──
 
   }

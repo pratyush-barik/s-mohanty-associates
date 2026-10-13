@@ -119,6 +119,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
   navSections: [
     { id: 'icicinpa-section-1', title: 'VALUATION OF IMMOVABLE PROPERTY' },
     { id: 'icicinpa-section-2', title: 'INDIVIDUAL TECHNICAL REPORT' },
+    { id: 'icicinpa-section-3', title: 'PROPERTY DETAILS' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankNpaRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -427,6 +428,282 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
                 />
               )}
             </Field>
+          </div>
+        );
+      }
+    },
+    // ── SECTION 3: PROPERTY DETAILS ─────────────────────────────
+    {
+      id: 'icicinpa-section-3',
+      title: 'PROPERTY DETAILS',
+      number: 3,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        return (
+          <div style={{ backgroundColor: '#e8f5e9', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            {/* Container: Project & Address Info */}
+            <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-green-200 pb-1">
+              Project & Address Info
+            </h4>
+
+            {/* Project Name */}
+            <Field label="Project Name">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.icicinpaProjectName || ''}
+                onChange={e => handleChange('icicinpaProjectName', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            {/* Building Name */}
+            <Field label="Building Name">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.icicinpaBuildingName || ''}
+                onChange={e => handleChange('icicinpaBuildingName', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            {/* Images — Enclosed / Not Enclosed */}
+            <Field label="Images">
+              <div className="flex gap-6">
+                {['Enclosed', 'Not Enclosed'].map(opt => (
+                  <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                      checked={fields.icicinpaImagesEnclosed === opt}
+                      onChange={() => handleChange('icicinpaImagesEnclosed', fields.icicinpaImagesEnclosed === opt ? '' : opt)}
+                      disabled={isReadOnly}
+                    />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            </Field>
+
+            {/* Property Type — Dropdown */}
+            <Field label="Property Type">
+              <select
+                className={inputCls}
+                value={fields.icicinpaPropertyType || ''}
+                onChange={e => handleChange('icicinpaPropertyType', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="">Select Property Type...</option>
+                <option value="Residential">Residential</option>
+                <option value="Commercial">Commercial</option>
+                <option value="Mixed">Mixed</option>
+                <option value="Industrial">Industrial</option>
+                <option value="Open Land">Open Land</option>
+              </select>
+            </Field>
+
+            {/* Unit Type — Dropdown */}
+            <Field label="Unit Type">
+              <select
+                className={inputCls}
+                value={fields.icicinpaUnitType || ''}
+                onChange={e => handleChange('icicinpaUnitType', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="">Select Unit Type...</option>
+                <option value="Flat">Flat</option>
+                <option value="House">House</option>
+                <option value="Villa">Villa</option>
+                <option value="Plot">Plot</option>
+                <option value="Shop">Shop</option>
+                <option value="Office">Office</option>
+                <option value="Warehouse">Warehouse</option>
+                <option value="Custom">Custom / Other</option>
+              </select>
+              {fields.icicinpaUnitType === 'Custom' && (
+                <input
+                  type="text"
+                  placeholder="Enter custom unit type..."
+                  className={`${inputCls} mt-2`}
+                  value={fields.icicinpaUnitTypeCustom || ''}
+                  onChange={e => handleChange('icicinpaUnitTypeCustom', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              )}
+            </Field>
+
+            {/* Unit No */}
+            <Field label="Unit No">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.icicinpaUnitNo || ''}
+                onChange={e => handleChange('icicinpaUnitNo', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            {/* Images — Attached / Not Attached */}
+            <Field label="Images (Documents)">
+              <div className="flex gap-6">
+                {['Attached', 'Not Attached'].map(opt => (
+                  <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                      checked={fields.icicinpaDocsAttached === opt}
+                      onChange={() => handleChange('icicinpaDocsAttached', fields.icicinpaDocsAttached === opt ? '' : opt)}
+                      disabled={isReadOnly}
+                    />
+                    {opt}
+                  </label>
+                ))}
+              </div>
+            </Field>
+
+            {/* Property Address */}
+            <Field label="Property Address">
+              <textarea
+                className={`${inputCls} resize-y`}
+                rows={3}
+                value={fields.icicinpaPropertyAddress || ''}
+                onChange={e => handleChange('icicinpaPropertyAddress', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Country — Dropdown (default: India) */}
+              <Field label="Country">
+                <select
+                  className={inputCls}
+                  value={fields.icicinpaCountry || 'India'}
+                  onChange={e => handleChange('icicinpaCountry', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="India">India</option>
+                  <option value="Other">Other</option>
+                </select>
+              </Field>
+
+              {/* State — Dropdown */}
+              <Field label="State">
+                <select
+                  className={inputCls}
+                  value={fields.icicinpaState || ''}
+                  onChange={e => handleChange('icicinpaState', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="">Select State...</option>
+                  <option value="Odisha">Odisha</option>
+                  <option value="West Bengal">West Bengal</option>
+                  <option value="Jharkhand">Jharkhand</option>
+                  <option value="Chhattisgarh">Chhattisgarh</option>
+                  <option value="Andhra Pradesh">Andhra Pradesh</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Tamil Nadu">Tamil Nadu</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="Rajasthan">Rajasthan</option>
+                  <option value="Uttar Pradesh">Uttar Pradesh</option>
+                  <option value="Madhya Pradesh">Madhya Pradesh</option>
+                  <option value="Custom">Other / Custom</option>
+                </select>
+                {fields.icicinpaState === 'Custom' && (
+                  <input
+                    type="text"
+                    placeholder="Enter state name..."
+                    className={`${inputCls} mt-2`}
+                    value={fields.icicinpaStateCustom || ''}
+                    onChange={e => handleChange('icicinpaStateCustom', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                )}
+              </Field>
+
+              {/* City — Dropdown */}
+              <Field label="City">
+                <select
+                  className={inputCls}
+                  value={fields.icicinpaCity || ''}
+                  onChange={e => handleChange('icicinpaCity', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="">Select City...</option>
+                  <option value="Bhubaneswar">Bhubaneswar</option>
+                  <option value="Cuttack">Cuttack</option>
+                  <option value="Nayagarh">Nayagarh</option>
+                  <option value="Puri">Puri</option>
+                  <option value="Berhampur">Berhampur</option>
+                  <option value="Rourkela">Rourkela</option>
+                  <option value="Sambalpur">Sambalpur</option>
+                  <option value="Balasore">Balasore</option>
+                  <option value="Baripada">Baripada</option>
+                  <option value="Jeypore">Jeypore</option>
+                  <option value="Custom">Other / Custom</option>
+                </select>
+                {fields.icicinpaCity === 'Custom' && (
+                  <input
+                    type="text"
+                    placeholder="Enter city name..."
+                    className={`${inputCls} mt-2`}
+                    value={fields.icicinpaCityCustom || ''}
+                    onChange={e => handleChange('icicinpaCityCustom', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                )}
+              </Field>
+
+              {/* Pincode */}
+              <Field label="Pincode">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.icicinpaPincode || ''}
+                  onChange={e => handleChange('icicinpaPincode', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+
+            {/* Nearby Landmark */}
+            <Field label="Nearby Landmark">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.icicinpaNearbyLandmark || ''}
+                onChange={e => handleChange('icicinpaNearbyLandmark', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            {/* Legal Address same as Property Address — checkbox */}
+            <Field label="">
+              <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                  checked={!!fields.icicinpaLegalAddressSame}
+                  onChange={e => handleChange('icicinpaLegalAddressSame', e.target.checked)}
+                  disabled={isReadOnly}
+                />
+                Legal Address is same as Property Address
+              </label>
+            </Field>
+
+            {/* Legal Address — prefill if checkbox is checked */}
+            <PrefillField
+              label="Legal Address"
+              type="textarea"
+              rows={3}
+              value={fields.icicinpaLegalAddress}
+              onChange={(val: string) => handleChange('icicinpaLegalAddress', val)}
+              isReadOnly={isReadOnly}
+              tooltip={fields.icicinpaLegalAddressSame ? 'Prefill from Property Address' : ''}
+              fallbackValue={fields.icicinpaLegalAddressSame ? fields.icicinpaPropertyAddress : undefined}
+            />
           </div>
         );
       }
