@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock } from 'lucide-react';
+import { Lock, Plus, Trash2 } from 'lucide-react';
 import { PDFIciciBankNpaRenderer } from '@/lib/banks/pdf-icici-bank-npa-renderer';
 
 // ─── PrefillField component (same pattern as ICICIBankHLLAPBBG) ─────────────
@@ -121,6 +121,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
     { id: 'icicinpa-section-2', title: 'INDIVIDUAL TECHNICAL REPORT' },
     { id: 'icicinpa-section-3', title: 'PROPERTY DETAILS' },
     { id: 'icicinpa-section-4', title: 'CONTACT DETAILS' },
+    { id: 'icicinpa-section-5', title: 'ATTACHED DOCUMENT DETAILS' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankNpaRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -766,6 +767,139 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
                 disabled={isReadOnly}
               />
             </Field>
+          </div>
+        );
+      }
+    },
+    // ── SECTION 5: ATTACHED DOCUMENT DETAILS ────────────────────
+    {
+      id: 'icicinpa-section-5',
+      title: 'ATTACHED DOCUMENT DETAILS',
+      number: 5,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const docs = Array.isArray(fields.icicinpaAttachedDocs) && fields.icicinpaAttachedDocs.length > 0
+          ? fields.icicinpaAttachedDocs
+          : [{ docName: '', docNameCustom: '', fieldName: '', fieldValue: '' }];
+
+        const updateDocs = (newDocs: any[]) => handleChange('icicinpaAttachedDocs', newDocs);
+
+        const addRow = () => {
+          updateDocs([...docs, { docName: '', docNameCustom: '', fieldName: '', fieldValue: '' }]);
+        };
+
+        const removeRow = (idx: number) => {
+          const next = docs.filter((_: any, i: number) => i !== idx);
+          updateDocs(next.length > 0 ? next : [{ docName: '', docNameCustom: '', fieldName: '', fieldValue: '' }]);
+        };
+
+        const updateRow = (idx: number, patch: any) => {
+          const next = docs.map((d: any, i: number) => i === idx ? { ...d, ...patch } : d);
+          updateDocs(next);
+        };
+
+        return (
+          <div style={{ backgroundColor: '#f3e5f5', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            {/* Table/Container: Documents (Dynamic Rows) */}
+            <div className="flex justify-between items-center border-b border-purple-200 pb-2">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">
+                Documents (Dynamic Rows)
+              </h4>
+              <button
+                type="button"
+                onClick={addRow}
+                disabled={isReadOnly}
+                className="inline-flex items-center gap-1 bg-purple-700 hover:bg-purple-800 text-white text-xs font-semibold px-3 py-1.5 rounded shadow-sm transition disabled:opacity-50"
+              >
+                <Plus className="w-3.5 h-3.5" /> Add Row
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {docs.map((doc: any, idx: number) => (
+                <div key={idx} className="bg-white/80 border border-purple-100 rounded-lg p-3 shadow-sm flex flex-col md:flex-row gap-3 items-start md:items-end">
+                  {/* Document Name */}
+                  <div className="flex-1 w-full">
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">
+                      Document Name
+                    </label>
+                    <select
+                      className={inputCls}
+                      value={doc.docName || ''}
+                      onChange={e => updateRow(idx, { docName: e.target.value })}
+                      disabled={isReadOnly}
+                    >
+                      <option value="">Select Document...</option>
+                      <option value="Copy of Sale Deed">Copy of Sale Deed</option>
+                      <option value="Copy of Title Deed">Copy of Title Deed</option>
+                      <option value="Copy of Patta / RoR">Copy of Patta / RoR</option>
+                      <option value="Copy of Mutation">Copy of Mutation</option>
+                      <option value="Copy of Approved Building Plan">Copy of Approved Building Plan</option>
+                      <option value="Copy of Possession Certificate">Copy of Possession Certificate</option>
+                      <option value="Copy of Tax Receipt">Copy of Tax Receipt</option>
+                      <option value="Copy of Electricity Bill">Copy of Electricity Bill</option>
+                      <option value="Copy of Encumbrance Certificate">Copy of Encumbrance Certificate</option>
+                      <option value="Copy of Agreement to Sell">Copy of Agreement to Sell</option>
+                      <option value="Copy of Conversion Order">Copy of Conversion Order</option>
+                      <option value="Custom">Custom / Other</option>
+                    </select>
+                    {doc.docName === 'Custom' && (
+                      <input
+                        type="text"
+                        placeholder="Enter custom document name..."
+                        className={`${inputCls} mt-2`}
+                        value={doc.docNameCustom || ''}
+                        onChange={e => updateRow(idx, { docNameCustom: e.target.value })}
+                        disabled={isReadOnly}
+                      />
+                    )}
+                  </div>
+
+                  {/* Field Name */}
+                  <div className="flex-1 w-full">
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">
+                      Field Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Deed No / Date / Khata"
+                      className={inputCls}
+                      value={doc.fieldName || ''}
+                      onChange={e => updateRow(idx, { fieldName: e.target.value })}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+
+                  {/* Field Value */}
+                  <div className="flex-1 w-full">
+                    <label className="block text-xs font-semibold text-gray-600 mb-1">
+                      Field Value
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. 1234/2021"
+                      className={inputCls}
+                      value={doc.fieldValue || ''}
+                      onChange={e => updateRow(idx, { fieldValue: e.target.value })}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+
+                  {/* Remove button */}
+                  {docs.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removeRow(idx)}
+                      disabled={isReadOnly}
+                      className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition self-end md:self-auto"
+                      title="Remove row"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         );
       }

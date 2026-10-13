@@ -154,6 +154,48 @@ export class PDFIciciBankNpaRenderer extends PDFBankRenderer {
 
     this.cursorY += 10;
 
+    // ── SECTION 5: ATTACHED DOCUMENT DETAILS ────────────────────────
+    this.drawSectionHeader('5. ATTACHED DOCUMENT DETAILS', false);
+    this.drawSectionHeader('Documents', false);
+
+    const rawDocs = this.getF('icicinpaAttachedDocs') || [];
+    const docRows: string[][] = [];
+
+    if (Array.isArray(rawDocs) && rawDocs.length > 0) {
+      rawDocs.forEach((d: any, idx: number) => {
+        const docName = d.docName === 'Custom' ? (d.docNameCustom || 'Custom') : (d.docName || 'NA');
+        const fName = d.fieldName || 'NA';
+        const fVal = d.fieldValue || 'NA';
+        docRows.push([String(idx + 1), docName, fName, fVal]);
+      });
+    }
+
+    if (docRows.length === 0) {
+      docRows.push(['1', 'NA', 'NA', 'NA']);
+    }
+
+    const docHeaders = ['Sl No', 'Document Name', 'Field Name', 'Field Value'];
+    const slW = 40;
+    const remW = CONTENT_W - slW;
+    const docW = remW * 0.4;
+    const fnW = remW * 0.3;
+    const fvW = remW * 0.3;
+
+    this.drawTable(
+      docHeaders,
+      docRows,
+      [slW, docW, fnW, fvW],
+      [],
+      [],
+      [],
+      [],
+      [],
+      ['center', 'left', 'left', 'left'],
+      ['center', 'left', 'left', 'left']
+    );
+
+    this.cursorY += 10;
+
     // ── (Additional sections will be added here as prompts are provided) ──
 
   }
