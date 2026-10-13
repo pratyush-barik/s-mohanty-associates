@@ -244,6 +244,7 @@ export const BANK_SUB_TEMPLATES: Record<string, string[]> = {
   'DCB BANK': ['Desktop valuation format', 'HL-LAP-SME'],
   'HDFC BANK': ['HL-LAP-BLG'],
   'ICICI BANK': ['HL-LAP-BBG', 'NPA'],
+  'IDBI BANK': ['BELOW 5CR', 'ABOVE 5CR'],
   'KOTAK MAHINDRA BANK': ['BUSINESS BANKING GROUP', 'HL-LAP'],
   'LIC HOUSING FINANCE LTD': [
     'NPA-DEFAULT CASES',

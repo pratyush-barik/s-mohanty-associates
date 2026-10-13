@@ -55,8 +55,9 @@ This document tracks the end-to-end implementation and customization of all 57+ 
 | **23** | **HDFC BANK** | `HL-LAP-BLG` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **24** | **ICICI BANK** | | | | | |
 | 24.1 | ICICI BANK | `HL-LAP-BBG` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| 24.2 | ICICI BANK | `NPA` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
-| **25** | **IDBI BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| **25** | **IDBI BANK** | | | | | |
+| 25.1 | IDBI BANK | `BELOW 5CR` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
+| 25.2 | IDBI BANK | `ABOVE 5CR` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **26** | **IDFC FIRST BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **27** | **IKF FINANCE** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
 | **28** | **INDIAN BANK** | `Standard` | ⏳ Not Started | ⏳ Stub | ⏳ Base PDF | ⏳ Pending |
