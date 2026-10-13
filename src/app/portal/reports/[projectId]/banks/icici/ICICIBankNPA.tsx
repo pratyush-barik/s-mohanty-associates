@@ -120,6 +120,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
     { id: 'icicinpa-section-1', title: 'VALUATION OF IMMOVABLE PROPERTY' },
     { id: 'icicinpa-section-2', title: 'INDIVIDUAL TECHNICAL REPORT' },
     { id: 'icicinpa-section-3', title: 'PROPERTY DETAILS' },
+    { id: 'icicinpa-section-4', title: 'CONTACT DETAILS' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankNpaRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -704,6 +705,67 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
               tooltip={fields.icicinpaLegalAddressSame ? 'Prefill from Property Address' : ''}
               fallbackValue={fields.icicinpaLegalAddressSame ? fields.icicinpaPropertyAddress : undefined}
             />
+          </div>
+        );
+      }
+    },
+    // ── SECTION 4: CONTACT DETAILS ──────────────────────────────
+    {
+      id: 'icicinpa-section-4',
+      title: 'CONTACT DETAILS',
+      number: 4,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        return (
+          <div style={{ backgroundColor: '#fffde7', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            {/* Container: Contact Information */}
+            <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-yellow-200 pb-1">
+              Contact Information
+            </h4>
+
+            {/* Name — prefill from Customer Name (Section 2) */}
+            <PrefillField
+              label="Name"
+              type="text"
+              value={fields.icicinpaContactName}
+              onChange={(val: string) => handleChange('icicinpaContactName', val)}
+              isReadOnly={isReadOnly}
+              tooltip='Prefill from Customer Name (Section 2)'
+              fallbackValue={fields.icicinpaCustomerName}
+            />
+
+            {/* Mobile 1/Landline1 */}
+            <Field label="Mobile 1/Landline1">
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.icicinpaMobile1 || ''}
+                onChange={e => handleChange('icicinpaMobile1', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            {/* Req Initiator Id */}
+            <Field label="Req Initiator Id">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.icicinpaReqInitiatorId || ''}
+                onChange={e => handleChange('icicinpaReqInitiatorId', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+
+            {/* Req Initiator Name */}
+            <Field label="Req Initiator Name">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.icicinpaReqInitiatorName || ''}
+                onChange={e => handleChange('icicinpaReqInitiatorName', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
           </div>
         );
       }

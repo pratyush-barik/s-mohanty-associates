@@ -142,6 +142,18 @@ export class PDFIciciBankNpaRenderer extends PDFBankRenderer {
 
     this.cursorY += 10;
 
+    // ── SECTION 4: CONTACT DETAILS ──────────────────────────────────
+    this.drawSectionHeader('4. CONTACT DETAILS', false);
+    this.drawSectionHeader('Contact Information', false);
+
+    const contactName = this.getF('icicinpaContactName') || this.getF('icicinpaCustomerName') || 'NA';
+    this.drawKeyValueRow([{ label: 'Name', value: contactName, labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Mobile 1/Landline1', value: this.getF('icicinpaMobile1') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Req Initiator Id', value: this.getF('icicinpaReqInitiatorId') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+    this.drawKeyValueRow([{ label: 'Req Initiator Name', value: this.getF('icicinpaReqInitiatorName') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }]);
+
+    this.cursorY += 10;
+
     // ── (Additional sections will be added here as prompts are provided) ──
 
   }
