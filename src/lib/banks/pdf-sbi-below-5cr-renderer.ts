@@ -255,7 +255,10 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     // 4. Model Code of Conduct For Valuers (Clauses 1 to 17+)
     this.drawCodeOfConduct();
 
-    // 5. Inherited Attachments: Photographs, Maps, Documents
+    // 5. Justification Letter to Chief Manager
+    this.drawJustificationLetter();
+
+    // 6. Inherited Attachments: Photographs, Maps, Documents
     await this.drawEnclosures();
 
     return await this.save();
@@ -821,7 +824,40 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
           '14. A Valuer shall maintain complete independence in his/its professional relationships and shall conduct the valuation independent of external influences.',
           '15. A Valuer shall wherever necessary disclose to the clients, possible sources of conflicts of duties and interests, while providing unbiased services.',
           '16. A Valuer shall not deal in securities of any subject company after any time when he/it first becomes aware of the possibility of his/its association with the valuation, and in accordance with the Securities and Exchange Board of India (Prohibition of Insider Trading) Regulations, 2015 or till the time the valuation report becomes public, whichever is earlier.',
-          '17. A Valuer shall not indulge in "mandate snatching" or offering "convenience valuations"',
+          '17. A Valuer shall not indulge in "mandate snatching" or offering "convenience valuations" in order to cater to a company or client\'s needs.',
+          '18. As an independent Valuer, the Valuer shall not charge success fee (Success fees may be defined as a compensation / incentive paid to any third party for successful closure of transaction. In this case, approval of credit proposals).',
+          '19. In any fairness opinion or independent expert opinion submitted by a Valuer, if there has been a prior engagement in an unconnected transaction, the Valuer shall declare the association with the company during the last five years.',
+        ],
+      },
+      {
+        title: 'Confidentiality',
+        items: [
+          '20. A Valuer shall not use or divulge to other clients or any other party any confidential information about the subject company, which has come to his/its knowledge without proper and specific authority or unless there is a legal or professional right or duty to disclose.',
+          '21. A Valuer shall ensure that he/ it maintains written contemporaneous records for any decision taken, the reasons for taking the decision, and the information and evidence in support of such decision. This shall be maintained so as to sufficiently enable a reasonable person to take a view on the appropriateness of his/its decisions and actions.',
+          '22. A Valuer shall appear, co-operate and be available for inspections and investigations carried out by the authority, any person authorized by the authority, the registered values\' organization with which he/it is registered or any other statutory regulatory body.',
+          '23. A Valuer shall provide all information and records as may be required by the authority, the Tribunal, Appellate Tribunal, the registered valuers organization with which he/it is registered, or any other statutory regulatory body.',
+          '24. A Valuer while respecting the confidentiality of information acquired during the course of performing professional services, shall maintain proper working papers for a period of three years or such longer period as required in its contract for a specific valuation, for production before a regulatory authority or for a peer review. In the event of a pending case before the Tribunal or Appellate Tribunal, the record shall be maintained till the disposal of the case.',
+        ],
+      },
+      {
+        title: 'Gifts and hospitality:',
+        items: [
+          '25. A Valuer or his/its relative shall not accept gifts or hospitality which undermines or affects his independence as a Valuer.\nExplanation — For the purposes of this code the term "relative" shall have the same meaning as Defined in clause (77) of Section 2 of the Companies Act, 2013 (18 of 2013).',
+          '26. A Valuer shall not offer gifts or hospitality or a financial or any other advantage to a public servant or any other person with a view to obtain or retain work for himself/ itself, or to obtain or retain an advantage in the conduct of profession for himself/ itself.',
+        ],
+      },
+      {
+        title: 'Remuneration and Costs.',
+        items: [
+          '27. A Valuer shall provide services for remuneration which is charged in a transparent manner, is a reasonable reflection of the work necessarily and properly undertaken, and is not inconsistent with the applicable rules.',
+          '28. A Valuer shall not accept any fees or charges other than those which are disclosed in a written contract with the person to whom he would be rendering service.',
+        ],
+      },
+      {
+        title: 'Occupation, employability and restrictions.',
+        items: [
+          '29. A Valuer shall refrain from accepting too many assignments, if he/it is unlikely to be able to devote adequate time to each of his/ its assignments.',
+          '30. A Valuer shall not conduct business which in the opinion of the authority or the registered Valuer organization discredits the profession.',
         ],
       },
     ];
@@ -841,10 +877,91 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
       }
       this.cursorY += 4;
     }
+
+    this.cursorY += 14;
+
+    // Code of conduct sign-off
+    const valuerSig = 'Signature of the Approved Valuer and Seal';
+    const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE_SMALL);
+    this.drawTextAt(`Date: 21.03.2026`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.cursorY += 12;
+    this.drawTextAt(`Place: Bhubaneswar`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 5. Inherited Enclosures: Photographs, Maps, Documents
+  // 5. Justification of Valuation Report Letter
+  // ──────────────────────────────────────────────────────────────────────────
+  private drawJustificationLetter(): void {
+    const d = this.reportFields;
+    this.addPage();
+    this.cursorY = 25;
+
+    const toLines = [
+      'TO,',
+      d.toAuthority || 'THE CHIEF MANAGER,',
+      d.bankName || 'STATE BANK OF INDIA,',
+      d.branchAddress || 'BALUGAON BRANCH, DIST: KHURDA, ODISHA',
+    ];
+
+    for (const line of toLines) {
+      this.drawTextAt(line, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL + 1 });
+      this.cursorY += 14;
+    }
+    this.cursorY += 14;
+
+    const sub = `Sub: - Justification of valuation Report of ${d.borrowerName || 'Mrs. Sunita Kumari Nahak, W/o: Mr. Brundabana Nayak & Mr. Brundabana Nayak'}`;
+    this.drawTextAt(sub, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.cursorY += 20;
+
+    this.drawTextAt('Dear Sir,', MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.cursorY += 16;
+
+    const p1 = `The subject property bearing ${d.propertyAddress || 'Khata No: 441/7666, Plot No: 338/7776, Total Area: Ac.0.031 Dec i.e. 1350.00 Sft, Kissam: Gharabari in Mz: Chhatrapur, Ps: Chhatrapur No-52, Ts: Chhatrapur No-184, Dist: Ganjam, Odisha.'} We consider the Market Value Rs.1800/- Per Sft & Govt. Value Rs.790/- Per Sft.`;
+    const p1Lines = this.wrapText(p1, CONTENT_W, FONT_SIZE_SMALL);
+    for (const l of p1Lines) {
+      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
+      this.cursorY += 14;
+    }
+    this.cursorY += 12;
+
+    const p2 = 'There is a very high difference between Govt. Value and market Value. Govt. Benchmark Value is not revised for that locality recently and to avoid high stamp Duty/Registration Charges Sale Deed are generally executed in under-valued rate.';
+    const p2Lines = this.wrapText(p2, CONTENT_W, FONT_SIZE_SMALL);
+    for (const l of p2Lines) {
+      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
+      this.cursorY += 14;
+    }
+    this.cursorY += 12;
+
+    const p3 = 'The property is situated within a developed Residential area of Palia, Chhatrapur, Ganjam, Khurda. All the civic amenities like Bus Stop, Hotel, School, College, Market Place and Hospital are located within 2-3 Km radious from the property. So, it has a good force sale value. Some web screenshot attach for your reference.';
+    const p3Lines = this.wrapText(p3, CONTENT_W, FONT_SIZE_SMALL);
+    for (const l of p3Lines) {
+      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
+      this.cursorY += 14;
+    }
+    this.cursorY += 12;
+
+    const p4 = 'So, the value given by us is justified considering the present market scenario.';
+    const p4Lines = this.wrapText(p4, CONTENT_W, FONT_SIZE_SMALL);
+    for (const l of p4Lines) {
+      this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
+      this.cursorY += 14;
+    }
+    this.cursorY += 40;
+
+    // Bottom Sign-off
+    const valuerSig = 'Er. Satyajit Mohanty';
+    const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE);
+    this.drawTextAt(`Date: ${d.signatureDate || '21.03.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt('Valuer', MARGIN_L + CONTENT_W - sigW, this.cursorY - 18, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.cursorY += 14;
+    this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // 6. Inherited Enclosures: Photographs, Maps, Documents
   // ──────────────────────────────────────────────────────────────────────────
   private async drawEnclosures(): Promise<void> {
     const d = this.reportFields;
