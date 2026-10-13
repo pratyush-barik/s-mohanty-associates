@@ -22,7 +22,7 @@ export const SBI_CONFIG: BankConfig = {
   displayName: 'State Bank of India (SBI) — ABOVE 5CR',
   defaultValues: {},
   getPDFRenderer: (data, projectCode) => {
-    const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-renderer');
+    const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-above-5cr-renderer');
     return new PDFSBIRenderer(data, projectCode);
   },
 };
@@ -324,7 +324,7 @@ export default function StateBankOfIndia({
 
   const handleDownloadPdfInternal = async () => {
     try {
-      const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-renderer');
+      const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-above-5cr-renderer');
       const renderer = new PDFSBIRenderer(fields, projectCode);
       const pdfBytes = await renderer.render();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
