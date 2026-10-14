@@ -315,6 +315,98 @@ export class PDFIciciBankNpaRenderer extends PDFBankRenderer {
 
     this.cursorY += 10;
 
+    // ── SECTION 8: UNIT DETAILS ─────────────────────────────────────
+    this.drawSectionHeader('8. UNIT DETAILS', false);
+    this.drawSectionHeader('Room Usage', false);
+
+    const rawRooms = this.getF('icicinpaRoomUsage') || [];
+    const roomRows: string[][] = [];
+
+    if (Array.isArray(rawRooms) && rawRooms.length > 0) {
+      rawRooms.forEach((r: any, idx: number) => {
+        const details = r.details === 'Custom' ? (r.detailsCustom || 'Custom') : (r.details || 'GF');
+        const roomsCount = r.rooms || '0';
+        const kitchenCount = r.kitchen || '0';
+        const bathCount = r.bathrooms || '0';
+        const remarks = r.remarks || 'NA';
+        roomRows.push([String(idx + 1), details, String(roomsCount), String(kitchenCount), String(bathCount), remarks]);
+      });
+    }
+
+    if (roomRows.length === 0) {
+      roomRows.push(['1', 'GF', '0', '0', '0', 'NA']);
+    }
+
+    const roomHeaders = ['Sl No', 'Details', 'Rooms', 'Kitchen', 'Bathrooms', 'Usages and Remarks'];
+    const rSlW = 35;
+    const rDetW = 75;
+    const rCountW = 55;
+    const rRemW = CONTENT_W - (rSlW + rDetW + rCountW * 3);
+
+    this.drawTable(
+      roomHeaders,
+      roomRows,
+      [rSlW, rDetW, rCountW, rCountW, rCountW, rRemW],
+      [],
+      [],
+      [],
+      [],
+      [],
+      ['center', 'center', 'center', 'center', 'center', 'left'],
+      ['center', 'center', 'center', 'center', 'center', 'left']
+    );
+
+    this.cursorY += 8;
+
+    this.drawSectionHeader('Structure & Occupancy', false);
+
+    const structure = this.getF('icicinpaStructure') === 'Custom' ? this.getF('icicinpaStructureCustom') : this.getF('icicinpaStructure');
+    this.drawKeyValueRow([
+      { label: 'Structure', value: structure || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const interior = this.getF('icicinpaInterior') === 'Custom' ? this.getF('icicinpaInteriorCustom') : this.getF('icicinpaInterior');
+    this.drawKeyValueRow([
+      { label: 'Interior', value: interior || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const exterior = this.getF('icicinpaExterior') === 'Custom' ? this.getF('icicinpaExteriorCustom') : this.getF('icicinpaExterior');
+    this.drawKeyValueRow([
+      { label: 'Exterior', value: exterior || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const maint = this.getF('icicinpaMaintenanceLevel') === 'Custom' ? this.getF('icicinpaMaintenanceLevelCustom') : this.getF('icicinpaMaintenanceLevel');
+    this.drawKeyValueRow([
+      { label: 'Maintenance Level', value: maint || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const approxAge = this.getF('icicinpaApproxAgeOfProperty') ? `${this.getF('icicinpaApproxAgeOfProperty')} Years` : 'NA';
+    this.drawKeyValueRow([
+      { label: 'Approx. Age Of Property', value: approxAge, labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const occStatus = this.getF('icicinpaStatusOfOccupancy') === 'Custom' ? this.getF('icicinpaStatusOfOccupancyCustom') : this.getF('icicinpaStatusOfOccupancy');
+    this.drawKeyValueRow([
+      { label: 'Status Of Occupancy', value: occStatus || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const occBy = this.getF('icicinpaOccupiedBy') === 'Custom' ? this.getF('icicinpaOccupiedByCustom') : this.getF('icicinpaOccupiedBy');
+    this.drawKeyValueRow([
+      { label: 'Occupied By', value: occBy || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const relOccupant = this.getF('icicinpaRelationshipOfOccupant') === 'Custom' ? this.getF('icicinpaRelationshipOfOccupantCustom') : this.getF('icicinpaRelationshipOfOccupant');
+    this.drawKeyValueRow([
+      { label: 'Relationship Of Occupant With Customer', value: relOccupant || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Occupied Since', value: this.getF('icicinpaOccupiedSince') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+
+    const lifespan = this.getF('icicinpaTotalLifespan') !== undefined && this.getF('icicinpaTotalLifespan') !== '' ? Number(this.getF('icicinpaTotalLifespan')) : 60;
+    const ageNum = Number(this.getF('icicinpaApproxAgeOfProperty') || 0);
+    const calcResidual = this.getF('icicinpaApproxAgeOfProperty') !== undefined && this.getF('icicinpaApproxAgeOfProperty') !== '' ? String(Math.max(0, lifespan - ageNum)) : 'NA';
+    const residualVal = this.getF('icicinpaResidualAge') || calcResidual;
+    const residualDisplay = residualVal && residualVal !== 'NA' ? `${residualVal} Years` : 'NA';
+    this.drawKeyValueRow([
+      { label: 'Residual Age of Property', value: residualDisplay, labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+
+    this.cursorY += 10;
+
     // ── (Additional sections will be added here as prompts are provided) ──
 
   }

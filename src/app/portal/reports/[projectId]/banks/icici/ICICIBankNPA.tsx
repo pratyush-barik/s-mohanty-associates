@@ -124,6 +124,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
     { id: 'icicinpa-section-5', title: 'ATTACHED DOCUMENT DETAILS' },
     { id: 'icicinpa-section-6', title: 'BOUNDARIES ON SITE' },
     { id: 'icicinpa-section-7', title: 'PROPERTY DETAILS (TECHNICAL SPECIFICATIONS)' },
+    { id: 'icicinpa-section-8', title: 'UNIT DETAILS' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankNpaRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -1367,6 +1368,418 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
                 tooltip="Prefill/Auto-calculates as % of Market Value"
                 fallbackValue={autoRealizeValue}
               />
+            </div>
+          </div>
+        );
+      }
+    },
+    // ── SECTION 8: UNIT DETAILS ─────────────────────────────────
+    {
+      id: 'icicinpa-section-8',
+      title: 'UNIT DETAILS',
+      number: 8,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const rooms = Array.isArray(fields.icicinpaRoomUsage) && fields.icicinpaRoomUsage.length > 0
+          ? fields.icicinpaRoomUsage
+          : [{ details: 'GF', rooms: '', kitchen: '', bathrooms: '', remarks: '' }];
+
+        const updateRooms = (newRooms: any[]) => handleChange('icicinpaRoomUsage', newRooms);
+
+        const addRow = () => {
+          updateRooms([...rooms, { details: 'GF', rooms: '', kitchen: '', bathrooms: '', remarks: '' }]);
+        };
+
+        const removeRow = (idx: number) => {
+          const next = rooms.filter((_: any, i: number) => i !== idx);
+          updateRooms(next.length > 0 ? next : [{ details: 'GF', rooms: '', kitchen: '', bathrooms: '', remarks: '' }]);
+        };
+
+        const updateRow = (idx: number, patch: any) => {
+          const next = rooms.map((r: any, i: number) => i === idx ? { ...r, ...patch } : r);
+          updateRooms(next);
+        };
+
+        const totalLifespan = fields.icicinpaTotalLifespan !== undefined && fields.icicinpaTotalLifespan !== '' ? Number(fields.icicinpaTotalLifespan) : 60;
+        const approxAge = Number(fields.icicinpaApproxAgeOfProperty || 0);
+        const autoResidualAge = fields.icicinpaApproxAgeOfProperty !== undefined && fields.icicinpaApproxAgeOfProperty !== ''
+          ? String(Math.max(0, totalLifespan - approxAge))
+          : '';
+
+        return (
+          <div className="space-y-6">
+            {/* Table/Container: Room Usage (Dynamic Rows) */}
+            <div style={{ backgroundColor: '#fce4ec', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <div className="flex justify-between items-center border-b border-pink-200 pb-2">
+                <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">
+                  Room Usage (Dynamic Rows)
+                </h4>
+                <button
+                  type="button"
+                  onClick={addRow}
+                  disabled={isReadOnly}
+                  className="inline-flex items-center gap-1 bg-pink-700 hover:bg-pink-800 text-white text-xs font-semibold px-3 py-1.5 rounded shadow-sm transition disabled:opacity-50"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Row
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {rooms.map((row: any, idx: number) => (
+                  <div key={idx} className="bg-white/80 border border-pink-100 rounded-lg p-3 shadow-sm flex flex-col md:flex-row gap-3 items-start md:items-end">
+                    {/* Details Dropdown */}
+                    <div className="w-full md:w-36">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        Details
+                      </label>
+                      <select
+                        className={inputCls}
+                        value={row.details || 'GF'}
+                        onChange={e => updateRow(idx, { details: e.target.value })}
+                        disabled={isReadOnly}
+                      >
+                        <option value="GF">GF (Ground Floor)</option>
+                        <option value="FF">FF (First Floor)</option>
+                        <option value="SF">SF (Second Floor)</option>
+                        <option value="TF">TF (Third Floor)</option>
+                        <option value="Fourth Floor">Fourth Floor</option>
+                        <option value="Basement">Basement</option>
+                        <option value="Entire Building">Entire Building</option>
+                        <option value="Custom">Custom / Other</option>
+                      </select>
+                      {row.details === 'Custom' && (
+                        <input
+                          type="text"
+                          placeholder="Floor/Details..."
+                          className={`${inputCls} mt-2`}
+                          value={row.detailsCustom || ''}
+                          onChange={e => updateRow(idx, { detailsCustom: e.target.value })}
+                          disabled={isReadOnly}
+                        />
+                      )}
+                    </div>
+
+                    {/* No. of Rooms */}
+                    <div className="w-full md:w-28">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        No. of Rooms
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        className={inputCls}
+                        value={row.rooms || ''}
+                        onChange={e => updateRow(idx, { rooms: e.target.value })}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* No. of Kitchen */}
+                    <div className="w-full md:w-28">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        No. of Kitchen
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        className={inputCls}
+                        value={row.kitchen || ''}
+                        onChange={e => updateRow(idx, { kitchen: e.target.value })}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* No. of Bathrooms */}
+                    <div className="w-full md:w-32">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        No. of Bathrooms
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="0"
+                        className={inputCls}
+                        value={row.bathrooms || ''}
+                        onChange={e => updateRow(idx, { bathrooms: e.target.value })}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Usages and Remarks */}
+                    <div className="flex-1 w-full">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        Usages and Remarks
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Residential 2BHK / Hall / Dining"
+                        className={inputCls}
+                        value={row.remarks || ''}
+                        onChange={e => updateRow(idx, { remarks: e.target.value })}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Remove button */}
+                    {rooms.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeRow(idx)}
+                        disabled={isReadOnly}
+                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition self-end md:self-auto"
+                        title="Remove row"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Container: Structure & Occupancy */}
+            <div style={{ backgroundColor: '#fce4ec', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-pink-200 pb-1">
+                Structure & Occupancy
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Structure */}
+                <Field label="Structure">
+                  <select
+                    className={inputCls}
+                    value={fields.icicinpaStructure || ''}
+                    onChange={e => handleChange('icicinpaStructure', e.target.value)}
+                    disabled={isReadOnly}
+                  >
+                    <option value="">Select Structure...</option>
+                    <option value="RCC Framed Structure">RCC Framed Structure</option>
+                    <option value="Load Bearing Structure">Load Bearing Structure</option>
+                    <option value="Steel Structure">Steel Structure</option>
+                    <option value="Pucca Structure">Pucca Structure</option>
+                    <option value="Semi-Pucca Structure">Semi-Pucca Structure</option>
+                    <option value="Custom">Custom / Other</option>
+                  </select>
+                  {fields.icicinpaStructure === 'Custom' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom structure..."
+                      className={`${inputCls} mt-2`}
+                      value={fields.icicinpaStructureCustom || ''}
+                      onChange={e => handleChange('icicinpaStructureCustom', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  )}
+                </Field>
+
+                {/* Interior */}
+                <Field label="Interior">
+                  <select
+                    className={inputCls}
+                    value={fields.icicinpaInterior || ''}
+                    onChange={e => handleChange('icicinpaInterior', e.target.value)}
+                    disabled={isReadOnly}
+                  >
+                    <option value="">Select Interior...</option>
+                    <option value="Good">Good</option>
+                    <option value="Average">Average</option>
+                    <option value="Poor">Poor</option>
+                    <option value="Custom">Custom / Other</option>
+                  </select>
+                  {fields.icicinpaInterior === 'Custom' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom interior..."
+                      className={`${inputCls} mt-2`}
+                      value={fields.icicinpaInteriorCustom || ''}
+                      onChange={e => handleChange('icicinpaInteriorCustom', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  )}
+                </Field>
+
+                {/* Exterior */}
+                <Field label="Exterior">
+                  <select
+                    className={inputCls}
+                    value={fields.icicinpaExterior || ''}
+                    onChange={e => handleChange('icicinpaExterior', e.target.value)}
+                    disabled={isReadOnly}
+                  >
+                    <option value="">Select Exterior...</option>
+                    <option value="Good">Good</option>
+                    <option value="Average">Average</option>
+                    <option value="Poor">Poor</option>
+                    <option value="Custom">Custom / Other</option>
+                  </select>
+                  {fields.icicinpaExterior === 'Custom' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom exterior..."
+                      className={`${inputCls} mt-2`}
+                      value={fields.icicinpaExteriorCustom || ''}
+                      onChange={e => handleChange('icicinpaExteriorCustom', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  )}
+                </Field>
+
+                {/* Maintenance Level */}
+                <Field label="Maintenance Level">
+                  <select
+                    className={inputCls}
+                    value={fields.icicinpaMaintenanceLevel || ''}
+                    onChange={e => handleChange('icicinpaMaintenanceLevel', e.target.value)}
+                    disabled={isReadOnly}
+                  >
+                    <option value="">Select Maintenance...</option>
+                    <option value="Good">Good</option>
+                    <option value="Average">Average</option>
+                    <option value="Poor">Poor</option>
+                    <option value="Excellent">Excellent</option>
+                    <option value="Custom">Custom / Other</option>
+                  </select>
+                  {fields.icicinpaMaintenanceLevel === 'Custom' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom maintenance..."
+                      className={`${inputCls} mt-2`}
+                      value={fields.icicinpaMaintenanceLevelCustom || ''}
+                      onChange={e => handleChange('icicinpaMaintenanceLevelCustom', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  )}
+                </Field>
+
+                {/* Approx. Age Of Property */}
+                <Field label="Approx. Age Of Property (Years)">
+                  <input
+                    type="number"
+                    className={inputCls}
+                    value={fields.icicinpaApproxAgeOfProperty || ''}
+                    onChange={e => handleChange('icicinpaApproxAgeOfProperty', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="e.g. 5"
+                  />
+                </Field>
+
+                {/* Status Of Occupancy */}
+                <Field label="Status Of Occupancy">
+                  <select
+                    className={inputCls}
+                    value={fields.icicinpaStatusOfOccupancy || ''}
+                    onChange={e => handleChange('icicinpaStatusOfOccupancy', e.target.value)}
+                    disabled={isReadOnly}
+                  >
+                    <option value="">Select Status...</option>
+                    <option value="Occupied">Occupied</option>
+                    <option value="Vacant">Vacant</option>
+                    <option value="Self Occupied">Self Occupied</option>
+                    <option value="Tenant Occupied">Tenant Occupied</option>
+                    <option value="Custom">Custom / Other</option>
+                  </select>
+                  {fields.icicinpaStatusOfOccupancy === 'Custom' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom status..."
+                      className={`${inputCls} mt-2`}
+                      value={fields.icicinpaStatusOfOccupancyCustom || ''}
+                      onChange={e => handleChange('icicinpaStatusOfOccupancyCustom', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  )}
+                </Field>
+
+                {/* Occupied By */}
+                <Field label="Occupied By">
+                  <select
+                    className={inputCls}
+                    value={fields.icicinpaOccupiedBy || ''}
+                    onChange={e => handleChange('icicinpaOccupiedBy', e.target.value)}
+                    disabled={isReadOnly}
+                  >
+                    <option value="">Select Occupied By...</option>
+                    <option value="Owner / Customer">Owner / Customer</option>
+                    <option value="Tenant">Tenant</option>
+                    <option value="Relative / Family">Relative / Family</option>
+                    <option value="Vacant">Vacant</option>
+                    <option value="Custom">Custom / Other</option>
+                  </select>
+                  {fields.icicinpaOccupiedBy === 'Custom' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom occupied by..."
+                      className={`${inputCls} mt-2`}
+                      value={fields.icicinpaOccupiedByCustom || ''}
+                      onChange={e => handleChange('icicinpaOccupiedByCustom', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  )}
+                </Field>
+
+                {/* Relationship Of Occupant With Customer */}
+                <Field label="Relationship Of Occupant With Customer">
+                  <select
+                    className={inputCls}
+                    value={fields.icicinpaRelationshipOfOccupant || ''}
+                    onChange={e => handleChange('icicinpaRelationshipOfOccupant', e.target.value)}
+                    disabled={isReadOnly}
+                  >
+                    <option value="">Select Relationship...</option>
+                    <option value="Self">Self</option>
+                    <option value="Family / Relative">Family / Relative</option>
+                    <option value="Tenant">Tenant</option>
+                    <option value="None / NA">None / NA</option>
+                    <option value="Custom">Custom / Other</option>
+                  </select>
+                  {fields.icicinpaRelationshipOfOccupant === 'Custom' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom relationship..."
+                      className={`${inputCls} mt-2`}
+                      value={fields.icicinpaRelationshipOfOccupantCustom || ''}
+                      onChange={e => handleChange('icicinpaRelationshipOfOccupantCustom', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  )}
+                </Field>
+
+                {/* Occupied Since */}
+                <Field label="Occupied Since (Year / Years)">
+                  <input
+                    type="number"
+                    className={inputCls}
+                    value={fields.icicinpaOccupiedSince || ''}
+                    onChange={e => handleChange('icicinpaOccupiedSince', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="e.g. 2018"
+                  />
+                </Field>
+
+                {/* Residual Age of Property — Prefill/Auto-calculates fields (Total Lifespan - Approx Age) */}
+                <PrefillField
+                  label={
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span>Residual Age of Property</span>
+                      <span className="text-xs text-gray-500 font-normal">([Lifespan:</span>
+                      <input
+                        type="number"
+                        className="w-12 text-xs border border-gray-300 rounded px-1 py-0.5 text-center font-medium bg-white"
+                        value={totalLifespan}
+                        onChange={(e: any) => handleChange('icicinpaTotalLifespan', e.target.value)}
+                        disabled={isReadOnly}
+                        title="Total Lifespan (Years)"
+                      />
+                      <span className="text-xs text-gray-500 font-normal">Yrs] - Age)</span>
+                    </div>
+                  }
+                  type="number"
+                  value={fields.icicinpaResidualAge}
+                  onChange={(val: string) => handleChange('icicinpaResidualAge', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Prefill/Auto-calculates (Total Lifespan - Approx Age)"
+                  fallbackValue={autoResidualAge}
+                />
+              </div>
             </div>
           </div>
         );
