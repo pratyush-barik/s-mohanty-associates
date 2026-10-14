@@ -95,5 +95,5 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **56** | **UNITY SMALL FINANCE BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **57** | **UTKARSH SMALL FINANCE BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **58** | **VARTHANA FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
-| **59** | **VISTAAR FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **59** | **VISTAAR FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
 | **60** | **YES BANK** | `Standard` | ✅ Created Base | ✅ Completed |
