@@ -127,7 +127,9 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'IDFC FIRST BANK': dynamic(() => import('./banks/idfc/IDFCFirstBank')),
   'IKF FINANCE': dynamic(() => import('./banks/ikf/IKFFinance')),
   'INDIAN BANK': dynamic(() => import('./banks/indian-bank/IndianBank')),
-  'INDUSIND BANK': dynamic(() => import('./banks/indusind/IndusIndBank')),
+  'INDUSIND BANK::HL-LAP': dynamic(() => import('./banks/indusind/IndusIndHLLAP')),
+  'INDUSIND BANK::BBG': dynamic(() => import('./banks/indusind/IndusIndBBG')),
+  'INDUSIND BANK': dynamic(() => import('./banks/indusind/IndusIndHLLAP')),
   'ISFC': dynamic(() => import('./banks/isfc/ISFC')),
   'JANA SMALL FINANCE BANK': dynamic(() => import('./banks/jana-sfb/JanaSmallFinanceBank')),
 
