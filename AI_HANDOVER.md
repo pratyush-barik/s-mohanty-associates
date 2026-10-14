@@ -108,6 +108,13 @@ The core business logic is **100% complete**.
    - **C. Income Tax / Capital Gains (`IncomeTaxReportBuilder.tsx`)**: A specialized builder for IT/Capital Gains valuations (when `organisationTemplate === 'INCOME_TAX'` or `'INCOME_TAX_CAPITAL_GAINS'`), featuring custom fields for retro-valuation, indexation, and specific statutory sections under IT rules.
    - **D. Bank & Financial Institution Builders (`BankReportBuilder.tsx` + `banks/`)**: An extensible OOP-style configuration hierarchy for 60+ banks and financial institutions (SBI, HDFC, ICICI, Axis, LIC Housing Finance, DCB, Kotak, Aditya Birla, PNB, etc.):
       - **Core Rule (Maximize Base Bank Reuse)**: For every bank report template, developers and AI agents must prioritize referencing and composing from the Base Bank architecture (`BaseBankReportComponents.tsx`, `bank-fields.ts`, `pdf-bank-renderer.ts`) instead of duplicating standard UI sections or PDF logic.
+      - **STRATEGIC ROADMAP & DEADLINE DIRECTIVE (OCTOBER – NOVEMBER 2026)**:
+        - **Phase 1: Rapid Full-Portfolio Scaffolding (Priority Target: Before Nov 2nd)**:
+          - Support for external models in Antigravity ends on **Nov 2nd**.
+          - To maximize development velocity, our immediate priority is to **scaffold the basic working UI structure and dedicated PDF renderer for ALL remaining banks and sub-templates directly from their sample reports**.
+          - In Phase 1, ensure every bank has its: (1) Correct bank/subtemplate ID and display name, (2) UI component with standard soft containers and proper calculation formulas, (3) Dedicated PDF renderer extending `PDFBankRenderer` with inherited attachment suites (Photos, Device-uploaded Maps, Documents), and (4) Registration in `BuilderSelector.tsx`.
+        - **Phase 2: Fine-Tuning, Validation & Visual Perfection**:
+          - Once 100% of the bank structures exist in code, perform bank-by-bank deep refinement: exact Code of Conduct clauses, custom justification letters, fine-tuned margin/geometry adjustments, and strict field verifications.
       - **Base Form Component (`BankReportBuilder.tsx`) & Modular Components (`BaseBankReportComponents.tsx`)**: Pre-built modular blocks (`BaseLocationSection`, `BasePropertySection`, `BaseValuationSection`, `BaseBoundarySection`, `BasePhotographsSection`, `BaseMapsSection`, `BaseAnnexureSection`, `Field`, `Section`, `SubSection`, `FloatingNavigator`).
       - **Master Types (`src/lib/bank-fields.ts`)**: `BaseReportFields` (~50 core valuation fields) + `BankConfig` delta types.
       - **Base PDF Renderer (`src/lib/pdf-bank-renderer.ts`)**: Extends `PDFGeneralRenderer`, allowing bank-specific PDF renderers to subclass and override table/section drawing logic.

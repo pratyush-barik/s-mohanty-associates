@@ -1,4 +1,9 @@
-@AGENTS.md
+## Strategic Roadmap (October – November 2026)
+- **Immediate Goal (Phase 1 — Target: Before Nov 2nd)**:
+  - External model support in Antigravity ends on Nov 2nd. Therefore, **prioritize creating the basic working structure and dedicated PDF renderer for ALL remaining bank templates from their sample reports**.
+  - Speed and complete architectural coverage are vital so that no bank is left behind.
+- **Refinement Goal (Phase 2)**:
+  - Once every bank has its scaffolded UI builder and PDF renderer wired up, iterate bank-by-bank to apply micro-fixes, precise code-of-conduct clauses, justification letters, and exact visual alignment.
 
 ## Core Developer Directive
 - **Base Bank Reuse**: For every bank report builder project, always refer to and maximize reuse from Base Bank components (`src/app/portal/reports/[projectId]/banks/BaseBankReportComponents.tsx`), fields (`src/lib/bank-fields.ts`), and PDF renderer (`src/lib/pdf-bank-renderer.ts`). Avoid duplicating standard sections from scratch.

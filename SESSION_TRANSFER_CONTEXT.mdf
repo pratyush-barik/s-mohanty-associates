@@ -124,12 +124,19 @@ SECTION 4: CURRENT REPOSITORY STATE & RECENT WORK
   - Bank 3: Annapurna Micro Finance (`Standard`) — Complete
   - Bank 4: Arka Finance (`Standard`) — Complete
   - Bank 5: Arthan Finance (`Standard`) — Complete
-  - Bank 7: Axis Bank (`HL-LAP`, `AGRI`) — Refactored, typed, PDF generated, ready for final review
+  - Bank 7: Axis Bank (`HL-LAP`, `AGRI`, `SBB`, `SME`) — Complete
   - Bank 8: Axis Finance — Complete (Arka-identical cover page & PDF)
+  - Bank 10: Bajaj Housing (`HL-LAP`) — Complete
+  - Bank 11: Bandhan Bank (`HL-LAP`, `SME`) — Complete
+  - Bank 12: Bank of Baroda (`Standard`) — Complete
+  - Bank 34: LIC Housing Finance (`NPA-DEFAULT CASES`, `PVR-1`, `PVR-2`) — Complete
+  - Bank 48: State Bank of India (`BELOW 5CR`, `ABOVE 5CR`) — Complete
+- Strategic Deadline & Directive:
+  - External model support ends on Nov 2nd.
+  - Immediate Objective: Rapidly scaffold basic UI builder and dedicated PDF renderer for ALL remaining banks and sub-templates directly from sample reports (Phase 1).
+  - Subsequent Objective: Bank-by-bank micro-refinement and visual perfection (Phase 2).
 - Immediate Next Focus in Progress:
-  - Axis Bank remaining subclasses: 7.3 `SBB`, 7.4 `SME`
-  - Next Bank: 9. `AYE FINANCE LTD`
-  - Refactoring wizard constants in `GeneralReportBuilder.tsx` to separate modular config if needed.
+  - Complete remaining active bank scaffolds starting with 16. `CANFIN HOMES LTD`, 9. `AYE FINANCE LTD`, and continuing alphabetically.
 
 ================================================================================
 SECTION 5: VERIFICATION COMMANDS

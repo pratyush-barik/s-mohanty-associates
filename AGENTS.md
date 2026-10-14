@@ -38,6 +38,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - Key components: `ChatInterface.tsx` (client-side enquiry chat), `ProjectChat.tsx` (employee-side project chat), `RequestsDashboard.tsx`, `EnquiryList.tsx`, `BuilderSelector.tsx` (dynamic router), and `banks/` directory (60+ bank builders)
 - **All report builders are lazy-loaded**: `GeneralReportBuilder.tsx`, `IBBIReportBuilder.tsx`, `IncomeTaxReportBuilder.tsx`, `BankReportBuilder.tsx`, and all bank-specific builders use `dynamic()` imports in `BuilderSelector.tsx`. Do NOT convert these back to static `import` statements — this would bloat the client bundle and exceed Vercel free tier storage limits.
 
+### Strategy & Timeline Directive (October – November 2026)
+- **Phase 1: Rapid Scaffolding of All 60+ Bank Basic Structures (Priority Target: Before Nov 2nd)**:
+  - Antigravity external model support ends on Nov 2nd. To maximize time and efficiency across models and agents, **our immediate goal is to rapidly scaffold the basic UI builder component and dedicated PDF renderer for all remaining banks from their sample reports**.
+  - Each bank scaffold must establish: (1) Correct bank/subtemplate ID matching sample reports, (2) UI sections layout, (3) Table structure & valuation arithmetic, (4) Dedicated PDF renderer with inherited attachment suites (Photographs, Device-uploaded Maps, Documents), and (5) Registration in `BuilderSelector.tsx`.
+- **Phase 2: Deep Refinement, Edge Cases & Custom Perfection**:
+  - Once all bank basic structures are established in the codebase, we apply targeted fixes, bank-specific quirks, affirmations, code of conduct clauses, and fine-grained visual alignment to perfection.
+
 ### Core Guideline: Maximize Base Bank Architecture Reuse
 - **UI Components**: Always refer to and reuse building blocks from `src/app/portal/reports/[projectId]/banks/BaseBankReportComponents.tsx` (`BaseBankReportLayout`, `BaseLocationSection`, `BasePropertySection`, `BaseValuationSection`, `BaseBoundarySection`, `BasePhotographsSection`, `BaseMapsSection`, `BaseAnnexureSection`, `Field`, `Section`, `SubSection`, `FloatingNavigator`).
 - **Fields & Types**: Inherit from `src/lib/bank-fields.ts` (`BaseReportFields`, `BankConfig`).
