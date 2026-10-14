@@ -2902,7 +2902,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
 
               {!isDeclAccepted && (
                 <div className="flex items-center gap-2 p-2 bg-amber-100/70 border border-amber-300 rounded text-xs text-amber-900">
-                  <AlertCircle className="w-4 h-4 text-amber-700 flex-shrink-0" />
+                  <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
                   <span>Please check and accept the mandatory declaration above to unlock the signature upload & digital pad.</span>
                 </div>
               )}
