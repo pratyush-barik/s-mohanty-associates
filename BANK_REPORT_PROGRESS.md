@@ -71,7 +71,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | 34.6 | LIC HOUSING FINANCE LTD | `PVR-5 (SUBSEQUENT VALUATION REPORT)` | ✅ Created Base | ✅ Completed |
 | **35** | **MAHINDRA FINANCE LTD** | `Standard` | ✅ Created Base | ✅ Completed |
 | **36** | **MANAPPURAM HOUSING FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
-| **37** | **NAVDHAN FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **37** | **NAVDHAN FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
 | **38** | **NEO GROWTH** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **39** | **PNB HOUSING FINANCE LTD** | `HL-LAP` | ⏳ Not Created | ⏳ Not Started |
 | **40** | **POONAWALLA FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
