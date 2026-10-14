@@ -61,7 +61,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **32** | **KOTAK MAHINDRA BANK** | | | |
 | 32.1 | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` | ✅ Created Base | 🔨 In Progress |
 | 32.2 | KOTAK MAHINDRA BANK | `HL-LAP` | ⏳ Not Created | ⏳ Not Started |
-| **33** | **L&T FINANCIAL SERVICES** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **33** | **L&T FINANCIAL SERVICES** | `Standard` | ✅ Created Base | ✅ Completed |
 | **34** | **LIC HOUSING FINANCE LTD** | | | |
 | 34.1 | LIC HOUSING FINANCE LTD | `NPA-DEFAULT CASES` | ✅ Created Base | ✅ Completed |
 | 34.2 | LIC HOUSING FINANCE LTD | `PVR-1(SELF CONSTRUCTION-L & B)` | ✅ Created Base | ✅ Completed |
@@ -69,7 +69,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | 34.4 | LIC HOUSING FINANCE LTD | `PVR-3(LAP-RENNOVATION-BOTH L&B-FLAT)` | ✅ Created Base | ✅ Completed |
 | 34.5 | LIC HOUSING FINANCE LTD | `PVR-4(LAND PURCHASE ONLY)` | ✅ Created Base | ✅ Completed |
 | 34.6 | LIC HOUSING FINANCE LTD | `PVR-5 (SUBSEQUENT VALUATION REPORT)` | ✅ Created Base | ✅ Completed |
-| **35** | **MAHINDRA FINANCE LTD** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **35** | **MAHINDRA FINANCE LTD** | `Standard` | ✅ Created Base | ✅ Completed |
 | **36** | **MANAPPURAM HOUSING FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **37** | **NAVDHAN FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **38** | **NEO GROWTH** | `Standard` | ⏳ Not Created | ⏳ Not Started |
