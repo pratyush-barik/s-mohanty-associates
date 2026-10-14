@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock, Plus, Trash2 } from 'lucide-react';
+import { Lock, Plus, Trash2, AlertCircle } from 'lucide-react';
 import { PDFIciciBankNpaRenderer } from '@/lib/banks/pdf-icici-bank-npa-renderer';
 import { rupeesInWords } from '@/lib/numberToWords';
 
@@ -109,6 +109,222 @@ const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'tex
   );
 };
 
+// ─── DigitalSignaturePad component ──────────────────────────────────────────
+const DigitalSignaturePad = ({
+  value,
+  onChange,
+  disabled
+}: {
+  value?: string;
+  onChange: (val: string) => void;
+  disabled?: boolean;
+}) => {
+  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [mode, setMode] = useState<'upload' | 'draw'>(value?.startsWith('data:image') ? 'draw' : 'upload');
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (disabled) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    ctx.beginPath();
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    setIsDrawing(true);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || disabled) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#1e3a8a';
+    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    if (!isDrawing) return;
+    setIsDrawing(false);
+    const canvas = canvasRef.current;
+    if (canvas) {
+      onChange(canvas.toDataURL('image/png'));
+    }
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    onChange('');
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          onChange(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className={`border border-amber-200 rounded-lg p-3 bg-white/90 shadow-sm ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="inline-flex rounded-md shadow-sm border border-amber-200 p-0.5 bg-amber-50">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => setMode('upload')}
+            className={`px-3 py-1 text-xs font-medium rounded transition ${mode === 'upload' ? 'bg-amber-600 text-white shadow' : 'text-amber-900 hover:text-amber-950'}`}
+          >
+            Upload File
+          </button>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => setMode('draw')}
+            className={`px-3 py-1 text-xs font-medium rounded transition ${mode === 'draw' ? 'bg-amber-600 text-white shadow' : 'text-amber-900 hover:text-amber-950'}`}
+          >
+            Digital Pad
+          </button>
+        </div>
+
+        {value && !disabled && (
+          <button
+            type="button"
+            onClick={clearCanvas}
+            className="text-xs text-red-600 hover:text-red-800 font-medium inline-flex items-center gap-1"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Clear Signature
+          </button>
+        )}
+      </div>
+
+      {mode === 'upload' ? (
+        <div className="space-y-2">
+          <input
+            type="file"
+            accept="image/*"
+            disabled={disabled}
+            onChange={handleFileUpload}
+            className="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-900 hover:file:bg-amber-200 cursor-pointer disabled:cursor-not-allowed"
+          />
+          {value && (
+            <div className="mt-2 p-2 border border-dashed border-amber-300 rounded bg-amber-50/50 flex justify-center">
+              <img src={value} alt="Valuer Signature with Seal" className="max-h-24 object-contain" />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="text-[11px] text-gray-500">Sign inside the box below with mouse or touch:</div>
+          <canvas
+            ref={canvasRef}
+            width={400}
+            height={110}
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
+            onTouchStart={startDrawing}
+            onTouchMove={draw}
+            onTouchEnd={stopDrawing}
+            className="w-full border-2 border-dashed border-amber-300 rounded bg-white touch-none cursor-crosshair h-28"
+          />
+          {value && (
+            <div className="flex justify-between items-center text-xs text-emerald-700">
+              <span>✓ Digital Signature captured</span>
+              {!disabled && (
+                <button type="button" onClick={clearCanvas} className="text-red-500 hover:underline">Clear & Redraw</button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── FileUploadBox component ────────────────────────────────────────────────
+const FileUploadBox = ({
+  label,
+  fileData,
+  fileName,
+  onChange,
+  disabled
+}: {
+  label: string;
+  fileData?: string;
+  fileName?: string;
+  onChange: (dataUrl: string, name: string) => void;
+  disabled?: boolean;
+}) => {
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        onChange(reader.result as string, file.name);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const isImage = fileData && (fileData.startsWith('data:image') || fileName?.match(/\.(jpg|jpeg|png|webp|gif)$/i));
+
+  return (
+    <div className="bg-white/80 border border-amber-200 rounded-lg p-3 space-y-2">
+      <label className="block text-xs font-semibold text-gray-700">{label}</label>
+      <input
+        type="file"
+        accept="image/jpeg,image/png,image/webp,application/pdf"
+        disabled={disabled}
+        onChange={handleFile}
+        className="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-amber-100 file:text-amber-800 hover:file:bg-amber-200 cursor-pointer disabled:cursor-not-allowed"
+      />
+      {fileData && (
+        <div className="flex items-center justify-between p-2 bg-amber-50 rounded border border-amber-200 text-xs text-gray-800">
+          <div className="flex items-center gap-2 truncate">
+            {isImage ? (
+              <img src={fileData} alt={fileName || 'Document'} className="w-8 h-8 object-cover rounded border" />
+            ) : (
+              <span className="font-semibold text-amber-900 bg-amber-200 px-1.5 py-0.5 rounded text-[10px]">PDF</span>
+            )}
+            <span className="truncate">{fileName || 'Uploaded Document'}</span>
+          </div>
+          {!disabled && (
+            <button
+              type="button"
+              onClick={() => onChange('', '')}
+              className="text-red-500 hover:text-red-700 p-1"
+              title="Remove file"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── Bank Config ─────────────────────────────────────────────────────────────
 export const ICICI_BANK_NPA_CONFIG: BankConfig = {
   bankId: 'ICICI BANK',
@@ -116,7 +332,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
   displayName: 'ICICI Bank — NPA',
   id: 'icici-npa',
   hiddenFields: ['to', 'dateOfValuation', 'refNo'],
-  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10', 'section-15', 'annexures'],
+  hiddenSections: ['section-1', 'section-2', 'section-3', 'section-4', 'section-5', 'section-6', 'section-7', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10', 'section-11', 'section-12', 'section-13', 'section-14', 'section-15', 'annexures'],
   navSections: [
     { id: 'icicinpa-section-1', title: 'VALUATION OF IMMOVABLE PROPERTY' },
     { id: 'icicinpa-section-2', title: 'INDIVIDUAL TECHNICAL REPORT' },
@@ -128,6 +344,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
     { id: 'icicinpa-section-8', title: 'UNIT DETAILS' },
     { id: 'icicinpa-section-9', title: 'VALUATION' },
     { id: 'icicinpa-section-10', title: 'VALUATION AS PER GOVT. APPROVED RATE & MISCELLANEOUS' },
+    { id: 'icicinpa-section-11', title: 'REMARKS & DECLARATION' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankNpaRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -2382,6 +2599,368 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
                     disabled={isReadOnly}
                   />
                 </Field>
+              </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    // ── SECTION 11: REMARKS & DECLARATION ───────────────────────
+    {
+      id: 'icicinpa-section-11',
+      title: 'REMARKS & DECLARATION',
+      number: 11,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const valuerProfileName = fields.valuerName || 'Er. Satyajit Mohanty';
+        const valuerProfileCity = fields.valuerCity || 'Bhubaneswar';
+        const todayDate = new Date().toISOString().split('T')[0];
+
+        const isDeclAccepted = fields.icicinpaDeclarationAccepted === true;
+
+        return (
+          <div className="space-y-6">
+            {/* Container: Evaluator Notes */}
+            <div style={{ backgroundColor: '#fff8e1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-amber-200 pb-1">
+                Evaluator Notes
+              </h4>
+              <Field label="Remarks">
+                <textarea
+                  rows={5}
+                  placeholder="Enter evaluator notes, observations, detailed property condition..."
+                  className={`${inputCls} resize-y`}
+                  value={fields.icicinpaRemarks || ''}
+                  onChange={e => handleChange('icicinpaRemarks', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+
+            {/* Container: Tracking & Approvals */}
+            <div style={{ backgroundColor: '#fff8e1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-amber-200 pb-1">
+                Tracking & Approvals
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Visited By */}
+                <PrefillField
+                  label="Visited By"
+                  type="select"
+                  options={[
+                    { value: valuerProfileName, label: `${valuerProfileName} (Chief Valuer)` },
+                    { value: 'Field Engineer', label: 'Field Engineer (Inspection Team)' },
+                    { value: 'Associate Valuer', label: 'Associate Valuer' },
+                    { value: 'Technical Officer', label: 'Technical Officer' },
+                    { value: 'Custom', label: 'Custom / Other' },
+                  ]}
+                  value={fields.icicinpaVisitedBy}
+                  onChange={(val: string) => handleChange('icicinpaVisitedBy', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Prefill/Auto-calculates based on valuer profile"
+                  fallbackValue={valuerProfileName}
+                />
+
+                {/* Visited On */}
+                <Field label="Visited On">
+                  <input
+                    type="date"
+                    className={inputCls}
+                    value={fields.icicinpaVisitedOn || fields.dateOfInspection || fields.icicinpaDate || ''}
+                    onChange={e => handleChange('icicinpaVisitedOn', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+
+                {/* Visited User Type */}
+                <Field label="Visited User Type">
+                  <select
+                    className={inputCls}
+                    value={fields.icicinpaVisitedUserType || ''}
+                    onChange={e => handleChange('icicinpaVisitedUserType', e.target.value)}
+                    disabled={isReadOnly}
+                  >
+                    <option value="">Select User Type...</option>
+                    <option value="Technical Valuer">Technical Valuer</option>
+                    <option value="Empanelled Valuer">Empanelled Valuer</option>
+                    <option value="Field Engineer">Field Engineer</option>
+                    <option value="External Consultant">External Consultant</option>
+                    <option value="Bank Official">Bank Official</option>
+                    <option value="Custom">Custom / Other</option>
+                  </select>
+                  {fields.icicinpaVisitedUserType === 'Custom' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom user type..."
+                      className={`${inputCls} mt-2`}
+                      value={fields.icicinpaVisitedUserTypeCustom || ''}
+                      onChange={e => handleChange('icicinpaVisitedUserTypeCustom', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  )}
+                </Field>
+
+                {/* Entered On */}
+                <Field label="Entered On">
+                  <input
+                    type="date"
+                    className={inputCls}
+                    value={fields.icicinpaEnteredOn || fields.icicinpaDate || todayDate}
+                    onChange={e => handleChange('icicinpaEnteredOn', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+
+                {/* Entered By */}
+                <PrefillField
+                  label="Entered By"
+                  type="select"
+                  options={[
+                    { value: valuerProfileName, label: `${valuerProfileName} (Chief Valuer)` },
+                    { value: 'Report Data Operator', label: 'Report Data Operator' },
+                    { value: 'Technical Assistant', label: 'Technical Assistant' },
+                    { value: 'Custom', label: 'Custom / Other' },
+                  ]}
+                  value={fields.icicinpaEnteredBy}
+                  onChange={(val: string) => handleChange('icicinpaEnteredBy', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Prefill/Auto-calculates based on valuer profile"
+                  fallbackValue={valuerProfileName}
+                />
+
+                {/* Approver ID */}
+                <Field label="Approver ID">
+                  <input
+                    type="text"
+                    placeholder="e.g. SMA/VAL/01"
+                    className={inputCls}
+                    value={fields.icicinpaApproverId || ''}
+                    onChange={e => handleChange('icicinpaApproverId', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+
+                {/* Approver Name */}
+                <Field label="Approver Name">
+                  <input
+                    type="text"
+                    placeholder="e.g. Er. Satyajit Mohanty"
+                    className={inputCls}
+                    value={fields.icicinpaApproverName || ''}
+                    onChange={e => handleChange('icicinpaApproverName', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+
+                {/* Approver Designation */}
+                <Field label="Approver Designation">
+                  <input
+                    type="text"
+                    placeholder="e.g. Chief Valuer & Consultant"
+                    className={inputCls}
+                    value={fields.icicinpaApproverDesignation || ''}
+                    onChange={e => handleChange('icicinpaApproverDesignation', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
+
+              {/* Approver Remarks */}
+              <Field label="Approver Remarks">
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Valuation recommended and approved as per bank norms..."
+                  className={`${inputCls} resize-y`}
+                  value={fields.icicinpaApproverRemarks || ''}
+                  onChange={e => handleChange('icicinpaApproverRemarks', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+
+            {/* Container: Image Links */}
+            <div style={{ backgroundColor: '#fff8e1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-amber-200 pb-1">
+                Image Links
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FileUploadBox
+                  label="Image / Document :1 (JPG/PNG/PDF)"
+                  fileData={fields.icicinpaImageDoc1}
+                  fileName={fields.icicinpaImageDoc1Name}
+                  onChange={(dataUrl, name) => {
+                    handleChange('icicinpaImageDoc1', dataUrl);
+                    handleChange('icicinpaImageDoc1Name', name);
+                  }}
+                  disabled={isReadOnly}
+                />
+                <FileUploadBox
+                  label="Image / Document :2 (JPG/PNG/PDF)"
+                  fileData={fields.icicinpaImageDoc2}
+                  fileName={fields.icicinpaImageDoc2Name}
+                  onChange={(dataUrl, name) => {
+                    handleChange('icicinpaImageDoc2', dataUrl);
+                    handleChange('icicinpaImageDoc2Name', name);
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            </div>
+
+            {/* Table/Container: Parameter Info */}
+            <div style={{ backgroundColor: '#fff8e1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-amber-200 pb-1">
+                Parameter Info (Read-Only)
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Field label="Application No.">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed text-gray-700 pr-8`}
+                      value={fields.icicinpaApplicationNo || 'NA'}
+                      disabled
+                      title="Prefill from Section 2"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Lock className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                </Field>
+
+                <Field label="Customer Name">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed text-gray-700 pr-8`}
+                      value={fields.icicinpaCustomerName || 'NA'}
+                      disabled
+                      title="Prefill from Section 2"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Lock className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                </Field>
+
+                <Field label="Channel Name /Employee Name">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed text-gray-700 pr-8`}
+                      value={(fields.icicinpaChannelName ? fields.icicinpaChannelName + (fields.icicinpaPreparedBy ? ' / ' + fields.icicinpaPreparedBy : '') : (fields.icicinpaPreparedBy || 'NA'))}
+                      disabled
+                      title="Prefill from Section 2"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Lock className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                </Field>
+
+                <Field label="Date">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed text-gray-700 pr-8`}
+                      value={fields.icicinpaDate || fields.valuationDate || todayDate}
+                      disabled
+                      title="Report Date"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Lock className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                </Field>
+              </div>
+            </div>
+
+            {/* Container: Signatories */}
+            <div style={{ backgroundColor: '#fff8e1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-amber-200 pb-1">
+                Signatories & Declarations
+              </h4>
+
+              {/* Mandatory Declaration Checkbox */}
+              <div className="p-3 bg-white/90 border border-amber-300 rounded-lg shadow-sm">
+                <label className="flex items-start gap-3 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="mt-1 h-4 w-4 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+                    checked={isDeclAccepted}
+                    onChange={e => handleChange('icicinpaDeclarationAccepted', e.target.checked)}
+                    disabled={isReadOnly}
+                  />
+                  <div className="text-xs text-gray-800 leading-relaxed font-medium">
+                    <span className="font-bold text-amber-900 block mb-0.5">Mandatory Declaration (Unlocks Signature):</span>
+                    &ldquo;I/We hereby declare that 1. The property was inspected by us. 2. We have no direct or indirect interest in the property valued. 3. The information furnished above is true and correct to the best of our knowledge and belief.&rdquo;
+                  </div>
+                </label>
+              </div>
+
+              {!isDeclAccepted && (
+                <div className="flex items-center gap-2 p-2 bg-amber-100/70 border border-amber-300 rounded text-xs text-amber-900">
+                  <AlertCircle className="w-4 h-4 text-amber-700 flex-shrink-0" />
+                  <span>Please check and accept the mandatory declaration above to unlock the signature upload & digital pad.</span>
+                </div>
+              )}
+
+              {/* Signature with Seal (File Upload / Digital Pad) */}
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-gray-700">
+                  Signature with seal {isDeclAccepted ? <span className="text-emerald-600 font-normal">(Unlocked)</span> : <span className="text-amber-700 font-normal">(Locked)</span>}
+                </label>
+                <DigitalSignaturePad
+                  value={fields.icicinpaSignatureSeal}
+                  onChange={(val: string) => handleChange('icicinpaSignatureSeal', val)}
+                  disabled={isReadOnly || !isDeclAccepted}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                {/* Date */}
+                <PrefillField
+                  label="Date"
+                  type="date"
+                  value={fields.icicinpaSignDate}
+                  onChange={(val: string) => handleChange('icicinpaSignDate', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Prefill/Auto-calculates fields to current date"
+                  fallbackValue={todayDate}
+                />
+
+                {/* Place */}
+                <PrefillField
+                  label="Place"
+                  type="text"
+                  value={fields.icicinpaSignPlace}
+                  onChange={(val: string) => handleChange('icicinpaSignPlace', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Prefill/Auto-calculates based on valuer profile"
+                  fallbackValue={valuerProfileCity}
+                />
+              </div>
+            </div>
+
+            {/* Container: Legal Statement */}
+            <div style={{ backgroundColor: '#fff8e1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-amber-200 pb-1">
+                Legal Statement
+              </h4>
+
+              <div className="p-3.5 bg-white/90 border border-amber-300 rounded-lg shadow-sm">
+                <div className="flex items-center justify-between mb-2 border-b border-amber-100 pb-1">
+                  <span className="text-xs font-bold text-amber-950 uppercase tracking-wide">DISCLAIMER (Read-Only)</span>
+                  <div className="flex items-center gap-1 text-[11px] text-gray-500">
+                    <Lock className="w-3.5 h-3.5 text-gray-400" />
+                    <span>Protected Standard Clause</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-700 leading-relaxed font-normal text-justify">
+                  DISCLAIMER: This valuation report has been prepared solely for the technical assessment and internal guidance of ICICI Bank. The valuation is carried out in good faith based on the documents, visual physical inspection, information, and representations furnished by the applicant/bank. No warranty is given or implied regarding structural stability, hidden foundations, soil strata, concealed installations, or legal title correctness. This report is confidential and cannot be reproduced, transferred, or used by any third party without prior written permission of S Mohanty Associates.
+                </p>
               </div>
             </div>
           </div>

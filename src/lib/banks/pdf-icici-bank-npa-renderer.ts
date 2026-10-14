@@ -593,6 +593,117 @@ export class PDFIciciBankNpaRenderer extends PDFBankRenderer {
 
     this.cursorY += 10;
 
+    // ── SECTION 11: REMARKS & DECLARATION ─
+    this.drawSectionHeader('11. REMARKS & DECLARATION', false);
+
+    // Container: Evaluator Notes
+    this.drawSectionHeader('Evaluator Notes', false);
+    const remarks = this.getF('icicinpaRemarks') || 'The property was visually inspected and assessed. Building construction is sound and matches development guidelines. Assessed on prevailing market rate.';
+    this.drawKeyValueRow([
+      { label: 'Remarks', value: remarks, labelWidth: 100, valueWidth: CONTENT_W - 100 }
+    ]);
+
+    this.cursorY += 8;
+
+    // Container: Tracking & Approvals
+    this.drawSectionHeader('Tracking & Approvals', false);
+    const visitedBy = this.getF('icicinpaVisitedBy') || this.getF('valuerName') || 'Er. Satyajit Mohanty';
+    const visitedOn = this.getF('icicinpaVisitedOn') || this.getF('dateOfInspection') || this.getF('icicinpaDate') || 'NA';
+    const visitedUserType = this.getF('icicinpaVisitedUserType') === 'Custom' ? this.getF('icicinpaVisitedUserTypeCustom') : (this.getF('icicinpaVisitedUserType') || 'Technical Valuer');
+    const enteredOn = this.getF('icicinpaEnteredOn') || this.getF('icicinpaDate') || 'NA';
+    const enteredBy = this.getF('icicinpaEnteredBy') || this.getF('valuerName') || 'Er. Satyajit Mohanty';
+    const approverName = this.getF('icicinpaApproverName') || this.getF('valuerName') || 'Er. Satyajit Mohanty';
+    const approverId = this.getF('icicinpaApproverId') || 'SMA/VAL/01';
+    const approverRemarks = this.getF('icicinpaApproverRemarks') || 'Approved';
+    const approverDesig = this.getF('icicinpaApproverDesignation') || 'Chief Valuer';
+
+    this.drawKeyValueRow([
+      { label: 'Visited By', value: visitedBy, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 },
+      { label: 'Visited On', value: visitedOn, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Visited User Type', value: visitedUserType || 'Technical Valuer', labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 },
+      { label: 'Entered On', value: enteredOn, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Entered By', value: enteredBy, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 },
+      { label: 'Approver ID', value: approverId, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Approver Name', value: approverName, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 },
+      { label: 'Approver Designation', value: approverDesig, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Approver Remarks', value: approverRemarks, labelWidth: 130, valueWidth: CONTENT_W - 130 }
+    ]);
+
+    this.cursorY += 8;
+
+    // Container: Image Links
+    this.drawSectionHeader('Image Links', false);
+    const doc1 = this.getF('icicinpaImageDoc1Name') || (this.getF('icicinpaImageDoc1') ? 'Image/Document Attached' : 'NA');
+    const doc2 = this.getF('icicinpaImageDoc2Name') || (this.getF('icicinpaImageDoc2') ? 'Image/Document Attached' : 'NA');
+    this.drawKeyValueRow([
+      { label: 'Image / Document :1', value: doc1, labelWidth: 160, valueWidth: (CONTENT_W / 2) - 160 },
+      { label: 'Image / Document :2', value: doc2, labelWidth: 160, valueWidth: (CONTENT_W / 2) - 160 }
+    ]);
+
+    this.cursorY += 8;
+
+    // Table/Container: Parameter Info
+    this.drawSectionHeader('Parameter Info', false);
+    const appNo = this.getF('icicinpaApplicationNo') || 'NA';
+    const custName = this.getF('icicinpaCustomerName') || 'NA';
+    const chanEmp = (this.getF('icicinpaChannelName') ? this.getF('icicinpaChannelName') + (this.getF('icicinpaPreparedBy') ? ' / ' + this.getF('icicinpaPreparedBy') : '') : (this.getF('icicinpaPreparedBy') || 'NA'));
+    const pDate = this.getF('icicinpaDate') || this.getF('valuationDate') || 'NA';
+
+    this.drawKeyValueRow([
+      { label: 'Application No.', value: appNo, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 },
+      { label: 'Customer Name', value: custName, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Channel / Emp Name', value: chanEmp, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 },
+      { label: 'Date', value: pDate, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 }
+    ]);
+
+    this.cursorY += 8;
+
+    // Container: Signatories
+    this.drawSectionHeader('Signatories & Declarations', false);
+    const isDecl = this.getF('icicinpaDeclarationAccepted') !== false;
+    const declMark = isDecl ? '[X]' : '[ ]';
+    this.drawKeyValueRow([
+      {
+        label: `${declMark} Mandatory Declaration`,
+        value: 'I/We hereby declare that 1. The property was inspected by us. 2. We have no direct or indirect interest in the property valued. 3. The information furnished above is true and correct to the best of our knowledge and belief.',
+        labelWidth: 180,
+        valueWidth: CONTENT_W - 180
+      }
+    ]);
+
+    const sigDate = this.getF('icicinpaSignDate') || this.getF('icicinpaDate') || 'NA';
+    const sigPlace = this.getF('icicinpaSignPlace') || this.getF('valuerCity') || 'Bhubaneswar';
+    const sigValuer = this.getF('valuerName') || 'Er. Satyajit Mohanty';
+
+    this.drawKeyValueRow([
+      { label: 'Signature with seal', value: sigValuer, labelWidth: 150, valueWidth: (CONTENT_W / 2) - 150 },
+      { label: 'Date', value: sigDate, labelWidth: 100, valueWidth: (CONTENT_W / 2) - 100 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Place', value: sigPlace, labelWidth: 150, valueWidth: (CONTENT_W / 2) - 150 }
+    ]);
+
+    this.cursorY += 8;
+
+    // Container: Legal Statement
+    this.drawSectionHeader('Legal Statement', false);
+    const disclaimer = 'DISCLAIMER: This valuation report has been prepared solely for the technical assessment and internal guidance of ICICI Bank. The valuation is carried out in good faith based on the documents, visual physical inspection, information, and representations furnished by the applicant/bank. No warranty is given or implied regarding structural stability, hidden foundations, soil strata, concealed installations, or legal title correctness. This report is confidential and cannot be reproduced, transferred, or used by any third party without prior written permission of S Mohanty Associates.';
+    this.drawKeyValueRow([
+      { label: 'DISCLAIMER', value: disclaimer, labelWidth: 100, valueWidth: CONTENT_W - 100 }
+    ]);
+
+    this.cursorY += 10;
+
     // ── (Additional sections will be added here as prompts are provided) ──
 
   }
