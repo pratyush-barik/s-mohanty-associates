@@ -1,4 +1,24 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# S Mohanty Associates — Property Valuation Management & Bank Report Engine
+
+Web application managing the end-to-end lifecycle of real estate and property valuation reports for S Mohanty Associates, empaneled with major PSU, Private, and Housing Finance institutions.
+
+## 🚀 Active Roadmap & Deadlines (October – November 2026)
+
+- **Phase 1: Rapid Scaffolding of All 60+ Bank Structures (Priority Target: Before Nov 2nd)**:
+  - External model support in Antigravity ends on **Nov 2nd**.
+  - To maximize development velocity, the primary objective is to **scaffold the basic working UI component and dedicated PDF renderer for ALL remaining bank templates directly from sample reports**.
+  - Deliverables per bank: Correct bank/subtemplate ID, soft container UI layout, table arithmetic & decimal handling, dedicated PDF renderer extending `PDFBankRenderer`, inherited attachment galleries (Photographs, Device-uploaded Maps, Documents), and lazy-loaded dynamic registration in `BuilderSelector.tsx`.
+- **Phase 2: Deep Refinement, Edge Cases & Custom Perfection**:
+  - Once 100% of the bank structures exist in the repository, perform bank-by-bank deep refinement (precise statutory declarations, Code of Conduct, justification letters, and pixel-perfect PDF alignment).
+
+For comprehensive developer directives, schema details, and architecture specifications, please refer to:
+- [`AI_HANDOVER.md`](AI_HANDOVER.md) — Comprehensive developer onboarding & project architecture.
+- [`AGENTS.md`](AGENTS.md) — Multi-agent directives, strict coding rules, and conventions.
+- [`CLAUDE.md`](CLAUDE.md) — Directives for Claude and collaborating models.
+- [`SESSION_TRANSFER_CONTEXT.mdf`](SESSION_TRANSFER_CONTEXT.mdf) — Machine-readable inference context & negative/positive controls.
+- [`BANK_REPORT_PROGRESS.md`](BANK_REPORT_PROGRESS.md) — Master tracker for all 60+ banks and 73 sub-templates.
+
+---
 
 ## Getting Started
 
@@ -6,31 +26,16 @@ First, run the development server:
 
 ```bash
 npm run dev
-# or    
-yarn dev 
-# or  
-pnpm dev
-# or    
-bun dev
 ```
- 
+
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Verification & Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Typecheck
+npx tsc --noEmit
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Production Build
+npm run build
+```
