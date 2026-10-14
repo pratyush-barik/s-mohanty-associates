@@ -72,7 +72,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **35** | **MAHINDRA FINANCE LTD** | `Standard` | ✅ Created Base | ✅ Completed |
 | **36** | **MANAPPURAM HOUSING FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **37** | **NAVDHAN FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
-| **38** | **NEO GROWTH** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **38** | **NEO GROWTH** | `Standard` | ✅ Created Base | ✅ Completed |
 | **39** | **PNB HOUSING FINANCE LTD** | `HL-LAP` | ⏳ Not Created | ⏳ Not Started |
 | **40** | **POONAWALLA FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **41** | **PROTEUM FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
