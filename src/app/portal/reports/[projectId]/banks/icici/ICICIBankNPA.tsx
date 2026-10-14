@@ -5,6 +5,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
 import { Lock, Plus, Trash2 } from 'lucide-react';
 import { PDFIciciBankNpaRenderer } from '@/lib/banks/pdf-icici-bank-npa-renderer';
+import { rupeesInWords } from '@/lib/numberToWords';
 
 // ─── PrefillField component (same pattern as ICICIBankHLLAPBBG) ─────────────
 const PrefillField = ({ label, value, onChange, tooltip, isReadOnly, type = 'text', fallbackValue, options, customInputProps, hideEditToggle = false, rows = 3 }: any) => {
@@ -125,6 +126,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
     { id: 'icicinpa-section-6', title: 'BOUNDARIES ON SITE' },
     { id: 'icicinpa-section-7', title: 'PROPERTY DETAILS (TECHNICAL SPECIFICATIONS)' },
     { id: 'icicinpa-section-8', title: 'UNIT DETAILS' },
+    { id: 'icicinpa-section-9', title: 'VALUATION' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankNpaRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -1780,6 +1782,236 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
                   fallbackValue={autoResidualAge}
                 />
               </div>
+            </div>
+          </div>
+        );
+      }
+    },
+    // ── SECTION 9: VALUATION ────────────────────────────────────
+    {
+      id: 'icicinpa-section-9',
+      title: 'VALUATION',
+      number: 9,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const rows = Array.isArray(fields.icicinpaValuationRows) && fields.icicinpaValuationRows.length > 0
+          ? fields.icicinpaValuationRows
+          : [
+              { description: 'Land', area: fields.icicinpaPlotArea || '', rate: '', amount: '' },
+              { description: 'Building', area: fields.icicinpaCarpetAreaMeasured || '', rate: '', amount: '' },
+            ];
+
+        const updateRows = (newRows: any[]) => handleChange('icicinpaValuationRows', newRows);
+
+        const addRow = () => {
+          updateRows([...rows, { description: 'Building', area: '', rate: '', amount: '' }]);
+        };
+
+        const removeRow = (idx: number) => {
+          const next = rows.filter((_: any, i: number) => i !== idx);
+          updateRows(next.length > 0 ? next : [{ description: 'Land', area: '', rate: '', amount: '' }]);
+        };
+
+        const updateRow = (idx: number, patch: any) => {
+          const next = rows.map((r: any, i: number) => {
+            if (i !== idx) return r;
+            const updated = { ...r, ...patch };
+            // Auto-prefill area from Section 7 if empty on description selection
+            if (patch.description === 'Land' && !updated.area && fields.icicinpaPlotArea) {
+              updated.area = fields.icicinpaPlotArea;
+            } else if (patch.description === 'Building' && !updated.area && fields.icicinpaCarpetAreaMeasured) {
+              updated.area = fields.icicinpaCarpetAreaMeasured;
+            }
+            // Auto-calculate amount if area and rate are present and amount wasn't manually overridden
+            const a = Number(updated.area || 0);
+            const rt = Number(updated.rate || 0);
+            if (patch.amount === undefined && a > 0 && rt > 0) {
+              updated.amount = String(Math.round(a * rt));
+            }
+            return updated;
+          });
+          updateRows(next);
+        };
+
+        // Compute total sum of amounts
+        const sumAmounts = rows.reduce((acc: number, r: any) => {
+          const amt = r.amount !== undefined && r.amount !== '' ? Number(r.amount) : (Number(r.area || 0) * Number(r.rate || 0));
+          return acc + (isNaN(amt) ? 0 : amt);
+        }, 0);
+
+        const autoTotal = sumAmounts > 0 ? String(Math.round(sumAmounts)) : '';
+        const autoRoundOff = autoTotal;
+        const autoInWords = Number(fields.icicinpaRoundOffTotal || autoRoundOff) > 0
+          ? rupeesInWords(Number(fields.icicinpaRoundOffTotal || autoRoundOff))
+          : '';
+
+        return (
+          <div className="space-y-6">
+            {/* Table/Container: Calculation Output (Dynamic Rows) */}
+            <div style={{ backgroundColor: '#e0f2f1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <div className="flex justify-between items-center border-b border-teal-200 pb-2">
+                <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">
+                  Calculation Output (Dynamic Rows)
+                </h4>
+                <button
+                  type="button"
+                  onClick={addRow}
+                  disabled={isReadOnly}
+                  className="inline-flex items-center gap-1 bg-teal-700 hover:bg-teal-800 text-white text-xs font-semibold px-3 py-1.5 rounded shadow-sm transition disabled:opacity-50"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Row
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {rows.map((row: any, idx: number) => {
+                  const fallbackArea = row.description === 'Land'
+                    ? (fields.icicinpaPlotArea || '')
+                    : (row.description === 'Building' ? (fields.icicinpaCarpetAreaMeasured || '') : '');
+                  const currentArea = row.area !== undefined && row.area !== '' ? row.area : fallbackArea;
+                  const currentRate = row.rate || '';
+                  const calcAmt = (Number(currentArea || 0) * Number(currentRate || 0)) > 0
+                    ? String(Math.round(Number(currentArea || 0) * Number(currentRate || 0)))
+                    : '';
+                  const currentAmt = row.amount !== undefined && row.amount !== '' ? row.amount : calcAmt;
+
+                  return (
+                    <div key={idx} className="bg-white/80 border border-teal-100 rounded-lg p-3 shadow-sm flex flex-col md:flex-row gap-3 items-start md:items-end">
+                      {/* Description Dropdown */}
+                      <div className="w-full md:w-44">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">
+                          Description
+                        </label>
+                        <select
+                          className={inputCls}
+                          value={row.description || 'Land'}
+                          onChange={e => updateRow(idx, { description: e.target.value })}
+                          disabled={isReadOnly}
+                        >
+                          <option value="Land">Land</option>
+                          <option value="Building">Building</option>
+                          <option value="First Floor Building">First Floor Building</option>
+                          <option value="Second Floor Building">Second Floor Building</option>
+                          <option value="Open Terrace">Open Terrace</option>
+                          <option value="Amenities / Others">Amenities / Others</option>
+                          <option value="Custom">Custom / Other</option>
+                        </select>
+                        {row.description === 'Custom' && (
+                          <input
+                            type="text"
+                            placeholder="Enter description..."
+                            className={`${inputCls} mt-2`}
+                            value={row.descriptionCustom || ''}
+                            onChange={e => updateRow(idx, { descriptionCustom: e.target.value })}
+                            disabled={isReadOnly}
+                          />
+                        )}
+                      </div>
+
+                      {/* Area (In Sqft) — Prefill from Plot Area / BUA */}
+                      <div className="w-full md:w-36">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1" title="Prefill/Auto-calculates from Section 7">
+                          Area (In Sqft)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="0"
+                          className={inputCls}
+                          value={currentArea}
+                          onChange={e => updateRow(idx, { area: e.target.value })}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+
+                      {/* Rate per Sqft(INR) */}
+                      <div className="w-full md:w-36">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1">
+                          Rate per Sqft (INR)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="Rs."
+                          className={inputCls}
+                          value={currentRate}
+                          onChange={e => updateRow(idx, { rate: e.target.value })}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+
+                      {/* Amount(INR) — Prefill/Auto-calculates (Area * Rate) */}
+                      <div className="flex-1 w-full">
+                        <label className="block text-xs font-semibold text-gray-600 mb-1" title="Auto-calculates (Area * Rate)">
+                          Amount (INR)
+                        </label>
+                        <input
+                          type="number"
+                          placeholder="Rs."
+                          className={inputCls}
+                          value={currentAmt}
+                          onChange={e => updateRow(idx, { amount: e.target.value })}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+
+                      {/* Delete Button */}
+                      {rows.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeRow(idx)}
+                          disabled={isReadOnly}
+                          className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition self-end md:self-auto"
+                          title="Remove row"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Container: Final Calculation */}
+            <div style={{ backgroundColor: '#e0f2f1', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-teal-200 pb-1">
+                Final Calculation
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* TOTAL */}
+                <PrefillField
+                  label="TOTAL (INR)"
+                  type="number"
+                  value={fields.icicinpaTotalAmount}
+                  onChange={(val: string) => handleChange('icicinpaTotalAmount', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Prefill/Auto-calculates (Sum of Amounts)"
+                  fallbackValue={autoTotal}
+                />
+
+                {/* Round Off Total */}
+                <PrefillField
+                  label="Round Off Total (INR)"
+                  type="number"
+                  value={fields.icicinpaRoundOffTotal}
+                  onChange={(val: string) => handleChange('icicinpaRoundOffTotal', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Prefill/Auto-calculates (Rounded Total)"
+                  fallbackValue={autoRoundOff}
+                />
+              </div>
+
+              {/* Round Off Total In Words */}
+              <PrefillField
+                label="Round Off Total In Words"
+                type="textarea"
+                rows={2}
+                value={fields.icicinpaRoundOffTotalInWords}
+                onChange={(val: string) => handleChange('icicinpaRoundOffTotalInWords', val)}
+                isReadOnly={isReadOnly}
+                tooltip="Prefill/Auto-calculates (Number to Words)"
+                fallbackValue={autoInWords}
+              />
             </div>
           </div>
         );

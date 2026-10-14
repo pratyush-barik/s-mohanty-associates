@@ -1,4 +1,5 @@
 import { PDFBankRenderer } from '../pdf-bank-renderer';
+import { rupeesInWords } from '../numberToWords';
 import { rgb } from 'pdf-lib';
 import {
   FONT_SIZE,
@@ -403,6 +404,77 @@ export class PDFIciciBankNpaRenderer extends PDFBankRenderer {
     const residualDisplay = residualVal && residualVal !== 'NA' ? `${residualVal} Years` : 'NA';
     this.drawKeyValueRow([
       { label: 'Residual Age of Property', value: residualDisplay, labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+
+    this.cursorY += 10;
+
+    // ── SECTION 9: VALUATION ────────────────────────────────────────
+    this.drawSectionHeader('9. VALUATION', false);
+    this.drawSectionHeader('Calculation Output', false);
+
+    const valRowsRaw = this.getF('icicinpaValuationRows') || [];
+    const tableRows: string[][] = [];
+
+    let computedTotal = 0;
+
+    if (Array.isArray(valRowsRaw) && valRowsRaw.length > 0) {
+      valRowsRaw.forEach((row: any, idx: number) => {
+        const desc = row.description === 'Custom' ? (row.descriptionCustom || 'Custom') : (row.description || 'Land');
+        const area = Number(row.area || (desc === 'Land' ? this.getF('icicinpaPlotArea') : this.getF('icicinpaCarpetAreaMeasured')) || 0);
+        const rate = Number(row.rate || 0);
+        const amt = row.amount !== undefined && row.amount !== '' ? Number(row.amount) : (area * rate);
+        computedTotal += amt;
+
+        tableRows.push([
+          String(idx + 1),
+          desc,
+          area > 0 ? String(area) : '0',
+          rate > 0 ? `Rs. ${rate}` : '0',
+          amt > 0 ? `Rs. ${Math.round(amt)}` : '0'
+        ]);
+      });
+    }
+
+    if (tableRows.length === 0) {
+      tableRows.push(['1', 'Land', '0', '0', '0']);
+    }
+
+    const valHeaders = ['Sl No', 'Description', 'Area (Sqft)', 'Rate / Sqft (INR)', 'Amount (INR)'];
+    const slCol = 35;
+    const descCol = 145;
+    const areaCol = 70;
+    const rateCol = 90;
+    const amtCol = CONTENT_W - (slCol + descCol + areaCol + rateCol);
+
+    this.drawTable(
+      valHeaders,
+      tableRows,
+      [slCol, descCol, areaCol, rateCol, amtCol],
+      [],
+      [],
+      [],
+      [],
+      [],
+      ['center', 'left', 'right', 'right', 'right'],
+      ['center', 'left', 'right', 'right', 'right']
+    );
+
+    this.cursorY += 8;
+
+    this.drawSectionHeader('Final Calculation', false);
+
+    const totalVal = this.getF('icicinpaTotalAmount') || (computedTotal > 0 ? String(Math.round(computedTotal)) : '0');
+    const roundOffVal = this.getF('icicinpaRoundOffTotal') || totalVal;
+    const inWordsVal = this.getF('icicinpaRoundOffTotalInWords') || (Number(roundOffVal) > 0 ? rupeesInWords(Number(roundOffVal)) : 'NA');
+
+    this.drawKeyValueRow([
+      { label: 'TOTAL', value: totalVal ? `Rs. ${totalVal}/-` : 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Round Off Total', value: roundOffVal ? `Rs. ${roundOffVal}/-` : 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Round Off Total In Words', value: inWordsVal, labelWidth: 200, valueWidth: CONTENT_W - 200 }
     ]);
 
     this.cursorY += 10;
