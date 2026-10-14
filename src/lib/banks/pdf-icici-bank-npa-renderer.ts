@@ -238,6 +238,83 @@ export class PDFIciciBankNpaRenderer extends PDFBankRenderer {
 
     this.cursorY += 10;
 
+    // ── SECTION 7: PROPERTY DETAILS ─────────────────────────────────
+    this.drawSectionHeader('7. PROPERTY DETAILS', false);
+    this.drawSectionHeader('Technical Specifications', false);
+
+    const plotArea = this.getF('icicinpaPlotArea') ? `${this.getF('icicinpaPlotArea')} sqft` : 'NA';
+    this.drawKeyValueRow([
+      { label: 'Plot Area', value: plotArea, labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Plot Demarcated At Site', value: this.getF('icicinpaPlotDemarcated') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const landUse = this.getF('icicinpaApprovedLandUse') === 'Custom' ? this.getF('icicinpaApprovedLandUseCustom') : this.getF('icicinpaApprovedLandUse');
+    this.drawKeyValueRow([
+      { label: 'Approved Land Use', value: landUse || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const infra = this.getF('icicinpaInfrastructureSurrounding') === 'Custom' ? this.getF('icicinpaInfrastructureSurroundingCustom') : this.getF('icicinpaInfrastructureSurrounding');
+    this.drawKeyValueRow([
+      { label: 'Infrastructure of Surrounding Area', value: infra || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const nature = this.getF('icicinpaNatureOfLocality') === 'Custom' ? this.getF('icicinpaNatureOfLocalityCustom') : this.getF('icicinpaNatureOfLocality');
+    this.drawKeyValueRow([
+      { label: 'Nature of Locality', value: nature || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const classLoc = this.getF('icicinpaClassOfLocality') === 'Custom' ? this.getF('icicinpaClassOfLocalityCustom') : this.getF('icicinpaClassOfLocality');
+    this.drawKeyValueRow([
+      { label: 'Class of Locality', value: classLoc || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Property Area(BUA)RCC G+1', value: this.getF('icicinpaPropertyAreaBua') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const propLoc = this.getF('icicinpaPropertyLocation') === 'Custom' ? this.getF('icicinpaPropertyLocationCustom') : this.getF('icicinpaPropertyLocation');
+    this.drawKeyValueRow([
+      { label: 'Property Location', value: propLoc || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Distance From City Center(Km)', value: this.getF('icicinpaDistanceFromCityCenter') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const propType = this.getF('icicinpaTypeOfProperty') === 'Custom' ? this.getF('icicinpaTypeOfPropertyCustom') : this.getF('icicinpaTypeOfProperty');
+    this.drawKeyValueRow([
+      { label: 'Type of Property', value: propType || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const floors = this.getF('icicinpaNoOfFloors') === 'Custom' ? this.getF('icicinpaNoOfFloorsCustom') : this.getF('icicinpaNoOfFloors');
+    this.drawKeyValueRow([
+      { label: 'No. of Floors', value: floors || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+
+    // Distress & Realize Values calculation
+    const mv = Number(this.getF('icicinpaRoundOffTotal') || this.getF('icicinpaPresentMarketValue') || 0);
+    const dPct = this.getF('icicinpaDistressPct') !== undefined && this.getF('icicinpaDistressPct') !== '' ? Number(this.getF('icicinpaDistressPct')) : 80;
+    const rPct = this.getF('icicinpaRealizePct') !== undefined && this.getF('icicinpaRealizePct') !== '' ? Number(this.getF('icicinpaRealizePct')) : 85;
+
+    const calcDistress = mv > 0 ? String(Math.round(mv * (dPct / 100))) : 'NA';
+    const calcRealize = mv > 0 ? String(Math.round(mv * (rPct / 100))) : 'NA';
+
+    const distressVal = this.getF('icicinpaDistressValue') || calcDistress;
+    const realizeVal = this.getF('icicinpaRealizeValue') || calcRealize;
+
+    this.drawKeyValueRow([
+      { label: `Distress Value (@${dPct}% of MV)`, value: distressVal && distressVal !== 'NA' ? (isNaN(Number(distressVal)) ? distressVal : `Rs. ${distressVal}/-`) : 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: `Realize Value (@${rPct}% of MV)`, value: realizeVal && realizeVal !== 'NA' ? (isNaN(Number(realizeVal)) ? realizeVal : `Rs. ${realizeVal}/-`) : 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const costConst = this.getF('icicinpaCostOfConstruction');
+    this.drawKeyValueRow([
+      { label: 'Cost of Construction', value: costConst ? (isNaN(Number(costConst)) ? costConst : `Rs. ${costConst}/-`) : 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'To Be Billed', value: this.getF('icicinpaToBeBilled') || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const carpetArea = this.getF('icicinpaCarpetAreaMeasured') ? `${this.getF('icicinpaCarpetAreaMeasured')} sqft` : 'NA';
+    this.drawKeyValueRow([
+      { label: 'Carpet Area (Measured)', value: carpetArea, labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+
+    this.cursorY += 10;
+
     // ── (Additional sections will be added here as prompts are provided) ──
 
   }

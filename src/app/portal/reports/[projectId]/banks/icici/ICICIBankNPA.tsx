@@ -123,6 +123,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
     { id: 'icicinpa-section-4', title: 'CONTACT DETAILS' },
     { id: 'icicinpa-section-5', title: 'ATTACHED DOCUMENT DETAILS' },
     { id: 'icicinpa-section-6', title: 'BOUNDARIES ON SITE' },
+    { id: 'icicinpa-section-7', title: 'PROPERTY DETAILS (TECHNICAL SPECIFICATIONS)' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankNpaRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -984,6 +985,387 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
                 isReadOnly={isReadOnly}
                 tooltip="Auto-calculates to 'Yes' if Deed and Site strings match"
                 fallbackValue={autoMatching}
+              />
+            </div>
+          </div>
+        );
+      }
+    },
+    // ── SECTION 7: PROPERTY DETAILS ─────────────────────────────
+    {
+      id: 'icicinpa-section-7',
+      title: 'PROPERTY DETAILS',
+      number: 7,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        const marketVal = Number(fields.icicinpaRoundOffTotal || fields.icicinpaPresentMarketValue || 0);
+        const distressPct = fields.icicinpaDistressPct !== undefined && fields.icicinpaDistressPct !== '' ? Number(fields.icicinpaDistressPct) : 80;
+        const realizePct = fields.icicinpaRealizePct !== undefined && fields.icicinpaRealizePct !== '' ? Number(fields.icicinpaRealizePct) : 85;
+
+        const autoDistressValue = marketVal > 0 ? String(Math.round(marketVal * (distressPct / 100))) : '';
+        const autoRealizeValue = marketVal > 0 ? String(Math.round(marketVal * (realizePct / 100))) : '';
+
+        return (
+          <div style={{ backgroundColor: '#fff3e0', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+            {/* Container: Technical Specifications */}
+            <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-orange-200 pb-1">
+              Technical Specifications
+            </h4>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Plot Area */}
+              <Field label="Plot Area">
+                <div className="relative">
+                  <input
+                    type="number"
+                    className={`${inputCls} pr-14`}
+                    value={fields.icicinpaPlotArea || ''}
+                    onChange={e => handleChange('icicinpaPlotArea', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="e.g. 1500"
+                  />
+                  <span className="absolute right-3 top-2.5 text-xs font-semibold text-gray-500 pointer-events-none">
+                    sqft
+                  </span>
+                </div>
+              </Field>
+
+              {/* Plot Demarcated At Site */}
+              <Field label="Plot Demarcated At Site">
+                <div className="flex gap-6 items-center h-10">
+                  {['Yes', 'No'].map(opt => (
+                    <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700">
+                      <input
+                        type="radio"
+                        value={opt}
+                        checked={fields.icicinpaPlotDemarcated === opt}
+                        onChange={e => handleChange('icicinpaPlotDemarcated', e.target.value)}
+                        disabled={isReadOnly}
+                        className="text-indigo-600 focus:ring-indigo-500 h-4 w-4"
+                      />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              </Field>
+
+              {/* Approved Land Use */}
+              <Field label="Approved Land Use">
+                <select
+                  className={inputCls}
+                  value={fields.icicinpaApprovedLandUse || ''}
+                  onChange={e => handleChange('icicinpaApprovedLandUse', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="">Select Land Use...</option>
+                  <option value="Residential">Residential</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Mixed (Residential + Commercial)">Mixed (Residential + Commercial)</option>
+                  <option value="Industrial">Industrial</option>
+                  <option value="Agricultural">Agricultural</option>
+                  <option value="Institutional">Institutional</option>
+                  <option value="Custom">Custom / Other</option>
+                </select>
+                {fields.icicinpaApprovedLandUse === 'Custom' && (
+                  <input
+                    type="text"
+                    placeholder="Enter custom land use..."
+                    className={`${inputCls} mt-2`}
+                    value={fields.icicinpaApprovedLandUseCustom || ''}
+                    onChange={e => handleChange('icicinpaApprovedLandUseCustom', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                )}
+              </Field>
+
+              {/* Infrastructure of the Surrounding Area */}
+              <Field label="Infrastructure of the Surrounding Area">
+                <select
+                  className={inputCls}
+                  value={fields.icicinpaInfrastructureSurrounding || ''}
+                  onChange={e => handleChange('icicinpaInfrastructureSurrounding', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="">Select Infrastructure...</option>
+                  <option value="Good">Good</option>
+                  <option value="Average">Average</option>
+                  <option value="Developing">Developing</option>
+                  <option value="Poor">Poor</option>
+                  <option value="Fully Developed">Fully Developed</option>
+                  <option value="Custom">Custom / Other</option>
+                </select>
+                {fields.icicinpaInfrastructureSurrounding === 'Custom' && (
+                  <input
+                    type="text"
+                    placeholder="Enter custom infrastructure..."
+                    className={`${inputCls} mt-2`}
+                    value={fields.icicinpaInfrastructureSurroundingCustom || ''}
+                    onChange={e => handleChange('icicinpaInfrastructureSurroundingCustom', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                )}
+              </Field>
+
+              {/* Nature of Locality */}
+              <Field label="Nature of Locality">
+                <select
+                  className={inputCls}
+                  value={fields.icicinpaNatureOfLocality || ''}
+                  onChange={e => handleChange('icicinpaNatureOfLocality', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="">Select Nature...</option>
+                  <option value="Residential">Residential</option>
+                  <option value="Commercial">Commercial</option>
+                  <option value="Mixed">Mixed</option>
+                  <option value="Industrial">Industrial</option>
+                  <option value="Semi-Urban">Semi-Urban</option>
+                  <option value="Rural">Rural</option>
+                  <option value="Custom">Custom / Other</option>
+                </select>
+                {fields.icicinpaNatureOfLocality === 'Custom' && (
+                  <input
+                    type="text"
+                    placeholder="Enter custom nature..."
+                    className={`${inputCls} mt-2`}
+                    value={fields.icicinpaNatureOfLocalityCustom || ''}
+                    onChange={e => handleChange('icicinpaNatureOfLocalityCustom', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                )}
+              </Field>
+
+              {/* Class of Locality */}
+              <Field label="Class of Locality">
+                <select
+                  className={inputCls}
+                  value={fields.icicinpaClassOfLocality || ''}
+                  onChange={e => handleChange('icicinpaClassOfLocality', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="">Select Class...</option>
+                  <option value="High Class / Premium">High Class / Premium</option>
+                  <option value="Upper Middle Class">Upper Middle Class</option>
+                  <option value="Middle Class">Middle Class</option>
+                  <option value="Lower Middle Class">Lower Middle Class</option>
+                  <option value="Low Class">Low Class</option>
+                  <option value="Custom">Custom / Other</option>
+                </select>
+                {fields.icicinpaClassOfLocality === 'Custom' && (
+                  <input
+                    type="text"
+                    placeholder="Enter custom class..."
+                    className={`${inputCls} mt-2`}
+                    value={fields.icicinpaClassOfLocalityCustom || ''}
+                    onChange={e => handleChange('icicinpaClassOfLocalityCustom', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                )}
+              </Field>
+
+              {/* Property Location */}
+              <Field label="Property Location">
+                <select
+                  className={inputCls}
+                  value={fields.icicinpaPropertyLocation || ''}
+                  onChange={e => handleChange('icicinpaPropertyLocation', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="">Select Location...</option>
+                  <option value="Main Road">Main Road</option>
+                  <option value="Interior Road">Interior Road</option>
+                  <option value="Corner Plot">Corner Plot</option>
+                  <option value="Gated Community / Complex">Gated Community / Complex</option>
+                  <option value="City Center">City Center</option>
+                  <option value="Suburban">Suburban</option>
+                  <option value="Outskirts">Outskirts</option>
+                  <option value="Custom">Custom / Other</option>
+                </select>
+                {fields.icicinpaPropertyLocation === 'Custom' && (
+                  <input
+                    type="text"
+                    placeholder="Enter custom location..."
+                    className={`${inputCls} mt-2`}
+                    value={fields.icicinpaPropertyLocationCustom || ''}
+                    onChange={e => handleChange('icicinpaPropertyLocationCustom', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                )}
+              </Field>
+
+              {/* Distance From City Center(Km) */}
+              <Field label="Distance From City Center(Km)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.icicinpaDistanceFromCityCenter || ''}
+                  onChange={e => handleChange('icicinpaDistanceFromCityCenter', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 5 Km"
+                />
+              </Field>
+
+              {/* Type of Property */}
+              <Field label="Type of Property">
+                <select
+                  className={inputCls}
+                  value={fields.icicinpaTypeOfProperty || ''}
+                  onChange={e => handleChange('icicinpaTypeOfProperty', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="">Select Type...</option>
+                  <option value="Independent House / Villa">Independent House / Villa</option>
+                  <option value="Residential Flat / Apartment">Residential Flat / Apartment</option>
+                  <option value="Commercial Building / Shop / Office">Commercial Building / Shop / Office</option>
+                  <option value="Vacant Land / Plot">Vacant Land / Plot</option>
+                  <option value="Industrial Shed / Warehouse">Industrial Shed / Warehouse</option>
+                  <option value="Mixed Use Building">Mixed Use Building</option>
+                  <option value="Custom">Custom / Other</option>
+                </select>
+                {fields.icicinpaTypeOfProperty === 'Custom' && (
+                  <input
+                    type="text"
+                    placeholder="Enter custom property type..."
+                    className={`${inputCls} mt-2`}
+                    value={fields.icicinpaTypeOfPropertyCustom || ''}
+                    onChange={e => handleChange('icicinpaTypeOfPropertyCustom', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                )}
+              </Field>
+
+              {/* No. of Floors */}
+              <Field label="No. of Floors">
+                <select
+                  className={inputCls}
+                  value={fields.icicinpaNoOfFloors || ''}
+                  onChange={e => handleChange('icicinpaNoOfFloors', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="">Select Floors...</option>
+                  <option value="Ground Floor (G)">Ground Floor (G)</option>
+                  <option value="G+1">G+1</option>
+                  <option value="G+2">G+2</option>
+                  <option value="G+3">G+3</option>
+                  <option value="G+4">G+4</option>
+                  <option value="Basement + G+1">Basement + G+1</option>
+                  <option value="Stilt + 4 Floors">Stilt + 4 Floors</option>
+                  <option value="Multi-Storeyed">Multi-Storeyed</option>
+                  <option value="Custom">Custom / Other</option>
+                </select>
+                {fields.icicinpaNoOfFloors === 'Custom' && (
+                  <input
+                    type="text"
+                    placeholder="Enter custom floors..."
+                    className={`${inputCls} mt-2`}
+                    value={fields.icicinpaNoOfFloorsCustom || ''}
+                    onChange={e => handleChange('icicinpaNoOfFloorsCustom', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                )}
+              </Field>
+
+              {/* Cost of Construction */}
+              <Field label="Cost of Construction">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.icicinpaCostOfConstruction || ''}
+                  onChange={e => handleChange('icicinpaCostOfConstruction', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Rs."
+                />
+              </Field>
+
+              {/* To Be Billed */}
+              <Field label="To Be Billed">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.icicinpaToBeBilled || ''}
+                  onChange={e => handleChange('icicinpaToBeBilled', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+
+              {/* Carpet Area (Measured) */}
+              <Field label="Carpet Area (Measured)">
+                <div className="relative">
+                  <input
+                    type="number"
+                    className={`${inputCls} pr-14`}
+                    value={fields.icicinpaCarpetAreaMeasured || ''}
+                    onChange={e => handleChange('icicinpaCarpetAreaMeasured', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="e.g. 1200"
+                  />
+                  <span className="absolute right-3 top-2.5 text-xs font-semibold text-gray-500 pointer-events-none">
+                    sqft
+                  </span>
+                </div>
+              </Field>
+            </div>
+
+            {/* Property Area(BUA)RCC G+1 */}
+            <Field label="Property Area(BUA)RCC G+1">
+              <textarea
+                rows={3}
+                className={`${inputCls} resize-y`}
+                value={fields.icicinpaPropertyAreaBua || ''}
+                onChange={e => handleChange('icicinpaPropertyAreaBua', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Enter built-up area details / breakdown..."
+              />
+            </Field>
+
+            {/* Distress Value & Realize Value (Auto-calculates as % of Market Value) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-orange-200">
+              <PrefillField
+                label={
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span>Distress Value</span>
+                    <span className="text-xs text-gray-500 font-normal">(@</span>
+                    <input
+                      type="number"
+                      className="w-12 text-xs border border-gray-300 rounded px-1 py-0.5 text-center font-medium bg-white"
+                      value={distressPct}
+                      onChange={(e: any) => handleChange('icicinpaDistressPct', e.target.value)}
+                      disabled={isReadOnly}
+                      title="Distress Percentage"
+                    />
+                    <span className="text-xs text-gray-500 font-normal">% of Market Value)</span>
+                  </div>
+                }
+                type="number"
+                value={fields.icicinpaDistressValue}
+                onChange={(val: string) => handleChange('icicinpaDistressValue', val)}
+                isReadOnly={isReadOnly}
+                tooltip="Prefill/Auto-calculates as % of Market Value"
+                fallbackValue={autoDistressValue}
+              />
+
+              <PrefillField
+                label={
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span>Realize Value</span>
+                    <span className="text-xs text-gray-500 font-normal">(@</span>
+                    <input
+                      type="number"
+                      className="w-12 text-xs border border-gray-300 rounded px-1 py-0.5 text-center font-medium bg-white"
+                      value={realizePct}
+                      onChange={(e: any) => handleChange('icicinpaRealizePct', e.target.value)}
+                      disabled={isReadOnly}
+                      title="Realize Percentage"
+                    />
+                    <span className="text-xs text-gray-500 font-normal">% of Market Value)</span>
+                  </div>
+                }
+                type="number"
+                value={fields.icicinpaRealizeValue}
+                onChange={(val: string) => handleChange('icicinpaRealizeValue', val)}
+                isReadOnly={isReadOnly}
+                tooltip="Prefill/Auto-calculates as % of Market Value"
+                fallbackValue={autoRealizeValue}
               />
             </div>
           </div>
