@@ -127,6 +127,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
     { id: 'icicinpa-section-7', title: 'PROPERTY DETAILS (TECHNICAL SPECIFICATIONS)' },
     { id: 'icicinpa-section-8', title: 'UNIT DETAILS' },
     { id: 'icicinpa-section-9', title: 'VALUATION' },
+    { id: 'icicinpa-section-10', title: 'VALUATION AS PER GOVT. APPROVED RATE & MISCELLANEOUS' },
   ],
   getPDFRenderer: (fields: any, projectCode?: string) => new PDFIciciBankNpaRenderer({ ...fields, projectCode }),
   extraSectionsStart: [
@@ -2012,6 +2013,376 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
                 tooltip="Prefill/Auto-calculates (Number to Words)"
                 fallbackValue={autoInWords}
               />
+            </div>
+          </div>
+        );
+      }
+    },
+    // ── SECTION 10: VALUATION AS PER GOVT. APPROVED RATE & MISCELLANEOUS ─
+    {
+      id: 'icicinpa-section-10',
+      title: 'VALUATION AS PER GOVT. APPROVED RATE & MISCELLANEOUS',
+      number: 10,
+      defaultOpen: true,
+      render: (fields, handleChange, isReadOnly) => {
+        // Government Rates Calculations
+        const govtLandArea = fields.icicinpaGovtLandArea !== undefined && fields.icicinpaGovtLandArea !== ''
+          ? fields.icicinpaGovtLandArea
+          : (fields.icicinpaPlotArea || '');
+        const govtAreaRate = fields.icicinpaGovtAreaRate || '';
+        const govtConstArea = fields.icicinpaGovtConstructedArea !== undefined && fields.icicinpaGovtConstructedArea !== ''
+          ? fields.icicinpaGovtConstructedArea
+          : (fields.icicinpaCarpetAreaMeasured || '');
+        const govtConstRate = fields.icicinpaGovtConstructedRate !== undefined && fields.icicinpaGovtConstructedRate !== ''
+          ? fields.icicinpaGovtConstructedRate
+          : (fields.icicinpaCostOfConstruction || '');
+
+        const autoGovtTotal = ((Number(govtLandArea || 0) * Number(govtAreaRate || 0)) + (Number(govtConstArea || 0) * Number(govtConstRate || 0))) > 0
+          ? String(Math.round((Number(govtLandArea || 0) * Number(govtAreaRate || 0)) + (Number(govtConstArea || 0) * Number(govtConstRate || 0))))
+          : '';
+
+        // Construction Rows
+        const constRows = Array.isArray(fields.icicinpaConstructionRows) && fields.icicinpaConstructionRows.length > 0
+          ? fields.icicinpaConstructionRows
+          : [
+              { stage: 'Completed', structure: 'RCC Framed Structure', stageDesc: 'Finishing works complete, ready for possession', pctComplete: '100', pctRecommended: '100' }
+            ];
+
+        const updateConstRows = (newRows: any[]) => handleChange('icicinpaConstructionRows', newRows);
+
+        const addConstRow = () => {
+          updateConstRows([...constRows, { stage: '', structure: '', stageDesc: '', pctComplete: '100', pctRecommended: '100' }]);
+        };
+
+        const removeConstRow = (idx: number) => {
+          const next = constRows.filter((_: any, i: number) => i !== idx);
+          updateConstRows(next.length > 0 ? next : [{ stage: '', structure: '', stageDesc: '', pctComplete: '100', pctRecommended: '100' }]);
+        };
+
+        const updateConstRow = (idx: number, patch: any) => {
+          const next = constRows.map((r: any, i: number) => i === idx ? { ...r, ...patch } : r);
+          updateConstRows(next);
+        };
+
+        // Auto-calculates fields to "Completed" if 100%
+        const isAll100 = constRows.length > 0 && constRows.every((r: any) => Number(r.pctComplete) === 100);
+        const autoCompletion = isAll100 ? 'Completed' : 'Under Construction';
+
+        return (
+          <div className="space-y-6">
+            {/* Container: Government Rates */}
+            <div style={{ backgroundColor: '#e8eaf6', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-indigo-200 pb-1">
+                Government Rates
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Land Area/Built Up Area/(Sq.Ft.) */}
+                <PrefillField
+                  label="Land Area/Built Up Area/(Sq.Ft.)"
+                  type="number"
+                  value={fields.icicinpaGovtLandArea}
+                  onChange={(val: string) => handleChange('icicinpaGovtLandArea', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Prefill from Plot Area (Section 7)"
+                  fallbackValue={fields.icicinpaPlotArea}
+                />
+
+                {/* Area Rate (Per Sq. Ft.) */}
+                <Field label="Area Rate (Per Sq. Ft.)">
+                  <input
+                    type="number"
+                    placeholder="Rs."
+                    className={inputCls}
+                    value={fields.icicinpaGovtAreaRate || ''}
+                    onChange={e => handleChange('icicinpaGovtAreaRate', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+
+                {/* Constructed Area(BUA) */}
+                <PrefillField
+                  label="Constructed Area(BUA) (Sq.Ft.)"
+                  type="number"
+                  value={fields.icicinpaGovtConstructedArea}
+                  onChange={(val: string) => handleChange('icicinpaGovtConstructedArea', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Prefill from Measured BUA / Carpet Area (Section 7)"
+                  fallbackValue={fields.icicinpaCarpetAreaMeasured}
+                />
+
+                {/* Constructed Rate (Per Sq. Ft.) */}
+                <PrefillField
+                  label="Constructed Rate (Per Sq. Ft.)"
+                  type="number"
+                  value={fields.icicinpaGovtConstructedRate}
+                  onChange={(val: string) => handleChange('icicinpaGovtConstructedRate', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Prefill from Cost of Construction (Section 7)"
+                  fallbackValue={fields.icicinpaCostOfConstruction}
+                />
+
+                {/* Total Value */}
+                <PrefillField
+                  label="Total Value (INR)"
+                  type="number"
+                  value={fields.icicinpaGovtTotalValue}
+                  onChange={(val: string) => handleChange('icicinpaGovtTotalValue', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip="Auto-calculates (Land Area * Rate + Constructed Area * Rate)"
+                  fallbackValue={autoGovtTotal}
+                />
+
+                {/* Floor wise Building Usage */}
+                <Field label="Floor wise Building Usage">
+                  <select
+                    className={inputCls}
+                    value={fields.icicinpaFloorwiseUsage || ''}
+                    onChange={e => handleChange('icicinpaFloorwiseUsage', e.target.value)}
+                    disabled={isReadOnly}
+                  >
+                    <option value="">Select Floor Usage...</option>
+                    <option value="Residential">Residential</option>
+                    <option value="Commercial">Commercial</option>
+                    <option value="Ground Floor Commercial, Upper Floors Residential">Ground Floor Commercial, Upper Floors Residential</option>
+                    <option value="Ground Floor Parking, Upper Floors Residential">Ground Floor Parking, Upper Floors Residential</option>
+                    <option value="Mixed Use">Mixed Use</option>
+                    <option value="Vacant / Under Construction">Vacant / Under Construction</option>
+                    <option value="Custom">Custom / Other</option>
+                  </select>
+                  {fields.icicinpaFloorwiseUsage === 'Custom' && (
+                    <input
+                      type="text"
+                      placeholder="Enter custom floor usage..."
+                      className={`${inputCls} mt-2`}
+                      value={fields.icicinpaFloorwiseUsageCustom || ''}
+                      onChange={e => handleChange('icicinpaFloorwiseUsageCustom', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  )}
+                </Field>
+              </div>
+            </div>
+
+            {/* Table/Container: Request Data (Read-Only text prefill from Section 2) */}
+            <div style={{ backgroundColor: '#e8eaf6', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-indigo-200 pb-1">
+                Request Data (Read-Only)
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Field label="Request Code">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed text-gray-700 pr-8`}
+                      value={fields.icicinpaRequestId || 'NA'}
+                      disabled
+                      title="Prefill from Request ID (Section 2)"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Lock className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                </Field>
+
+                <Field label="Request Date">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed text-gray-700 pr-8`}
+                      value={fields.icicinpaDate || fields.valuationDate || 'NA'}
+                      disabled
+                      title="Valuation Date"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Lock className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                </Field>
+
+                <Field label="Parent Prod.Type">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed text-gray-700 pr-8`}
+                      value={fields.icicinpaProductName || fields.icicinpaProductType || 'NA'}
+                      disabled
+                      title="Prefill from Product Name / Type (Section 2)"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Lock className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                </Field>
+
+                <Field label="Product Type">
+                  <div className="relative">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-gray-100 cursor-not-allowed text-gray-700 pr-8`}
+                      value={fields.icicinpaProductType || 'NA'}
+                      disabled
+                      title="Prefill from Product Type (Section 2)"
+                    />
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                      <Lock className="w-4 h-4 text-gray-400" />
+                    </div>
+                  </div>
+                </Field>
+              </div>
+            </div>
+
+            {/* Table/Container: Construction Status (Dynamic Rows) */}
+            <div style={{ backgroundColor: '#e8eaf6', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <div className="flex justify-between items-center border-b border-indigo-200 pb-2">
+                <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">
+                  Construction Status (Dynamic Rows)
+                </h4>
+                <button
+                  type="button"
+                  onClick={addConstRow}
+                  disabled={isReadOnly}
+                  className="inline-flex items-center gap-1 bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-semibold px-3 py-1.5 rounded shadow-sm transition disabled:opacity-50"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Row
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {constRows.map((row: any, idx: number) => (
+                  <div key={idx} className="bg-white/80 border border-indigo-100 rounded-lg p-3 shadow-sm flex flex-col md:flex-row gap-3 items-start md:items-end">
+                    {/* Stage of Construction */}
+                    <div className="w-full md:w-40">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        Stage of Construction
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Completed"
+                        className={inputCls}
+                        value={row.stage || ''}
+                        onChange={e => updateConstRow(idx, { stage: e.target.value })}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Description of Structure */}
+                    <div className="flex-1 w-full">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        Description of Structure
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. RCC Framed Structure"
+                        className={inputCls}
+                        value={row.structure || ''}
+                        onChange={e => updateConstRow(idx, { structure: e.target.value })}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Description of Stage */}
+                    <div className="flex-1 w-full">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        Description of Stage
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Finishing works ready"
+                        className={inputCls}
+                        value={row.stageDesc || ''}
+                        onChange={e => updateConstRow(idx, { stageDesc: e.target.value })}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* % Completion */}
+                    <div className="w-full md:w-28">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        % Completion
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="100"
+                        className={inputCls}
+                        value={row.pctComplete || ''}
+                        onChange={e => updateConstRow(idx, { pctComplete: e.target.value })}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* % Recommended */}
+                    <div className="w-full md:w-28">
+                      <label className="block text-xs font-semibold text-gray-600 mb-1">
+                        % Recommended
+                      </label>
+                      <input
+                        type="number"
+                        placeholder="100"
+                        className={inputCls}
+                        value={row.pctRecommended || ''}
+                        onChange={e => updateConstRow(idx, { pctRecommended: e.target.value })}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {/* Delete Button */}
+                    {constRows.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeConstRow(idx)}
+                        disabled={isReadOnly}
+                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition self-end md:self-auto"
+                        title="Remove row"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Container: Verification Status */}
+            <div style={{ backgroundColor: '#e8eaf6', padding: '16px', borderRadius: '8px' }} className="space-y-4">
+              <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide border-b border-indigo-200 pb-1">
+                Verification Status
+              </h4>
+
+              <div className="space-y-4">
+                {/* Completion Status — Prefill/Auto-calculates to "Completed" if 100% */}
+                <PrefillField
+                  label="Completion Status"
+                  type="select"
+                  options={[
+                    { value: 'Completed', label: 'Completed' },
+                    { value: 'Under Construction', label: 'Under Construction' },
+                    { value: 'Near Completion (Above 80%)', label: 'Near Completion (Above 80%)' },
+                    { value: 'Mid Stage (50% - 80%)', label: 'Mid Stage (50% - 80%)' },
+                    { value: 'Initial Stage (Below 50%)', label: 'Initial Stage (Below 50%)' },
+                    { value: 'Stalled / Incomplete', label: 'Stalled / Incomplete' },
+                    { value: 'Custom', label: 'Custom / Other' },
+                  ]}
+                  value={fields.icicinpaCompletionStatus}
+                  onChange={(val: string) => handleChange('icicinpaCompletionStatus', val)}
+                  isReadOnly={isReadOnly}
+                  tooltip='Prefill/Auto-calculates to "Completed" if 100%'
+                  fallbackValue={autoCompletion}
+                />
+
+                {/* Violations Observed If Any */}
+                <Field label="Violations Observed If Any">
+                  <textarea
+                    rows={3}
+                    placeholder="Enter violations if any, e.g. No violations observed / Construction as per approved norms..."
+                    className={`${inputCls} resize-y`}
+                    value={fields.icicinpaViolationsObserved || ''}
+                    onChange={e => handleChange('icicinpaViolationsObserved', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
             </div>
           </div>
         );

@@ -479,6 +479,120 @@ export class PDFIciciBankNpaRenderer extends PDFBankRenderer {
 
     this.cursorY += 10;
 
+    // ── SECTION 10: VALUATION AS PER GOVT. APPROVED RATE & MISCELLANEOUS ─
+    this.drawSectionHeader('10. VALUATION AS PER GOVT. APPROVED RATE & MISCELLANEOUS', false);
+    this.drawSectionHeader('Government Rates', false);
+
+    const gLandArea = this.getF('icicinpaGovtLandArea') || this.getF('icicinpaPlotArea') || '0';
+    const gAreaRate = this.getF('icicinpaGovtAreaRate') || '0';
+    const gConstArea = this.getF('icicinpaGovtConstructedArea') || this.getF('icicinpaCarpetAreaMeasured') || '0';
+    const gConstRate = this.getF('icicinpaGovtConstructedRate') || this.getF('icicinpaCostOfConstruction') || '0';
+
+    const autoGTot = ((Number(gLandArea) * Number(gAreaRate)) + (Number(gConstArea) * Number(gConstRate))) > 0
+      ? String(Math.round((Number(gLandArea) * Number(gAreaRate)) + (Number(gConstArea) * Number(gConstRate))))
+      : '0';
+    const gTotal = this.getF('icicinpaGovtTotalValue') || autoGTot;
+
+    this.drawKeyValueRow([
+      { label: 'Land Area / Built Up Area (Sq.Ft.)', value: gLandArea && gLandArea !== '0' ? `${gLandArea} sqft` : 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Area Rate (Per Sq. Ft.)', value: gAreaRate && gAreaRate !== '0' ? `Rs. ${gAreaRate}/-` : 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Constructed Area (BUA)', value: gConstArea && gConstArea !== '0' ? `${gConstArea} sqft` : 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Constructed Rate (Per Sq. Ft.)', value: gConstRate && gConstRate !== '0' ? `Rs. ${gConstRate}/-` : 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Total Value', value: gTotal && gTotal !== '0' ? `Rs. ${gTotal}/-` : 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    const floorUsage = this.getF('icicinpaFloorwiseUsage') === 'Custom' ? this.getF('icicinpaFloorwiseUsageCustom') : this.getF('icicinpaFloorwiseUsage');
+    this.drawKeyValueRow([
+      { label: 'Floor wise Building Usage', value: floorUsage || 'NA', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+
+    this.cursorY += 8;
+
+    this.drawSectionHeader('Request Data', false);
+
+    const reqCode = this.getF('icicinpaRequestId') || 'NA';
+    const reqDate = this.getF('icicinpaDate') || this.getF('valuationDate') || 'NA';
+    const parentProd = this.getF('icicinpaProductName') || this.getF('icicinpaProductType') || 'NA';
+    const prodType = this.getF('icicinpaProductType') || 'NA';
+
+    this.drawKeyValueRow([
+      { label: 'Request Code', value: reqCode, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 },
+      { label: 'Request Date', value: reqDate, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Parent Prod.Type', value: parentProd, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 },
+      { label: 'Product Type', value: prodType, labelWidth: 130, valueWidth: (CONTENT_W / 2) - 130 }
+    ]);
+
+    this.cursorY += 8;
+
+    this.drawSectionHeader('Construction Status', false);
+
+    const constRowsRaw = this.getF('icicinpaConstructionRows') || [];
+    const cTableRows: string[][] = [];
+
+    if (Array.isArray(constRowsRaw) && constRowsRaw.length > 0) {
+      constRowsRaw.forEach((row: any, idx: number) => {
+        cTableRows.push([
+          String(idx + 1),
+          row.stage || 'Completed',
+          row.structure || 'RCC Framed',
+          row.stageDesc || 'Finishing complete',
+          row.pctComplete ? `${row.pctComplete}%` : '100%',
+          row.pctRecommended ? `${row.pctRecommended}%` : '100%'
+        ]);
+      });
+    }
+
+    if (cTableRows.length === 0) {
+      cTableRows.push(['1', 'Completed', 'RCC Framed Structure', 'Finishing complete', '100%', '100%']);
+    }
+
+    const cHeaders = ['Sl No', 'Stage of Construction', 'Structure', 'Description of Stage', '% Complete', '% Recom.'];
+    const cSl = 35;
+    const cStage = 100;
+    const cStruct = 110;
+    const cComp = 60;
+    const cRec = 60;
+    const cDesc = CONTENT_W - (cSl + cStage + cStruct + cComp + cRec);
+
+    this.drawTable(
+      cHeaders,
+      cTableRows,
+      [cSl, cStage, cStruct, cDesc, cComp, cRec],
+      [],
+      [],
+      [],
+      [],
+      [],
+      ['center', 'left', 'left', 'left', 'center', 'center'],
+      ['center', 'left', 'left', 'left', 'center', 'center']
+    );
+
+    this.cursorY += 8;
+
+    this.drawSectionHeader('Verification Status', false);
+
+    const isAll100 = constRowsRaw.length > 0 ? constRowsRaw.every((r: any) => Number(r.pctComplete) === 100) : true;
+    const autoStatus = isAll100 ? 'Completed' : 'Under Construction';
+    const compStatus = this.getF('icicinpaCompletionStatus') || autoStatus;
+
+    this.drawKeyValueRow([
+      { label: 'Completion Status', value: compStatus, labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+    this.drawKeyValueRow([
+      { label: 'Violations Observed If Any', value: this.getF('icicinpaViolationsObserved') || 'None observed', labelWidth: 200, valueWidth: CONTENT_W - 200 }
+    ]);
+
+    this.cursorY += 10;
+
     // ── (Additional sections will be added here as prompts are provided) ──
 
   }
