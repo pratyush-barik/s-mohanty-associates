@@ -1,16 +1,1063 @@
 'use client';
-import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
+
+import React, { useState, useMemo, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
+import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
+import { BankReportBuilderProps } from '../../BankReportBuilder';
+import {
+  Section,
+  Field,
+  inputCls,
+  selectCls,
+  BaseDocumentsSection,
+  BaseMapsSection,
+  BasePhotographsSection,
+  ReportActionBar,
+  FloatingNavigator,
+  NavItem,
+  formatReportDate,
+  getEarliestFieldVisit,
+  EarliestFieldVisitBadge,
+  BasePhotoBucketModal,
+} from '../BaseBankReportComponents';
+import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
+import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
+import { PDFUtkarshSFBRenderer } from '@/lib/banks/pdf-utkarsh-sfb-renderer';
 
 export const UTKARSH_CONFIG: BankConfig = {
   bankId: 'UTKARSH SMALL FINANCE BANK',
-  subTemplateId: '',
+  subTemplateId: 'Standard',
   displayName: 'Utkarsh Small Finance Bank',
   defaultValues: {
-    purpose: 'Housing Loan / Micro Mortgages',
+    purpose: 'Housing Loan / LAP / Micro Mortgages',
   },
 };
 
-export default function UtkarshSmallFinanceBank(props: BankReportBuilderProps) {
-  return <BankReportBuilder config={UTKARSH_CONFIG} {...props} />;
+export interface UtkarshSFBProps extends BankReportBuilderProps {
+  initialData?: any;
+  isReadOnly?: boolean;
+}
+
+export default function UtkarshSmallFinanceBank({
+  projectId,
+  projectCode,
+  initialFields: rawInitialFields,
+  status,
+  userRole = 'field_engineer',
+  isReadOnly: isReadOnlyProp = false,
+  bucketImages = [],
+  prefill = {},
+}: UtkarshSFBProps) {
+  const router = useRouter();
+  const isReadOnly = isReadOnlyProp || status === 'COMPLETED';
+
+  const [saving, setSaving] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [previewing, setPreviewing] = useState(false);
+  const [uploading, setUploading] = useState<string | boolean>(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const [showBucketModal, setShowBucketModal] = useState(false);
+
+  const navSections: NavItem[] = [
+    { id: 'utkarsh-sec-app', title: 'Application Details' },
+    { id: 'utkarsh-sec-location', title: 'Location & Boundaries' },
+    { id: 'utkarsh-sec-municipal', title: 'Municipal & Legal Docs' },
+    { id: 'utkarsh-sec-technical', title: 'Technical Details & Accommodations' },
+    { id: 'utkarsh-sec-valuation', title: 'Valuation & Net Mortgage' },
+    { id: 'utkarsh-sec-remarks', title: 'Remarks & Declaration' },
+    { id: 'utkarsh-sec-attachments', title: 'Maps, Documents & Photos' },
+  ];
+
+  const earliestVisit = useMemo(() => {
+    return getEarliestFieldVisit(bucketImages, prefill);
+  }, [bucketImages, prefill]);
+
+  // Initialize fields
+  const [fields, setFields] = useState<Record<string, any>>(() => {
+    const d = { ...(rawInitialFields || {}) };
+    const p = (prefill || {}) as any;
+
+    // Application Details
+    if (!d.fileRefNo) d.fileRefNo = projectCode || '1537260505111947';
+    if (!d.reportDate) d.reportDate = earliestVisit ? formatReportDate(earliestVisit.date) : '13/06/2026';
+    if (!d.loanType) d.loanType = 'LAP';
+    if (!d.applicantName) d.applicantName = p.applicantName || 'Mahammada Imran';
+    const cPhone = p.contactPhone || '9238305224/8260205224/9658715707';
+    const cName = p.contactName || p.applicantName || 'Mahammada Imran';
+    if (!d.contactPersonsNos) d.contactPersonsNos = `${cName}: ${cPhone}`;
+    if (!d.ownerName) d.ownerName = p.contactName || 'Mahammad Ershad, S/O-Mahammad Ekram';
+    if (!d.propertyArea) d.propertyArea = '(805sqft)';
+    if (!d.holdingType) d.holdingType = 'Free Hold';
+    if (!d.propertyUsage) d.propertyUsage = 'Residential';
+    if (!d.areaAuthorisedTCP) d.areaAuthorisedTCP = 'WithinBDA limit';
+
+    // Location Details
+    const defaultAddress =
+      p.propertyAddress ||
+      'Hall Khata No-1611/309, Hall Plot No-4403/6312, Baragarh Housing Scheme and House No. EB-358, Plot No- 2405, (Area=805sqft) Mouza-Bhubaneswar Town Unit No-35 Baragarh, Tahasil/PS-Bhubaneswar, Dist-Khurda, Odisha, Pin-751018';
+    if (!d.addressAsPerFiring) d.addressAsPerFiring = defaultAddress;
+    if (!d.addressOnInspection) d.addressOnInspection = defaultAddress;
+    if (!d.addressAsPerDocs) d.addressAsPerDocs = defaultAddress;
+
+    if (!d.personMetNos) d.personMetNos = `${cName}: ${cPhone}`;
+    if (!d.addressMatching) d.addressMatching = 'Yes';
+    if (!d.landmark) d.landmark = 'Near Shree Jagannath Temple';
+    if (!d.zoneAsPerCity) d.zoneAsPerCity = 'Residential';
+    if (!d.locationGPS) d.locationGPS = '20.248472, 85.853611';
+
+    // Boundaries
+    if (!d.bndActualNorth) d.bndActualNorth = "Other's Building";
+    if (!d.bndDocNorth) d.bndDocNorth = 'EB-557';
+    if (!d.bndActualEast) d.bndActualEast = "Other's Building";
+    if (!d.bndDocEast) d.bndDocEast = 'EB-347';
+    if (!d.bndActualWest) d.bndActualWest = 'Road';
+    if (!d.bndDocWest) d.bndDocWest = 'Road';
+    if (!d.bndActualSouth) d.bndActualSouth = "Other's Building";
+    if (!d.bndDocSouth) d.bndDocSouth = 'EB-359';
+    if (!d.boundaryTalliedRemark) d.boundaryTalliedRemark = 'Boundary is matching as per documents';
+
+    // Accessibility
+    if (!d.neighbourhoodType) d.neighbourhoodType = 'Middle';
+    if (!d.marketability) d.marketability = 'Good';
+    if (!d.proximityAmenities) d.proximityAmenities = '1-2 Kms';
+    if (!d.siteAccess) d.siteAccess = '15-Feet wide Road';
+    if (!d.withinMunicipalLimits) d.withinMunicipalLimits = 'Yes';
+    if (!d.plotDemarcation) d.plotDemarcation = 'Yes';
+    if (!d.neighboursInquiry) d.neighboursInquiry = 'Yes';
+
+    // Document / Municipal Details
+    if (!d.sanctionPlanProvided) d.sanctionPlanProvided = 'No';
+    if (!d.sanctionPermitNo) d.sanctionPermitNo = 'NA';
+    if (!d.sanctionDate) d.sanctionDate = 'NA';
+    if (!d.validTill) d.validTill = 'NA';
+    if (!d.floorsSanctioned) d.floorsSanctioned = 'NA';
+    if (!d.sanctionedAreas) d.sanctionedAreas = 'NA';
+    if (!d.sanctioningAuthority) d.sanctioningAuthority = 'Plan not provided';
+    if (!d.municipalCompliance) d.municipalCompliance = 'Municipal Limit';
+    if (!d.localByLawsCompliance) d.localByLawsCompliance = 'WithinBDA limit';
+    if (!d.commencementCertDetails) d.commencementCertDetails = 'NA';
+    if (!d.legalDocsProvided) d.legalDocsProvided = 'Yes';
+    if (!d.legalDocsDetails) d.legalDocsDetails = 'Copy of Allotment deed, ROR';
+
+    // Technical Details
+    if (!d.technicalPropertyType) d.technicalPropertyType = p.propertyType || 'Residential';
+    if (!d.noOfStories) d.noOfStories = 'G+2';
+    if (!d.tenementPosition) d.tenementPosition = 'Self occupied';
+    if (!d.constructionType) d.constructionType = 'RCC';
+    if (!d.noOfLifts) d.noOfLifts = 'Nil';
+
+    // Accommodation
+    if (!d.accoBF) d.accoBF = 'Nil';
+    if (!d.accoMezz) d.accoMezz = 'Nil';
+    if (!d.accoGF) d.accoGF = '805sqft';
+    if (!d.accoSF) d.accoSF = '568sqft';
+    if (!d.accoFF) d.accoFF = '805sqft';
+    if (!d.accoTF) d.accoTF = 'NA';
+    if (!d.acco4thF) d.acco4thF = 'NA';
+
+    if (!d.flatFloorNo) d.flatFloorNo = 'NA';
+    if (!d.flatAccommodation) d.flatAccommodation = 'NA';
+    if (!d.independentAccessUnit) d.independentAccessUnit = 'Yes';
+
+    if (!d.occupancyStatus) d.occupancyStatus = 'Owner';
+    if (!d.occupantName) d.occupantName = 'Mahammada Imran';
+    if (!d.finishExterior) d.finishExterior = 'Good';
+    if (!d.finishInterior) d.finishInterior = 'Good';
+    if (!d.finishFlooring) d.finishFlooring = 'Tiles';
+    if (!d.finishWood) d.finishWood = 'Wood';
+    if (!d.commercialUsageDetails) d.commercialUsageDetails = 'NA';
+    if (!d.completionStatus) d.completionStatus = '100% Completed';
+    if (!d.currentAge) d.currentAge = '20-Years';
+    if (!d.residualAge) d.residualAge = '40-Years';
+
+    // Valuation calculation numbers
+    if (!d.valConstAreaNum) d.valConstAreaNum = 2178;
+    if (!d.valConstRateNum) d.valConstRateNum = 2200;
+    if (!d.valConstTotalNum) d.valConstTotalNum = 4791600;
+
+    if (!d.valLandAreaNum) d.valLandAreaNum = 805;
+    if (!d.valLandRateNum) d.valLandRateNum = 8000;
+    if (!d.valLandTotalNum) d.valLandTotalNum = 6440000;
+
+    if (!d.netMortgageValueNum) d.netMortgageValueNum = 11231600;
+    if (!d.forcedValueNum) d.forcedValueNum = 8985280;
+
+    if (!d.valConstArea) d.valConstArea = '2178sqft';
+    if (!d.valConstRate) d.valConstRate = 'Rs.2200/-';
+    if (!d.valConstTotal) d.valConstTotal = 'Rs.47,91,600/-';
+    if (!d.valTotalBUA) d.valTotalBUA = 'Rs.47,91,600/-';
+    if (!d.valDepDesc) d.valDepDesc = '1.00% per years for 20-Years i.e. 20%';
+    if (!d.valDepAmount) d.valDepAmount = 'Nil';
+    if (!d.valConstAfterDep) d.valConstAfterDep = 'Rs.47,91,600/-';
+
+    if (!d.valLandArea) d.valLandArea = '805sqft';
+    if (!d.valLandRate) d.valLandRate = 'Rs.8000/-';
+    if (!d.valLandTotal) d.valLandTotal = 'Rs.64,40,000/-';
+
+    if (!d.carParkingNos) d.carParkingNos = 'NA';
+    if (!d.carParkingRate) d.carParkingRate = 'NA';
+    if (!d.carParkingTotal) d.carParkingTotal = 'NA';
+    if (!d.otherOneTimeCost) d.otherOneTimeCost = 'NA';
+
+    if (!d.netMortgageValue) d.netMortgageValue = 'Rs.1,12,31,600/-';
+    if (!d.govtRate) d.govtRate = 'Rs.2048/-';
+    if (!d.forcedValue) d.forcedValue = 'Rs.89,85,280/-';
+    if (!d.valuationDoneEarlier) d.valuationDoneEarlier = '13/05/2026';
+    if (!d.inDemolitionList) d.inDemolitionList = 'No (Within BDAlimit)';
+    if (!d.inNegativeArea) d.inNegativeArea = 'NO';
+    if (!d.litigationObserved) d.litigationObserved = 'NO';
+    if (!d.deviationsAccepted) d.deviationsAccepted = 'NA';
+
+    // Remarks & Declaration
+    if (!d.remarks) {
+      d.remarks =
+        'Remarks: Subject property is a G+2 storied residential building, having land extent of 805sqft, having measured BUA 2178sqft (GF-805sqft, FF-805sqft&SF-568sqft). Approved plan is not provided. It is accessible with 15-feet wide road & surrounding areas are residential in nature. Age of the property is about20-years. All civicamenities are present with 1-2 kms from the property. This plot is coming under BDA limit& Primary residential use zone. Entire building isused by the customer for residential purpose. Valuation has been done for land & measured BUA of G+2storied residential building.As approved plan is not provided, it is up to sole discretion of Utkarsh Bank to consider the BUA value or not.';
+    }
+    if (!d.place) d.place = 'Bhubaneswar';
+
+    // Attachments
+    if (!d.propertyImages) d.propertyImages = [];
+    if (!d.propertyImageNames) d.propertyImageNames = [];
+    if (!d.documentImages) d.documentImages = [];
+    if (!d.documentImageNames) d.documentImageNames = [];
+    if (!d.locationMapImages) d.locationMapImages = [];
+    if (!d.mouzaMapImages) d.mouzaMapImages = [];
+    if (!d.sketchMapImages) d.sketchMapImages = [];
+    if (!d.cadastralMapImages) d.cadastralMapImages = [];
+    if (!d.bdaMapImages) d.bdaMapImages = [];
+
+    return d;
+  });
+
+  const updateField = useCallback((key: string, value: any) => {
+    setFields((prev) => {
+      const next = { ...prev, [key]: value };
+
+      // Live valuation calculation
+      const constA = parseFloat(String(next.valConstAreaNum ?? 0)) || 0;
+      const constR = parseFloat(String(next.valConstRateNum ?? 0)) || 0;
+      const landA = parseFloat(String(next.valLandAreaNum ?? 0)) || 0;
+      const landR = parseFloat(String(next.valLandRateNum ?? 0)) || 0;
+
+      const calcConstVal = Math.round(constA * constR);
+      const calcLandVal = Math.round(landA * landR);
+      const calcNet = calcConstVal + calcLandVal;
+      const calcForced = Math.round(calcNet * 0.8); // 80% forced value standard
+
+      if (['valConstAreaNum', 'valConstRateNum', 'valLandAreaNum', 'valLandRateNum'].includes(key)) {
+        next.valConstTotalNum = calcConstVal;
+        next.valConstTotal = `Rs.${calcConstVal.toLocaleString('en-IN')}/-`;
+        next.valTotalBUA = `Rs.${calcConstVal.toLocaleString('en-IN')}/-`;
+        next.valConstAfterDep = `Rs.${calcConstVal.toLocaleString('en-IN')}/-`;
+        next.valConstArea = `${constA}sqft`;
+        next.valConstRate = `Rs.${constR}/-`;
+
+        next.valLandTotalNum = calcLandVal;
+        next.valLandTotal = `Rs.${calcLandVal.toLocaleString('en-IN')}/-`;
+        next.valLandArea = `${landA}sqft`;
+        next.valLandRate = `Rs.${landR}/-`;
+
+        next.netMortgageValueNum = calcNet;
+        next.netMortgageValue = `Rs.${calcNet.toLocaleString('en-IN')}/-`;
+        next.forcedValueNum = calcForced;
+        next.forcedValue = `Rs.${calcForced.toLocaleString('en-IN')}/-`;
+      }
+
+      return next;
+    });
+  }, []);
+
+  // Upload handler for maps
+  const handleMapUpload = async (fieldKey: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    try {
+      setUploading(fieldKey);
+      const urls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `reports/${projectId}/maps/${Date.now()}_${i}.${ext}`;
+        const { error: uploadErr } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(path, file);
+        if (uploadErr) throw uploadErr;
+        const { data: publicUrlData } = supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .getPublicUrl(path);
+        urls.push(publicUrlData.publicUrl);
+      }
+      setFields((prev) => ({
+        ...prev,
+        [fieldKey]: [...(prev[fieldKey] || []), ...urls],
+      }));
+    } catch (err: any) {
+      alert('Error uploading map: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Upload handler for documents
+  const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    try {
+      setUploading('documents');
+      const urls: string[] = [];
+      const names: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `reports/${projectId}/documents/${Date.now()}_${i}.${ext}`;
+        const { error: uploadErr } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(path, file);
+        if (uploadErr) throw uploadErr;
+        const { data: publicUrlData } = supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .getPublicUrl(path);
+        urls.push(publicUrlData.publicUrl);
+        names.push(file.name.replace(/\.[^/.]+$/, ''));
+      }
+      setFields((prev) => ({
+        ...prev,
+        documentImages: [...(prev.documentImages || []), ...urls],
+        documentImageNames: [...(prev.documentImageNames || []), ...names],
+      }));
+    } catch (err: any) {
+      alert('Error uploading documents: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Upload handler for photos
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    try {
+      setUploading('photos');
+      const urls: string[] = [];
+      const names: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const ext = file.name.split('.').pop() || 'jpg';
+        const path = `reports/${projectId}/photos/${Date.now()}_${i}.${ext}`;
+        const { error: uploadErr } = await supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .upload(path, file);
+        if (uploadErr) throw uploadErr;
+        const { data: publicUrlData } = supabaseBrowser.storage
+          .from(STORAGE_BUCKETS.VALUATION_DOCUMENTS)
+          .getPublicUrl(path);
+        urls.push(publicUrlData.publicUrl);
+        names.push(`Photograph ${(fields.propertyImages?.length || 0) + i + 1}`);
+      }
+      setFields((prev) => ({
+        ...prev,
+        propertyImages: [...(prev.propertyImages || []), ...urls],
+        propertyImageNames: [...(prev.propertyImageNames || []), ...names],
+      }));
+    } catch (err: any) {
+      alert('Error uploading photos: ' + err.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Save Draft
+  const handleSaveDraft = async () => {
+    setSaving(true);
+    setAutoSaveStatus('saving');
+    try {
+      await saveReportDraft(projectId, {
+        custom_fields: fields,
+        valuation_amount: fields.netMortgageValueNum || 0,
+        updated_at: new Date().toISOString(),
+      });
+      setAutoSaveStatus('saved');
+      setMessage({ text: 'Draft saved successfully', type: 'success' });
+      setTimeout(() => setMessage(null), 3000);
+    } catch (err: any) {
+      setAutoSaveStatus('error');
+      setMessage({ text: err.message, type: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Submit Report
+  const handleSubmit = async () => {
+    if (!confirm('Are you sure you want to submit this Utkarsh Small Finance Bank report?')) return;
+    setSubmitting(true);
+    try {
+      await saveReportDraft(projectId, {
+        custom_fields: fields,
+        valuation_amount: fields.netMortgageValueNum || 0,
+        updated_at: new Date().toISOString(),
+      });
+      await supabaseBrowser.from('projects').update({
+        status: 'COMPLETED',
+        valuation_amount: fields.netMortgageValueNum || 0,
+        updated_at: new Date().toISOString(),
+      });
+      alert('Report submitted successfully!');
+      router.refresh();
+    } catch (err: any) {
+      alert('Error submitting report: ' + err.message);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // PDF Preview & Download
+  const generatePdfBytes = async (): Promise<Uint8Array> => {
+    const renderer = new PDFUtkarshSFBRenderer({
+      ...fields,
+      projectCode,
+    });
+    return await renderer.render();
+  };
+
+  const handlePreviewPDF = async () => {
+    try {
+      setPreviewing(true);
+      const pdfBytes = await generatePdfBytes();
+      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (err: any) {
+      alert(`Error previewing PDF: ${err.message}`);
+    } finally {
+      setPreviewing(false);
+    }
+  };
+
+  const handleDownloadPDF = async () => {
+    try {
+      setPreviewing(true);
+      const pdfBytes = await generatePdfBytes();
+      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Utkarsh_SFB_Valuation_${fields.fileRefNo || projectCode || 'Report'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (err: any) {
+      alert(`Error downloading PDF: ${err.message}`);
+    } finally {
+      setPreviewing(false);
+    }
+  };
+
+  return (
+    <div className="relative min-h-screen bg-slate-50 text-slate-800 pb-28">
+      <FloatingNavigator sections={navSections} />
+
+      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+        <div className="bg-white rounded-xl shadow border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+              UTKARSH SMALL FINANCE BANK — VALUATION REPORT
+            </h1>
+            <p className="text-sm text-slate-500 mt-1">
+              Valuation Report Format • LAN No: <span className="font-semibold text-slate-700">{fields.fileRefNo || projectCode}</span>
+            </p>
+          </div>
+          <EarliestFieldVisitBadge fieldVisit={earliestVisit} />
+        </div>
+
+        {earliestVisit && (
+          <div className="flex items-center justify-between p-4 bg-blue-50/80 border border-blue-200 rounded-xl text-blue-900 text-sm">
+            <span className="font-medium">Site inspection detected from uploaded images ({formatReportDate(earliestVisit.date)}).</span>
+            <button
+              type="button"
+              onClick={() => {
+                const dt = formatReportDate(earliestVisit.date);
+                updateField('reportDate', dt);
+              }}
+              className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-lg shadow-sm transition"
+            >
+              Sync Report Date
+            </button>
+          </div>
+        )}
+
+        {/* 1. Application Details */}
+        <div id="utkarsh-sec-app">
+          <Section title="Application Details">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              <Field label="File Ref NO. / LAN No.">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.fileRefNo || ''}
+                  onChange={(e) => updateField('fileRefNo', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Date of Report">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.reportDate || ''}
+                  onChange={(e) => updateField('reportDate', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Loan Type">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.loanType || ''}
+                  onChange={(e) => updateField('loanType', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Name of Applicant">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.applicantName || ''}
+                  onChange={(e) => updateField('applicantName', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Contact Persons / Nos">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.contactPersonsNos || ''}
+                  onChange={(e) => updateField('contactPersonsNos', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Name of Property Owner">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.ownerName || ''}
+                  onChange={(e) => updateField('ownerName', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Field label="Property Area">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.propertyArea || ''}
+                  onChange={(e) => updateField('propertyArea', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Property Holding Type">
+                <select
+                  className={selectCls}
+                  value={fields.holdingType || 'Free Hold'}
+                  onChange={(e) => updateField('holdingType', e.target.value)}
+                  disabled={isReadOnly}
+                >
+                  <option value="Free Hold">Free Hold</option>
+                  <option value="Lease Hold">Lease Hold</option>
+                </select>
+              </Field>
+              <Field label="Property Usage">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.propertyUsage || ''}
+                  onChange={(e) => updateField('propertyUsage', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Area Authorised as per TCP">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.areaAuthorisedTCP || ''}
+                  onChange={(e) => updateField('areaAuthorisedTCP', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+          </Section>
+        </div>
+
+        {/* 2. Location Details & Boundaries */}
+        <div id="utkarsh-sec-location">
+          <Section title="Location Details & Site Boundaries">
+            <div className="space-y-3 mb-4">
+              <Field label="Address as per Firing">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.addressAsPerFiring || ''}
+                  onChange={(e) => updateField('addressAsPerFiring', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Address on Inspection (Postal)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.addressOnInspection || ''}
+                  onChange={(e) => updateField('addressOnInspection', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Address as per Docs (Sanction & Legal)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.addressAsPerDocs || ''}
+                  onChange={(e) => updateField('addressAsPerDocs', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <Field label="Person Met / Nos">
+                <input type="text" className={inputCls} value={fields.personMetNos || ''} onChange={(e) => updateField('personMetNos', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Address Matching?">
+                <select className={selectCls} value={fields.addressMatching || 'Yes'} onChange={(e) => updateField('addressMatching', e.target.value)} disabled={isReadOnly}>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </Field>
+              <Field label="Landmark">
+                <input type="text" className={inputCls} value={fields.landmark || ''} onChange={(e) => updateField('landmark', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Zone as per City">
+                <input type="text" className={inputCls} value={fields.zoneAsPerCity || ''} onChange={(e) => updateField('zoneAsPerCity', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+
+            <div className="mb-6">
+              <Field label="Location of Plot / Property (GPS Lat, Long)">
+                <input type="text" className={inputCls} value={fields.locationGPS || ''} onChange={(e) => updateField('locationGPS', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+
+            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Four Site Boundaries</h4>
+            <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg mb-4">
+              <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+                <thead className="bg-slate-100 dark:bg-slate-800 font-medium">
+                  <tr>
+                    <th className="px-3 py-2 text-left">Basis</th>
+                    <th className="px-3 py-2 text-left">North</th>
+                    <th className="px-3 py-2 text-left">East</th>
+                    <th className="px-3 py-2 text-left">West</th>
+                    <th className="px-3 py-2 text-left">South</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                  <tr>
+                    <td className="px-3 py-2 font-medium bg-slate-50 dark:bg-slate-800/40">Actual as Verified at Site</td>
+                    <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.bndActualNorth || ''} onChange={(e) => updateField('bndActualNorth', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.bndActualEast || ''} onChange={(e) => updateField('bndActualEast', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.bndActualWest || ''} onChange={(e) => updateField('bndActualWest', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.bndActualSouth || ''} onChange={(e) => updateField('bndActualSouth', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                  <tr>
+                    <td className="px-3 py-2 font-medium bg-slate-50 dark:bg-slate-800/40">As per Sale Deed</td>
+                    <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.bndDocNorth || ''} onChange={(e) => updateField('bndDocNorth', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.bndDocEast || ''} onChange={(e) => updateField('bndDocEast', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.bndDocWest || ''} onChange={(e) => updateField('bndDocWest', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.bndDocSouth || ''} onChange={(e) => updateField('bndDocSouth', e.target.value)} disabled={isReadOnly} /></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Field label="Boundaries Tallied Remark">
+                <input type="text" className={inputCls} value={fields.boundaryTalliedRemark || ''} onChange={(e) => updateField('boundaryTalliedRemark', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Neighbourhood Type">
+                <input type="text" className={inputCls} value={fields.neighbourhoodType || ''} onChange={(e) => updateField('neighbourhoodType', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Marketability">
+                <select className={selectCls} value={fields.marketability || 'Good'} onChange={(e) => updateField('marketability', e.target.value)} disabled={isReadOnly}>
+                  <option value="Poor">Poor</option>
+                  <option value="Average">Average</option>
+                  <option value="Good">Good</option>
+                </select>
+              </Field>
+              <Field label="Site Access">
+                <input type="text" className={inputCls} value={fields.siteAccess || ''} onChange={(e) => updateField('siteAccess', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+          </Section>
+        </div>
+
+        {/* 3. Municipal & Legal Docs */}
+        <div id="utkarsh-sec-municipal">
+          <Section title="Municipal Details & Legal Documents">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <Field label="Sanction Plan Provided?">
+                <select className={selectCls} value={fields.sanctionPlanProvided || 'No'} onChange={(e) => updateField('sanctionPlanProvided', e.target.value)} disabled={isReadOnly}>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </Field>
+              <Field label="Sanction / Permit No.">
+                <input type="text" className={inputCls} value={fields.sanctionPermitNo || ''} onChange={(e) => updateField('sanctionPermitNo', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Date of Sanction">
+                <input type="text" className={inputCls} value={fields.sanctionDate || ''} onChange={(e) => updateField('sanctionDate', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Valid Till">
+                <input type="text" className={inputCls} value={fields.validTill || ''} onChange={(e) => updateField('validTill', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              <Field label="No. of Floors Sanctioned">
+                <input type="text" className={inputCls} value={fields.floorsSanctioned || ''} onChange={(e) => updateField('floorsSanctioned', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Sanctioned Areas">
+                <input type="text" className={inputCls} value={fields.sanctionedAreas || ''} onChange={(e) => updateField('sanctionedAreas', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Sanctioning Authority">
+                <input type="text" className={inputCls} value={fields.sanctioningAuthority || ''} onChange={(e) => updateField('sanctioningAuthority', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field label="Local By-Laws Compliance (If plan not available)">
+                <input type="text" className={inputCls} value={fields.localByLawsCompliance || ''} onChange={(e) => updateField('localByLawsCompliance', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Details of Legal Docs Provided">
+                <input type="text" className={inputCls} value={fields.legalDocsDetails || ''} onChange={(e) => updateField('legalDocsDetails', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+          </Section>
+        </div>
+
+        {/* 4. Technical Details & Accommodations */}
+        <div id="utkarsh-sec-technical">
+          <Section title="Technical Details & Accommodations">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <Field label="Type of Property">
+                <input type="text" className={inputCls} value={fields.technicalPropertyType || ''} onChange={(e) => updateField('technicalPropertyType', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="No. of Stories">
+                <input type="text" className={inputCls} value={fields.noOfStories || ''} onChange={(e) => updateField('noOfStories', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Tenement Position">
+                <input type="text" className={inputCls} value={fields.tenementPosition || ''} onChange={(e) => updateField('tenementPosition', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Construction Type">
+                <input type="text" className={inputCls} value={fields.constructionType || ''} onChange={(e) => updateField('constructionType', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+
+            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Floor-wise Measured Accommodation</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              <Field label="Ground Floor (G.F. RCC)">
+                <input type="text" className={inputCls} value={fields.accoGF || ''} onChange={(e) => updateField('accoGF', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="First Floor (F.F. RCC)">
+                <input type="text" className={inputCls} value={fields.accoFF || ''} onChange={(e) => updateField('accoFF', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Second Floor (S.F.)">
+                <input type="text" className={inputCls} value={fields.accoSF || ''} onChange={(e) => updateField('accoSF', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Basement / Mezzanine">
+                <input type="text" className={inputCls} value={fields.accoBF || 'Nil'} onChange={(e) => updateField('accoBF', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Field label="Completion Status">
+                <input type="text" className={inputCls} value={fields.completionStatus || ''} onChange={(e) => updateField('completionStatus', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Current Age of Property">
+                <input type="text" className={inputCls} value={fields.currentAge || ''} onChange={(e) => updateField('currentAge', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Residual Physical Life">
+                <input type="text" className={inputCls} value={fields.residualAge || ''} onChange={(e) => updateField('residualAge', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+          </Section>
+        </div>
+
+        {/* 5. Valuation & Net Mortgage Value */}
+        <div id="utkarsh-sec-valuation">
+          <Section title="Valuation (Live Calculation)">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              <Field label="Construction Area (Sqft)">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.valConstAreaNum ?? 2178}
+                  onChange={(e) => updateField('valConstAreaNum', parseFloat(e.target.value) || 0)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Construction Rate (Rs per Sqft)">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.valConstRateNum ?? 2200}
+                  onChange={(e) => updateField('valConstRateNum', parseFloat(e.target.value) || 0)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Total Construction Value (Rs)">
+                <div className="p-2.5 rounded-lg bg-slate-100 font-bold text-slate-900 border border-slate-200">
+                  {formatIndianCurrency(fields.valConstTotalNum)}
+                </div>
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Field label="Land Area (Sqft)">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.valLandAreaNum ?? 805}
+                  onChange={(e) => updateField('valLandAreaNum', parseFloat(e.target.value) || 0)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Land Rate (Rs per Sqft)">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.valLandRateNum ?? 8000}
+                  onChange={(e) => updateField('valLandRateNum', parseFloat(e.target.value) || 0)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Total Land Value (Rs)">
+                <div className="p-2.5 rounded-lg bg-slate-100 font-bold text-slate-900 border border-slate-200">
+                  {formatIndianCurrency(fields.valLandTotalNum)}
+                </div>
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl mb-6">
+              <div>
+                <span className="text-xs uppercase font-semibold text-emerald-700 tracking-wider">NET MORTGAGE VALUE</span>
+                <div className="text-2xl font-black text-slate-900 mt-1">
+                  {formatIndianCurrency(fields.netMortgageValueNum)}
+                </div>
+                <div className="text-xs text-slate-600 mt-0.5">
+                  {rupeesInWords(fields.netMortgageValueNum || 0)}
+                </div>
+              </div>
+              <div>
+                <span className="text-xs uppercase font-semibold text-blue-700 tracking-wider">DISTRESSED / FORCED VALUE</span>
+                <div className="text-2xl font-black text-blue-900 mt-1">
+                  {fields.forcedValue}
+                </div>
+                <div className="text-xs text-slate-600 mt-0.5">
+                  Assessed distress realization
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Field label="Government Rate (Rs/Sqft)">
+                <input type="text" className={inputCls} value={fields.govtRate || ''} onChange={(e) => updateField('govtRate', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Valuation Done Earlier">
+                <input type="text" className={inputCls} value={fields.valuationDoneEarlier || ''} onChange={(e) => updateField('valuationDoneEarlier', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="In Demolition List?">
+                <input type="text" className={inputCls} value={fields.inDemolitionList || ''} onChange={(e) => updateField('inDemolitionList', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Any Litigation Observed?">
+                <input type="text" className={inputCls} value={fields.litigationObserved || ''} onChange={(e) => updateField('litigationObserved', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+          </Section>
+        </div>
+
+        {/* 6. Remarks & Declaration */}
+        <div id="utkarsh-sec-remarks">
+          <Section title="Remarks & Sign-off">
+            <div className="space-y-4">
+              <Field label="Remarks & Observations">
+                <textarea
+                  rows={6}
+                  className={inputCls}
+                  value={fields.remarks || ''}
+                  onChange={(e) => updateField('remarks', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                <Field label="Place">
+                  <input type="text" className={inputCls} value={fields.place || 'Bhubaneswar'} onChange={(e) => updateField('place', e.target.value)} disabled={isReadOnly} />
+                </Field>
+                <Field label="Report Date">
+                  <input type="text" className={inputCls} value={fields.reportDate || ''} onChange={(e) => updateField('reportDate', e.target.value)} disabled={isReadOnly} />
+                </Field>
+              </div>
+            </div>
+          </Section>
+        </div>
+
+        {/* 7. Attachments: Maps, Documents & Photographs */}
+        <div id="utkarsh-sec-attachments" className="space-y-6">
+          <BaseMapsSection
+            title="Location Plan & Sketch Map"
+            sectionId="utkarsh-sec-maps"
+            sectionNumber={1}
+            locationMapImages={fields.locationMapImages || []}
+            mouzaMapImages={fields.mouzaMapImages || []}
+            sketchMapImages={fields.sketchMapImages || []}
+            cadastralMapImages={fields.cadastralMapImages || []}
+            bdaMapImages={fields.bdaMapImages || []}
+            isReadOnly={isReadOnly}
+            uploading={uploading}
+            onLocationMapUpload={(e) => handleMapUpload('locationMapImages', e)}
+            onLocationMapRemove={(idx) =>
+              setFields((p) => ({
+                ...p,
+                locationMapImages: (p.locationMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)),
+              }))
+            }
+            onMouzaMapUpload={(e) => handleMapUpload('mouzaMapImages', e)}
+            onMouzaMapRemove={(idx) =>
+              setFields((p) => ({
+                ...p,
+                mouzaMapImages: (p.mouzaMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)),
+              }))
+            }
+            onSketchMapUpload={(e) => handleMapUpload('sketchMapImages', e)}
+            onSketchMapRemove={(idx) =>
+              setFields((p) => ({
+                ...p,
+                sketchMapImages: (p.sketchMapImages || []).filter((_: any, i: number) => i !== idx),
+              }))
+            }
+            onCadastralMapUpload={(e) => handleMapUpload('cadastralMapImages', e)}
+            onCadastralMapRemove={(idx) =>
+              setFields((p) => ({
+                ...p,
+                cadastralMapImages: (p.cadastralMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)),
+              }))
+            }
+            onBdaMapUpload={(e) => handleMapUpload('bdaMapImages', e)}
+            onBdaMapRemove={(idx) =>
+              setFields((p) => ({
+                ...p,
+                bdaMapImages: (p.bdaMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)),
+              }))
+            }
+            onReorderLocationMap={(newImgs) => setFields((p) => ({ ...p, locationMapImages: newImgs }))}
+            onReorderMouzaMap={(newImgs) => setFields((p) => ({ ...p, mouzaMapImages: newImgs }))}
+            onReorderSketchMap={(newImgs) => setFields((p) => ({ ...p, sketchMapImages: newImgs }))}
+            onReorderCadastralMap={(newImgs) => setFields((p) => ({ ...p, cadastralMapImages: newImgs }))}
+            onReorderBdaMap={(newImgs) => setFields((p) => ({ ...p, bdaMapImages: newImgs }))}
+          />
+
+          <BaseDocumentsSection
+            title="Verified Property Documents"
+            sectionId="utkarsh-sec-docs"
+            sectionNumber={2}
+            documentImages={fields.documentImages || []}
+            documentImageNames={fields.documentImageNames || []}
+            isReadOnly={isReadOnly}
+            uploading={uploading}
+            onUploadDocuments={handleDocUpload}
+            onRemoveDocument={(idx) =>
+              setFields((p) => ({
+                ...p,
+                documentImages: (p.documentImages || []).filter((_: any, i: number) => i !== idx),
+                documentImageNames: (p.documentImageNames || []).filter((_: any, i: number) => i !== idx),
+              }))
+            }
+            onDocumentNameChange={(idx, name) => {
+              const arr = [...(fields.documentImageNames || [])];
+              while (arr.length <= idx) arr.push('');
+              arr[idx] = name;
+              setFields((p) => ({ ...p, documentImageNames: arr }));
+            }}
+            onReorderDocuments={(newImgs, newNames) =>
+              setFields((p) => ({ ...p, documentImages: newImgs, documentImageNames: newNames }))
+            }
+          />
+
+          <BasePhotographsSection
+            title="Property Site Photographs"
+            sectionId="utkarsh-sec-photos"
+            sectionNumber={3}
+            propertyImages={fields.propertyImages || []}
+            propertyImageNames={fields.propertyImageNames || []}
+            isReadOnly={isReadOnly}
+            uploading={uploading}
+            bucketCount={bucketImages?.length || 0}
+            onOpenBucketPicker={() => setShowBucketModal(true)}
+            onUploadImages={handlePhotoUpload}
+            onRemoveImage={(idx) =>
+              setFields((p) => ({
+                ...p,
+                propertyImages: (p.propertyImages || []).filter((_: any, i: number) => i !== idx),
+                propertyImageNames: (p.propertyImageNames || []).filter((_: any, i: number) => i !== idx),
+              }))
+            }
+            onImageNameChange={(idx, name) => {
+              const arr = [...(fields.propertyImageNames || [])];
+              while (arr.length <= idx) arr.push('');
+              arr[idx] = name;
+              setFields((p) => ({ ...p, propertyImageNames: arr }));
+            }}
+            onReorderImages={(newImgs, newNames) =>
+              setFields((p) => ({ ...p, propertyImages: newImgs, propertyImageNames: newNames }))
+            }
+          />
+        </div>
+      </main>
+
+      {/* Floating Action Bar */}
+      <ReportActionBar
+        isReadOnly={isReadOnly}
+        userRole={userRole}
+        autoSaveStatus={autoSaveStatus}
+        message={message}
+        loading={saving || submitting || previewing || !!uploading}
+        onSaveDraft={handleSaveDraft}
+        onSubmit={handleSubmit}
+        onPreviewPDF={handlePreviewPDF}
+        onDownloadPDF={handleDownloadPDF}
+      />
+
+      {/* Bucket Selector Modal */}
+      {showBucketModal && (
+        <BasePhotoBucketModal
+          isOpen={showBucketModal}
+          bucketImages={bucketImages}
+          mode="propertyImages"
+          onClose={() => setShowBucketModal(false)}
+          onConfirm={(selectedUrls: string[]) => {
+            setFields((prev) => ({
+              ...prev,
+              propertyImages: [...(prev.propertyImages || []), ...selectedUrls],
+              propertyImageNames: [
+                ...(prev.propertyImageNames || []),
+                ...selectedUrls.map((_, i) => `Photograph ${(prev.propertyImages?.length || 0) + i + 1}`),
+              ],
+            }));
+            setShowBucketModal(false);
+          }}
+        />
+      )}
+    </div>
+  );
 }

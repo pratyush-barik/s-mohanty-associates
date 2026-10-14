@@ -93,7 +93,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **54** | **UJJIVAN SMALL FINANCE BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **55** | **UNION BANK OF INDIA-UBI** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **56** | **UNITY SMALL FINANCE BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
-| **57** | **UTKARSH SMALL FINANCE BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **57** | **UTKARSH SMALL FINANCE BANK** | `Standard` | ✅ Created Base | ✅ Completed |
 | **58** | **VARTHANA FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
 | **59** | **VISTAAR FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
 | **60** | **YES BANK** | `Standard` | ✅ Created Base | ✅ Completed |
