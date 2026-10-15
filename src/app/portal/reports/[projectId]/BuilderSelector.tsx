@@ -163,14 +163,39 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'PUNJAB NATIONAL BANK': dynamic(() => import('./banks/punjab-national/PunjabNationalBank')),
   'PURPLE FINANCE': dynamic(() => import('./banks/purple/PurpleFinance')),
 
+  // IDBI Bank
+  'IDBI BANK::BELOW 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
+  'IDBI BANK::ABOVE 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
+  'IDBI BANK': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
+
+  // Direct Format Keys
+  'BELOW 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
+  'ABOVE 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
+  'Flat & Apartment': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
+  'Land & Building': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
+
   // Sammunati, SBI, Shriram, SMFG, Suryoday, Swarna
   'SAMMUNATI FINANCE': dynamic(() => import('./banks/sammunati/SammunatiFinance')),
-  'STATE BANK OF INDIA-SBI::Flat & Apartment': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
-  'STATE BANK OF INDIA-SBI::Land & Building': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
+  // State Bank of India (SBI) - Flat & Apartment / Above 5CR
   'STATE BANK OF INDIA-SBI::ABOVE 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
+  'STATE BANK OF INDIA-SBI::Flat & Apartment': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
+  'STATE BANK OF INDIA::ABOVE 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
+  'STATE BANK OF INDIA::Flat & Apartment': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
+  'SBI::ABOVE 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
+  'SBI::Flat & Apartment': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
+
+  // State Bank of India (SBI) - Land & Building / Below 5CR
   'STATE BANK OF INDIA-SBI::BELOW 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
+  'STATE BANK OF INDIA-SBI::Land & Building': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
+  'STATE BANK OF INDIA::BELOW 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
+  'STATE BANK OF INDIA::Land & Building': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
+  'SBI::BELOW 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
+  'SBI::Land & Building': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
+
+  // SBI Root Fallbacks
   'STATE BANK OF INDIA-SBI': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
   'STATE BANK OF INDIA': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
+  'SBI': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
   'SHRIRAM FINANCE': dynamic(() => import('./banks/shriram/ShriramFinance')),
   'SMFG INDIA-FULLERTON': dynamic(() => import('./banks/smfg/SMFGIndiaFullerton')),
   'SURYODAY SMALL FINANCE BANK': dynamic(() => import('./banks/suryoday/SuryodaySmallFinanceBank')),
@@ -348,30 +373,54 @@ export default function BuilderSelector({
   // Find bank specific builder if available with fallback and normalization
   const SelectedBankBuilder = useMemo(() => {
     if (activeBuilder !== "bank") return null;
-    const org = (activeFields?.organisationTemplate || "").trim();
-    const sub = (activeFields?.organisationSubTemplate || "").trim();
+    const org = (activeFields?.organisationTemplate || activeFields?.bankName || "").trim();
+    const sub = (activeFields?.organisationSubTemplate || activeFields?.subTemplate || "").trim();
     const fullKey = sub ? `${org}::${sub}` : org;
 
+    // 1. Direct exact match
     if (BANK_BUILDER_MAP[fullKey]) return BANK_BUILDER_MAP[fullKey];
-    if (BANK_BUILDER_MAP[org]) return BANK_BUILDER_MAP[org];
 
+    // 2. Case and whitespace normalized fullKey match
     const cleanFullKey = fullKey.toUpperCase().replace(/\s+/g, " ");
     const cleanOrg = org.toUpperCase().replace(/\s+/g, " ");
 
-    const matchKey =
-      Object.keys(BANK_BUILDER_MAP).find(
-        (k) => k.toUpperCase().replace(/\s+/g, " ") === cleanFullKey
-      ) ||
-      Object.keys(BANK_BUILDER_MAP).find(
-        (k) => k.toUpperCase().replace(/\s+/g, " ") === cleanOrg
-      );
+    const matchFullKey = Object.keys(BANK_BUILDER_MAP).find(
+      (k) => k.toUpperCase().replace(/\s+/g, " ") === cleanFullKey
+    );
+    if (matchFullKey && BANK_BUILDER_MAP[matchFullKey]) {
+      return BANK_BUILDER_MAP[matchFullKey];
+    }
 
-    if (matchKey && BANK_BUILDER_MAP[matchKey]) {
-      return BANK_BUILDER_MAP[matchKey];
+    // 3. Dedicated SBI / IDBI sub-template routing
+    const isSbi = cleanOrg.includes('STATE BANK OF INDIA') || cleanOrg === 'SBI';
+    const isIdbi = cleanOrg.includes('IDBI');
+    if (isSbi || isIdbi) {
+      const cleanSub = (sub || cleanOrg).toUpperCase().replace(/\s+/g, " ");
+      if (cleanSub.includes('BELOW') || cleanSub.includes('LAND')) {
+        return BANK_BUILDER_MAP['STATE BANK OF INDIA-SBI::BELOW 5CR'];
+      }
+      if (cleanSub.includes('ABOVE') || cleanSub.includes('FLAT') || cleanSub.includes('APARTMENT')) {
+        return BANK_BUILDER_MAP['STATE BANK OF INDIA-SBI::ABOVE 5CR'];
+      }
+    }
+
+    // 4. Direct format match (e.g. if key is just 'BELOW 5CR' or 'ABOVE 5CR')
+    if (sub && BANK_BUILDER_MAP[sub]) {
+      return BANK_BUILDER_MAP[sub];
+    }
+
+    // 5. Fallback to org match if no sub-template match found
+    if (BANK_BUILDER_MAP[org]) return BANK_BUILDER_MAP[org];
+
+    const matchOrgKey = Object.keys(BANK_BUILDER_MAP).find(
+      (k) => k.toUpperCase().replace(/\s+/g, " ") === cleanOrg
+    );
+    if (matchOrgKey && BANK_BUILDER_MAP[matchOrgKey]) {
+      return BANK_BUILDER_MAP[matchOrgKey];
     }
 
     return BankReportBuilder;
-  }, [activeBuilder, activeFields?.organisationTemplate, activeFields?.organisationSubTemplate]);
+  }, [activeBuilder, activeFields?.organisationTemplate, activeFields?.organisationSubTemplate, activeFields?.bankName, activeFields?.subTemplate]);
 
   if (activeBuilder === "wizard") {
     return (
