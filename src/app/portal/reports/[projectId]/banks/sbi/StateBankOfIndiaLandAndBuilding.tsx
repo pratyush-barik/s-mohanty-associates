@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveReportDraft } from '@/app/actions/project';
+import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
@@ -15,6 +15,8 @@ import {
   BasePhotographsSection,
   ActiveConfigBanner,
   ReportActionBar,
+  FloatingNavigator,
+  NavItem,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { PDFSBILandAndBuildingRenderer } from '@/lib/banks/pdf-sbi-land-and-building-renderer';
@@ -63,6 +65,8 @@ export default function StateBankOfIndiaLandAndBuilding({
       organisationSubTemplate: saved.organisationSubTemplate || 'Land & Building',
       institutionCategory: saved.institutionCategory || 'Bank & FIS',
       propertyValuationType: 'LAND_AND_BUILDING',
+      serviceType: saved.serviceType || pf.serviceType || 'MORTGAGE_AND_LOAN_SECURITY_VALUATION',
+      subjectType: saved.subjectType || pf.subjectType || 'HOME_LOAN_VALUATION',
 
       // Top Header
       toAuthority: saved.toAuthority !== undefined ? saved.toAuthority : 'THE CHIEF MANAGER / BRANCH HEAD,',
@@ -306,18 +310,80 @@ export default function StateBankOfIndiaLandAndBuilding({
     }
   };
 
+  const handlePreviewPdfInternal = async () => {
+    try {
+      const renderer = new PDFSBILandAndBuildingRenderer(fields, projectCode);
+      const pdfBytes = await renderer.render();
+      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (e) {
+      console.error('Error generating SBI Land & Building PDF Preview:', e);
+      alert('Error generating PDF preview.');
+    }
+  };
+
+  const handleSubmitInternal = async () => {
+    if (!projectId || isReadOnly) return;
+    if (!confirm('Are you sure you want to submit this report for manager verification?')) return;
+    setSaving(true);
+    try {
+      await saveReportDraft(projectId, {
+        ...fields,
+        clientType: 'organisation',
+        organisationTemplate: 'STATE BANK OF INDIA-SBI',
+        organisationSubTemplate: 'Land & Building',
+        institutionCategory: 'Bank & FIS',
+        propertyValuationType: 'LAND_AND_BUILDING',
+        reportData: fields,
+      });
+      const res = await submitReportForVerification(projectId);
+      if (res && 'error' in res && res.error) {
+        alert(`Failed to submit report: ${res.error}`);
+      } else {
+        alert('Report submitted successfully to Manager!');
+        router.refresh();
+      }
+    } catch (e: any) {
+      console.error('Failed to submit report', e);
+      alert(`Error submitting report: ${e?.message || e}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const NAV_SECTIONS: NavItem[] = [
+    { id: 'sbi-lb-sec-1', title: 'CUSTOMER DETAILS' },
+    { id: 'sbi-lb-sec-2', title: 'PROPERTY DETAILS' },
+    { id: 'sbi-lb-sec-3', title: 'DOCUMENT DETAILS' },
+    { id: 'sbi-lb-sec-4', title: 'PHYSICAL DETAILS' },
+    { id: 'sbi-lb-sec-5', title: 'TENURE & VIOLATIONS' },
+    { id: 'sbi-lb-sec-6', title: 'AREA DETAILS' },
+    { id: 'sbi-lb-sec-7', title: 'VALUATION NARRATIVE' },
+    { id: 'sbi-lb-sec-8', title: 'MARKETABILITY' },
+    { id: 'sbi-lb-sec-9', title: 'PROPERTY VALUE' },
+    { id: 'section-documents', title: 'DOCUMENTS' },
+    { id: 'section-maps', title: 'MAPS' },
+    { id: 'section-photographs', title: 'PHOTOGRAPHS' },
+  ];
+
   return (
-    <div className="space-y-6 pb-24">
+    <div className="space-y-6 pb-24 w-full">
       {/* ── Active Configuration Banner with Change Parameters ── */}
       <ActiveConfigBanner
         clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
         category={fields.institutionCategory || 'Bank & FIS'}
-        bankName={fields.bankName || fields.organisationTemplate || 'STATE BANK OF INDIA-SBI'}
+        bankName={fields.bankName || fields.organisationTemplate || 'STATE BANK OF INDIA (SBI)'}
         subclass={fields.organisationSubTemplate || 'Land & Building'}
         serviceType={fields.serviceType}
         subjectType={fields.subjectType}
         onResetWizard={onResetWizard}
       />
+
+      {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
+        {/* ── Left Form Column ── */}
+        <div className="flex-1 min-w-0 space-y-6 w-full">
 
       {/* ── Top Header Card ── */}
       <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -344,7 +410,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </div>
 
       {/* ── Section 1: Customer Details ── */}
-      <Section title="1. Customer Details" number={1} defaultOpen={true}>
+      <Section id="sbi-lb-sec-1" title="1. Customer Details" number={1} defaultOpen={true}>
         <div className="grid md:grid-cols-2 gap-4">
           <Field label="Name of the Owner">
             <textarea
@@ -391,7 +457,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 2: Property Details ── */}
-      <Section title="2. Property Details" number={2} defaultOpen={true}>
+      <Section id="sbi-lb-sec-2" title="2. Property Details" number={2} defaultOpen={true}>
         <Field label="Address (with Khata, Plot, Sub Plot, Area, Kissam, Mouza)">
           <textarea
             className={inputCls + ' min-h-17.5'}
@@ -414,7 +480,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 3: Document Details ── */}
-      <Section title="3. Document Details" number={3} defaultOpen={false}>
+      <Section id="sbi-lb-sec-3" title="3. Document Details" number={3} defaultOpen={false}>
         <div className="space-y-4">
           <div className="grid md:grid-cols-4 gap-2 items-center">
             <span className="text-xs font-semibold text-slate-700">Layout Plan</span>
@@ -479,7 +545,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 4: Physical Details & Boundaries ── */}
-      <Section title="4. Physical Details & Boundaries" number={4} defaultOpen={true}>
+      <Section id="sbi-lb-sec-4" title="4. Physical Details & Boundaries" number={4} defaultOpen={true}>
         <div className="space-y-2">
           {['East', 'West', 'North', 'South'].map((dir) => {
             const dKey = `boundary${dir}Doc`;
@@ -578,7 +644,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 5 to 7: Tenure, Stage & Violations ── */}
-      <Section title="5, 6, 7. Tenure, Construction Stage & Violations" number={5} defaultOpen={false}>
+      <Section id="sbi-lb-sec-5" title="5, 6, 7. Tenure, Construction Stage & Violations" number={5} defaultOpen={false}>
         <div className="grid md:grid-cols-3 gap-3">
           <Field label="5. Status of Tenure">
             <input
@@ -609,7 +675,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 8: Area details of the property ── */}
-      <Section title="8. Area Details (Multi-Block Approval & Actual)" number={6} defaultOpen={true}>
+      <Section id="sbi-lb-sec-6" title="8. Area Details (Multi-Block Approval & Actual)" number={6} defaultOpen={true}>
         <div className="grid md:grid-cols-3 gap-3">
           <Field label="Site Area">
             <input
@@ -658,7 +724,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 9 & 10: Land Rate Adopted & Remarks ── */}
-      <Section title="9 & 10. Valuation Narrative & Remarks" number={7} defaultOpen={true}>
+      <Section id="sbi-lb-sec-7" title="9 & 10. Valuation Narrative & Remarks" number={7} defaultOpen={true}>
         <Field label="9. The Land Rate Adopted Narrative">
           <textarea
             className={inputCls + ' min-h-22.5 text-xs'}
@@ -680,7 +746,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 13, 14, 15: Enclosures & Marketability ── */}
-      <Section title="13, 14, 15. Enclosures & Marketability of Property" number={8} defaultOpen={false}>
+      <Section id="sbi-lb-sec-8" title="13, 14, 15. Enclosures & Marketability of Property" number={8} defaultOpen={false}>
         <div className="grid md:grid-cols-2 gap-4">
           <Field label="13. List of Documents Enclosed">
             <input
@@ -712,7 +778,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Value of the Property Matrix (4 Rows x 4 Columns) ── */}
-      <Section title="Value of the Property (4 x 4 Summary Matrix)" number={9} defaultOpen={true}>
+      <Section id="sbi-lb-sec-9" title="Value of the Property (4 x 4 Summary Matrix)" number={9} defaultOpen={true}>
         <div className="grid md:grid-cols-4 gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50">
           <Field label="Land Market Value (Rs.)">
             <input
@@ -888,15 +954,21 @@ export default function StateBankOfIndiaLandAndBuilding({
         sectionNumber={12}
         sectionId="section-photographs"
       />
+        </div>
 
-      {/* ── Standard Sticky Bottom Action Bar ── */}
+        {/* ── Right Sections Nav Panel ── */}
+        <FloatingNavigator sections={NAV_SECTIONS} />
+      </div>
+
+      {/* ── Standard Sticky Bottom Action Bar with 4 Buttons ── */}
       <ReportActionBar
         isReadOnly={isReadOnly}
         userRole={userRole}
         autoSaveStatus={saving ? 'saving' : saveSuccess ? 'saved' : 'idle'}
         loading={saving}
         onSaveDraft={handleSaveInternal}
-        onPreviewPDF={handleDownloadPdfInternal}
+        onSubmit={handleSubmitInternal}
+        onPreviewPDF={handlePreviewPdfInternal}
         onDownloadPDF={handleDownloadPdfInternal}
       />
     </div>

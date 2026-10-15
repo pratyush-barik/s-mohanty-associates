@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveReportDraft } from '@/app/actions/project';
+import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
@@ -15,6 +15,8 @@ import {
   BasePhotographsSection,
   ActiveConfigBanner,
   ReportActionBar,
+  FloatingNavigator,
+  NavItem,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { Lock, Plus, Trash2 } from 'lucide-react';
@@ -150,6 +152,8 @@ export default function StateBankOfIndiaFlatAndApartment({
       organisationTemplate: saved.organisationTemplate || 'STATE BANK OF INDIA-SBI',
       organisationSubTemplate: saved.organisationSubTemplate || 'Flat & Apartment',
       institutionCategory: saved.institutionCategory || 'Bank & FIS',
+      serviceType: saved.serviceType || pf.serviceType || 'MORTGAGE_AND_LOAN_SECURITY_VALUATION',
+      subjectType: saved.subjectType || pf.subjectType || 'HOME_LOAN_VALUATION',
 
       // Header Address
       toAuthority: saved.toAuthority !== undefined ? saved.toAuthority : 'THE ASST. GENERAL MANAGER,',
@@ -632,6 +636,19 @@ export default function StateBankOfIndiaFlatAndApartment({
     }
   };
 
+  const handlePreviewPdfInternal = async () => {
+    try {
+      const renderer = new PDFSBIRenderer(fields, projectCode);
+      const pdfBytes = await renderer.render();
+      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (e) {
+      console.error('Error generating SBI PDF Preview:', e);
+      alert('Error generating PDF preview.');
+    }
+  };
+
   const handleDownloadPdfInternal = async () => {
     try {
       const renderer = new PDFSBIRenderer(fields, projectCode);
@@ -648,20 +665,66 @@ export default function StateBankOfIndiaFlatAndApartment({
     }
   };
 
+  const handleSubmitInternal = async () => {
+    if (!projectId || isReadOnly) return;
+    if (!confirm('Are you sure you want to submit this report for manager verification?')) return;
+    setSaving(true);
+    try {
+      await saveReportDraft(projectId, {
+        ...fields,
+        clientType: 'organisation',
+        organisationTemplate: 'STATE BANK OF INDIA-SBI',
+        organisationSubTemplate: 'Flat & Apartment',
+        institutionCategory: 'Bank & FIS',
+        propertyValuationType: 'FLAT',
+        reportData: fields,
+      });
+      const res = await submitReportForVerification(projectId);
+      if (res && 'error' in res && res.error) {
+        alert(`Failed to submit report: ${res.error}`);
+      } else {
+        alert('Report submitted successfully to Manager!');
+        router.refresh();
+      }
+    } catch (e: any) {
+      console.error('Failed to submit report', e);
+      alert(`Error submitting report: ${e?.message || e}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const pf = (prefill || {}) as any;
 
+  const NAV_SECTIONS: NavItem[] = [
+    { id: 'sbi-flat-general', title: 'GENERAL' },
+    { id: 'sbi-flat-building', title: 'APARTMENT BUILDING' },
+    { id: 'sbi-flat-flat', title: 'FLAT SPECIFICATIONS' },
+    { id: 'sbi-flat-valuation', title: 'VALUATION & RATES' },
+    { id: 'sbi-flat-method', title: 'VALUATION METHOD' },
+    { id: 'sbi-flat-abstract', title: 'TOTAL ABSTRACT' },
+    { id: 'section-documents', title: 'DOCUMENTS' },
+    { id: 'section-maps', title: 'MAPS' },
+    { id: 'section-photographs', title: 'PHOTOGRAPHS' },
+  ];
+
   return (
-    <div className="space-y-6 pb-24">
+    <div className="space-y-6 pb-24 w-full">
       {/* ── Active Configuration Banner with Change Parameters ── */}
       <ActiveConfigBanner
         clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
         category={fields.institutionCategory || 'Bank & FIS'}
-        bankName={fields.bankName || fields.organisationTemplate || 'STATE BANK OF INDIA-SBI'}
+        bankName={fields.bankName || fields.organisationTemplate || 'STATE BANK OF INDIA (SBI)'}
         subclass={fields.organisationSubTemplate || 'Flat & Apartment'}
         serviceType={fields.serviceType}
         subjectType={fields.subjectType}
         onResetWizard={onResetWizard}
       />
+
+      {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
+        {/* ── Left Form Column ── */}
+        <div className="flex-1 min-w-0 space-y-6 w-full">
 
       {/* ── Top Header Card ── */}
       <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -693,7 +756,7 @@ export default function StateBankOfIndiaFlatAndApartment({
       </div>
 
       {/* ── Section 1: I. GENERAL (Color: Light Blue #e3f2fd) ── */}
-      <Section title="I. GENERAL" number="I" defaultOpen={true}>
+      <Section id="sbi-flat-general" title="I. GENERAL" number="I" defaultOpen={true}>
         <div style={{ backgroundColor: '#e3f2fd', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-blue-200">
           {/* Header Title inside light blue box */}
           <div className="border-b border-blue-300 pb-2 flex justify-between items-center">
@@ -1309,7 +1372,7 @@ export default function StateBankOfIndiaFlatAndApartment({
       </Section>
 
       {/* ── Section 2: II. APARTMENT BUILDING (Color: Light Green #e8f5e9) ── */}
-      <Section title="II. APARTMENT BUILDING" number="II" defaultOpen={true}>
+      <Section id="sbi-flat-building" title="II. APARTMENT BUILDING" number="II" defaultOpen={true}>
         <div style={{ backgroundColor: '#e8f5e9', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-emerald-200">
           {/* Header Title inside light green box */}
           <div className="border-b border-emerald-300 pb-2 flex justify-between items-center">
@@ -1710,7 +1773,7 @@ export default function StateBankOfIndiaFlatAndApartment({
       </Section>
 
       {/* ── Section 3: III. FLAT (Color: Light Yellow #fffde7) ── */}
-      <Section title="III. FLAT" number="III" defaultOpen={true}>
+      <Section id="sbi-flat-flat" title="III. FLAT" number="III" defaultOpen={true}>
             <div style={{ backgroundColor: '#fffde7', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-amber-200">
               {/* Header Title inside light yellow box */}
               <div className="border-b border-amber-300 pb-2 flex justify-between items-center">
@@ -2079,7 +2142,7 @@ export default function StateBankOfIndiaFlatAndApartment({
             </div>
           </Section>
 
-          <Section title="VI. Rate, Composite Depreciation & Flat Valuation" number={5} defaultOpen={true}>
+          <Section id="sbi-flat-valuation" title="VI. Rate, Composite Depreciation & Flat Valuation" number={5} defaultOpen={true}>
             <div className="grid md:grid-cols-3 gap-3">
               <Field label="Rate: Building + Services (Rs./Sft)">
                 <input
@@ -2140,7 +2203,7 @@ export default function StateBankOfIndiaFlatAndApartment({
           </Section>
 
       {/* ── Section: Method of Valuation Box ── */}
-      <Section title="Method of Valuation Procedure" number={6} defaultOpen={false}>
+      <Section id="sbi-flat-method" title="Method of Valuation Procedure" number={6} defaultOpen={false}>
         <div className="grid md:grid-cols-2 gap-4">
           <Field label="Procedure Adopted Guidance (Left Box)">
             <textarea
@@ -2162,7 +2225,7 @@ export default function StateBankOfIndiaFlatAndApartment({
       </Section>
 
       {/* ── Section: Total Abstract Matrix ── */}
-      <Section title="Total Abstract for the Entire Property" number={7} defaultOpen={true}>
+      <Section id="sbi-flat-abstract" title="Total Abstract for the Entire Property" number={7} defaultOpen={true}>
         <div className="grid md:grid-cols-4 gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
           <Field label="Govt. Value of Land (Rs.)">
             <input
@@ -2267,15 +2330,21 @@ export default function StateBankOfIndiaFlatAndApartment({
         sectionNumber={10}
         sectionId="section-photographs"
       />
+        </div>
 
-      {/* ── Standard Sticky Bottom Action Bar ── */}
+        {/* ── Right Sections Nav Panel ── */}
+        <FloatingNavigator sections={NAV_SECTIONS} />
+      </div>
+
+      {/* ── Standard Sticky Bottom Action Bar with 4 Buttons ── */}
       <ReportActionBar
         isReadOnly={isReadOnly}
         userRole={userRole}
         autoSaveStatus={saving ? 'saving' : saveSuccess ? 'saved' : 'idle'}
         loading={saving}
         onSaveDraft={handleSaveInternal}
-        onPreviewPDF={handleDownloadPdfInternal}
+        onSubmit={handleSubmitInternal}
+        onPreviewPDF={handlePreviewPdfInternal}
         onDownloadPDF={handleDownloadPdfInternal}
       />
     </div>
