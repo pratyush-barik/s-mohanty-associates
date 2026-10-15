@@ -444,6 +444,18 @@ export default function StateBankOfIndiaFlatAndApartment({
       sbiDeclarationSignDate: saved.sbiDeclarationSignDate !== undefined ? saved.sbiDeclarationSignDate : (saved.signatureDate || pf.reportDate || '06.08.2026'),
       sbiDeclarationSignPlace: saved.sbiDeclarationSignPlace !== undefined ? saved.sbiDeclarationSignPlace : (saved.signaturePlace || 'Bhubaneswar'),
 
+      // Section 9: VALUATION PARTICULARS, CODE OF CONDUCT & JUSTIFICATION
+      sbiParticularsPurposeAppointing: saved.sbiParticularsPurposeAppointing !== undefined ? saved.sbiParticularsPurposeAppointing : 'To assess the present market value of the property for loan purpose. The Manager of above said bank is the Appointing authority.',
+      sbiCodeOfConductChecks: saved.sbiCodeOfConductChecks || {},
+      sbiConductSignDate: saved.sbiConductSignDate !== undefined ? saved.sbiConductSignDate : (saved.signatureDate || pf.reportDate || '06.08.2026'),
+      sbiConductSignPlace: saved.sbiConductSignPlace !== undefined ? saved.sbiConductSignPlace : (saved.signaturePlace || 'Bhubaneswar'),
+      sbiJustificationBankAddress: saved.sbiJustificationBankAddress !== undefined ? saved.sbiJustificationBankAddress : '',
+      sbiJustificationSubject: saved.sbiJustificationSubject !== undefined ? saved.sbiJustificationSubject : (saved.justificationLetterSubject || ''),
+      sbiJustificationPropertyDesc: saved.sbiJustificationPropertyDesc !== undefined ? saved.sbiJustificationPropertyDesc : '',
+      sbiJustificationStatement: saved.sbiJustificationStatement !== undefined ? saved.sbiJustificationStatement : (saved.justificationLetterBody || 'There is a very high difference between Govt. Value and market Value. Govt. Benchmark Value is not revised for that locality recently and to avoid high stamp Duty/Registration Charges Sale Deed are generally executed in under-valued rate.\n\nSo, the value given by us is justified considering the present market scenario.'),
+      sbiJustificationSignDate: saved.sbiJustificationSignDate !== undefined ? saved.sbiJustificationSignDate : (saved.signatureDate || pf.reportDate || '06.08.2026'),
+      sbiJustificationSignPlace: saved.sbiJustificationSignPlace !== undefined ? saved.sbiJustificationSignPlace : (saved.signaturePlace || 'Bhubaneswar'),
+
       // Flat 10-item breakdown
       valFlatPresentValue: saved.valFlatPresentValue !== undefined ? saved.valFlatPresentValue : 'Rs. 1,32,34,375/-',
       valCarParking: saved.valCarParking !== undefined ? saved.valCarParking : '0',
@@ -737,6 +749,7 @@ export default function StateBankOfIndiaFlatAndApartment({
     { id: 'sbi-flat-composite-depreciation', title: 'COMPOSITE DEPRECIATION' },
     { id: 'sbi-flat-abstract-declaration', title: 'TOTAL ABSTRACT & DECLARATION' },
     { id: 'sbi-flat-abstract-bm-verification', title: 'TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION' },
+    { id: 'sbi-flat-particulars-conduct-justification', title: 'VALUATION PARTICULARS, CONDUCT & JUSTIFICATION' },
     { id: 'section-documents', title: 'DOCUMENTS' },
     { id: 'section-maps', title: 'MAPS' },
     { id: 'section-photographs', title: 'PHOTOGRAPHS' },
@@ -896,6 +909,64 @@ export default function StateBankOfIndiaFlatAndApartment({
   const handleToggleStatement = (id: string, checked: boolean) => {
     handleChange('sbiValuerDeclarations', { ...valuerDeclarationsMap, [id]: checked });
   };
+
+  // ── Section 9: VALUATION PARTICULARS, CODE OF CONDUCT & JUSTIFICATION ──
+  const autoDatesParticulars = `Date of Appointment: ${fields.sbiFlatInspectionDate || fields.inspectionDate || '03.08.2026'}\nValuation Date: ${fields.sbiFlatInspectionDate || fields.inspectionDate || '03.08.2026'}\nDate of Report: ${fields.reportDate || fields.valuationDate || '06.08.2026'}`;
+
+  const CODE_OF_CONDUCT_POINTS = [
+    { num: 1, text: 'A Valuer shall, in the conduct of his/its business, follow high standards of integrity and fairness in all his/its dealings with his/its clients and other Valuers.' },
+    { num: 2, text: 'A Valuer shall maintain integrity by being honest, straightforward, and forthright in all professional relationships.' },
+    { num: 3, text: 'A Valuer shall endeavor to ensure that he/it provides true and adequate information and shall not misrepresent any facts or situations.' },
+    { num: 4, text: 'A Valuer shall refrain from being involved in any action that would bring disrepute to the profession.' },
+    { num: 5, text: 'A Valuer shall keep public interest foremost while delivering his services.' },
+    { num: 6, text: 'A Valuer shall render at all times high standards of service, exercise due diligence, ensure proper care and exercise independent professional judgment.' },
+    { num: 7, text: 'A Valuer shall carry out professional services in accordance with the relevant technical and professional standards that may be specified from time to time.' },
+    { num: 8, text: 'A Valuer shall continuously maintain professional knowledge and skill to provide competent professional service based on up-to-date developments in practice, prevailing regulations/guidelines and techniques.' },
+    { num: 9, text: 'In the preparation of a valuation report, the Valuer shall not disclaim liability for his/its expertise or deny his/its duty of care, except to the extent that the assumptions are based on statements of fact provided by the company or its auditors or consultants or information available in public domain and not generated by the Valuer.' },
+    { num: 10, text: 'A Valuer shall not carry out any instruction of the client insofar as they are incompatible with the requirements of integrity, objectivity and independence.' },
+    { num: 11, text: 'A Valuer shall clearly state to his client the services that he would be competent to provide and the services for which he would be relying on other Valuers or professionals or for which the client can have a separate arrangement with other Valuers.' },
+    { num: 12, text: 'A Valuer shall act with objectivity in his/its professional dealings by ensuring that his/its decisions are made without the presence of any bias, conflict of interest, coercion, or undue influence of any party, whether directly connected to the valuation assignment or not.' },
+    { num: 13, text: 'A Valuer shall not take up an assignment if he/it or any of his/its relatives or associates is not independent in terms of association to the company.' },
+    { num: 14, text: 'A Valuer shall maintain complete independence in his/its professional relationships and shall conduct the valuation independent of external influences.' },
+    { num: 15, text: 'A Valuer shall wherever necessary disclose to the clients, possible sources of conflicts of duties and interests, while providing unbiased services.' },
+    { num: 16, text: 'A Valuer shall not deal in securities of any subject company after any time when he/it first becomes aware of the possibility of his/its association with the valuation, and in accordance with the Securities and Exchange Board of India (Prohibition of Insider Trading) Regulations, 2015 or till the time the valuation report becomes public, whichever is earlier.' },
+    { num: 17, text: 'A Valuer shall not indulge in "mandate snatching" or offering "convenience valuations" in order to cater to a company or client\'s needs.' },
+    { num: 18, text: 'As an independent Valuer, the Valuer shall not charge success fee (Success fees may be defined as a compensation / incentive paid to any third party for successful closure of transaction. In this case, approval of credit proposals).' },
+    { num: 19, text: 'In any fairness opinion or independent expert opinion submitted by a Valuer, if there has been a prior engagement in an unconnected transaction, the Valuer shall declare the association with the company during the last five years.' },
+    { num: 20, text: 'A Valuer shall not use or divulge to other clients or any other party any confidential information about the subject company, which has come to his/its knowledge without proper and specific authority or unless there is a legal or professional right or duty to disclose.' },
+    { num: 21, text: 'A Valuer shall ensure that he/it maintains written contemporaneous records for any decision taken, the reasons for taking the decision, and the information and evidence in support of such decision. This shall be maintained so as to sufficiently enable a reasonable person to take a view on the appropriateness of his/its decisions and actions.' },
+    { num: 22, text: 'A Valuer shall appear, co-operate and be available for inspections and investigations carried out by the authority, any person authorized by the authority, the registered values\' organization with which he/it is registered or any other statutory regulatory body.' },
+    { num: 23, text: 'A Valuer shall provide all information and records as may be required by the authority, the Tribunal, Appellate Tribunal, the registered valuers organization with which he/it is registered, or any other statutory regulatory body.' },
+    { num: 24, text: 'A Valuer while respecting the confidentiality of information acquired during the course of performing professional services, shall maintain proper working papers for a period of three years or such longer period as required in its contract for a specific valuation, for production before a regulatory authority or for a peer review. In the event of a pending case before the Tribunal or Appellate Tribunal, the record shall be maintained till the disposal of the case.' },
+    { num: 25, text: 'A Valuer or his/its relative shall not accept gifts or hospitality which undermines or affects his independence as a Valuer. Explanation — For the purposes of this code the term "relative" shall have the same meaning as Defined in clause (77) of Section 2 of the Companies Act, 2013 (18 of 2013).' },
+    { num: 26, text: 'A Valuer shall not offer gifts or hospitality or a financial or any other advantage to a public servant or any other person with a view to obtain or retain work for himself/ itself, or to obtain or retain an advantage in the conduct of profession for himself/ itself.' },
+    { num: 27, text: 'A Valuer shall provide services for remuneration which is charged in a transparent manner, is a reasonable reflection of the work necessarily and properly undertaken, and is not inconsistent with the applicable rules.' },
+    { num: 28, text: 'A Valuer shall not accept any fees or charges other than those which are disclosed in a written contract with the person to whom he would be rendering service.' },
+    { num: 29, text: 'A Valuer shall refrain from accepting too many assignments, if he/it is unlikely to be able to devote adequate time to each of his/its assignments.' },
+    { num: 30, text: 'A Valuer shall not conduct business which in the opinion of the authority or the registered Valuer organization discredits the profession.' },
+  ];
+
+  const conductChecksMap = fields.sbiCodeOfConductChecks || {};
+  const isConductChecked = (num: number) => conductChecksMap[num] !== false;
+  const allConductChecked = CODE_OF_CONDUCT_POINTS.every(p => isConductChecked(p.num));
+
+  const handleToggleAllConduct = () => {
+    const nextVal = !allConductChecked;
+    const nextMap: Record<number, boolean> = {};
+    CODE_OF_CONDUCT_POINTS.forEach(p => {
+      nextMap[p.num] = nextVal;
+    });
+    handleChange('sbiCodeOfConductChecks', nextMap);
+  };
+
+  const handleToggleConduct = (num: number, checked: boolean) => {
+    handleChange('sbiCodeOfConductChecks', { ...conductChecksMap, [num]: checked });
+  };
+
+  const fallbackBankAddressBlock = `TO,\nTHE ASST. GENERAL MANAGER,\n${fields.bankName || 'STATE BANK OF INDIA,'}\n${fields.rboOffice || fields.branchAddress || 'RBO, PURI, DIST: PURI, ODISHA'}`;
+  const ownerNameStr = fields.saleDeedExecutedName || fields.borrowerName || fields.sbiFlatSaleDeedExecutedName || 'Mr. Srijit Mishra';
+  const autoJustificationSub = `Sub: - Justification of valuation Report of ${ownerNameStr}.`;
+  const autoPropertyDescBlock = `The subject property bearing Khata No:${fields.khataNo || fields.sbiFlatKhataNo || '432/1656, 432/1661'}, Flat No: ${fields.flatDoorNumber || fields.sbiFlatDoorNumber || 'A-041, 4th Floor, Tower-A, 2BHK'} in name & style Apartment "${fields.apartmentBuildingName || fields.sbiFlatApartmentName || 'THE COSMOPOLIS'}" having Super Built up Area: ${fields.superBuiltUpArea || fields.sbiFlatSuperBuiltUpArea || '1375.00'} Sft in Mouza: ${fields.mouza || fields.sbiFlatMouza || 'Dumuduma'}, Ps- ${fields.policeStation || fields.sbiFlatPoliceStation || 'Khandagiri No-4'}, Ts: ${fields.tahasil || fields.sbiFlatTahasil || 'Bhubaneswar'}, Dist-${fields.district || fields.sbiFlatDistrict || 'Khurda'}, Odisha.`;
 
   return (
     <div className="space-y-6 pb-24 w-full">
@@ -2885,6 +2956,332 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
+      {/* ── Section 9: VALUATION PARTICULARS (11-POINT GRID), MODEL CODE OF CONDUCT & JUSTIFICATION ── */}
+      <Section id="sbi-flat-particulars-conduct-justification" title="VALUATION PARTICULARS (11-POINT GRID)" number="IX" defaultOpen={true}>
+        <div className="space-y-6">
+          {/* Container 1: VALUATION PARTICULARS (11-POINT GRID) (Color: Light Gray #f5f5f5) */}
+          <div style={{ backgroundColor: '#f5f5f5', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-slate-300">
+            {/* Header Title inside light gray box */}
+            <div className="border-b border-slate-300 pb-2 flex justify-between items-center">
+              <h3 className="font-bold text-slate-800 text-sm uppercase tracking-wider">
+                VALUATION PARTICULARS (11-POINT GRID)
+              </h3>
+              <span className="text-[11px] font-semibold text-slate-700 bg-slate-200 px-2 py-0.5 rounded-full border border-slate-300">
+                Statutory 11-Point Grid
+              </span>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* 1 Background information of the asset being valued; */}
+              <Field label="1 Background information of the asset being valued;">
+                <textarea
+                  className={inputCls + ' min-h-20 text-xs bg-white'}
+                  value={getParticularsVal(0, fields.propertyDescription || 'The property is situated in a good developed Residential area of Dumuduma, Bhubaneswar.')}
+                  onChange={e => handleParticularsChange(0, e.target.value)}
+                  disabled={isReadOnly}
+                  rows={3}
+                />
+              </Field>
+
+              {/* 2 Purpose of valuation and appointing authority */}
+              <PrefillField
+                label="2 Purpose of valuation and appointing authority"
+                value={fields.particularsItems && fields.particularsItems[1] !== undefined ? fields.particularsItems[1] : fields.sbiParticularsPurposeAppointing}
+                onChange={(val: string) => {
+                  handleParticularsChange(1, val);
+                  handleChange('sbiParticularsPurposeAppointing', val);
+                }}
+                isReadOnly={isReadOnly}
+                type="textarea"
+                rows={3}
+                tooltip='>>Prefill from section COVER PAGE, "PURPOSE :" and "Appointing Authority"<<'
+                fallbackValue="To assess the present market value of the property for loan purpose. The Manager of above said bank is the Appointing authority."
+              />
+
+              {/* 3 Identity of the Valuers and any other experts involved in the valuation; */}
+              <Field label="3 Identity of the Valuers and any other experts involved in the valuation;">
+                <textarea
+                  className={inputCls + ' min-h-20 text-xs bg-white'}
+                  value={getParticularsVal(2, 'As it is a land & building valuation (We are authorized Valuers for L& B). So, there is no need to appoint an expert for this valuation.')}
+                  onChange={e => handleParticularsChange(2, e.target.value)}
+                  disabled={isReadOnly}
+                  rows={3}
+                />
+              </Field>
+
+              {/* 4 Disclosure of Valuers interest or conflict, if any; */}
+              <Field label="4 Disclosure of Valuers interest or conflict, if any;">
+                <textarea
+                  className={inputCls + ' min-h-20 text-xs bg-white'}
+                  value={getParticularsVal(3, 'No such interest is involved')}
+                  onChange={e => handleParticularsChange(3, e.target.value)}
+                  disabled={isReadOnly}
+                  rows={3}
+                />
+              </Field>
+
+              {/* 5 Date of appointment, valuation date and date of report; */}
+              <PrefillField
+                label="5 Date of appointment, valuation date and date of report;"
+                value={fields.particularsItems && fields.particularsItems[4] !== undefined ? fields.particularsItems[4] : ''}
+                onChange={(val: string) => {
+                  handleParticularsChange(4, val);
+                }}
+                isReadOnly={isReadOnly}
+                type="textarea"
+                rows={3}
+                tooltip='>>Auto calculating from section I. GENERAL, "2. a) Date of inspection" and COVER PAGE "DATE:"<<'
+                fallbackValue={autoDatesParticulars}
+              />
+
+              {/* 6 Inspections and/or investigations undertaken; */}
+              <Field label="6 Inspections and/or investigations undertaken;">
+                <textarea
+                  className={inputCls + ' min-h-20 text-xs bg-white'}
+                  value={getParticularsVal(5, 'We Identify the property by customer')}
+                  onChange={e => handleParticularsChange(5, e.target.value)}
+                  disabled={isReadOnly}
+                  rows={3}
+                />
+              </Field>
+
+              {/* 7 Nature and sources of the information used or relied upon; */}
+              <Field label="7 Nature and sources of the information used or relied upon;">
+                <textarea
+                  className={inputCls + ' min-h-20 text-xs bg-white'}
+                  value={getParticularsVal(6, 'Market transaction values are collected from nearby Builder, Brokers, Local People regarding land value & cost of construction of the building has been derived on basis of CPWD/OPWD rate & Contractors information.')}
+                  onChange={e => handleParticularsChange(6, e.target.value)}
+                  disabled={isReadOnly}
+                  rows={3}
+                />
+              </Field>
+
+              {/* 8 Procedures adopted in carrying out the valuation and valuation standards followed; */}
+              <Field label="8 Procedures adopted in carrying out the valuation and valuation standards followed;">
+                <textarea
+                  className={inputCls + ' min-h-20 text-xs bg-white'}
+                  value={getParticularsVal(7, 'Land & Building Method. Land value arrived by comparing similar land parcels in that locality while building value arrived by cost incurred to construct a similar house as on date')}
+                  onChange={e => handleParticularsChange(7, e.target.value)}
+                  disabled={isReadOnly}
+                  rows={3}
+                />
+              </Field>
+
+              {/* 9 Restrictions on use of the report, if any; */}
+              <Field label="9 Restrictions on use of the report, if any;">
+                <textarea
+                  className={inputCls + ' min-h-20 text-xs bg-white'}
+                  value={getParticularsVal(8, 'No such restrictions founds')}
+                  onChange={e => handleParticularsChange(8, e.target.value)}
+                  disabled={isReadOnly}
+                  rows={3}
+                />
+              </Field>
+
+              {/* 10 Major factors that were taken into account during the valuation; */}
+              <Field label="10 Major factors that were taken into account during the valuation;">
+                <textarea
+                  className={inputCls + ' min-h-20 text-xs bg-white'}
+                  value={getParticularsVal(9, 'The identification of the property, topography, surrounding development, road development etc')}
+                  onChange={e => handleParticularsChange(9, e.target.value)}
+                  disabled={isReadOnly}
+                  rows={3}
+                />
+              </Field>
+
+              {/* 11 Caveats, limitations and disclaimers to the extent they explain or elucidate the limitations faced by valuers... */}
+              <div className="md:col-span-2">
+                <Field label="11 Caveats, limitations and disclaimers to the extent they explain or elucidate the limitations faced by valuers...">
+                  <textarea
+                    className={inputCls + ' min-h-20 text-xs bg-white'}
+                    value={getParticularsVal(10, 'No such Caveats and limitation.')}
+                    onChange={e => handleParticularsChange(10, e.target.value)}
+                    disabled={isReadOnly}
+                    rows={3}
+                  />
+                </Field>
+              </div>
+            </div>
+          </div>
+
+          {/* Container 2: MODEL CODE OF CONDUCT FOR VALUERS (Color: Light Indigo #e8eaf6) */}
+          <div style={{ backgroundColor: '#e8eaf6', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-indigo-200">
+            {/* Header Title inside light indigo box */}
+            <div className="border-b border-indigo-300 pb-2 flex justify-between items-center">
+              <h3 className="font-bold text-indigo-900 text-sm uppercase tracking-wider">
+                MODEL CODE OF CONDUCT FOR VALUERS
+              </h3>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleToggleAllConduct}
+                  disabled={isReadOnly}
+                  className="text-[11px] font-semibold text-indigo-800 bg-indigo-100 hover:bg-indigo-200 px-2.5 py-1 rounded-md border border-indigo-300 transition-colors cursor-pointer"
+                >
+                  {allConductChecked ? 'Deselect All' : 'Select All'}
+                </button>
+                <span className="text-[11px] font-semibold text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded-full border border-indigo-300">
+                  Points 1 to 30
+                </span>
+              </div>
+            </div>
+
+            {/* Code of Conduct Statements (Points 1 to 30) Grid of Checkboxes */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-indigo-950 uppercase tracking-wider">
+                  Code of Conduct Statements (Points 1 to 30)
+                </label>
+                <span className="text-[11px] text-indigo-700 italic">
+                  30 Statutory Standards & Ethics
+                </span>
+              </div>
+              <div className="grid md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto p-2 border border-indigo-200/70 rounded-xl bg-white/70">
+                {CODE_OF_CONDUCT_POINTS.map(item => (
+                  <label
+                    key={item.num}
+                    className="flex items-start gap-2.5 p-2.5 rounded-lg border border-indigo-100 bg-white hover:bg-indigo-50/50 cursor-pointer transition-colors shadow-2xs"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isConductChecked(item.num)}
+                      onChange={e => handleToggleConduct(item.num, e.target.checked)}
+                      disabled={isReadOnly}
+                      className="w-4 h-4 mt-0.5 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 shrink-0"
+                    />
+                    <div className="text-xs text-slate-800 leading-snug">
+                      <span className="font-bold text-indigo-900 mr-1">{item.num}.</span>
+                      {item.text}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Date (Code of Conduct Sign-off) & Place (Code of Conduct Sign-off) */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <PrefillField
+                label="Date (Code of Conduct Sign-off)"
+                type="date"
+                value={fields.sbiConductSignDate}
+                onChange={(val: string) => {
+                  handleChange('sbiConductSignDate', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "DATE:"<<'
+                fallbackValue={fields.signatureDate || fields.reportDate || pf.reportDate || '06.08.2026'}
+              />
+
+              <PrefillField
+                label="Place (Code of Conduct Sign-off)"
+                value={fields.sbiConductSignPlace}
+                onChange={(val: string) => {
+                  handleChange('sbiConductSignPlace', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "Branch Address Details"<<'
+                fallbackValue={fields.signaturePlace || fields.branchAddress || 'Bhubaneswar'}
+              />
+            </div>
+          </div>
+
+          {/* Container 3: JUSTIFICATION OF VALUATION REPORT (Color: Light Coral #ffe0b2) */}
+          <div style={{ backgroundColor: '#ffe0b2', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-amber-300">
+            {/* Header Title inside light coral box */}
+            <div className="border-b border-amber-400/80 pb-2 flex justify-between items-center">
+              <h3 className="font-bold text-amber-950 text-sm uppercase tracking-wider">
+                JUSTIFICATION OF VALUATION REPORT
+              </h3>
+              <span className="text-[11px] font-semibold text-amber-900 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                Govt. Benchmark vs Market Value Justification
+              </span>
+            </div>
+
+            {/* Bank Address Block (TO, THE ASST. GENERAL MANAGER...) */}
+            <PrefillField
+              label="Bank Address Block (TO, THE ASST. GENERAL MANAGER...)"
+              value={fields.sbiJustificationBankAddress}
+              onChange={(val: string) => {
+                handleChange('sbiJustificationBankAddress', val);
+              }}
+              isReadOnly={isReadOnly}
+              type="textarea"
+              rows={4}
+              tooltip='>>Prefill from section COVER PAGE, "STATE BANK OF INDIA, RBO, [Branch Address Details]"<<'
+              fallbackValue={fallbackBankAddressBlock}
+            />
+
+            {/* Sub: - Justification of valuation Report of */}
+            <PrefillField
+              label="Sub: - Justification of valuation Report of"
+              value={fields.sbiJustificationSubject}
+              onChange={(val: string) => {
+                handleChange('sbiJustificationSubject', val);
+                handleChange('justificationLetterSubject', val);
+              }}
+              isReadOnly={isReadOnly}
+              tooltip='>>Auto calculating from ["Justification of valuation Report of " + NAME OF THE OWNER]<<'
+              fallbackValue={autoJustificationSub}
+            />
+
+            {/* Property Description Block (The subject property bearing...) */}
+            <PrefillField
+              label="Property Description Block (The subject property bearing...)"
+              value={fields.sbiJustificationPropertyDesc}
+              onChange={(val: string) => {
+                handleChange('sbiJustificationPropertyDesc', val);
+              }}
+              isReadOnly={isReadOnly}
+              type="textarea"
+              rows={3}
+              tooltip=">>Auto calculating from [VALUATION OF FLAT BEARING KHATA NO:]<<"
+              fallbackValue={autoPropertyDescBlock}
+            />
+
+            {/* Justification Statement (Govt. Value vs Market Value rationale) */}
+            <Field label="Justification Statement (Govt. Value vs Market Value rationale)">
+              <textarea
+                className={inputCls + ' min-h-24 bg-white'}
+                value={fields.sbiJustificationStatement !== undefined ? fields.sbiJustificationStatement : (fields.justificationLetterBody || 'There is a very high difference between Govt. Value and market Value. Govt. Benchmark Value is not revised for that locality recently and to avoid high stamp Duty/Registration Charges Sale Deed are generally executed in under-valued rate.\n\nSo, the value given by us is justified considering the present market scenario.')}
+                onChange={e => {
+                  handleChange('sbiJustificationStatement', e.target.value);
+                  handleChange('justificationLetterBody', e.target.value);
+                }}
+                disabled={isReadOnly}
+                rows={4}
+                placeholder="There is a very high difference between Govt. Value and market Value. Govt. Benchmark Value is not revised for that locality recently..."
+              />
+            </Field>
+
+            {/* Date (Justification Sign-off) & Place (Justification Sign-off) */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <PrefillField
+                label="Date (Justification Sign-off)"
+                type="date"
+                value={fields.sbiJustificationSignDate}
+                onChange={(val: string) => {
+                  handleChange('sbiJustificationSignDate', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "DATE:"<<'
+                fallbackValue={fields.signatureDate || fields.reportDate || pf.reportDate || '06.08.2026'}
+              />
+
+              <PrefillField
+                label="Place (Justification Sign-off)"
+                value={fields.sbiJustificationSignPlace}
+                onChange={(val: string) => {
+                  handleChange('sbiJustificationSignPlace', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "Branch Address Details"<<'
+                fallbackValue={fields.signaturePlace || fields.branchAddress || 'Bhubaneswar'}
+              />
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* ── Section: Base Documents ── */}
       <BaseDocumentsSection
         title="Documents"
@@ -2892,7 +3289,7 @@ export default function StateBankOfIndiaFlatAndApartment({
         documentImageNames={fields.documentImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={9}
+        sectionNumber={10}
         sectionId="section-documents"
       />
 
@@ -2910,7 +3307,7 @@ export default function StateBankOfIndiaFlatAndApartment({
         propertyAddress={fields.propertyDescription || ''}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={10}
+        sectionNumber={11}
         sectionId="section-maps"
       />
 
@@ -2921,7 +3318,7 @@ export default function StateBankOfIndiaFlatAndApartment({
         propertyImageNames={fields.propertyImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={11}
+        sectionNumber={12}
         sectionId="section-photographs"
       />
         </div>

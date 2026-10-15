@@ -416,6 +416,17 @@ export interface SBIFlatReportFields {
   justificationLetterSubject?: string;
   justificationLetterBody?: string;
 
+  sbiParticularsPurposeAppointing?: string;
+  sbiCodeOfConductChecks?: Record<number, boolean>;
+  sbiConductSignDate?: string;
+  sbiConductSignPlace?: string;
+  sbiJustificationBankAddress?: string;
+  sbiJustificationSubject?: string;
+  sbiJustificationPropertyDesc?: string;
+  sbiJustificationStatement?: string;
+  sbiJustificationSignDate?: string;
+  sbiJustificationSignPlace?: string;
+
   // Enclosures
   documentImages?: string[];
   documentImageNames?: string[];
@@ -1532,11 +1543,11 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
 
     const valuerSig = 'Signature of the Approved Valuer and Seal';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE_SMALL);
-    this.drawTextAt(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Date: ${d.sbiConductSignDate || d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 12;
-    this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Place: ${d.sbiConductSignPlace || d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
   }
 
   // ──────────────────────────────────────────────────────────────────────────
@@ -1549,19 +1560,22 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
 
     const isLandAndBldg = d.propertyValuationType === 'LAND_AND_BUILDING';
 
-    const toLines = isLandAndBldg
-      ? [
-          'TO,',
-          d.toAuthority || 'THE BRANCH HEAD,',
-          d.bankName || 'IDBI BANK, JHARSUGUDA BRANCH,',
-          d.branchAddress || 'DIST: JHARSUGUDA, ODISHA',
-        ]
-      : [
-          'TO,',
-          d.toAuthority || 'THE ASST. GENERAL MANAGER,',
-          d.bankName || 'STATE BANK OF INDIA,',
-          d.rboOffice || 'RBO, PURI, DIST: PURI, ODISHA',
-        ];
+    const customBankAddr = d.sbiJustificationBankAddress;
+    const toLines = customBankAddr
+      ? customBankAddr.split('\n').map(l => l.trim()).filter(Boolean)
+      : (isLandAndBldg
+        ? [
+            'TO,',
+            d.toAuthority || 'THE BRANCH HEAD,',
+            d.bankName || 'IDBI BANK, JHARSUGUDA BRANCH,',
+            d.branchAddress || 'DIST: JHARSUGUDA, ODISHA',
+          ]
+        : [
+            'TO,',
+            d.toAuthority || 'THE ASST. GENERAL MANAGER,',
+            d.bankName || 'STATE BANK OF INDIA,',
+            d.rboOffice || 'RBO, PURI, DIST: PURI, ODISHA',
+          ]);
 
     for (const line of toLines) {
       this.drawTextAt(line, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL + 1 });
@@ -1569,14 +1583,18 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
     }
     this.cursorY += 14;
 
-    const sub = d.justificationLetterSubject || `Sub: - Justification of valuation Report of ${d.borrowerName || 'Mr. Srijit Mishra, S/o: Mr. Gopinath Mishra'}.`;
+    const sub = d.sbiJustificationSubject || d.justificationLetterSubject || `Sub: - Justification of valuation Report of ${d.borrowerName || 'Mr. Srijit Mishra, S/o: Mr. Gopinath Mishra'}.`;
     this.drawTextAt(sub, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 20;
 
     this.drawTextAt('Dear Sir,', MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.cursorY += 16;
 
-    const defaultBody = d.justificationLetterBody || (
+    const combinedCustomBody = (d.sbiJustificationPropertyDesc || d.sbiJustificationStatement)
+      ? `${d.sbiJustificationPropertyDesc || ''}\n\n${d.sbiJustificationStatement || ''}`.trim()
+      : null;
+
+    const defaultBody = combinedCustomBody || d.justificationLetterBody || (
       isLandAndBldg
         ? `The subject property bearing Khata No: 1212/2894, Plot No: 4254/8796 & 4254/9148, Total Area: Ac.0.115 Dec i.e. 5009.00 Sft, Kissam: Gharabari in Mz: Jharsuguda Unit No- 5 Jharsuguda, Dist: Jharsuguda, Odisha.\n\nThere is a very high difference between Govt. Value and market Value. Govt. Benchmark Value is not revised for that locality recently and to avoid high stamp Duty/Registration Charges Sale Deed are generally executed in under-valued rate.\n\nSo, the value given by us is justified considering the present market scenario.`
         : `The subject property bearing Khata No:432/1656, 432/1661, Flat No: A-041, 4th Floor, Tower-A, 2BHK in name & style Apartment "THE COSMOPOLIS" having Super Built up Area: 1375.00 Sft in Mouza: Dumuduma, Ps- Khandagiri No-4, Ts: Bhubaneswar, Dist-Khurda, Odisha.\n\nThere is a very high difference between Govt. Value and market Value. Govt. Benchmark Value is not revised for that locality recently and to avoid high stamp Duty/Registration Charges Sale Deed are generally executed in under-valued rate.\n\nSo, the value given by us is justified considering the present market scenario.`
@@ -1596,11 +1614,11 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
 
     const valuerSig = 'Er. Satyajit Mohanty';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE);
-    this.drawTextAt(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`Date: ${d.sbiJustificationSignDate || d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.drawTextAt('Valuer', MARGIN_L + CONTENT_W - sigW, this.cursorY - 18, { bold: true, fontSize: FONT_SIZE });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.cursorY += 14;
-    this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`Place: ${d.sbiJustificationSignPlace || d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
   }
 
   // ──────────────────────────────────────────────────────────────────────────
