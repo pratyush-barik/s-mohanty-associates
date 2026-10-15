@@ -137,8 +137,8 @@ Templates with complete interactive report draft builder UI and full PDF rendere
 | **37** | NAVDHAN FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/navdhan/NavdhanFinance.tsx` | `src/lib/banks/pdf-navdhan-finance-renderer.ts` | ✅ Completed |
 | **38** | NEO GROWTH | `Standard` | `src/app/portal/reports/[projectId]/banks/neo/NeoGrowth.tsx` | `src/lib/banks/pdf-neo-growth-renderer.ts` | ✅ Completed |
 | **39** | PNB HOUSING FINANCE LTD | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/pnb-housing/PNBHousingHLLAP.tsx` | `src/lib/banks/pdf-pnb-housing-renderer.ts` | ✅ Completed |
-| **48.1** | STATE BANK OF INDIA-SBI | `ABOVE 5CR` (`Flat & Apartment`) | `src/app/portal/reports/[projectId]/banks/sbi/StateBankOfIndiaFlatAndApartment.tsx` | `src/lib/banks/pdf-sbi-above-5cr-renderer.ts` | ✅ Completed |
-| **48.2** | STATE BANK OF INDIA-SBI | `BELOW 5CR` (`Land & Building`) | `src/app/portal/reports/[projectId]/banks/sbi/StateBankOfIndiaLandAndBuilding.tsx` | `src/lib/banks/pdf-sbi-below-5cr-renderer.ts` | ✅ Completed |
+| **48.1** | STATE BANK OF INDIA-SBI | `ABOVE 5CR` (`Flat & Apartment`) | `src/app/portal/reports/[projectId]/banks/sbi/StateBankOfIndiaFlatAndApartment.tsx` | `src/lib/banks/pdf-sbi-flat-and-apartment-renderer.ts` | ✅ Completed |
+| **48.2** | STATE BANK OF INDIA-SBI | `BELOW 5CR` (`Land & Building`) | `src/app/portal/reports/[projectId]/banks/sbi/StateBankOfIndiaLandAndBuilding.tsx` | `src/lib/banks/pdf-sbi-land-and-building-renderer.ts` | ✅ Completed |
 | **56** | UNITY SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/unity-sfb/UnitySmallFinanceBank.tsx` | `src/lib/banks/pdf-unity-sfb-renderer.ts` | ✅ Completed |
 | **57** | UTKARSH SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/utkarsh/UtkarshSmallFinanceBank.tsx` | `src/lib/banks/pdf-utkarsh-sfb-renderer.ts` | ✅ Completed |
 | **58** | VARTHANA FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/varthana/VarthanaFinance.tsx` | `src/lib/banks/pdf-varthana-finance-renderer.ts` | ✅ Completed |

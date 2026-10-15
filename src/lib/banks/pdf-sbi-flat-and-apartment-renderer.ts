@@ -1,10 +1,10 @@
 /**
- * pdf-sbi-above-5cr-renderer.ts — Unified Dedicated PDF Renderer for Above 5CR (SBI & IDBI)
+ * pdf-sbi-flat-and-apartment-renderer.ts — Dedicated PDF Renderer for State Bank of India Flat & Apartment
  *
  * Supports dual modes via `propertyValuationType`:
  * 1. 'FLAT':
  *    - Title: VALUATION REPORT (IN RESPECT OF FLAT)
- *    - I. GENERAL (1-17 with Deed vs Actual Dimensions / Not Applicable)
+ *    - I. GENERAL (1-21 with Deed vs Actual Dimensions / Not Applicable)
  *    - II. APARTMENT BUILDING (1-11 with facilities)
  *    - III. FLAT (1-15 with construction specs, taxes, SBA, carpet, UDS)
  *    - IV. MARKETABILITY (1-3)
@@ -398,7 +398,7 @@ export interface SBIFlatReportFields {
   [key: string]: any;
 }
 
-export class PDFSBIRenderer extends PDFBankRenderer {
+export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
   private reportFields: SBIFlatReportFields;
   private projectCode?: string;
 
@@ -473,128 +473,136 @@ export class PDFSBIRenderer extends PDFBankRenderer {
 
     // ── SECTION I. GENERAL ──
     this.drawSectionHeaderRow('I.', 'GENERAL');
-    this.draw2ColRow('1.', 'Purpose for which the valuation is made', d.purposeOfValuation || 'To assess the present Market Value of the Property for Loan purpose');
+    this.draw2ColRow('1.', 'Purpose for which the valuation is made', d.sbiFlatPurposeOfValuation || d.purposeOfValuation || d.purpose || 'To assess the present Market Value of the Property for Loan purpose');
 
     this.drawSubTableRow('2.', [
-      { label: 'a) Date of inspection', value: d.inspectionDate || '03.08.2026' },
-      { label: 'b) Date on which the valuation is made', value: d.valuationDate || d.reportDate || '06.08.2026' },
+      { label: 'a) Date of inspection', value: d.sbiFlatInspectionDate || d.inspectionDate || '03.08.2026' },
+      { label: 'b) Date on which the valuation is made', value: d.sbiFlatValuationDate || d.valuationDate || d.reportDate || '06.08.2026' },
     ]);
 
-    const docs = d.documentsProduced && d.documentsProduced.length > 0 ? d.documentsProduced : ['Sale Deed', '', ''];
+    const docs = (d.sbiFlatDocumentsProduced && d.sbiFlatDocumentsProduced.length > 0)
+      ? d.sbiFlatDocumentsProduced
+      : ((d.documentsProduced && d.documentsProduced.length > 0) ? d.documentsProduced : ['Sale Deed', '', '']);
     this.drawSubTableRow('3.', [
       { label: 'i)', value: docs[0] || 'Sale Deed' },
       { label: 'ii)', value: docs[1] || '' },
       { label: 'iii)', value: docs[2] || '' },
     ], 'List of documents produced for perusal');
 
-    this.draw2ColRow('4.', 'Name of the Owner and his / their address (es) with Phone no. (details of share of each owner incase of joint ownership)', d.ownerNameAndAddress || 'NA');
-    this.draw2ColRow('5.', 'Brief description of the property (Including leasehold / freehold etc)', d.propertyDescription || 'NA');
+    this.draw2ColRow('4.', 'Name of the Owner and his / their address (es) with Phone no. (details of share of each owner incase of joint ownership)', d.sbiFlatOwnerNameAndAddress || d.ownerNameAndAddress || 'NA');
+    this.draw2ColRow('5.', 'Brief description of the property (Including leasehold / freehold etc)', d.sbiFlatPropertyDescription || d.propertyDescription || 'NA');
 
     this.drawSubTableRow('6.', [
-      { label: 'a) Plot No. / Survey No.', value: d.plotNo || 'NA' },
-      { label: 'b) Door No.', value: d.doorNo || 'NA' },
-      { label: 'c) T. S. No. / Village', value: d.tsNoVillage || 'NA' },
-      { label: 'd) Ward / Taluka', value: d.wardTaluka || 'NA' },
-      { label: 'e) Mandal / District', value: d.mandalDistrict || 'NA' },
+      { label: 'a) Plot No. / Survey No.', value: d.sbiFlatPlotNo || d.plotNo || 'NA' },
+      { label: 'b) Door No.', value: d.sbiFlatDoorNo || d.doorNo || 'NA' },
+      { label: 'c) T. S. No. / Village', value: d.sbiFlatTsNo || d.tsNoVillage || 'NA' },
+      { label: 'd) Ward / Taluka', value: d.sbiFlatWard || d.wardTaluka || 'NA' },
+      { label: 'e) Mandal / District', value: d.sbiFlatDistrict || d.mandalDistrict || 'NA' },
     ], 'Location of property');
 
-    this.draw2ColRow('7.', 'Postal address of the property', d.postalAddress || 'NA');
+    this.draw2ColRow('7.', 'Postal address of the property', d.sbiFlatPostalAddress || d.postalAddress || 'NA');
 
     this.drawSubTableRow('8.', [
       { label: 'City', value: d.cityTown || 'City' },
-      { label: 'Residential Area', value: d.residentialArea || 'Residential Area' },
+      { label: 'Residential Area', value: d.sbiFlatCityTownType || d.residentialArea || 'Residential Area' },
       { label: 'Commercial Area', value: d.commercialArea || 'Not Applicable' },
       { label: 'Industrial Area', value: d.industrialArea || 'Not Applicable' },
     ], 'City / Town');
 
     this.drawSubTableRow('9.', [
-      { label: 'i) High / Middle / Poor', value: d.classificationHighMiddlePoor || 'Middle Class' },
-      { label: 'ii) Urban / Semi Urban / Rural', value: d.classificationUrbanRural || 'Urban Area' },
+      { label: 'i) High / Middle / Poor', value: d.sbiFlatClassOfLocality || d.classificationHighMiddlePoor || 'Middle Class' },
+      { label: 'ii) Urban / Semi Urban / Rural', value: d.sbiFlatUrbanRural || d.classificationUrbanRural || 'Urban Area' },
     ], 'Classification of the area');
 
-    this.draw2ColRow('10', 'Coming under Corporation limit/ Village Panchayat / Municipality', d.localBodyLimit || 'Bhubaneswar Municipal Corporation area limit');
-    this.draw2ColRow('11', 'Whether covered under any State / Central Govt. enactments (e.g. Urban Land Ceiling Act) or notified under agency area / scheduled area / cantonment area', d.govtEnactmentsCovered || 'No');
-    this.draw2ColRow('12', 'In case it is an agricultural land, any conversion to house site plots is contemplated', d.agriculturalConversion || 'The Plot is already converted to Homestead');
+    this.draw2ColRow('10', 'Coming under Corporation limit/ Village Panchayat / Municipality', d.sbiFlatLocalBodyLimit || d.localBodyLimit || 'Bhubaneswar Municipal Corporation area limit');
+    const govtEnactText = d.sbiFlatGovtEnactmentsCovered !== undefined
+      ? (d.sbiFlatGovtEnactmentsCovered ? `Yes${d.sbiFlatGovtEnactmentsDetails ? ` (${d.sbiFlatGovtEnactmentsDetails})` : ''}` : 'No')
+      : (d.govtEnactmentsCovered || 'No');
+    this.draw2ColRow('11', 'Whether covered under any State / Central Govt. enactments (e.g. Urban Land Ceiling Act) or notified under agency area / scheduled area / cantonment area', govtEnactText);
+    this.draw2ColRow('12', 'In case it is an agricultural land, any conversion to house site plots is contemplated', d.sbiFlatAgriculturalConversion || d.agriculturalConversion || 'The Plot is already converted to Homestead');
 
     this.drawBoundariesTable(d);
     this.drawDimensionsTable(d, true);
 
-    const coordsStr = d.coordinatesText || (d.latitude && d.longitude ? `Latitude: ${d.latitude}, Longitude: ${d.longitude}` : 'NA');
+    const coordsStr = d.sbiFlatCoordinates || d.coordinatesText || ((d.sbiFlatLatitude || d.latitude) && (d.sbiFlatLongitude || d.longitude) ? `Latitude: ${d.sbiFlatLatitude || d.latitude}, Longitude: ${d.sbiFlatLongitude || d.longitude}` : 'NA');
     this.draw2ColRow('14.2', 'Latitude, Longitude and Coordinates of the site', coordsStr);
 
-    this.draw2ColRow('15', 'Extent of the site of the Project', d.extentOfProjectSite || 'NA');
-    this.draw2ColRow('16', 'Extent of the site considered for valuation (least of 14 A & 14 B)', d.extentConsideredValuation || 'Not Applicable');
-    this.draw2ColRow('17', 'Whether occupied by the owner / tenant? If occupied by tenant, since how long? Rent Received per month.', d.occupancyStatusOwnerTenant || 'The Flat is occupied by Owner');
-    this.draw2ColRow('18', 'Date of issue and validity of layout of approved map / plan', d.approvedPlanValidity || 'Date of Issue: 29.07.2010\nValidity: 3 Yrs from the approval');
-    this.draw2ColRow('19', 'Approved map / plan issuing authority', d.approvedPlanAuthority || 'Plan has been approved by BDA');
-    this.draw2ColRow('20', 'Whether genuineness or authenticity of approved map / plan is verified', d.approvedPlanAuthenticity || 'Yes, Verified from the authenticated authority');
-    this.draw2ColRow('21', 'Any other comments by our empanelled valuers on authentic of approved plan', d.valuerCommentsOnPlan || 'Yes, The approval plan is authenticated');
+    this.draw2ColRow('15', 'Extent of the site of the Project', d.sbiFlatExtentOfSiteProject || d.extentOfProjectSite || 'NA');
+    this.draw2ColRow('16', 'Extent of the site considered for valuation (least of 14 A & 14 B)', d.sbiFlatExtentOfSiteValuation || d.extentConsideredValuation || 'Not Applicable');
+    this.draw2ColRow('17', 'Whether occupied by the owner / tenant? If occupied by tenant, since how long? Rent Received per month.', d.sbiFlatOccupancyStatus || d.occupancyStatusOwnerTenant || 'The Flat is occupied by Owner');
+    this.draw2ColRow('18', 'Date of issue and validity of layout of approved map / plan', d.sbiFlatApprovedPlanDateValidity || d.approvedPlanValidity || 'Date of Issue: 29.07.2010\nValidity: 3 Yrs from the approval');
+    this.draw2ColRow('19', 'Approved map / plan issuing authority', d.sbiFlatApprovedPlanAuthority || d.approvedPlanAuthority || 'Plan has been approved by BDA');
+    const planAuthVerified = d.sbiFlatPlanAuthenticityVerified !== undefined
+      ? (d.sbiFlatPlanAuthenticityVerified ? 'Yes, Verified from the authenticated authority' : 'No')
+      : (d.approvedPlanAuthenticity || 'Yes, Verified from the authenticated authority');
+    this.draw2ColRow('20', 'Whether genuineness or authenticity of approved map / plan is verified', planAuthVerified);
+    this.draw2ColRow('21', 'Any other comments by our empanelled valuers on authentic of approved plan', d.sbiFlatValuerCommentsOnPlan || d.valuerCommentsOnPlan || 'Yes, The approval plan is authenticated');
 
     // ── SECTION II. APARTMENT BUILDING ──
     this.drawSectionHeaderRow('II.', 'APARTMENT BUILDING');
-    this.draw2ColRow('1.', 'Nature of the Apartment', d.natureOfApartment || 'Residential Apartment');
+    this.draw2ColRow('1.', 'Nature of the Apartment', d.sbiFlatNatureOfApartment || d.natureOfApartment || 'Residential Apartment');
 
     this.drawSubTableRow('2.', [
-      { label: 'T.S. No', value: d.aptLocationTsNo || 'NA' },
-      { label: 'Block No', value: d.aptLocationBlockNo || 'Tower-A' },
-      { label: 'Ward No', value: d.aptLocationWardNo || 'Not Applicable' },
-      { label: 'Village/Municipality/Corporation', value: d.aptLocationVillageCorp || 'Within Municipal Corporation area limit' },
-      { label: 'Door No., Street or Road (Pin Code)', value: d.aptLocationDoorRoadPin || 'NA' },
+      { label: 'T.S. No', value: d.sbiFlatAptLocationTsNo || d.aptLocationTsNo || 'NA' },
+      { label: 'Block No', value: d.sbiFlatAptLocationBlockNo || d.aptLocationBlockNo || 'Tower-A' },
+      { label: 'Ward No', value: d.sbiFlatAptLocationWardNo || d.aptLocationWardNo || 'Not Applicable' },
+      { label: 'Village/Municipality/Corporation', value: d.sbiFlatAptLocationVillageCorp || d.aptLocationVillageCorp || 'Within Municipal Corporation area limit' },
+      { label: 'Door No., Street or Road (Pin Code)', value: d.sbiFlatAptLocationDoorRoadPin || d.aptLocationDoorRoadPin || 'NA' },
     ], 'Location');
 
-    this.draw2ColRow('3.', 'Description of the locality Residential / Commercial / Mixed', d.localityDescription || 'Residential');
-    this.draw2ColRow('4.', 'Year of Construction', d.yearOfConstruction || '2010');
-    this.draw2ColRow('5.', 'Number of Floors', d.numberOfFloors || 'B+G+16 Storied');
-    this.draw2ColRow('6.', 'Type of Structure', d.typeOfStructure || 'RCC Frame Structure');
-    this.draw2ColRow('7.', 'Number of Dwelling units in the building', d.dwellingUnitsCount || 'Not Verified');
-    this.draw2ColRow('8.', 'Quality of Construction', d.qualityOfConstruction || 'Good');
-    this.draw2ColRow('9.', 'Appearance of the Building', d.appearanceOfBuilding || 'Good');
-    this.draw2ColRow('10.', 'Maintenance of the Building', d.maintenanceOfBuilding || 'Good');
+    this.draw2ColRow('3.', 'Description of the locality Residential / Commercial / Mixed', d.sbiFlatLocalityDescription || d.localityDescription || 'Residential');
+    this.draw2ColRow('4.', 'Year of Construction', d.sbiFlatYearOfConstruction || d.yearOfConstruction || '2010');
+    this.draw2ColRow('5.', 'Number of Floors', d.sbiFlatNumberOfFloors || d.numberOfFloors || 'B+G+16 Storied');
+    this.draw2ColRow('6.', 'Type of Structure', d.sbiFlatTypeOfStructure || d.typeOfStructure || 'RCC Frame Structure');
+    this.draw2ColRow('7.', 'Number of Dwelling units in the building', d.sbiFlatDwellingUnitsCount || d.dwellingUnitsCount || 'Not Verified');
+    this.draw2ColRow('8.', 'Quality of Construction', d.sbiFlatQualityOfConstruction || d.qualityOfConstruction || 'Good');
+    this.draw2ColRow('9.', 'Appearance of the Building', d.sbiFlatAppearanceOfBuilding || d.appearanceOfBuilding || 'Good');
+    this.draw2ColRow('10.', 'Maintenance of the Building', d.sbiFlatMaintenanceOfBuilding || d.maintenanceOfBuilding || 'Good');
 
     this.drawSubTableRow('11.', [
-      { label: 'Lift', value: d.facilityLift || 'Yes' },
-      { label: 'Protected Water Supply', value: d.facilityWaterSupply || 'Yes' },
-      { label: 'Under Ground Sewerage', value: d.facilitySewerage || 'Yes' },
-      { label: 'Car Parking-Open/Covered', value: d.facilityCarParking || 'Covered parking' },
-      { label: 'Does compound wall exist?', value: d.facilityCompoundWall || 'Yes' },
-      { label: 'Is pavement laid around the building?', value: d.facilityPavement || 'Yes' },
+      { label: 'Lift', value: d.facilityLift || (d.hasLift ? 'Yes' : 'No') },
+      { label: 'Protected Water Supply', value: d.facilityWaterSupply || (d.hasWaterSupply ? 'Yes' : 'No') },
+      { label: 'Under Ground Sewerage', value: d.facilitySewerage || (d.hasSewerage ? 'Yes' : 'No') },
+      { label: 'Car Parking-Open/Covered', value: d.facilityCarParking || (d.hasCarParking ? 'Covered parking' : 'No') },
+      { label: 'Does compound wall exist?', value: d.facilityCompoundWall || (d.hasCompoundWall ? 'Yes' : 'No') },
+      { label: 'Is pavement laid around the building?', value: d.facilityPavement || (d.hasPavement ? 'Yes' : 'No') },
     ], 'Facilities Available');
 
     // ── SECTION III. FLAT ──
     this.drawSectionHeaderRow('III.', 'FLAT');
-    this.draw2ColRow('1', 'The floor on which the flat is situated', d.flatFloorNumber || '4th Floor');
-    this.draw2ColRow('2', 'Door No of the Flat', d.flatDoorNumber || 'Flat No: A-041, Tower-A');
+    this.draw2ColRow('1', 'The floor on which the flat is situated', d.sbiFlatFloorNumber || d.flatFloorNumber || '4th Floor');
+    this.draw2ColRow('2', 'Door No of the Flat', d.sbiFlatDoorNumber || d.flatDoorNumber || 'Flat No: A-041, Tower-A');
 
     this.drawSubTableRow('3', [
-      { label: 'Roof', value: d.specRoof || 'RCC Roof' },
-      { label: 'Flooring', value: d.specFlooring || 'VT Flooring' },
-      { label: 'Doors', value: d.specDoors || 'Hard Ply wood doors' },
-      { label: 'Windows', value: d.specWindows || 'Aluminum frame with glass fitting windows' },
-      { label: 'Fittings', value: d.specFittings || 'Superior' },
-      { label: 'Finishing', value: d.specFinishing || 'Cement Plastering, Putty, Modular Kitchen, Roof Ceiling with Decorative Light, Cupboard, Wardrobes' },
+      { label: 'Roof', value: d.sbiFlatSpecRoof || d.specRoof || 'RCC Roof' },
+      { label: 'Flooring', value: d.sbiFlatSpecFlooring || d.specFlooring || 'VT Flooring' },
+      { label: 'Doors', value: d.sbiFlatSpecDoors || d.specDoors || 'Hard Ply wood doors' },
+      { label: 'Windows', value: d.sbiFlatSpecWindows || d.specWindows || 'Aluminum frame with glass fitting windows' },
+      { label: 'Fittings', value: d.sbiFlatSpecFittings || d.specFittings || 'Superior' },
+      { label: 'Finishing', value: d.sbiFlatSpecFinishing || d.specFinishing || 'Cement Plastering, Putty, Modular Kitchen, Roof Ceiling with Decorative Light, Cupboard, Wardrobes' },
     ], 'Specifications of the flat');
 
     this.drawSubTableRow('4', [
-      { label: 'Assessment No', value: d.assessmentNumber || 'Not Verified' },
-      { label: 'Tax paid in name of', value: d.taxPaidName || 'Not Verified' },
-      { label: 'Tax Amount', value: d.taxAmount || 'Not Verified' },
+      { label: 'Assessment No', value: d.sbiFlatAssessmentNumber || d.assessmentNumber || 'Not Verified' },
+      { label: 'Tax paid in name of', value: d.sbiFlatTaxPaidName || d.taxPaidName || 'Not Verified' },
+      { label: 'Tax Amount', value: d.sbiFlatTaxAmount || d.taxAmount || 'Not Verified' },
     ]);
 
     this.drawSubTableRow('5', [
-      { label: 'Electricity Service Connection No', value: d.electricityConnectionNo || 'Not Verified' },
-      { label: 'Meter Card in name of', value: d.meterCardName || 'Not Verified' },
+      { label: 'Electricity Service Connection No', value: d.sbiFlatElectricityConnectionNo || d.electricityConnectionNo || 'Not Verified' },
+      { label: 'Meter Card in name of', value: d.sbiFlatMeterCardName || d.meterCardName || 'Not Verified' },
     ]);
 
-    this.draw2ColRow('6', 'How is the maintenance of the flat?', d.flatMaintenanceCondition || 'Good');
-    this.draw2ColRow('7', 'Sale Deed executed in the name of', d.saleDeedExecutedName || 'NA');
-    this.draw2ColRow('8', 'What is the undivided area of land as per Sale Deed?', d.undividedLandArea || 'Ac.0.012 Dec i.e. 523.00 Sft');
-    this.draw2ColRow('9', 'What is the Super Built up Area of the flat?', d.superBuiltUpArea || 'Super Built up Area: 1375.00 Sft');
-    this.draw2ColRow('10', 'What is the floor space index (app.)', d.floorSpaceIndex || 'As per approval plan');
-    this.draw2ColRow('11', 'What is the Carpet Area of the flat?', d.carpetArea || '948.00 Sft (Approx.)');
-    this.draw2ColRow('12', 'Is it Posh/ I class / Medium / Ordinary?', d.poshClassMediumOrdinary || 'I Class');
-    this.draw2ColRow('13', 'Is it being used for Residential or Commercial purpose?', d.usageResidentialCommercial || 'Residential Purpose');
-    this.draw2ColRow('14', 'Is it Owner-occupied or let out?', d.flatOccupancyOwnerTenant || 'The Flat is occupied by Owner');
-    this.draw2ColRow('15', 'If rented, what is the monthly rent?', d.monthlyRentIfRented || 'Not Applicable');
+    this.draw2ColRow('6', 'How is the maintenance of the flat?', d.sbiFlatMaintenanceCondition || d.flatMaintenanceCondition || 'Good');
+    this.draw2ColRow('7', 'Sale Deed executed in the name of', d.sbiFlatSaleDeedExecutedName || d.saleDeedExecutedName || 'NA');
+    this.draw2ColRow('8', 'What is the undivided area of land as per Sale Deed?', d.sbiFlatUndividedLandArea || d.undividedLandArea || 'Ac.0.012 Dec i.e. 523.00 Sft');
+    this.draw2ColRow('9', 'What is the Super Built up Area of the flat?', d.sbiFlatSuperBuiltUpArea || d.superBuiltUpArea || 'Super Built up Area: 1375.00 Sft');
+    this.draw2ColRow('10', 'What is the floor space index (app.)', d.sbiFlatFloorSpaceIndex || d.floorSpaceIndex || 'As per approval plan');
+    this.draw2ColRow('11', 'What is the Carpet Area of the flat?', d.sbiFlatCarpetArea || d.carpetArea || '948.00 Sft (Approx.)');
+    this.draw2ColRow('12', 'Is it Posh/ I class / Medium / Ordinary?', d.sbiFlatPoshClassMediumOrdinary || d.poshClassMediumOrdinary || 'I Class');
+    this.draw2ColRow('13', 'Is it being used for Residential or Commercial purpose?', d.sbiFlatUsageResidentialCommercial || d.usageResidentialCommercial || 'Residential Purpose');
+    this.draw2ColRow('14', 'Is it Owner-occupied or let out?', d.sbiFlatOccupancyOwnerTenant || d.flatOccupancyOwnerTenant || 'The Flat is occupied by Owner');
+    this.draw2ColRow('15', 'If rented, what is the monthly rent?', d.sbiFlatMonthlyRentIfRented || d.monthlyRentIfRented || 'Not Applicable');
 
     // ── SECTION IV. MARKETABILITY ──
     this.drawSectionHeaderRow('IV.', 'MARKETABILITY');
@@ -813,10 +821,10 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     this.cursorY += rowH;
 
     const rows = [
-      { dir: 'East', doc: d.boundaryEastDocument || 'Plot No-4254(Part)', verif: d.boundaryEastVerification || 'Vacant Land' },
-      { dir: 'West', doc: d.boundaryWestDocument || 'Plot No-4254(Part)', verif: d.boundaryWestVerification || 'Vacant Land' },
-      { dir: 'North', doc: d.boundaryNorthDocument || 'Plot No-6940', verif: d.boundaryNorthVerification || 'Others Building' },
-      { dir: 'South', doc: d.boundarySouthDocument || 'Road', verif: d.boundarySouthVerification || 'Road' },
+      { dir: 'East', doc: d.sbiFlatBoundaryEastDoc || d.boundaryEastDocument || 'Plot No-4254(Part)', verif: d.sbiFlatBoundaryEastVerif || d.boundaryEastVerification || 'Vacant Land' },
+      { dir: 'West', doc: d.sbiFlatBoundaryWestDoc || d.boundaryWestDocument || 'Plot No-4254(Part)', verif: d.sbiFlatBoundaryWestVerif || d.boundaryWestVerification || 'Vacant Land' },
+      { dir: 'North', doc: d.sbiFlatBoundaryNorthDoc || d.boundaryNorthDocument || 'Plot No-6940', verif: d.sbiFlatBoundaryNorthVerif || d.boundaryNorthVerification || 'Others Building' },
+      { dir: 'South', doc: d.sbiFlatBoundarySouthDoc || d.boundarySouthDocument || 'Road', verif: d.sbiFlatBoundarySouthVerif || d.boundarySouthVerification || 'Road' },
     ];
 
     for (const r of rows) {
@@ -854,10 +862,10 @@ export class PDFSBIRenderer extends PDFBankRenderer {
 
     if (isFlat) {
       const rows = [
-        { dir: 'East', deed: d.dimensionEastDeed || 'Not Applicable (Flat)', act: d.dimensionEastActual || '' },
-        { dir: 'West', deed: d.dimensionWestDeed || 'Not Applicable (Flat)', act: d.dimensionWestActual || '' },
-        { dir: 'North', deed: d.dimensionNorthDeed || 'Not Applicable (Flat)', act: d.dimensionNorthActual || '' },
-        { dir: 'South', deed: d.dimensionSouthDeed || 'Not Applicable (Flat)', act: d.dimensionSouthActual || '' },
+        { dir: 'East', deed: d.sbiFlatDimEastDeed || d.dimensionEastDeed || 'Not Applicable (Flat)', act: d.sbiFlatDimEastActual || d.dimensionEastActual || '' },
+        { dir: 'West', deed: d.sbiFlatDimWestDeed || d.dimensionWestDeed || 'Not Applicable (Flat)', act: d.sbiFlatDimWestActual || d.dimensionWestActual || '' },
+        { dir: 'North', deed: d.sbiFlatDimNorthDeed || d.dimensionNorthDeed || 'Not Applicable (Flat)', act: d.sbiFlatDimNorthActual || d.dimensionNorthActual || '' },
+        { dir: 'South', deed: d.sbiFlatDimSouthDeed || d.dimensionSouthDeed || 'Not Applicable (Flat)', act: d.sbiFlatDimSouthActual || d.dimensionSouthActual || '' },
       ];
       for (const r of rows) {
         this.drawCell(MARGIN_L, this.cursorY, wSl, rowH, '', { fillColor: LBL_BG });
@@ -1704,3 +1712,6 @@ export class PDFSBIRenderer extends PDFBankRenderer {
     }
   }
 }
+
+// Backwards compatibility alias
+export { PDFSBIFlatAndApartmentRenderer as PDFSBIRenderer };

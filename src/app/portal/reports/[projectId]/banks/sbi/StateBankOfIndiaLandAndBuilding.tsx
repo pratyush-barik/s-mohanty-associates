@@ -22,8 +22,8 @@ export const SBI_LAND_BUILDING_CONFIG: BankConfig = {
   displayName: 'State Bank of India (SBI) — Land & Building',
   defaultValues: {},
   getPDFRenderer: (data, projectCode) => {
-    const { PDFSBIBelow5CRRenderer } = require('@/lib/banks/pdf-sbi-below-5cr-renderer');
-    return new PDFSBIBelow5CRRenderer(data, projectCode);
+    const { PDFSBILandAndBuildingRenderer } = require('@/lib/banks/pdf-sbi-land-and-building-renderer');
+    return new PDFSBILandAndBuildingRenderer(data, projectCode);
   },
 };
 
@@ -278,18 +278,18 @@ export default function StateBankOfIndiaLandAndBuilding({
 
   const handleDownloadPdfInternal = async () => {
     try {
-      const { PDFSBIBelow5CRRenderer } = require('@/lib/banks/pdf-sbi-below-5cr-renderer');
-      const renderer = new PDFSBIBelow5CRRenderer(fields, projectCode);
+      const { PDFSBILandAndBuildingRenderer } = require('@/lib/banks/pdf-sbi-land-and-building-renderer');
+      const renderer = new PDFSBILandAndBuildingRenderer(fields, projectCode);
       const pdfBytes = await renderer.render();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `SBI_Below_5CR_${projectCode || projectId}.pdf`;
+      a.download = `SBI_Land_And_Building_${projectCode || projectId}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
-      console.error('Error generating SBI Below 5CR PDF:', e);
+      console.error('Error generating SBI Land & Building PDF:', e);
     }
   };
 

@@ -108,7 +108,7 @@ export const SBI_CONFIG: BankConfig = {
   displayName: 'State Bank of India (SBI) — Flat & Apartment',
   defaultValues: {},
   getPDFRenderer: (data, projectCode) => {
-    const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-above-5cr-renderer');
+    const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-flat-and-apartment-renderer');
     return new PDFSBIRenderer(data, projectCode);
   },
 };
@@ -622,14 +622,14 @@ export default function StateBankOfIndiaFlatAndApartment({
 
   const handleDownloadPdfInternal = async () => {
     try {
-      const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-above-5cr-renderer');
+      const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-flat-and-apartment-renderer');
       const renderer = new PDFSBIRenderer(fields, projectCode);
       const pdfBytes = await renderer.render();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `SBI_Above_5CR_${fields.propertyValuationType}_${projectCode || projectId}.pdf`;
+      a.download = `SBI_Flat_And_Apartment_${fields.propertyValuationType}_${projectCode || projectId}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {

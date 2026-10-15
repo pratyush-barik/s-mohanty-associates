@@ -1,5 +1,5 @@
 /**
- * pdf-sbi-below-5cr-renderer.ts — Dedicated PDF Renderer for State Bank of India & IDBI (BELOW 5CR)
+ * pdf-sbi-land-and-building-renderer.ts — Dedicated PDF Renderer for State Bank of India & IDBI Land & Building (Below 5CR)
  *
  * Implements:
  * - TO: THE CHIEF MANAGER / BRANCH HEAD, Bank Name, Branch, Dist...
@@ -223,7 +223,7 @@ export interface SBIBelow5CRFields {
 
 const SECTION_BANNER_BG = '#C26B2B'; // Standard warm reddish-brown matching the reference sample
 
-export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
+export class PDFSBILandAndBuildingRenderer extends PDFBankRenderer {
   private reportFields: SBIBelow5CRFields;
   private projectCode?: string;
 
@@ -1108,3 +1108,6 @@ export class PDFSBIBelow5CRRenderer extends PDFBankRenderer {
     }
   }
 }
+
+// Backwards compatibility alias
+export { PDFSBILandAndBuildingRenderer as PDFSBIBelow5CRRenderer };
