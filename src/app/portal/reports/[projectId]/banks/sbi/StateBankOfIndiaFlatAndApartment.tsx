@@ -419,6 +419,16 @@ export default function StateBankOfIndiaFlatAndApartment({
       finalDepreciatedBuildingRate: saved.finalDepreciatedBuildingRate !== undefined ? saved.finalDepreciatedBuildingRate : '2125',
       finalRateLandOther: saved.finalRateLandOther !== undefined ? saved.finalRateLandOther : '7500',
       finalTotalCompositeRate: saved.finalTotalCompositeRate !== undefined ? saved.finalTotalCompositeRate : '9625',
+      sbiFlatDepreciatedBuildingRate: saved.sbiFlatDepreciatedBuildingRate !== undefined ? saved.sbiFlatDepreciatedBuildingRate : (saved.depreciatedBuildingRate || saved.finalDepreciatedBuildingRate || '2125'),
+      sbiFlatReplacementCostOfFlat: saved.sbiFlatReplacementCostOfFlat !== undefined ? saved.sbiFlatReplacementCostOfFlat : (saved.replacementCostOfFlat || '375'),
+      sbiFlatBuildingAge: saved.sbiFlatBuildingAge !== undefined ? saved.sbiFlatBuildingAge : (saved.buildingAge || '10'),
+      sbiFlatBuildingLife: saved.sbiFlatBuildingLife !== undefined ? saved.sbiFlatBuildingLife : (saved.buildingLife || '60'),
+      sbiFlatDepreciationSalvagePercentage: saved.sbiFlatDepreciationSalvagePercentage !== undefined ? saved.sbiFlatDepreciationSalvagePercentage : (saved.depreciationSalvagePercentage || '15%'),
+      sbiFlatDepreciationRatio: saved.sbiFlatDepreciationRatio !== undefined ? saved.sbiFlatDepreciationRatio : (saved.depreciationRatio || '1.5% Per Annum'),
+      sbiFlatTotalCompositeRateArrived: saved.sbiFlatTotalCompositeRateArrived !== undefined ? saved.sbiFlatTotalCompositeRateArrived : (saved.totalCompositeRateArrived || '9625'),
+      sbiFlatFinalDepreciatedBuildingRate: saved.sbiFlatFinalDepreciatedBuildingRate !== undefined ? saved.sbiFlatFinalDepreciatedBuildingRate : (saved.finalDepreciatedBuildingRate || '2125'),
+      sbiFlatFinalRateLandOther: saved.sbiFlatFinalRateLandOther !== undefined ? saved.sbiFlatFinalRateLandOther : (saved.finalRateLandOther || '7500'),
+      sbiFlatFinalTotalCompositeRate: saved.sbiFlatFinalTotalCompositeRate !== undefined ? saved.sbiFlatFinalTotalCompositeRate : (saved.finalTotalCompositeRate || '9625'),
 
       // Flat 10-item breakdown
       valFlatPresentValue: saved.valFlatPresentValue !== undefined ? saved.valFlatPresentValue : 'Rs. 1,32,34,375/-',
@@ -710,11 +720,31 @@ export default function StateBankOfIndiaFlatAndApartment({
     { id: 'sbi-flat-flat', title: 'FLAT SPECIFICATIONS' },
     { id: 'sbi-flat-marketability', title: 'MARKETABILITY' },
     { id: 'sbi-flat-rate', title: 'RATE' },
-    { id: 'sbi-flat-abstract', title: 'TOTAL ABSTRACT' },
+    { id: 'sbi-flat-composite-depreciation', title: 'COMPOSITE DEPRECIATION' },
     { id: 'section-documents', title: 'DOCUMENTS' },
     { id: 'section-maps', title: 'MAPS' },
     { id: 'section-photographs', title: 'PHOTOGRAPHS' },
   ];
+
+  // ── Auto-calculations for Section VI. COMPOSITE RATE ADOPTED AFTER DEPRECIATION ──
+  const bldgServicesRate = parseNum(fields.sbiFlatRateBreakupBuildingServices || fields.rateBreakupBuildingServices || 2500);
+  const landOthersRate = parseNum(fields.sbiFlatRateBreakupLandOthers || fields.rateBreakupLandOthers || 7500);
+  const currentYear = new Date().getFullYear();
+  const yearOfConst = parseNum(fields.sbiFlatYearOfConstruction || fields.yearOfConstruction || 0);
+  const calcAge = yearOfConst > 0 && currentYear >= yearOfConst ? (currentYear - yearOfConst) : (parseNum(fields.sbiFlatBuildingAge || fields.buildingAge) || 10);
+  const calcAgeStr = String(calcAge);
+  const calcLife = parseNum(fields.sbiFlatBuildingLife || fields.buildingLife || 60);
+  const depPctFraction = calcLife > 0 ? (calcAge / calcLife) * 0.90 : 0.15;
+  const depPctNumber = +(depPctFraction * 100).toFixed(2);
+  const depPctStr = `${depPctNumber}%`;
+  const depRatioVal = calcAge > 0 ? +(depPctNumber / calcAge).toFixed(2) : 1.5;
+  const depRatioStr = `${depRatioVal}% Per Annum`;
+  const replCostVal = Math.round(bldgServicesRate * depPctFraction);
+  const replCostStr = String(replCostVal);
+  const depBldgRateVal = Math.round(bldgServicesRate - replCostVal);
+  const depBldgRateStr = String(depBldgRateVal);
+  const totalCompositeVal = Math.round(depBldgRateVal + landOthersRate);
+  const totalCompositeStr = String(totalCompositeVal);
 
   return (
     <div className="space-y-6 pb-24 w-full">
@@ -2279,70 +2309,166 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
-      {/* ── Section: Total Abstract Matrix ── */}
-      <Section id="sbi-flat-abstract" title="Total Abstract for the Entire Property" number={7} defaultOpen={true}>
-        <div className="grid md:grid-cols-4 gap-4 p-4 rounded-xl border border-slate-200 bg-slate-50">
-          <Field label="Govt. Value of Land (Rs.)">
-            <input
-              className={inputCls}
-              value={fields.abstractGovtValueLand}
-              onChange={(e) => handleChange('abstractGovtValueLand', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Market Value (Rs.)">
-            <input
-              className={inputCls + ' font-bold text-slate-900'}
-              value={fields.abstractMarketValue}
-              onChange={(e) => handleChange('abstractMarketValue', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Realizable Value (%)">
-            <div className="space-y-1">
-              <input
-                className={inputCls}
-                value={fields.abstractRealizablePct}
-                onChange={(e) => handleChange('abstractRealizablePct', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="100 (Default)"
-              />
-              <input
-                className={inputCls}
-                value={fields.abstractRealizableValue}
-                onChange={(e) => handleChange('abstractRealizableValue', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </div>
-          </Field>
-          <Field label="Distress Value (%)">
-            <div className="space-y-1">
-              <input
-                className={inputCls}
-                value={fields.abstractDistressPct}
-                onChange={(e) => handleChange('abstractDistressPct', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="100 (Default)"
-              />
-              <input
-                className={inputCls}
-                value={fields.abstractDistressValue}
-                onChange={(e) => handleChange('abstractDistressValue', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </div>
-          </Field>
-        </div>
+      {/* ── Section 6: VI. COMPOSITE RATE ADOPTED AFTER DEPRECIATION (Color: Light Orange #fff3e0) ── */}
+      <Section id="sbi-flat-composite-depreciation" title="VI. COMPOSITE RATE ADOPTED AFTER DEPRECIATION" number="VI" defaultOpen={true}>
+        <div style={{ backgroundColor: '#fff3e0', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-orange-200">
+          {/* Header Title inside light orange box */}
+          <div className="border-b border-orange-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-orange-900 text-sm uppercase tracking-wider">
+              VI. COMPOSITE RATE ADOPTED AFTER DEPRECIATION
+            </h3>
+            <span className="text-[11px] font-semibold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-full border border-orange-300">
+              Depreciation & Composite Valuation
+            </span>
+          </div>
 
-        <div className="mt-4">
-          <Field label="Remarks & Observations">
-            <textarea
-              className={inputCls + ' min-h-20'}
-              value={fields.remarksText}
-              onChange={(e) => handleChange('remarksText', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
+          {/* 1. Depreciation Details */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold text-orange-950 uppercase tracking-wider border-b border-orange-200/60 pb-1">
+              1. Depreciation Details
+            </h4>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* 1 a) Depreciated building rate */}
+              <PrefillField
+                label="1 a) Depreciated building rate"
+                value={fields.sbiFlatDepreciatedBuildingRate}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatDepreciatedBuildingRate', val);
+                  handleChange('finalDepreciatedBuildingRate', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip=">>Auto calculating from [Building + Services Rate - (Building + Services Rate * Depreciation Percentage)]<<"
+                fallbackValue={depBldgRateStr}
+              />
+
+              {/* 1 b) Replacement cost of flat with Services */}
+              <PrefillField
+                label="1 b) Replacement cost of flat with Services"
+                value={fields.sbiFlatReplacementCostOfFlat}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatReplacementCostOfFlat', val);
+                  handleChange('replacementCostOfFlat', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip=">>Auto calculating from [Building + Services Rate * Depreciation Percentage]<<"
+                fallbackValue={replCostStr}
+              />
+
+              {/* 1 c) Age of the building */}
+              <PrefillField
+                label="1 c) Age of the building"
+                value={fields.sbiFlatBuildingAge}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatBuildingAge', val);
+                  handleChange('buildingAge', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip=">>Auto calculating from [Current Year - Year of Construction]<<"
+                fallbackValue={calcAgeStr}
+              />
+
+              {/* 1 d) Life of the building estimated */}
+              <Field label="1 d) Life of the building estimated">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.sbiFlatBuildingLife !== undefined ? fields.sbiFlatBuildingLife : (fields.buildingLife || '60')}
+                  onChange={e => {
+                    handleChange('sbiFlatBuildingLife', e.target.value);
+                    handleChange('buildingLife', e.target.value);
+                  }}
+                  disabled={isReadOnly}
+                  placeholder="60"
+                />
+              </Field>
+
+              {/* 1 e) Depreciation percentage assuming the salvage value as 10% */}
+              <PrefillField
+                label="1 e) Depreciation percentage assuming the salvage value as 10%"
+                value={fields.sbiFlatDepreciationSalvagePercentage}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatDepreciationSalvagePercentage', val);
+                  handleChange('depreciationSalvagePercentage', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip=">>Auto calculating from [(Age of the building / Life of the building estimated) * 0.90]<<"
+                fallbackValue={depPctStr}
+              />
+
+              {/* 1 f) Depreciated Ratio of the building */}
+              <PrefillField
+                label="1 f) Depreciated Ratio of the building"
+                value={fields.sbiFlatDepreciationRatio}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatDepreciationRatio', val);
+                  handleChange('depreciationRatio', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip=">>Auto calculating from [Depreciation percentage / Age of the building]<<"
+                fallbackValue={depRatioStr}
+              />
+            </div>
+          </div>
+
+          {/* 2. Total Composite Rate Arrived for Valuation */}
+          <div className="space-y-4">
+            <h4 className="text-xs font-bold text-orange-950 uppercase tracking-wider border-b border-orange-200/60 pb-1">
+              2. Total Composite Rate Arrived for Valuation
+            </h4>
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* 2 a) Total composite rate arrived for valuation */}
+              <PrefillField
+                label="2 a) Total composite rate arrived for valuation"
+                value={fields.sbiFlatTotalCompositeRateArrived}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatTotalCompositeRateArrived', val);
+                  handleChange('totalCompositeRateArrived', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip=">>Auto calculating from [Depreciated building rate + Rate for Land & other]<<"
+                fallbackValue={totalCompositeStr}
+              />
+
+              {/* 2 b) Depreciated building rate */}
+              <PrefillField
+                label="2 b) Depreciated building rate"
+                value={fields.sbiFlatFinalDepreciatedBuildingRate}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatFinalDepreciatedBuildingRate', val);
+                  handleChange('finalDepreciatedBuildingRate', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section VI, "1 a) Depreciated building rate"<<'
+                fallbackValue={fields.sbiFlatDepreciatedBuildingRate || depBldgRateStr}
+              />
+
+              {/* 2 c) Rate for Land & other */}
+              <PrefillField
+                label="2 c) Rate for Land & other"
+                value={fields.sbiFlatFinalRateLandOther}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatFinalRateLandOther', val);
+                  handleChange('finalRateLandOther', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section V. RATE, "3. Break - up for the rate (Land + Others)"<<'
+                fallbackValue={fields.sbiFlatRateBreakupLandOthers || fields.rateBreakupLandOthers || '7500'}
+              />
+
+              {/* 2 d) Total Composite Rate */}
+              <PrefillField
+                label="2 d) Total Composite Rate"
+                value={fields.sbiFlatFinalTotalCompositeRate}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatFinalTotalCompositeRate', val);
+                  handleChange('finalTotalCompositeRate', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section VI, "2 a) Total composite rate arrived for valuation"<<'
+                fallbackValue={fields.sbiFlatTotalCompositeRateArrived || totalCompositeStr}
+              />
+            </div>
+          </div>
         </div>
       </Section>
 

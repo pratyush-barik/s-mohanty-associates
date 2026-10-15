@@ -203,6 +203,16 @@ export interface SBIFlatReportFields {
   finalDepreciatedBuildingRate?: string;
   finalRateLandOther?: string;
   finalTotalCompositeRate?: string;
+  sbiFlatDepreciatedBuildingRate?: string;
+  sbiFlatReplacementCostOfFlat?: string;
+  sbiFlatBuildingAge?: string;
+  sbiFlatBuildingLife?: string;
+  sbiFlatDepreciationSalvagePercentage?: string;
+  sbiFlatDepreciationRatio?: string;
+  sbiFlatTotalCompositeRateArrived?: string;
+  sbiFlatFinalDepreciatedBuildingRate?: string;
+  sbiFlatFinalRateLandOther?: string;
+  sbiFlatFinalTotalCompositeRate?: string;
 
   // Details of valuation (Flat LS items)
   valFlatPresentValue?: string;
@@ -633,19 +643,19 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
     // ── SECTION VI. COMPOSITE RATE ADOPTED AFTER DEPRECIATION ──
     this.drawSectionHeaderRow('VI', 'COMPOSITE RATE ADOPTED AFTER DEPRECIATION');
     this.drawSubTableRow('1', [
-      { label: 'a) Depreciated building rate', value: d.depreciatedBuildingRateAnnualFormula || '1.5% Per Annum (1.5% X 10 Yrs = 15%)' },
-      { label: 'b) Replacement cost of flat with Services', value: d.replacementCostOfFlat || 'Rs.2500/- X 15% = Rs.375/-\nRs.2500.00 - Rs.375/- = Rs.2125/- Per Sft' },
-      { label: 'c) Age of the building', value: d.buildingAge ? `${d.buildingAge} Yrs` : '10 Yrs' },
-      { label: 'd) Life of the building estimated', value: d.buildingLife ? `${d.buildingLife} Yrs` : '50 Yrs' },
-      { label: 'e) Depreciation percentage assuming salvage value as 10%', value: d.depreciationSalvagePercentage || 'Age: 10 Yrs, Useful Life: 60 Yrs. Salvage Value: 10%. Considering straight-line method of depreciation.' },
-      { label: 'f) Depreciated Ratio of the building', value: d.depreciationRatio || '1.5% Per Annum' },
+      { label: 'a) Depreciated building rate', value: d.sbiFlatDepreciatedBuildingRate ? `Rs.${d.sbiFlatDepreciatedBuildingRate}/- Per Sft` : (d.depreciatedBuildingRateAnnualFormula || '1.5% Per Annum (1.5% X 10 Yrs = 15%)') },
+      { label: 'b) Replacement cost of flat with Services', value: d.sbiFlatReplacementCostOfFlat ? `Rs.${d.sbiFlatReplacementCostOfFlat}/- Per Sft` : (d.replacementCostOfFlat || 'Rs.2500/- X 15% = Rs.375/-\nRs.2500.00 - Rs.375/- = Rs.2125/- Per Sft') },
+      { label: 'c) Age of the building', value: d.sbiFlatBuildingAge ? `${d.sbiFlatBuildingAge} Yrs` : (d.buildingAge ? `${d.buildingAge} Yrs` : '10 Yrs') },
+      { label: 'd) Life of the building estimated', value: d.sbiFlatBuildingLife ? `${d.sbiFlatBuildingLife} Yrs` : (d.buildingLife ? `${d.buildingLife} Yrs` : '60 Yrs') },
+      { label: 'e) Depreciation percentage assuming salvage value as 10%', value: d.sbiFlatDepreciationSalvagePercentage || d.depreciationSalvagePercentage || 'Age: 10 Yrs, Useful Life: 60 Yrs. Salvage Value: 10%. Considering straight-line method of depreciation.' },
+      { label: 'f) Depreciated Ratio of the building', value: d.sbiFlatDepreciationRatio || d.depreciationRatio || '1.5% Per Annum' },
     ]);
 
     this.drawSubTableRow('2', [
-      { label: 'a) Total composite rate arrived for valuation', value: '' },
-      { label: 'b) Depreciated building rate', value: d.finalDepreciatedBuildingRate || 'Rs.2125/- Per Sft' },
-      { label: 'c) Rate for Land & other', value: d.finalRateLandOther || 'Rs.7500/- Per Sft' },
-      { label: 'd) Total Composite Rate', value: d.finalTotalCompositeRate || 'Rs.9625/- Per Sft' },
+      { label: 'a) Total composite rate arrived for valuation', value: d.sbiFlatTotalCompositeRateArrived ? `Rs.${d.sbiFlatTotalCompositeRateArrived}/- Per Sft` : (d.totalCompositeRateArrived || (d.finalTotalCompositeRate ? `Rs.${d.finalTotalCompositeRate}/- Per Sft` : 'Rs.9625/- Per Sft')) },
+      { label: 'b) Depreciated building rate', value: d.sbiFlatFinalDepreciatedBuildingRate ? `Rs.${d.sbiFlatFinalDepreciatedBuildingRate}/- Per Sft` : (d.finalDepreciatedBuildingRate ? `Rs.${d.finalDepreciatedBuildingRate}/- Per Sft` : 'Rs.2125/- Per Sft') },
+      { label: 'c) Rate for Land & other', value: d.sbiFlatFinalRateLandOther ? `Rs.${d.sbiFlatFinalRateLandOther}/- Per Sft` : (d.finalRateLandOther ? `Rs.${d.finalRateLandOther}/- Per Sft` : 'Rs.7500/- Per Sft') },
+      { label: 'd) Total Composite Rate', value: d.sbiFlatFinalTotalCompositeRate ? `Rs.${d.sbiFlatFinalTotalCompositeRate}/- Per Sft` : (d.finalTotalCompositeRate ? `Rs.${d.finalTotalCompositeRate}/- Per Sft` : 'Rs.9625/- Per Sft') },
     ]);
 
     // Details of Valuation Table (Flat)
