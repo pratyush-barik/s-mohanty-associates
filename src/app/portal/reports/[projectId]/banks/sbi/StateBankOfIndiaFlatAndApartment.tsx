@@ -16,6 +16,7 @@ import {
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { Lock, Plus, Trash2 } from 'lucide-react';
+import { PDFSBIRenderer } from '@/lib/banks/pdf-sbi-flat-and-apartment-renderer';
 
 // ─── PrefillField component with Edit Toggle & Hover Tooltip ────────────────
 const PrefillField = ({
@@ -107,8 +108,7 @@ export const SBI_CONFIG: BankConfig = {
   subTemplateId: 'Flat & Apartment',
   displayName: 'State Bank of India (SBI) — Flat & Apartment',
   defaultValues: {},
-  getPDFRenderer: (data, projectCode) => {
-    const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-flat-and-apartment-renderer');
+  getPDFRenderer: (data: any, projectCode?: string) => {
     return new PDFSBIRenderer(data, projectCode);
   },
 };
@@ -622,10 +622,9 @@ export default function StateBankOfIndiaFlatAndApartment({
 
   const handleDownloadPdfInternal = async () => {
     try {
-      const { PDFSBIRenderer } = require('@/lib/banks/pdf-sbi-flat-and-apartment-renderer');
       const renderer = new PDFSBIRenderer(fields, projectCode);
       const pdfBytes = await renderer.render();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -637,6 +636,7 @@ export default function StateBankOfIndiaFlatAndApartment({
     }
   };
 
+  const pf = (prefill || {}) as any;
   const isFlat = fields.propertyValuationType !== 'LAND_AND_BUILDING';
 
   return (
@@ -726,7 +726,7 @@ export default function StateBankOfIndiaFlatAndApartment({
             }}
             isReadOnly={isReadOnly}
             tooltip='>>Prefill from section COVER PAGE, "PURPOSE :"<<'
-            fallbackValue={fields.purposeOfValuation || prefill?.purposeOfValuation || 'To assess the present Market Value of the Property for Loan purpose'}
+            fallbackValue={fields.purposeOfValuation || pf.purposeOfValuation || 'To assess the present Market Value of the Property for Loan purpose'}
           />
 
           {/* 2. a) Date of inspection & 2. b) Date on which the valuation is made */}
@@ -755,7 +755,7 @@ export default function StateBankOfIndiaFlatAndApartment({
               }}
               isReadOnly={isReadOnly}
               tooltip='>>Prefill from section COVER PAGE, "DATE:"<<'
-              fallbackValue={fields.valuationDate || fields.reportDate || prefill?.reportDate || '06.08.2026'}
+              fallbackValue={fields.valuationDate || fields.reportDate || pf.reportDate || '06.08.2026'}
             />
           </div>
 
@@ -826,7 +826,7 @@ export default function StateBankOfIndiaFlatAndApartment({
             }}
             isReadOnly={isReadOnly}
             tooltip='>>Prefill from section COVER PAGE, "NAME OF THE OWNER"<<'
-            fallbackValue={fields.ownerNameAndAddress || (prefill?.propertyOwner ? `${prefill.propertyOwner}, At: ${prefill.propertyAddress || ''}, Ph: ${prefill.customerPhone || ''}` : 'Mr. Srijit Mishra, S/o: Mr. Gopinath Mishra, Ph: 9861012345')}
+            fallbackValue={fields.ownerNameAndAddress || (pf.propertyOwner ? `${pf.propertyOwner}, At: ${pf.propertyAddress || ''}, Ph: ${pf.customerPhone || ''}` : 'Mr. Srijit Mishra, S/o: Mr. Gopinath Mishra, Ph: 9861012345')}
           />
 
           {/* 5. Brief description of the property */}
@@ -1962,7 +1962,7 @@ export default function StateBankOfIndiaFlatAndApartment({
                 }}
                 isReadOnly={isReadOnly}
                 tooltip='>>Prefill from section I. GENERAL, "4. Name of the Owner and his / their address (es) with Phone no."<<'
-                fallbackValue={fields.sbiFlatOwnerNameAndAddress || fields.ownerNameAndAddress || (prefill?.propertyOwner ? `${prefill.propertyOwner}, At: ${prefill.propertyAddress || ''}, Ph: ${prefill.customerPhone || ''}` : 'Mr. Srijit Mishra')}
+                fallbackValue={fields.sbiFlatOwnerNameAndAddress || fields.ownerNameAndAddress || (pf.propertyOwner ? `${pf.propertyOwner}, At: ${pf.propertyAddress || ''}, Ph: ${pf.customerPhone || ''}` : 'Mr. Srijit Mishra')}
               />
 
               {/* 8 Undivided area, 9 Super Built up Area, 10 Floor Space Index, 11 Carpet Area */}
@@ -2225,7 +2225,7 @@ export default function StateBankOfIndiaFlatAndApartment({
         <div className="grid md:grid-cols-2 gap-4">
           <Field label="Procedure Adopted Guidance (Left Box)">
             <textarea
-              className={inputCls + ' min-h-[90px] text-xs bg-slate-50'}
+              className={inputCls + ' min-h-22.5 text-xs bg-slate-50'}
               value={fields.methodOfValuationProcedure}
               onChange={(e) => handleChange('methodOfValuationProcedure', e.target.value)}
               disabled={isReadOnly}
@@ -2233,7 +2233,7 @@ export default function StateBankOfIndiaFlatAndApartment({
           </Field>
           <Field label="Adopted Valuation Methodology (Right Box)">
             <textarea
-              className={inputCls + ' min-h-[90px] text-xs'}
+              className={inputCls + ' min-h-22.5 text-xs'}
               value={fields.methodOfValuationText}
               onChange={(e) => handleChange('methodOfValuationText', e.target.value)}
               disabled={isReadOnly}
@@ -2300,7 +2300,7 @@ export default function StateBankOfIndiaFlatAndApartment({
         <div className="mt-4">
           <Field label="Remarks & Observations">
             <textarea
-              className={inputCls + ' min-h-[80px]'}
+              className={inputCls + ' min-h-20'}
               value={fields.remarksText}
               onChange={(e) => handleChange('remarksText', e.target.value)}
               disabled={isReadOnly}

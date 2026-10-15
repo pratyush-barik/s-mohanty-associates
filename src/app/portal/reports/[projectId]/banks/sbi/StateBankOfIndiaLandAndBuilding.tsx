@@ -15,14 +15,14 @@ import {
   BasePhotographsSection,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
+import { PDFSBILandAndBuildingRenderer } from '@/lib/banks/pdf-sbi-land-and-building-renderer';
 
 export const SBI_LAND_BUILDING_CONFIG: BankConfig = {
   bankId: 'STATE BANK OF INDIA-SBI',
   subTemplateId: 'Land & Building',
   displayName: 'State Bank of India (SBI) — Land & Building',
   defaultValues: {},
-  getPDFRenderer: (data, projectCode) => {
-    const { PDFSBILandAndBuildingRenderer } = require('@/lib/banks/pdf-sbi-land-and-building-renderer');
+  getPDFRenderer: (data: any, projectCode?: string) => {
     return new PDFSBILandAndBuildingRenderer(data, projectCode);
   },
 };
@@ -278,10 +278,9 @@ export default function StateBankOfIndiaLandAndBuilding({
 
   const handleDownloadPdfInternal = async () => {
     try {
-      const { PDFSBILandAndBuildingRenderer } = require('@/lib/banks/pdf-sbi-land-and-building-renderer');
       const renderer = new PDFSBILandAndBuildingRenderer(fields, projectCode);
       const pdfBytes = await renderer.render();
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -331,7 +330,7 @@ export default function StateBankOfIndiaLandAndBuilding({
         <div className="grid md:grid-cols-2 gap-4">
           <Field label="Name of the Owner">
             <textarea
-              className={inputCls + ' min-h-[70px]'}
+              className={inputCls + ' min-h-17.5'}
               value={fields.ownerNameAndAddress}
               onChange={(e) => handleChange('ownerNameAndAddress', e.target.value)}
               disabled={isReadOnly}
@@ -377,7 +376,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       <Section title="2. Property Details" number={2} defaultOpen={true}>
         <Field label="Address (with Khata, Plot, Sub Plot, Area, Kissam, Mouza)">
           <textarea
-            className={inputCls + ' min-h-[70px]'}
+            className={inputCls + ' min-h-17.5'}
             value={fields.propertyAddress}
             onChange={(e) => handleChange('propertyAddress', e.target.value)}
             disabled={isReadOnly}
@@ -471,14 +470,14 @@ export default function StateBankOfIndiaLandAndBuilding({
               <div key={dir} className="grid grid-cols-3 gap-2 items-center">
                 <span className="text-xs font-medium text-slate-700">{dir}</span>
                 <input
-                  className={inputCls + ' !py-1.5 text-xs'}
+                  className={inputCls + ' py-1.5! text-xs'}
                   value={fields[dKey] || ''}
                   onChange={(e) => handleChange(dKey, e.target.value)}
                   disabled={isReadOnly}
                   placeholder="As per Agreement"
                 />
                 <input
-                  className={inputCls + ' !py-1.5 text-xs'}
+                  className={inputCls + ' py-1.5! text-xs'}
                   value={fields[vKey] || ''}
                   onChange={(e) => handleChange(vKey, e.target.value)}
                   disabled={isReadOnly}
@@ -623,7 +622,7 @@ export default function StateBankOfIndiaLandAndBuilding({
         <div className="grid md:grid-cols-2 gap-4 mt-3">
           <Field label="Plinth Area (As per Approval - Block-1 & 2)">
             <textarea
-              className={inputCls + ' min-h-[70px] text-xs'}
+              className={inputCls + ' min-h-17.5 text-xs'}
               value={fields.plinthAreaApprovalText}
               onChange={(e) => handleChange('plinthAreaApprovalText', e.target.value)}
               disabled={isReadOnly}
@@ -631,7 +630,7 @@ export default function StateBankOfIndiaLandAndBuilding({
           </Field>
           <Field label="Plinth Area (As per Actual)">
             <textarea
-              className={inputCls + ' min-h-[70px] text-xs'}
+              className={inputCls + ' min-h-17.5 text-xs'}
               value={fields.plinthAreaActualText}
               onChange={(e) => handleChange('plinthAreaActualText', e.target.value)}
               disabled={isReadOnly}
@@ -644,7 +643,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       <Section title="9 & 10. Valuation Narrative & Remarks" number={7} defaultOpen={true}>
         <Field label="9. The Land Rate Adopted Narrative">
           <textarea
-            className={inputCls + ' min-h-[90px] text-xs'}
+            className={inputCls + ' min-h-22.5 text-xs'}
             value={fields.landRateAdoptedText}
             onChange={(e) => handleChange('landRateAdoptedText', e.target.value)}
             disabled={isReadOnly}
@@ -653,7 +652,7 @@ export default function StateBankOfIndiaLandAndBuilding({
         <div className="mt-4">
           <Field label="10. Remarks">
             <textarea
-              className={inputCls + ' min-h-[80px] text-xs'}
+              className={inputCls + ' min-h-20 text-xs'}
               value={fields.generalRemarksText}
               onChange={(e) => handleChange('generalRemarksText', e.target.value)}
               disabled={isReadOnly}
@@ -685,7 +684,7 @@ export default function StateBankOfIndiaLandAndBuilding({
         <div className="mt-3">
           <Field label="15. Marketability of the Property">
             <textarea
-              className={inputCls + ' min-h-[80px] text-xs'}
+              className={inputCls + ' min-h-20 text-xs'}
               value={fields.marketabilityNarrative}
               onChange={(e) => handleChange('marketabilityNarrative', e.target.value)}
               disabled={isReadOnly}
