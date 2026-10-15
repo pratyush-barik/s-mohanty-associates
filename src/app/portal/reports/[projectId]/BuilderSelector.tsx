@@ -165,10 +165,10 @@ const BANK_BUILDER_MAP: Record<string, any> = {
 
   // Sammunati, SBI, Shriram, SMFG, Suryoday, Swarna
   'SAMMUNATI FINANCE': dynamic(() => import('./banks/sammunati/SammunatiFinance')),
-  'STATE BANK OF INDIA-SBI::ABOVE 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaAbove5CR')),
-  'STATE BANK OF INDIA-SBI::BELOW 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaBelow5CR')),
-  'STATE BANK OF INDIA-SBI': dynamic(() => import('./banks/sbi/StateBankOfIndiaAbove5CR')),
-  'STATE BANK OF INDIA': dynamic(() => import('./banks/sbi/StateBankOfIndiaAbove5CR')),
+  'STATE BANK OF INDIA-SBI::ABOVE 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndia')),
+  'STATE BANK OF INDIA-SBI::BELOW 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndia')),
+  'STATE BANK OF INDIA-SBI': dynamic(() => import('./banks/sbi/StateBankOfIndia')),
+  'STATE BANK OF INDIA': dynamic(() => import('./banks/sbi/StateBankOfIndia')),
   'SHRIRAM FINANCE': dynamic(() => import('./banks/shriram/ShriramFinance')),
   'SMFG INDIA-FULLERTON': dynamic(() => import('./banks/smfg/SMFGIndiaFullerton')),
   'SURYODAY SMALL FINANCE BANK': dynamic(() => import('./banks/suryoday/SuryodaySmallFinanceBank')),
