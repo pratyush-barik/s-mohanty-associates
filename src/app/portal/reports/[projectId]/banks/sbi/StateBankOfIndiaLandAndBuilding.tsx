@@ -483,7 +483,7 @@ export default function StateBankOfIndiaLandAndBuilding({
   const NAV_SECTIONS: NavItem[] = [
     { id: 'sbi-lb-cover-and-customer', title: 'COVER PAGE & BANK DETAILS' },
     { id: 'sbi-lb-sec-2', title: '2 Property Details' },
-    { id: 'sbi-lb-sec-3', title: 'DOCUMENT DETAILS' },
+    { id: 'sbi-lb-sec-3', title: '3 Document Details' },
     { id: 'sbi-lb-sec-4', title: 'PHYSICAL DETAILS' },
     { id: 'sbi-lb-sec-5', title: 'TENURE & VIOLATIONS' },
     { id: 'sbi-lb-sec-6', title: 'AREA DETAILS' },
@@ -800,64 +800,184 @@ export default function StateBankOfIndiaLandAndBuilding({
         </div>
       </Section>
 
-      {/* ── Section 3: Document Details ── */}
-      <Section id="sbi-lb-sec-3" title="3. Document Details" number={3} defaultOpen={false}>
-        <div className="space-y-4">
-          <div className="grid md:grid-cols-4 gap-2 items-center">
-            <span className="text-xs font-semibold text-slate-700">Layout Plan</span>
-            <input
-              className={inputCls}
-              value={fields.layoutPlanAvailable}
-              onChange={(e) => handleChange('layoutPlanAvailable', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Yes/ No"
-            />
-            <input
-              className={inputCls}
-              value={fields.layoutPlanAuthority}
-              onChange={(e) => handleChange('layoutPlanAuthority', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Approving Authority"
-            />
-            <input
-              className={inputCls}
-              value={fields.layoutPlanApprovalNo}
-              onChange={(e) => handleChange('layoutPlanApprovalNo', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Approval No & Date"
-            />
+      {/* ── Section 3: 3 Document Details (Color: Light Yellow #fffde7) ── */}
+      <Section id="sbi-lb-sec-3" title="3 Document Details" number={3} defaultOpen={true}>
+        <div style={{ backgroundColor: '#fffde7', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-amber-200">
+          {/* Header Title inside light yellow box */}
+          <div className="border-b border-amber-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-amber-900 text-sm uppercase tracking-wider">
+              3 Document Details
+            </h3>
+            <span className="text-[11px] font-semibold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+              Statutory Approvals & Permissions
+            </span>
           </div>
 
-          <div className="grid md:grid-cols-4 gap-2 items-center">
-            <span className="text-xs font-semibold text-slate-700">Building Plan</span>
-            <input
-              className={inputCls}
-              value={fields.buildingPlanAvailable}
-              onChange={(e) => handleChange('buildingPlanAvailable', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Yes/ No"
-            />
-            <input
-              className={inputCls}
-              value={fields.buildingPlanAuthority}
-              onChange={(e) => handleChange('buildingPlanAuthority', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Approving Authority"
-            />
-            <input
-              className={inputCls}
-              value={fields.buildingPlanApprovalNo}
-              onChange={(e) => handleChange('buildingPlanApprovalNo', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Approval No & Date"
-            />
+          {/* Layout plan (Yes/ No, Name of approving authority, Approval No.) */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Layout plan (Yes/ No, Name of approving authority, Approval No.)
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-white/80 p-3 rounded-xl border border-amber-200">
+              <div className="md:col-span-3">
+                <label className="flex items-center gap-2.5 cursor-pointer bg-white px-3 py-2 rounded-lg border border-gray-200 hover:border-amber-300 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={fields.layoutPlanAvailable === 'Yes' || fields.layoutPlanAvailable === true}
+                    onChange={e => handleChange('layoutPlanAvailable', e.target.checked ? 'Yes' : 'No')}
+                    disabled={isReadOnly}
+                    className="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500"
+                  />
+                  <span className="text-xs font-medium text-slate-800">
+                    Available: <strong className={fields.layoutPlanAvailable === 'Yes' ? 'text-emerald-700' : 'text-slate-500'}>
+                      {fields.layoutPlanAvailable === 'Yes' ? 'Yes' : 'No'}
+                    </strong>
+                  </span>
+                </label>
+              </div>
+              <div className="md:col-span-4">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.layoutPlanAuthority || ''}
+                  onChange={e => handleChange('layoutPlanAuthority', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Name of approving authority"
+                />
+              </div>
+              <div className="md:col-span-5">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.layoutPlanApprovalNo || ''}
+                  onChange={e => handleChange('layoutPlanApprovalNo', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Approval No. & Date"
+                />
+              </div>
+            </div>
           </div>
 
-          <Field label="List of Documents Produced">
-            <input
+          {/* Building plan (Yes/ No) */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Building plan (Yes/ No)
+            </label>
+            <div className="bg-white/80 p-3 rounded-xl border border-amber-200">
+              <label className="inline-flex items-center gap-2.5 cursor-pointer bg-white px-3 py-2 rounded-lg border border-gray-200 hover:border-amber-300 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={fields.buildingPlanAvailable === 'Yes' || fields.buildingPlanAvailable === true}
+                  onChange={e => handleChange('buildingPlanAvailable', e.target.checked ? 'Yes' : 'No')}
+                  disabled={isReadOnly}
+                  className="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500"
+                />
+                <span className="text-xs font-medium text-slate-800">
+                  Available: <strong className={fields.buildingPlanAvailable === 'Yes' ? 'text-emerald-700' : 'text-slate-500'}>
+                    {fields.buildingPlanAvailable === 'Yes' ? 'Yes' : 'No'}
+                  </strong>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Construction permission (Yes/ No, Name of approving authority, Approval No.) */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Construction permission (Yes/ No, Name of approving authority, Approval No.)
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-white/80 p-3 rounded-xl border border-amber-200">
+              <div className="md:col-span-3">
+                <label className="flex items-center gap-2.5 cursor-pointer bg-white px-3 py-2 rounded-lg border border-gray-200 hover:border-amber-300 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={fields.constructionPermissionAvailable === 'Yes' || fields.constructionPermissionAvailable === true}
+                    onChange={e => handleChange('constructionPermissionAvailable', e.target.checked ? 'Yes' : 'No')}
+                    disabled={isReadOnly}
+                    className="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500"
+                  />
+                  <span className="text-xs font-medium text-slate-800">
+                    Available: <strong className={fields.constructionPermissionAvailable === 'Yes' ? 'text-emerald-700' : 'text-slate-500'}>
+                      {fields.constructionPermissionAvailable === 'Yes' ? 'Yes' : 'No'}
+                    </strong>
+                  </span>
+                </label>
+              </div>
+              <div className="md:col-span-4">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.constructionPermissionAuthority || ''}
+                  onChange={e => handleChange('constructionPermissionAuthority', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Name of approving authority"
+                />
+              </div>
+              <div className="md:col-span-5">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.constructionPermissionApprovalNo || ''}
+                  onChange={e => handleChange('constructionPermissionApprovalNo', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Approval No. & Date"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Legal documents (Yes/ No, Name of approving authority, Approval No.) */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Legal documents (Yes/ No, Name of approving authority, Approval No.)
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center bg-white/80 p-3 rounded-xl border border-amber-200">
+              <div className="md:col-span-3">
+                <label className="flex items-center gap-2.5 cursor-pointer bg-white px-3 py-2 rounded-lg border border-gray-200 hover:border-amber-300 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={fields.legalDocumentsAvailable === 'Yes' || fields.legalDocumentsAvailable === true}
+                    onChange={e => handleChange('legalDocumentsAvailable', e.target.checked ? 'Yes' : 'No')}
+                    disabled={isReadOnly}
+                    className="w-4 h-4 text-amber-600 rounded border-gray-300 focus:ring-amber-500"
+                  />
+                  <span className="text-xs font-medium text-slate-800">
+                    Available: <strong className={fields.legalDocumentsAvailable === 'Yes' ? 'text-emerald-700' : 'text-slate-500'}>
+                      {fields.legalDocumentsAvailable === 'Yes' ? 'Yes' : 'No'}
+                    </strong>
+                  </span>
+                </label>
+              </div>
+              <div className="md:col-span-4">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.legalDocumentsAuthority || ''}
+                  onChange={e => handleChange('legalDocumentsAuthority', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Name of approving authority"
+                />
+              </div>
+              <div className="md:col-span-5">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.legalDocumentsApprovalNo || ''}
+                  onChange={e => handleChange('legalDocumentsApprovalNo', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Approval No. & Date"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* List of documents */}
+          <Field label="List of documents">
+            <textarea
               className={inputCls}
-              value={fields.listOfDocuments}
-              onChange={(e) => handleChange('listOfDocuments', e.target.value)}
+              rows={3}
+              value={fields.listOfDocuments || ''}
+              onChange={e => handleChange('listOfDocuments', e.target.value)}
               disabled={isReadOnly}
               placeholder="Xerox copy of Agreement for Sale, Sketch Map, Patta, Approval Letter"
             />
