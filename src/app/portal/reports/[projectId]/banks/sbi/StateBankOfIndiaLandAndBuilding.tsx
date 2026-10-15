@@ -19,7 +19,93 @@ import {
   NavItem,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
+import { Lock } from 'lucide-react';
 import { PDFSBILandAndBuildingRenderer } from '@/lib/banks/pdf-sbi-land-and-building-renderer';
+
+// ─── PrefillField component with Edit Toggle & Hover Tooltip ────────────────
+const PrefillField = ({
+  label,
+  value,
+  onChange,
+  tooltip,
+  isReadOnly,
+  type = 'text',
+  fallbackValue,
+  options,
+  customInputProps,
+  hideEditToggle = false,
+  rows = 3
+}: any) => {
+  const [isEdit, setIsEdit] = useState(false);
+
+  React.useEffect(() => {
+    if (!isEdit && fallbackValue !== undefined && value !== fallbackValue) {
+      onChange(fallbackValue);
+    }
+  }, [isEdit, fallbackValue, value, onChange]);
+
+  const handleToggle = () => setIsEdit(!isEdit);
+  const displayValue = isEdit ? (value || '') : (fallbackValue !== undefined ? (fallbackValue || '') : (value || ''));
+
+  const labelWithToggle = (
+    <div className="flex justify-between items-center w-full">
+      <div className="flex-1 flex items-center pr-4 font-semibold text-xs text-slate-700">{label}</div>
+      {!hideEditToggle && (
+        <div className="flex items-center gap-2">
+          <span className={`text-[10px] font-bold uppercase ${isEdit ? 'text-emerald-700' : 'text-gray-400'}`}>
+            {isEdit ? 'Edit On' : 'Edit Off'}
+          </span>
+          <button
+            type="button"
+            onClick={handleToggle}
+            disabled={isReadOnly}
+            className={`relative inline-flex h-4 w-8 items-center rounded-full transition-colors duration-200 focus:outline-none ${isEdit ? 'bg-emerald-500' : 'bg-gray-300'} ${isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform duration-200 shadow ${isEdit ? 'translate-x-4' : 'translate-x-1'}`} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <Field label={labelWithToggle}>
+      <div className="relative mt-1">
+        {type === 'textarea' ? (
+          <textarea
+            className={`${inputCls} pr-8 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
+            value={displayValue}
+            onChange={e => onChange(e.target.value)}
+            disabled={isReadOnly || !isEdit}
+            rows={rows}
+          />
+        ) : type === 'select' ? (
+          <select
+            className={`${inputCls} pr-8 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
+            value={displayValue}
+            onChange={e => onChange(e.target.value)}
+            disabled={isReadOnly || !isEdit}
+          >
+            {options?.map((opt: any, i: number) => <option key={i} value={opt.value}>{opt.label}</option>)}
+          </select>
+        ) : (
+          <input
+            type={type === 'number' ? 'number' : type === 'date' ? 'date' : 'text'}
+            className={`${inputCls} pr-8 ${!isEdit ? 'bg-gray-100 cursor-not-allowed text-gray-700' : 'bg-white'}`}
+            value={displayValue}
+            onChange={e => onChange(e.target.value)}
+            disabled={isReadOnly || !isEdit}
+          />
+        )}
+        {!isEdit && (
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 group cursor-help" title={tooltip}>
+            <Lock className="w-4 h-4 text-gray-400 group-hover:text-gray-600" />
+          </div>
+        )}
+      </div>
+    </Field>
+  );
+};
 
 export const SBI_LAND_BUILDING_CONFIG: BankConfig = {
   bankId: 'STATE BANK OF INDIA-SBI',
@@ -68,17 +154,30 @@ export default function StateBankOfIndiaLandAndBuilding({
       serviceType: saved.serviceType || pf.serviceType || 'MORTGAGE_AND_LOAN_SECURITY_VALUATION',
       subjectType: saved.subjectType || pf.subjectType || 'HOME_LOAN_VALUATION',
 
-      // Top Header
+      // Top Header / COVER PAGE & BANK DETAILS
+      reportOnValuationOf: saved.reportOnValuationOf !== undefined ? saved.reportOnValuationOf : 'LAND & BUILDING',
+      branchAddressDetails: saved.branchAddressDetails !== undefined ? saved.branchAddressDetails : (saved.branchAddress || 'STATE BANK OF INDIA, BALUGAON BRANCH, DIST: KHURDA, ODISHA'),
+      asOnDate: saved.asOnDate !== undefined ? saved.asOnDate : '',
       toAuthority: saved.toAuthority !== undefined ? saved.toAuthority : 'THE CHIEF MANAGER / BRANCH HEAD,',
       bankName: saved.bankName !== undefined ? saved.bankName : (pf.bankName || 'STATE BANK OF INDIA,'),
       branchAddress: saved.branchAddress !== undefined ? saved.branchAddress : 'BALUGAON BRANCH, DIST: KHURDA, ODISHA',
       refNo: saved.refNo !== undefined ? saved.refNo : (projectCode || projectId || 'SMA/IDBI/07-2026/09'),
+      coverDate: saved.coverDate !== undefined ? saved.coverDate : (saved.reportDate || pf.reportDate || ''),
       reportDate: saved.reportDate !== undefined ? saved.reportDate : (pf.reportDate || '24.07.2026'),
+      valuationPropertyDesc: saved.valuationPropertyDesc !== undefined ? saved.valuationPropertyDesc : (saved.propertyAddress || pf.propertyAddress || 'Khata No: 311/2959, Plot No: 765/2546, Sub Plot No: 1151 & 1152, Total Area: Ac.0.055 Dec i.e. 2400.00 Sft, Kissam: Gharabari in Mz: Kantilo, Ps: Airfield No-53, Ts: Jatani No-196, Dist: Khurda, Odisha. Pin-751002'),
+      nameOfTheOwner: saved.nameOfTheOwner !== undefined ? saved.nameOfTheOwner : (saved.borrowerName || pf.contactName || 'Mr. Dipak Kumar Barik'),
       borrowerName: saved.borrowerName !== undefined ? saved.borrowerName : (pf.contactName || 'Mr. Dipak Kumar Barik'),
+      presentMarketValue: saved.presentMarketValue !== undefined ? saved.presentMarketValue : '',
+      realizableValue: saved.realizableValue !== undefined ? saved.realizableValue : '',
+      forcedSaleValue: saved.forcedSaleValue !== undefined ? saved.forcedSaleValue : '',
+      govtValue: saved.govtValue !== undefined ? saved.govtValue : '2891850',
+      purposeOfValuation: saved.purposeOfValuation !== undefined ? saved.purposeOfValuation : 'TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY',
 
-      // 1. Customer Details
-      ownerNameAndAddress: saved.ownerNameAndAddress !== undefined ? saved.ownerNameAndAddress : (pf.contactName ? `${pf.contactName}, S/o: ${pf.fatherName || 'Ashok Kumar Barik'}, At: ${pf.propertyAddress || 'Khandagiri, Bhubaneswar, Dist: Khurda, Odisha'}` : 'Mr. Dipak Kumar Barik, S/o: Ashok Kumar Barik, At: Khandagiri, Bhubaneswar, Dist: Khurda, Odisha.'),
+      // 1 Customer Details
+      customerBorrowalUnit: saved.customerBorrowalUnit !== undefined ? saved.customerBorrowalUnit : (saved.nameOfTheOwner || saved.borrowerName || pf.contactName || 'Mr. Dipak Kumar Barik'),
+      customerOwnerName: saved.customerOwnerName !== undefined ? saved.customerOwnerName : (saved.nameOfTheOwner || saved.borrowerName || pf.contactName || 'Mr. Dipak Kumar Barik'),
       applicationNo: saved.applicationNo !== undefined ? saved.applicationNo : 'Not Available',
+      ownerNameAndAddress: saved.ownerNameAndAddress !== undefined ? saved.ownerNameAndAddress : (pf.contactName ? `${pf.contactName}, S/o: ${pf.fatherName || 'Ashok Kumar Barik'}, At: ${pf.propertyAddress || 'Khandagiri, Bhubaneswar, Dist: Khurda, Odisha'}` : 'Mr. Dipak Kumar Barik, S/o: Ashok Kumar Barik, At: Khandagiri, Bhubaneswar, Dist: Khurda, Odisha.'),
       caseType: saved.caseType !== undefined ? saved.caseType : 'Fresh Valuation',
       identifiedByAndMobNo: saved.identifiedByAndMobNo !== undefined ? saved.identifiedByAndMobNo : "Mr. Dalai (Owner's Representative), Mob-9178156885",
 
@@ -352,8 +451,37 @@ export default function StateBankOfIndiaLandAndBuilding({
     }
   };
 
+  // ── Auto-calculated values for COVER PAGE ──
+  const systemCurrentDate = useMemo(() => {
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0');
+    const yyyy = today.getFullYear();
+    return `${dd}.${mm}.${yyyy}`;
+  }, []);
+
+  const totalMarketVal = useMemo(() => {
+    const landMarket = parseNum(fields.abstractMarketLand);
+    const bldgMarket = parseNum(fields.abstractMarketBldg);
+    return (landMarket + bldgMarket) > 0 ? (landMarket + bldgMarket) : 8611000;
+  }, [fields.abstractMarketLand, fields.abstractMarketBldg]);
+
+  const presentMarketValueStr = useMemo(() => {
+    return `Rs. ${formatIndianCurrency(totalMarketVal)}/-`;
+  }, [totalMarketVal]);
+
+  const realizableValueStr = useMemo(() => {
+    const rVal = Math.round(totalMarketVal * 0.95);
+    return `Rs. ${formatIndianCurrency(rVal)}/-`;
+  }, [totalMarketVal]);
+
+  const forcedSaleValueStr = useMemo(() => {
+    const fVal = Math.round(totalMarketVal * 0.85);
+    return `Rs. ${formatIndianCurrency(fVal)}/-`;
+  }, [totalMarketVal]);
+
   const NAV_SECTIONS: NavItem[] = [
-    { id: 'sbi-lb-sec-1', title: 'CUSTOMER DETAILS' },
+    { id: 'sbi-lb-cover-and-customer', title: 'COVER PAGE & BANK DETAILS' },
     { id: 'sbi-lb-sec-2', title: 'PROPERTY DETAILS' },
     { id: 'sbi-lb-sec-3', title: 'DOCUMENT DETAILS' },
     { id: 'sbi-lb-sec-4', title: 'PHYSICAL DETAILS' },
@@ -387,50 +515,246 @@ export default function StateBankOfIndiaLandAndBuilding({
         <div className="flex-1 min-w-0 space-y-6 w-full">
 
 
-      {/* ── Section 1: Customer Details ── */}
-      <Section id="sbi-lb-sec-1" title="1. Customer Details" number={1} defaultOpen={true}>
-        <div className="grid md:grid-cols-2 gap-4">
-          <Field label="Name of the Owner">
-            <textarea
-              className={inputCls + ' min-h-17.5'}
-              value={fields.ownerNameAndAddress}
-              onChange={(e) => handleChange('ownerNameAndAddress', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Mr. Dipak Kumar Barik, S/o: Ashok Kumar Barik, At: ..."
-            />
-          </Field>
-          <div className="space-y-3">
-            <Field label="Application No.">
-              <input
+      {/* ── Section 1: COVER PAGE & BANK DETAILS ── */}
+      <Section id="sbi-lb-cover-and-customer" title="COVER PAGE & BANK DETAILS" number="1" defaultOpen={true}>
+        <div className="space-y-6">
+          {/* Container 1: COVER PAGE & BANK DETAILS (Color: Light Gray #f5f5f5) */}
+          <div style={{ backgroundColor: '#f5f5f5', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-gray-300">
+            {/* Header Title inside light gray box */}
+            <div className="border-b border-gray-300 pb-2 flex justify-between items-center">
+              <h3 className="font-bold text-gray-800 text-sm uppercase tracking-wider">
+                COVER PAGE & BANK DETAILS
+              </h3>
+              <span className="text-[11px] font-semibold text-gray-600 bg-white px-2 py-0.5 rounded-full border border-gray-300">
+                Bank Details & Valuation Summary
+              </span>
+            </div>
+
+            {/* REPORT ON VALUATION OF & AS ON DATE: */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="REPORT ON VALUATION OF">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.reportOnValuationOf || ''}
+                  onChange={e => handleChange('reportOnValuationOf', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. LAND & BUILDING"
+                />
+              </Field>
+
+              <PrefillField
+                label="AS ON DATE:"
+                value={fields.asOnDate}
+                onChange={(val: string) => {
+                  handleChange('asOnDate', val);
+                  if (!fields.coverDate) {
+                    handleChange('coverDate', val);
+                  }
+                }}
+                isReadOnly={isReadOnly}
+                tooltip=">>Auto calculating from [System Current Date]<<"
+                fallbackValue={systemCurrentDate}
+              />
+            </div>
+
+            {/* STATE BANK OF INDIA, [Branch Address Details] */}
+            <Field label="STATE BANK OF INDIA, [Branch Address Details]">
+              <textarea
                 className={inputCls}
-                value={fields.applicationNo}
-                onChange={(e) => handleChange('applicationNo', e.target.value)}
+                rows={2}
+                value={fields.branchAddressDetails || ''}
+                onChange={e => {
+                  handleChange('branchAddressDetails', e.target.value);
+                  handleChange('branchAddress', e.target.value);
+                }}
                 disabled={isReadOnly}
-                placeholder="Not Available"
+                placeholder="e.g. BALUGAON BRANCH, DIST: KHURDA, ODISHA"
               />
             </Field>
-            <Field label="Case Type">
-              <input
+
+            {/* TO, REF. NO: & DATE: */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <Field label="TO,">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.toAuthority || ''}
+                  onChange={e => handleChange('toAuthority', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. THE CHIEF MANAGER / BRANCH HEAD,"
+                />
+              </Field>
+
+              <Field label="REF. NO:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.refNo || ''}
+                  onChange={e => handleChange('refNo', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. SMA/IDBI/07-2026/09"
+                />
+              </Field>
+
+              <PrefillField
+                label="DATE:"
+                value={fields.coverDate}
+                onChange={(val: string) => {
+                  handleChange('coverDate', val);
+                  handleChange('reportDate', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "AS ON DATE:"<<'
+                fallbackValue={fields.asOnDate || systemCurrentDate}
+              />
+            </div>
+
+            {/* VALUATION OF LAND & BUILDING BEARING KHATA NO: */}
+            <Field label="VALUATION OF LAND & BUILDING BEARING KHATA NO:">
+              <textarea
                 className={inputCls}
-                value={fields.caseType}
-                onChange={(e) => handleChange('caseType', e.target.value)}
+                rows={3}
+                value={fields.valuationPropertyDesc || ''}
+                onChange={e => {
+                  handleChange('valuationPropertyDesc', e.target.value);
+                  handleChange('propertyAddress', e.target.value);
+                }}
                 disabled={isReadOnly}
-                placeholder="Fresh Valuation"
+                placeholder="e.g. Khata No: 311/2959, Plot No: 765/2546, Sub Plot No: 1151 & 1152, Total Area: Ac.0.055 Dec i.e. 2400.00 Sft..."
+              />
+            </Field>
+
+            {/* NAME OF THE OWNER */}
+            <Field label="NAME OF THE OWNER">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.nameOfTheOwner || ''}
+                onChange={e => {
+                  const val = e.target.value;
+                  handleChange('nameOfTheOwner', val);
+                  handleChange('borrowerName', val);
+                  handleChange('ownerNameAndAddress', val);
+                  if (!fields.customerBorrowalUnit || fields.customerBorrowalUnit === fields.nameOfTheOwner) {
+                    handleChange('customerBorrowalUnit', val);
+                  }
+                  if (!fields.customerOwnerName || fields.customerOwnerName === fields.nameOfTheOwner) {
+                    handleChange('customerOwnerName', val);
+                  }
+                }}
+                disabled={isReadOnly}
+                placeholder="e.g. Mr. Dipak Kumar Barik"
+              />
+            </Field>
+
+            {/* PRESENT MARKET VALUE, REALIZABLE VALUE, FORCED SALE VALUE */}
+            <div className="grid md:grid-cols-3 gap-4">
+              <PrefillField
+                label="PRESENT MARKET VALUE"
+                value={fields.presentMarketValue}
+                onChange={(val: string) => handleChange('presentMarketValue', val)}
+                isReadOnly={isReadOnly}
+                tooltip=">>Auto calculating from [Total Market Value of Land + Depreciated Value of Building]<<"
+                fallbackValue={presentMarketValueStr}
+              />
+
+              <PrefillField
+                label="REALIZABLE VALUE"
+                value={fields.realizableValue}
+                onChange={(val: string) => handleChange('realizableValue', val)}
+                isReadOnly={isReadOnly}
+                tooltip=">>Auto calculating from [PRESENT MARKET VALUE * 0.95]<<"
+                fallbackValue={realizableValueStr}
+              />
+
+              <PrefillField
+                label="FORCED SALE VALUE"
+                value={fields.forcedSaleValue}
+                onChange={(val: string) => handleChange('forcedSaleValue', val)}
+                isReadOnly={isReadOnly}
+                tooltip=">>Auto calculating from [PRESENT MARKET VALUE * 0.85]<<"
+                fallbackValue={forcedSaleValueStr}
+              />
+            </div>
+
+            {/* GOVT. VALUE & PURPOSE : */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <Field label="GOVT. VALUE">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.govtValue || ''}
+                  onChange={e => handleChange('govtValue', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 2891850"
+                />
+              </Field>
+
+              <PrefillField
+                label="PURPOSE :"
+                value={fields.purposeOfValuation}
+                onChange={(val: string) => handleChange('purposeOfValuation', val)}
+                isReadOnly={isReadOnly}
+                tooltip='>>Auto calculating from ["TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY"]<<'
+                fallbackValue="TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY"
+              />
+            </div>
+          </div>
+
+          {/* Container 2: 1 Customer Details (Color: Light Blue #e3f2fd) */}
+          <div style={{ backgroundColor: '#e3f2fd', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-blue-200">
+            {/* Header Title inside light blue box */}
+            <div className="border-b border-blue-300 pb-2 flex justify-between items-center">
+              <h3 className="font-bold text-blue-900 text-sm uppercase tracking-wider">
+                1 Customer Details
+              </h3>
+              <span className="text-[11px] font-semibold text-blue-700 bg-white px-2 py-0.5 rounded-full border border-blue-200">
+                Borrowal Unit & Applicant Information
+              </span>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {/* Name of Customer(s)/Borrowal Unit: */}
+              <PrefillField
+                label="Name of Customer(s)/Borrowal Unit:"
+                value={fields.customerBorrowalUnit}
+                onChange={(val: string) => {
+                  handleChange('customerBorrowalUnit', val);
+                  handleChange('borrowerName', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "NAME OF THE OWNER"<<'
+                fallbackValue={fields.nameOfTheOwner || fields.borrowerName || ''}
+              />
+
+              {/* Name of the Owner */}
+              <PrefillField
+                label="Name of the Owner"
+                value={fields.customerOwnerName}
+                onChange={(val: string) => {
+                  handleChange('customerOwnerName', val);
+                  handleChange('nameOfTheOwner', val);
+                  handleChange('ownerNameAndAddress', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "NAME OF THE OWNER"<<'
+                fallbackValue={fields.nameOfTheOwner || fields.borrowerName || ''}
+              />
+            </div>
+
+            {/* Appl. No. */}
+            <Field label="Appl. No.">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.applicationNo || ''}
+                onChange={e => handleChange('applicationNo', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. Not Available / Appl-123456"
               />
             </Field>
           </div>
-        </div>
-
-        <div className="mt-3">
-          <Field label="Identified by & Mob No">
-            <input
-              className={inputCls}
-              value={fields.identifiedByAndMobNo}
-              onChange={(e) => handleChange('identifiedByAndMobNo', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Mr. Dalai (Owner's Representative), Mob-9178156885"
-            />
-          </Field>
         </div>
       </Section>
 
