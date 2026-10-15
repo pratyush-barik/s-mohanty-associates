@@ -396,6 +396,17 @@ export interface SBIFlatReportFields {
   signaturePlace?: string;
   signatureDate?: string;
 
+  sbiFlatBmRemarks?: string;
+  sbiFlatBmFinalAppraisalText?: string;
+  sbiFlatValuerSignPlace?: string;
+  sbiFlatValuerSignDate?: string;
+  sbiFlatBmVerificationStatement?: string;
+  bmVerificationStatement?: string;
+  sbiFlatBmSignDate?: string;
+  sbiValuerDeclarations?: Record<string, boolean>;
+  sbiDeclarationSignDate?: string;
+  sbiDeclarationSignPlace?: string;
+
   bmInspectionDate?: string;
   bmSatisfiedValue?: string;
   bmSatisfiedWords?: string;
@@ -1179,7 +1190,7 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
       ? `SUBJECT PROPERTY IS A 2 BHK FLAT, HAVING SUPER BUILT UP AREA: ${d.superBuiltUpArea || '1375.00 SFT'}. PROPERTY LOCATED IN A DEVELOPED RESIDENTIAL AREA. ALL CIVIC AMENITIES ARE PRESENT WITHIN 2-3 KMS FROM THE PROPERTY. VALUATION HAS BEEN DONE FOR FLAT ONLY.`
       : `THIS IS AN NPA CASE. THE SUBJECT PROPERTY IS A G+3 STORIED RESIDENTIAL BUILDING, LAND EXTENT OF (AC.0.115 DEC I.E. 5009.00 SFT). THE PROPERTY IS LOCATED IN A WELL-DEVELOPED RESIDENTIAL-CUM-COMMERCIAL LOCALITY. ALL CIVIC AMENITIES ARE WITHIN 2-3 KM RADIUS. VALUATION HAS BEEN CARRIED OUT CONSIDERING THE LAND COMPONENT AND APPROVED BUA OF G+2 STORIED BUILDING.`;
 
-    const remarks = d.sbiFlatRemarks || d.remarksText || defaultRemarks;
+    const remarks = d.sbiFlatBmRemarks || d.sbiFlatRemarks || d.remarksText || defaultRemarks;
     const rLines = this.wrapText(remarks, CONTENT_W, FONT_SIZE_SMALL);
     for (const l of rLines) {
       this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
@@ -1195,7 +1206,7 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
 
     const defaultAppraisalBullet = `• As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is ${fmv} (${d.opinionMarketValueWords || 'Rupees ...'}). The Realizable Value is ${rsv} (${d.opinionRealizableValueWords || 'Rupees ...'}). The book value as of Land is ${bookLand} (${d.opinionGovtLandValueWords || 'Rupees ...'}) and the distress value is ${dsv} (${d.opinionDistressValueWords || 'Rupees ...'}).`;
 
-    const customAppraisal = d.sbiFlatFinalAppraisalText || d.finalAppraisalText;
+    const customAppraisal = d.sbiFlatBmFinalAppraisalText || d.sbiFlatFinalAppraisalText || d.finalAppraisalText;
     const appraisalBullet = customAppraisal ? `• ${customAppraisal.replace(/^•\s*/, '')}` : defaultAppraisalBullet;
 
     const bullets = [
@@ -1218,15 +1229,16 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
     // Approved Valuer Signature
     const valuerSig = '(Name and Official seal of the Approved Valuer)';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE_SMALL);
-    this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Place: ${d.sbiFlatValuerSignPlace || d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 12;
-    this.drawTextAt(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Date: ${d.sbiFlatValuerSignDate || d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 35;
 
     // Branch Manager Counter-Inspection Box
-    const bmP = `The undersigned has inspected the property detailed in the Valuation Report on dated ${d.bmInspectionDate || '___________'}. We are satisfied that the fair and reasonable market value of the property is Rs.${d.bmSatisfiedValue || '___________'} (Rupees ${d.bmSatisfiedWords || '__________________________________________________'}).`;
+    const defaultBmP = `The undersigned has inspected the property detailed in the Valuation Report on dated ${d.bmInspectionDate || d.inspectionDate || '___________'}. We are satisfied that the fair and reasonable market value of the property is Rs.${d.bmSatisfiedValue || d.abstractOrSayMarket || '___________'}${d.bmSatisfiedWords ? ` (Rupees ${d.bmSatisfiedWords})` : ''}.`;
+    const bmP = d.sbiFlatBmVerificationStatement || d.bmVerificationStatement || defaultBmP;
     const bmL = this.wrapText(bmP, CONTENT_W, FONT_SIZE_SMALL);
     for (const l of bmL) {
       this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
@@ -1236,7 +1248,7 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
 
     const bmSig = '(Name of the Branch Manager with Official seal)';
     const bmSigW = this.fontBold.widthOfTextAtSize(bmSig, FONT_SIZE_SMALL);
-    this.drawTextAt(`Date: ${d.bmSignatureDate || '__________'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Date: ${d.sbiFlatBmSignDate || d.bmSignatureDate || '__________'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - bmSigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(bmSig, MARGIN_L + CONTENT_W - bmSigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 24;
@@ -1323,11 +1335,11 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
     // Bottom Valuer Sign-off with membership details
     const valuerSig = '(Name and Official seal of the Approved Valuer)';
     const sigW = this.fontBold.widthOfTextAtSize(valuerSig, FONT_SIZE_SMALL);
-    this.drawTextAt(`Date: ${d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Date: ${d.sbiDeclarationSignDate || d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 12;
-    this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Place: ${d.sbiDeclarationSignPlace || d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 18;
 
     // Valuer Association credentials

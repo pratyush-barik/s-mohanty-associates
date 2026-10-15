@@ -433,6 +433,17 @@ export default function StateBankOfIndiaFlatAndApartment({
       sbiFlatFinalAppraisalText: saved.sbiFlatFinalAppraisalText !== undefined ? saved.sbiFlatFinalAppraisalText : (saved.finalAppraisalText || ''),
       particularsItems: saved.particularsItems || [],
 
+      // Section 8: TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION & DECLARATION FROM VALUERS
+      sbiFlatBmRemarks: saved.sbiFlatBmRemarks !== undefined ? saved.sbiFlatBmRemarks : (saved.sbiFlatRemarks || saved.remarksText || 'SUBJECT PROPERTY IS A 2 BHK FLAT, HAVING SUPER BUILT UP AREA: 1375.00 SFT. PROPERTY LOCATED IN A DEVELOPED RESIDENTIAL AREA. ALL CIVIC AMENITIES ARE PRESENT WITHIN 2-3 KMS FROM THE PROPERTY. VALUATION HAS BEEN DONE FOR FLAT ONLY.'),
+      sbiFlatBmFinalAppraisalText: saved.sbiFlatBmFinalAppraisalText !== undefined ? saved.sbiFlatBmFinalAppraisalText : (saved.sbiFlatFinalAppraisalText || saved.finalAppraisalText || ''),
+      sbiFlatValuerSignPlace: saved.sbiFlatValuerSignPlace !== undefined ? saved.sbiFlatValuerSignPlace : (saved.signaturePlace || 'Bhubaneswar'),
+      sbiFlatValuerSignDate: saved.sbiFlatValuerSignDate !== undefined ? saved.sbiFlatValuerSignDate : (saved.signatureDate || pf.reportDate || '06.08.2026'),
+      sbiFlatBmVerificationStatement: saved.sbiFlatBmVerificationStatement !== undefined ? saved.sbiFlatBmVerificationStatement : (saved.bmVerificationStatement || ''),
+      sbiFlatBmSignDate: saved.sbiFlatBmSignDate !== undefined ? saved.sbiFlatBmSignDate : (saved.bmSignatureDate || ''),
+      sbiValuerDeclarations: saved.sbiValuerDeclarations || {},
+      sbiDeclarationSignDate: saved.sbiDeclarationSignDate !== undefined ? saved.sbiDeclarationSignDate : (saved.signatureDate || pf.reportDate || '06.08.2026'),
+      sbiDeclarationSignPlace: saved.sbiDeclarationSignPlace !== undefined ? saved.sbiDeclarationSignPlace : (saved.signaturePlace || 'Bhubaneswar'),
+
       // Flat 10-item breakdown
       valFlatPresentValue: saved.valFlatPresentValue !== undefined ? saved.valFlatPresentValue : 'Rs. 1,32,34,375/-',
       valCarParking: saved.valCarParking !== undefined ? saved.valCarParking : '0',
@@ -725,6 +736,7 @@ export default function StateBankOfIndiaFlatAndApartment({
     { id: 'sbi-flat-rate', title: 'RATE' },
     { id: 'sbi-flat-composite-depreciation', title: 'COMPOSITE DEPRECIATION' },
     { id: 'sbi-flat-abstract-declaration', title: 'TOTAL ABSTRACT & DECLARATION' },
+    { id: 'sbi-flat-abstract-bm-verification', title: 'TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION' },
     { id: 'section-documents', title: 'DOCUMENTS' },
     { id: 'section-maps', title: 'MAPS' },
     { id: 'section-photographs', title: 'PHOTOGRAPHS' },
@@ -833,6 +845,56 @@ export default function StateBankOfIndiaFlatAndApartment({
       return fields.particularsItems[index];
     }
     return fallback;
+  };
+
+  // ── Section 8: TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION & DECLARATIONS ──
+  const bmInspDate = fields.bmInspectionDate || fields.sbiFlatInspectionDate || fields.inspectionDate || '03.08.2026';
+  const autoBmVerificationStatement = `The undersigned has inspected the property detailed in the Valuation Report on dated ${bmInspDate}. We are satisfied that the fair and reasonable market value of the property is ${marketValStr}.`;
+
+  const DECLARATION_STATEMENTS: { id: string; text: string }[] = [
+    { id: 'a', text: 'I am citizen of India.' },
+    { id: 'b', text: 'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.' },
+    { id: 'c', text: `The information furnished in my valuation report dated ${fields.reportDate || '06.08.2026'} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.` },
+    { id: 'd', text: `I have personally inspected the property ${fields.inspectionDate || '03.08.2026'} & I have valued the property which is identified by customer. The work is not sub-contracted to any other valuer & carried out by myself.` },
+    { id: 'e', text: 'Valuation report is submitted in the format as prescribed by the bank.' },
+    { id: 'f', text: 'I have not been depanelled by any other bank and in case any such depanelment by other banks during my empanelment with you, I will inform you within three days of such depanelment.' },
+    { id: 'g', text: 'I have not been removed from service earlier.' },
+    { id: 'h', text: 'I have not been convicted of any offence & sentenced to a term of imprisonment.' },
+    { id: 'i', text: 'I have not been declared to be unsound mind.' },
+    { id: 'j', text: 'I have not been found guilty of misconduct in my professional capacity.' },
+    { id: 'k', text: 'I am not an undischarged bankrupt, or have not applied to be adjudicated as a bankrupt.' },
+    { id: 'l', text: 'I have not undischarged insolvent.' },
+    { id: 'm', text: 'I have not been levied a penalty under section 271J of Income-Tax Act, 1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.' },
+    { id: 'n', text: 'I have not been convicted of an offence connected with any proceeding under the Income-Tax Act 1961, wealth Tax Act 1957 or Gift Tax Act 1958.' },
+    { id: 'o', text: `My PAN Card number as applicable is ${fields.valuerPan || 'AONPM6997B'}.` },
+    { id: 'p', text: 'I undertake to keep you informed of any events or happenings which would make me ineligible for empanelment as a valuer.' },
+    { id: 'q', text: 'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure.' },
+    { id: 'r', text: 'I have read the hand book on policy, standards & procedure for real Estate valuation, 2011 of the IBA & this report is in conformity to the "Standards" enshrined for valuation in the part -B of the above handbook to the best of my knowledge.' },
+    { id: 's', text: 'I have read the International Valuation Standards (IVS) & the report submitted to the Bank for the respective asset class is in conformity to the "Standards" enshrined for valuation in the IVS in "General Standards" & "Asset Standards" as applicable.' },
+    { id: 't', text: 'I abide by the Model Code of Conduct for empanelment of valuer in the Bank.' },
+    { id: 'u', text: 'I am registered under Section 34 AB of the Wealth Tax Act, 1957.' },
+    { id: 'v', text: 'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI)' },
+    { id: 'w', text: "My CIBIL Score and credit worthiness is as per Bank's guidelines." },
+    { id: 'x', text: 'I am the authorized official of the firm who is competent to sign this valuation report' },
+    { id: 'y', text: 'I will undertake the valuation work on receipt of letter of Engagement generated from the System. (i.e. LLMS/LOS) only' },
+    { id: 'z', text: 'Further, I hereby provide the following information.' },
+  ];
+
+  const valuerDeclarationsMap = fields.sbiValuerDeclarations || {};
+  const isStatementChecked = (id: string) => valuerDeclarationsMap[id] !== false;
+  const allDeclarationsChecked = DECLARATION_STATEMENTS.every(s => isStatementChecked(s.id));
+
+  const handleToggleAllDeclarations = () => {
+    const nextVal = !allDeclarationsChecked;
+    const nextMap: Record<string, boolean> = {};
+    DECLARATION_STATEMENTS.forEach(s => {
+      nextMap[s.id] = nextVal;
+    });
+    handleChange('sbiValuerDeclarations', nextMap);
+  };
+
+  const handleToggleStatement = (id: string, checked: boolean) => {
+    handleChange('sbiValuerDeclarations', { ...valuerDeclarationsMap, [id]: checked });
   };
 
   return (
@@ -2635,6 +2697,194 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
+      {/* ── Section 8: TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION (Color: Mint Green #f1f8e9) + DECLARATION FROM VALUERS (Color: Light Red #ffebee) ── */}
+      <Section id="sbi-flat-abstract-bm-verification" title="TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION" number="VIII" defaultOpen={true}>
+        <div className="space-y-6">
+          {/* Container 1: TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION (Color: Mint Green #f1f8e9) */}
+          <div style={{ backgroundColor: '#f1f8e9', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-emerald-200">
+            {/* Header Title inside mint green box */}
+            <div className="border-b border-emerald-300 pb-2 flex justify-between items-center">
+              <h3 className="font-bold text-emerald-900 text-sm uppercase tracking-wider">
+                TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION
+              </h3>
+              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                Valuer Appraisal & Branch Manager Verification
+              </span>
+            </div>
+
+            {/* REMARKS */}
+            <Field label="REMARKS">
+              <textarea
+                className={inputCls + ' min-h-24'}
+                value={fields.sbiFlatBmRemarks !== undefined ? fields.sbiFlatBmRemarks : (fields.sbiFlatRemarks || fields.remarksText || '')}
+                onChange={e => {
+                  handleChange('sbiFlatBmRemarks', e.target.value);
+                  handleChange('sbiFlatRemarks', e.target.value);
+                  handleChange('remarksText', e.target.value);
+                }}
+                disabled={isReadOnly}
+                rows={3}
+                placeholder="e.g. SUBJECT PROPERTY IS A 2 BHK FLAT, HAVING SUPER BUILT UP AREA: 1375.00 SFT. PROPERTY LOCATED IN A DEVELOPED RESIDENTIAL AREA. ALL CIVIC AMENITIES ARE PRESENT WITHIN 2-3 KMS FROM THE PROPERTY. VALUATION HAS BEEN DONE FOR FLAT ONLY."
+              />
+            </Field>
+
+            {/* Final Appraisal Text / Fair Market Value Statement */}
+            <PrefillField
+              label="Final Appraisal Text / Fair Market Value Statement"
+              value={fields.sbiFlatBmFinalAppraisalText}
+              onChange={(val: string) => {
+                handleChange('sbiFlatBmFinalAppraisalText', val);
+                handleChange('sbiFlatFinalAppraisalText', val);
+                handleChange('finalAppraisalText', val);
+              }}
+              isReadOnly={isReadOnly}
+              type="textarea"
+              rows={3}
+              tooltip=">>Auto calculating from [String concatenation of Property Spec variables, PRESENT MARKET VALUE, REALIZABLE VALUE, and FORCED SALE VALUE]<<"
+              fallbackValue={autoAppraisalText}
+            />
+
+            {/* Place (Valuer Sign-off) & Date (Valuer Sign-off) */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <PrefillField
+                label="Place (Valuer Sign-off)"
+                value={fields.sbiFlatValuerSignPlace}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatValuerSignPlace', val);
+                  handleChange('signaturePlace', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "Branch Address Details"<<'
+                fallbackValue={fields.signaturePlace || fields.branchAddress || 'Bhubaneswar'}
+              />
+
+              <PrefillField
+                label="Date (Valuer Sign-off)"
+                type="date"
+                value={fields.sbiFlatValuerSignDate}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatValuerSignDate', val);
+                  handleChange('signatureDate', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "DATE:"<<'
+                fallbackValue={fields.signatureDate || fields.reportDate || pf.reportDate || '06.08.2026'}
+              />
+            </div>
+
+            {/* Branch Manager Verification Statement */}
+            <PrefillField
+              label="Branch Manager Verification Statement"
+              value={fields.sbiFlatBmVerificationStatement}
+              onChange={(val: string) => {
+                handleChange('sbiFlatBmVerificationStatement', val);
+                handleChange('bmVerificationStatement', val);
+              }}
+              isReadOnly={isReadOnly}
+              type="textarea"
+              rows={3}
+              tooltip=">>Auto calculating from [String concatenation of Inspection Date and Fair Market Value]<<"
+              fallbackValue={autoBmVerificationStatement}
+            />
+
+            {/* Date (Branch Manager Sign-off) */}
+            <Field label="Date (Branch Manager Sign-off)">
+              <input
+                type="date"
+                className={inputCls}
+                value={fields.sbiFlatBmSignDate || fields.bmSignatureDate || ''}
+                onChange={e => {
+                  handleChange('sbiFlatBmSignDate', e.target.value);
+                  handleChange('bmSignatureDate', e.target.value);
+                }}
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+
+          {/* Container 2: DECLARATION FROM VALUERS (Color: Light Red #ffebee) */}
+          <div style={{ backgroundColor: '#ffebee', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-rose-200">
+            {/* Header Title inside light red box */}
+            <div className="border-b border-rose-300 pb-2 flex justify-between items-center">
+              <h3 className="font-bold text-rose-900 text-sm uppercase tracking-wider">
+                DECLARATION FROM VALUERS
+              </h3>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleToggleAllDeclarations}
+                  disabled={isReadOnly}
+                  className="text-[11px] font-semibold text-rose-800 bg-rose-100 hover:bg-rose-200 px-2.5 py-1 rounded-md border border-rose-300 transition-colors cursor-pointer"
+                >
+                  {allDeclarationsChecked ? 'Deselect All' : 'Select All'}
+                </button>
+                <span className="text-[11px] font-semibold text-rose-800 bg-rose-100 px-2 py-0.5 rounded-full border border-rose-300">
+                  Statements a to z
+                </span>
+              </div>
+            </div>
+
+            {/* Declarations (Statements a to z) Grid of Checkboxes */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <label className="text-xs font-bold text-rose-950 uppercase tracking-wider">
+                  Declarations (Statements a to z)
+                </label>
+                <span className="text-[11px] text-rose-700 italic">
+                  26 Affirmation Statements
+                </span>
+              </div>
+              <div className="grid md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto p-2 border border-rose-200/70 rounded-xl bg-white/70">
+                {DECLARATION_STATEMENTS.map(item => (
+                  <label
+                    key={item.id}
+                    className="flex items-start gap-2.5 p-2.5 rounded-lg border border-rose-100 bg-white hover:bg-rose-50/50 cursor-pointer transition-colors shadow-2xs"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isStatementChecked(item.id)}
+                      onChange={e => handleToggleStatement(item.id, e.target.checked)}
+                      disabled={isReadOnly}
+                      className="w-4 h-4 mt-0.5 rounded border-rose-300 text-rose-600 focus:ring-rose-500 shrink-0"
+                    />
+                    <div className="text-xs text-slate-800 leading-snug">
+                      <span className="font-bold text-rose-900 mr-1">{item.id}.</span>
+                      {item.text}
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Date (Declaration Sign-off) & Place (Declaration Sign-off) */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <PrefillField
+                label="Date (Declaration Sign-off)"
+                type="date"
+                value={fields.sbiDeclarationSignDate}
+                onChange={(val: string) => {
+                  handleChange('sbiDeclarationSignDate', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "DATE:"<<'
+                fallbackValue={fields.signatureDate || fields.reportDate || pf.reportDate || '06.08.2026'}
+              />
+
+              <PrefillField
+                label="Place (Declaration Sign-off)"
+                value={fields.sbiDeclarationSignPlace}
+                onChange={(val: string) => {
+                  handleChange('sbiDeclarationSignPlace', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "Branch Address Details"<<'
+                fallbackValue={fields.signaturePlace || fields.branchAddress || 'Bhubaneswar'}
+              />
+            </div>
+          </div>
+        </div>
+      </Section>
+
       {/* ── Section: Base Documents ── */}
       <BaseDocumentsSection
         title="Documents"
@@ -2642,7 +2892,7 @@ export default function StateBankOfIndiaFlatAndApartment({
         documentImageNames={fields.documentImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={8}
+        sectionNumber={9}
         sectionId="section-documents"
       />
 
@@ -2660,7 +2910,7 @@ export default function StateBankOfIndiaFlatAndApartment({
         propertyAddress={fields.propertyDescription || ''}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={9}
+        sectionNumber={10}
         sectionId="section-maps"
       />
 
@@ -2671,7 +2921,7 @@ export default function StateBankOfIndiaFlatAndApartment({
         propertyImageNames={fields.propertyImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={10}
+        sectionNumber={11}
         sectionId="section-photographs"
       />
         </div>
