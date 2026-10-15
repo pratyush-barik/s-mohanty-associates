@@ -59,7 +59,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **30** | **ISFC** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **31** | **JANA SMALL FINANCE BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **32** | **KOTAK MAHINDRA BANK** | | | |
-| 32.1 | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` | ✅ Created Base | 🔨 In Progress |
+| 32.1 | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` | ✅ Created Base | ✅ Completed |
 | 32.2 | KOTAK MAHINDRA BANK | `HL-LAP` | ⏳ Not Created | ⏳ Not Started |
 | **33** | **L&T FINANCIAL SERVICES** | `Standard` | ✅ Created Base | ✅ Completed |
 | **34** | **LIC HOUSING FINANCE LTD** | | | |
@@ -97,3 +97,60 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **58** | **VARTHANA FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
 | **59** | **VISTAAR FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
 | **60** | **YES BANK** | `Standard` | ✅ Created Base | ✅ Completed |
+
+---
+
+## 📁 Bank Report Builder Files Directory
+
+### 1. Fully Completed Report Drafts (`✅ Completed`)
+Templates with complete interactive report draft builder UI and full PDF renderers:
+
+| # | Bank / Organization | Format / Key | Report Draft UI Component | PDF Renderer File | Status |
+|---|---|---|---|---|---|
+| **1.1** | ADITYA BIRLA CAPITAL LTD | `MLAP` | `src/app/portal/reports/[projectId]/banks/aditya-birla/AdityaBirlaCapitalMLAP.tsx` | `src/lib/banks/pdf-aditya-birla-mlap-renderer.ts` | ✅ Completed |
+| **1.2** | ADITYA BIRLA CAPITAL LTD | `STSL` | `src/app/portal/reports/[projectId]/banks/aditya-birla/AdityaBirlaCapitalSTSL.tsx` | `src/lib/banks/pdf-aditya-birla-stsl-renderer.ts` | ✅ Completed |
+| **2.1** | ADITYA BIRLA HOUSING FINANCE LTD | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/aditya-birla-housing/AdityaBirlaHousingHLLAP.tsx` | `src/lib/banks/pdf-aditya-birla-housing-renderer.ts` | ✅ Completed |
+| **3** | ANNAPURNA MICRO FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/annapurna/AnnapurnaMicroFinance.tsx` | `src/lib/banks/pdf-annapurna-micro-finance-renderer.ts` | ✅ Completed |
+| **4** | ARKA FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/arka/ArkaFinance.tsx` | `src/lib/banks/pdf-arka-finance-renderer.ts` | ✅ Completed |
+| **5** | ARTHAN FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/arthan/ArthanFinance.tsx` | `src/lib/banks/pdf-arthan-finance-renderer.ts` | ✅ Completed |
+| **7.1** | AXIS BANK | `AGRI` | `src/app/portal/reports/[projectId]/banks/axis/AxisAGRI.tsx` | `src/lib/banks/pdf-axis-agri-renderer.ts` | ✅ Completed |
+| **7.2** | AXIS BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/axis/AxisHLLAP.tsx` | `src/lib/banks/pdf-axis-hllap-renderer.ts` | ✅ Completed |
+| **7.3** | AXIS BANK | `SBB` | `src/app/portal/reports/[projectId]/banks/axis/AxisSBB.tsx` | `src/lib/banks/pdf-axis-sbb-renderer.ts` | ✅ Completed |
+| **7.4** | AXIS BANK | `SME` | `src/app/portal/reports/[projectId]/banks/axis/AxisSME.tsx` | `src/lib/banks/pdf-axis-sme-renderer.ts` | ✅ Completed |
+| **8** | AXIS FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/axis-finance/AxisFinance.tsx` | `src/lib/banks/pdf-axis-finance-renderer.ts` | ✅ Completed |
+| **10** | BAJAJ HOUSING FINANCE LTD | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/bajaj-housing/BajajHousingHLLAP.tsx` | `src/lib/banks/pdf-bajaj-housing-renderer.ts` | ✅ Completed |
+| **11.1** | BANDHAN BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanHLLAP.tsx` | `src/lib/banks/pdf-bandhan-hllap-renderer.ts` | ✅ Completed |
+| **11.2** | BANDHAN BANK | `SME` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanSME.tsx` | `src/lib/banks/pdf-bandhan-sme-renderer.ts` | ✅ Completed |
+| **12** | BANK OF BARODA-BOB | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-baroda/BankOfBaroda.tsx` | `src/lib/banks/pdf-bank-of-baroda-renderer.ts` | ✅ Completed |
+| **26** | IDFC FIRST BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/idfc/IDFCFirstBank.tsx` | `src/lib/banks/pdf-idfc-first-bank-renderer.ts` | ✅ Completed |
+| **29.1** | INDUSIND BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/indusind/IndusIndHLLAP.tsx` | `src/lib/banks/pdf-indusind-hllap-renderer.ts` | ✅ Completed |
+| **29.2** | INDUSIND BANK | `BBG` | `src/app/portal/reports/[projectId]/banks/indusind/IndusIndBBG.tsx` | `src/lib/banks/pdf-indusind-bbg-renderer.ts` | ✅ Completed |
+| **32.1** | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` (`kotak-bbg`) | `src/app/portal/reports/[projectId]/banks/kotak/KotakBBG.tsx` | `src/lib/banks/pdf-kotak-bbg-renderer.ts` | ✅ Completed |
+| **33** | L&T FINANCIAL SERVICES | `Standard` | `src/app/portal/reports/[projectId]/banks/lt/LTFinancialServices.tsx` | `src/lib/banks/pdf-lt-financial-services-renderer.ts` | ✅ Completed |
+| **34.1** | LIC HOUSING FINANCE LTD | `NPA-DEFAULT CASES` | `src/app/portal/reports/[projectId]/banks/lic/LICNPA.tsx` | `src/lib/banks/pdf-lic-npa-renderer.ts` | ✅ Completed |
+| **34.2** | LIC HOUSING FINANCE LTD | `PVR-1(SELF CONSTRUCTION-L & B)` | `src/app/portal/reports/[projectId]/banks/lic/LICPVR1.tsx` | `src/lib/banks/pdf-lic-pvr1-renderer.ts` | ✅ Completed |
+| **34.3** | LIC HOUSING FINANCE LTD | `PVR-2(FLAT-UNDERCONSTRUCTION)` | `src/app/portal/reports/[projectId]/banks/lic/LICPVR2.tsx` | `src/lib/banks/pdf-lic-pvr2-renderer.ts` | ✅ Completed |
+| **34.4** | LIC HOUSING FINANCE LTD | `PVR-3(LAP-RENNOVATION-BOTH L&B-FLAT)` | `src/app/portal/reports/[projectId]/banks/lic/LICPVR3.tsx` | `src/lib/banks/pdf-lic-pvr3-renderer.ts` | ✅ Completed |
+| **34.5** | LIC HOUSING FINANCE LTD | `PVR-4(LAND PURCHASE ONLY)` | `src/app/portal/reports/[projectId]/banks/lic/LICPVR4.tsx` | `src/lib/banks/pdf-lic-pvr4-renderer.ts` | ✅ Completed |
+| **34.6** | LIC HOUSING FINANCE LTD | `PVR-5 (SUBSEQUENT VALUATION REPORT)` | `src/app/portal/reports/[projectId]/banks/lic/LICPVR5.tsx` | `src/lib/banks/pdf-lic-pvr5-renderer.ts` | ✅ Completed |
+| **35** | MAHINDRA FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/mahindra/MahindraFinance.tsx` | `src/lib/banks/pdf-mahindra-finance-renderer.ts` | ✅ Completed |
+| **37** | NAVDHAN FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/navdhan/NavdhanFinance.tsx` | `src/lib/banks/pdf-navdhan-finance-renderer.ts` | ✅ Completed |
+| **38** | NEO GROWTH | `Standard` | `src/app/portal/reports/[projectId]/banks/neo/NeoGrowth.tsx` | `src/lib/banks/pdf-neo-growth-renderer.ts` | ✅ Completed |
+| **39** | PNB HOUSING FINANCE LTD | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/pnb-housing/PNBHousingHLLAP.tsx` | `src/lib/banks/pdf-pnb-housing-renderer.ts` | ✅ Completed |
+| **48.1** | STATE BANK OF INDIA-SBI | `BELOW 5CR` | `src/app/portal/reports/[projectId]/banks/sbi/StateBankOfIndiaBelow5CR.tsx` | `src/lib/banks/pdf-sbi-below-5cr-renderer.ts` | ✅ Completed |
+| **48.2** | STATE BANK OF INDIA-SBI | `ABOVE 5CR` | `src/app/portal/reports/[projectId]/banks/sbi/StateBankOfIndiaAbove5CR.tsx` | `src/lib/banks/pdf-sbi-above-5cr-renderer.ts` | ✅ Completed |
+| **56** | UNITY SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/unity-sfb/UnitySmallFinanceBank.tsx` | `src/lib/banks/pdf-unity-sfb-renderer.ts` | ✅ Completed |
+| **57** | UTKARSH SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/utkarsh/UtkarshSmallFinanceBank.tsx` | `src/lib/banks/pdf-utkarsh-sfb-renderer.ts` | ✅ Completed |
+| **58** | VARTHANA FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/varthana/VarthanaFinance.tsx` | `src/lib/banks/pdf-varthana-finance-renderer.ts` | ✅ Completed |
+| **59** | VISTAAR FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/vistaar/VistaarFinance.tsx` | `src/lib/banks/pdf-vistaar-finance-renderer.ts` | ✅ Completed |
+| **60** | YES BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/yes-bank/YesBank.tsx` | `src/lib/banks/pdf-yes-bank-renderer.ts` | ✅ Completed |
+
+### 2. Base Structure Completed (`✅ Created Base` — Builder In Progress)
+Templates with base structure & draft UI files created, currently undergoing field customization or section buildout:
+
+| # | Bank / Organization | Format / Key | Report Draft UI Component | PDF Renderer File | Status |
+|---|---|---|---|---|---|
+| **16** | CANFIN HOMES LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/canfin/CanFinHomes.tsx` | `src/lib/banks/pdf-canfin-homes-renderer.ts` | 🔨 In Progress |
+| **18** | CLIX CAPITAL LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/clix/ClixCapital.tsx` | `src/lib/banks/pdf-clix-capital-renderer.ts` | 🔨 In Progress |
+| **24.1** | ICICI BANK | `HL-LAP-BBG` (`icici-hllap-bbg`) | `src/app/portal/reports/[projectId]/banks/icici/ICICIBankHLLAPBBG.tsx` | `src/lib/banks/pdf-icici-bank-hllap-bbg-renderer.ts` | 🔨 In Progress |
+| **24.2** | ICICI BANK | `NPA` (`icici-npa`) | `src/app/portal/reports/[projectId]/banks/icici/ICICIBankNPA.tsx` | `src/lib/banks/pdf-icici-bank-npa-renderer.ts` | 🔨 In Progress |
