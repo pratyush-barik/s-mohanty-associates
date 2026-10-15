@@ -13,6 +13,8 @@ import {
   BaseDocumentsSection,
   BaseMapsSection,
   BasePhotographsSection,
+  ActiveConfigBanner,
+  ReportActionBar,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { PDFSBILandAndBuildingRenderer } from '@/lib/banks/pdf-sbi-land-and-building-renderer';
@@ -56,6 +58,12 @@ export default function StateBankOfIndiaLandAndBuilding({
     const pf = (prefill || {}) as any;
 
     return {
+      clientType: saved.clientType || 'organisation',
+      organisationTemplate: saved.organisationTemplate || 'STATE BANK OF INDIA-SBI',
+      organisationSubTemplate: saved.organisationSubTemplate || 'Land & Building',
+      institutionCategory: saved.institutionCategory || 'Bank & FIS',
+      propertyValuationType: 'LAND_AND_BUILDING',
+
       // Top Header
       toAuthority: saved.toAuthority !== undefined ? saved.toAuthority : 'THE CHIEF MANAGER / BRANCH HEAD,',
       bankName: saved.bankName !== undefined ? saved.bankName : (pf.bankName || 'STATE BANK OF INDIA,'),
@@ -265,6 +273,12 @@ export default function StateBankOfIndiaLandAndBuilding({
     setSaving(true);
     try {
       await saveReportDraft(projectId, {
+        ...fields,
+        clientType: 'organisation',
+        organisationTemplate: 'STATE BANK OF INDIA-SBI',
+        organisationSubTemplate: 'Land & Building',
+        institutionCategory: 'Bank & FIS',
+        propertyValuationType: 'LAND_AND_BUILDING',
         reportData: fields,
       });
       setSaveSuccess(true);
@@ -294,7 +308,18 @@ export default function StateBankOfIndiaLandAndBuilding({
 
   return (
     <div className="space-y-6 pb-24">
-      {/* ── Top Header Card & Actions ── */}
+      {/* ── Active Configuration Banner with Change Parameters ── */}
+      <ActiveConfigBanner
+        clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
+        category={fields.institutionCategory || 'Bank & FIS'}
+        bankName={fields.bankName || fields.organisationTemplate || 'STATE BANK OF INDIA-SBI'}
+        subclass={fields.organisationSubTemplate || 'Land & Building'}
+        serviceType={fields.serviceType}
+        subjectType={fields.subjectType}
+        onResetWizard={onResetWizard}
+      />
+
+      {/* ── Top Header Card ── */}
       <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
@@ -306,23 +331,16 @@ export default function StateBankOfIndiaLandAndBuilding({
           </p>
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        {onResetWizard && (
           <button
             type="button"
-            onClick={handleSaveInternal}
-            disabled={saving || isReadOnly}
-            className="btn btn-secondary text-xs px-4 py-2"
+            onClick={onResetWizard}
+            className="text-xs text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3.5 py-2 rounded-xl font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs shrink-0"
           >
-            {saving ? 'Saving...' : saveSuccess ? '✓ Saved' : 'Save Draft'}
+            <span>⚙️</span>
+            <span>Change Parameters</span>
           </button>
-          <button
-            type="button"
-            onClick={handleDownloadPdfInternal}
-            className="btn btn-primary text-xs px-4 py-2 flex items-center gap-2"
-          >
-            <span>Download PDF</span>
-          </button>
-        </div>
+        )}
       </div>
 
       {/* ── Section 1: Customer Details ── */}
@@ -869,6 +887,17 @@ export default function StateBankOfIndiaLandAndBuilding({
         uploading={false}
         sectionNumber={12}
         sectionId="section-photographs"
+      />
+
+      {/* ── Standard Sticky Bottom Action Bar ── */}
+      <ReportActionBar
+        isReadOnly={isReadOnly}
+        userRole={userRole}
+        autoSaveStatus={saving ? 'saving' : saveSuccess ? 'saved' : 'idle'}
+        loading={saving}
+        onSaveDraft={handleSaveInternal}
+        onPreviewPDF={handleDownloadPdfInternal}
+        onDownloadPDF={handleDownloadPdfInternal}
       />
     </div>
   );

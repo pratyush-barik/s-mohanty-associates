@@ -13,6 +13,8 @@ import {
   BaseDocumentsSection,
   BaseMapsSection,
   BasePhotographsSection,
+  ActiveConfigBanner,
+  ReportActionBar,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { Lock, Plus, Trash2 } from 'lucide-react';
@@ -142,8 +144,12 @@ export default function StateBankOfIndiaFlatAndApartment({
     const pf = (prefill || {}) as any;
 
     return {
-      // Mode Toggle: 'FLAT' | 'LAND_AND_BUILDING'
-      propertyValuationType: saved.propertyValuationType || 'FLAT',
+      // Mode: Strictly FLAT for Flat & Apartment builder
+      propertyValuationType: 'FLAT',
+      clientType: saved.clientType || 'organisation',
+      organisationTemplate: saved.organisationTemplate || 'STATE BANK OF INDIA-SBI',
+      organisationSubTemplate: saved.organisationSubTemplate || 'Flat & Apartment',
+      institutionCategory: saved.institutionCategory || 'Bank & FIS',
 
       // Header Address
       toAuthority: saved.toAuthority !== undefined ? saved.toAuthority : 'THE ASST. GENERAL MANAGER,',
@@ -609,6 +615,12 @@ export default function StateBankOfIndiaFlatAndApartment({
     setSaving(true);
     try {
       await saveReportDraft(projectId, {
+        ...fields,
+        clientType: 'organisation',
+        organisationTemplate: 'STATE BANK OF INDIA-SBI',
+        organisationSubTemplate: 'Flat & Apartment',
+        institutionCategory: 'Bank & FIS',
+        propertyValuationType: 'FLAT',
         reportData: fields,
       });
       setSaveSuccess(true);
@@ -628,7 +640,7 @@ export default function StateBankOfIndiaFlatAndApartment({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `SBI_Flat_And_Apartment_${fields.propertyValuationType}_${projectCode || projectId}.pdf`;
+      a.download = `SBI_Flat_And_Apartment_${projectCode || projectId}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
@@ -637,11 +649,21 @@ export default function StateBankOfIndiaFlatAndApartment({
   };
 
   const pf = (prefill || {}) as any;
-  const isFlat = fields.propertyValuationType !== 'LAND_AND_BUILDING';
 
   return (
     <div className="space-y-6 pb-24">
-      {/* ── Top Header Card with Dynamic Mode Toggle ── */}
+      {/* ── Active Configuration Banner with Change Parameters ── */}
+      <ActiveConfigBanner
+        clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
+        category={fields.institutionCategory || 'Bank & FIS'}
+        bankName={fields.bankName || fields.organisationTemplate || 'STATE BANK OF INDIA-SBI'}
+        subclass={fields.organisationSubTemplate || 'Flat & Apartment'}
+        serviceType={fields.serviceType}
+        subjectType={fields.subjectType}
+        onResetWizard={onResetWizard}
+      />
+
+      {/* ── Top Header Card ── */}
       <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -649,7 +671,7 @@ export default function StateBankOfIndiaFlatAndApartment({
               STATE BANK OF INDIA (SBI) — Flat & Apartment
             </span>
             <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-              {isFlat ? '🏢 Flat / Apartment Format' : '🏡 Land & Building Format'}
+              🏢 Flat / Apartment Format
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mt-2">Valuation Report Questionnaire</h2>
@@ -658,49 +680,16 @@ export default function StateBankOfIndiaFlatAndApartment({
           </p>
         </div>
 
-        {/* Property Type Mode Toggle */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-          <div className="flex rounded-xl bg-slate-100 p-1 border border-slate-200">
-            <button
-              type="button"
-              onClick={() => handleChange('propertyValuationType', 'FLAT')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                isFlat
-                  ? 'bg-white text-blue-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              🏢 Flat / Apartment
-            </button>
-            <button
-              type="button"
-              onClick={() => handleChange('propertyValuationType', 'LAND_AND_BUILDING')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                !isFlat
-                  ? 'bg-white text-emerald-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              🏡 Land & Building
-            </button>
-          </div>
-
+        {onResetWizard && (
           <button
             type="button"
-            onClick={handleSaveInternal}
-            disabled={saving || isReadOnly}
-            className="btn btn-secondary text-xs px-4 py-2"
+            onClick={onResetWizard}
+            className="text-xs text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3.5 py-2 rounded-xl font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs shrink-0"
           >
-            {saving ? 'Saving...' : saveSuccess ? '✓ Saved' : 'Save Draft'}
+            <span>⚙️</span>
+            <span>Change Parameters</span>
           </button>
-          <button
-            type="button"
-            onClick={handleDownloadPdfInternal}
-            className="btn btn-primary text-xs px-4 py-2 flex items-center gap-2"
-          >
-            <span>Download PDF</span>
-          </button>
-        </div>
+        )}
       </div>
 
       {/* ── Section 1: I. GENERAL (Color: Light Blue #e3f2fd) ── */}
@@ -1720,12 +1709,8 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
-      {/* ── Mode A: Flat / Apartment Specific Sections ── */}
-      {isFlat ? (
-        <>
-
-          {/* ── Section 3: III. FLAT (Color: Light Yellow #fffde7) ── */}
-          <Section title="III. FLAT" number="III" defaultOpen={true}>
+      {/* ── Section 3: III. FLAT (Color: Light Yellow #fffde7) ── */}
+      <Section title="III. FLAT" number="III" defaultOpen={true}>
             <div style={{ backgroundColor: '#fffde7', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-amber-200">
               {/* Header Title inside light yellow box */}
               <div className="border-b border-amber-300 pb-2 flex justify-between items-center">
@@ -2153,72 +2138,6 @@ export default function StateBankOfIndiaFlatAndApartment({
               </Field>
             </div>
           </Section>
-        </>
-      ) : (
-        /* ── Mode B: Land & Building Specific Sections ── */
-        <>
-          <Section title="II. Characteristics of the Site (19 Parameters)" number={3} defaultOpen={false}>
-            <div className="grid md:grid-cols-3 gap-3">
-              <Field label="Classification of Locality">
-                <input
-                  className={inputCls}
-                  value={fields.siteClassificationLocality}
-                  onChange={(e) => handleChange('siteClassificationLocality', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-              <Field label="Road Facilities Available">
-                <input
-                  className={inputCls}
-                  value={fields.siteRoadFacilities}
-                  onChange={(e) => handleChange('siteRoadFacilities', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-              <Field label="Width of Road">
-                <input
-                  className={inputCls}
-                  value={fields.siteRoadWidth}
-                  onChange={(e) => handleChange('siteRoadWidth', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
-          </Section>
-
-          <Section title="Part A & B: Land and Building Valuation" number={4} defaultOpen={true}>
-            <div className="grid md:grid-cols-3 gap-3">
-              <Field label="Land Market Value (Rs.)">
-                <input
-                  className={inputCls + ' font-bold text-slate-900'}
-                  value={fields.abstractMarketLand}
-                  onChange={(e) => handleChange('abstractMarketLand', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Rs. 1,75,31,500.00"
-                />
-              </Field>
-              <Field label="Building Net Value (Rs.)">
-                <input
-                  className={inputCls + ' font-bold text-slate-900'}
-                  value={fields.abstractMarketBldg}
-                  onChange={(e) => handleChange('abstractMarketBldg', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Rs. 1,27,02,792.00"
-                />
-              </Field>
-              <Field label="Total Market Value (Rs.)">
-                <input
-                  className={inputCls + ' font-bold text-emerald-700 bg-emerald-50'}
-                  value={fields.abstractMarketTotal}
-                  onChange={(e) => handleChange('abstractMarketTotal', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="Rs. 3,02,34,292.00"
-                />
-              </Field>
-            </div>
-          </Section>
-        </>
-      )}
 
       {/* ── Section: Method of Valuation Box ── */}
       <Section title="Method of Valuation Procedure" number={6} defaultOpen={false}>
@@ -2347,6 +2266,17 @@ export default function StateBankOfIndiaFlatAndApartment({
         uploading={false}
         sectionNumber={10}
         sectionId="section-photographs"
+      />
+
+      {/* ── Standard Sticky Bottom Action Bar ── */}
+      <ReportActionBar
+        isReadOnly={isReadOnly}
+        userRole={userRole}
+        autoSaveStatus={saving ? 'saving' : saveSuccess ? 'saved' : 'idle'}
+        loading={saving}
+        onSaveDraft={handleSaveInternal}
+        onPreviewPDF={handleDownloadPdfInternal}
+        onDownloadPDF={handleDownloadPdfInternal}
       />
     </div>
   );
