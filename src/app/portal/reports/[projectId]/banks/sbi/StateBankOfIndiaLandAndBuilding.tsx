@@ -378,6 +378,7 @@ export default function StateBankOfIndiaLandAndBuilding({
         serviceType={fields.serviceType}
         subjectType={fields.subjectType}
         onResetWizard={onResetWizard}
+        sticky={false}
       />
 
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}

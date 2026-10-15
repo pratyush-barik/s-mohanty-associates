@@ -544,6 +544,7 @@ export function ActiveConfigBanner({
   serviceType,
   subjectType,
   onResetWizard,
+  sticky = true,
 }: {
   clientType?: 'individual' | 'organisation';
   bankName?: string;
@@ -553,6 +554,7 @@ export function ActiveConfigBanner({
   serviceType?: string;
   subjectType?: string;
   onResetWizard?: () => void;
+  sticky?: boolean;
 }) {
   const activeSubclass = (subclass || formatName || '').trim();
   const isIndividual = clientType === 'individual';
@@ -564,7 +566,7 @@ export function ActiveConfigBanner({
   const displaySubclass = isGenericValuationReport ? undefined : activeSubclass;
 
   return (
-    <div className="p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl sticky top-2 z-50">
+    <div className={`p-4 bg-white border border-[#dee2e6] flex flex-row items-center justify-between gap-4 shadow-md rounded-2xl ${sticky ? 'sticky top-2 z-50' : ''}`}>
       <div className="flex items-center gap-4">
         <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider leading-tight min-w-22.5 select-none">
           Active<br />Configuration
