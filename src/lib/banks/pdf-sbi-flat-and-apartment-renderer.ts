@@ -186,6 +186,11 @@ export interface SBIFlatReportFields {
   rateBreakupLandOthers?: string;
   guidelineRateLandText?: string;
   guidelineTotalUdsLandValue?: string;
+  sbiFlatComparableSaleInstancesRate?: string;
+  sbiFlatAdoptedBasicCompositeRate?: string;
+  sbiFlatRateBreakupBuildingServices?: string;
+  sbiFlatRateBreakupLandOthers?: string;
+  sbiFlatGuidelineRateLandText?: string;
 
   depreciatedBuildingRateAnnualFormula?: string;
   replacementCostOfFlat?: string;
@@ -615,15 +620,15 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
 
     // ── SECTION V. RATE ──
     this.drawSectionHeaderRow('V.', 'RATE');
-    this.draw2ColRow('1', 'After analyzing the comparable sale instances, what is the composite rate for a similar flat with same specifications in the adjoining locality?', d.comparableSaleInstancesRate || 'Similar flats getting transacted in range of Rs.9800/- to Rs.10200/- Per Sft of SBA.');
-    this.draw2ColRow('2', 'Assuming it is a new construction, what is the adopted basic composite rate of the flat under valuation after comparing with specifications and other factors', d.adoptedBasicCompositeRate || 'We have considered the market value as Rs.10000/- Per Sft of SBA.');
+    this.draw2ColRow('1', 'After analyzing the comparable sale instances, what is the composite rate for a similar flat with same specifications in the adjoining locality?', d.sbiFlatComparableSaleInstancesRate || d.comparableSaleInstancesRate || 'Similar flats getting transacted in range of Rs.9800/- to Rs.10200/- Per Sft of SBA.');
+    this.draw2ColRow('2', 'Assuming it is a new construction, what is the adopted basic composite rate of the flat under valuation after comparing with specifications and other factors', d.sbiFlatAdoptedBasicCompositeRate || d.adoptedBasicCompositeRate || 'We have considered the market value as Rs.10000/- Per Sft of SBA.');
 
     this.drawSubTableRow('3.', [
-      { label: 'i Building + Services', value: d.rateBreakupBuildingServices || 'Rs.2500/- Per Sft' },
-      { label: 'ii Land + Others', value: d.rateBreakupLandOthers || 'Rs.7500/- Per Sft' },
+      { label: 'i Building + Services', value: d.sbiFlatRateBreakupBuildingServices || d.rateBreakupBuildingServices || 'Rs.2500/- Per Sft' },
+      { label: 'ii Land + Others', value: d.sbiFlatRateBreakupLandOthers || d.rateBreakupLandOthers || 'Rs.7500/- Per Sft' },
     ], 'Break - up for the rate');
 
-    this.draw2ColRow('4.', "Guideline rate obtained from the Registrar's office (an evidence thereof to be enclosed)", d.guidelineRateLandText || 'Rs.11,56,32,000/- Per Acre i.e. Rs.2655/- Per Sft\nTotal Value of UDS: 523.00 Sft X Rs.2655/- = Rs.13,88,565/-');
+    this.draw2ColRow('4.', "Guideline rate obtained from the Registrar's office (an evidence thereof to be enclosed)", d.sbiFlatGuidelineRateLandText || d.guidelineRateLandText || 'Rs.11,56,32,000/- Per Acre i.e. Rs.2655/- Per Sft\nTotal Value of UDS: 523.00 Sft X Rs.2655/- = Rs.13,88,565/-');
 
     // ── SECTION VI. COMPOSITE RATE ADOPTED AFTER DEPRECIATION ──
     this.drawSectionHeaderRow('VI', 'COMPOSITE RATE ADOPTED AFTER DEPRECIATION');

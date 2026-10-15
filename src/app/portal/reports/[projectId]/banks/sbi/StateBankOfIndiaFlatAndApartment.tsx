@@ -403,6 +403,11 @@ export default function StateBankOfIndiaFlatAndApartment({
       rateBreakupBuildingServices: saved.rateBreakupBuildingServices !== undefined ? saved.rateBreakupBuildingServices : 'Rs.2500/- Per Sft',
       rateBreakupLandOthers: saved.rateBreakupLandOthers !== undefined ? saved.rateBreakupLandOthers : 'Rs.7500/- Per Sft',
       guidelineRateLandText: saved.guidelineRateLandText !== undefined ? saved.guidelineRateLandText : 'Rs.11,56,32,000/- Per Acre i.e. Rs.2655/- Per Sft | Total Value of UDS: 523.00 Sft X Rs.2655/- = Rs.13,88,565/-',
+      sbiFlatComparableSaleInstancesRate: saved.sbiFlatComparableSaleInstancesRate !== undefined ? saved.sbiFlatComparableSaleInstancesRate : (saved.comparableSaleInstancesRate || 'Similar flats getting transacted in range of Rs.9800/- to Rs.10200/- Per Sft of SBA.'),
+      sbiFlatAdoptedBasicCompositeRate: saved.sbiFlatAdoptedBasicCompositeRate !== undefined ? saved.sbiFlatAdoptedBasicCompositeRate : (saved.adoptedBasicCompositeRate || 'We have considered the market value as Rs.10000/- Per Sft of SBA.'),
+      sbiFlatRateBreakupBuildingServices: saved.sbiFlatRateBreakupBuildingServices !== undefined ? saved.sbiFlatRateBreakupBuildingServices : (saved.rateBreakupBuildingServices || '2500'),
+      sbiFlatRateBreakupLandOthers: saved.sbiFlatRateBreakupLandOthers !== undefined ? saved.sbiFlatRateBreakupLandOthers : (saved.rateBreakupLandOthers || '7500'),
+      sbiFlatGuidelineRateLandText: saved.sbiFlatGuidelineRateLandText !== undefined ? saved.sbiFlatGuidelineRateLandText : (saved.guidelineRateLandText || 'Rs.11,56,32,000/- Per Acre i.e. Rs.2655/- Per Sft | Total Value of UDS: 523.00 Sft X Rs.2655/- = Rs.13,88,565/-'),
 
       depreciatedBuildingRateAnnualFormula: saved.depreciatedBuildingRateAnnualFormula !== undefined ? saved.depreciatedBuildingRateAnnualFormula : '1.5% Per Annum (1.5% X 10 Yrs = 15%)',
       replacementCostOfFlat: saved.replacementCostOfFlat !== undefined ? saved.replacementCostOfFlat : 'Rs.2500/- X 15% = Rs.375/- | Rs.2500.00 - Rs.375/- = Rs.2125/- Per Sft',
@@ -704,7 +709,7 @@ export default function StateBankOfIndiaFlatAndApartment({
     { id: 'sbi-flat-building', title: 'APARTMENT BUILDING' },
     { id: 'sbi-flat-flat', title: 'FLAT SPECIFICATIONS' },
     { id: 'sbi-flat-marketability', title: 'MARKETABILITY' },
-    { id: 'sbi-flat-method', title: 'VALUATION METHOD' },
+    { id: 'sbi-flat-rate', title: 'RATE' },
     { id: 'sbi-flat-abstract', title: 'TOTAL ABSTRACT' },
     { id: 'section-documents', title: 'DOCUMENTS' },
     { id: 'section-maps', title: 'MAPS' },
@@ -2182,23 +2187,93 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
-      {/* ── Section: Method of Valuation Box ── */}
-      <Section id="sbi-flat-method" title="Method of Valuation Procedure" number={6} defaultOpen={false}>
-        <div className="grid md:grid-cols-2 gap-4">
-          <Field label="Procedure Adopted Guidance (Left Box)">
+      {/* ── Section 5: V. RATE (Color: Light Cyan #e0f7fa) ── */}
+      <Section id="sbi-flat-rate" title="V. RATE" number="V" defaultOpen={true}>
+        <div style={{ backgroundColor: '#e0f7fa', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-cyan-200">
+          {/* Header Title inside light cyan box */}
+          <div className="border-b border-cyan-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-cyan-900 text-sm uppercase tracking-wider">
+              V. RATE
+            </h3>
+            <span className="text-[11px] font-semibold text-cyan-800 bg-cyan-100 px-2 py-0.5 rounded-full border border-cyan-300">
+              Composite Rate & Valuation Break-up
+            </span>
+          </div>
+
+          {/* 1 After analyzing the comparable sale instances... */}
+          <Field label="1 After analyzing the comparable sale instances, what is the composite rate for a similar flat with same specifications in the adjoining locality?">
             <textarea
-              className={inputCls + ' min-h-22.5 text-xs bg-slate-50'}
-              value={fields.methodOfValuationProcedure}
-              onChange={(e) => handleChange('methodOfValuationProcedure', e.target.value)}
+              className={inputCls + ' min-h-20'}
+              value={fields.sbiFlatComparableSaleInstancesRate !== undefined ? fields.sbiFlatComparableSaleInstancesRate : (fields.comparableSaleInstancesRate || '')}
+              onChange={e => {
+                handleChange('sbiFlatComparableSaleInstancesRate', e.target.value);
+                handleChange('comparableSaleInstancesRate', e.target.value);
+              }}
               disabled={isReadOnly}
+              placeholder="e.g. Similar flats getting transacted in range of Rs.9800/- to Rs.10200/- Per Sft of SBA."
             />
           </Field>
-          <Field label="Adopted Valuation Methodology (Right Box)">
+
+          {/* 2 Assuming it is a new construction, what is the adopted basic composite rate... */}
+          <Field label="2 Assuming it is a new construction, what is the adopted basic composite rate of the flat under valuation after comparing with specifications and other factors">
             <textarea
-              className={inputCls + ' min-h-22.5 text-xs'}
-              value={fields.methodOfValuationText}
-              onChange={(e) => handleChange('methodOfValuationText', e.target.value)}
+              className={inputCls + ' min-h-20'}
+              value={fields.sbiFlatAdoptedBasicCompositeRate !== undefined ? fields.sbiFlatAdoptedBasicCompositeRate : (fields.adoptedBasicCompositeRate || '')}
+              onChange={e => {
+                handleChange('sbiFlatAdoptedBasicCompositeRate', e.target.value);
+                handleChange('adoptedBasicCompositeRate', e.target.value);
+              }}
               disabled={isReadOnly}
+              placeholder="e.g. We have considered the market value as Rs.10000/- Per Sft of SBA."
+            />
+          </Field>
+
+          {/* 3. Break - up for the rate (Building + Services, Land + Others) */}
+          <div className="space-y-3">
+            <div className="text-xs font-semibold text-[#495057] uppercase tracking-wider">
+              3. Break - up for the rate (Building + Services, Land + Others)
+            </div>
+            <div className="grid md:grid-cols-2 gap-4 bg-white/70 p-4 rounded-xl border border-cyan-200">
+              <Field label="i Building + Services (Rs. / Sft)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.sbiFlatRateBreakupBuildingServices !== undefined ? fields.sbiFlatRateBreakupBuildingServices : (fields.rateBreakupBuildingServices || '')}
+                  onChange={e => {
+                    handleChange('sbiFlatRateBreakupBuildingServices', e.target.value);
+                    handleChange('rateBreakupBuildingServices', e.target.value);
+                  }}
+                  disabled={isReadOnly}
+                  placeholder="2500"
+                />
+              </Field>
+              <Field label="ii Land + Others (Rs. / Sft)">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.sbiFlatRateBreakupLandOthers !== undefined ? fields.sbiFlatRateBreakupLandOthers : (fields.rateBreakupLandOthers || '')}
+                  onChange={e => {
+                    handleChange('sbiFlatRateBreakupLandOthers', e.target.value);
+                    handleChange('rateBreakupLandOthers', e.target.value);
+                  }}
+                  disabled={isReadOnly}
+                  placeholder="7500"
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* 4. Guideline rate obtained from the Registrar's office */}
+          <Field label="4. Guideline rate obtained from the Registrar's office (an evidence thereof to be enclosed)">
+            <textarea
+              className={inputCls + ' min-h-20'}
+              value={fields.sbiFlatGuidelineRateLandText !== undefined ? fields.sbiFlatGuidelineRateLandText : (fields.guidelineRateLandText || '')}
+              onChange={e => {
+                handleChange('sbiFlatGuidelineRateLandText', e.target.value);
+                handleChange('guidelineRateLandText', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. Rs.11,56,32,000/- Per Acre i.e. Rs.2655/- Per Sft | Total Value of UDS: 523.00 Sft X Rs.2655/- = Rs.13,88,565/-"
             />
           </Field>
         </div>
