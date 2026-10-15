@@ -244,7 +244,7 @@ export const BANK_SUB_TEMPLATES: Record<string, string[]> = {
   'DCB BANK': ['Desktop valuation format', 'HL-LAP-SME'],
   'HDFC BANK': ['HL-LAP-BLG'],
   'ICICI BANK': ['HL-LAP-BBG', 'NPA'],
-  'IDBI BANK': ['BELOW 5CR', 'ABOVE 5CR'],
+  'IDBI BANK': ['Land & Building', 'Flat & Apartment'],
   'INDUSIND BANK': ['HL-LAP', 'BBG'],
   'KOTAK MAHINDRA BANK': ['BUSINESS BANKING GROUP', 'HL-LAP'],
   'LIC HOUSING FINANCE LTD': [
@@ -255,7 +255,7 @@ export const BANK_SUB_TEMPLATES: Record<string, string[]> = {
     'PVR-4(LAND PURCHASE ONLY)',
     'PVR-5 (SUBSEQUENT VALUATION REPORT)'
   ],
-  'STATE BANK OF INDIA-SBI': ['BELOW 5CR', 'ABOVE 5CR'],
-  'STATE BANK OF INDIA': ['BELOW 5CR', 'ABOVE 5CR'],
+  'STATE BANK OF INDIA-SBI': ['Land & Building', 'Flat & Apartment'],
+  'STATE BANK OF INDIA': ['Land & Building', 'Flat & Apartment'],
   'TATA CAPITAL LTD': ['SME-BLG'],
 };

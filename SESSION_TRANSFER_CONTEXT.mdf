@@ -130,7 +130,7 @@ SECTION 4: CURRENT REPOSITORY STATE & RECENT WORK
   - Bank 11: Bandhan Bank (`HL-LAP`, `SME`) — Complete
   - Bank 12: Bank of Baroda (`Standard`) — Complete
   - Bank 34: LIC Housing Finance (`NPA-DEFAULT CASES`, `PVR-1`, `PVR-2`) — Complete
-  - Bank 48: State Bank of India (`BELOW 5CR`, `ABOVE 5CR`) — Complete
+  - Bank 48: State Bank of India (`Land & Building`, `Flat & Apartment`) — Complete
 - Strategic Deadline & Directive:
   - External model support ends on Nov 2nd.
   - Immediate Objective: Rapidly scaffold basic UI builder and dedicated PDF renderer for ALL remaining banks and sub-templates directly from sample reports (Phase 1).

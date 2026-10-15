@@ -646,7 +646,7 @@ export default function StateBankOfIndiaFlatAndApartment({
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              STATE BANK OF INDIA (SBI) — ABOVE 5CR (Flat & Apartment)
+              STATE BANK OF INDIA (SBI) — Flat & Apartment
             </span>
             <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
               {isFlat ? '🏢 Flat / Apartment Format' : '🏡 Land & Building Format'}

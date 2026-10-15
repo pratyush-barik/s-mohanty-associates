@@ -164,6 +164,8 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'PURPLE FINANCE': dynamic(() => import('./banks/purple/PurpleFinance')),
 
   // IDBI Bank
+  'IDBI BANK::Land & Building': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
+  'IDBI BANK::Flat & Apartment': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
   'IDBI BANK::BELOW 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
   'IDBI BANK::ABOVE 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
   'IDBI BANK': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
@@ -397,14 +399,14 @@ export default function BuilderSelector({
     if (isSbi || isIdbi) {
       const cleanSub = (sub || cleanOrg).toUpperCase().replace(/\s+/g, " ");
       if (cleanSub.includes('BELOW') || cleanSub.includes('LAND')) {
-        return BANK_BUILDER_MAP['STATE BANK OF INDIA-SBI::BELOW 5CR'];
+        return BANK_BUILDER_MAP['STATE BANK OF INDIA-SBI::Land & Building'];
       }
       if (cleanSub.includes('ABOVE') || cleanSub.includes('FLAT') || cleanSub.includes('APARTMENT')) {
-        return BANK_BUILDER_MAP['STATE BANK OF INDIA-SBI::ABOVE 5CR'];
+        return BANK_BUILDER_MAP['STATE BANK OF INDIA-SBI::Flat & Apartment'];
       }
     }
 
-    // 4. Direct format match (e.g. if key is just 'BELOW 5CR' or 'ABOVE 5CR')
+    // 4. Direct format match (e.g. if key is just 'Land & Building' or 'Flat & Apartment')
     if (sub && BANK_BUILDER_MAP[sub]) {
       return BANK_BUILDER_MAP[sub];
     }
