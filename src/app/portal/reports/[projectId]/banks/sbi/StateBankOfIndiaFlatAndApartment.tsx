@@ -394,6 +394,9 @@ export default function StateBankOfIndiaFlatAndApartment({
       marketabilityRating: saved.marketabilityRating !== undefined ? saved.marketabilityRating : 'Good',
       factorsFavoringPotentialValue: saved.factorsFavoringPotentialValue !== undefined ? saved.factorsFavoringPotentialValue : 'The subject property located in a developed Residential area. All civic amenities are located within 2-3 Km radius.',
       negativeFactorsObserved: saved.negativeFactorsObserved !== undefined ? saved.negativeFactorsObserved : 'Nothing Observed',
+      sbiFlatMarketabilityRating: saved.sbiFlatMarketabilityRating !== undefined ? saved.sbiFlatMarketabilityRating : (saved.marketabilityRating || 'Good'),
+      sbiFlatFactorsFavoringPotentialValue: saved.sbiFlatFactorsFavoringPotentialValue !== undefined ? saved.sbiFlatFactorsFavoringPotentialValue : (saved.factorsFavoringPotentialValue || 'The subject property located in a developed Residential area. All civic amenities are located within 2-3 Km radius.'),
+      sbiFlatNegativeFactorsObserved: saved.sbiFlatNegativeFactorsObserved !== undefined ? saved.sbiFlatNegativeFactorsObserved : (saved.negativeFactorsObserved || 'Nothing Observed'),
 
       comparableSaleInstancesRate: saved.comparableSaleInstancesRate !== undefined ? saved.comparableSaleInstancesRate : 'Similar flats getting transacted in range of Rs.9800/- to Rs.10200/- Per Sft of SBA.',
       adoptedBasicCompositeRate: saved.adoptedBasicCompositeRate !== undefined ? saved.adoptedBasicCompositeRate : 'We have considered the market value as Rs.10000/- Per Sft of SBA.',
@@ -700,7 +703,7 @@ export default function StateBankOfIndiaFlatAndApartment({
     { id: 'sbi-flat-general', title: 'GENERAL' },
     { id: 'sbi-flat-building', title: 'APARTMENT BUILDING' },
     { id: 'sbi-flat-flat', title: 'FLAT SPECIFICATIONS' },
-    { id: 'sbi-flat-valuation', title: 'VALUATION & RATES' },
+    { id: 'sbi-flat-marketability', title: 'MARKETABILITY' },
     { id: 'sbi-flat-method', title: 'VALUATION METHOD' },
     { id: 'sbi-flat-abstract', title: 'TOTAL ABSTRACT' },
     { id: 'section-documents', title: 'DOCUMENTS' },
@@ -2115,65 +2118,69 @@ export default function StateBankOfIndiaFlatAndApartment({
             </div>
           </Section>
 
-          <Section id="sbi-flat-valuation" title="VI. Rate, Composite Depreciation & Flat Valuation" number={5} defaultOpen={true}>
-            <div className="grid md:grid-cols-3 gap-3">
-              <Field label="Rate: Building + Services (Rs./Sft)">
-                <input
-                  className={inputCls}
-                  value={fields.finalDepreciatedBuildingRate}
-                  onChange={(e) => handleChange('finalDepreciatedBuildingRate', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="2125"
-                />
-              </Field>
-              <Field label="Rate: Land & Others (Rs./Sft)">
-                <input
-                  className={inputCls}
-                  value={fields.finalRateLandOther}
-                  onChange={(e) => handleChange('finalRateLandOther', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="7500"
-                />
-              </Field>
-              <Field label="Total Composite Rate (Rs./Sft)">
-                <input
-                  className={inputCls + ' font-bold text-emerald-700'}
-                  value={fields.finalTotalCompositeRate}
-                  onChange={(e) => handleChange('finalTotalCompositeRate', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="9625"
-                />
-              </Field>
-            </div>
+      {/* ── Section 4: IV. MARKETABILITY (Color: Light Purple #f3e5f5) ── */}
+      <Section id="sbi-flat-marketability" title="IV. MARKETABILITY" number="IV" defaultOpen={true}>
+        <div style={{ backgroundColor: '#f3e5f5', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-purple-200">
+          {/* Header Title inside light purple box */}
+          <div className="border-b border-purple-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-purple-900 text-sm uppercase tracking-wider">
+              IV. MARKETABILITY
+            </h3>
+            <span className="text-[11px] font-semibold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-300">
+              Marketability Assessment
+            </span>
+          </div>
 
-            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mt-4">Details of Valuation (10 Items)</h4>
-            <div className="grid md:grid-cols-3 gap-3">
-              <Field label="1. Flat Present Value">
-                <input
-                  className={inputCls + ' font-bold'}
-                  value={fields.valFlatPresentValue}
-                  onChange={(e) => handleChange('valFlatPresentValue', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-              <Field label="2. Car Parking Space in LS">
-                <input
-                  className={inputCls}
-                  value={fields.valCarParking}
-                  onChange={(e) => handleChange('valCarParking', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-              <Field label="Total Estimated Flat Value">
-                <input
-                  className={inputCls + ' font-bold bg-slate-50 text-blue-700'}
-                  value={fields.valTotalEstimated}
-                  onChange={(e) => handleChange('valTotalEstimated', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
-          </Section>
+          {/* 1 How is the marketability? */}
+          <Field label="1 How is the marketability?">
+            <select
+              className={selectCls}
+              value={fields.sbiFlatMarketabilityRating || fields.marketabilityRating || fields.marketability || 'Good'}
+              onChange={e => {
+                handleChange('sbiFlatMarketabilityRating', e.target.value);
+                handleChange('marketabilityRating', e.target.value);
+                handleChange('marketability', e.target.value);
+              }}
+              disabled={isReadOnly}
+            >
+              <option value="Good">Good</option>
+              <option value="Very Good">Very Good</option>
+              <option value="Excellent">Excellent</option>
+              <option value="Fair">Fair</option>
+              <option value="Average">Average</option>
+              <option value="Poor">Poor</option>
+            </select>
+          </Field>
+
+          {/* 2 What are the factors favoring for an extra Potential Value? */}
+          <Field label="2 What are the factors favoring for an extra Potential Value?">
+            <textarea
+              className={inputCls + ' min-h-20'}
+              value={fields.sbiFlatFactorsFavoringPotentialValue !== undefined ? fields.sbiFlatFactorsFavoringPotentialValue : (fields.factorsFavoringPotentialValue || '')}
+              onChange={e => {
+                handleChange('sbiFlatFactorsFavoringPotentialValue', e.target.value);
+                handleChange('factorsFavoringPotentialValue', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. The subject property located in a developed Residential area. All civic amenities are located within 2-3 Km radius."
+            />
+          </Field>
+
+          {/* 3 Any negative factors are observed which affect the market value in general? */}
+          <Field label="3 Any negative factors are observed which affect the market value in general?">
+            <textarea
+              className={inputCls + ' min-h-20'}
+              value={fields.sbiFlatNegativeFactorsObserved !== undefined ? fields.sbiFlatNegativeFactorsObserved : (fields.negativeFactorsObserved || '')}
+              onChange={e => {
+                handleChange('sbiFlatNegativeFactorsObserved', e.target.value);
+                handleChange('negativeFactorsObserved', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. Nothing Observed"
+            />
+          </Field>
+        </div>
+      </Section>
 
       {/* ── Section: Method of Valuation Box ── */}
       <Section id="sbi-flat-method" title="Method of Valuation Procedure" number={6} defaultOpen={false}>

@@ -176,6 +176,9 @@ export interface SBIFlatReportFields {
   marketabilityRating?: string;
   factorsFavoringPotentialValue?: string;
   negativeFactorsObserved?: string;
+  sbiFlatMarketabilityRating?: string;
+  sbiFlatFactorsFavoringPotentialValue?: string;
+  sbiFlatNegativeFactorsObserved?: string;
 
   comparableSaleInstancesRate?: string;
   adoptedBasicCompositeRate?: string;
@@ -606,9 +609,9 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
 
     // ── SECTION IV. MARKETABILITY ──
     this.drawSectionHeaderRow('IV.', 'MARKETABILITY');
-    this.draw2ColRow('1', 'How is the marketability?', d.marketabilityRating || 'Good');
-    this.draw2ColRow('2', 'What are the factors favoring for an extra Potential Value?', d.factorsFavoringPotentialValue || 'The subject property located in a developed Residential area. All civic amenities are located within 2-3 Km radious.');
-    this.draw2ColRow('3', 'Any negative factors are observed which affect the market value in general?', d.negativeFactorsObserved || 'Nothing Observed');
+    this.draw2ColRow('1', 'How is the marketability?', d.sbiFlatMarketabilityRating || d.marketabilityRating || 'Good');
+    this.draw2ColRow('2', 'What are the factors favoring for an extra Potential Value?', d.sbiFlatFactorsFavoringPotentialValue || d.factorsFavoringPotentialValue || 'The subject property located in a developed Residential area. All civic amenities are located within 2-3 Km radious.');
+    this.draw2ColRow('3', 'Any negative factors are observed which affect the market value in general?', d.sbiFlatNegativeFactorsObserved || d.negativeFactorsObserved || 'Nothing Observed');
 
     // ── SECTION V. RATE ──
     this.drawSectionHeaderRow('V.', 'RATE');
