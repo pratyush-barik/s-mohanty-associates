@@ -223,6 +223,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       numberOfRoomsKitchens: saved.numberOfRoomsKitchens !== undefined ? saved.numberOfRoomsKitchens : '1 Nos',
       totalNumberOfFloors: saved.totalNumberOfFloors !== undefined ? saved.totalNumberOfFloors : 'G+1 Storied',
       areaPropertyLocated: saved.areaPropertyLocated !== undefined ? saved.areaPropertyLocated : 'Kalyani Vihar Scheme',
+      yearOfOccupancy: saved.yearOfOccupancy !== undefined ? saved.yearOfOccupancy : '2024',
       approxAgeProperty: saved.approxAgeProperty !== undefined ? saved.approxAgeProperty : 'New',
       residualLifeProperty: saved.residualLifeProperty !== undefined ? saved.residualLifeProperty : '65 Yrs',
       typeOfStructure: saved.typeOfStructure !== undefined ? saved.typeOfStructure : 'RCC Frame',
@@ -480,11 +481,18 @@ export default function StateBankOfIndiaLandAndBuilding({
     return `Rs. ${formatIndianCurrency(fVal)}/-`;
   }, [totalMarketVal]);
 
+  const approxAgeStr = useMemo(() => {
+    const curYear = new Date().getFullYear();
+    const occYear = parseInt(String(fields.yearOfOccupancy || '2024').replace(/[^0-9]/g, '')) || 2024;
+    const diff = Math.max(0, curYear - occYear);
+    return diff === 0 ? '0 Years (New)' : `${diff} Years`;
+  }, [fields.yearOfOccupancy]);
+
   const NAV_SECTIONS: NavItem[] = [
     { id: 'sbi-lb-cover-and-customer', title: 'COVER PAGE & BANK DETAILS' },
     { id: 'sbi-lb-sec-2', title: '2 Property Details' },
     { id: 'sbi-lb-sec-3', title: '3 Document Details' },
-    { id: 'sbi-lb-sec-4', title: 'PHYSICAL DETAILS' },
+    { id: 'sbi-lb-sec-4', title: '4 Physical Details' },
     { id: 'sbi-lb-sec-5', title: 'TENURE & VIOLATIONS' },
     { id: 'sbi-lb-sec-6', title: 'AREA DETAILS' },
     { id: 'sbi-lb-sec-7', title: 'VALUATION NARRATIVE' },
@@ -985,102 +993,244 @@ export default function StateBankOfIndiaLandAndBuilding({
         </div>
       </Section>
 
-      {/* ── Section 4: Physical Details & Boundaries ── */}
-      <Section id="sbi-lb-sec-4" title="4. Physical Details & Boundaries" number={4} defaultOpen={true}>
-        <div className="space-y-2">
-          {['East', 'West', 'North', 'South'].map((dir) => {
-            const dKey = `boundary${dir}Doc`;
-            const vKey = `boundary${dir}Verif`;
-            return (
-              <div key={dir} className="grid grid-cols-3 gap-2 items-center">
-                <span className="text-xs font-medium text-slate-700">{dir}</span>
-                <input
-                  className={inputCls + ' py-1.5! text-xs'}
-                  value={fields[dKey] || ''}
-                  onChange={(e) => handleChange(dKey, e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="As per Agreement"
-                />
-                <input
-                  className={inputCls + ' py-1.5! text-xs'}
-                  value={fields[vKey] || ''}
-                  onChange={(e) => handleChange(vKey, e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="As per Sketch Map"
-                />
+      {/* ── Section 4: 4 Physical Details (Color: Light Purple #f3e5f5) ── */}
+      <Section id="sbi-lb-sec-4" title="4 Physical Details" number={4} defaultOpen={true}>
+        <div style={{ backgroundColor: '#f3e5f5', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-purple-200">
+          {/* Header Title inside light purple box */}
+          <div className="border-b border-purple-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-purple-900 text-sm uppercase tracking-wider">
+              4 Physical Details
+            </h3>
+            <span className="text-[11px] font-semibold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-300">
+              Physical Characteristics & Boundaries
+            </span>
+          </div>
+
+          {/* Boundaries as per Document / Verification (East, West, North, South) */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Boundaries as per Document / Verification (East, West, North, South)
+            </label>
+            <div className="bg-white/80 p-3 rounded-xl border border-purple-200 space-y-3">
+              <div className="grid grid-cols-12 gap-2 text-xs font-bold text-slate-700 pb-1 border-b border-purple-200">
+                <span className="col-span-2">Direction</span>
+                <span className="col-span-5">As per Document</span>
+                <span className="col-span-5">As per Verification (Actual at Site)</span>
               </div>
-            );
-          })}
-        </div>
+              {[
+                { dir: 'East', dKey: 'boundaryEastDoc', vKey: 'boundaryEastVerif' },
+                { dir: 'West', dKey: 'boundaryWestDoc', vKey: 'boundaryWestVerif' },
+                { dir: 'North', dKey: 'boundaryNorthDoc', vKey: 'boundaryNorthVerif' },
+                { dir: 'South', dKey: 'boundarySouthDoc', vKey: 'boundarySouthVerif' },
+              ].map(({ dir, dKey, vKey }) => (
+                <div key={dir} className="grid grid-cols-12 gap-2 items-center">
+                  <span className="col-span-2 text-xs font-bold text-purple-950">{dir}</span>
+                  <div className="col-span-5">
+                    <textarea
+                      rows={2}
+                      className={inputCls + ' text-xs'}
+                      value={fields[dKey] || ''}
+                      onChange={e => handleChange(dKey, e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder={`As per Document (${dir})`}
+                    />
+                  </div>
+                  <div className="col-span-5">
+                    <textarea
+                      rows={2}
+                      className={inputCls + ' text-xs'}
+                      value={fields[vKey] || ''}
+                      onChange={e => handleChange(vKey, e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder={`Actual at site (${dir})`}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
 
-        <div className="grid md:grid-cols-4 gap-3 mt-4">
-          <Field label="Matching of Boundaries">
-            <input
-              className={inputCls}
-              value={fields.matchingBoundaries}
-              onChange={(e) => handleChange('matchingBoundaries', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Plot Demarcated">
-            <input
-              className={inputCls}
-              value={fields.plotDemarcated}
-              onChange={(e) => handleChange('plotDemarcated', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Approved Land Use">
-            <input
-              className={inputCls}
-              value={fields.approvedLandUse}
-              onChange={(e) => handleChange('approvedLandUse', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Type of Property">
-            <input
-              className={inputCls}
-              value={fields.typeOfProperty}
-              onChange={(e) => handleChange('typeOfProperty', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-        </div>
+          {/* Matching of boundaries & Plot demarcated */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <div className="bg-white/80 p-3.5 rounded-xl border border-purple-200">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={fields.matchingBoundaries === 'Yes' || fields.matchingBoundaries === true}
+                  onChange={e => handleChange('matchingBoundaries', e.target.checked ? 'Yes' : 'No')}
+                  disabled={isReadOnly}
+                  className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                />
+                <span className="text-xs font-semibold text-slate-800">
+                  Matching of boundaries: <strong className={fields.matchingBoundaries === 'Yes' ? 'text-emerald-700' : 'text-slate-500'}>
+                    {fields.matchingBoundaries === 'Yes' ? 'Yes' : 'No'}
+                  </strong>
+                </span>
+              </label>
+            </div>
 
-        <div className="grid md:grid-cols-4 gap-3 mt-3">
-          <Field label="Living / Dining">
-            <input
-              className={inputCls}
-              value={fields.numberOfRoomsLiving}
-              onChange={(e) => handleChange('numberOfRoomsLiving', e.target.value)}
-              disabled={isReadOnly}
+            <div className="bg-white/80 p-3.5 rounded-xl border border-purple-200">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={fields.plotDemarcated === 'Yes' || fields.plotDemarcated === true}
+                  onChange={e => handleChange('plotDemarcated', e.target.checked ? 'Yes' : 'No')}
+                  disabled={isReadOnly}
+                  className="w-4 h-4 text-purple-600 rounded border-gray-300 focus:ring-purple-500"
+                />
+                <span className="text-xs font-semibold text-slate-800">
+                  Plot demarcated: <strong className={fields.plotDemarcated === 'Yes' ? 'text-emerald-700' : 'text-slate-500'}>
+                    {fields.plotDemarcated === 'Yes' ? 'Yes' : 'No'}
+                  </strong>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* Approved land use & Type of property (Plotted/ Flat) */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Approved land use">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.approvedLandUse || ''}
+                onChange={e => handleChange('approvedLandUse', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. Residential"
+              />
+            </Field>
+
+            <Field label="Type of property (Plotted/ Flat)">
+              <div className="flex gap-6 bg-white/80 p-2.5 rounded-xl border border-purple-200 h-10 items-center">
+                {['Plotted', 'Flat'].map(type => (
+                  <label key={type} className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-slate-800">
+                    <input
+                      type="radio"
+                      name="sbiLbTypeOfPropertyRadio"
+                      value={type}
+                      checked={(fields.typeOfProperty || 'Plotted').toLowerCase().includes(type.toLowerCase())}
+                      onChange={e => handleChange('typeOfProperty', e.target.value)}
+                      disabled={isReadOnly}
+                      className="text-purple-600 focus:ring-purple-500 h-4 w-4"
+                    />
+                    <span>{type}</span>
+                  </label>
+                ))}
+              </div>
+            </Field>
+          </div>
+
+          {/* Number of rooms (Living/ Dining, Bed rooms, Toilets, Kitchens) */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Number of rooms (Living/ Dining, Bed rooms, Toilets, Kitchens)
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 bg-white/80 p-3 rounded-xl border border-purple-200">
+              <Field label="Living / Dining">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.numberOfRoomsLiving !== undefined ? String(fields.numberOfRoomsLiving).replace(/[^0-9]/g, '') : ''}
+                  onChange={e => handleChange('numberOfRoomsLiving', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 2"
+                />
+              </Field>
+              <Field label="Bed rooms">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.numberOfRoomsBed !== undefined ? String(fields.numberOfRoomsBed).replace(/[^0-9]/g, '') : ''}
+                  onChange={e => handleChange('numberOfRoomsBed', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 5"
+                />
+              </Field>
+              <Field label="Toilets">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.numberOfRoomsToilets !== undefined ? String(fields.numberOfRoomsToilets).replace(/[^0-9]/g, '') : ''}
+                  onChange={e => handleChange('numberOfRoomsToilets', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 3"
+                />
+              </Field>
+              <Field label="Kitchens">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.numberOfRoomsKitchens !== undefined ? String(fields.numberOfRoomsKitchens).replace(/[^0-9]/g, '') : ''}
+                  onChange={e => handleChange('numberOfRoomsKitchens', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 1"
+                />
+              </Field>
+            </div>
+          </div>
+
+          {/* Total number of floors & Area on which the property is located */}
+          <div className="grid md:grid-cols-2 gap-4">
+            <Field label="Total number of floors">
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.totalNumberOfFloors !== undefined ? String(fields.totalNumberOfFloors).replace(/[^0-9]/g, '') : ''}
+                onChange={e => handleChange('totalNumberOfFloors', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. 2"
+              />
+            </Field>
+
+            <Field label="Area on which the property is located">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.areaPropertyLocated || ''}
+                onChange={e => handleChange('areaPropertyLocated', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. Kalyani Vihar Scheme"
+              />
+            </Field>
+          </div>
+
+          {/* Approx. age of the property, Residual life of the property, Type of structure */}
+          <div className="grid md:grid-cols-3 gap-4">
+            <PrefillField
+              label="Approx. age of the property"
+              value={fields.approxAgeProperty}
+              onChange={(val: string) => handleChange('approxAgeProperty', val)}
+              isReadOnly={isReadOnly}
+              tooltip=">>Auto calculating from [Current Year - Year of Occupancy]<<"
+              fallbackValue={approxAgeStr}
             />
-          </Field>
-          <Field label="Bedrooms">
-            <input
-              className={inputCls}
-              value={fields.numberOfRoomsBed}
-              onChange={(e) => handleChange('numberOfRoomsBed', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Toilets">
-            <input
-              className={inputCls}
-              value={fields.numberOfRoomsToilets}
-              onChange={(e) => handleChange('numberOfRoomsToilets', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Kitchens">
-            <input
-              className={inputCls}
-              value={fields.numberOfRoomsKitchens}
-              onChange={(e) => handleChange('numberOfRoomsKitchens', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
+
+            <Field label="Residual life of the property">
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.residualLifeProperty !== undefined ? String(fields.residualLifeProperty).replace(/[^0-9]/g, '') : ''}
+                onChange={e => handleChange('residualLifeProperty', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. 65"
+              />
+            </Field>
+
+            <Field label="Type of structure - RCC framed/ Stone">
+              <select
+                className={inputCls}
+                value={fields.typeOfStructure || 'RCC framed'}
+                onChange={e => handleChange('typeOfStructure', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="RCC framed">RCC framed</option>
+                <option value="Stone">Stone</option>
+                <option value="Load Bearing">Load Bearing</option>
+                <option value="Steel Frame">Steel Frame</option>
+                <option value="Composite Structure">Composite Structure</option>
+              </select>
+            </Field>
+          </div>
         </div>
       </Section>
 
