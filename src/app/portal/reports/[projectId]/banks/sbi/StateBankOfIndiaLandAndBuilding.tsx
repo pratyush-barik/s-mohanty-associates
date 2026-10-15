@@ -16,10 +16,10 @@ import {
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 
-export const SBI_BELOW_5CR_CONFIG: BankConfig = {
+export const SBI_LAND_BUILDING_CONFIG: BankConfig = {
   bankId: 'STATE BANK OF INDIA-SBI',
-  subTemplateId: 'BELOW 5CR',
-  displayName: 'State Bank of India (SBI) — BELOW 5CR',
+  subTemplateId: 'Land & Building',
+  displayName: 'State Bank of India (SBI) — Land & Building',
   defaultValues: {},
   getPDFRenderer: (data, projectCode) => {
     const { PDFSBIBelow5CRRenderer } = require('@/lib/banks/pdf-sbi-below-5cr-renderer');
@@ -27,12 +27,12 @@ export const SBI_BELOW_5CR_CONFIG: BankConfig = {
   },
 };
 
-export interface SBIBelow5CRProps extends BankReportBuilderProps {
+export interface SBILandBuildingProps extends BankReportBuilderProps {
   initialData?: any;
   isReadOnly?: boolean;
 }
 
-export default function StateBankOfIndiaBelow5CR({
+export default function StateBankOfIndiaLandAndBuilding({
   projectId,
   projectCode,
   initialFields: rawInitialFields,
@@ -299,7 +299,7 @@ export default function StateBankOfIndiaBelow5CR({
       <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
-            STATE BANK OF INDIA (SBI) / IDBI — BELOW 5CR
+            STATE BANK OF INDIA (SBI) / IDBI — Land & Building
           </span>
           <h2 className="text-xl font-bold text-slate-900 mt-2">Valuation Report Questionnaire</h2>
           <p className="text-xs text-slate-500">
