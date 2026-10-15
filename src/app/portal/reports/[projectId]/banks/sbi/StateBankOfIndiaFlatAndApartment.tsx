@@ -304,18 +304,18 @@ export default function StateBankOfIndiaFlatAndApartment({
       sbiFlatValuerCommentsOnPlan: saved.sbiFlatValuerCommentsOnPlan !== undefined ? saved.sbiFlatValuerCommentsOnPlan : (saved.valuerCommentsOnPlan || 'The building construction is in conformity with the approved plan and statutory setback norms.'),
       valuerCommentsOnPlan: saved.valuerCommentsOnPlan !== undefined ? saved.valuerCommentsOnPlan : 'The building construction is in conformity with the approved plan and statutory setback norms.',
 
-      // ── FLAT SPECIFIC DEFAULTS ──
+      // ── FLAT SPECIFIC DEFAULTS & SECTION II. APARTMENT BUILDING ──
       natureOfApartment: saved.natureOfApartment !== undefined ? saved.natureOfApartment : 'Residential Apartment',
-      aptLocationTsNo: saved.aptLocationTsNo !== undefined ? saved.aptLocationTsNo : '',
+      aptLocationTsNo: saved.aptLocationTsNo !== undefined ? saved.aptLocationTsNo : 'NA',
       aptLocationBlockNo: saved.aptLocationBlockNo !== undefined ? saved.aptLocationBlockNo : 'Tower-A',
       aptLocationWardNo: saved.aptLocationWardNo !== undefined ? saved.aptLocationWardNo : 'Not Applicable',
       aptLocationVillageCorp: saved.aptLocationVillageCorp !== undefined ? saved.aptLocationVillageCorp : 'Within Municipal Corporation area limit',
-      aptLocationDoorRoadPin: saved.aptLocationDoorRoadPin !== undefined ? saved.aptLocationDoorRoadPin : '',
+      aptLocationDoorRoadPin: saved.aptLocationDoorRoadPin !== undefined ? saved.aptLocationDoorRoadPin : 'NA',
       localityDescription: saved.localityDescription !== undefined ? saved.localityDescription : 'Residential',
       yearOfConstruction: saved.yearOfConstruction !== undefined ? saved.yearOfConstruction : '2010',
-      numberOfFloors: saved.numberOfFloors !== undefined ? saved.numberOfFloors : 'B+G+16 Storied',
+      numberOfFloors: saved.numberOfFloors !== undefined ? saved.numberOfFloors : '16',
       typeOfStructure: saved.typeOfStructure !== undefined ? saved.typeOfStructure : 'RCC Frame Structure',
-      dwellingUnitsCount: saved.dwellingUnitsCount !== undefined ? saved.dwellingUnitsCount : 'Not Verified',
+      dwellingUnitsCount: saved.dwellingUnitsCount !== undefined ? saved.dwellingUnitsCount : '64',
       qualityOfConstruction: saved.qualityOfConstruction !== undefined ? saved.qualityOfConstruction : 'Good',
       appearanceOfBuilding: saved.appearanceOfBuilding !== undefined ? saved.appearanceOfBuilding : 'Good',
       maintenanceOfBuilding: saved.maintenanceOfBuilding !== undefined ? saved.maintenanceOfBuilding : 'Good',
@@ -325,6 +325,22 @@ export default function StateBankOfIndiaFlatAndApartment({
       facilityCarParking: saved.facilityCarParking !== undefined ? saved.facilityCarParking : 'Covered parking',
       facilityCompoundWall: saved.facilityCompoundWall !== undefined ? saved.facilityCompoundWall : 'Yes',
       facilityPavement: saved.facilityPavement !== undefined ? saved.facilityPavement : 'Yes',
+      hasLift: saved.hasLift !== undefined ? saved.hasLift : true,
+      hasWaterSupply: saved.hasWaterSupply !== undefined ? saved.hasWaterSupply : true,
+      hasSewerage: saved.hasSewerage !== undefined ? saved.hasSewerage : true,
+      hasCarParking: saved.hasCarParking !== undefined ? saved.hasCarParking : true,
+      hasCompoundWall: saved.hasCompoundWall !== undefined ? saved.hasCompoundWall : true,
+      hasPavement: saved.hasPavement !== undefined ? saved.hasPavement : true,
+
+      sbiFlatNatureOfApartment: saved.sbiFlatNatureOfApartment !== undefined ? saved.sbiFlatNatureOfApartment : (saved.natureOfApartment || 'Residential Apartment'),
+      sbiFlatLocalityDescription: saved.sbiFlatLocalityDescription !== undefined ? saved.sbiFlatLocalityDescription : (saved.localityDescription || 'Residential'),
+      sbiFlatYearOfConstruction: saved.sbiFlatYearOfConstruction !== undefined ? saved.sbiFlatYearOfConstruction : (saved.yearOfConstruction || '2010'),
+      sbiFlatNumberOfFloors: saved.sbiFlatNumberOfFloors !== undefined ? saved.sbiFlatNumberOfFloors : (saved.numberOfFloors || '16'),
+      sbiFlatTypeOfStructure: saved.sbiFlatTypeOfStructure !== undefined ? saved.sbiFlatTypeOfStructure : (saved.typeOfStructure || 'RCC Frame Structure'),
+      sbiFlatDwellingUnitsCount: saved.sbiFlatDwellingUnitsCount !== undefined ? saved.sbiFlatDwellingUnitsCount : (saved.dwellingUnitsCount || '64'),
+      sbiFlatQualityOfConstruction: saved.sbiFlatQualityOfConstruction !== undefined ? saved.sbiFlatQualityOfConstruction : (saved.qualityOfConstruction || 'Good'),
+      sbiFlatAppearanceOfBuilding: saved.sbiFlatAppearanceOfBuilding !== undefined ? saved.sbiFlatAppearanceOfBuilding : (saved.appearanceOfBuilding || 'Good'),
+      sbiFlatMaintenanceOfBuilding: saved.sbiFlatMaintenanceOfBuilding !== undefined ? saved.sbiFlatMaintenanceOfBuilding : (saved.maintenanceOfBuilding || 'Good'),
 
       flatFloorNumber: saved.flatFloorNumber !== undefined ? saved.flatFloorNumber : '4th Floor',
       flatDoorNumber: saved.flatDoorNumber !== undefined ? saved.flatDoorNumber : 'Flat No: A-041, Tower-A',
@@ -1289,126 +1305,403 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
-      {/* ── Section 2: General & Location Details (Points 6-21) ── */}
-      <Section title="General, Location & Boundaries" number={2} defaultOpen={true}>
-        <div className="grid md:grid-cols-4 gap-3">
-          <Field label="Plot / Survey No.">
-            <input
-              className={inputCls}
-              value={fields.plotNo}
-              onChange={(e) => handleChange('plotNo', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Door No.">
-            <input
-              className={inputCls}
-              value={fields.doorNo}
-              onChange={(e) => handleChange('doorNo', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Mouza / Village / T.S. No">
-            <input
-              className={inputCls}
-              value={fields.tsNoVillage}
-              onChange={(e) => handleChange('tsNoVillage', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="District">
-            <input
-              className={inputCls}
-              value={fields.mandalDistrict}
-              onChange={(e) => handleChange('mandalDistrict', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-        </div>
+      {/* ── Section 2: II. APARTMENT BUILDING (Color: Light Green #e8f5e9) ── */}
+      <Section title="II. APARTMENT BUILDING" number="II" defaultOpen={true}>
+        <div style={{ backgroundColor: '#e8f5e9', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-emerald-200">
+          {/* Header Title inside light green box */}
+          <div className="border-b border-emerald-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-emerald-900 text-sm uppercase tracking-wider">
+              II. APARTMENT BUILDING
+            </h3>
+            <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+              Building Particulars & Facilities
+            </span>
+          </div>
 
-        {/* Boundaries Dual Columns */}
-        <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mt-4">3 / 13. Boundaries of the Property</h4>
-        <div className="space-y-2 mt-2">
-          {['East', 'West', 'North', 'South'].map((dir) => {
-            const vKey = `boundary${dir}Verification`;
-            const dKey = `boundary${dir}Document`;
-            return (
-              <div key={dir} className="grid grid-cols-3 gap-2 items-center">
-                <span className="text-xs font-medium text-slate-700">{dir}</span>
+          {/* 1. Nature of the Apartment */}
+          <Field label="1. Nature of the Apartment">
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.sbiFlatNatureOfApartment || fields.natureOfApartment || ''}
+              onChange={e => {
+                handleChange('sbiFlatNatureOfApartment', e.target.value);
+                handleChange('natureOfApartment', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. Residential Apartment"
+            />
+          </Field>
+
+          {/* 2. Location (T.S. No, Block No, Ward No, Village, Door No.) */}
+          <Field label="2. Location (T.S. No, Block No, Ward No, Village, Door No.)">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 bg-white/70 p-3.5 rounded-xl border border-emerald-200">
+              <div>
+                <label className="block text-[11px] font-bold text-emerald-900 uppercase tracking-wider mb-1">
+                  T.S. No
+                </label>
                 <input
-                  className={inputCls + ' !py-1.5 text-xs'}
-                  value={fields[dKey] || ''}
-                  onChange={(e) => handleChange(dKey, e.target.value)}
+                  type="text"
+                  className={inputCls}
+                  value={fields.aptLocationTsNo || ''}
+                  onChange={e => handleChange('aptLocationTsNo', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="As per Document"
-                />
-                <input
-                  className={inputCls + ' !py-1.5 text-xs'}
-                  value={fields[vKey] || ''}
-                  onChange={(e) => handleChange(vKey, e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="As per Verification"
+                  placeholder="T.S. No (or NA)"
                 />
               </div>
-            );
-          })}
-        </div>
-
-        {/* Dimensions Dual Columns */}
-        <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider mt-4">14.1 Dimensions of the Site</h4>
-        <div className="space-y-2 mt-2">
-          {['East', 'West', 'North', 'South'].map((dir) => {
-            const deedKey = `dimension${dir}Deed`;
-            const actKey = `dimension${dir}Actual`;
-            return (
-              <div key={dir} className="grid grid-cols-3 gap-2 items-center">
-                <span className="text-xs font-medium text-slate-700">{dir}</span>
+              <div>
+                <label className="block text-[11px] font-bold text-emerald-900 uppercase tracking-wider mb-1">
+                  Block No
+                </label>
                 <input
-                  className={inputCls + ' !py-1.5 text-xs'}
-                  value={fields[deedKey] || ''}
-                  onChange={(e) => handleChange(deedKey, e.target.value)}
+                  type="text"
+                  className={inputCls}
+                  value={fields.aptLocationBlockNo || ''}
+                  onChange={e => handleChange('aptLocationBlockNo', e.target.value)}
                   disabled={isReadOnly}
-                  placeholder="A - As per Deed"
-                />
-                <input
-                  className={inputCls + ' !py-1.5 text-xs'}
-                  value={fields[actKey] || ''}
-                  onChange={(e) => handleChange(actKey, e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="B - Actual"
+                  placeholder="e.g. Tower-A"
                 />
               </div>
-            );
-          })}
-        </div>
+              <div>
+                <label className="block text-[11px] font-bold text-emerald-900 uppercase tracking-wider mb-1">
+                  Ward No
+                </label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.aptLocationWardNo || ''}
+                  onChange={e => handleChange('aptLocationWardNo', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Ward No"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-emerald-900 uppercase tracking-wider mb-1">
+                  Village / Municipality
+                </label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.aptLocationVillageCorp || ''}
+                  onChange={e => handleChange('aptLocationVillageCorp', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Village / Municipality"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-emerald-900 uppercase tracking-wider mb-1">
+                  Door No / Road / Pin
+                </label>
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.aptLocationDoorRoadPin || ''}
+                  onChange={e => handleChange('aptLocationDoorRoadPin', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Door No / Street"
+                />
+              </div>
+            </div>
+          </Field>
 
-        <div className="grid md:grid-cols-3 gap-3 mt-4">
-          <Field label="14.2 Coordinates Text">
-            <input
-              className={inputCls}
-              value={fields.coordinatesText}
-              onChange={(e) => handleChange('coordinatesText', e.target.value)}
+          {/* 3. Description of the locality Residential / Commercial / Mixed */}
+          <Field label="3. Description of the locality Residential / Commercial / Mixed">
+            <select
+              className={selectCls}
+              value={fields.sbiFlatLocalityDescription || fields.localityDescription || 'Residential'}
+              onChange={e => {
+                handleChange('sbiFlatLocalityDescription', e.target.value);
+                handleChange('localityDescription', e.target.value);
+              }}
               disabled={isReadOnly}
-              placeholder="Latitude: 20.251088, Longitude: 85.787390"
-            />
+            >
+              <option value="Residential">Residential</option>
+              <option value="Commercial">Commercial</option>
+              <option value="Mixed">Mixed</option>
+              <option value="Industrial">Industrial</option>
+              <option value="Residential cum Commercial">Residential cum Commercial</option>
+            </select>
           </Field>
-          <Field label="15. Extent of Site / Project">
-            <input
-              className={inputCls}
-              value={fields.extentOfProjectSite}
-              onChange={(e) => handleChange('extentOfProjectSite', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Total Area: Ac.0.115 Dec i.e. 5009.00 Sft"
-            />
-          </Field>
-          <Field label="16. Extent Considered for Valuation (least of 14 A & 14 B)">
-            <input
-              className={inputCls}
-              value={fields.extentConsideredValuation}
-              onChange={(e) => handleChange('extentConsideredValuation', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Not Applicable / Extent Sft"
-            />
+
+          {/* 4. Year of Construction, 5. Number of Floors, 6. Type of Structure, 7. Dwelling units */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <Field label="4. Year of Construction">
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.sbiFlatYearOfConstruction || fields.yearOfConstruction || ''}
+                onChange={e => {
+                  handleChange('sbiFlatYearOfConstruction', e.target.value);
+                  handleChange('yearOfConstruction', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="e.g. 2010"
+              />
+            </Field>
+
+            <Field label="5. Number of Floors">
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.sbiFlatNumberOfFloors || fields.numberOfFloors || ''}
+                onChange={e => {
+                  handleChange('sbiFlatNumberOfFloors', e.target.value);
+                  handleChange('numberOfFloors', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="e.g. 16"
+              />
+            </Field>
+
+            <Field label="6. Type of Structure">
+              <select
+                className={selectCls}
+                value={fields.sbiFlatTypeOfStructure || fields.typeOfStructure || 'RCC Frame Structure'}
+                onChange={e => {
+                  handleChange('sbiFlatTypeOfStructure', e.target.value);
+                  handleChange('typeOfStructure', e.target.value);
+                }}
+                disabled={isReadOnly}
+              >
+                <option value="RCC Frame Structure">RCC Frame Structure</option>
+                <option value="Load Bearing Structure">Load Bearing Structure</option>
+                <option value="Steel Frame Structure">Steel Frame Structure</option>
+                <option value="Composite Structure">Composite Structure</option>
+              </select>
+            </Field>
+
+            <Field label="7. Number of Dwelling units in the building">
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.sbiFlatDwellingUnitsCount || fields.dwellingUnitsCount || ''}
+                onChange={e => {
+                  handleChange('sbiFlatDwellingUnitsCount', e.target.value);
+                  handleChange('dwellingUnitsCount', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="e.g. 64"
+              />
+            </Field>
+          </div>
+
+          {/* 8. Quality of Construction, 9. Appearance, 10. Maintenance */}
+          <div className="grid md:grid-cols-3 gap-4">
+            <Field label="8. Quality of Construction">
+              <select
+                className={selectCls}
+                value={fields.sbiFlatQualityOfConstruction || fields.qualityOfConstruction || 'Good'}
+                onChange={e => {
+                  handleChange('sbiFlatQualityOfConstruction', e.target.value);
+                  handleChange('qualityOfConstruction', e.target.value);
+                }}
+                disabled={isReadOnly}
+              >
+                <option value="Good">Good</option>
+                <option value="Average">Average</option>
+                <option value="Poor">Poor</option>
+                <option value="Superior">Superior</option>
+                <option value="Very Good">Very Good</option>
+              </select>
+            </Field>
+
+            <Field label="9. Appearance of the Building">
+              <select
+                className={selectCls}
+                value={fields.sbiFlatAppearanceOfBuilding || fields.appearanceOfBuilding || 'Good'}
+                onChange={e => {
+                  handleChange('sbiFlatAppearanceOfBuilding', e.target.value);
+                  handleChange('appearanceOfBuilding', e.target.value);
+                }}
+                disabled={isReadOnly}
+              >
+                <option value="Good">Good</option>
+                <option value="Average">Average</option>
+                <option value="Poor">Poor</option>
+                <option value="Very Good">Very Good</option>
+                <option value="Ordinary">Ordinary</option>
+              </select>
+            </Field>
+
+            <Field label="10 Maintenance of the Building">
+              <select
+                className={selectCls}
+                value={fields.sbiFlatMaintenanceOfBuilding || fields.maintenanceOfBuilding || 'Good'}
+                onChange={e => {
+                  handleChange('sbiFlatMaintenanceOfBuilding', e.target.value);
+                  handleChange('maintenanceOfBuilding', e.target.value);
+                }}
+                disabled={isReadOnly}
+              >
+                <option value="Good">Good</option>
+                <option value="Average">Average</option>
+                <option value="Poor">Poor</option>
+                <option value="Well Maintained">Well Maintained</option>
+                <option value="Fair">Fair</option>
+              </select>
+            </Field>
+          </div>
+
+          {/* 11 Facilities Available (Lift, Water, Sewerage, Parking, Wall, Pavement) */}
+          <Field label="11 Facilities Available (Lift, Water, Sewerage, Parking, Wall, Pavement)">
+            <div className="bg-white/80 p-4 rounded-xl border border-emerald-200">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {/* 1. Lift */}
+                <label className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                  (fields.facilityLift === 'Yes' || fields.hasLift)
+                    ? 'bg-emerald-50/80 border-emerald-300 shadow-xs'
+                    : 'bg-white border-slate-200 hover:border-slate-300'
+                }`}>
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                    checked={fields.facilityLift === 'Yes' || !!fields.hasLift}
+                    onChange={e => {
+                      const checked = e.target.checked;
+                      handleChange('hasLift', checked);
+                      handleChange('facilityLift', checked ? 'Yes' : 'No');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">Lift</span>
+                    <span className="text-[11px] text-slate-500">Passenger / Service Elevator</span>
+                  </div>
+                </label>
+
+                {/* 2. Water Supply */}
+                <label className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                  (fields.facilityWaterSupply === 'Yes' || fields.hasWaterSupply)
+                    ? 'bg-emerald-50/80 border-emerald-300 shadow-xs'
+                    : 'bg-white border-slate-200 hover:border-slate-300'
+                }`}>
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                    checked={fields.facilityWaterSupply === 'Yes' || !!fields.hasWaterSupply}
+                    onChange={e => {
+                      const checked = e.target.checked;
+                      handleChange('hasWaterSupply', checked);
+                      handleChange('facilityWaterSupply', checked ? 'Yes' : 'No');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">Water Supply</span>
+                    <span className="text-[11px] text-slate-500">Protected Drinking Water</span>
+                  </div>
+                </label>
+
+                {/* 3. Sewerage */}
+                <label className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                  (fields.facilitySewerage === 'Yes' || fields.hasSewerage)
+                    ? 'bg-emerald-50/80 border-emerald-300 shadow-xs'
+                    : 'bg-white border-slate-200 hover:border-slate-300'
+                }`}>
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                    checked={fields.facilitySewerage === 'Yes' || !!fields.hasSewerage}
+                    onChange={e => {
+                      const checked = e.target.checked;
+                      handleChange('hasSewerage', checked);
+                      handleChange('facilitySewerage', checked ? 'Yes' : 'No');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">Sewerage</span>
+                    <span className="text-[11px] text-slate-500">Under Ground Sewerage</span>
+                  </div>
+                </label>
+
+                {/* 4. Car Parking */}
+                <div className={`p-3 rounded-lg border transition-all ${
+                  (fields.facilityCarParking && fields.facilityCarParking !== 'No' && fields.facilityCarParking !== 'None')
+                    ? 'bg-emerald-50/80 border-emerald-300 shadow-xs'
+                    : 'bg-white border-slate-200 hover:border-slate-300'
+                }`}>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                      checked={!!(fields.facilityCarParking && fields.facilityCarParking !== 'No' && fields.facilityCarParking !== 'None')}
+                      onChange={e => {
+                        const checked = e.target.checked;
+                        handleChange('hasCarParking', checked);
+                        handleChange('facilityCarParking', checked ? 'Covered parking' : 'No');
+                      }}
+                      disabled={isReadOnly}
+                    />
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 block">Car Parking</span>
+                      <span className="text-[11px] text-slate-500">Open / Covered Parking</span>
+                    </div>
+                  </label>
+                  {!!(fields.facilityCarParking && fields.facilityCarParking !== 'No' && fields.facilityCarParking !== 'None') && (
+                    <div className="mt-2 pl-7">
+                      <select
+                        className="text-xs py-1 px-2 border border-emerald-300 rounded bg-white text-emerald-900 w-full focus:outline-emerald-500"
+                        value={fields.facilityCarParking}
+                        onChange={e => handleChange('facilityCarParking', e.target.value)}
+                        disabled={isReadOnly}
+                      >
+                        <option value="Covered parking">Covered parking</option>
+                        <option value="Open parking">Open parking</option>
+                        <option value="Stilt parking">Stilt parking</option>
+                        <option value="Basement parking">Basement parking</option>
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                {/* 5. Compound Wall */}
+                <label className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                  (fields.facilityCompoundWall === 'Yes' || fields.hasCompoundWall)
+                    ? 'bg-emerald-50/80 border-emerald-300 shadow-xs'
+                    : 'bg-white border-slate-200 hover:border-slate-300'
+                }`}>
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                    checked={fields.facilityCompoundWall === 'Yes' || !!fields.hasCompoundWall}
+                    onChange={e => {
+                      const checked = e.target.checked;
+                      handleChange('hasCompoundWall', checked);
+                      handleChange('facilityCompoundWall', checked ? 'Yes' : 'No');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">Compound Wall</span>
+                    <span className="text-[11px] text-slate-500">Compound Wall with Gate</span>
+                  </div>
+                </label>
+
+                {/* 6. Pavement */}
+                <label className={`flex items-start gap-3 p-3 rounded-lg border transition-all cursor-pointer ${
+                  (fields.facilityPavement === 'Yes' || fields.hasPavement)
+                    ? 'bg-emerald-50/80 border-emerald-300 shadow-xs'
+                    : 'bg-white border-slate-200 hover:border-slate-300'
+                }`}>
+                  <input
+                    type="checkbox"
+                    className="mt-0.5 w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+                    checked={fields.facilityPavement === 'Yes' || !!fields.hasPavement}
+                    onChange={e => {
+                      const checked = e.target.checked;
+                      handleChange('hasPavement', checked);
+                      handleChange('facilityPavement', checked ? 'Yes' : 'No');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-800 block">Pavement</span>
+                    <span className="text-[11px] text-slate-500">Paved Area Around Building</span>
+                  </div>
+                </label>
+              </div>
+            </div>
           </Field>
         </div>
       </Section>
@@ -1416,44 +1709,8 @@ export default function StateBankOfIndiaFlatAndApartment({
       {/* ── Mode A: Flat / Apartment Specific Sections ── */}
       {isFlat ? (
         <>
-          <Section title="II. Apartment Building & Facilities" number={3} defaultOpen={false}>
-            <div className="grid md:grid-cols-4 gap-3">
-              <Field label="Nature of Apartment">
-                <input
-                  className={inputCls}
-                  value={fields.natureOfApartment}
-                  onChange={(e) => handleChange('natureOfApartment', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-              <Field label="Year of Construction">
-                <input
-                  className={inputCls}
-                  value={fields.yearOfConstruction}
-                  onChange={(e) => handleChange('yearOfConstruction', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-              <Field label="Number of Floors">
-                <input
-                  className={inputCls}
-                  value={fields.numberOfFloors}
-                  onChange={(e) => handleChange('numberOfFloors', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-              <Field label="Type of Structure">
-                <input
-                  className={inputCls}
-                  value={fields.typeOfStructure}
-                  onChange={(e) => handleChange('typeOfStructure', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
-          </Section>
 
-          <Section title="III. Flat Specifications & Area" number={4} defaultOpen={true}>
+          <Section title="III. Flat Specifications & Area" number="III" defaultOpen={true}>
             <div className="grid md:grid-cols-4 gap-3">
               <Field label="Floor Number">
                 <input
