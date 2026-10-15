@@ -726,34 +726,6 @@ export default function StateBankOfIndiaFlatAndApartment({
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
 
-      {/* ── Top Header Card ── */}
-      <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              STATE BANK OF INDIA (SBI) — Flat & Apartment
-            </span>
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-              🏢 Flat / Apartment Format
-            </span>
-          </div>
-          <h2 className="text-xl font-bold text-slate-900 mt-2">Valuation Report Questionnaire</h2>
-          <p className="text-xs text-slate-500">
-            Standard Statutory Bank Format addressing Asst. General Manager with full schedules.
-          </p>
-        </div>
-
-        {onResetWizard && (
-          <button
-            type="button"
-            onClick={onResetWizard}
-            className="text-xs text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3.5 py-2 rounded-xl font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-xs shrink-0"
-          >
-            <span>⚙️</span>
-            <span>Change Parameters</span>
-          </button>
-        )}
-      </div>
 
       {/* ── Section 1: I. GENERAL (Color: Light Blue #e3f2fd) ── */}
       <Section id="sbi-flat-general" title="I. GENERAL" number="I" defaultOpen={true}>
