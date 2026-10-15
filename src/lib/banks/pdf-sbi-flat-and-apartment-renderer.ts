@@ -375,6 +375,9 @@ export interface SBIFlatReportFields {
 
   // Remarks & Opinions
   remarksText?: string;
+  sbiFlatRemarks?: string;
+  finalAppraisalText?: string;
+  sbiFlatFinalAppraisalText?: string;
   opinionMarketValueWords?: string;
   opinionRealizableValueWords?: string;
   opinionGovtLandValueWords?: string;
@@ -1176,7 +1179,7 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
       ? `SUBJECT PROPERTY IS A 2 BHK FLAT, HAVING SUPER BUILT UP AREA: ${d.superBuiltUpArea || '1375.00 SFT'}. PROPERTY LOCATED IN A DEVELOPED RESIDENTIAL AREA. ALL CIVIC AMENITIES ARE PRESENT WITHIN 2-3 KMS FROM THE PROPERTY. VALUATION HAS BEEN DONE FOR FLAT ONLY.`
       : `THIS IS AN NPA CASE. THE SUBJECT PROPERTY IS A G+3 STORIED RESIDENTIAL BUILDING, LAND EXTENT OF (AC.0.115 DEC I.E. 5009.00 SFT). THE PROPERTY IS LOCATED IN A WELL-DEVELOPED RESIDENTIAL-CUM-COMMERCIAL LOCALITY. ALL CIVIC AMENITIES ARE WITHIN 2-3 KM RADIUS. VALUATION HAS BEEN CARRIED OUT CONSIDERING THE LAND COMPONENT AND APPROVED BUA OF G+2 STORIED BUILDING.`;
 
-    const remarks = d.remarksText || defaultRemarks;
+    const remarks = d.sbiFlatRemarks || d.remarksText || defaultRemarks;
     const rLines = this.wrapText(remarks, CONTENT_W, FONT_SIZE_SMALL);
     for (const l of rLines) {
       this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_SMALL });
@@ -1190,11 +1193,16 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
     const dsv = d.abstractOrSayDistress || d.abstractDistressValue || d.abstractDistressTotal || 'Rs. 1,12,49,000/-';
     const bookLand = d.abstractOrSayGovtLand || d.abstractGovtValueLand || d.abstractGovtTotal || 'Rs. 13,89,000/-';
 
+    const defaultAppraisalBullet = `• As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is ${fmv} (${d.opinionMarketValueWords || 'Rupees ...'}). The Realizable Value is ${rsv} (${d.opinionRealizableValueWords || 'Rupees ...'}). The book value as of Land is ${bookLand} (${d.opinionGovtLandValueWords || 'Rupees ...'}) and the distress value is ${dsv} (${d.opinionDistressValueWords || 'Rupees ...'}).`;
+
+    const customAppraisal = d.sbiFlatFinalAppraisalText || d.finalAppraisalText;
+    const appraisalBullet = customAppraisal ? `• ${customAppraisal.replace(/^•\s*/, '')}` : defaultAppraisalBullet;
+
     const bullets = [
       `• The Fair Market value of the Property (FMV): ${fmv}`,
       `• The Realizable Sale Value of the Property (RSV): ${rsv}`,
       `• The Distress Sale value of the Property (DSV): ${dsv}`,
-      `• As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is ${fmv} (${d.opinionMarketValueWords || 'Rupees ...'}). The Realizable Value is ${rsv} (${d.opinionRealizableValueWords || 'Rupees ...'}). The book value as of Land is ${bookLand} (${d.opinionGovtLandValueWords || 'Rupees ...'}) and the distress value is ${dsv} (${d.opinionDistressValueWords || 'Rupees ...'}).`,
+      appraisalBullet,
     ];
 
     for (const b of bullets) {

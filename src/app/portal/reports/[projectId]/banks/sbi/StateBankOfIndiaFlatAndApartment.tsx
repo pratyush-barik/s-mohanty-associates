@@ -429,6 +429,9 @@ export default function StateBankOfIndiaFlatAndApartment({
       sbiFlatFinalDepreciatedBuildingRate: saved.sbiFlatFinalDepreciatedBuildingRate !== undefined ? saved.sbiFlatFinalDepreciatedBuildingRate : (saved.finalDepreciatedBuildingRate || '2125'),
       sbiFlatFinalRateLandOther: saved.sbiFlatFinalRateLandOther !== undefined ? saved.sbiFlatFinalRateLandOther : (saved.finalRateLandOther || '7500'),
       sbiFlatFinalTotalCompositeRate: saved.sbiFlatFinalTotalCompositeRate !== undefined ? saved.sbiFlatFinalTotalCompositeRate : (saved.finalTotalCompositeRate || '9625'),
+      sbiFlatRemarks: saved.sbiFlatRemarks !== undefined ? saved.sbiFlatRemarks : (saved.remarksText || 'The subject property is a residential flat situated in a developed and prominent residential area with all civic amenities.'),
+      sbiFlatFinalAppraisalText: saved.sbiFlatFinalAppraisalText !== undefined ? saved.sbiFlatFinalAppraisalText : (saved.finalAppraisalText || ''),
+      particularsItems: saved.particularsItems || [],
 
       // Flat 10-item breakdown
       valFlatPresentValue: saved.valFlatPresentValue !== undefined ? saved.valFlatPresentValue : 'Rs. 1,32,34,375/-',
@@ -721,6 +724,7 @@ export default function StateBankOfIndiaFlatAndApartment({
     { id: 'sbi-flat-marketability', title: 'MARKETABILITY' },
     { id: 'sbi-flat-rate', title: 'RATE' },
     { id: 'sbi-flat-composite-depreciation', title: 'COMPOSITE DEPRECIATION' },
+    { id: 'sbi-flat-abstract-declaration', title: 'TOTAL ABSTRACT & DECLARATION' },
     { id: 'section-documents', title: 'DOCUMENTS' },
     { id: 'section-maps', title: 'MAPS' },
     { id: 'section-photographs', title: 'PHOTOGRAPHS' },
@@ -745,6 +749,91 @@ export default function StateBankOfIndiaFlatAndApartment({
   const depBldgRateStr = String(depBldgRateVal);
   const totalCompositeVal = Math.round(depBldgRateVal + landOthersRate);
   const totalCompositeStr = String(totalCompositeVal);
+
+  // ── Auto Appraisal Text & Compliance Grid for Section 7: TOTAL ABSTRACT & DECLARATION ──
+  const specParts = [
+    fields.sbiFlatDoorNo || fields.doorNo ? `Door / Flat No: ${fields.sbiFlatDoorNo || fields.doorNo}` : '',
+    fields.sbiFlatFloorNumber || fields.flatFloorNumber ? `Floor: ${fields.sbiFlatFloorNumber || fields.flatFloorNumber}` : '',
+    fields.sbiFlatApartmentName || fields.apartmentBuildingName ? `in ${fields.sbiFlatApartmentName || fields.apartmentBuildingName}` : '',
+    fields.sbiFlatSuperBuiltUpArea || fields.superBuiltUpArea ? `having Super Built-up Area of ${fields.sbiFlatSuperBuiltUpArea || fields.superBuiltUpArea}` : '',
+  ].filter(Boolean).join(', ');
+
+  const marketValStr = fields.abstractOrSayMarket || fields.abstractMarketValue || 'Rs. 1,32,34,000/-';
+  const realizableValStr = fields.abstractOrSayRealizable || fields.abstractRealizableValue || 'Rs. 1,25,73,000/-';
+  const forcedSaleValStr = fields.abstractOrSayDistress || fields.abstractDistressValue || 'Rs. 1,12,49,000/-';
+
+  const autoAppraisalText = `As a result of physical inspection, appraisal and analysis of ${specParts || 'the subject property'}, it is our considered opinion that the PRESENT MARKET VALUE of the property is ${marketValStr}. The REALIZABLE VALUE is ${realizableValStr} and the FORCED SALE VALUE is ${forcedSaleValStr}.`;
+
+  const COMPLIANCE_ITEMS = [
+    {
+      num: 1,
+      title: '1. Background information of the asset being valued;',
+      defaultComment: fields.propertyDescription || 'The property is situated in a good developed Residential area of Dumuduma, Bhubaneswar.',
+    },
+    {
+      num: 2,
+      title: '2. Purpose of valuation and appointing authority',
+      defaultComment: 'To assess the present market value of the property for loan purpose. The Manager of above said bank is the Appointing authority.',
+    },
+    {
+      num: 3,
+      title: '3. Identity of the Valuers and any other experts involved in the valuation;',
+      defaultComment: 'As it is a land & building valuation (We are authorized Valuers for L& B). So, there is no need to appoint an expert for this valuation.',
+    },
+    {
+      num: 4,
+      title: '4. Disclosure of Valuers interest or conflict, if any;',
+      defaultComment: 'No such interest is involved',
+    },
+    {
+      num: 5,
+      title: '5. Date of appointment, valuation date and date of report;',
+      defaultComment: `Date of Appointment: ${fields.inspectionDate || '03.08.2026'}\nValuation Date: ${fields.inspectionDate || '03.08.2026'}\nDate of Report: ${fields.reportDate || '06.08.2026'}`,
+    },
+    {
+      num: 6,
+      title: '6. Inspections and/or investigations undertaken;',
+      defaultComment: 'We Identify the property by customer',
+    },
+    {
+      num: 7,
+      title: '7. Nature and sources of the information used or relied upon;',
+      defaultComment: 'Market transaction values are collected from nearby Builder, Brokers, Local People regarding land value & cost of construction of the building has been derived on basis of CPWD/OPWD rate & Contractors information.',
+    },
+    {
+      num: 8,
+      title: '8. Procedures adopted in carrying out the valuation and valuation standards followed;',
+      defaultComment: 'Land & Building Method. Land value arrived by comparing similar land parcels in that locality while building value arrived by cost incurred to construct a similar house as on date',
+    },
+    {
+      num: 9,
+      title: '9. Restrictions on use of the report, if any;',
+      defaultComment: 'No such restrictions founds',
+    },
+    {
+      num: 10,
+      title: '10. Major factors that were taken into account during the valuation;',
+      defaultComment: 'The identification of the property, topography, surrounding development, road development etc',
+    },
+    {
+      num: 11,
+      title: '11. Caveats, limitations and disclaimers to the extent they explain or elucidate the limitations faced by valuers, which shall not be for the purpose of limiting his responsibility for the valuation report.',
+      defaultComment: 'No such Caveats and limitation.',
+    },
+  ];
+
+  const handleParticularsChange = (index: number, val: string) => {
+    const current = Array.isArray(fields.particularsItems) ? [...fields.particularsItems] : [];
+    current[index] = val;
+    handleChange('particularsItems', current);
+  };
+
+  const getParticularsVal = (index: number, fallback: string) => {
+    if (fields.particularsItems && fields.particularsItems[index] !== undefined && fields.particularsItems[index] !== '') {
+      return fields.particularsItems[index];
+    }
+    return fallback;
+  };
 
   return (
     <div className="space-y-6 pb-24 w-full">
@@ -2467,6 +2556,80 @@ export default function StateBankOfIndiaFlatAndApartment({
                 tooltip='>>Prefill from section VI, "2 a) Total composite rate arrived for valuation"<<'
                 fallbackValue={fields.sbiFlatTotalCompositeRateArrived || totalCompositeStr}
               />
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── Section 7: TOTAL ABSTRACT & DECLARATION (Color: Mint Green #f1f8e9) ── */}
+      <Section id="sbi-flat-abstract-declaration" title="TOTAL ABSTRACT & DECLARATION" number="VII" defaultOpen={true}>
+        <div style={{ backgroundColor: '#f1f8e9', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-emerald-200">
+          {/* Header Title inside mint green box */}
+          <div className="border-b border-emerald-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-emerald-900 text-sm uppercase tracking-wider">
+              TOTAL ABSTRACT & DECLARATION
+            </h3>
+            <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+              Summary & Statutory Compliance
+            </span>
+          </div>
+
+          {/* REMARKS */}
+          <Field label="REMARKS">
+            <textarea
+              className={inputCls + ' min-h-24'}
+              value={fields.sbiFlatRemarks !== undefined ? fields.sbiFlatRemarks : (fields.remarksText || '')}
+              onChange={e => {
+                handleChange('sbiFlatRemarks', e.target.value);
+                handleChange('remarksText', e.target.value);
+              }}
+              disabled={isReadOnly}
+              rows={3}
+              placeholder="e.g. SUBJECT PROPERTY IS A 2 BHK FLAT, HAVING SUPER BUILT UP AREA: 1375.00 SFT. PROPERTY LOCATED IN A DEVELOPED RESIDENTIAL AREA. ALL CIVIC AMENITIES ARE PRESENT WITHIN 2-3 KMS FROM THE PROPERTY. VALUATION HAS BEEN DONE FOR FLAT ONLY."
+            />
+          </Field>
+
+          {/* Final Appraisal Text / Fair Market Value Statement */}
+          <PrefillField
+            label="Final Appraisal Text / Fair Market Value Statement"
+            value={fields.sbiFlatFinalAppraisalText}
+            onChange={(val: string) => {
+              handleChange('sbiFlatFinalAppraisalText', val);
+              handleChange('finalAppraisalText', val);
+            }}
+            isReadOnly={isReadOnly}
+            type="textarea"
+            rows={3}
+            tooltip=">>Auto calculating from [String concatenation of Property Spec variables, PRESENT MARKET VALUE, REALIZABLE VALUE, and FORCED SALE VALUE]<<"
+            fallbackValue={autoAppraisalText}
+          />
+
+          {/* 1-11 Compliance grid */}
+          <div className="space-y-4">
+            <div className="border-b border-emerald-300/80 pb-2 flex justify-between items-center">
+              <h4 className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
+                1-11 Compliance Grid
+              </h4>
+              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full border border-emerald-200">
+                11 Statutory Checkpoints
+              </span>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {COMPLIANCE_ITEMS.map((item, idx) => (
+                <div key={idx} className="bg-white/90 p-4 rounded-xl border border-emerald-200 space-y-2 shadow-xs">
+                  <div className="text-xs font-bold text-emerald-900 leading-snug">
+                    {item.title}
+                  </div>
+                  <textarea
+                    className={inputCls + ' min-h-20 text-xs bg-slate-50/50 focus:bg-white'}
+                    value={getParticularsVal(idx, item.defaultComment)}
+                    onChange={e => handleParticularsChange(idx, e.target.value)}
+                    disabled={isReadOnly}
+                    rows={3}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
