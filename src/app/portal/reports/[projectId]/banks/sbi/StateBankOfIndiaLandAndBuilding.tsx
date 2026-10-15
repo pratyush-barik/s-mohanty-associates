@@ -482,7 +482,7 @@ export default function StateBankOfIndiaLandAndBuilding({
 
   const NAV_SECTIONS: NavItem[] = [
     { id: 'sbi-lb-cover-and-customer', title: 'COVER PAGE & BANK DETAILS' },
-    { id: 'sbi-lb-sec-2', title: 'PROPERTY DETAILS' },
+    { id: 'sbi-lb-sec-2', title: '2 Property Details' },
     { id: 'sbi-lb-sec-3', title: 'DOCUMENT DETAILS' },
     { id: 'sbi-lb-sec-4', title: 'PHYSICAL DETAILS' },
     { id: 'sbi-lb-sec-5', title: 'TENURE & VIOLATIONS' },
@@ -758,22 +758,41 @@ export default function StateBankOfIndiaLandAndBuilding({
         </div>
       </Section>
 
-      {/* ── Section 2: Property Details ── */}
-      <Section id="sbi-lb-sec-2" title="2. Property Details" number={2} defaultOpen={true}>
-        <Field label="Address (with Khata, Plot, Sub Plot, Area, Kissam, Mouza)">
-          <textarea
-            className={inputCls + ' min-h-17.5'}
-            value={fields.propertyAddress}
-            onChange={(e) => handleChange('propertyAddress', e.target.value)}
-            disabled={isReadOnly}
-          />
-        </Field>
-        <div className="mt-3">
-          <Field label="Nearby Landmark / Independent Access">
-            <input
+      {/* ── Section 2: 2 Property Details (Color: Light Green #e8f5e9) ── */}
+      <Section id="sbi-lb-sec-2" title="2 Property Details" number={2} defaultOpen={true}>
+        <div style={{ backgroundColor: '#e8f5e9', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-emerald-200">
+          {/* Header Title inside light green box */}
+          <div className="border-b border-emerald-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-emerald-900 text-sm uppercase tracking-wider">
+              2 Property Details
+            </h3>
+            <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+              Property Identification & Access
+            </span>
+          </div>
+
+          {/* Address */}
+          <Field label="Address">
+            <textarea
               className={inputCls}
-              value={fields.nearbyLandmark}
-              onChange={(e) => handleChange('nearbyLandmark', e.target.value)}
+              rows={3}
+              value={fields.propertyAddress || ''}
+              onChange={e => {
+                handleChange('propertyAddress', e.target.value);
+                handleChange('valuationPropertyDesc', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Khata No: 311/2959, Plot No: 765/2546, Sub Plot No: 1151 & 1152, Total Area: Ac.0.055 Dec i.e. 2400.00 Sft, Kissam: Gharabari in Mz: Kantilo, Ps: Airfield No-53, Ts: Jatani No-196, Dist: Khurda, Odisha. Pin-751002"
+            />
+          </Field>
+
+          {/* Nearby Landmark/Google Map Independent access to the property */}
+          <Field label="Nearby Landmark/Google Map Independent access to the property">
+            <textarea
+              className={inputCls}
+              rows={3}
+              value={fields.nearbyLandmark || ''}
+              onChange={e => handleChange('nearbyLandmark', e.target.value)}
               disabled={isReadOnly}
               placeholder="The subject property is situated back side of Subhasri Villa Apartment, Kantilo"
             />
