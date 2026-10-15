@@ -367,6 +367,20 @@ export default function StateBankOfIndiaFlatAndApartment({
       flatOccupancyOwnerTenant: saved.flatOccupancyOwnerTenant !== undefined ? saved.flatOccupancyOwnerTenant : 'The Flat is occupied by Owner',
       monthlyRentIfRented: saved.monthlyRentIfRented !== undefined ? saved.monthlyRentIfRented : 'Not Applicable',
 
+      // Section 3 (III. FLAT) keys
+      sbiFlatFloorNumber: saved.sbiFlatFloorNumber !== undefined ? saved.sbiFlatFloorNumber : (saved.flatFloorNumber || '4th Floor'),
+      sbiFlatDoorNumber: saved.sbiFlatDoorNumber !== undefined ? saved.sbiFlatDoorNumber : (saved.flatDoorNumber || 'Flat No: A-041, Tower-A'),
+      sbiFlatMaintenanceCondition: saved.sbiFlatMaintenanceCondition !== undefined ? saved.sbiFlatMaintenanceCondition : (saved.flatMaintenanceCondition || 'Good'),
+      sbiFlatSaleDeedExecutedName: saved.sbiFlatSaleDeedExecutedName !== undefined ? saved.sbiFlatSaleDeedExecutedName : (saved.saleDeedExecutedName || 'Mr. Srijit Mishra'),
+      sbiFlatUndividedLandArea: saved.sbiFlatUndividedLandArea !== undefined ? saved.sbiFlatUndividedLandArea : (saved.undividedLandArea || 'Ac.0.012 Dec i.e. 523.00 Sft'),
+      sbiFlatSuperBuiltUpArea: saved.sbiFlatSuperBuiltUpArea !== undefined ? saved.sbiFlatSuperBuiltUpArea : (saved.superBuiltUpArea || '1375.00'),
+      sbiFlatFloorSpaceIndex: saved.sbiFlatFloorSpaceIndex !== undefined ? saved.sbiFlatFloorSpaceIndex : (saved.floorSpaceIndex || 'As per approval plan'),
+      sbiFlatCarpetArea: saved.sbiFlatCarpetArea !== undefined ? saved.sbiFlatCarpetArea : (saved.carpetArea || '948.00 Sft (Approx.)'),
+      sbiFlatPoshClassMediumOrdinary: saved.sbiFlatPoshClassMediumOrdinary !== undefined ? saved.sbiFlatPoshClassMediumOrdinary : (saved.poshClassMediumOrdinary || 'I Class'),
+      sbiFlatUsageResidentialCommercial: saved.sbiFlatUsageResidentialCommercial !== undefined ? saved.sbiFlatUsageResidentialCommercial : (saved.usageResidentialCommercial || 'Residential Purpose'),
+      sbiFlatOccupancyOwnerTenant: saved.sbiFlatOccupancyOwnerTenant !== undefined ? saved.sbiFlatOccupancyOwnerTenant : (saved.flatOccupancyOwnerTenant || 'The Flat is occupied by Owner'),
+      sbiFlatMonthlyRentIfRented: saved.sbiFlatMonthlyRentIfRented !== undefined ? saved.sbiFlatMonthlyRentIfRented : (saved.monthlyRentIfRented || ''),
+
       marketabilityRating: saved.marketabilityRating !== undefined ? saved.marketabilityRating : 'Good',
       factorsFavoringPotentialValue: saved.factorsFavoringPotentialValue !== undefined ? saved.factorsFavoringPotentialValue : 'The subject property located in a developed Residential area. All civic amenities are located within 2-3 Km radius.',
       negativeFactorsObserved: saved.negativeFactorsObserved !== undefined ? saved.negativeFactorsObserved : 'Nothing Observed',
@@ -1710,39 +1724,371 @@ export default function StateBankOfIndiaFlatAndApartment({
       {isFlat ? (
         <>
 
-          <Section title="III. Flat Specifications & Area" number="III" defaultOpen={true}>
-            <div className="grid md:grid-cols-4 gap-3">
-              <Field label="Floor Number">
-                <input
-                  className={inputCls}
-                  value={fields.flatFloorNumber}
-                  onChange={(e) => handleChange('flatFloorNumber', e.target.value)}
-                  disabled={isReadOnly}
-                />
+          {/* ── Section 3: III. FLAT (Color: Light Yellow #fffde7) ── */}
+          <Section title="III. FLAT" number="III" defaultOpen={true}>
+            <div style={{ backgroundColor: '#fffde7', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-amber-200">
+              {/* Header Title inside light yellow box */}
+              <div className="border-b border-amber-300 pb-2 flex justify-between items-center">
+                <h3 className="font-bold text-amber-900 text-sm uppercase tracking-wider">
+                  III. FLAT
+                </h3>
+                <span className="text-[11px] font-semibold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+                  Flat Specifications & Tenancy
+                </span>
+              </div>
+
+              {/* 1 The floor on which the flat is situated & 2 Door No of the Flat */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <Field label="1 The floor on which the flat is situated">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.sbiFlatFloorNumber || fields.flatFloorNumber || ''}
+                    onChange={e => {
+                      handleChange('sbiFlatFloorNumber', e.target.value);
+                      handleChange('flatFloorNumber', e.target.value);
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="e.g. 4th Floor"
+                  />
+                </Field>
+
+                <Field label="2 Door No of the Flat">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.sbiFlatDoorNumber || fields.flatDoorNumber || ''}
+                    onChange={e => {
+                      handleChange('sbiFlatDoorNumber', e.target.value);
+                      handleChange('flatDoorNumber', e.target.value);
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="e.g. Flat No: A-041, Tower-A"
+                  />
+                </Field>
+              </div>
+
+              {/* 3 Specifications of the flat (Roof, Flooring, Doors, Windows, Fittings, Finishing) */}
+              <Field label="3 Specifications of the flat (Roof, Flooring, Doors, Windows, Fittings, Finishing)">
+                <div className="bg-white/80 p-3.5 rounded-xl border border-amber-200 space-y-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                        Roof
+                      </label>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.specRoof || ''}
+                        onChange={e => handleChange('specRoof', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="e.g. RCC Roof"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                        Flooring
+                      </label>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.specFlooring || ''}
+                        onChange={e => handleChange('specFlooring', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="e.g. VT Flooring / Vitrified Tiles"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                        Doors
+                      </label>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.specDoors || ''}
+                        onChange={e => handleChange('specDoors', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="e.g. Hard Ply wood doors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                        Windows
+                      </label>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.specWindows || ''}
+                        onChange={e => handleChange('specWindows', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="e.g. Aluminum frame with glass fitting windows"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                        Fittings
+                      </label>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.specFittings || ''}
+                        onChange={e => handleChange('specFittings', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="e.g. Superior / Standard CP fittings"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                        Finishing
+                      </label>
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields.specFinishing || ''}
+                        onChange={e => handleChange('specFinishing', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="e.g. Cement Plastering, Putty, Modular Kitchen"
+                      />
+                    </div>
+                  </div>
+                </div>
               </Field>
-              <Field label="Door / Flat No.">
-                <input
-                  className={inputCls}
-                  value={fields.flatDoorNumber}
-                  onChange={(e) => handleChange('flatDoorNumber', e.target.value)}
-                  disabled={isReadOnly}
-                />
+
+              {/* 4 Assessment No (Tax paid in name of, Tax Amount) */}
+              <Field label="4 Assessment No (Tax paid in name of, Tax Amount)">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-white/80 p-3.5 rounded-xl border border-amber-200">
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                      Assessment No
+                    </label>
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.assessmentNumber || ''}
+                      onChange={e => handleChange('assessmentNumber', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="Assessment No (or Not Verified)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                      Tax paid in name of
+                    </label>
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.taxPaidName || ''}
+                      onChange={e => handleChange('taxPaidName', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="Tax paid in name of"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                      Tax Amount
+                    </label>
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.taxAmount || ''}
+                      onChange={e => handleChange('taxAmount', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="Tax Amount (or Not Verified)"
+                    />
+                  </div>
+                </div>
               </Field>
-              <Field label="Super Built-up Area (Sft)">
-                <input
-                  className={inputCls + ' font-bold text-blue-700'}
-                  value={fields.superBuiltUpArea}
-                  onChange={(e) => handleChange('superBuiltUpArea', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="1375.00"
-                />
+
+              {/* 5 Electricity Service Connection No (Meter Card in name of) */}
+              <Field label="5 Electricity Service Connection No (Meter Card in name of)">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 bg-white/80 p-3.5 rounded-xl border border-amber-200">
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                      Electricity Service Connection No
+                    </label>
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.electricityConnectionNo || ''}
+                      onChange={e => handleChange('electricityConnectionNo', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="Connection No (or Not Verified)"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-amber-900 uppercase tracking-wider mb-1">
+                      Meter Card in name of
+                    </label>
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={fields.meterCardName || ''}
+                      onChange={e => handleChange('meterCardName', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder="Meter Card in name of"
+                    />
+                  </div>
+                </div>
               </Field>
-              <Field label="Carpet Area">
-                <input
-                  className={inputCls}
-                  value={fields.carpetArea}
-                  onChange={(e) => handleChange('carpetArea', e.target.value)}
+
+              {/* 6 How is the maintenance of the flat? */}
+              <Field label="6 How is the maintenance of the flat?">
+                <select
+                  className={selectCls}
+                  value={fields.sbiFlatMaintenanceCondition || fields.flatMaintenanceCondition || 'Good'}
+                  onChange={e => {
+                    handleChange('sbiFlatMaintenanceCondition', e.target.value);
+                    handleChange('flatMaintenanceCondition', e.target.value);
+                  }}
                   disabled={isReadOnly}
+                >
+                  <option value="Good">Good</option>
+                  <option value="Average">Average</option>
+                  <option value="Poor">Poor</option>
+                  <option value="Well Maintained">Well Maintained</option>
+                  <option value="Fair">Fair</option>
+                </select>
+              </Field>
+
+              {/* 7 Sale Deed executed in the name of */}
+              <PrefillField
+                type="textarea"
+                rows={2}
+                label="7 Sale Deed executed in the name of"
+                value={fields.sbiFlatSaleDeedExecutedName || fields.saleDeedExecutedName}
+                onChange={(val: string) => {
+                  handleChange('sbiFlatSaleDeedExecutedName', val);
+                  handleChange('saleDeedExecutedName', val);
+                }}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section I. GENERAL, "4. Name of the Owner and his / their address (es) with Phone no."<<'
+                fallbackValue={fields.sbiFlatOwnerNameAndAddress || fields.ownerNameAndAddress || (prefill?.propertyOwner ? `${prefill.propertyOwner}, At: ${prefill.propertyAddress || ''}, Ph: ${prefill.customerPhone || ''}` : 'Mr. Srijit Mishra')}
+              />
+
+              {/* 8 Undivided area, 9 Super Built up Area, 10 Floor Space Index, 11 Carpet Area */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Field label="8 What is the undivided area of land as per Sale Deed?">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.sbiFlatUndividedLandArea || fields.undividedLandArea || ''}
+                    onChange={e => {
+                      handleChange('sbiFlatUndividedLandArea', e.target.value);
+                      handleChange('undividedLandArea', e.target.value);
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="Ac.0.012 Dec i.e. 523.00 Sft"
+                  />
+                </Field>
+
+                <Field label="9 What is the Super Built up Area of the flat?">
+                  <input
+                    type="text"
+                    className={inputCls + ' font-bold text-blue-700'}
+                    value={fields.sbiFlatSuperBuiltUpArea || fields.superBuiltUpArea || ''}
+                    onChange={e => {
+                      handleChange('sbiFlatSuperBuiltUpArea', e.target.value);
+                      handleChange('superBuiltUpArea', e.target.value);
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="1375.00"
+                  />
+                </Field>
+
+                <Field label="10 What is the floor space index (app.)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.sbiFlatFloorSpaceIndex || fields.floorSpaceIndex || ''}
+                    onChange={e => {
+                      handleChange('sbiFlatFloorSpaceIndex', e.target.value);
+                      handleChange('floorSpaceIndex', e.target.value);
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="As per approval plan"
+                  />
+                </Field>
+
+                <Field label="11 What is the Carpet Area of the flat?">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.sbiFlatCarpetArea || fields.carpetArea || ''}
+                    onChange={e => {
+                      handleChange('sbiFlatCarpetArea', e.target.value);
+                      handleChange('carpetArea', e.target.value);
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="948.00 Sft (Approx.)"
+                  />
+                </Field>
+              </div>
+
+              {/* 12 Is it Posh/ I class / Medium / Ordinary?, 13 Residential/Commercial, 14 Owner-occupied/let out */}
+              <div className="grid md:grid-cols-3 gap-4">
+                <Field label="12 Is it Posh/ I class / Medium / Ordinary?">
+                  <select
+                    className={selectCls}
+                    value={fields.sbiFlatPoshClassMediumOrdinary || fields.poshClassMediumOrdinary || 'I Class'}
+                    onChange={e => {
+                      handleChange('sbiFlatPoshClassMediumOrdinary', e.target.value);
+                      handleChange('poshClassMediumOrdinary', e.target.value);
+                    }}
+                    disabled={isReadOnly}
+                  >
+                    <option value="I Class">I Class</option>
+                    <option value="Posh">Posh</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Ordinary">Ordinary</option>
+                  </select>
+                </Field>
+
+                <Field label="13 Is it being used for Residential or Commercial purpose?">
+                  <select
+                    className={selectCls}
+                    value={fields.sbiFlatUsageResidentialCommercial || fields.usageResidentialCommercial || 'Residential Purpose'}
+                    onChange={e => {
+                      handleChange('sbiFlatUsageResidentialCommercial', e.target.value);
+                      handleChange('usageResidentialCommercial', e.target.value);
+                    }}
+                    disabled={isReadOnly}
+                  >
+                    <option value="Residential Purpose">Residential Purpose</option>
+                    <option value="Commercial Purpose">Commercial Purpose</option>
+                    <option value="Mixed Purpose">Mixed Purpose</option>
+                  </select>
+                </Field>
+
+                <Field label="14 Is it Owner-occupied or let out?">
+                  <select
+                    className={selectCls}
+                    value={fields.sbiFlatOccupancyOwnerTenant || fields.flatOccupancyOwnerTenant || 'The Flat is occupied by Owner'}
+                    onChange={e => {
+                      handleChange('sbiFlatOccupancyOwnerTenant', e.target.value);
+                      handleChange('flatOccupancyOwnerTenant', e.target.value);
+                    }}
+                    disabled={isReadOnly}
+                  >
+                    <option value="The Flat is occupied by Owner">The Flat is occupied by Owner</option>
+                    <option value="Owner-occupied">Owner-occupied</option>
+                    <option value="Let out / Rented">Let out / Rented</option>
+                    <option value="Vacant">Vacant</option>
+                  </select>
+                </Field>
+              </div>
+
+              {/* 15 If rented, what is the monthly rent? */}
+              <Field label="15 If rented, what is the monthly rent?">
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={fields.sbiFlatMonthlyRentIfRented || fields.monthlyRentIfRented || ''}
+                  onChange={e => {
+                    handleChange('sbiFlatMonthlyRentIfRented', e.target.value);
+                    handleChange('monthlyRentIfRented', e.target.value);
+                  }}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 15000 (or leave blank / 0 if not rented)"
                 />
               </Field>
             </div>
