@@ -20,6 +20,7 @@ import {
   getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
+  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -37,6 +38,7 @@ export const LT_FINANCIAL_CONFIG: BankConfig = {
 export interface LTFinancialProps extends BankReportBuilderProps {
   initialData?: any;
   isReadOnly?: boolean;
+  onResetWizard?: () => void;
 }
 
 export default function LTFinancialServices({
@@ -48,6 +50,7 @@ export default function LTFinancialServices({
   isReadOnly: isReadOnlyProp = false,
   bucketImages = [],
   prefill = {},
+  onResetWizard,
 }: LTFinancialProps) {
   const router = useRouter();
   const isReadOnly = isReadOnlyProp || status === 'COMPLETED';
@@ -424,10 +427,17 @@ export default function LTFinancialServices({
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100 pb-28">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 space-y-6">
-        <FloatingNavigator sections={navSections} />
+      {/* Top Banner */}
+      <ActiveConfigBanner
+        bankName="L&T FINANCIAL SERVICES"
+        formatName="LAP - TOPUP"
+        onResetWizard={onResetWizard}
+        sticky={false}
+      />
 
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="flex-1 min-w-0 space-y-6 w-full">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
               <span>🏢 L&T Financial Services — LAP / TOPUP Format</span>
@@ -857,6 +867,10 @@ export default function LTFinancialServices({
           />
         </div>
       </div>
+
+      {/* ── Right Sections Nav Panel ── */}
+      <FloatingNavigator sections={navSections} />
+    </div>
 
       <ReportActionBar
         isReadOnly={isReadOnly}

@@ -20,6 +20,7 @@ import {
   getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
+  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -37,6 +38,7 @@ export const UTKARSH_CONFIG: BankConfig = {
 export interface UtkarshSFBProps extends BankReportBuilderProps {
   initialData?: any;
   isReadOnly?: boolean;
+  onResetWizard?: () => void;
 }
 
 export default function UtkarshSmallFinanceBank({
@@ -48,6 +50,7 @@ export default function UtkarshSmallFinanceBank({
   isReadOnly: isReadOnlyProp = false,
   bucketImages = [],
   prefill = {},
+  onResetWizard,
 }: UtkarshSFBProps) {
   const router = useRouter();
   const isReadOnly = isReadOnlyProp || status === 'COMPLETED';
@@ -452,10 +455,21 @@ export default function UtkarshSmallFinanceBank({
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-50 text-slate-800 pb-28">
-      <FloatingNavigator sections={navSections} />
+    <div className="space-y-6 pb-28 w-full">
+      {/* ── Active Configuration Banner with Change Parameters ── */}
+      <ActiveConfigBanner
+        clientType="organisation"
+        category="Bank & FIS"
+        bankName={fields.organisationTemplate || 'UTKARSH SMALL FINANCE BANK'}
+        subclass={fields.organisationSubTemplate || 'Standard'}
+        onResetWizard={onResetWizard}
+        sticky={false}
+      />
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+      {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
+        {/* ── Left Form Column ── */}
+        <div className="flex-1 min-w-0 space-y-6 w-full">
         <div className="bg-white rounded-xl shadow border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -1036,7 +1050,11 @@ export default function UtkarshSmallFinanceBank({
             }
           />
         </div>
-      </main>
+      </div>
+
+      {/* ── Right Sections Nav Panel ── */}
+      <FloatingNavigator sections={navSections} />
+    </div>
 
       {/* Floating Action Bar */}
       <ReportActionBar

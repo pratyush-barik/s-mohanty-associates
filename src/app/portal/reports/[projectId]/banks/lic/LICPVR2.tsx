@@ -13,6 +13,8 @@ import {
   BaseDocumentsSection,
   BaseMapsSection,
   BasePhotographsSection,
+  ActiveConfigBanner,
+  FloatingNavigator,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency } from '@/lib/numberToWords';
 
@@ -282,9 +284,35 @@ export default function LICPVR2({
     }
   };
 
+  const navSections = [
+    { id: 'sec-meta', title: 'Header & Metadata' },
+    { id: 'sec-a', title: 'A. General' },
+    { id: 'sec-b', title: 'B. Entire Project' },
+    { id: 'sec-c', title: 'C. Drawing Approval' },
+    { id: 'sec-d', title: 'D. Inspection Details' },
+    { id: 'sec-e', title: 'E. Flat Details' },
+    { id: 'sec-f-g', title: 'F & G. Valuation' },
+    { id: 'sec-narratives', title: 'Narratives & Certificate' },
+    { id: 'section-documents', title: 'Documents' },
+    { id: 'section-maps', title: 'Maps' },
+    { id: 'section-photographs', title: 'Photographs' },
+  ];
+
   return (
-    <div className="space-y-6 pb-24 max-w-6xl mx-auto">
-      {/* ── Top Header Card ── */}
+    <div className="space-y-6 pb-28 w-full">
+      {/* ── Active Config Banner with Change Parameters ── */}
+      <ActiveConfigBanner
+        bankName={fields.organisationTemplate || 'LIC HOUSING FINANCE LTD'}
+        subclass="PVR-2(FLAT-UNDERCONSTRUCTION)"
+        clientType="organisation"
+        category="Bank & FIS"
+        onResetWizard={onResetWizard}
+        sticky={false}
+      />
+
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
+        <div className="flex-1 min-w-0 space-y-6 w-full">
+          {/* ── Top Header Card ── */}
       <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -557,6 +585,9 @@ export default function LICPVR2({
         sectionNumber={11}
         sectionId="section-photographs"
       />
+        </div>
+        <FloatingNavigator sections={navSections} />
+      </div>
     </div>
   );
 }

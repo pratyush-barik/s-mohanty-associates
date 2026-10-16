@@ -13,6 +13,8 @@ import {
   BaseDocumentsSection,
   BaseMapsSection,
   BasePhotographsSection,
+  ActiveConfigBanner,
+  FloatingNavigator,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency } from '@/lib/numberToWords';
 
@@ -229,9 +231,32 @@ export default function LICNPA({
     }
   };
 
+  const navSections = [
+    { id: 'sec-1', title: 'Account & Borrower' },
+    { id: 'sec-2', title: 'Area Breakdown' },
+    { id: 'sec-3', title: 'Physical Condition' },
+    { id: 'sec-4', title: 'Valuation' },
+    { id: 'sec-5', title: 'Certification' },
+    { id: 'section-documents', title: 'Documents' },
+    { id: 'section-maps', title: 'Maps' },
+    { id: 'section-photographs', title: 'Photographs' },
+  ];
+
   return (
-    <div className="space-y-6 pb-24 max-w-6xl mx-auto">
-      {/* ── Top Header Card ── */}
+    <div className="space-y-6 pb-28 w-full">
+      {/* ── Active Config Banner with Change Parameters ── */}
+      <ActiveConfigBanner
+        bankName={fields.organisationTemplate || 'LIC HOUSING FINANCE LTD'}
+        subclass="NPA-DEFAULT CASES"
+        clientType="organisation"
+        category="Bank & FIS"
+        onResetWizard={onResetWizard}
+        sticky={false}
+      />
+
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
+        <div className="flex-1 min-w-0 space-y-6 w-full">
+          {/* ── Top Header Card ── */}
       <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
@@ -635,6 +660,9 @@ export default function LICNPA({
         sectionNumber={8}
         sectionId="section-photographs"
       />
+        </div>
+        <FloatingNavigator sections={navSections} />
+      </div>
     </div>
   );
 }

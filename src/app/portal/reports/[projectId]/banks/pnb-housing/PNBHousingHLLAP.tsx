@@ -20,6 +20,7 @@ import {
   getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
+  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -37,6 +38,7 @@ export const PNB_HOUSING_HL_LAP_CONFIG: BankConfig = {
 export interface PNBHousingProps extends BankReportBuilderProps {
   initialData?: any;
   isReadOnly?: boolean;
+  onResetWizard?: () => void;
 }
 
 export default function PNBHousingHLLAP({
@@ -48,6 +50,7 @@ export default function PNBHousingHLLAP({
   isReadOnly: isReadOnlyProp = false,
   bucketImages = [],
   prefill = {},
+  onResetWizard,
 }: PNBHousingProps) {
   const router = useRouter();
   const isReadOnly = isReadOnlyProp || status === 'COMPLETED';
@@ -442,10 +445,21 @@ export default function PNBHousingHLLAP({
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-50 text-slate-800 pb-28">
-      <FloatingNavigator sections={navSections} />
+    <div className="space-y-6 pb-28 w-full">
+      {/* ── Active Configuration Banner with Change Parameters ── */}
+      <ActiveConfigBanner
+        clientType="organisation"
+        category="Bank & FIS"
+        bankName={fields.organisationTemplate || 'PNB HOUSING FINANCE LTD'}
+        subclass={fields.organisationSubTemplate || 'Standard'}
+        onResetWizard={onResetWizard}
+        sticky={false}
+      />
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+      {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
+        {/* ── Left Form Column ── */}
+        <div className="flex-1 min-w-0 space-y-6 w-full">
         <div className="bg-white rounded-xl shadow border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -1458,7 +1472,11 @@ export default function PNBHousingHLLAP({
             onReorderImages={(newImgs, newNames) => setFields(p => ({ ...p, propertyImages: newImgs, propertyImageNames: newNames }))}
           />
         </div>
-      </main>
+      </div>
+
+      {/* ── Right Sections Nav Panel ── */}
+      <FloatingNavigator sections={navSections} />
+    </div>
 
       <ReportActionBar
         isReadOnly={isReadOnly}

@@ -44,6 +44,7 @@ export interface IndusIndBBGProps {
   userRole: string;
   bucketImages?: any[];
   prefill?: any;
+  onResetWizard?: () => void;
 }
 
 export default function IndusIndBBG({
@@ -54,6 +55,7 @@ export default function IndusIndBBG({
   userRole,
   bucketImages = [],
   prefill,
+  onResetWizard,
 }: IndusIndBBGProps) {
   const router = useRouter();
 
@@ -506,23 +508,20 @@ export default function IndusIndBBG({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 pb-24">
+    <div className="space-y-6 pb-28 w-full">
       {/* Active Header Banner */}
       <ActiveConfigBanner
-        bankName="INDUSIND BANK"
-        subclass="BBG"
+        bankName={fields.organisationTemplate || 'INDUSIND BANK'}
+        subclass={fields.organisationSubTemplate || 'BBG'}
         clientType="organisation"
         category="Bank & FIS"
+        onResetWizard={onResetWizard}
+        sticky={false}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex gap-8">
-        {/* Floating Navigator */}
-        <div className="hidden lg:block w-64 shrink-0">
-          <FloatingNavigator sections={navSections} />
-        </div>
-
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* Center Main Form */}
-        <div className="flex-1 space-y-6">
+        <div className="flex-1 min-w-0 space-y-6 w-full">
           {message && (
             <div className={`p-4 rounded-xl text-sm font-semibold border shadow-xs ${
               message.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'
@@ -1143,21 +1142,24 @@ export default function IndusIndBBG({
               onReorderImages={(newImgs, newNames) => setFields((p: any) => ({ ...p, propertyImages: newImgs, propertyImageNames: newNames }))}
             />
           </div>
-
-          {/* Action Bar */}
-          <ReportActionBar
-            isReadOnly={isReadOnly}
-            userRole={userRole}
-            autoSaveStatus={autoSaveStatus}
-            message={message}
-            loading={saving || submitting || previewing || !!uploading}
-            onSaveDraft={handleSaveDraft}
-            onSubmit={handleSubmit}
-            onPreviewPDF={handlePreviewPDF}
-            onDownloadPDF={handleDownloadPDF}
-          />
         </div>
+
+        {/* Floating Navigator */}
+        <FloatingNavigator sections={navSections} />
       </div>
+
+      {/* Action Bar */}
+      <ReportActionBar
+        isReadOnly={isReadOnly}
+        userRole={userRole}
+        autoSaveStatus={autoSaveStatus}
+        message={message}
+        loading={saving || submitting || previewing || !!uploading}
+        onSaveDraft={handleSaveDraft}
+        onSubmit={handleSubmit}
+        onPreviewPDF={handlePreviewPDF}
+        onDownloadPDF={handleDownloadPDF}
+      />
 
       {showBucketModal && (
         <BasePhotoBucketModal

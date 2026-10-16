@@ -48,6 +48,7 @@ export interface IndusIndHLLAPProps {
   userRole: string;
   bucketImages?: any[];
   prefill?: any;
+  onResetWizard?: () => void;
 }
 
 export default function IndusIndHLLAP({
@@ -58,6 +59,7 @@ export default function IndusIndHLLAP({
   userRole,
   bucketImages = [],
   prefill,
+  onResetWizard,
 }: IndusIndHLLAPProps) {
   const router = useRouter();
 
@@ -566,23 +568,20 @@ export default function IndusIndHLLAP({
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 pb-24">
+    <div className="space-y-6 pb-28 w-full">
       {/* Active Config Header Banner */}
       <ActiveConfigBanner
-        bankName="INDUSIND BANK"
-        subclass="HL-LAP"
+        bankName={fields.organisationTemplate || 'INDUSIND BANK'}
+        subclass={fields.organisationSubTemplate || 'HL-LAP'}
         clientType="organisation"
         category="Bank & FIS"
+        onResetWizard={onResetWizard}
+        sticky={false}
       />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 flex gap-8">
-        {/* Left Floating Navigator */}
-        <div className="hidden lg:block w-64 shrink-0">
-          <FloatingNavigator sections={navSections} />
-        </div>
-
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* Center Main Form */}
-        <div className="flex-1 space-y-8">
+        <div className="flex-1 min-w-0 space-y-8 w-full">
           {/* Section 1: General Details */}
           <Section id="section-1" title="1. General Details">
             <div className="border border-slate-200 bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
@@ -1534,20 +1533,24 @@ export default function IndusIndHLLAP({
             onReorderImages={handlePhotoReorder}
           />
 
-          {/* STANDARDIZED ACTION BAR */}
-          <ReportActionBar
-            isReadOnly={isReadOnly}
-            userRole={userRole}
-            autoSaveStatus={autoSaveStatus}
-            message={message}
-            loading={saving || submitting || previewing || !!uploading}
-            onSaveDraft={handleSaveDraft}
-            onSubmit={handleSubmit}
-            onPreviewPDF={handlePreviewPDF}
-            onDownloadPDF={handleDownloadPDF}
-          />
         </div>
+
+        {/* Floating Navigator */}
+        <FloatingNavigator sections={navSections} />
       </div>
+
+      {/* STANDARDIZED ACTION BAR */}
+      <ReportActionBar
+        isReadOnly={isReadOnly}
+        userRole={userRole}
+        autoSaveStatus={autoSaveStatus}
+        message={message}
+        loading={saving || submitting || previewing || !!uploading}
+        onSaveDraft={handleSaveDraft}
+        onSubmit={handleSubmit}
+        onPreviewPDF={handlePreviewPDF}
+        onDownloadPDF={handleDownloadPDF}
+      />
 
       {/* Cloud Photo Bucket Picker Modal */}
       {showBucketModal && (

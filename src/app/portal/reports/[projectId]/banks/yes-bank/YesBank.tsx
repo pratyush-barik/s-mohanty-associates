@@ -20,6 +20,7 @@ import {
   getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
+  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -37,6 +38,7 @@ export const YES_BANK_CONFIG: BankConfig = {
 export interface YesBankProps extends BankReportBuilderProps {
   initialData?: any;
   isReadOnly?: boolean;
+  onResetWizard?: () => void;
 }
 
 export default function YesBank({
@@ -48,6 +50,7 @@ export default function YesBank({
   isReadOnly: isReadOnlyProp = false,
   bucketImages = [],
   prefill = {},
+  onResetWizard,
 }: YesBankProps) {
   const router = useRouter();
   const isReadOnly = isReadOnlyProp || status === 'COMPLETED';
@@ -74,10 +77,10 @@ export default function YesBank({
     const p = (prefill || {}) as any;
 
     // Meta Header
-    if (!d.branchName) d.branchName = p.branch || '';
+    if (!d.branchName) d.branchName = p.branch || p.bankBranch || '';
     if (!d.typeOfCase) d.typeOfCase = 'NA';
     if (!d.valuerName) d.valuerName = 'M/s. S Mohanty Associates';
-    if (!d.visitingEnggName) d.visitingEnggName = 'M/s. S Mohanty Associates';
+    if (!d.visitingEnggName) d.visitingEnggName = earliestVisit?.engineerName || p.firstFieldAgentName || p.fieldEmployees?.[0]?.name || 'M/s. S Mohanty Associates';
     if (!d.timeOfVisit) d.timeOfVisit = '';
     if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '';
     if (!d.caseRefNo) d.caseRefNo = projectCode || '';
@@ -89,7 +92,7 @@ export default function YesBank({
     }
 
     // 1. Basic Details
-    if (!d.applicantName) d.applicantName = p.applicantName || '';
+    if (!d.applicantName) d.applicantName = p.applicantName || p.contactName || '';
     if (!d.ownerName) d.ownerName = p.contactName || '';
     if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || '';
     if (!d.currentUsage) d.currentUsage = '';
@@ -454,10 +457,21 @@ export default function YesBank({
   };
 
   return (
-    <div className="relative min-h-screen bg-slate-50 text-slate-800 pb-28">
-      <FloatingNavigator sections={navSections} />
+    <div className="space-y-6 pb-28 w-full">
+      {/* ── Active Configuration Banner with Change Parameters ── */}
+      <ActiveConfigBanner
+        clientType="organisation"
+        category="Bank & FIS"
+        bankName={fields.organisationTemplate || 'YES BANK'}
+        subclass={fields.organisationSubTemplate || 'Standard'}
+        onResetWizard={onResetWizard}
+        sticky={false}
+      />
 
-      <main className="max-w-5xl mx-auto px-4 py-8 space-y-6">
+      {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
+        {/* ── Left Form Column ── */}
+        <div className="flex-1 min-w-0 space-y-6 w-full">
         <div className="bg-white rounded-xl shadow border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -1375,7 +1389,11 @@ export default function YesBank({
             onReorderImages={(newImgs, newNames) => setFields(p => ({ ...p, propertyImages: newImgs, propertyImageNames: newNames }))}
           />
         </div>
-      </main>
+      </div>
+
+      {/* ── Right Sections Nav Panel ── */}
+      <FloatingNavigator sections={navSections} />
+    </div>
 
       <ReportActionBar
         isReadOnly={isReadOnly}

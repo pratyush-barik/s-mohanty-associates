@@ -13,6 +13,7 @@ import {
   BaseDocumentsSection,
   BaseMapsSection,
   BasePhotographsSection,
+  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { formatReportDate } from '@/lib/pdf-bank-renderer';
@@ -441,6 +442,16 @@ export default function IDBIBankAbove5CR({
 
   return (
     <div className="space-y-6 pb-24">
+      {/* ── Active Configuration Banner with Change Parameters ── */}
+      <ActiveConfigBanner
+        bankName="IDBI BANK"
+        subclass="ABOVE 5CR"
+        clientType="organisation"
+        category="Bank & FIS"
+        onResetWizard={onResetWizard}
+        sticky={false}
+      />
+
       {/* ── Top Header Card with Dynamic Mode Toggle ── */}
       <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>

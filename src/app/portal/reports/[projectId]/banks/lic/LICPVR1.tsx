@@ -13,6 +13,8 @@ import {
   BaseDocumentsSection,
   BaseMapsSection,
   BasePhotographsSection,
+  ActiveConfigBanner,
+  FloatingNavigator,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency } from '@/lib/numberToWords';
 
@@ -299,9 +301,35 @@ export default function LICPVR1({
     }
   };
 
+  const navSections = [
+    { id: 'sec-meta', title: 'Header & Metadata' },
+    { id: 'sec-a', title: 'A. General' },
+    { id: 'sec-b', title: 'B. Land' },
+    { id: 'sec-c', title: 'C. Buildings' },
+    { id: 'sec-d', title: 'D. Inspection' },
+    { id: 'sec-e', title: 'E. Total Value' },
+    { id: 'sec-annexure', title: 'Annexure' },
+    { id: 'sec-rec-cert', title: 'Certificate' },
+    { id: 'section-documents', title: 'Documents' },
+    { id: 'section-maps', title: 'Maps' },
+    { id: 'section-photographs', title: 'Photographs' },
+  ];
+
   return (
-    <div className="space-y-6 pb-24 max-w-6xl mx-auto">
-      {/* ── Top Header Card ── */}
+    <div className="space-y-6 pb-28 w-full">
+      {/* ── Active Config Banner with Change Parameters ── */}
+      <ActiveConfigBanner
+        bankName={fields.organisationTemplate || 'LIC HOUSING FINANCE LTD'}
+        subclass="PVR-1(SELF CONSTRUCTION-L & B)"
+        clientType="organisation"
+        category="Bank & FIS"
+        onResetWizard={onResetWizard}
+        sticky={false}
+      />
+
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
+        <div className="flex-1 min-w-0 space-y-6 w-full">
+          {/* ── Top Header Card ── */}
       <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
@@ -738,6 +766,9 @@ export default function LICPVR1({
         sectionNumber={11}
         sectionId="section-photographs"
       />
+        </div>
+        <FloatingNavigator sections={navSections} />
+      </div>
     </div>
   );
 }
