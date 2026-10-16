@@ -10,9 +10,9 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 
 | Status Category | Count | Description |
 | :--- | :---: | :--- |
-| **✅ Completed** | **17 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
+| **✅ Completed** | **18 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
 | **🔨 In Progress** | **28 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
-| **⏳ Not Started** | **31 formats (29 banks)** | Directory reserved / pending base component creation |
+| **⏳ Not Started** | **30 formats (28 banks)** | Directory reserved / pending base component creation |
 | **Total Tracked** | **60 institutions** (76 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
@@ -42,7 +42,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **12** | **BANK OF BARODA-BOB** | `Standard` | ✅ Created Base | ✅ Completed |
 | **13** | **BANK OF INDIA-BOI** | `Standard` | ✅ Created Base | ✅ Completed |
 | **14** | **BANK OF MAHARASHTRA-BOM** | `Standard` | ✅ Created Base | ✅ Completed |
-| **15** | **CANARA BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **15** | **CANARA BANK** | `Standard` | ✅ Created Base | ✅ Completed |
 | **16** | **CANFIN HOMES LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **17** | **CHOLAMANDALAM INVESTMENT COMPANY LTD** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **18** | **CLIX CAPITAL LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
@@ -133,6 +133,7 @@ Templates with complete interactive report draft builder UI and full PDF rendere
 | **12** | BANK OF BARODA-BOB | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-baroda/BankOfBaroda.tsx` | `src/lib/banks/pdf-bank-of-baroda-renderer.ts` | ✅ Completed |
 | **13** | BANK OF INDIA-BOI | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-india/BankOfIndia.tsx` | `src/lib/banks/pdf-bank-of-india-renderer.ts` | ✅ Completed |
 | **14** | BANK OF MAHARASHTRA-BOM | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-maharashtra/BankOfMaharashtra.tsx` | `src/lib/banks/pdf-bank-of-maharashtra-renderer.ts` | ✅ Completed |
+| **15** | CANARA BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/canara/CanaraBank.tsx` | `src/lib/banks/pdf-canara-bank-renderer.ts` | ✅ Completed |
 
 ### 2. Base Structure Completed (`✅ Created Base` — Builder In Progress)
 Templates with base structure & draft UI files created, currently undergoing field customization or section buildout:
