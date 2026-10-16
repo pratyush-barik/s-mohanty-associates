@@ -493,18 +493,14 @@ export default function IndusIndBBG({
 
   // Nav Items
   const navSections: NavItem[] = [
-    { id: 'bbg-sec-a', title: 'A. General' },
-    { id: 'bbg-sec-b', title: 'B. Locality' },
-    { id: 'bbg-sec-c', title: 'C. Property' },
-    { id: 'bbg-sec-d', title: 'D. Subject' },
-    { id: 'bbg-sec-e', title: 'E. Structural' },
-    { id: 'bbg-sec-f', title: 'F. Unit' },
-    { id: 'bbg-sec-g', title: 'G. Valuation' },
-    { id: 'bbg-sec-disc', title: 'VII. Disclosures' },
-    { id: 'bbg-sec-decl', title: 'VIII. Declaration' },
-    { id: 'bbg-sec-docs', title: 'Documents' },
-    { id: 'bbg-sec-maps', title: 'Maps' },
-    { id: 'bbg-sec-photos', title: 'Photographs' },
+    { id: 'bbg-sec-a', title: 'General Details' },
+    { id: 'bbg-sec-b', title: 'Locality Details' },
+    { id: 'bbg-sec-c', title: 'Property Details & Deviations' },
+    { id: 'bbg-sec-g', title: 'Valuation & Calculations' },
+    { id: 'bbg-sec-disc', title: 'Disclosures & Declaration' },
+    { id: 'bbg-sec-docs', title: 'Property Documents' },
+    { id: 'bbg-sec-maps', title: 'Location Maps' },
+    { id: 'bbg-sec-photos', title: 'Property Photographs' },
   ];
 
   return (
@@ -512,7 +508,7 @@ export default function IndusIndBBG({
       {/* Active Header Banner */}
       <ActiveConfigBanner
         bankName={fields.organisationTemplate || 'INDUSIND BANK'}
-        subclass={fields.organisationSubTemplate || 'BBG'}
+        subclass={fields.organisationSubTemplate || undefined}
         clientType="organisation"
         category="Bank & FIS"
         onResetWizard={onResetWizard}
@@ -531,7 +527,7 @@ export default function IndusIndBBG({
           )}
 
           {/* Section A: General Details */}
-          <Section id="bbg-sec-a" title="A. General Details">
+          <Section id="bbg-sec-a" title="General Details">
             <div className="border border-slate-200 bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
               <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Header &amp; Inspection Info
@@ -643,7 +639,7 @@ export default function IndusIndBBG({
           </Section>
 
           {/* Section B: Locality Details */}
-          <Section id="bbg-sec-b" title="B. Surrounding Locality Details">
+          <Section id="bbg-sec-b" title="Locality Details">
             <div className="border border-blue-200 bg-[#F0F7FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="1. Ward No. / Municipal Land No.">
@@ -737,7 +733,7 @@ export default function IndusIndBBG({
           </Section>
 
           {/* Section C: Property Details & Deviations */}
-          <Section id="bbg-sec-c" title="C. Property Details & Deviations">
+          <Section id="bbg-sec-c" title="Property Details & Deviations">
             <div className="border border-indigo-200 bg-[#F5F3FF] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="1. Description of Property">
@@ -860,8 +856,8 @@ export default function IndusIndBBG({
             </div>
           </Section>
 
-          {/* Section G: Valuation Engine */}
-          <Section id="bbg-sec-g" title="G. Valuation Engine & Calculations">
+          {/* Section G: Valuation */}
+          <Section id="bbg-sec-g" title="Valuation & Calculations">
             <div className="border border-emerald-200 bg-[#F0FDF4] rounded-xl p-4 sm:p-5 shadow-2xs space-y-6">
               <div className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
                 (I) For Land &amp; Building (Auto-Summed &amp; Constrained)
@@ -1027,7 +1023,7 @@ export default function IndusIndBBG({
           </Section>
 
           {/* Section VII & VIII: Disclosures & Declaration */}
-          <Section id="bbg-sec-disc" title="VII & VIII. Disclosures & Declaration">
+          <Section id="bbg-sec-disc" title="Disclosures & Declaration">
             <div className="border border-amber-200 bg-[#FFFBEB] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
               <div className="text-xs font-bold text-amber-800 uppercase tracking-wider">
                 Statutory Bank Declarations
@@ -1059,9 +1055,8 @@ export default function IndusIndBBG({
           {/* Inherited Attachments Sections */}
           <div id="bbg-sec-docs">
             <BaseDocumentsSection
-              title="Documents"
+              title="Property Documents"
               sectionId="bbg-sec-docs"
-              sectionNumber="IX"
               documentImages={fields.documentImages || []}
               documentImageNames={fields.documentImageNames || []}
               isReadOnly={isReadOnly}
@@ -1084,9 +1079,8 @@ export default function IndusIndBBG({
 
           <div id="bbg-sec-maps">
             <BaseMapsSection
-              title="Maps"
+              title="Location Maps"
               sectionId="bbg-sec-maps"
-              sectionNumber="X"
               locationMapImages={fields.locationMapImages || []}
               mouzaMapImages={fields.mouzaMapImages || []}
               sketchMapImages={fields.sketchMapImages || []}
@@ -1120,7 +1114,6 @@ export default function IndusIndBBG({
             <BasePhotographsSection
               title="Property Photographs"
               sectionId="bbg-sec-photos"
-              sectionNumber="XI"
               propertyImages={fields.propertyImages || []}
               propertyImageNames={fields.propertyImageNames || []}
               isReadOnly={isReadOnly}

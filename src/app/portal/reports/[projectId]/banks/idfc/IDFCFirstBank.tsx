@@ -64,17 +64,17 @@ export default function IDFCFirstBank({
 
   // Navigation Items
   const navSections: NavItem[] = [
-    { id: 'sec-header', title: '1. Case & Ref' },
-    { id: 'sec-basic', title: '2. Basic Details' },
-    { id: 'sec-surrounding', title: '3. Surrounding & Locality' },
-    { id: 'sec-property', title: '4. Property & Building' },
-    { id: 'sec-sanction', title: '5. Sanctions & Approvals' },
-    { id: 'sec-setbacks', title: '6. Setbacks & Areas' },
-    { id: 'sec-valuation', title: '7. Valuation Engine' },
-    { id: 'sec-boundaries', title: '8. Boundaries & Remarks' },
-    { id: 'sec-documents', title: '9. Verified Documents' },
-    { id: 'sec-maps', title: '10. Maps & Location Sketch' },
-    { id: 'sec-photos', title: '11. Property Photographs' },
+    { id: 'sec-header', title: 'Header & Case Reference' },
+    { id: 'sec-basic', title: 'Basic Details' },
+    { id: 'sec-surrounding', title: 'Surrounding & Locality Details' },
+    { id: 'sec-property', title: 'Property & Building Details' },
+    { id: 'sec-sanction', title: 'Sanctions & Regulatory Approvals' },
+    { id: 'sec-setbacks', title: 'Setbacks & Area Schedules' },
+    { id: 'sec-valuation', title: 'Valuation Engine & Calculations' },
+    { id: 'sec-boundaries', title: 'Boundaries & Final Observations' },
+    { id: 'sec-documents', title: 'Verified Property Documents' },
+    { id: 'sec-maps', title: 'Location Sketch & Route Maps' },
+    { id: 'sec-photos', title: 'Property Site Photographs' },
   ];
 
   // Earliest visit info
@@ -493,7 +493,9 @@ export default function IDFCFirstBank({
       {/* Top Banner */}
       <ActiveConfigBanner
         bankName="IDFC FIRST BANK"
-        formatName="TECHNICAL APPRAISAL REPORT"
+        subclass={initialFields?.organisationSubTemplate || undefined}
+        category="Bank & FIS"
+        clientType="organisation"
         onResetWizard={onResetWizard}
         sticky={false}
       />
@@ -515,7 +517,7 @@ export default function IDFCFirstBank({
         {/* 1. Case & Ref */}
         <div id="sec-header" className={softCardCls}>
           <div className="border-b border-slate-800 pb-2">
-            <h2 className="text-base font-semibold text-slate-200">1. Header & Case Reference Information</h2>
+            <h2 className="text-base font-semibold text-slate-200">Header & Case Reference</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Field label="Report Ref No">
@@ -599,7 +601,7 @@ export default function IDFCFirstBank({
         {/* 2. Basic Details */}
         <div id="sec-basic" className={softCardCls}>
           <div className="border-b border-slate-800 pb-2">
-            <h2 className="text-base font-semibold text-slate-200">2. Basic Details (Points 1 - 4)</h2>
+            <h2 className="text-base font-semibold text-slate-200">Basic Details</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Field label="1. Applicant/s Name/s">
@@ -662,7 +664,7 @@ export default function IDFCFirstBank({
         {/* 3. Surrounding & Locality */}
         <div id="sec-surrounding" className={softCardCls}>
           <div className="border-b border-slate-800 pb-2">
-            <h2 className="text-base font-semibold text-slate-200">3. Surrounding & Locality Details (Points 5 - 8)</h2>
+            <h2 className="text-base font-semibold text-slate-200">Surrounding & Locality Details</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Field label="Approved Usage of Property">
@@ -756,7 +758,7 @@ export default function IDFCFirstBank({
         {/* 4. Property & Building Details */}
         <div id="sec-property" className={softCardCls}>
           <div className="border-b border-slate-800 pb-2">
-            <h2 className="text-base font-semibold text-slate-200">4. Property & Building Details (Points 9 - 13)</h2>
+            <h2 className="text-base font-semibold text-slate-200">Property & Building Details</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Field label="9. Occupant Status">
@@ -950,7 +952,7 @@ export default function IDFCFirstBank({
         {/* 5. Sanctions & Approvals */}
         <div id="sec-sanction" className={softCardCls}>
           <div className="border-b border-slate-800 pb-2">
-            <h2 className="text-base font-semibold text-slate-200">5. Sanction Plan & Regulatory Approvals (Points 14 - 19)</h2>
+            <h2 className="text-base font-semibold text-slate-200">Sanctions & Regulatory Approvals</h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
@@ -1058,7 +1060,7 @@ export default function IDFCFirstBank({
         {/* 6. Setbacks & Areas */}
         <div id="sec-setbacks" className={softCardCls}>
           <div className="border-b border-slate-800 pb-2">
-            <h2 className="text-base font-semibold text-slate-200">6. Setbacks & Floor Wise Area Schedules (Points 19A, 19B, 20)</h2>
+            <h2 className="text-base font-semibold text-slate-200">Setbacks & Area Schedules</h2>
           </div>
 
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">19A. Setbacks & Demolition Risk</h3>
@@ -1159,7 +1161,7 @@ export default function IDFCFirstBank({
         {/* 7. Valuation Engine */}
         <div id="sec-valuation" className={softCardCls}>
           <div className="border-b border-slate-800 pb-2 flex justify-between items-center">
-            <h2 className="text-base font-semibold text-slate-200">7. Valuation Engine (Point 21)</h2>
+            <h2 className="text-base font-semibold text-slate-200">Valuation Engine & Calculations</h2>
             <span className="text-xs bg-indigo-500/10 text-indigo-400 px-2.5 py-1 rounded-full border border-indigo-500/20 font-mono">
               Auto-Calculating
             </span>
@@ -1312,7 +1314,7 @@ export default function IDFCFirstBank({
         {/* 8. Boundaries & Remarks */}
         <div id="sec-boundaries" className={softCardCls}>
           <div className="border-b border-slate-800 pb-2">
-            <h2 className="text-base font-semibold text-slate-200">8. Boundaries Matrix & Final Observations (Point 22)</h2>
+            <h2 className="text-base font-semibold text-slate-200">Boundaries & Final Observations</h2>
           </div>
 
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400">Boundary Comparison Matrix</h3>
@@ -1437,7 +1439,6 @@ export default function IDFCFirstBank({
           <BaseDocumentsSection
             title="Verified Property Documents"
             sectionId="sec-documents"
-            sectionNumber={9}
             documentImages={formData.documentImages || []}
             documentImageNames={formData.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1467,7 +1468,6 @@ export default function IDFCFirstBank({
           <BaseMapsSection
             title="Location Sketch & Route Maps"
             sectionId="sec-maps"
-            sectionNumber={10}
             locationMapImages={formData.locationMapImages || []}
             mouzaMapImages={formData.mouzaMapImages || []}
             sketchMapImages={formData.sketchMapImages || []}
@@ -1498,9 +1498,8 @@ export default function IDFCFirstBank({
         {/* 11. Property Photographs */}
         <div id="sec-photos">
           <BasePhotographsSection
-            title="Property Photographs"
+            title="Property Site Photographs"
             sectionId="sec-photos"
-            sectionNumber={11}
             propertyImages={formData.propertyImages || []}
             propertyImageNames={formData.propertyImageNames || []}
             isReadOnly={isReadOnly}

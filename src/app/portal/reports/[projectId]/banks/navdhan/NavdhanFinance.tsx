@@ -28,7 +28,7 @@ import { PDFNavdhanFinanceRenderer } from '@/lib/banks/pdf-navdhan-finance-rende
 
 export const NAVDHAN_FINANCE_CONFIG: BankConfig = {
   bankId: 'NAVDHAN FINANCE',
-  subTemplateId: 'Standard',
+  subTemplateId: '',
   displayName: 'Navdhan Finance',
   defaultValues: {
     purpose: 'Housing / MSME / Rural Lending Valuation',
@@ -457,7 +457,7 @@ export default function NavdhanFinance({
         clientType="organisation"
         category="Bank & FIS"
         bankName={fields.organisationTemplate || 'NAVDHAN FINANCE'}
-        subclass={fields.organisationSubTemplate || 'Standard'}
+        subclass={fields.organisationSubTemplate || undefined}
         onResetWizard={onResetWizard}
         sticky={false}
       />
@@ -1426,7 +1426,6 @@ export default function NavdhanFinance({
           <BaseDocumentsSection
             title="Verified Property Documents"
             sectionId="nv-sec-docs"
-            sectionNumber={1}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1449,7 +1448,6 @@ export default function NavdhanFinance({
           <BaseMapsSection
             title="Location Sketch & Route Maps"
             sectionId="nv-sec-maps"
-            sectionNumber={2}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1477,7 +1475,6 @@ export default function NavdhanFinance({
           <BasePhotographsSection
             title="Property Site Photographs"
             sectionId="nv-sec-photos"
-            sectionNumber={3}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

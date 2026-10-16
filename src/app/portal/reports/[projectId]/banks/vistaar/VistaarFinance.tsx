@@ -28,7 +28,7 @@ import { PDFVistaarFinanceRenderer } from '@/lib/banks/pdf-vistaar-finance-rende
 
 export const VISTAAR_FINANCE_CONFIG: BankConfig = {
   bankId: 'VISTAAR FINANCE',
-  subTemplateId: 'Standard',
+  subTemplateId: '',
   displayName: 'Vistaar Financial Services Pvt Ltd',
   defaultValues: {
     purpose: 'LAP / MSME Loan Against Property',
@@ -462,7 +462,7 @@ export default function VistaarFinance({
         clientType="organisation"
         category="Bank & FIS"
         bankName={fields.organisationTemplate || 'VISTAAR FINANCE'}
-        subclass={fields.organisationSubTemplate || 'Standard'}
+        subclass={fields.organisationSubTemplate || undefined}
         onResetWizard={onResetWizard}
         sticky={false}
       />
@@ -1169,7 +1169,6 @@ export default function VistaarFinance({
           <BaseDocumentsSection
             title="Verified Property Documents"
             sectionId="vistaar-sec-docs"
-            sectionNumber={1}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1196,7 +1195,6 @@ export default function VistaarFinance({
           <BaseMapsSection
             title="Location Sketch & Route Maps"
             sectionId="vistaar-sec-maps"
-            sectionNumber={2}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1249,7 +1247,6 @@ export default function VistaarFinance({
           <BasePhotographsSection
             title="Property Site Photographs"
             sectionId="vistaar-sec-photos"
-            sectionNumber={3}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

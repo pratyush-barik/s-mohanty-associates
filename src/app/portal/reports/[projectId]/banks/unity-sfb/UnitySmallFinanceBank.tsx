@@ -28,7 +28,7 @@ import { PDFUnitySFBRenderer } from '@/lib/banks/pdf-unity-sfb-renderer';
 
 export const UNITY_SFB_CONFIG: BankConfig = {
   bankId: 'UNITY SMALL FINANCE BANK',
-  subTemplateId: 'Standard',
+  subTemplateId: '',
   displayName: 'Unity Small Finance Bank',
   defaultValues: {
     purpose: 'Housing Loan / Business Finance / LAP',
@@ -475,7 +475,7 @@ export default function UnitySmallFinanceBank({
         clientType="organisation"
         category="Bank & FIS"
         bankName={fields.organisationTemplate || 'UNITY SMALL FINANCE BANK'}
-        subclass={fields.organisationSubTemplate || 'Standard'}
+        subclass={fields.organisationSubTemplate || undefined}
         onResetWizard={onResetWizard}
         sticky={false}
       />
@@ -912,7 +912,6 @@ export default function UnitySmallFinanceBank({
           <BaseMapsSection
             title="Location Plan & Sketch Map"
             sectionId="unity-sec-maps"
-            sectionNumber={1}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -965,7 +964,6 @@ export default function UnitySmallFinanceBank({
           <BaseDocumentsSection
             title="Verified Property Documents"
             sectionId="unity-sec-docs"
-            sectionNumber={2}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -992,7 +990,6 @@ export default function UnitySmallFinanceBank({
           <BasePhotographsSection
             title="Property Site Photographs"
             sectionId="unity-sec-photos"
-            sectionNumber={3}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

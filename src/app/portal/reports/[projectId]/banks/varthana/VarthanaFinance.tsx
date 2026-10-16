@@ -28,7 +28,7 @@ import { PDFVarthanaFinanceRenderer } from '@/lib/banks/pdf-varthana-finance-ren
 
 export const VARTHANA_FINANCE_CONFIG: BankConfig = {
   bankId: 'VARTHANA FINANCE',
-  subTemplateId: 'Standard',
+  subTemplateId: '',
   displayName: 'Varthana Finance (School Loans)',
   defaultValues: {
     purpose: 'School & Educational Institution Infrastructure Valuation',
@@ -466,7 +466,7 @@ export default function VarthanaFinance({
         clientType="organisation"
         category="Bank & FIS"
         bankName={fields.organisationTemplate || 'VARTHANA FINANCE'}
-        subclass={fields.organisationSubTemplate || 'Standard'}
+        subclass={fields.organisationSubTemplate || undefined}
         onResetWizard={onResetWizard}
         sticky={false}
       />
@@ -1090,7 +1090,6 @@ export default function VarthanaFinance({
           <BaseMapsSection
             title="Amin Sketch-Map & Location Plans"
             sectionId="varthana-sec-maps"
-            sectionNumber={1}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1143,7 +1142,6 @@ export default function VarthanaFinance({
           <BaseDocumentsSection
             title="Verified Property Documents"
             sectionId="varthana-sec-docs"
-            sectionNumber={2}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1170,7 +1168,6 @@ export default function VarthanaFinance({
           <BasePhotographsSection
             title="Property Site Photographs"
             sectionId="varthana-sec-photos"
-            sectionNumber={3}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

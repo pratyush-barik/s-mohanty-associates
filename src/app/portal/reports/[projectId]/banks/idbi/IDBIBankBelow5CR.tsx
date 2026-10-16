@@ -359,7 +359,7 @@ export default function IDBIBankBelow5CR({
       {/* ── Active Configuration Banner with Change Parameters ── */}
       <ActiveConfigBanner
         bankName="IDBI BANK"
-        subclass="BELOW 5CR"
+        subclass={(initialFields as any)?.organisationSubTemplate || undefined}
         clientType="organisation"
         category="Bank & FIS"
         onResetWizard={onResetWizard}
@@ -1318,18 +1318,17 @@ export default function IDBIBankBelow5CR({
 
       {/* ── Section: Base Documents ── */}
       <BaseDocumentsSection
-        title="Documents"
+        title="Verified Property Documents"
         documentImages={fields.documentImages || []}
         documentImageNames={fields.documentImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={10}
         sectionId="section-documents"
       />
 
       {/* ── Section: Base Maps ── */}
       <BaseMapsSection
-        title="Maps"
+        title="Location Maps"
         locationMapImages={fields.locationMapImages || []}
         mouzaMapImages={fields.mouzaMapImages || []}
         sketchMapImages={fields.sketchMapImages || []}
@@ -1341,7 +1340,6 @@ export default function IDBIBankBelow5CR({
         propertyAddress={fields.propertyAddress || ''}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={11}
         sectionId="section-maps"
       />
 
@@ -1352,7 +1350,6 @@ export default function IDBIBankBelow5CR({
         propertyImageNames={fields.propertyImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={12}
         sectionId="section-photographs"
       />
     </div>

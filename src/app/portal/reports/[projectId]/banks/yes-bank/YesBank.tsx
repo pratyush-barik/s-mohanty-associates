@@ -28,7 +28,7 @@ import { PDFYesBankRenderer } from '@/lib/banks/pdf-yes-bank-renderer';
 
 export const YES_BANK_CONFIG: BankConfig = {
   bankId: 'YES BANK',
-  subTemplateId: 'Standard',
+  subTemplateId: '',
   displayName: 'YES Bank Limited',
   defaultValues: {
     purpose: 'Housing Loan / Commercial / Project Loan',
@@ -56,15 +56,17 @@ export default function YesBank({
   const isReadOnly = isReadOnlyProp || status === 'COMPLETED';
 
   const navSections: NavItem[] = [
-    { id: 'yes-sec-header', title: 'Header & Meta' },
-    { id: 'yes-sec-basic', title: '1. Basic Details' },
-    { id: 'yes-sec-locality', title: '2. Locality & Surroundings' },
-    { id: 'yes-sec-property', title: '3. Property & Building' },
-    { id: 'yes-sec-sanction', title: '4. Sanction & Setbacks' },
-    { id: 'yes-sec-valuation', title: '5. Valuation & Rates' },
-    { id: 'yes-sec-market', title: '6-8. Market, Stage & Remarks' },
+    { id: 'yes-sec-header', title: 'Header & Branch Details' },
+    { id: 'yes-sec-basic', title: 'Basic Details' },
+    { id: 'yes-sec-locality', title: 'Locality & Surroundings' },
+    { id: 'yes-sec-property', title: 'Property Details' },
+    { id: 'yes-sec-sanction', title: 'Sanction Plan Details' },
+    { id: 'yes-sec-valuation', title: 'Valuation & Rates' },
+    { id: 'yes-sec-market', title: 'Market Comparison & Remarks' },
     { id: 'yes-sec-declaration', title: 'Declaration & Sign-off' },
-    { id: 'yes-sec-attachments', title: 'Attachments' },
+    { id: 'yes-sec-docs', title: 'Verified Property Documents' },
+    { id: 'yes-sec-maps', title: 'Location Sketch & Route Maps' },
+    { id: 'yes-sec-photos', title: 'Property Site Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -463,7 +465,7 @@ export default function YesBank({
         clientType="organisation"
         category="Bank & FIS"
         bankName={fields.organisationTemplate || 'YES BANK'}
-        subclass={fields.organisationSubTemplate || 'Standard'}
+        subclass={fields.organisationSubTemplate || undefined}
         onResetWizard={onResetWizard}
         sticky={false}
       />
@@ -486,7 +488,7 @@ export default function YesBank({
 
         {/* 1. Header & Branch */}
         <div id="yes-sec-header">
-          <Section title="Header & Branch Meta Details">
+          <Section title="Header & Branch Details">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Branch Name">
                 <input
@@ -577,7 +579,7 @@ export default function YesBank({
 
         {/* 2. Basic Details */}
         <div id="yes-sec-basic">
-          <Section title="1. Basic Details">
+          <Section title="Basic Details">
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Applicants Name">
@@ -652,7 +654,7 @@ export default function YesBank({
 
         {/* 3. Locality & Surroundings */}
         <div id="yes-sec-locality">
-          <Section title="2. Surroundings & Locality Details">
+          <Section title="Locality & Surroundings">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Zoning as per Master Plan / Development plan">
                 <input
@@ -743,7 +745,7 @@ export default function YesBank({
 
         {/* 4. Property Details */}
         <div id="yes-sec-property">
-          <Section title="3. Property Details">
+          <Section title="Property Details">
             <Field label="Brief description of the property">
               <textarea
                 rows={4}
@@ -970,7 +972,7 @@ export default function YesBank({
 
         {/* 5. Sanction Plan Approval & Setbacks */}
         <div id="yes-sec-sanction">
-          <Section title="4. Sanction Plan Approval & Other Document details">
+          <Section title="Sanction Plan Details">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Sanctioned plans details">
                 <input
@@ -1100,7 +1102,7 @@ export default function YesBank({
 
         {/* 6. Valuation & Rates */}
         <div id="yes-sec-valuation">
-          <Section title="5. Valuation - Area Details & Rates">
+          <Section title="Valuation & Rates">
             <div className="space-y-6">
               {/* Land + Construction Method */}
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-4">
@@ -1213,7 +1215,7 @@ export default function YesBank({
 
         {/* 7. Market Comparison, Stage & Remarks */}
         <div id="yes-sec-market">
-          <Section title="6-8. Market Comparison, Stage of Construction & Remarks">
+          <Section title="Market Comparison & Remarks">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Stage Progress (%)">
                 <input
@@ -1316,7 +1318,6 @@ export default function YesBank({
           <BaseDocumentsSection
             title="Verified Property Documents"
             sectionId="yes-sec-docs"
-            sectionNumber={1}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1339,7 +1340,6 @@ export default function YesBank({
           <BaseMapsSection
             title="Location Sketch & Route Maps"
             sectionId="yes-sec-maps"
-            sectionNumber={2}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1367,7 +1367,6 @@ export default function YesBank({
           <BasePhotographsSection
             title="Property Site Photographs"
             sectionId="yes-sec-photos"
-            sectionNumber={3}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

@@ -28,7 +28,7 @@ import { PDFUtkarshSFBRenderer } from '@/lib/banks/pdf-utkarsh-sfb-renderer';
 
 export const UTKARSH_CONFIG: BankConfig = {
   bankId: 'UTKARSH SMALL FINANCE BANK',
-  subTemplateId: 'Standard',
+  subTemplateId: '',
   displayName: 'Utkarsh Small Finance Bank',
   defaultValues: {
     purpose: 'Housing Loan / LAP / Micro Mortgages',
@@ -461,7 +461,7 @@ export default function UtkarshSmallFinanceBank({
         clientType="organisation"
         category="Bank & FIS"
         bankName={fields.organisationTemplate || 'UTKARSH SMALL FINANCE BANK'}
-        subclass={fields.organisationSubTemplate || 'Standard'}
+        subclass={fields.organisationSubTemplate || undefined}
         onResetWizard={onResetWizard}
         sticky={false}
       />
@@ -944,7 +944,6 @@ export default function UtkarshSmallFinanceBank({
           <BaseMapsSection
             title="Location Plan & Sketch Map"
             sectionId="utkarsh-sec-maps"
-            sectionNumber={1}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -997,7 +996,6 @@ export default function UtkarshSmallFinanceBank({
           <BaseDocumentsSection
             title="Verified Property Documents"
             sectionId="utkarsh-sec-docs"
-            sectionNumber={2}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1024,7 +1022,6 @@ export default function UtkarshSmallFinanceBank({
           <BasePhotographsSection
             title="Property Site Photographs"
             sectionId="utkarsh-sec-photos"
-            sectionNumber={3}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

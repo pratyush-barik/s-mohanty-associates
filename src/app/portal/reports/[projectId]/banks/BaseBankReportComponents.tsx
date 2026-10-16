@@ -497,20 +497,23 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
 
           const isActive = activeId === sec.id;
           const rawTitle = sec.title || '';
-          const cleanTitle = rawTitle
-            .replace(/^(?:section|sec|part)\s+[0-9a-zivxlcdm]+[\.\s\-:]*\s*/i, '')
-            .replace(/^(?:\d+|[ivxlcdm]+)[\.\)\s\-:]+\s*/i, '')
-            .replace(/^\([0-9a-zivxlcdm]+\)[\.\s\-:]*\s*/i, '')
-            .trim();
-          const match = cleanTitle.match(/^(.*?)\s*(\([^\)]+\))$/);
-          const mainTitle = match ? match[1] : cleanTitle;
-          const badgeRange = match ? match[2] : null;
+          // Strip any numbers, numbering ranges, letters, and prefixes so navbar NEVER contains numbers
+          let cleanTitle = rawTitle.trim();
+          cleanTitle = cleanTitle.replace(/^(?:section|sec|part|pt|points?)\s+[0-9a-zivxlcdm]+(?:\s*(?:to|-|–)\s*[0-9a-zivxlcdm]+)?[\.\s\-:]*\s*/i, '');
+          cleanTitle = cleanTitle.replace(/^\(?[0-9]+(?:\s*(?:[-–—/]|to)\s*[0-9]+)?\)?[.\s\-–—:]*\s*/i, '');
+          cleanTitle = cleanTitle.replace(/^[ivxlcdm]+(?:\s*(?:&|and|-|–)\s*[ivxlcdm]+)?[.\)\s\-–—:]+\s*/i, '');
+          cleanTitle = cleanTitle.replace(/^[a-z][.\)\s\-–—:]+\s*/i, '');
+          cleanTitle = cleanTitle.replace(/\s*\((?:points?|pt|sec|section)?\s*[0-9ivxlcdm\s\-–—to]+\)$/i, '');
+          cleanTitle = cleanTitle.replace(/^[0-9]+[.\s\-–—:]*\s*/, '');
+          cleanTitle = cleanTitle.replace(/^[\s.\-–—:]+/, '').trim();
+
+          const mainTitle = cleanTitle || rawTitle;
 
           return (
             <button
               key={sec.id || `item-${idx}`}
               type="button"
-              title={cleanTitle}
+              title={mainTitle}
               onClick={() => scrollTo(sec.id)}
               className={`w-full py-1.5 px-2.5 rounded-xl text-center flex flex-col items-center justify-center transition-all duration-200 text-xs font-bold my-0.5 shrink-0 ${
                 isActive
@@ -520,11 +523,6 @@ export function FloatingNavigator({ sections }: { sections: NavItem[] }) {
             >
               <span className="leading-snug block w-full whitespace-normal text-center">
                 {mainTitle}
-                {badgeRange && (
-                  <span className={`block text-[10.5px] font-semibold tracking-tight whitespace-nowrap mt-0.5 text-center ${isActive ? 'text-amber-100' : 'text-indigo-700/80'}`}>
-                    {badgeRange}
-                  </span>
-                )}
               </span>
             </button>
           );
@@ -562,7 +560,10 @@ export function ActiveConfigBanner({
     ? (SERVICES_LIST.find((s) => s.id === serviceType)?.title || serviceType).replace(/_/g, ' ')
     : undefined;
 
-  const isGenericValuationReport = activeSubclass.toLowerCase() === 'valuation report';
+  const isGenericValuationReport =
+    !activeSubclass ||
+    activeSubclass.toLowerCase() === 'valuation report' ||
+    activeSubclass.toLowerCase() === 'standard';
   const displaySubclass = isGenericValuationReport ? undefined : activeSubclass;
 
   return (

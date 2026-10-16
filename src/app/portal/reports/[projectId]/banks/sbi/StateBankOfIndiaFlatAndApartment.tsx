@@ -741,18 +741,18 @@ export default function StateBankOfIndiaFlatAndApartment({
   const pf = (prefill || {}) as any;
 
   const NAV_SECTIONS: NavItem[] = [
-    { id: 'sbi-flat-general', title: 'GENERAL' },
-    { id: 'sbi-flat-building', title: 'APARTMENT BUILDING' },
-    { id: 'sbi-flat-flat', title: 'FLAT SPECIFICATIONS' },
-    { id: 'sbi-flat-marketability', title: 'MARKETABILITY' },
-    { id: 'sbi-flat-rate', title: 'RATE' },
-    { id: 'sbi-flat-composite-depreciation', title: 'COMPOSITE DEPRECIATION' },
-    { id: 'sbi-flat-abstract-declaration', title: 'TOTAL ABSTRACT & DECLARATION' },
-    { id: 'sbi-flat-abstract-bm-verification', title: 'TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION' },
-    { id: 'sbi-flat-particulars-conduct-justification', title: 'VALUATION PARTICULARS, CONDUCT & JUSTIFICATION' },
-    { id: 'section-documents', title: 'DOCUMENTS' },
-    { id: 'section-maps', title: 'MAPS' },
-    { id: 'section-photographs', title: 'PHOTOGRAPHS' },
+    { id: 'sbi-flat-general', title: 'General Details' },
+    { id: 'sbi-flat-building', title: 'Apartment Building' },
+    { id: 'sbi-flat-flat', title: 'Flat Specifications' },
+    { id: 'sbi-flat-marketability', title: 'Marketability' },
+    { id: 'sbi-flat-rate', title: 'Valuation & Rates' },
+    { id: 'sbi-flat-composite-depreciation', title: 'Composite Depreciation' },
+    { id: 'sbi-flat-abstract-declaration', title: 'Total Abstract & Declaration' },
+    { id: 'sbi-flat-abstract-bm-verification', title: 'Total Abstract & Branch Manager Verification' },
+    { id: 'sbi-flat-particulars-conduct-justification', title: 'Valuation Particulars & Conduct' },
+    { id: 'section-documents', title: 'Verified Property Documents' },
+    { id: 'section-maps', title: 'Location Maps' },
+    { id: 'section-photographs', title: 'Property Photographs' },
   ];
 
   // ── Auto-calculations for Section VI. COMPOSITE RATE ADOPTED AFTER DEPRECIATION ──
@@ -975,7 +975,7 @@ export default function StateBankOfIndiaFlatAndApartment({
         clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
         category={fields.institutionCategory || 'Bank & FIS'}
         bankName={fields.bankName || fields.organisationTemplate || 'STATE BANK OF INDIA (SBI)'}
-        subclass={fields.organisationSubTemplate || 'Flat & Apartment'}
+        subclass={fields.organisationSubTemplate || undefined}
         serviceType={fields.serviceType}
         subjectType={fields.subjectType}
         onResetWizard={onResetWizard}
@@ -988,8 +988,8 @@ export default function StateBankOfIndiaFlatAndApartment({
         <div className="flex-1 min-w-0 space-y-6 w-full">
 
 
-      {/* ── Section 1: I. GENERAL (Color: Light Blue #e3f2fd) ── */}
-      <Section id="sbi-flat-general" title="I. GENERAL" number="I" defaultOpen={true}>
+      {/* ── Section 1: General Details ── */}
+      <Section id="sbi-flat-general" title="General Details" defaultOpen={true}>
         <div style={{ backgroundColor: '#e3f2fd', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-blue-200">
           {/* Header Title inside light blue box */}
           <div className="border-b border-blue-300 pb-2 flex justify-between items-center">
@@ -1604,8 +1604,8 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
-      {/* ── Section 2: II. APARTMENT BUILDING (Color: Light Green #e8f5e9) ── */}
-      <Section id="sbi-flat-building" title="II. APARTMENT BUILDING" number="II" defaultOpen={true}>
+      {/* ── Section 2: Apartment Building ── */}
+      <Section id="sbi-flat-building" title="Apartment Building" defaultOpen={true}>
         <div style={{ backgroundColor: '#e8f5e9', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-emerald-200">
           {/* Header Title inside light green box */}
           <div className="border-b border-emerald-300 pb-2 flex justify-between items-center">
@@ -2005,8 +2005,8 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
-      {/* ── Section 3: III. FLAT (Color: Light Yellow #fffde7) ── */}
-      <Section id="sbi-flat-flat" title="III. FLAT" number="III" defaultOpen={true}>
+      {/* ── Section 3: Flat Specifications ── */}
+      <Section id="sbi-flat-flat" title="Flat Specifications" defaultOpen={true}>
             <div style={{ backgroundColor: '#fffde7', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-amber-200">
               {/* Header Title inside light yellow box */}
               <div className="border-b border-amber-300 pb-2 flex justify-between items-center">
@@ -2375,8 +2375,8 @@ export default function StateBankOfIndiaFlatAndApartment({
             </div>
           </Section>
 
-      {/* ── Section 4: IV. MARKETABILITY (Color: Light Purple #f3e5f5) ── */}
-      <Section id="sbi-flat-marketability" title="IV. MARKETABILITY" number="IV" defaultOpen={true}>
+      {/* ── Section 4: Marketability ── */}
+      <Section id="sbi-flat-marketability" title="Marketability" defaultOpen={true}>
         <div style={{ backgroundColor: '#f3e5f5', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-purple-200">
           {/* Header Title inside light purple box */}
           <div className="border-b border-purple-300 pb-2 flex justify-between items-center">
@@ -2439,8 +2439,8 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
-      {/* ── Section 5: V. RATE (Color: Light Cyan #e0f7fa) ── */}
-      <Section id="sbi-flat-rate" title="V. RATE" number="V" defaultOpen={true}>
+      {/* ── Section 5: Valuation & Rates ── */}
+      <Section id="sbi-flat-rate" title="Valuation & Rates" defaultOpen={true}>
         <div style={{ backgroundColor: '#e0f7fa', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-cyan-200">
           {/* Header Title inside light cyan box */}
           <div className="border-b border-cyan-300 pb-2 flex justify-between items-center">
@@ -2531,8 +2531,8 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
-      {/* ── Section 6: VI. COMPOSITE RATE ADOPTED AFTER DEPRECIATION (Color: Light Orange #fff3e0) ── */}
-      <Section id="sbi-flat-composite-depreciation" title="VI. COMPOSITE RATE ADOPTED AFTER DEPRECIATION" number="VI" defaultOpen={true}>
+      {/* ── Section 6: Composite Depreciation ── */}
+      <Section id="sbi-flat-composite-depreciation" title="Composite Depreciation" defaultOpen={true}>
         <div style={{ backgroundColor: '#fff3e0', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-orange-200">
           {/* Header Title inside light orange box */}
           <div className="border-b border-orange-300 pb-2 flex justify-between items-center">
@@ -2694,8 +2694,8 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
-      {/* ── Section 7: TOTAL ABSTRACT & DECLARATION (Color: Mint Green #f1f8e9) ── */}
-      <Section id="sbi-flat-abstract-declaration" title="TOTAL ABSTRACT & DECLARATION" number="VII" defaultOpen={true}>
+      {/* ── Section 7: Total Abstract & Declaration ── */}
+      <Section id="sbi-flat-abstract-declaration" title="Total Abstract & Declaration" defaultOpen={true}>
         <div style={{ backgroundColor: '#f1f8e9', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-emerald-200">
           {/* Header Title inside mint green box */}
           <div className="border-b border-emerald-300 pb-2 flex justify-between items-center">
@@ -2768,8 +2768,8 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
-      {/* ── Section 8: TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION (Color: Mint Green #f1f8e9) + DECLARATION FROM VALUERS (Color: Light Red #ffebee) ── */}
-      <Section id="sbi-flat-abstract-bm-verification" title="TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION" number="VIII" defaultOpen={true}>
+      {/* ── Section 8: Total Abstract & Branch Manager Verification ── */}
+      <Section id="sbi-flat-abstract-bm-verification" title="Total Abstract & Branch Manager Verification" defaultOpen={true}>
         <div className="space-y-6">
           {/* Container 1: TOTAL ABSTRACT & BRANCH MANAGER VERIFICATION (Color: Mint Green #f1f8e9) */}
           <div style={{ backgroundColor: '#f1f8e9', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-emerald-200">
@@ -2956,8 +2956,8 @@ export default function StateBankOfIndiaFlatAndApartment({
         </div>
       </Section>
 
-      {/* ── Section 9: VALUATION PARTICULARS (11-POINT GRID), MODEL CODE OF CONDUCT & JUSTIFICATION ── */}
-      <Section id="sbi-flat-particulars-conduct-justification" title="VALUATION PARTICULARS (11-POINT GRID)" number="IX" defaultOpen={true}>
+      {/* ── Section 9: Valuation Particulars & Conduct ── */}
+      <Section id="sbi-flat-particulars-conduct-justification" title="Valuation Particulars & Conduct" defaultOpen={true}>
         <div className="space-y-6">
           {/* Container 1: VALUATION PARTICULARS (11-POINT GRID) (Color: Light Gray #f5f5f5) */}
           <div style={{ backgroundColor: '#f5f5f5', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-slate-300">
@@ -3284,18 +3284,17 @@ export default function StateBankOfIndiaFlatAndApartment({
 
       {/* ── Section: Base Documents ── */}
       <BaseDocumentsSection
-        title="Documents"
+        title="Verified Property Documents"
         documentImages={fields.documentImages || []}
         documentImageNames={fields.documentImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={10}
         sectionId="section-documents"
       />
 
       {/* ── Section: Base Maps ── */}
       <BaseMapsSection
-        title="Maps"
+        title="Location Maps"
         locationMapImages={fields.locationMapImages || []}
         mouzaMapImages={fields.mouzaMapImages || []}
         sketchMapImages={fields.sketchMapImages || []}
@@ -3307,7 +3306,6 @@ export default function StateBankOfIndiaFlatAndApartment({
         propertyAddress={fields.propertyDescription || ''}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={11}
         sectionId="section-maps"
       />
 
@@ -3318,7 +3316,6 @@ export default function StateBankOfIndiaFlatAndApartment({
         propertyImageNames={fields.propertyImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={12}
         sectionId="section-photographs"
       />
         </div>

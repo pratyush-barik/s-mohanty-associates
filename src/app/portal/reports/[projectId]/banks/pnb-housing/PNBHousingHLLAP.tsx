@@ -451,7 +451,7 @@ export default function PNBHousingHLLAP({
         clientType="organisation"
         category="Bank & FIS"
         bankName={fields.organisationTemplate || 'PNB HOUSING FINANCE LTD'}
-        subclass={fields.organisationSubTemplate || 'Standard'}
+        subclass={fields.organisationSubTemplate || undefined}
         onResetWizard={onResetWizard}
         sticky={false}
       />
@@ -1399,7 +1399,6 @@ export default function PNBHousingHLLAP({
           <BaseDocumentsSection
             title="Verified Property Documents"
             sectionId="pnb-sec-docs"
-            sectionNumber={1}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1422,7 +1421,6 @@ export default function PNBHousingHLLAP({
           <BaseMapsSection
             title="Location Sketch & Route Maps"
             sectionId="pnb-sec-maps"
-            sectionNumber={2}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1450,7 +1448,6 @@ export default function PNBHousingHLLAP({
           <BasePhotographsSection
             title="Property Site Photographs"
             sectionId="pnb-sec-photos"
-            sectionNumber={3}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

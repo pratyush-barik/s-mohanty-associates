@@ -552,19 +552,19 @@ export default function IndusIndHLLAP({
 
   // Nav Items
   const navSections: NavItem[] = [
-    { id: 'section-1', title: '1. General' },
-    { id: 'section-2', title: '2. Customer' },
-    { id: 'section-3', title: '3. Property' },
-    { id: 'section-4', title: '4. Documents' },
-    { id: 'section-5', title: '5. Physical' },
-    { id: 'section-6', title: '6. Occupancy' },
-    { id: 'section-7', title: '7. Comments' },
-    { id: 'section-8', title: '8. Valuation' },
-    { id: 'section-9', title: '9. Deviations' },
-    { id: 'section-10', title: '10. Declaration' },
-    { id: 'section-documents', title: 'Documents' },
-    { id: 'section-maps', title: 'Maps' },
-    { id: 'section-photos', title: 'Photographs' },
+    { id: 'section-1', title: 'General Details' },
+    { id: 'section-2', title: 'Customer Details' },
+    { id: 'section-3', title: 'Property Details' },
+    { id: 'section-4', title: 'Document Details' },
+    { id: 'section-5', title: 'Physical Details' },
+    { id: 'section-6', title: 'Occupancy Details' },
+    { id: 'section-7', title: 'Specific Comments' },
+    { id: 'section-8', title: 'Valuation & Calculations' },
+    { id: 'section-9', title: 'Deviation Details' },
+    { id: 'section-10', title: 'Declaration & Signature' },
+    { id: 'section-documents', title: 'Property Documents' },
+    { id: 'section-maps', title: 'Location Maps' },
+    { id: 'section-photos', title: 'Property Photographs' },
   ];
 
   return (
@@ -572,7 +572,7 @@ export default function IndusIndHLLAP({
       {/* Active Config Header Banner */}
       <ActiveConfigBanner
         bankName={fields.organisationTemplate || 'INDUSIND BANK'}
-        subclass={fields.organisationSubTemplate || 'HL-LAP'}
+        subclass={fields.organisationSubTemplate || undefined}
         clientType="organisation"
         category="Bank & FIS"
         onResetWizard={onResetWizard}
@@ -583,7 +583,7 @@ export default function IndusIndHLLAP({
         {/* Center Main Form */}
         <div className="flex-1 min-w-0 space-y-8 w-full">
           {/* Section 1: General Details */}
-          <Section id="section-1" title="1. General Details">
+          <Section id="section-1" title="General Details">
             <div className="border border-slate-200 bg-[#F8FAFC] rounded-xl p-4 sm:p-5 shadow-2xs space-y-4">
               <div className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                 Bank &amp; Inspection Info
@@ -664,7 +664,7 @@ export default function IndusIndHLLAP({
           </Section>
 
           {/* Section 2: Customer Details */}
-          <Section id="section-2" title="2. Customer Details">
+          <Section id="section-2" title="Customer Details">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Name of Customer / Applicant">
                 <input
@@ -702,7 +702,7 @@ export default function IndusIndHLLAP({
           </Section>
 
           {/* Section 3: Property Details */}
-          <Section id="section-3" title="3. Property Details">
+          <Section id="section-3" title="Property Details">
             <div className="space-y-4">
               <Field label="Address of Property (at site) i.e. Postal address with Pin-code & Phone no">
                 <textarea
@@ -732,7 +732,7 @@ export default function IndusIndHLLAP({
           </Section>
 
           {/* Section 4: Document Details */}
-          <Section id="section-4" title="4. Document Details">
+          <Section id="section-4" title="Document Details">
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 border p-3 rounded bg-slate-50">
                 <Field label="Layout Plan Provided?">
@@ -855,7 +855,7 @@ export default function IndusIndHLLAP({
           </Section>
 
           {/* Section 5: Physical Details */}
-          <Section id="section-5" title="5. Physical Details">
+          <Section id="section-5" title="Physical Details">
             <div className="space-y-6">
               {/* 5.A Boundaries Table */}
               <div>
@@ -1077,7 +1077,7 @@ export default function IndusIndHLLAP({
           </Section>
 
           {/* Section 6: Occupancy Details */}
-          <Section id="section-6" title="6. Occupancy Details">
+          <Section id="section-6" title="Occupancy Details">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="Status of Occupancy">
                 <input type="text" className={inputCls} value={fields.indusOccupancyStatus} onChange={(e) => updateField('indusOccupancyStatus', e.target.value)} />
@@ -1101,7 +1101,7 @@ export default function IndusIndHLLAP({
           </Section>
 
           {/* Section 7: Specific Comments */}
-          <Section id="section-7" title="7. Specific Comments on Property">
+          <Section id="section-7" title="Specific Comments">
             <Field label="Detailed Comments & Technical Observations">
               <textarea
                 rows={3}
@@ -1113,7 +1113,7 @@ export default function IndusIndHLLAP({
           </Section>
 
           {/* Section 8: Valuation */}
-          <Section id="section-8" title="8. Valuation & Calculation Engine">
+          <Section id="section-8" title="Valuation & Calculations">
             <div className="space-y-6">
               <div className="flex items-center gap-4 border-b pb-3">
                 <label className="text-sm font-semibold text-slate-700">Valuation Mode:</label>
@@ -1340,7 +1340,7 @@ export default function IndusIndHLLAP({
           </Section>
 
           {/* Section 9: Deviations */}
-          <Section id="section-9" title="9. Specific Details of Deviation at Site">
+          <Section id="section-9" title="Deviation Details">
             <div className="space-y-4">
               <div className="overflow-x-auto border rounded">
                 <table className="w-full text-sm">
@@ -1423,7 +1423,7 @@ export default function IndusIndHLLAP({
           </Section>
 
           {/* Section 10: Remarks & Declaration */}
-          <Section id="section-10" title="10. Remarks, Declaration & Signature">
+          <Section id="section-10" title="Declaration & Signature">
             <div className="space-y-4">
               <Field label="Synthesized Remarks">
                 <textarea
@@ -1470,9 +1470,8 @@ export default function IndusIndHLLAP({
 
           {/* SECTION 11: Documents */}
           <BaseDocumentsSection
-            title="Documents"
+            title="Property Documents"
             sectionId="section-documents"
-            sectionNumber={11}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1485,9 +1484,8 @@ export default function IndusIndHLLAP({
 
           {/* SECTION 12: Maps */}
           <BaseMapsSection
-            title="Maps"
+            title="Location Maps"
             sectionId="section-maps"
-            sectionNumber={12}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1520,7 +1518,6 @@ export default function IndusIndHLLAP({
           <BasePhotographsSection
             title="Property Photographs"
             sectionId="section-photos"
-            sectionNumber={13}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

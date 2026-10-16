@@ -28,7 +28,7 @@ import { PDFMahindraFinanceRenderer } from '@/lib/banks/pdf-mahindra-finance-ren
 
 export const MAHINDRA_FINANCE_CONFIG: BankConfig = {
   bankId: 'MAHINDRA FINANCE LTD',
-  subTemplateId: 'Standard',
+  subTemplateId: '',
   displayName: 'Mahindra & Mahindra Financial Services Ltd',
   defaultValues: {
     purpose: 'Housing / SME / Commercial Asset Valuation',
@@ -456,7 +456,7 @@ export default function MahindraFinance({
         clientType="organisation"
         category="Bank & FIS"
         bankName={fields.organisationTemplate || 'MAHINDRA RURAL HOUSING FINANCE LTD'}
-        subclass={fields.organisationSubTemplate || 'Standard'}
+        subclass={fields.organisationSubTemplate || undefined}
         onResetWizard={onResetWizard}
         sticky={false}
       />
@@ -1418,7 +1418,6 @@ export default function MahindraFinance({
           <BaseDocumentsSection
             title="Verified Property Documents"
             sectionId="mh-sec-docs"
-            sectionNumber={1}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1441,7 +1440,6 @@ export default function MahindraFinance({
           <BaseMapsSection
             title="Location Sketch & Route Maps"
             sectionId="mh-sec-maps"
-            sectionNumber={2}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1469,7 +1467,6 @@ export default function MahindraFinance({
           <BasePhotographsSection
             title="Property Site Photographs"
             sectionId="mh-sec-photos"
-            sectionNumber={3}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}
