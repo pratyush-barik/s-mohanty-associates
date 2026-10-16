@@ -493,7 +493,7 @@ export default function StateBankOfIndiaLandAndBuilding({
     { id: 'sbi-lb-sec-2', title: '2 Property Details' },
     { id: 'sbi-lb-sec-3', title: '3 Document Details' },
     { id: 'sbi-lb-sec-4', title: '4 Physical Details' },
-    { id: 'sbi-lb-sec-5', title: 'TENURE & VIOLATIONS' },
+    { id: 'sbi-lb-sec-5', title: '5 Tenure/ Occupancy Details' },
     { id: 'sbi-lb-sec-6', title: 'AREA DETAILS' },
     { id: 'sbi-lb-sec-7', title: 'VALUATION NARRATIVE' },
     { id: 'sbi-lb-sec-8', title: 'MARKETABILITY' },
@@ -1234,34 +1234,61 @@ export default function StateBankOfIndiaLandAndBuilding({
         </div>
       </Section>
 
-      {/* ── Section 5 to 7: Tenure, Stage & Violations ── */}
-      <Section id="sbi-lb-sec-5" title="5, 6, 7. Tenure, Construction Stage & Violations" number={5} defaultOpen={false}>
-        <div className="grid md:grid-cols-3 gap-3">
-          <Field label="5. Status of Tenure">
-            <input
-              className={inputCls}
-              value={fields.statusOfTenure}
-              onChange={(e) => handleChange('statusOfTenure', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="6. Stage of Construction">
-            <input
-              className={inputCls}
-              value={fields.stageOfConstruction}
-              onChange={(e) => handleChange('stageOfConstruction', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="7. Violations Observed">
-            <input
-              className={inputCls}
-              value={fields.natureExtentViolations}
-              onChange={(e) => handleChange('natureExtentViolations', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Horizontal Deviation-93%"
-            />
-          </Field>
+      {/* ── Section 5: 5 Tenure/ Occupancy Details (Color: Light Cyan #e0f7fa) ── */}
+      <Section id="sbi-lb-sec-5" title="5 Tenure/ Occupancy Details" number={5} defaultOpen={true}>
+        <div style={{ backgroundColor: '#e0f7fa', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-cyan-200">
+          {/* Header Title inside light cyan box */}
+          <div className="border-b border-cyan-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-cyan-900 text-sm uppercase tracking-wider">
+              5 Tenure/ Occupancy Details
+            </h3>
+            <span className="text-[11px] font-semibold text-cyan-800 bg-cyan-100 px-2 py-0.5 rounded-full border border-cyan-300">
+              Occupancy & Tenancy Status
+            </span>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* Status of tenure (Owned/ Rented (Under Construction)) */}
+            <Field label="Status of tenure (Owned/ Rented (Under Construction))">
+              <select
+                className={inputCls}
+                value={fields.statusOfTenure || 'Owned/ Rented (Under Construction)'}
+                onChange={e => handleChange('statusOfTenure', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="Owned/ Rented (Under Construction)">Owned/ Rented (Under Construction)</option>
+                <option value="Owned">Owned</option>
+                <option value="Rented">Rented</option>
+                <option value="Under Construction">Under Construction</option>
+                <option value="Self Occupied">Self Occupied</option>
+                <option value="Vacant">Vacant</option>
+              </select>
+            </Field>
+
+            {/* Number of years of occupancy */}
+            <Field label="Number of years of occupancy">
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.numberOfYearsOccupancy !== undefined && fields.numberOfYearsOccupancy !== 'NA' ? String(fields.numberOfYearsOccupancy).replace(/[^0-9]/g, '') : ''}
+                onChange={e => handleChange('numberOfYearsOccupancy', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. 5"
+              />
+            </Field>
+
+            {/* Relationship of tenant to owner */}
+            <Field label="Relationship of tenant to owner">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.relationshipTenantOwner || ''}
+                onChange={e => handleChange('relationshipTenantOwner', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. NA / None"
+              />
+            </Field>
+          </div>
         </div>
       </Section>
 
