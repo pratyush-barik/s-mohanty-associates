@@ -260,7 +260,9 @@ export default function StateBankOfIndiaLandAndBuilding({
       // 10. Remarks
       generalRemarksText: saved.generalRemarksText !== undefined ? saved.generalRemarksText : `REMARKS:\nSUBJECT PROPERTY IS AN UNDER CONSTRUCTED G+1 STORIED BUILDING, LAND EXTENT OF AC.0.055 DEC I.E. 2400.00 SFT. PROPERTY LOCATED IN A GOOD DEVELOPED RESIDENTIAL AREA OF KALYANI VIHAR, KANTILO, BHUBANESWAR. THIS PROPERTY IS COMING UNDER BHUBANESWAR DEVELOPMENT AUTHORITY AREA LIMIT. ALL CIVIC AMENITIES ARE PRESENT 2-3 KM FROM THE PROPERTY. VALUATION HAS BEEN DONE FOR LAND & APPROVED BUA OF THE G+1 STORIED BUILDING (BLOCK-1).`,
 
-      // 11. Declaration
+      // 10 & 11 Declaration & Valuer Details
+      inspectionDate: saved.inspectionDate !== undefined ? saved.inspectionDate : (saved.dateOfInspection || '2026-07-24'),
+      valuerDeclarations: saved.valuerDeclarations || {},
       declarationText: saved.declarationText !== undefined ? saved.declarationText : `1) The property was inspected by the undersigned on 24.07.2026\n2) The undersigned does not have any direct/indirect interest in the above property.\n3) The information furnished herein is true and correct to the best of our knowledge.`,
 
       // 12. Valuer Details
@@ -495,6 +497,38 @@ export default function StateBankOfIndiaLandAndBuilding({
     return diff === 0 ? '0 Years (New)' : `${diff} Years`;
   }, [fields.yearOfOccupancy]);
 
+  const systemValuerProfileDetails = useMemo(() => {
+    return 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)\nPlot No: 858 (P) & 859 (P), Near Astha Binodini Apartment, Siba Nagar, Rajarani, Tankapani Road, Bhubaneswar-751018';
+  }, []);
+
+  const DECLARATIONS_LIST = [
+    { id: '1', text: `The property was inspected by the undersigned on ${fields.inspectionDate || fields.signatureDate || '24.07.2026'}.` },
+    { id: '2', text: 'The undersigned does not have any direct or indirect interest in the above property.' },
+    { id: '3', text: 'The information furnished herein is true and correct to the best of our knowledge.' },
+    { id: '4', text: 'I am a citizen of India and registered valuer with Insolvency & Bankruptcy Board of India (IBBI).' },
+    { id: '5', text: 'Valuation report is submitted in the format as prescribed by the Bank.' },
+    { id: '6', text: 'I have not concealed or suppressed any material information, facts and records and have made a complete and full disclosure.' },
+    { id: '7', text: 'I abide by the Model Code of Conduct for empanelment of Valuer in the Bank.' },
+    { id: '8', text: 'I will not undertake valuation of any assets in which I have a direct or indirect interest during the prescribed period.' },
+  ];
+
+  const valuerDeclarationsMap = fields.valuerDeclarations || {};
+  const isDeclChecked = (id: string) => valuerDeclarationsMap[id] !== false;
+  const allDeclsChecked = DECLARATIONS_LIST.every(d => isDeclChecked(d.id));
+
+  const handleToggleAllDecls = () => {
+    const nextVal = !allDeclsChecked;
+    const nextMap: Record<string, boolean> = {};
+    DECLARATIONS_LIST.forEach(d => {
+      nextMap[d.id] = nextVal;
+    });
+    handleChange('valuerDeclarations', nextMap);
+  };
+
+  const handleToggleDecl = (id: string, checked: boolean) => {
+    handleChange('valuerDeclarations', { ...valuerDeclarationsMap, [id]: checked });
+  };
+
   const NAV_SECTIONS: NavItem[] = [
     { id: 'sbi-lb-cover-and-customer', title: 'COVER PAGE & BANK DETAILS' },
     { id: 'sbi-lb-sec-2', title: '2 Property Details' },
@@ -505,6 +539,7 @@ export default function StateBankOfIndiaLandAndBuilding({
     { id: 'sbi-lb-sec-7', title: '7 Violations, if any, observed' },
     { id: 'sbi-lb-sec-8', title: '8 Area details of the property' },
     { id: 'sbi-lb-sec-9', title: '9 Valuation' },
+    { id: 'sbi-lb-sec-10', title: '10 & 11 Declaration & Valuer Details' },
     { id: 'section-documents', title: 'DOCUMENTS' },
     { id: 'section-maps', title: 'MAPS' },
     { id: 'section-photographs', title: 'PHOTOGRAPHS' },
@@ -1595,6 +1630,105 @@ export default function StateBankOfIndiaLandAndBuilding({
         </div>
       </Section>
 
+      {/* ── Section 10: 10 & 11 Declaration & Valuer Details (Color: Light Amber #fff8e1) ── */}
+      <Section id="sbi-lb-sec-10" title="10 & 11 Declaration & Valuer Details" number={10} defaultOpen={true}>
+        <div style={{ backgroundColor: '#fff8e1', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-amber-200">
+          {/* Header Title inside light amber box */}
+          <div className="border-b border-amber-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-amber-900 text-sm uppercase tracking-wider">
+              10 & 11 Declaration & Valuer Details
+            </h3>
+            <span className="text-[11px] font-semibold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full border border-amber-300">
+              Inspection Date, Declarations & Sign-Off
+            </span>
+          </div>
+
+          {/* Inspection Date & Declarations */}
+          <div>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                Inspection Date & Declarations
+              </label>
+              <button
+                type="button"
+                onClick={handleToggleAllDecls}
+                disabled={isReadOnly}
+                className="text-[11px] font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 px-2.5 py-1 rounded-md border border-amber-300 transition-colors cursor-pointer"
+              >
+                {allDeclsChecked ? 'Deselect All' : 'Select All'}
+              </button>
+            </div>
+
+            <div className="bg-white/80 p-4 rounded-xl border border-amber-200 space-y-4">
+              {/* Input Box (Date) */}
+              <div className="grid md:grid-cols-2 gap-4 items-center pb-3 border-b border-amber-100">
+                <Field label="Inspection Date">
+                  <input
+                    type="date"
+                    className={inputCls}
+                    value={fields.inspectionDate || ''}
+                    onChange={e => handleChange('inspectionDate', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <div className="text-xs text-amber-900 bg-amber-50 p-2.5 rounded-lg border border-amber-200 font-medium">
+                  Inspection recorded for: <strong>{fields.inspectionDate || fields.signatureDate || '24.07.2026'}</strong>
+                </div>
+              </div>
+
+              {/* Declarations Checkboxes */}
+              <div className="space-y-2">
+                <div className="grid md:grid-cols-2 gap-2.5">
+                  {DECLARATIONS_LIST.map(item => (
+                    <label
+                      key={item.id}
+                      className="flex items-start gap-2.5 p-2.5 rounded-lg border border-amber-100 bg-white hover:bg-amber-50/60 cursor-pointer transition-colors shadow-2xs"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isDeclChecked(item.id)}
+                        onChange={e => handleToggleDecl(item.id, e.target.checked)}
+                        disabled={isReadOnly}
+                        className="w-4 h-4 mt-0.5 rounded border-amber-300 text-amber-600 focus:ring-amber-500 shrink-0"
+                      />
+                      <div className="text-xs text-slate-800 leading-snug">
+                        <span className="font-bold text-amber-950 mr-1">{item.id}.</span>
+                        {item.text}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Name and Address & Date */}
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Name and Address */}
+            <PrefillField
+              label="Name and Address"
+              type="textarea"
+              rows={3}
+              value={fields.valuerNameAndAddress}
+              onChange={(val: string) => handleChange('valuerNameAndAddress', val)}
+              isReadOnly={isReadOnly}
+              tooltip=">>Auto calculating from [System Valuer Profile Settings]<<"
+              fallbackValue={systemValuerProfileDetails}
+            />
+
+            {/* Date */}
+            <PrefillField
+              label="Date"
+              value={fields.signatureDate}
+              onChange={(val: string) => handleChange('signatureDate', val)}
+              isReadOnly={isReadOnly}
+              tooltip='>>Prefill from section COVER PAGE, "DATE:"<<'
+              fallbackValue={fields.coverDate || fields.reportDate || '24.07.2026'}
+            />
+          </div>
+        </div>
+      </Section>
+
       {/* ── Section: Base Documents ── */}
       <BaseDocumentsSection
         title="Documents"
@@ -1602,7 +1736,7 @@ export default function StateBankOfIndiaLandAndBuilding({
         documentImageNames={fields.documentImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={10}
+        sectionNumber={12}
         sectionId="section-documents"
       />
 
@@ -1620,7 +1754,7 @@ export default function StateBankOfIndiaLandAndBuilding({
         propertyAddress={fields.propertyAddress || ''}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={11}
+        sectionNumber={13}
         sectionId="section-maps"
       />
 
@@ -1631,7 +1765,7 @@ export default function StateBankOfIndiaLandAndBuilding({
         propertyImageNames={fields.propertyImageNames || []}
         isReadOnly={isReadOnly}
         uploading={false}
-        sectionNumber={12}
+        sectionNumber={14}
         sectionId="section-photographs"
       />
         </div>
