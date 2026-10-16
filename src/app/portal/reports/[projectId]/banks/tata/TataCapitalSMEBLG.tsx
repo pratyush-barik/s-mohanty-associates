@@ -22,9 +22,21 @@ import {
   BasePhotoBucketModal,
   ActiveConfigBanner,
 } from '../BaseBankReportComponents';
-import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
+import {
+  formatIndianCurrency,
+  rupeesInWords,
+} from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { PDFTataCapitalSMEBLGRenderer } from '@/lib/banks/pdf-tata-capital-sme-blg-renderer';
+import {
+  sanitizePositiveFloat,
+  sanitizePositiveInt,
+  sanitizePercentage,
+  sanitizeYearsWithNA,
+  parseSafeFloat,
+  multiplyExactDecimals,
+  sumDecimals,
+} from '@/lib/bank-input-constraints';
 
 export const TATA_CAPITAL_SME_BLG_CONFIG: BankConfig = {
   bankId: 'TATA CAPITAL LTD',
@@ -232,15 +244,15 @@ export default function TataCapitalSMEBLG({
 
   // Auto-calculated values for Part E (Land & Building)
   const calculations = useMemo(() => {
-    const landArea = parseFloat(String(fields.landAreaSqft || 0).replace(/,/g, '')) || 0;
-    const landRate = parseFloat(String(fields.recommendedLandRate || 0).replace(/,/g, '')) || 0;
-    const landValueA = landArea * landRate;
+    const landArea = parseSafeFloat(fields.landAreaSqft);
+    const landRate = parseSafeFloat(fields.recommendedLandRate);
+    const landValueA = multiplyExactDecimals(landArea, landRate);
 
-    const approvedBua = parseFloat(String(fields.approvedBuaSqft || 0).replace(/,/g, '')) || 0;
-    const constrRate = parseFloat(String(fields.constructionCostPerSqft || 0).replace(/,/g, '')) || 0;
-    const totalConstructionValueB = approvedBua * constrRate;
+    const approvedBua = parseSafeFloat(fields.approvedBuaSqft);
+    const constrRate = parseSafeFloat(fields.constructionCostPerSqft);
+    const totalConstructionValueB = multiplyExactDecimals(approvedBua, constrRate);
 
-    const totalMarketValue = landValueA + totalConstructionValueB;
+    const totalMarketValue = sumDecimals([landValueA, totalConstructionValueB]);
     const forcedSaleValue = Math.round(totalMarketValue * 0.8);
     const insuranceValue = Math.round(totalConstructionValueB * 0.85);
 
@@ -1332,21 +1344,23 @@ export default function TataCapitalSMEBLG({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Land Area (in Sq. Ft)">
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     disabled={isReadOnly}
                     className={inputCls}
                     value={fields.landAreaSqft ?? ''}
-                    onChange={e => handleFieldChange('landAreaSqft', e.target.value)}
+                    onChange={e => handleFieldChange('landAreaSqft', sanitizePositiveFloat(e.target.value))}
                   />
                 </Field>
 
                 <Field label="Adopted Rate per Sq. Ft (₹)">
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     disabled={isReadOnly}
                     className={inputCls}
                     value={fields.recommendedLandRate ?? ''}
-                    onChange={e => handleFieldChange('recommendedLandRate', e.target.value)}
+                    onChange={e => handleFieldChange('recommendedLandRate', sanitizePositiveFloat(e.target.value))}
                   />
                 </Field>
 
@@ -1390,21 +1404,23 @@ export default function TataCapitalSMEBLG({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Approved BUA of Building (Sq. Ft)">
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     disabled={isReadOnly}
                     className={inputCls}
                     value={fields.approvedBuaSqft ?? ''}
-                    onChange={e => handleFieldChange('approvedBuaSqft', e.target.value)}
+                    onChange={e => handleFieldChange('approvedBuaSqft', sanitizePositiveFloat(e.target.value))}
                   />
                 </Field>
 
                 <Field label="Construction Cost per Sq. Ft (₹)">
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     disabled={isReadOnly}
                     className={inputCls}
                     value={fields.constructionCostPerSqft ?? ''}
-                    onChange={e => handleFieldChange('constructionCostPerSqft', e.target.value)}
+                    onChange={e => handleFieldChange('constructionCostPerSqft', sanitizePositiveFloat(e.target.value))}
                   />
                 </Field>
 
@@ -1421,11 +1437,12 @@ export default function TataCapitalSMEBLG({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Actual BUA of Building at Site (Sq. Ft)">
                   <input
-                    type="number"
+                    type="text"
+                    inputMode="decimal"
                     disabled={isReadOnly}
                     className={inputCls}
                     value={fields.actualBuaSqft ?? ''}
-                    onChange={e => handleFieldChange('actualBuaSqft', e.target.value)}
+                    onChange={e => handleFieldChange('actualBuaSqft', sanitizePositiveFloat(e.target.value))}
                   />
                 </Field>
 
