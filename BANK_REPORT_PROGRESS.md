@@ -10,8 +10,8 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 
 | Status Category | Count | Description |
 | :--- | :---: | :--- |
-| **✅ Completed** | **20 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
-| **🔨 In Progress** | **28 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
+| **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
+| **🔨 In Progress** | **33 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
 | **⏳ Not Started** | **28 formats (26 banks)** | Directory reserved / pending base component creation |
 | **Total Tracked** | **60 institutions** (76 formats) | Full coverage of Indian Banks & NBFCs |
 
@@ -40,9 +40,9 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | 11.1 | BANDHAN BANK | `HL-LAP` | ✅ Created Base | ✅ Completed |
 | 11.2 | BANDHAN BANK | `SME` | ✅ Created Base | ✅ Completed |
 | **12** | **BANK OF BARODA-BOB** | `Standard` | ✅ Created Base | ✅ Completed |
-| **13** | **BANK OF INDIA-BOI** | `Standard` | ✅ Created Base | ✅ Completed |
-| **14** | **BANK OF MAHARASHTRA-BOM** | `Standard` | ✅ Created Base | ✅ Completed |
-| **15** | **CANARA BANK** | `Standard` | ✅ Created Base | ✅ Completed |
+| **13** | **BANK OF INDIA-BOI** | `Standard` | ✅ Created Base | 🔨 In Progress |
+| **14** | **BANK OF MAHARASHTRA-BOM** | `Standard` | ✅ Created Base | 🔨 In Progress |
+| **15** | **CANARA BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **16** | **CANFIN HOMES LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **17** | **CHOLAMANDALAM INVESTMENT COMPANY LTD** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **18** | **CLIX CAPITAL LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
@@ -98,9 +98,9 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **50** | **SWARNA FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **51** | **TATA CAPITAL LTD** | `SME-BLG` | ⏳ Not Created | ⏳ Not Started |
 | **52** | **TATA HOUSING FINANCE LTD** | `Standard` | ⏳ Not Created | ⏳ Not Started |
-| **53** | **UCO BANK** | `Standard` | ✅ Created Base | ✅ Completed |
+| **53** | **UCO BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **54** | **UJJIVAN SMALL FINANCE BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
-| **55** | **UNION BANK OF INDIA-UBI** | `Standard` | ✅ Created Base | ✅ Completed |
+| **55** | **UNION BANK OF INDIA-UBI** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **56** | **UNITY SMALL FINANCE BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **57** | **UTKARSH SMALL FINANCE BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **58** | **VARTHANA FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
@@ -131,17 +131,15 @@ Templates with complete interactive report draft builder UI and full PDF rendere
 | **11.1** | BANDHAN BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanHLLAP.tsx` | `src/lib/banks/pdf-bandhan-hllap-renderer.ts` | ✅ Completed |
 | **11.2** | BANDHAN BANK | `SME` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanSME.tsx` | `src/lib/banks/pdf-bandhan-sme-renderer.ts` | ✅ Completed |
 | **12** | BANK OF BARODA-BOB | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-baroda/BankOfBaroda.tsx` | `src/lib/banks/pdf-bank-of-baroda-renderer.ts` | ✅ Completed |
-| **13** | BANK OF INDIA-BOI | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-india/BankOfIndia.tsx` | `src/lib/banks/pdf-bank-of-india-renderer.ts` | ✅ Completed |
-| **14** | BANK OF MAHARASHTRA-BOM | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-maharashtra/BankOfMaharashtra.tsx` | `src/lib/banks/pdf-bank-of-maharashtra-renderer.ts` | ✅ Completed |
-| **15** | CANARA BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/canara/CanaraBank.tsx` | `src/lib/banks/pdf-canara-bank-renderer.ts` | ✅ Completed |
-| **53** | UCO BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/uco/UCOBank.tsx` | `src/lib/banks/pdf-uco-bank-renderer.ts` | ✅ Completed |
-| **55** | UNION BANK OF INDIA-UBI | `Standard` | `src/app/portal/reports/[projectId]/banks/union-bank/UnionBankOfIndia.tsx` | `src/lib/banks/pdf-union-bank-of-india-renderer.ts` | ✅ Completed |
 
 ### 2. Base Structure Completed (`✅ Created Base` — Builder In Progress)
 Templates with base structure & draft UI files created, currently undergoing field customization or section buildout:
 
 | # | Bank / Organization | Format / Key | Report Draft UI Component | PDF Renderer File | Status |
 |---|---|---|---|---|---|
+| **13** | BANK OF INDIA-BOI | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-india/BankOfIndia.tsx` | `src/lib/banks/pdf-bank-of-india-renderer.ts` | 🔨 In Progress |
+| **14** | BANK OF MAHARASHTRA-BOM | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-maharashtra/BankOfMaharashtra.tsx` | `src/lib/banks/pdf-bank-of-maharashtra-renderer.ts` | 🔨 In Progress |
+| **15** | CANARA BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/canara/CanaraBank.tsx` | `src/lib/banks/pdf-canara-bank-renderer.ts` | 🔨 In Progress |
 | **16** | CANFIN HOMES LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/canfin/CanFinHomes.tsx` | `src/lib/banks/pdf-canfin-homes-renderer.ts` | 🔨 In Progress |
 | **18** | CLIX CAPITAL LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/clix/ClixCapital.tsx` | `src/lib/banks/pdf-clix-capital-renderer.ts` | 🔨 In Progress |
 | **24.1** | ICICI BANK | `HL-LAP-BBG` (`icici-hllap-bbg`) | `src/app/portal/reports/[projectId]/banks/icici/ICICIBankHLLAPBBG.tsx` | `src/lib/banks/pdf-icici-bank-hllap-bbg-renderer.ts` | 🔨 In Progress |
@@ -165,6 +163,8 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **39** | PNB HOUSING FINANCE LTD | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/pnb-housing/PNBHousingHLLAP.tsx` | `src/lib/banks/pdf-pnb-housing-renderer.ts` | 🔨 In Progress |
 | **48.1** | STATE BANK OF INDIA-SBI | `Flat & Apartment` | `src/app/portal/reports/[projectId]/banks/sbi/StateBankOfIndiaFlatAndApartment.tsx` | `src/lib/banks/pdf-sbi-flat-and-apartment-renderer.ts` | 🔨 In Progress |
 | **48.2** | STATE BANK OF INDIA-SBI | `Land & Building` | `src/app/portal/reports/[projectId]/banks/sbi/StateBankOfIndiaLandAndBuilding.tsx` | `src/lib/banks/pdf-sbi-land-and-building-renderer.ts` | 🔨 In Progress |
+| **53** | UCO BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/uco/UCOBank.tsx` | `src/lib/banks/pdf-uco-bank-renderer.ts` | 🔨 In Progress |
+| **55** | UNION BANK OF INDIA-UBI | `Standard` | `src/app/portal/reports/[projectId]/banks/union-bank/UnionBankOfIndia.tsx` | `src/lib/banks/pdf-union-bank-of-india-renderer.ts` | 🔨 In Progress |
 | **56** | UNITY SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/unity-sfb/UnitySmallFinanceBank.tsx` | `src/lib/banks/pdf-unity-sfb-renderer.ts` | 🔨 In Progress |
 | **57** | UTKARSH SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/utkarsh/UtkarshSmallFinanceBank.tsx` | `src/lib/banks/pdf-utkarsh-sfb-renderer.ts` | 🔨 In Progress |
 | **58** | VARTHANA FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/varthana/VarthanaFinance.tsx` | `src/lib/banks/pdf-varthana-finance-renderer.ts` | 🔨 In Progress |
