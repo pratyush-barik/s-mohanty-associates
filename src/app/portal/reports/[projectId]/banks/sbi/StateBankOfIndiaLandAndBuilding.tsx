@@ -494,7 +494,7 @@ export default function StateBankOfIndiaLandAndBuilding({
     { id: 'sbi-lb-sec-3', title: '3 Document Details' },
     { id: 'sbi-lb-sec-4', title: '4 Physical Details' },
     { id: 'sbi-lb-sec-5', title: '5 Tenure/ Occupancy Details' },
-    { id: 'sbi-lb-sec-6', title: 'AREA DETAILS' },
+    { id: 'sbi-lb-sec-6', title: '6 Stage of construction' },
     { id: 'sbi-lb-sec-7', title: 'VALUATION NARRATIVE' },
     { id: 'sbi-lb-sec-8', title: 'MARKETABILITY' },
     { id: 'sbi-lb-sec-9', title: 'PROPERTY VALUE' },
@@ -1292,52 +1292,49 @@ export default function StateBankOfIndiaLandAndBuilding({
         </div>
       </Section>
 
-      {/* ── Section 8: Area details of the property ── */}
-      <Section id="sbi-lb-sec-6" title="8. Area Details (Multi-Block Approval & Actual)" number={6} defaultOpen={true}>
-        <div className="grid md:grid-cols-3 gap-3">
-          <Field label="Site Area">
-            <input
-              className={inputCls}
-              value={fields.siteAreaText}
-              onChange={(e) => handleChange('siteAreaText', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Carpet Area">
-            <input
-              className={inputCls}
-              value={fields.carpetAreaText}
-              onChange={(e) => handleChange('carpetAreaText', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Saleable Area">
-            <input
-              className={inputCls}
-              value={fields.saleableAreaText}
-              onChange={(e) => handleChange('saleableAreaText', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-        </div>
+      {/* ── Section 6: 6 Stage of construction (Color: Light Orange #fff3e0) ── */}
+      <Section id="sbi-lb-sec-6" title="6 Stage of construction" number={6} defaultOpen={true}>
+        <div style={{ backgroundColor: '#fff3e0', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-orange-200">
+          {/* Header Title inside light orange box */}
+          <div className="border-b border-orange-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-orange-900 text-sm uppercase tracking-wider">
+              6 Stage of construction
+            </h3>
+            <span className="text-[11px] font-semibold text-orange-800 bg-orange-100 px-2 py-0.5 rounded-full border border-orange-300">
+              Construction Progress
+            </span>
+          </div>
 
-        <div className="grid md:grid-cols-2 gap-4 mt-3">
-          <Field label="Plinth Area (As per Approval - Block-1 & 2)">
-            <textarea
-              className={inputCls + ' min-h-17.5 text-xs'}
-              value={fields.plinthAreaApprovalText}
-              onChange={(e) => handleChange('plinthAreaApprovalText', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="Plinth Area (As per Actual)">
-            <textarea
-              className={inputCls + ' min-h-17.5 text-xs'}
-              value={fields.plinthAreaActualText}
-              onChange={(e) => handleChange('plinthAreaActualText', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Stage of construction */}
+            <Field label="Stage of construction">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.stageOfConstruction || ''}
+                onChange={e => handleChange('stageOfConstruction', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. Ground Floor Completed (85%), First Floor Completed (80%)"
+              />
+            </Field>
+
+            {/* If under construction, extent of completion */}
+            <Field label="If under construction, extent of completion">
+              <div className="relative">
+                <input
+                  type="text"
+                  className={inputCls + ' pr-8'}
+                  value={fields.underConstructionExtent || ''}
+                  onChange={e => handleChange('underConstructionExtent', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 80% / Not Applicable"
+                />
+                <span className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-xs font-semibold text-orange-600/70">
+                  %
+                </span>
+              </div>
+            </Field>
+          </div>
         </div>
       </Section>
 
