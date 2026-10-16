@@ -285,28 +285,51 @@ export default function StateBankOfIndiaLandAndBuilding({
       replacementRateVal: saved.replacementRateVal !== undefined ? saved.replacementRateVal : '2000',
       depreciationVal: saved.depreciationVal !== undefined ? saved.depreciationVal : '0',
 
-      // Value of Property Abstract (4x4 Table)
+      // DETAILS OF VALUATION Grid
+      valuationGridItems: saved.valuationGridItems || [
+        { plotNo: 'RCC GROUND FLOOR (BLOCK-1)', area: '746.00', rate: '2000.00', totalValue: '1492000' },
+        { plotNo: 'RCC FIRST FLOOR (BLOCK-1)', area: '746.00', rate: '1500.00', totalValue: '1119000' },
+      ],
+
+      // Value of Property Abstract (4x4 Table with Ext Services)
       abstractGovtLand: saved.abstractGovtLand !== undefined ? saved.abstractGovtLand : '933600',
       abstractGovtBldg: saved.abstractGovtBldg !== undefined ? saved.abstractGovtBldg : '1958250',
+      abstractGovtExtra: saved.abstractGovtExtra !== undefined ? saved.abstractGovtExtra : '0',
       abstractGovtTotal: saved.abstractGovtTotal !== undefined ? saved.abstractGovtTotal : '2891850',
       abstractGovtOrSay: saved.abstractGovtOrSay !== undefined ? saved.abstractGovtOrSay : '2892000',
 
       abstractMarketLand: saved.abstractMarketLand !== undefined ? saved.abstractMarketLand : '6000000',
       abstractMarketBldg: saved.abstractMarketBldg !== undefined ? saved.abstractMarketBldg : '2611000',
+      abstractMarketExtra: saved.abstractMarketExtra !== undefined ? saved.abstractMarketExtra : '0',
       abstractMarketTotal: saved.abstractMarketTotal !== undefined ? saved.abstractMarketTotal : '8611000',
       abstractMarketOrSay: saved.abstractMarketOrSay !== undefined ? saved.abstractMarketOrSay : '8611000',
 
       abstractRealizablePct: saved.abstractRealizablePct !== undefined ? saved.abstractRealizablePct : '95',
       abstractRealizableLand: saved.abstractRealizableLand !== undefined ? saved.abstractRealizableLand : '5700000',
       abstractRealizableBldg: saved.abstractRealizableBldg !== undefined ? saved.abstractRealizableBldg : '2480450',
+      abstractRealizableExtra: saved.abstractRealizableExtra !== undefined ? saved.abstractRealizableExtra : '0',
       abstractRealizableTotal: saved.abstractRealizableTotal !== undefined ? saved.abstractRealizableTotal : '8180450',
       abstractRealizableOrSay: saved.abstractRealizableOrSay !== undefined ? saved.abstractRealizableOrSay : '8180000',
 
       abstractDistressPct: saved.abstractDistressPct !== undefined ? saved.abstractDistressPct : '85',
       abstractDistressLand: saved.abstractDistressLand !== undefined ? saved.abstractDistressLand : '5100000',
       abstractDistressBldg: saved.abstractDistressBldg !== undefined ? saved.abstractDistressBldg : '2219350',
+      abstractDistressExtra: saved.abstractDistressExtra !== undefined ? saved.abstractDistressExtra : '0',
       abstractDistressTotal: saved.abstractDistressTotal !== undefined ? saved.abstractDistressTotal : '7319350',
       abstractDistressOrSay: saved.abstractDistressOrSay !== undefined ? saved.abstractDistressOrSay : '7319000',
+
+      // ENCLOSURES & APPRAISAL STATEMENT
+      encLayoutSketch: saved.encLayoutSketch !== undefined ? saved.encLayoutSketch : 'Enclosed',
+      encBuildingPlan: saved.encBuildingPlan !== undefined ? saved.encBuildingPlan : 'Enclosed',
+      encFloorPlan: saved.encFloorPlan !== undefined ? saved.encFloorPlan : 'Enclosed',
+      encPhotographGeo: saved.encPhotographGeo !== undefined ? saved.encPhotographGeo : 'Enclosed',
+      encCertifiedApprovedPlan: saved.encCertifiedApprovedPlan !== undefined ? saved.encCertifiedApprovedPlan : 'Enclosed',
+      encGoogleMapCoords: saved.encGoogleMapCoords !== undefined ? saved.encGoogleMapCoords : 'Enclosed',
+      encPriceTrendPortals: saved.encPriceTrendPortals !== undefined ? saved.encPriceTrendPortals : 'Enclosed',
+      encGuidelineRateEvidence: saved.encGuidelineRateEvidence !== undefined ? saved.encGuidelineRateEvidence : 'Enclosed',
+      encOtherDocuments: saved.encOtherDocuments !== undefined ? saved.encOtherDocuments : 'No',
+
+      finalAppraisalText: saved.finalAppraisalText !== undefined ? saved.finalAppraisalText : '',
 
       // Attachments
       documentImages: saved.documentImages || [],
@@ -344,22 +367,26 @@ export default function StateBankOfIndiaLandAndBuilding({
   useEffect(() => {
     const landMarket = parseNum(fields.abstractMarketLand);
     const bldgMarket = parseNum(fields.abstractMarketBldg);
-    const totalMarket = landMarket + bldgMarket;
+    const extraMarket = parseNum(fields.abstractMarketExtra);
+    const totalMarket = landMarket + bldgMarket + extraMarket;
 
     const landGovt = parseNum(fields.abstractGovtLand);
     const bldgGovt = parseNum(fields.abstractGovtBldg);
-    const totalGovt = landGovt + bldgGovt;
+    const extraGovt = parseNum(fields.abstractGovtExtra);
+    const totalGovt = landGovt + bldgGovt + extraGovt;
 
     const rPct = parsePct(fields.abstractRealizablePct, 100);
     const dPct = parsePct(fields.abstractDistressPct, 100);
 
     const realLand = Math.round((landMarket * rPct) / 100);
     const realBldg = Math.round((bldgMarket * rPct) / 100);
-    const totalReal = realLand + realBldg;
+    const realExtra = Math.round((extraMarket * rPct) / 100);
+    const totalReal = realLand + realBldg + realExtra;
 
     const distLand = Math.round((landMarket * dPct) / 100);
     const distBldg = Math.round((bldgMarket * dPct) / 100);
-    const totalDist = distLand + distBldg;
+    const distExtra = Math.round((extraMarket * dPct) / 100);
+    const totalDist = distLand + distBldg + distExtra;
 
     setFields((prev: any) => ({
       ...prev,
@@ -367,16 +394,20 @@ export default function StateBankOfIndiaLandAndBuilding({
       abstractMarketTotal: totalMarket > 0 ? `Rs. ${formatIndianCurrency(totalMarket)}` : prev.abstractMarketTotal,
       abstractRealizableLand: realLand > 0 ? `Rs. ${formatIndianCurrency(realLand)}` : prev.abstractRealizableLand,
       abstractRealizableBldg: realBldg > 0 ? `Rs. ${formatIndianCurrency(realBldg)}` : prev.abstractRealizableBldg,
+      abstractRealizableExtra: realExtra > 0 ? `Rs. ${formatIndianCurrency(realExtra)}` : prev.abstractRealizableExtra,
       abstractRealizableTotal: totalReal > 0 ? `Rs. ${formatIndianCurrency(totalReal)}` : prev.abstractRealizableTotal,
       abstractDistressLand: distLand > 0 ? `Rs. ${formatIndianCurrency(distLand)}` : prev.abstractDistressLand,
       abstractDistressBldg: distBldg > 0 ? `Rs. ${formatIndianCurrency(distBldg)}` : prev.abstractDistressBldg,
+      abstractDistressExtra: distExtra > 0 ? `Rs. ${formatIndianCurrency(distExtra)}` : prev.abstractDistressExtra,
       abstractDistressTotal: totalDist > 0 ? `Rs. ${formatIndianCurrency(totalDist)}` : prev.abstractDistressTotal,
     }));
   }, [
     fields.abstractMarketLand,
     fields.abstractMarketBldg,
+    fields.abstractMarketExtra,
     fields.abstractGovtLand,
     fields.abstractGovtBldg,
+    fields.abstractGovtExtra,
     fields.abstractRealizablePct,
     fields.abstractDistressPct,
   ]);
@@ -405,7 +436,20 @@ export default function StateBankOfIndiaLandAndBuilding({
 
   const handleDownloadPdfInternal = async () => {
     try {
-      const renderer = new PDFSBILandAndBuildingRenderer(fields, projectCode);
+      const mappedValItems = (fields.valuationGridItems && fields.valuationGridItems.length > 0)
+        ? fields.valuationGridItems.map((it: any) => ({
+            particulars: it.plotNo || '',
+            plinthArea: it.area || '',
+            roofHeight: "10'-6\"",
+            age: 'New',
+            rate: `Rs. ${it.rate || ''}`,
+            cost: `Rs. ${formatIndianCurrency(parseFloat(it.totalValue) || 0)}`,
+            depreciation: 'Rs. 0.00',
+            netValue: `Rs. ${formatIndianCurrency(parseFloat(it.totalValue) || 0)}`
+          }))
+        : undefined;
+      const renderFields = { ...fields, valItems: mappedValItems || fields.valItems };
+      const renderer = new PDFSBILandAndBuildingRenderer(renderFields, projectCode);
       const pdfBytes = await renderer.render();
       const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
@@ -421,7 +465,20 @@ export default function StateBankOfIndiaLandAndBuilding({
 
   const handlePreviewPdfInternal = async () => {
     try {
-      const renderer = new PDFSBILandAndBuildingRenderer(fields, projectCode);
+      const mappedValItems = (fields.valuationGridItems && fields.valuationGridItems.length > 0)
+        ? fields.valuationGridItems.map((it: any) => ({
+            particulars: it.plotNo || '',
+            plinthArea: it.area || '',
+            roofHeight: "10'-6\"",
+            age: 'New',
+            rate: `Rs. ${it.rate || ''}`,
+            cost: `Rs. ${formatIndianCurrency(parseFloat(it.totalValue) || 0)}`,
+            depreciation: 'Rs. 0.00',
+            netValue: `Rs. ${formatIndianCurrency(parseFloat(it.totalValue) || 0)}`
+          }))
+        : undefined;
+      const renderFields = { ...fields, valItems: mappedValItems || fields.valItems };
+      const renderer = new PDFSBILandAndBuildingRenderer(renderFields, projectCode);
       const pdfBytes = await renderer.render();
       const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
@@ -529,6 +586,80 @@ export default function StateBankOfIndiaLandAndBuilding({
     handleChange('valuerDeclarations', { ...valuerDeclarationsMap, [id]: checked });
   };
 
+  const autoAppraisalText = useMemo(() => {
+    const spec = fields.valuationPropertyDesc || fields.propertyAddress || 'the subject property';
+    const mVal = fields.abstractMarketOrSay || fields.abstractMarketTotal || presentMarketValueStr;
+    const rVal = fields.abstractRealizableOrSay || fields.abstractRealizableTotal || realizableValueStr;
+    const fVal = fields.abstractDistressOrSay || fields.abstractDistressTotal || forcedSaleValueStr;
+    return `As a result of physical inspection, appraisal and analysis of ${spec}, it is our considered opinion that the PRESENT MARKET VALUE of the property is ${mVal}. The REALIZABLE VALUE is ${rVal} and the FORCED SALE VALUE is ${fVal}.`;
+  }, [
+    fields.valuationPropertyDesc,
+    fields.propertyAddress,
+    fields.abstractMarketOrSay,
+    fields.abstractMarketTotal,
+    presentMarketValueStr,
+    fields.abstractRealizableOrSay,
+    fields.abstractRealizableTotal,
+    realizableValueStr,
+    fields.abstractDistressOrSay,
+    fields.abstractDistressTotal,
+    forcedSaleValueStr,
+  ]);
+
+  const ENCLOSURES_ITEMS = [
+    { key: 'encLayoutSketch', id: 'a)', text: 'Layout plan sketch of the area in which the property is located with latitude and longitude' },
+    { key: 'encBuildingPlan', id: 'b)', text: 'Building Plan' },
+    { key: 'encFloorPlan', id: 'c)', text: 'Floor Plan' },
+    { key: 'encPhotographGeo', id: 'd)', text: "Photograph of the property (including geo-stamping with date) and owner (in case of housing loans, if borrower is available) including a 'Selfie' of the Valuer at the site" },
+    { key: 'encCertifiedApprovedPlan', id: 'e)', text: 'Certified copy of the approved / sanctioned plan wherever applicable from the concerned office' },
+    { key: 'encGoogleMapCoords', id: 'f)', text: 'Google Map location of the property and Longitude/Latitude and co-ordinates of the property' },
+    { key: 'encPriceTrendPortals', id: 'g)', text: 'Price trend of the Property in the locality/city from property search sites viz Magickbricks.com, 99Acres.com, Makan.com etc' },
+    { key: 'encGuidelineRateEvidence', id: 'h)', text: 'Guideline rate mentioned in the valuation report must be supported by documentary evidence i.e. latest guideline rate published in district website, Registrar Office etc should be printed and signed by the concerned valuer as an evidence of authenticity' },
+    { key: 'encOtherDocuments', id: 'i)', text: 'Any other relevant documents/ extracts' },
+  ];
+
+  const handleAddValuationItem = () => {
+    const next = [...(fields.valuationGridItems || [])];
+    next.push({
+      plotNo: `Block-1: Item ${next.length + 1}`,
+      area: '500.00',
+      rate: '1500.00',
+      totalValue: '750000',
+    });
+    handleChange('valuationGridItems', next);
+  };
+
+  const handleUpdateValuationItem = (index: number, key: string, value: string) => {
+    const next = [...(fields.valuationGridItems || [])];
+    const row = { ...next[index], [key]: value };
+    if (key === 'area' || key === 'rate') {
+      const a = parseFloat(String(key === 'area' ? value : row.area).replace(/[^0-9.]/g, '')) || 0;
+      const r = parseFloat(String(key === 'rate' ? value : row.rate).replace(/[^0-9.]/g, '')) || 0;
+      row.totalValue = String(Math.round(a * r));
+    }
+    next[index] = row;
+    handleChange('valuationGridItems', next);
+  };
+
+  const handleDeleteValuationItem = (index: number) => {
+    const next = (fields.valuationGridItems || []).filter((_: any, i: number) => i !== index);
+    handleChange('valuationGridItems', next);
+  };
+
+  const totalValuationGridAmount = useMemo(() => {
+    return (fields.valuationGridItems || []).reduce((acc: number, it: any) => {
+      const val = parseFloat(String(it.totalValue || '0').replace(/[^0-9.]/g, '')) || 0;
+      return acc + val;
+    }, 0);
+  }, [fields.valuationGridItems]);
+
+  const totalValuationGridArea = useMemo(() => {
+    return (fields.valuationGridItems || []).reduce((acc: number, it: any) => {
+      const a = parseFloat(String(it.area || '0').replace(/[^0-9.]/g, '')) || 0;
+      return acc + a;
+    }, 0);
+  }, [fields.valuationGridItems]);
+
   const NAV_SECTIONS: NavItem[] = [
     { id: 'sbi-lb-cover-and-customer', title: 'Cover Page & Bank Details' },
     { id: 'sbi-lb-sec-2', title: 'Property Details' },
@@ -540,6 +671,7 @@ export default function StateBankOfIndiaLandAndBuilding({
     { id: 'sbi-lb-sec-8', title: 'Area Details of Property' },
     { id: 'sbi-lb-sec-9', title: 'Valuation & Rates' },
     { id: 'sbi-lb-sec-10', title: 'Declaration & Valuer Details' },
+    { id: 'sbi-lb-sec-11', title: 'DETAILS OF VALUATION & TOTAL ABSTRACT' },
     { id: 'section-documents', title: 'Verified Property Documents' },
     { id: 'section-maps', title: 'Location Maps' },
     { id: 'section-photographs', title: 'Property Photographs' },
@@ -1725,6 +1857,491 @@ export default function StateBankOfIndiaLandAndBuilding({
               tooltip='>>Prefill from section COVER PAGE, "DATE:"<<'
               fallbackValue={fields.coverDate || fields.reportDate || '24.07.2026'}
             />
+          </div>
+        </div>
+      </Section>
+
+      {/* ── Section 11: DETAILS OF VALUATION & TOTAL ABSTRACT + ENCLOSURES & APPRAISAL STATEMENT ── */}
+      <Section id="sbi-lb-sec-11" title="DETAILS OF VALUATION & TOTAL ABSTRACT" defaultOpen={true}>
+        <div className="space-y-6">
+          {/* Container 1: DETAILS OF VALUATION & TOTAL ABSTRACT (Color: Light Purple #f3e5f5) */}
+          <div style={{ backgroundColor: '#f3e5f5', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-purple-200">
+            {/* Header Title inside light purple box */}
+            <div className="border-b border-purple-300 pb-2 flex justify-between items-center">
+              <h3 className="font-bold text-purple-900 text-sm uppercase tracking-wider">
+                DETAILS OF VALUATION & TOTAL ABSTRACT
+              </h3>
+              <span className="text-[11px] font-semibold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-full border border-purple-300">
+                Valuation Schedule & 4x4 Abstract Matrix
+              </span>
+            </div>
+
+            {/* Field 1: DETAILS OF VALUATION Grid (Plot No, Area, Rate, Total Value) */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-xs font-bold text-purple-950 uppercase tracking-wider">
+                  DETAILS OF VALUATION Grid (Plot No, Area, Rate, Total Value)
+                </label>
+                <button
+                  type="button"
+                  onClick={handleAddValuationItem}
+                  disabled={isReadOnly}
+                  className="text-[11px] font-semibold text-purple-800 bg-purple-100 hover:bg-purple-200 px-3 py-1 rounded-md border border-purple-300 transition-colors cursor-pointer"
+                >
+                  + Add Item / Row
+                </button>
+              </div>
+
+              <div className="bg-white/80 p-3 rounded-xl border border-purple-200 overflow-x-auto">
+                <table className="w-full text-xs text-left border-collapse min-w-[600px]">
+                  <thead>
+                    <tr className="border-b border-purple-200 text-purple-900 bg-purple-50/70">
+                      <th className="p-2.5 font-bold">Sl.</th>
+                      <th className="p-2.5 font-bold">Particulars / Plot No / Block</th>
+                      <th className="p-2.5 font-bold text-right">Plinth Area (Sft)</th>
+                      <th className="p-2.5 font-bold text-right">Rate (Rs./Sft)</th>
+                      <th className="p-2.5 font-bold text-right">Total Value (Rs.)</th>
+                      <th className="p-2.5 font-bold text-center w-16">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-purple-100">
+                    {(fields.valuationGridItems || []).map((it: any, idx: number) => (
+                      <tr key={idx} className="hover:bg-purple-50/40 transition-colors">
+                        <td className="p-2 font-bold text-purple-950">{idx + 1}</td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            className={inputCls + ' text-xs'}
+                            value={it.plotNo || ''}
+                            onChange={e => handleUpdateValuationItem(idx, 'plotNo', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="e.g. RCC GROUND FLOOR (BLOCK-1)"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="number"
+                            className={inputCls + ' text-xs text-right'}
+                            value={it.area || ''}
+                            onChange={e => handleUpdateValuationItem(idx, 'area', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="0.00"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="number"
+                            className={inputCls + ' text-xs text-right'}
+                            value={it.rate || ''}
+                            onChange={e => handleUpdateValuationItem(idx, 'rate', e.target.value)}
+                            disabled={isReadOnly}
+                            placeholder="0.00"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            className={inputCls + ' text-xs text-right font-bold text-purple-900 bg-purple-50/50'}
+                            value={it.totalValue !== undefined ? `Rs. ${formatIndianCurrency(parseFloat(it.totalValue) || 0)}` : ''}
+                            readOnly
+                            disabled
+                            placeholder="Rs. 0.00"
+                          />
+                        </td>
+                        <td className="p-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteValuationItem(idx)}
+                            disabled={isReadOnly || (fields.valuationGridItems || []).length <= 1}
+                            className="text-rose-500 hover:text-rose-700 text-xs font-bold disabled:opacity-30 disabled:cursor-not-allowed"
+                            title="Delete row"
+                          >
+                            ✕
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Total Summary Row */}
+                    <tr className="bg-purple-100/70 font-bold border-t-2 border-purple-300">
+                      <td colSpan={2} className="p-2.5 text-right uppercase text-purple-950">
+                        Total Valuation:
+                      </td>
+                      <td className="p-2.5 text-right text-purple-950">
+                        {totalValuationGridArea.toFixed(2)} Sft
+                      </td>
+                      <td className="p-2.5 text-right text-purple-800">
+                        —
+                      </td>
+                      <td className="p-2.5 text-right text-emerald-800 font-extrabold text-sm">
+                        Rs. {formatIndianCurrency(totalValuationGridAmount)}/-
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Field 2: TOTAL ABSTRACT FOR THE ENTIRE PROPERTY (Land, Building, Ext. Services, etc.) */}
+            <div>
+              <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 mb-2">
+                <label className="text-xs font-bold text-purple-950 uppercase tracking-wider">
+                  TOTAL ABSTRACT FOR THE ENTIRE PROPERTY (Land, Building, Ext. Services, etc.)
+                </label>
+                <div className="flex items-center gap-3 text-xs bg-white/70 px-3 py-1 rounded-lg border border-purple-200">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-600 font-medium">Realizable %:</span>
+                    <input
+                      type="number"
+                      className="w-14 px-1.5 py-0.5 text-xs border rounded text-right font-bold"
+                      value={fields.abstractRealizablePct || '95'}
+                      onChange={e => handleChange('abstractRealizablePct', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-600 font-medium">Distress %:</span>
+                    <input
+                      type="number"
+                      className="w-14 px-1.5 py-0.5 text-xs border rounded text-right font-bold"
+                      value={fields.abstractDistressPct || '85'}
+                      onChange={e => handleChange('abstractDistressPct', e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white/80 p-3 rounded-xl border border-purple-200 overflow-x-auto">
+                <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+                  <thead>
+                    <tr className="border-b border-purple-200 text-purple-900 bg-purple-50/70">
+                      <th className="p-2.5 font-bold">Item / Particulars</th>
+                      <th className="p-2.5 font-bold text-right">Govt Value (Rs.)</th>
+                      <th className="p-2.5 font-bold text-right">Market Value (Rs.)</th>
+                      <th className="p-2.5 font-bold text-right">Realizable Value ({fields.abstractRealizablePct || 95}%)</th>
+                      <th className="p-2.5 font-bold text-right">Distress Value ({fields.abstractDistressPct || 85}%)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-purple-100">
+                    {/* Land Row */}
+                    <tr className="hover:bg-purple-50/40">
+                      <td className="p-2 font-bold text-purple-950">1. Land Value</td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right'}
+                          value={fields.abstractGovtLand || ''}
+                          onChange={e => handleChange('abstractGovtLand', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="933600"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right font-bold'}
+                          value={fields.abstractMarketLand || ''}
+                          onChange={e => handleChange('abstractMarketLand', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="6000000"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right'}
+                          value={fields.abstractRealizableLand || ''}
+                          onChange={e => handleChange('abstractRealizableLand', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="5700000"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right'}
+                          value={fields.abstractDistressLand || ''}
+                          onChange={e => handleChange('abstractDistressLand', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="5100000"
+                        />
+                      </td>
+                    </tr>
+
+                    {/* Building Row */}
+                    <tr className="hover:bg-purple-50/40">
+                      <td className="p-2 font-bold text-purple-950">2. Building Value</td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right'}
+                          value={fields.abstractGovtBldg || ''}
+                          onChange={e => handleChange('abstractGovtBldg', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="1958250"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right font-bold'}
+                          value={fields.abstractMarketBldg || ''}
+                          onChange={e => handleChange('abstractMarketBldg', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="2611000"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right'}
+                          value={fields.abstractRealizableBldg || ''}
+                          onChange={e => handleChange('abstractRealizableBldg', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="2480450"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right'}
+                          value={fields.abstractDistressBldg || ''}
+                          onChange={e => handleChange('abstractDistressBldg', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="2219350"
+                        />
+                      </td>
+                    </tr>
+
+                    {/* Ext. Services / Amenities / Other Row */}
+                    <tr className="hover:bg-purple-50/40">
+                      <td className="p-2 font-bold text-purple-950">3. Ext. Services & Amenities</td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right'}
+                          value={fields.abstractGovtExtra || ''}
+                          onChange={e => handleChange('abstractGovtExtra', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="0"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right'}
+                          value={fields.abstractMarketExtra || ''}
+                          onChange={e => handleChange('abstractMarketExtra', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="0"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right'}
+                          value={fields.abstractRealizableExtra || ''}
+                          onChange={e => handleChange('abstractRealizableExtra', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="0"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right'}
+                          value={fields.abstractDistressExtra || ''}
+                          onChange={e => handleChange('abstractDistressExtra', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="0"
+                        />
+                      </td>
+                    </tr>
+
+                    {/* Total Column Row */}
+                    <tr className="bg-purple-100/80 font-bold border-t-2 border-purple-300">
+                      <td className="p-2.5 uppercase text-purple-950 font-extrabold">TOTAL AMOUNT (Rs.)</td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right font-bold bg-amber-50'}
+                          value={fields.abstractGovtTotal || ''}
+                          onChange={e => handleChange('abstractGovtTotal', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="Rs. 2891850"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right font-bold text-emerald-800 bg-emerald-50'}
+                          value={fields.abstractMarketTotal || ''}
+                          onChange={e => handleChange('abstractMarketTotal', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="Rs. 8611000"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right font-bold text-blue-800 bg-blue-50'}
+                          value={fields.abstractRealizableTotal || ''}
+                          onChange={e => handleChange('abstractRealizableTotal', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="Rs. 8180450"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right font-bold text-rose-800 bg-rose-50'}
+                          value={fields.abstractDistressTotal || ''}
+                          onChange={e => handleChange('abstractDistressTotal', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="Rs. 7319350"
+                        />
+                      </td>
+                    </tr>
+
+                    {/* Or Say Row */}
+                    <tr className="bg-purple-50/80 font-bold">
+                      <td className="p-2.5 uppercase text-purple-950">OR SAY (ROUNDED RS.)</td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right font-bold'}
+                          value={fields.abstractGovtOrSay || ''}
+                          onChange={e => handleChange('abstractGovtOrSay', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="Rs. 2892000"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right font-bold text-emerald-800'}
+                          value={fields.abstractMarketOrSay || ''}
+                          onChange={e => handleChange('abstractMarketOrSay', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="Rs. 8611000"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right font-bold text-blue-800'}
+                          value={fields.abstractRealizableOrSay || ''}
+                          onChange={e => handleChange('abstractRealizableOrSay', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="Rs. 8180000"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls + ' text-xs text-right font-bold text-rose-800'}
+                          value={fields.abstractDistressOrSay || ''}
+                          onChange={e => handleChange('abstractDistressOrSay', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="Rs. 7319000"
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Container 2: ENCLOSURES & APPRAISAL STATEMENT (Color: Mint Green #f1f8e9) */}
+          <div style={{ backgroundColor: '#f1f8e9', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-emerald-200">
+            {/* Header Title inside mint green box */}
+            <div className="border-b border-emerald-300 pb-2 flex justify-between items-center">
+              <h3 className="font-bold text-emerald-900 text-sm uppercase tracking-wider">
+                ENCLOSURES & APPRAISAL STATEMENT
+              </h3>
+              <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                Enclosures Checklist & Valuer Sign-Off
+              </span>
+            </div>
+
+            {/* Field 1: Enclosures (Items a through i) */}
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <label className="text-xs font-bold text-emerald-950 uppercase tracking-wider">
+                  Enclosures (Items a through i)
+                </label>
+                <span className="text-[11px] text-emerald-700 italic">
+                  9 Standard Enclosure Checkpoints
+                </span>
+              </div>
+              <div className="grid md:grid-cols-3 gap-3">
+                {ENCLOSURES_ITEMS.map(item => {
+                  const currentVal = fields[item.key] || (item.key === 'encOtherDocuments' ? 'No' : 'Enclosed');
+                  return (
+                    <div key={item.key} className="bg-white/90 p-3 rounded-xl border border-emerald-200 flex flex-col justify-between space-y-2.5 shadow-2xs">
+                      <div className="text-xs font-semibold text-slate-800 leading-snug">
+                        <strong className="text-emerald-900 mr-1">{item.id}</strong>
+                        {item.text}
+                      </div>
+                      <div className="flex items-center gap-1.5 pt-1 border-t border-emerald-100">
+                        {(['Enclosed', 'Yes', 'No'] as const).map(opt => (
+                          <button
+                            key={opt}
+                            type="button"
+                            disabled={isReadOnly}
+                            onClick={() => handleChange(item.key, opt)}
+                            className={`flex-1 py-1 px-2 text-[11px] font-bold rounded-lg border transition-all ${
+                              currentVal === opt
+                                ? opt === 'No'
+                                  ? 'bg-rose-50 border-rose-300 text-rose-700'
+                                  : 'bg-emerald-600 border-emerald-600 text-white shadow-xs'
+                                : 'bg-slate-50 border-gray-200 text-slate-600 hover:bg-emerald-50 hover:border-emerald-300'
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Field 2: Final Appraisal Text / Fair Market Value Statement */}
+            <PrefillField
+              label="Final Appraisal Text / Fair Market Value Statement"
+              type="textarea"
+              rows={4}
+              value={fields.finalAppraisalText}
+              onChange={(val: string) => handleChange('finalAppraisalText', val)}
+              isReadOnly={isReadOnly}
+              tooltip=">>Auto calculating from [String concatenation of Property Spec variables, PRESENT MARKET VALUE, REALIZABLE VALUE, and FORCED SALE VALUE]<<"
+              fallbackValue={autoAppraisalText}
+            />
+
+            {/* Field 3 & 4: Date (Valuer Sign-off) & Place (Valuer Sign-off) */}
+            <div className="grid md:grid-cols-2 gap-4">
+              <PrefillField
+                label="Date (Valuer Sign-off)"
+                value={fields.signatureDate}
+                onChange={(val: string) => handleChange('signatureDate', val)}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "DATE:"<<'
+                fallbackValue={fields.coverDate || fields.reportDate || '24.07.2026'}
+              />
+
+              <PrefillField
+                label="Place (Valuer Sign-off)"
+                value={fields.signaturePlace}
+                onChange={(val: string) => handleChange('signaturePlace', val)}
+                isReadOnly={isReadOnly}
+                tooltip='>>Prefill from section COVER PAGE, "Branch Address Details"<<'
+                fallbackValue={fields.branchAddressDetails || fields.branchAddress || 'Bhubaneswar'}
+              />
+            </div>
           </div>
         </div>
       </Section>
