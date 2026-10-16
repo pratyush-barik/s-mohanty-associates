@@ -247,8 +247,15 @@ export default function StateBankOfIndiaLandAndBuilding({
       plinthAreaApprovalText: saved.plinthAreaApprovalText !== undefined ? saved.plinthAreaApprovalText : 'Block-1: Ground: 746.00 Sft, First: 746.00 Sft, Second: 746.00 Sft\nBlock-2: Ground: 746.00 Sft, First: 746.00 Sft, Second: 746.00 Sft',
       plinthAreaActualText: saved.plinthAreaActualText !== undefined ? saved.plinthAreaActualText : 'Block-1: Ground: 1440.00 Sft, First: 1440.00 Sft\nTotal: 2880.00 Sft',
 
-      // 9. Valuation (Land Rate Adopted)
+      // 9. Valuation
       landRateAdoptedText: saved.landRateAdoptedText !== undefined ? saved.landRateAdoptedText : `THE LAND RATE ADOPTED IN THIS VALUATION:\n• GOVT. BENCHMARK VALUE: RS.1,69,65,000/- PER ACRE I.E. RS.389/- PER SFT\n• TOTAL LAND AREA: AC.0.055 DEC I.E. 2400.00 SFT\n• GUIDELINE VALUE OF LAND= 2400.00 SFT X RS.389/- PER SFT =RS.9,33,600/-\n• THE PREVAILING MARKET RATE OF THE LAND IS RS.2400/- TO RS.2600/- PER SFT.\n• THE ADOPTED MARKET RATE OF THE LAND IS RS.2500/- PER SFT FOR VALUATION PURPOSE.\n• TOTAL MARKET VALUE: 2400.00 SFT X RS.2500/- PER SFT = RS.60,00,000/-`,
+      tirQualificationsMitigation: saved.tirQualificationsMitigation !== undefined ? saved.tirQualificationsMitigation : (saved.tirQualifications || 'NIL / Clear TIR obtained without any adverse observations'),
+      sarfaesiCompliant: saved.sarfaesiCompliant !== undefined ? saved.sarfaesiCompliant : 'Yes',
+      socialInfrastructure: saved.socialInfrastructure !== undefined ? saved.socialInfrastructure : 'No',
+      entireLandMortgaged: saved.entireLandMortgaged !== undefined ? saved.entireLandMortgaged : 'Yes',
+      lastTwoTransactionsDetails: saved.lastTwoTransactionsDetails !== undefined ? saved.lastTwoTransactionsDetails : 'As per local enquiry, recent transactions in the locality range between Rs. 2,400/- to Rs. 2,600/- per Sq.ft.',
+      variationJustification20Pct: saved.variationJustification20Pct !== undefined ? saved.variationJustification20Pct : 'No significant variation observed; adopted rate is aligned with prevailing market trends.',
+      otherRelevantAspects: saved.otherRelevantAspects !== undefined ? saved.otherRelevantAspects : 'The property has good road connectivity and civic amenities available within 1-2 kms.',
 
       // 10. Remarks
       generalRemarksText: saved.generalRemarksText !== undefined ? saved.generalRemarksText : `REMARKS:\nSUBJECT PROPERTY IS AN UNDER CONSTRUCTED G+1 STORIED BUILDING, LAND EXTENT OF AC.0.055 DEC I.E. 2400.00 SFT. PROPERTY LOCATED IN A GOOD DEVELOPED RESIDENTIAL AREA OF KALYANI VIHAR, KANTILO, BHUBANESWAR. THIS PROPERTY IS COMING UNDER BHUBANESWAR DEVELOPMENT AUTHORITY AREA LIMIT. ALL CIVIC AMENITIES ARE PRESENT 2-3 KM FROM THE PROPERTY. VALUATION HAS BEEN DONE FOR LAND & APPROVED BUA OF THE G+1 STORIED BUILDING (BLOCK-1).`,
@@ -497,7 +504,7 @@ export default function StateBankOfIndiaLandAndBuilding({
     { id: 'sbi-lb-sec-6', title: '6 Stage of construction' },
     { id: 'sbi-lb-sec-7', title: '7 Violations, if any, observed' },
     { id: 'sbi-lb-sec-8', title: '8 Area details of the property' },
-    { id: 'sbi-lb-sec-9', title: 'PROPERTY VALUE' },
+    { id: 'sbi-lb-sec-9', title: '9 Valuation' },
     { id: 'section-documents', title: 'DOCUMENTS' },
     { id: 'section-maps', title: 'MAPS' },
     { id: 'section-photographs', title: 'PHOTOGRAPHS' },
@@ -1444,139 +1451,145 @@ export default function StateBankOfIndiaLandAndBuilding({
         </div>
       </Section>
 
-      {/* ── Value of the Property Matrix (4 Rows x 4 Columns) ── */}
-      <Section id="sbi-lb-sec-9" title="Value of the Property (4 x 4 Summary Matrix)" number={9} defaultOpen={true}>
-        <div className="grid md:grid-cols-4 gap-3 p-4 rounded-xl border border-slate-200 bg-slate-50">
-          <Field label="Land Market Value (Rs.)">
-            <input
-              className={inputCls + ' font-bold'}
-              value={fields.abstractMarketLand}
-              onChange={(e) => handleChange('abstractMarketLand', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="6000000"
-            />
-          </Field>
-          <Field label="Building Market Value (Rs.)">
-            <input
-              className={inputCls + ' font-bold'}
-              value={fields.abstractMarketBldg}
-              onChange={(e) => handleChange('abstractMarketBldg', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="2611000"
-            />
-          </Field>
-          <Field label="Total Market Value (Rs.)">
-            <input
-              className={inputCls + ' font-bold text-emerald-700 bg-emerald-50'}
-              value={fields.abstractMarketTotal}
-              onChange={(e) => handleChange('abstractMarketTotal', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="8611000"
-            />
-          </Field>
-          <Field label="Market Or Say (Rs.)">
-            <input
-              className={inputCls + ' font-bold text-emerald-700'}
-              value={fields.abstractMarketOrSay}
-              onChange={(e) => handleChange('abstractMarketOrSay', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="8611000"
-            />
-          </Field>
-        </div>
+      {/* ── Section 9: 9 Valuation (Color: Light Indigo #e8eaf6) ── */}
+      <Section id="sbi-lb-sec-9" title="9 Valuation" number={9} defaultOpen={true}>
+        <div style={{ backgroundColor: '#e8eaf6', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-indigo-200">
+          {/* Header Title inside light indigo box */}
+          <div className="border-b border-indigo-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-indigo-900 text-sm uppercase tracking-wider">
+              9 Valuation
+            </h3>
+            <span className="text-[11px] font-semibold text-indigo-800 bg-indigo-100 px-2 py-0.5 rounded-full border border-indigo-300">
+              Land Rate, SARFAESI Compliance & Market Aspects
+            </span>
+          </div>
 
-        <div className="grid md:grid-cols-4 gap-3 mt-3">
-          <Field label="Land Govt Value (Rs.)">
-            <input
+          {/* THE LAND RATE ADOPTED IN THIS VALUATION */}
+          <Field label="THE LAND RATE ADOPTED IN THIS VALUATION">
+            <textarea
               className={inputCls}
-              value={fields.abstractGovtLand}
-              onChange={(e) => handleChange('abstractGovtLand', e.target.value)}
+              rows={5}
+              value={fields.landRateAdoptedText || ''}
+              onChange={e => handleChange('landRateAdoptedText', e.target.value)}
               disabled={isReadOnly}
-              placeholder="933600"
+              placeholder="Enter details of land rate adopted in this valuation..."
             />
           </Field>
-          <Field label="Building Govt Value (Rs.)">
-            <input
-              className={inputCls}
-              value={fields.abstractGovtBldg}
-              onChange={(e) => handleChange('abstractGovtBldg', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="1958250"
-            />
-          </Field>
-          <Field label="Total Govt Value (Rs.)">
-            <input
-              className={inputCls}
-              value={fields.abstractGovtTotal}
-              onChange={(e) => handleChange('abstractGovtTotal', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="2891850"
-            />
-          </Field>
-          <Field label="Govt Or Say (Rs.)">
-            <input
-              className={inputCls}
-              value={fields.abstractGovtOrSay}
-              onChange={(e) => handleChange('abstractGovtOrSay', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="2892000"
-            />
-          </Field>
-        </div>
 
-        <div className="grid md:grid-cols-4 gap-3 mt-3">
-          <Field label="Realizable Value (%)">
-            <div className="space-y-1">
-              <input
-                className={inputCls}
-                value={fields.abstractRealizablePct}
-                onChange={(e) => handleChange('abstractRealizablePct', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="95"
-              />
-              <input
-                className={inputCls + ' text-xs'}
-                value={fields.abstractRealizableTotal}
-                onChange={(e) => handleChange('abstractRealizableTotal', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="Total Realizable"
-              />
-            </div>
-          </Field>
-          <Field label="Distress Value (%)">
-            <div className="space-y-1">
-              <input
-                className={inputCls}
-                value={fields.abstractDistressPct}
-                onChange={(e) => handleChange('abstractDistressPct', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="85"
-              />
-              <input
-                className={inputCls + ' text-xs'}
-                value={fields.abstractDistressTotal}
-                onChange={(e) => handleChange('abstractDistressTotal', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="Total Distress"
-              />
-            </div>
-          </Field>
-          <Field label="Realizable Or Say (Rs.)">
-            <input
+          {/* i) Qualifications in TIR/Mitigation suggested, if any */}
+          <Field label="i) Qualifications in TIR/Mitigation suggested, if any">
+            <textarea
               className={inputCls}
-              value={fields.abstractRealizableOrSay}
-              onChange={(e) => handleChange('abstractRealizableOrSay', e.target.value)}
+              rows={3}
+              value={fields.tirQualificationsMitigation || ''}
+              onChange={e => handleChange('tirQualificationsMitigation', e.target.value)}
               disabled={isReadOnly}
-              placeholder="8180000"
+              placeholder="e.g. NIL / Clear TIR obtained without any adverse observations"
             />
           </Field>
-          <Field label="Distress Or Say (Rs.)">
-            <input
+
+          {/* Checkboxes: ii, iii, iv */}
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* ii) Property is SARFAESI compliant */}
+            <div className="bg-white/80 p-3.5 rounded-xl border border-indigo-200">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={fields.sarfaesiCompliant === 'Yes' || fields.sarfaesiCompliant === true}
+                  onChange={e => handleChange('sarfaesiCompliant', e.target.checked ? 'Yes' : 'No')}
+                  disabled={isReadOnly}
+                  className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                />
+                <span className="text-xs font-semibold text-slate-800">
+                  ii) Property is SARFAESI compliant: <strong className={fields.sarfaesiCompliant === 'Yes' ? 'text-emerald-700' : 'text-slate-500'}>
+                    {fields.sarfaesiCompliant === 'Yes' ? 'Yes' : 'No'}
+                  </strong>
+                </span>
+              </label>
+            </div>
+
+            {/* iii) Whether property belongs to social infrastructure... */}
+            <div className="bg-white/80 p-3.5 rounded-xl border border-indigo-200">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={fields.socialInfrastructure === 'Yes' || fields.socialInfrastructure === true}
+                  onChange={e => handleChange('socialInfrastructure', e.target.checked ? 'Yes' : 'No')}
+                  disabled={isReadOnly}
+                  className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                />
+                <span className="text-xs font-semibold text-slate-800">
+                  iii) Whether property belongs to social infrastructure...: <strong className={fields.socialInfrastructure === 'Yes' ? 'text-emerald-700' : 'text-slate-500'}>
+                    {fields.socialInfrastructure === 'Yes' ? 'Yes' : 'No'}
+                  </strong>
+                </span>
+              </label>
+            </div>
+
+            {/* iv) Whether entire piece of land... has been mortgaged */}
+            <div className="bg-white/80 p-3.5 rounded-xl border border-indigo-200">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={fields.entireLandMortgaged === 'Yes' || fields.entireLandMortgaged === true}
+                  onChange={e => handleChange('entireLandMortgaged', e.target.checked ? 'Yes' : 'No')}
+                  disabled={isReadOnly}
+                  className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
+                />
+                <span className="text-xs font-semibold text-slate-800">
+                  iv) Whether entire piece of land... has been mortgaged: <strong className={fields.entireLandMortgaged === 'Yes' ? 'text-emerald-700' : 'text-slate-500'}>
+                    {fields.entireLandMortgaged === 'Yes' ? 'Yes' : 'No'}
+                  </strong>
+                </span>
+              </label>
+            </div>
+          </div>
+
+          {/* v) Details of last two transactions in the locality/area... */}
+          <Field label="v) Details of last two transactions in the locality/area...">
+            <textarea
               className={inputCls}
-              value={fields.abstractDistressOrSay}
-              onChange={(e) => handleChange('abstractDistressOrSay', e.target.value)}
+              rows={3}
+              value={fields.lastTwoTransactionsDetails || ''}
+              onChange={e => handleChange('lastTwoTransactionsDetails', e.target.value)}
               disabled={isReadOnly}
-              placeholder="7319000"
+              placeholder="e.g. Details of last two transactions in the locality/area..."
+            />
+          </Field>
+
+          {/* vi) In case of variation of 20% or more... justification... */}
+          <Field label="vi) In case of variation of 20% or more... justification...">
+            <textarea
+              className={inputCls}
+              rows={3}
+              value={fields.variationJustification20Pct || ''}
+              onChange={e => handleChange('variationJustification20Pct', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. Justification in case of variation of 20% or more..."
+            />
+          </Field>
+
+          {/* vii) Any other aspect which has relevance... */}
+          <Field label="vii) Any other aspect which has relevance...">
+            <textarea
+              className={inputCls}
+              rows={3}
+              value={fields.otherRelevantAspects || ''}
+              onChange={e => handleChange('otherRelevantAspects', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. Any other aspect which has relevance to the valuation..."
+            />
+          </Field>
+
+          {/* REMARKS */}
+          <Field label="REMARKS">
+            <textarea
+              className={inputCls}
+              rows={4}
+              value={fields.generalRemarksText || ''}
+              onChange={e => handleChange('generalRemarksText', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Enter remarks..."
             />
           </Field>
         </div>
