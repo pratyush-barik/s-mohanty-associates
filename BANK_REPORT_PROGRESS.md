@@ -6,6 +6,15 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 - **Base Structure**: `✅ Created Base` | `⏳ Not Created`
 - **Status**: `✅ Completed` | `🔨 In Progress` | `⏳ Not Started`
 
+### 📊 Overall Status Summary
+
+| Status Category | Count | Description |
+| :--- | :---: | :--- |
+| **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
+| **🔨 In Progress** | **28 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
+| **⏳ Not Started** | **33 formats (31 banks)** | Directory reserved / pending base component creation |
+| **Total Tracked** | **60 institutions** (76 formats) | Full coverage of Indian Banks & NBFCs |
+
 ---
 
 | # | Bank / Organization | Subclass / Format | Base Structure | Status |
