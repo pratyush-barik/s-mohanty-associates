@@ -495,7 +495,7 @@ export default function StateBankOfIndiaLandAndBuilding({
     { id: 'sbi-lb-sec-4', title: '4 Physical Details' },
     { id: 'sbi-lb-sec-5', title: '5 Tenure/ Occupancy Details' },
     { id: 'sbi-lb-sec-6', title: '6 Stage of construction' },
-    { id: 'sbi-lb-sec-7', title: 'VALUATION NARRATIVE' },
+    { id: 'sbi-lb-sec-7', title: '7 Violations, if any, observed' },
     { id: 'sbi-lb-sec-8', title: 'MARKETABILITY' },
     { id: 'sbi-lb-sec-9', title: 'PROPERTY VALUE' },
     { id: 'section-documents', title: 'DOCUMENTS' },
@@ -1338,23 +1338,28 @@ export default function StateBankOfIndiaLandAndBuilding({
         </div>
       </Section>
 
-      {/* ── Section 9 & 10: Land Rate Adopted & Remarks ── */}
-      <Section id="sbi-lb-sec-7" title="9 & 10. Valuation Narrative & Remarks" number={7} defaultOpen={true}>
-        <Field label="9. The Land Rate Adopted Narrative">
-          <textarea
-            className={inputCls + ' min-h-22.5 text-xs'}
-            value={fields.landRateAdoptedText}
-            onChange={(e) => handleChange('landRateAdoptedText', e.target.value)}
-            disabled={isReadOnly}
-          />
-        </Field>
-        <div className="mt-4">
-          <Field label="10. Remarks">
+      {/* ── Section 7: 7 Violations, if any, observed (Color: Light Pink #fce4ec) ── */}
+      <Section id="sbi-lb-sec-7" title="7 Violations, if any, observed" number={7} defaultOpen={true}>
+        <div style={{ backgroundColor: '#fce4ec', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-pink-200">
+          {/* Header Title inside light pink box */}
+          <div className="border-b border-pink-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-pink-900 text-sm uppercase tracking-wider">
+              7 Violations, if any, observed
+            </h3>
+            <span className="text-[11px] font-semibold text-pink-800 bg-pink-100 px-2 py-0.5 rounded-full border border-pink-300">
+              Deviations & Compliance
+            </span>
+          </div>
+
+          {/* Nature and extent of violations */}
+          <Field label="Nature and extent of violations">
             <textarea
-              className={inputCls + ' min-h-20 text-xs'}
-              value={fields.generalRemarksText}
-              onChange={(e) => handleChange('generalRemarksText', e.target.value)}
+              className={inputCls}
+              rows={3}
+              value={fields.natureExtentViolations || ''}
+              onChange={e => handleChange('natureExtentViolations', e.target.value)}
               disabled={isReadOnly}
+              placeholder="e.g. Horizontal Deviation-93% / No major violations observed"
             />
           </Field>
         </div>
