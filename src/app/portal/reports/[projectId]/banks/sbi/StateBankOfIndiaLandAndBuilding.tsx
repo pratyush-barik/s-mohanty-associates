@@ -496,7 +496,7 @@ export default function StateBankOfIndiaLandAndBuilding({
     { id: 'sbi-lb-sec-5', title: '5 Tenure/ Occupancy Details' },
     { id: 'sbi-lb-sec-6', title: '6 Stage of construction' },
     { id: 'sbi-lb-sec-7', title: '7 Violations, if any, observed' },
-    { id: 'sbi-lb-sec-8', title: 'MARKETABILITY' },
+    { id: 'sbi-lb-sec-8', title: '8 Area details of the property' },
     { id: 'sbi-lb-sec-9', title: 'PROPERTY VALUE' },
     { id: 'section-documents', title: 'DOCUMENTS' },
     { id: 'section-maps', title: 'MAPS' },
@@ -1365,35 +1365,82 @@ export default function StateBankOfIndiaLandAndBuilding({
         </div>
       </Section>
 
-      {/* ── Section 13, 14, 15: Enclosures & Marketability ── */}
-      <Section id="sbi-lb-sec-8" title="13, 14, 15. Enclosures & Marketability of Property" number={8} defaultOpen={false}>
-        <div className="grid md:grid-cols-2 gap-4">
-          <Field label="13. List of Documents Enclosed">
-            <input
-              className={inputCls}
-              value={fields.listDocumentsEnclosed}
-              onChange={(e) => handleChange('listDocumentsEnclosed', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-          <Field label="14. List of Photos Enclosed">
-            <input
-              className={inputCls}
-              value={fields.listPhotosEnclosed}
-              onChange={(e) => handleChange('listPhotosEnclosed', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
-        </div>
-        <div className="mt-3">
-          <Field label="15. Marketability of the Property">
-            <textarea
-              className={inputCls + ' min-h-20 text-xs'}
-              value={fields.marketabilityNarrative}
-              onChange={(e) => handleChange('marketabilityNarrative', e.target.value)}
-              disabled={isReadOnly}
-            />
-          </Field>
+      {/* ── Section 8: 8 Area details of the property (Color: Light Teal #e0f2f1) ── */}
+      <Section id="sbi-lb-sec-8" title="8 Area details of the property" number={8} defaultOpen={true}>
+        <div style={{ backgroundColor: '#e0f2f1', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-teal-200">
+          {/* Header Title inside light teal box */}
+          <div className="border-b border-teal-300 pb-2 flex justify-between items-center">
+            <h3 className="font-bold text-teal-900 text-sm uppercase tracking-wider">
+              8 Area details of the property
+            </h3>
+            <span className="text-[11px] font-semibold text-teal-800 bg-teal-100 px-2 py-0.5 rounded-full border border-teal-300">
+              Site, Plinth, Carpet & Saleable Areas
+            </span>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {/* Site Area */}
+            <Field label="Site Area">
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.siteAreaText !== undefined ? String(fields.siteAreaText).replace(/[^0-9.]/g, '') : ''}
+                onChange={e => handleChange('siteAreaText', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. 2400 (in Sq.ft)"
+              />
+            </Field>
+
+            {/* Carpet Area */}
+            <Field label="Carpet Area">
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.carpetAreaText !== undefined ? String(fields.carpetAreaText).replace(/[^0-9.]/g, '') : ''}
+                onChange={e => handleChange('carpetAreaText', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. 2440 (in Sq.ft)"
+              />
+            </Field>
+
+            {/* Saleable Area */}
+            <Field label="Saleable Area">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.saleableAreaText || ''}
+                onChange={e => handleChange('saleableAreaText', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. 2400.00 Sft (Land) & 2880.00 Sft (Building)"
+              />
+            </Field>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            {/* Plinth Area (As per Approval) */}
+            <Field label="Plinth Area (As per Approval)">
+              <textarea
+                className={inputCls}
+                rows={3}
+                value={fields.plinthAreaApprovalText || ''}
+                onChange={e => handleChange('plinthAreaApprovalText', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. Block-1: Ground: 746.00 Sft, First: 746.00 Sft, Second: 746.00 Sft"
+              />
+            </Field>
+
+            {/* Plinth Area (As per Actual) */}
+            <Field label="Plinth Area (As per Actual)">
+              <textarea
+                className={inputCls}
+                rows={3}
+                value={fields.plinthAreaActualText || ''}
+                onChange={e => handleChange('plinthAreaActualText', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. Block-1: Ground: 1440.00 Sft, First: 1440.00 Sft, Total: 2880.00 Sft"
+              />
+            </Field>
+          </div>
         </div>
       </Section>
 
