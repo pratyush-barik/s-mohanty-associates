@@ -80,69 +80,67 @@ export default function VistaarFinance({
     const d = { ...(rawInitialFields || {}) };
     const p = (prefill || {}) as any;
 
-    // Header & Meta
+    // Header & Meta — only structural/agency defaults; property data comes from prefill or user input
     if (!d.valuationAgency) d.valuationAgency = 'M/S S MOHANTY ASSOCIATES';
-    if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '04.03.2021';
-    if (!d.proposalNo) d.proposalNo = projectCode || '0192SBML00663';
+    if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
+    if (!d.proposalNo) d.proposalNo = projectCode || '';
     if (!d.caseType) d.caseType = 'LAP';
-    if (!d.inspectionDate) d.inspectionDate = earliestVisit ? formatReportDate(earliestVisit.date) : '04.03.2021';
-    if (!d.nearestLandmark) d.nearestLandmark = 'Near Bharatipur Panchayat Office';
+    if (!d.inspectionDate) d.inspectionDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
+    if (!d.nearestLandmark) d.nearestLandmark = p.nearestLandmark || '';
 
-    const custName = p.applicantName || p.contactName || 'Mr. Tapan Behera';
-    const custPhone = p.contactPhone || '9861769314/9078595317';
-    if (!d.applicantDetails) d.applicantDetails = `${custName}, Mob-${custPhone}`;
-    if (!d.ownerSeller) d.ownerSeller = p.contactName || 'Mr. Narahari Behera & Sanjukta Behera';
-    if (!d.personMetAtSite) d.personMetAtSite = `${custName}, Mob-${custPhone}`;
+    const custName = p.applicantName || p.contactName || '';
+    const custPhone = p.contactPhone || '';
+    if (!d.applicantDetails) d.applicantDetails = custName ? `${custName}${custPhone ? ', Mob-' + custPhone : ''}` : '';
+    if (!d.ownerSeller) d.ownerSeller = p.contactName || '';
+    if (!d.personMetAtSite) d.personMetAtSite = custName ? `${custName}${custPhone ? ', Mob-' + custPhone : ''}` : '';
 
-    const defaultAddress =
-      p.propertyAddress ||
-      'Khata No-346,Plot No-1202(Area=AC.0.100Decs,Homested),Mouza-Bharati Pur,Tahasil-Pipili,PS-Pipili,Dist-Puri,Odisha,Pin-752104';
+    const defaultAddress = p.propertyAddress || '';
     if (!d.addressAsPerTRF) d.addressAsPerTRF = defaultAddress;
     if (!d.addressAsPerDoc) d.addressAsPerDoc = defaultAddress;
-    if (!d.addressAtSite) d.addressAtSite = 'Plot No-1202,At/PO-Bharati Pur,PS-Pipili,Dist-Puri,Pin-752104';
-    if (!d.documentsProvided) d.documentsProvided = 'Copy of Sale deed,ROR & EC';
+    if (!d.addressAtSite) d.addressAtSite = defaultAddress;
+    if (!d.documentsProvided) d.documentsProvided = '';
 
     // Locational & Property Specific Details
     if (!d.landHoldingStatus) d.landHoldingStatus = 'Freehold';
     if (!d.developedBy) d.developedBy = 'Self';
-    if (!d.typeOfProperty) d.typeOfProperty = p.propertyType || 'Asbestos Roofing House';
-    if (!d.typeOfLocality) d.typeOfLocality = 'Developing';
+    if (!d.typeOfProperty) d.typeOfProperty = p.propertyType || '';
+    if (!d.typeOfLocality) d.typeOfLocality = '';
     if (!d.occupationStatus) d.occupationStatus = 'Self Occupied';
     if (!d.zoningMasterPlan) d.zoningMasterPlan = 'NA';
     if (!d.propertyUsage) d.propertyUsage = 'Residential';
     if (!d.plotDemarcation) d.plotDemarcation = 'Yes';
     if (!d.propertyIdentifiable) d.propertyIdentifiable = 'Yes';
     if (!d.identifiedThrough) d.identifiedThrough = 'Customer';
-    if (!d.withinMCLimit) d.withinMCLimit = 'Within Bharatipur GP limit';
-    if (!d.internalFinishing) d.internalFinishing = 'AS flooring';
-    if (!d.typeOfStructure) d.typeOfStructure = 'Asbestos Roofing House';
+    if (!d.withinMCLimit) d.withinMCLimit = '';
+    if (!d.internalFinishing) d.internalFinishing = '';
+    if (!d.typeOfStructure) d.typeOfStructure = '';
     if (!d.noOfFloors) d.noOfFloors = '1';
     if (!d.locatedOnFloor) d.locatedOnFloor = 'NA';
     if (!d.totalFlats) d.totalFlats = 'NA';
-    if (!d.externalFinishing) d.externalFinishing = 'Good';
+    if (!d.externalFinishing) d.externalFinishing = '';
     if (!d.constructionStage) d.constructionStage = '100%';
-    if (!d.yearOfCompletion) d.yearOfCompletion = '2010';
-    if (!d.ageOfProperty) d.ageOfProperty = '10-Years';
-    if (!d.futurePhysicalLife) d.futurePhysicalLife = '40-Years';
+    if (!d.yearOfCompletion) d.yearOfCompletion = '';
+    if (!d.ageOfProperty) d.ageOfProperty = '';
+    if (!d.futurePhysicalLife) d.futurePhysicalLife = '';
 
-    // Boundaries
-    if (!d.bndDocNorth) d.bndDocNorth = 'Kalandi Das';
-    if (!d.bndDocSouth) d.bndDocSouth = 'Road';
-    if (!d.bndDocEast) d.bndDocEast = 'Not mentioned';
-    if (!d.bndDocWest) d.bndDocWest = 'Not mentioned';
+    // Boundaries — blank by default, user fills in from site visit
+    if (!d.bndDocNorth) d.bndDocNorth = '';
+    if (!d.bndDocSouth) d.bndDocSouth = '';
+    if (!d.bndDocEast) d.bndDocEast = '';
+    if (!d.bndDocWest) d.bndDocWest = '';
 
-    if (!d.bndBhunakshaNorth) d.bndBhunakshaNorth = 'Plot no-1199 & 1200';
-    if (!d.bndBhunakshaSouth) d.bndBhunakshaSouth = 'Road';
-    if (!d.bndBhunakshaEast) d.bndBhunakshaEast = 'Plot no-1201';
-    if (!d.bndBhunakshaWest) d.bndBhunakshaWest = 'Part of Plot no-1203';
+    if (!d.bndBhunakshaNorth) d.bndBhunakshaNorth = '';
+    if (!d.bndBhunakshaSouth) d.bndBhunakshaSouth = '';
+    if (!d.bndBhunakshaEast) d.bndBhunakshaEast = '';
+    if (!d.bndBhunakshaWest) d.bndBhunakshaWest = '';
 
-    if (!d.bndSiteNorth) d.bndSiteNorth = 'Vacant land of Kalandi Das';
-    if (!d.bndSiteSouth) d.bndSiteSouth = 'Road';
-    if (!d.bndSiteEast) d.bndSiteEast = 'Vacant land of Narendra Sethi';
-    if (!d.bndSiteWest) d.bndSiteWest = 'Vacant plot of Narahari Behera';
+    if (!d.bndSiteNorth) d.bndSiteNorth = '';
+    if (!d.bndSiteSouth) d.bndSiteSouth = '';
+    if (!d.bndSiteEast) d.bndSiteEast = '';
+    if (!d.bndSiteWest) d.bndSiteWest = '';
 
     if (!d.boundariesMatching) d.boundariesMatching = 'Yes';
-    if (!d.boundariesMismatchReason) d.boundariesMismatchReason = 'Identified by customer (Mr. Tapan Behera)';
+    if (!d.boundariesMismatchReason) d.boundariesMismatchReason = '';
 
     // Setbacks & Storeys
     if (!d.sbPermFront) d.sbPermFront = 'NA';
@@ -155,8 +153,8 @@ export default function VistaarFinance({
     if (!d.sbActualLeft) d.sbActualLeft = 'NA';
     if (!d.sbActualRight) d.sbActualRight = 'NA';
 
-    if (!d.heightPermissible) d.heightPermissible = 'NA(Plan not provided)';
-    if (!d.heightActual) d.heightActual = 'GF';
+    if (!d.heightPermissible) d.heightPermissible = 'NA';
+    if (!d.heightActual) d.heightActual = '';
 
     // Built-up Area
     if (!d.buaBasementAccom) d.buaBasementAccom = 'NA';
@@ -165,23 +163,23 @@ export default function VistaarFinance({
     if (!d.buaBasementPerm) d.buaBasementPerm = 'NA';
     if (!d.buaBasementAdopted) d.buaBasementAdopted = 'NA';
 
-    if (!d.buaGFAccom) d.buaGFAccom = '1-room';
-    if (!d.buaGFCarpet) d.buaGFCarpet = '510';
-    if (!d.buaGFActual) d.buaGFActual = '600';
-    if (!d.buaGFPerm) d.buaGFPerm = '0';
-    if (!d.buaGFAdopted) d.buaGFAdopted = '600';
+    if (!d.buaGFAccom) d.buaGFAccom = '';
+    if (!d.buaGFCarpet) d.buaGFCarpet = '';
+    if (!d.buaGFActual) d.buaGFActual = '';
+    if (!d.buaGFPerm) d.buaGFPerm = '';
+    if (!d.buaGFAdopted) d.buaGFAdopted = '';
 
     if (!d.buaTotalAccom) d.buaTotalAccom = 'NA';
-    if (!d.buaTotalCarpet) d.buaTotalCarpet = '510';
-    if (!d.buaTotalActual) d.buaTotalActual = '600';
-    if (!d.buaTotalPerm) d.buaTotalPerm = '0';
-    if (!d.buaTotalAdopted) d.buaTotalAdopted = '600';
+    if (!d.buaTotalCarpet) d.buaTotalCarpet = '';
+    if (!d.buaTotalActual) d.buaTotalActual = '';
+    if (!d.buaTotalPerm) d.buaTotalPerm = '';
+    if (!d.buaTotalAdopted) d.buaTotalAdopted = '';
 
     if (!d.violationObserved) d.violationObserved = 'NA';
 
     // Plan & Cost
     if (!d.constructionAsPerPlan) d.constructionAsPerPlan = 'NA';
-    if (!d.planApprovalDetails) d.planApprovalDetails = 'Approved plan not Provided';
+    if (!d.planApprovalDetails) d.planApprovalDetails = '';
     if (!d.constructionPermissionNo) d.constructionPermissionNo = 'NA';
     if (!d.approvalViolations) d.approvalViolations = 'NA';
     if (!d.confirmingByelaws) d.confirmingByelaws = 'NA';
@@ -191,39 +189,36 @@ export default function VistaarFinance({
     if (!d.justifiedCostRate) d.justifiedCostRate = 'NA';
     if (!d.adoptableJustifiedCost) d.adoptableJustifiedCost = 'NA';
 
-    // Valuation
-    if (!d.landAreaSqft) d.landAreaSqft = '4356';
-    if (!d.adoptableBUASqft) d.adoptableBUASqft = '600';
-    if (!d.marketRateLandRange) d.marketRateLandRange = '380-420';
-    if (!d.constructionRatePerSqft) d.constructionRatePerSqft = '400';
-    if (!d.recRateLandPerSqft) d.recRateLandPerSqft = '400';
+    // Valuation — blank so user enters actual figures
+    if (!d.landAreaSqft) d.landAreaSqft = '';
+    if (!d.adoptableBUASqft) d.adoptableBUASqft = '';
+    if (!d.marketRateLandRange) d.marketRateLandRange = '';
+    if (!d.constructionRatePerSqft) d.constructionRatePerSqft = '';
+    if (!d.recRateLandPerSqft) d.recRateLandPerSqft = '';
 
-    if (!d.totalConstValue100) d.totalConstValue100 = '240000';
-    if (!d.totalLandValue) d.totalLandValue = '1742400';
-    if (!d.totalConstValueStage) d.totalConstValueStage = '240000';
-    if (!d.marketValue100) d.marketValue100 = '1982400';
-    if (!d.marketValueStage) d.marketValueStage = '1982400';
-    if (!d.distressValue100) d.distressValue100 = '1486800';
-    if (!d.distressValueStage) d.distressValueStage = '1486800';
+    if (!d.totalConstValue100) d.totalConstValue100 = '';
+    if (!d.totalLandValue) d.totalLandValue = '';
+    if (!d.totalConstValueStage) d.totalConstValueStage = '';
+    if (!d.marketValue100) d.marketValue100 = '';
+    if (!d.marketValueStage) d.marketValueStage = '';
+    if (!d.distressValue100) d.distressValue100 = '';
+    if (!d.distressValueStage) d.distressValueStage = '';
 
     if (!d.commercialSBUA) d.commercialSBUA = 'NA';
     if (!d.compositeRate) d.compositeRate = 'NA';
     if (!d.totalCommercialMV) d.totalCommercialMV = 'NA';
 
-    if (!d.govtRateLand) d.govtRateLand = 'Not showing';
+    if (!d.govtRateLand) d.govtRateLand = '';
     if (!d.landValueGovt) d.landValueGovt = 'NA';
     if (!d.govtRateFlats) d.govtRateFlats = 'NA';
     if (!d.flatValueGovt) d.flatValueGovt = 'NA';
 
-    if (!d.latitude) d.latitude = '20.120126';
-    if (!d.longitude) d.longitude = '85.813235';
+    if (!d.latitude) d.latitude = p.latitude || '';
+    if (!d.longitude) d.longitude = p.longitude || '';
 
     // Remarks & Certification
-    if (!d.remarks) {
-      d.remarks =
-        'Subject property is a asbestos roofing house having land extent of 4356sqft (AC.0.100Decs, Homestead), having measured BUA 600sqft. Age of property is about 5-years. Copy of approved plan not provided. Property located within Bharatipur GP limit & surrounding areas are residential in nature. Property approaches 30-feet wide Road. This asbestos house is occupied by customer for resedential purpose. Valuation has been done for land component only. Asbestos roofing BUA value considered, as per internal policy of Vistar Finace. Note- As per sale deed, East & West side boundary are not mentioned';
-    }
-    if (!d.reportSubmissionDate) d.reportSubmissionDate = earliestVisit ? formatReportDate(earliestVisit.date) : '04.03.2021';
+    if (!d.remarks) d.remarks = '';
+    if (!d.reportSubmissionDate) d.reportSubmissionDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
     if (!d.visitingEngineer) d.visitingEngineer = 'M/S S MOHANTY ASSOCIATES';
     if (!d.authorizedSignatory) d.authorizedSignatory = 'M/S S MOHANTY ASSOCIATES\nEr. S. Mohanty (Approved Valuer)';
 

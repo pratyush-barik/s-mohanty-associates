@@ -32,7 +32,7 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
   }
 
   async drawContent(): Promise<void> {
-    this.addPage();
+    // NOTE: init() already adds page 1. Do NOT call this.addPage() here.
 
     // Top Header Row: Name of Valuation Agency & Date of Valuation
     const halfW = CONTENT_W / 2;
@@ -46,7 +46,7 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
       },
       {
         label: 'Date of Valuation',
-        value: this.getF('valuationDate', '04.03.2021'),
+        value: this.getF('valuationDate', ''),
         labelWidth: 120,
         valueWidth: halfW - 120,
         labelBold: true,
@@ -59,17 +59,17 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
     this.drawVistaarSectionHeader('Technical Initiation Request Form Data');
 
     this.drawKeyValueRow([
-      { label: 'Proposal No', value: this.getF('proposalNo', '0192SBML00663'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Case Type', value: this.getF('caseType', 'LAP'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'Proposal No', value: this.getF('proposalNo', this.projectCode || ''), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Case Type', value: this.getF('caseType', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Date of Inspection / Site visit', value: this.getF('inspectionDate', '04.03.2021'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Nearest Landmark', value: this.getF('nearestLandmark', 'Near Bharatipur Panchayat Office'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'Date of Inspection / Site visit', value: this.getF('inspectionDate', ''), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Nearest Landmark', value: this.getF('nearestLandmark', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
       {
         label: 'Name of the Customer/ Applicant & Contact Details',
-        value: this.getF('applicantDetails', 'Mr. Tapan Behera,Mob-9861769314/9078595317'),
+        value: this.getF('applicantDetails', ''),
         labelWidth: 160,
         valueWidth: CONTENT_W - 160,
       },
@@ -77,7 +77,7 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       {
         label: 'Name of Current Owner / Seller',
-        value: this.getF('ownerSeller', 'Mr. Narahari Behera & Sanjukta Behera'),
+        value: this.getF('ownerSeller', ''),
         labelWidth: 160,
         valueWidth: CONTENT_W - 160,
       },
@@ -85,7 +85,7 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       {
         label: 'Name of the Person met at site & Contact No.',
-        value: this.getF('personMetAtSite', 'Mr. Tapan Behera,Mob-9861769314/9078595317'),
+        value: this.getF('personMetAtSite', ''),
         labelWidth: 160,
         valueWidth: CONTENT_W - 160,
       },
@@ -98,21 +98,21 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: 'Address of the property being appraised', value: '', labelWidth: addrMainLabelW, valueWidth: 0, labelBold: true },
-      { label: 'As per TRF', value: this.getF('addressAsPerTRF', 'Khata No-346,Plot No-1202,Mouza-Bharati Pur,Tahasil-Pipili,PS-Pipili,Dist-Puri,Odisha,Pin-752104'), labelWidth: addrSubLabelW, valueWidth: addrValW },
+      { label: 'As per TRF', value: this.getF('addressAsPerTRF', ''), labelWidth: addrSubLabelW, valueWidth: addrValW },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: addrMainLabelW, valueWidth: 0 },
-      { label: 'As per Document', value: this.getF('addressAsPerDoc', 'Khata No-346,Plot No-1202(Area=AC.0.100Decs,Homested),Mouza-Bharati Pur,Tahasil-Pipili,PS-Pipili,Dist-Puri,Odisha,Pin-752104'), labelWidth: addrSubLabelW, valueWidth: addrValW },
+      { label: 'As per Document', value: this.getF('addressAsPerDoc', ''), labelWidth: addrSubLabelW, valueWidth: addrValW },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: addrMainLabelW, valueWidth: 0 },
-      { label: 'As per Actual at site', value: this.getF('addressAtSite', 'Plot No-1202,At/PO-Bharati Pur,PS-Pipili,Dist-Puri,Pin-752104'), labelWidth: addrSubLabelW, valueWidth: addrValW },
+      { label: 'As per Actual at site', value: this.getF('addressAtSite', ''), labelWidth: addrSubLabelW, valueWidth: addrValW },
     ]);
 
     this.drawKeyValueRow([
       {
         label: 'Documents Provided',
-        value: this.getF('documentsProvided', 'Copy of Sale deed,ROR & EC'),
+        value: this.getF('documentsProvided', ''),
         labelWidth: 160,
         valueWidth: CONTENT_W - 160,
         labelBold: true,
@@ -125,48 +125,48 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
     this.drawVistaarSectionHeader('Locational & Property Specific Details (based on site visit)');
 
     this.drawKeyValueRow([
-      { label: 'Status of Land Holding', value: this.getF('landHoldingStatus', 'Freehold'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Developed By', value: this.getF('developedBy', 'Self'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'Status of Land Holding', value: this.getF('landHoldingStatus', ''), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Developed By', value: this.getF('developedBy', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Type of Property', value: this.getF('typeOfProperty', 'Asbestos Roofing House'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Type of Locality', value: this.getF('typeOfLocality', 'Developing'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'Type of Property', value: this.getF('typeOfProperty', ''), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Type of Locality', value: this.getF('typeOfLocality', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
       { label: 'Date of Inspection / Site visit', value: this.getF('inspectionDate', '04.03.2021'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Occupation Status', value: this.getF('occupationStatus', 'Self Occupied'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'Occupation Status', value: this.getF('occupationStatus', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
       { label: 'Location/Zoning as per Master Plan', value: this.getF('zoningMasterPlan', 'NA'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Property Usage', value: this.getF('propertyUsage', 'Residential'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'Property Usage', value: this.getF('propertyUsage', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Plot Demarcation', value: this.getF('plotDemarcation', 'Yes'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Property Identifiable', value: this.getF('propertyIdentifiable', 'Yes'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'Plot Demarcation', value: this.getF('plotDemarcation', ''), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Property Identifiable', value: this.getF('propertyIdentifiable', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Identified Through', value: this.getF('identifiedThrough', 'Customer'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Within MC / GP Limit & Distance From Nearest M.C', value: this.getF('withinMCLimit', 'Within Bharatipur GP limit'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'Identified Through', value: this.getF('identifiedThrough', ''), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Within MC / GP Limit & Distance From Nearest M.C', value: this.getF('withinMCLimit', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Internal Finishing', value: this.getF('internalFinishing', 'AS flooring'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Type of Structure', value: this.getF('typeOfStructure', 'Asbestos Roofing House'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'Internal Finishing', value: this.getF('internalFinishing', ''), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Type of Structure', value: this.getF('typeOfStructure', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
-      { label: 'No. of Floors in the building', value: this.getF('noOfFloors', '1'), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'No. of Floors in the building', value: this.getF('noOfFloors', ''), labelWidth: 160, valueWidth: halfW - 160 },
       { label: 'Located on Floor No.', value: this.getF('locatedOnFloor', 'NA'), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
       { label: 'Total No. of Flats / Unit in building', value: this.getF('totalFlats', 'NA'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'External Finishing', value: this.getF('externalFinishing', 'Good'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'External Finishing', value: this.getF('externalFinishing', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
       { label: 'Construction Stage of the Property (in 100%)', value: this.getF('constructionStage', '100%'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Year of Completion or Disbursement', value: this.getF('yearOfCompletion', '2010'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'Year of Completion or Disbursement', value: this.getF('yearOfCompletion', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Age of the Property', value: this.getF('ageOfProperty', '10-Years'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Future Physical Life of Property', value: this.getF('futurePhysicalLife', '40-Years'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'Age of the Property', value: this.getF('ageOfProperty', ''), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Future Physical Life of Property', value: this.getF('futurePhysicalLife', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
 
     // ==========================================
@@ -179,31 +179,31 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
     const bndRows = [
       [
         'As per Documents (Sale Deed)',
-        this.getF('bndDocNorth', 'Kalandi Das'),
-        this.getF('bndDocSouth', 'Road'),
-        this.getF('bndDocEast', 'Not mentioned'),
-        this.getF('bndDocWest', 'Not mentioned'),
+        this.getF('bndDocNorth', ''),
+        this.getF('bndDocSouth', ''),
+        this.getF('bndDocEast', ''),
+        this.getF('bndDocWest', ''),
       ],
       [
         'As per Bhunaksha / Map',
-        this.getF('bndBhunakshaNorth', 'Plot no-1199 & 1200'),
-        this.getF('bndBhunakshaSouth', 'Road'),
-        this.getF('bndBhunakshaEast', 'Plot no-1201'),
-        this.getF('bndBhunakshaWest', 'Part of Plot no-1203'),
+        this.getF('bndBhunakshaNorth', ''),
+        this.getF('bndBhunakshaSouth', ''),
+        this.getF('bndBhunakshaEast', ''),
+        this.getF('bndBhunakshaWest', ''),
       ],
       [
         'As per Site / Actual',
-        this.getF('bndSiteNorth', 'Vacant land of Kalandi Das'),
-        this.getF('bndSiteSouth', 'Road'),
-        this.getF('bndSiteEast', 'Vacant land of Narendra Sethi'),
-        this.getF('bndSiteWest', 'Vacant plot of Narahari Behera'),
+        this.getF('bndSiteNorth', ''),
+        this.getF('bndSiteSouth', ''),
+        this.getF('bndSiteEast', ''),
+        this.getF('bndSiteWest', ''),
       ],
     ];
     this.drawDataTable(bndHeaders, bndRows, 9);
 
     this.drawKeyValueRow([
       { label: 'Boundaries Matching', value: this.getF('boundariesMatching', 'Yes'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'If No, then reason thereon', value: this.getF('boundariesMismatchReason', 'Identified by customer (Mr. Tapan Behera)'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'If No, then reason thereon', value: this.getF('boundariesMismatchReason', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
 
     // ==========================================
@@ -233,10 +233,10 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
 
     this.drawVistaarSectionHeader('Height / Storeys');
     this.drawKeyValueRow([
-      { label: 'As per sanctioned/ permissible byelaws', value: this.getF('heightPermissible', 'NA(Plan not provided)'), labelWidth: 160, valueWidth: CONTENT_W - 160 },
+      { label: 'As per sanctioned/ permissible byelaws', value: this.getF('heightPermissible', 'NA'), labelWidth: 160, valueWidth: CONTENT_W - 160 },
     ]);
     this.drawKeyValueRow([
-      { label: 'As per Site / Actual', value: this.getF('heightActual', 'GF'), labelWidth: 160, valueWidth: CONTENT_W - 160 },
+      { label: 'As per Site / Actual', value: this.getF('heightActual', ''), labelWidth: 160, valueWidth: CONTENT_W - 160 },
     ]);
 
     // ==========================================
@@ -264,19 +264,19 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
       ],
       [
         'Ground Floor',
-        this.getF('buaGFAccom', '1-room'),
-        this.getF('buaGFCarpet', '510'),
-        this.getF('buaGFActual', '600'),
-        this.getF('buaGFPerm', '0'),
-        this.getF('buaGFAdopted', '600'),
+        this.getF('buaGFAccom', ''),
+        this.getF('buaGFCarpet', ''),
+        this.getF('buaGFActual', ''),
+        this.getF('buaGFPerm', ''),
+        this.getF('buaGFAdopted', ''),
       ],
       [
         'Total',
         this.getF('buaTotalAccom', 'NA'),
-        this.getF('buaTotalCarpet', '510'),
-        this.getF('buaTotalActual', '600'),
-        this.getF('buaTotalPerm', '0'),
-        this.getF('buaTotalAdopted', '600'),
+        this.getF('buaTotalCarpet', ''),
+        this.getF('buaTotalActual', ''),
+        this.getF('buaTotalPerm', ''),
+        this.getF('buaTotalAdopted', ''),
       ],
     ];
     this.drawDataTable(buaHeaders, buaRows, 9);
@@ -293,7 +293,7 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: 'Construction as per approved/ sanctioned plans', value: this.getF('constructionAsPerPlan', 'NA'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Details of approved plan with approval no and date', value: this.getF('planApprovalDetails', 'Approved plan not Provided'), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Details of approved plan with approval no and date', value: this.getF('planApprovalDetails', ''), labelWidth: 160, valueWidth: halfW - 160 },
     ]);
     this.drawKeyValueRow([
       { label: 'Construction permission Number and date', value: this.getF('constructionPermissionNo', 'NA'), labelWidth: 160, valueWidth: halfW - 160 },
@@ -319,18 +319,18 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
     this.checkPageBreak(200);
     this.drawVistaarSectionHeader('Valuation of Property (Fair Market Valuation / Distress Valuation)');
 
-    const landArea = this.getF('landAreaSqft', '4356');
-    const adoptableBUA = this.getF('adoptableBUASqft', '600');
-    const marketRateLandRange = this.getF('marketRateLandRange', '380-420');
-    const constructionRate = this.getF('constructionRatePerSqft', '400');
-    const recRateLand = this.getF('recRateLandPerSqft', '400');
-    const totalConstVal100 = this.getF('totalConstValue100', '240000');
-    const totalLandValue = this.getF('totalLandValue', '1742400');
-    const totalConstValStage = this.getF('totalConstValueStage', '240000');
-    const mv100 = this.getF('marketValue100', '1982400');
-    const mvStage = this.getF('marketValueStage', '1982400');
-    const distress100 = this.getF('distressValue100', '1486800');
-    const distressStage = this.getF('distressValueStage', '1486800');
+    const landArea = this.getF('landAreaSqft', '');
+    const adoptableBUA = this.getF('adoptableBUASqft', '');
+    const marketRateLandRange = this.getF('marketRateLandRange', '');
+    const constructionRate = this.getF('constructionRatePerSqft', '');
+    const recRateLand = this.getF('recRateLandPerSqft', '');
+    const totalConstVal100 = this.getF('totalConstValue100', '');
+    const totalLandValue = this.getF('totalLandValue', '');
+    const totalConstValStage = this.getF('totalConstValueStage', '');
+    const mv100 = this.getF('marketValue100', '');
+    const mvStage = this.getF('marketValueStage', '');
+    const distress100 = this.getF('distressValue100', '');
+    const distressStage = this.getF('distressValueStage', '');
 
     this.drawKeyValueRow([
       { label: 'Land Area (In Sqft)', value: String(landArea), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
@@ -364,7 +364,7 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
       { label: 'Total Market Value of Apartment / Shop / Flat / Office (Rs per sqft)', value: this.getF('totalCommercialMV', 'NA'), labelWidth: 260, valueWidth: CONTENT_W - 260 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Government Guideline/ Circle rate for Land (Rs per sqft)', value: this.getF('govtRateLand', 'Not showing'), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Government Guideline/ Circle rate for Land (Rs per sqft)', value: this.getF('govtRateLand', ''), labelWidth: 160, valueWidth: halfW - 160 },
       { label: 'Land Value as per Government Rate (Rs)', value: this.getF('landValueGovt', 'NA'), labelWidth: 160, valueWidth: halfW - 160 },
     ]);
     this.drawKeyValueRow([
@@ -372,8 +372,8 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
       { label: 'Flat / Apartment Value as per Government Rate (Rs)', value: this.getF('flatValueGovt', 'NA'), labelWidth: 160, valueWidth: halfW - 160 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Latitude (N)', value: this.getF('latitude', '20.120126'), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
-      { label: 'Longitude (E)', value: this.getF('longitude', '85.813235'), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
+      { label: 'Latitude (N)', value: this.getF('latitude', ''), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
+      { label: 'Longitude (E)', value: this.getF('longitude', ''), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
     ]);
 
     // ==========================================
@@ -402,7 +402,7 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: 'Date of Visit', value: this.getF('inspectionDate', '04.03.2021'), labelWidth: 160, valueWidth: halfW - 160 },
-      { label: 'Date of Report Submission', value: this.getF('reportSubmissionDate', '04.03.2021'), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Date of Report Submission', value: this.getF('reportSubmissionDate', ''), labelWidth: 160, valueWidth: halfW - 160 },
     ]);
     this.drawKeyValueRow([
       {
@@ -433,14 +433,14 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
       this.drawKeyValueRow([
         {
           label: 'Name of the Customer/ Applicant',
-          value: this.getF('applicantDetails', 'Mr. Tapan Behera,Mob-9861769314/9078595317'),
+          value: this.getF('applicantDetails', ''),
           labelWidth: 160,
           valueWidth: halfW - 160,
           labelBold: true,
         },
         {
           label: 'Proposal No.',
-          value: this.getF('proposalNo', '0192SBML00663'),
+          value: this.getF('proposalNo', this.projectCode || ''),
           labelWidth: 120,
           valueWidth: halfW - 120,
           labelBold: true,

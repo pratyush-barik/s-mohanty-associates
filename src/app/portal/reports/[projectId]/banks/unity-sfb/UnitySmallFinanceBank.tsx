@@ -82,73 +82,71 @@ export default function UnitySmallFinanceBank({
     const p = (prefill || {}) as any;
 
     // Header & Meta Table
-    if (!d.branchName) d.branchName = p.branch || 'Bhubaneswar';
+    if (!d.branchName) d.branchName = p.branch || '';
     if (!d.typeOfCase) d.typeOfCase = 'LAP';
     if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty';
-    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '14/07/2022';
-    if (!d.caseRefNo) d.caseRefNo = projectCode || 'APPL00013925';
+    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '';
+    if (!d.caseRefNo) d.caseRefNo = projectCode || '';
     if (!d.reportDate) d.reportDate = formatReportDate(new Date().toISOString());
-    const cPhone = p.contactPhone || '9437021846';
-    const cName = p.contactName || 'Mrs. Sanjukta Behera';
-    if (!d.contactPerson) d.contactPerson = `${cName}, Mob:- ${cPhone}`;
+    const cPhone = p.contactPhone || '';
+    const cName = p.contactName || '';
+    if (!d.contactPerson) d.contactPerson = cName ? (cPhone ? `${cName}, Mob:- ${cPhone}` : cName) : '';
 
     // 1-4. Basic Details
-    if (!d.applicantName) d.applicantName = p.applicantName || 'MAA CHANDI TRADERS';
-    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || 'G+1 storied commercial cum residential building';
-    if (!d.currentUsage) d.currentUsage = 'Mixed';
-    const defaultAddress =
-      p.propertyAddress ||
-      'Khata no- 723/237, Plot No- 739/1539, (area=AC.0.237Decs, Homestead), Mouza-Bahadulpatna, Tahasil-Salipur, PS-Salipur, Dist-Cuttack, Odisha, Pin-754200';
+    if (!d.applicantName) d.applicantName = p.applicantName || '';
+    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || '';
+    if (!d.currentUsage) d.currentUsage = 'Residential';
+    const defaultAddress = p.propertyAddress || '';
     if (!d.addressAtSite) d.addressAtSite = defaultAddress;
     if (!d.addressAsPerDoc) d.addressAsPerDoc = defaultAddress;
     if (!d.priorValuation) d.priorValuation = 'No';
 
     // 5-8. Locality & Surrounding
-    if (!d.localityType) d.localityType = 'Mixed';
+    if (!d.localityType) d.localityType = 'Residential';
     if (!d.localityClass) d.localityClass = 'Middle Class';
     if (!d.siteStatus) d.siteStatus = 'Developed';
-    if (!d.proximityAmenities) d.proximityAmenities = 'Within 1-2 Kms';
-    if (!d.railwayStation) d.railwayStation = '15Kms (Cuttack Railway Station)';
-    if (!d.busStop) d.busStop = '100Mtr (Bahadulpatna Square Bus Stop)';
-    if (!d.landmark) d.landmark = 'Near Paga Bus Stop';
-    if (!d.distanceCityCenter) d.distanceCityCenter = '15 Kms from Cuttack city center';
-    if (!d.approachRoad) d.approachRoad = '60 ft wide Road';
+    if (!d.proximityAmenities) d.proximityAmenities = '';
+    if (!d.railwayStation) d.railwayStation = '';
+    if (!d.busStop) d.busStop = '';
+    if (!d.landmark) d.landmark = '';
+    if (!d.distanceCityCenter) d.distanceCityCenter = '';
+    if (!d.approachRoad) d.approachRoad = '';
 
     // 9-13. Property & Building
-    if (!d.occupancyStatus) d.occupancyStatus = 'Rented';
-    if (!d.occupantName) d.occupantName = 'NA';
-    if (!d.occupantRelation) d.occupantRelation = 'NA';
+    if (!d.occupancyStatus) d.occupancyStatus = 'Occupied';
+    if (!d.occupantName) d.occupantName = '';
+    if (!d.occupantRelation) d.occupantRelation = '';
     if (!d.propertyDemarcation) d.propertyDemarcation = 'Yes';
-    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = 'Documents & help of Customer';
+    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = 'Documents & Site Inspection';
     if (!d.structureType) d.structureType = 'RCC';
-    if (!d.landPlotArea) d.landPlotArea = '10323sqft';
+    if (!d.landPlotArea) d.landPlotArea = '';
     if (!d.noOfBlocks) d.noOfBlocks = 'NA';
     if (!d.noOfUnits) d.noOfUnits = 'NA';
-    if (!d.noOfFloors) d.noOfFloors = '2(G+1)';
-    if (!d.noOfLifts) d.noOfLifts = 'N.A';
+    if (!d.noOfFloors) d.noOfFloors = '';
+    if (!d.noOfLifts) d.noOfLifts = 'NA';
 
-    if (!d.unitFloorNo) d.unitFloorNo = 'N.A';
+    if (!d.unitFloorNo) d.unitFloorNo = 'NA';
     if (!d.noOfRooms) d.noOfRooms = 'NA';
-    if (!d.measuredBUA) d.measuredBUA = 'GF:-1728sqft, FF:-1728sqft\nTotal=3456sqft, (G+1)';
-    if (!d.carpetArea) d.carpetArea = '2937sqft';
+    if (!d.measuredBUA) d.measuredBUA = '';
+    if (!d.carpetArea) d.carpetArea = '';
     if (!d.viewRemarks) d.viewRemarks = 'NA';
 
     if (!d.qualityExteriors) d.qualityExteriors = 'Good';
     if (!d.qualityInteriors) d.qualityInteriors = 'Good';
-    if (!d.ageOfProperty) d.ageOfProperty = '06-Years';
-    if (!d.residualLife) d.residualLife = '54-Years';
+    if (!d.ageOfProperty) d.ageOfProperty = '';
+    if (!d.residualLife) d.residualLife = '';
 
     // 14-20. Sanction & Setbacks
-    if (!d.sanctionPlanVerified) d.sanctionPlanVerified = 'Sanctioned plan not provided';
+    if (!d.sanctionPlanVerified) d.sanctionPlanVerified = '';
     if (!d.ownershipType) d.ownershipType = 'Freehold';
-    if (!d.documentsVerified) d.documentsVerified = 'Copy of Sale deed, ROR & Sketch map';
-    if (!d.withinMunicipalLimits) d.withinMunicipalLimits = 'Within GP limit';
-    if (!d.permissibleUsageMasterPlan) d.permissibleUsageMasterPlan = 'Master Plan not published';
+    if (!d.documentsVerified) d.documentsVerified = '';
+    if (!d.withinMunicipalLimits) d.withinMunicipalLimits = '';
+    if (!d.permissibleUsageMasterPlan) d.permissibleUsageMasterPlan = '';
 
     if (!d.sbPlanFront) d.sbPlanFront = 'NA';
     if (!d.sbSiteFront) d.sbSiteFront = 'NA';
     if (!d.sbDevFront) d.sbDevFront = 'NA';
-    if (!d.sbRemarks) d.sbRemarks = 'Not mentioned in plan';
+    if (!d.sbRemarks) d.sbRemarks = '';
 
     if (!d.sbPlanLeft) d.sbPlanLeft = 'NA';
     if (!d.sbSiteLeft) d.sbSiteLeft = 'NA';
@@ -166,27 +164,27 @@ export default function UnitySmallFinanceBank({
 
     if (!d.floorConstBasement) d.floorConstBasement = 'NA';
     if (!d.floorConstStilt) d.floorConstStilt = 'NA';
-    if (!d.floorConstGF) d.floorConstGF = '1728sqft';
-    if (!d.floorConstFF) d.floorConstFF = '1728sqft';
+    if (!d.floorConstGF) d.floorConstGF = '';
+    if (!d.floorConstFF) d.floorConstFF = '';
     if (!d.floorConstSF) d.floorConstSF = 'NA';
     if (!d.floorConstTF) d.floorConstTF = 'NA';
 
     // 21. Valuation & Rates (Live calculations)
-    if (!d.valLandAreaNum) d.valLandAreaNum = 10323;
+    if (!d.valLandAreaNum) d.valLandAreaNum = 0;
     if (!d.valLandRateNum) d.valLandRateNum = 0;
     if (!d.valLandAmountNum) d.valLandAmountNum = 0;
 
-    if (!d.valConstAreaNum) d.valConstAreaNum = 3456;
+    if (!d.valConstAreaNum) d.valConstAreaNum = 0;
     if (!d.valConstRateNum) d.valConstRateNum = 0;
     if (!d.valConstAmountNum) d.valConstAmountNum = 0;
 
-    if (!d.valLandArea) d.valLandArea = '10323Sqft';
-    if (!d.valLandRate) d.valLandRate = 'Rs.0/-';
-    if (!d.valLandAmount) d.valLandAmount = 'Rs.0/-';
+    if (!d.valLandArea) d.valLandArea = '';
+    if (!d.valLandRate) d.valLandRate = '';
+    if (!d.valLandAmount) d.valLandAmount = '';
 
-    if (!d.valConstArea) d.valConstArea = '3456sqft';
-    if (!d.valConstRate) d.valConstRate = 'Rs.0/-';
-    if (!d.valConstAmount) d.valConstAmount = 'Rs.0/-';
+    if (!d.valConstArea) d.valConstArea = '';
+    if (!d.valConstRate) d.valConstRate = '';
+    if (!d.valConstAmount) d.valConstAmount = '';
 
     if (!d.stageOfConstruction) d.stageOfConstruction = '100%';
     if (!d.recConstValue) d.recConstValue = '100%';
@@ -200,33 +198,33 @@ export default function UnitySmallFinanceBank({
     if (!d.totalAmenitiesCharges) d.totalAmenitiesCharges = 'NA';
 
     if (!d.totalMarketValueNum) d.totalMarketValueNum = 0;
-    if (!d.totalMarketValue) d.totalMarketValue = 'Rs.0/-';
+    if (!d.totalMarketValue) d.totalMarketValue = '';
     if (!d.forcedSaleValueNum) d.forcedSaleValueNum = 0;
-    if (!d.forcedSaleValue) d.forcedSaleValue = 'Rs.0/-';
+    if (!d.forcedSaleValue) d.forcedSaleValue = '';
     if (!d.approxRentals) d.approxRentals = 'NA';
 
     // 22. Boundaries
-    if (!d.bndEastDeed) d.bndEastDeed = 'Seller';
-    if (!d.bndWestDeed) d.bndWestDeed = 'Banamali Maharana';
-    if (!d.bndNorthDeed) d.bndNorthDeed = 'Chirakal';
-    if (!d.bndSouthDeed) d.bndSouthDeed = 'Jadumani Behera';
+    if (!d.bndEastDeed) d.bndEastDeed = '';
+    if (!d.bndWestDeed) d.bndWestDeed = '';
+    if (!d.bndNorthDeed) d.bndNorthDeed = '';
+    if (!d.bndSouthDeed) d.bndSouthDeed = '';
 
-    if (!d.bndEastSketch) d.bndEastSketch = 'Part of Plot no-739';
-    if (!d.bndWestSketch) d.bndWestSketch = '20 Feet Wide Road';
-    if (!d.bndNorthSketch) d.bndNorthSketch = 'Cuttack Chandabali Road';
-    if (!d.bndSouthSketch) d.bndSouthSketch = 'Sarhad Mouza Bahugram';
+    if (!d.bndEastSketch) d.bndEastSketch = '';
+    if (!d.bndWestSketch) d.bndWestSketch = '';
+    if (!d.bndNorthSketch) d.bndNorthSketch = '';
+    if (!d.bndSouthSketch) d.bndSouthSketch = '';
 
-    if (!d.bndEastSite) d.bndEastSite = 'Building Of Birakishor Menta';
-    if (!d.bndWestSite) d.bndWestSite = '20 Feet Wide Road';
-    if (!d.bndNorthSite) d.bndNorthSite = 'N.H-9(A)';
-    if (!d.bndSouthSite) d.bndSouthSite = 'Vacant land';
+    if (!d.bndEastSite) d.bndEastSite = '';
+    if (!d.bndWestSite) d.bndWestSite = '';
+    if (!d.bndNorthSite) d.bndNorthSite = '';
+    if (!d.bndSouthSite) d.bndSouthSite = '';
 
-    if (!d.boundariesMatching) d.boundariesMatching = 'Yes(Boundary matching as per document)';
+    if (!d.boundariesMatching) d.boundariesMatching = 'Yes';
 
     // Remarks & Declaration
     if (!d.remarks) {
       d.remarks =
-        'Remarks:- Subject property is a G+1 storied commercial cum residential building having land extent of 10323sqft, total measured BUA 3456sqft. Approved plan not provided. Age of the building is about 6-years. It is located in developing area of Cuttack & accessible with 60-feet wide road. Property is near about 15 Kms from Cuttack city centre. All civic amenities are present within 1-2Kms. This plot is coming under Bahugram GP limit & surrounding areas are commercial cum residential in nature. Entire building is used by multi tenants for commercial cum residential purpose. Note- As per ROR the property is stand in name of Sri Radha Raman God. Hence, this case is not recommended.';
+        'Remarks:- Subject property visited and inspected. Property boundaries are demarcated. Valuation done based on prevailing local market rates.';
     }
     if (!d.visitingEngineer) d.visitingEngineer = 'Er. Satyajit Mohanty';
 
@@ -697,7 +695,7 @@ export default function UnitySmallFinanceBank({
                     <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.sbPlanFront || 'NA'} onChange={(e) => updateField('sbPlanFront', e.target.value)} disabled={isReadOnly} /></td>
                     <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.sbSiteFront || 'NA'} onChange={(e) => updateField('sbSiteFront', e.target.value)} disabled={isReadOnly} /></td>
                     <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.sbDevFront || 'NA'} onChange={(e) => updateField('sbDevFront', e.target.value)} disabled={isReadOnly} /></td>
-                    <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.sbRemarks || 'Not mentioned in plan'} onChange={(e) => updateField('sbRemarks', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className="px-2 py-1.5"><input type="text" className={inputCls} value={fields.sbRemarks || ''} onChange={(e) => updateField('sbRemarks', e.target.value)} disabled={isReadOnly} /></td>
                   </tr>
                   <tr>
                     <td className="px-3 py-2 font-medium bg-slate-50 dark:bg-slate-800/40">Side 1 (Left)</td>
@@ -727,16 +725,16 @@ export default function UnitySmallFinanceBank({
             <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">20. Floor Wise Constructed Area</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Field label="Ground Floor Constructed">
-                <input type="text" className={inputCls} value={fields.floorConstGF || '1728sqft'} onChange={(e) => updateField('floorConstGF', e.target.value)} disabled={isReadOnly} />
+                <input type="text" className={inputCls} value={fields.floorConstGF || ''} onChange={(e) => updateField('floorConstGF', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="First Floor Constructed">
-                <input type="text" className={inputCls} value={fields.floorConstFF || '1728sqft'} onChange={(e) => updateField('floorConstFF', e.target.value)} disabled={isReadOnly} />
+                <input type="text" className={inputCls} value={fields.floorConstFF || ''} onChange={(e) => updateField('floorConstFF', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="Second Floor Constructed">
-                <input type="text" className={inputCls} value={fields.floorConstSF || 'NA'} onChange={(e) => updateField('floorConstSF', e.target.value)} disabled={isReadOnly} />
+                <input type="text" className={inputCls} value={fields.floorConstSF || ''} onChange={(e) => updateField('floorConstSF', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="Basement / Stilt">
-                <input type="text" className={inputCls} value={fields.floorConstBasement || 'NA'} onChange={(e) => updateField('floorConstBasement', e.target.value)} disabled={isReadOnly} />
+                <input type="text" className={inputCls} value={fields.floorConstBasement || ''} onChange={(e) => updateField('floorConstBasement', e.target.value)} disabled={isReadOnly} />
               </Field>
             </div>
           </Section>
@@ -750,7 +748,7 @@ export default function UnitySmallFinanceBank({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valLandAreaNum ?? 10323}
+                  value={fields.valLandAreaNum ?? ''}
                   onChange={(e) => updateField('valLandAreaNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />
@@ -759,7 +757,7 @@ export default function UnitySmallFinanceBank({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valLandRateNum ?? 0}
+                  value={fields.valLandRateNum ?? ''}
                   onChange={(e) => updateField('valLandRateNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />
@@ -776,7 +774,7 @@ export default function UnitySmallFinanceBank({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valConstAreaNum ?? 3456}
+                  value={fields.valConstAreaNum ?? ''}
                   onChange={(e) => updateField('valConstAreaNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />

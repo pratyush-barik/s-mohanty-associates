@@ -71,7 +71,7 @@ export default function LICPVR4({
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const raw = rawInitialFields || {};
     return {
-      fileNo: raw.fileNo || (prefill as any)?.loanAccountNo || '2104012499',
+      fileNo: raw.fileNo || (prefill as any)?.loanAccountNo || (prefill as any)?.projectCode || '',
       nameOfValuer: raw.nameOfValuer || 'Er. Satyajit Mohanty',
       codeNo: raw.codeNo || 'BH-AOV0078',
       appointingAuthority: raw.appointingAuthority || 'LIC HFL(BR-I)',
@@ -80,56 +80,56 @@ export default function LICPVR4({
       areaOffice: raw.areaOffice || 'Bhubaneswar',
 
       // A. General
-      applicationNo: raw.applicationNo || '2104012499',
-      customerName: raw.customerName || (prefill as any)?.applicantName || (prefill as any)?.contactName || 'Mr. Rabi Narayan Sahoo,S/o-Mr. Maharaj Sahoo',
-      plotNo: raw.plotNo || 'Plot no-100, Khata no-231/448,Duplex House No-S-03(Type-A)',
-      villageTaluk: raw.villageTaluk || 'Mouza- Botanda,Tahasil-Jatni',
-      districtMunicipality: raw.districtMunicipality || 'Dist-Khurda,Odisha, Pin-751002',
-      landmark: raw.landmark || 'Near Kalika Villa,Botanda,Jatni',
+      applicationNo: raw.applicationNo || (prefill as any)?.loanAccountNo || (prefill as any)?.projectCode || '',
+      customerName: raw.customerName || (prefill as any)?.applicantName || (prefill as any)?.contactName || '',
+      plotNo: raw.plotNo || (prefill as any)?.property?.plotNo || '',
+      villageTaluk: raw.villageTaluk || (prefill as any)?.property?.mouza || '',
+      districtMunicipality: raw.districtMunicipality || (prefill as any)?.property?.district || '',
+      landmark: raw.landmark || (prefill as any)?.property?.landmark || '',
 
       // B. Inspection & Boundaries
-      boundaryNorth: raw.boundaryNorth || 'Plot No-101/Vacant Plot',
-      boundarySouth: raw.boundarySouth || 'Road/20-Feet Wide road',
-      boundaryEast: raw.boundaryEast || 'Duplex No-Type-B-04/Duplex No-04',
-      boundaryWest: raw.boundaryWest || 'Duplex No-Type-B-02/Duplex No-02',
+      boundaryNorth: raw.boundaryNorth || (prefill as any)?.property?.boundaries?.north?.asPerDeed || (prefill as any)?.property?.northBoundary || '',
+      boundarySouth: raw.boundarySouth || (prefill as any)?.property?.boundaries?.south?.asPerDeed || (prefill as any)?.property?.southBoundary || '',
+      boundaryEast: raw.boundaryEast || (prefill as any)?.property?.boundaries?.east?.asPerDeed || (prefill as any)?.property?.eastBoundary || '',
+      boundaryWest: raw.boundaryWest || (prefill as any)?.property?.boundaries?.west?.asPerDeed || (prefill as any)?.property?.westBoundary || '',
 
-      locationSketchVerified: raw.locationSketchVerified || 'Yes / No',
-      surveyVillageTaluk: raw.surveyVillageTaluk || 'Plot no-100, Khata no-231/448,Duplex House No-S-03(Type-A), "SATYABHAMA ASIYANA"',
+      locationSketchVerified: raw.locationSketchVerified || 'Yes',
+      surveyVillageTaluk: raw.surveyVillageTaluk || '',
       characterOfLocality: raw.characterOfLocality || 'Residential',
-      layoutApprovalAuthority: raw.layoutApprovalAuthority || 'BDO,Junior Engineer,Jatni Block & Sarapanch,Pradhansahi Gram Panchayat',
-      layoutApprovalNo: raw.layoutApprovalNo || 'vide letter no-120, dated-16/08/2012',
+      layoutApprovalAuthority: raw.layoutApprovalAuthority || '',
+      layoutApprovalNo: raw.layoutApprovalNo || '',
 
       surroundingDevelopment: raw.surroundingDevelopment || 'Middle',
-      basicAmenitiesAvailable: raw.basicAmenitiesAvailable || 'Yes / No',
+      basicAmenitiesAvailable: raw.basicAmenitiesAvailable || 'Yes',
       levelRelativeToRoad: raw.levelRelativeToRoad || 'Road level is equal to plot level',
       shapeOfPlot: raw.shapeOfPlot || 'Regular',
       plotDemarcated: raw.plotDemarcated || 'Yes',
       otherFinancierNotice: raw.otherFinancierNotice || 'No',
-      widthOnRoadFacing: raw.widthOnRoadFacing || '20-ft wide / 30-Ft wide',
-      isCornerPlot: raw.isCornerPlot || 'Yes (It approaches both 20-Ft. & 30-Ft wide road)',
+      widthOnRoadFacing: raw.widthOnRoadFacing || '',
+      isCornerPlot: raw.isCornerPlot || 'No',
       negativesToLocality: raw.negativesToLocality || 'No',
-      favourableConsiderations: raw.favourableConsiderations || 'All civic amenities like school,hospital, market area are within 1-2Kms.',
+      favourableConsiderations: raw.favourableConsiderations || 'All civic amenities like school, hospital, market area are within 1-2Kms.',
       marketability: raw.marketability || 'Good',
       clearAccess: raw.clearAccess || 'Yes',
       highTensionLines: raw.highTensionLines || 'No',
-      plotAreaSqft: raw.plotAreaSqft || '1200',
+      plotAreaSqft: raw.plotAreaSqft || ((prefill as any)?.property?.plotArea ? String((prefill as any).property.plotArea) : '0'),
 
       // Valuation
-      unitRateMV: raw.unitRateMV || '1250',
-      unitRateGV: raw.unitRateGV || '229.57',
+      unitRateMV: raw.unitRateMV || ((prefill as any)?.property?.marketRate ? String((prefill as any).property.marketRate) : '0'),
+      unitRateGV: raw.unitRateGV || '0',
       acceptableMortgageValue: raw.acceptableMortgageValue || 'NA',
       marketValueSource: raw.marketValueSource || 'By analysis of rates of material, labour etc & from local market data of similar properties.',
-      otherRemarks: raw.otherRemarks || 'This is a Plot+ Construction case. Construction is started.',
+      otherRemarks: raw.otherRemarks || '',
 
       // Methodology
-      methodologyBackground: raw.methodologyBackground || 'Subject property is a vacant residential plot located in a developing area of Botanda.',
+      methodologyBackground: raw.methodologyBackground || '',
       methodologySources: raw.methodologySources || 'Recent transactions, Property Brokers, local market feedback.',
       methodologyProcedures: raw.methodologyProcedures || 'Land value arrived by comparing similar land parcels in that locality.',
       methodologyAdopted: raw.methodologyAdopted || 'Sales comparison method of valuation adopted.',
       methodologyFactors: raw.methodologyFactors || 'Location & accessibility to civic amenities etc.',
 
       // Certificate
-      inspectionDate: raw.inspectionDate || earliestVisit?.date || '11/02/2021',
+      inspectionDate: raw.inspectionDate || earliestVisit?.date || '',
       valuationStation: raw.valuationStation || 'Bhubaneswar',
 
       // Attachments

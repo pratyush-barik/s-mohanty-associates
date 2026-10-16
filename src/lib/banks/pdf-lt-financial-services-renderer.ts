@@ -38,8 +38,6 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
   }
 
   async drawContent(): Promise<void> {
-    this.addPage();
-
     // Top Header Banner
     this.drawCenteredTitle('L&T Finance Services/DELHI/', 13, true);
     this.advanceCursor(4);
@@ -89,9 +87,9 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
     ];
     boundaries.forEach(b => {
       this.drawKeyValueRow([
-        { label: b.name, value: '', labelWidth: bColW[0], valueWidth: 0, labelBold: true },
-        { label: b.doc || 'NA', value: '', labelWidth: bColW[1], valueWidth: 0 },
-        { label: b.site || 'NA', value: '', labelWidth: bColW[2], valueWidth: 0 },
+        { label: '', value: b.name, labelWidth: 0, valueWidth: bColW[0], valueBold: true },
+        { label: '', value: b.doc || 'NA', labelWidth: 0, valueWidth: bColW[1] },
+        { label: '', value: b.site || 'NA', labelWidth: 0, valueWidth: bColW[2] },
       ]);
     });
 
@@ -120,10 +118,10 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
     ];
     docs.forEach(d => {
       this.drawKeyValueRow([
-        { label: d.name, value: '', labelWidth: dColW[0], valueWidth: 0 },
-        { label: d.auth, value: '', labelWidth: dColW[1], valueWidth: 0 },
-        { label: d.date, value: '', labelWidth: dColW[2], valueWidth: 0 },
-        { label: d.ref, value: '', labelWidth: dColW[3], valueWidth: 0 },
+        { label: '', value: d.name, labelWidth: 0, valueWidth: dColW[0] },
+        { label: '', value: d.auth, labelWidth: 0, valueWidth: dColW[1] },
+        { label: '', value: d.date, labelWidth: 0, valueWidth: dColW[2] },
+        { label: '', value: d.ref, labelWidth: 0, valueWidth: dColW[3] },
       ]);
     });
 
@@ -174,12 +172,12 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
     ];
     configs.forEach(c => {
       this.drawKeyValueRow([
-        { label: c.flr, value: '', labelWidth: cColW[0], valueWidth: 0, labelBold: true },
-        { label: c.bed || '-', value: '', labelWidth: cColW[1], valueWidth: 0 },
-        { label: c.kit || '-', value: '', labelWidth: cColW[2], valueWidth: 0 },
-        { label: c.hall || '-', value: '', labelWidth: cColW[3], valueWidth: 0 },
-        { label: c.bath || '-', value: '', labelWidth: cColW[4], valueWidth: 0 },
-        { label: c.rem || '-', value: '', labelWidth: cColW[5], valueWidth: 0 },
+        { label: '', value: c.flr, labelWidth: 0, valueWidth: cColW[0], valueBold: true },
+        { label: '', value: c.bed || '-', labelWidth: 0, valueWidth: cColW[1] },
+        { label: '', value: c.kit || '-', labelWidth: 0, valueWidth: cColW[2] },
+        { label: '', value: c.hall || '-', labelWidth: 0, valueWidth: cColW[3] },
+        { label: '', value: c.bath || '-', labelWidth: 0, valueWidth: cColW[4] },
+        { label: '', value: c.rem || '-', labelWidth: 0, valueWidth: cColW[5] },
       ]);
     });
 
@@ -223,34 +221,34 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
 
     // Plot Area row
     this.drawKeyValueRow([
-      { label: 'Plot Area', value: '', labelWidth: vColW[0], valueWidth: 0, labelBold: true },
-      { label: String(plotArea), value: '', labelWidth: vColW[1], valueWidth: 0 },
-      { label: formatIndianCurrency(plotRate), value: '', labelWidth: vColW[2], valueWidth: 0 },
-      { label: formatIndianCurrency(plotVal), value: '', labelWidth: vColW[3], valueWidth: 0, labelBold: true },
+      { label: '', value: 'Plot Area', labelWidth: 0, valueWidth: vColW[0], valueBold: true },
+      { label: '', value: String(plotArea), labelWidth: 0, valueWidth: vColW[1] },
+      { label: '', value: formatIndianCurrency(plotRate), labelWidth: 0, valueWidth: vColW[2] },
+      { label: '', value: formatIndianCurrency(plotVal), labelWidth: 0, valueWidth: vColW[3], valueBold: true },
     ]);
 
     // Measured BUA
     this.drawKeyValueRow([
-      { label: `Built up Area Measured (${this.getF('measuredBuaDesc', 'G+2 RCC GF & FF, Shed SF')})`, value: '', labelWidth: vColW[0], valueWidth: 0 },
-      { label: this.getF('measuredBuaSqft', '3462'), value: '', labelWidth: vColW[1], valueWidth: 0 },
-      { label: '-', value: '', labelWidth: vColW[2], valueWidth: 0 },
-      { label: '-', value: '', labelWidth: vColW[3], valueWidth: 0 },
+      { label: '', value: `Built up Area Measured (${this.getF('measuredBuaDesc', 'G+2 RCC GF & FF, Shed SF')})`, labelWidth: 0, valueWidth: vColW[0] },
+      { label: '', value: this.getF('measuredBuaSqft', '3462'), labelWidth: 0, valueWidth: vColW[1] },
+      { label: '', value: '-', labelWidth: 0, valueWidth: vColW[2] },
+      { label: '', value: '-', labelWidth: 0, valueWidth: vColW[3] },
     ]);
 
     // Plan BUA
     this.drawKeyValueRow([
-      { label: `Built up Area as per Plan (${this.getF('planBuaDesc', 'G+1 RCC GF-1332sqft, FF-1332sqft')})`, value: '', labelWidth: vColW[0], valueWidth: 0, labelBold: true },
-      { label: String(bldgPlanBua), value: '', labelWidth: vColW[1], valueWidth: 0 },
-      { label: formatIndianCurrency(bldgRate), value: '', labelWidth: vColW[2], valueWidth: 0 },
-      { label: formatIndianCurrency(bldgVal), value: '', labelWidth: vColW[3], valueWidth: 0, labelBold: true },
+      { label: '', value: `Built up Area as per Plan (${this.getF('planBuaDesc', 'G+1 RCC GF-1332sqft, FF-1332sqft')})`, labelWidth: 0, valueWidth: vColW[0], valueBold: true },
+      { label: '', value: String(bldgPlanBua), labelWidth: 0, valueWidth: vColW[1] },
+      { label: '', value: formatIndianCurrency(bldgRate), labelWidth: 0, valueWidth: vColW[2] },
+      { label: '', value: formatIndianCurrency(bldgVal), labelWidth: 0, valueWidth: vColW[3], valueBold: true },
     ]);
 
     // Extra Amenities
     this.drawKeyValueRow([
-      { label: 'Amenities (Fixed furniture, Modular kitchen, False Ceiling)', value: '', labelWidth: vColW[0], valueWidth: 0 },
-      { label: '-', value: '', labelWidth: vColW[1], valueWidth: 0 },
-      { label: '-', value: '', labelWidth: vColW[2], valueWidth: 0 },
-      { label: formatIndianCurrency(amenitiesVal), value: '', labelWidth: vColW[3], valueWidth: 0 },
+      { label: '', value: 'Amenities (Fixed furniture, Modular kitchen, False Ceiling)', labelWidth: 0, valueWidth: vColW[0] },
+      { label: '', value: '-', labelWidth: 0, valueWidth: vColW[1] },
+      { label: '', value: '-', labelWidth: 0, valueWidth: vColW[2] },
+      { label: '', value: formatIndianCurrency(amenitiesVal), labelWidth: 0, valueWidth: vColW[3] },
     ]);
 
     // Grand Total Box
@@ -303,7 +301,7 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
     ];
     reqs.forEach(r => {
       this.drawKeyValueRow([
-        { label: r, value: '', labelWidth: CONTENT_W, valueWidth: 0 },
+        { label: '', value: r, labelWidth: 0, valueWidth: CONTENT_W },
       ]);
     });
 

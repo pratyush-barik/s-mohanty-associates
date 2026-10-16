@@ -57,17 +57,17 @@ export class PDFIDFCFirstBankRenderer extends PDFBankRenderer {
         labelBold: false,
       },
       {
-        label: value || 'NA',
-        value: '',
-        labelWidth: valW,
-        valueWidth: 0,
-        labelBold: boldVal,
+        label: '',
+        value: value || 'NA',
+        labelWidth: 0,
+        valueWidth: valW,
+        valueBold: boldVal,
       },
     ]);
   }
 
   async drawContent(): Promise<void> {
-    this.addPage();
+    // NOTE: init() already adds page 1. Do NOT call this.addPage() here.
 
     // Document Title Banner
     this.drawCenteredTitle('TECHNICAL APPRAISAL REPORT', 14, true);
@@ -200,9 +200,9 @@ export class PDFIDFCFirstBankRenderer extends PDFBankRenderer {
     setbacks.forEach((s, idx) => {
       this.drawKeyValueRow([
         { label: s.name, value: '', labelWidth: setbackColW[0], valueWidth: 0 },
-        { label: s.plan, value: '', labelWidth: setbackColW[1], valueWidth: 0 },
-        { label: s.site, value: '', labelWidth: setbackColW[2], valueWidth: 0 },
-        { label: idx === 0 ? this.getF('setback_remarks', 'NA') : '', value: '', labelWidth: setbackColW[3], valueWidth: 0 },
+        { label: '', value: s.plan, labelWidth: 0, valueWidth: setbackColW[1] },
+        { label: '', value: s.site, labelWidth: 0, valueWidth: setbackColW[2] },
+        { label: '', value: idx === 0 ? this.getF('setback_remarks', 'NA') : '', labelWidth: 0, valueWidth: setbackColW[3] },
       ]);
     });
 
@@ -227,10 +227,10 @@ export class PDFIDFCFirstBankRenderer extends PDFBankRenderer {
     const floorRows = [
       {
         flr: 'GF',
-        planSqft: this.getF('floor_gf_plan_sqft', '828sqft'),
-        planSqmt: this.getF('floor_gf_plan_sqmt', '76.95sqmt'),
-        siteSqft: this.getF('floor_gf_site_sqft', '828sqft'),
-        siteSqmt: this.getF('floor_gf_site_sqmt', '76.95sqmt'),
+        planSqft: this.getF('floor_gf_plan_sqft', ''),
+        planSqmt: this.getF('floor_gf_plan_sqmt', ''),
+        siteSqft: this.getF('floor_gf_site_sqft', ''),
+        siteSqmt: this.getF('floor_gf_site_sqmt', ''),
         dev: this.getF('floor_gf_deviation', 'NA'),
       },
       {
@@ -246,11 +246,11 @@ export class PDFIDFCFirstBankRenderer extends PDFBankRenderer {
     floorRows.forEach(f => {
       this.drawKeyValueRow([
         { label: f.flr, value: '', labelWidth: flrColW[0], valueWidth: 0, labelBold: true },
-        { label: f.planSqft, value: '', labelWidth: flrColW[1], valueWidth: 0 },
-        { label: f.planSqmt, value: '', labelWidth: flrColW[2], valueWidth: 0 },
-        { label: f.siteSqft, value: '', labelWidth: flrColW[3], valueWidth: 0 },
-        { label: f.siteSqmt, value: '', labelWidth: flrColW[4], valueWidth: 0 },
-        { label: f.dev, value: '', labelWidth: flrColW[5], valueWidth: 0 },
+        { label: '', value: f.planSqft, labelWidth: 0, valueWidth: flrColW[1] },
+        { label: '', value: f.planSqmt, labelWidth: 0, valueWidth: flrColW[2] },
+        { label: '', value: f.siteSqft, labelWidth: 0, valueWidth: flrColW[3] },
+        { label: '', value: f.siteSqmt, labelWidth: 0, valueWidth: flrColW[4] },
+        { label: '', value: f.dev, labelWidth: 0, valueWidth: flrColW[5] },
       ]);
     });
 
@@ -283,35 +283,35 @@ export class PDFIDFCFirstBankRenderer extends PDFBankRenderer {
     const constRate100 = parseFloat(this.getF('construction_rate_100', '0')) || 0;
     const constAmount100 = parseFloat(this.getF('construction_amount_100', '0')) || (buaArea * constRate100);
 
-    const stagePct = parseFloat(this.getF('stage_of_construction_pct', '30')) || 0;
+    const stagePct = parseFloat(this.getF('stage_of_construction_pct', '100')) || 100;
     const stageRate = constRate100 * (stagePct / 100);
     const stageAmount = parseFloat(this.getF('stage_construction_amount', '0')) || (constAmount100 * (stagePct / 100));
 
     // Land row
     this.drawKeyValueRow([
       { label: 'Land', value: '', labelWidth: valGridW[0], valueWidth: 0, labelBold: true },
-      { label: `${landArea} sft`, value: '', labelWidth: valGridW[1], valueWidth: 0 },
-      { label: `${(landArea * 0.0929).toFixed(2)} sqmt`, value: '', labelWidth: valGridW[2], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(landRate)}/-`, value: '', labelWidth: valGridW[3], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(landAmount)}/-`, value: '', labelWidth: valGridW[4], valueWidth: 0, labelBold: true },
+      { label: '', value: landArea ? `${landArea} sft` : '', labelWidth: 0, valueWidth: valGridW[1] },
+      { label: '', value: landArea ? `${(landArea * 0.0929).toFixed(2)} sqmt` : '', labelWidth: 0, valueWidth: valGridW[2] },
+      { label: '', value: landRate ? `Rs.${formatIndianCurrency(landRate)}/-` : '', labelWidth: 0, valueWidth: valGridW[3] },
+      { label: '', value: landAmount ? `Rs.${formatIndianCurrency(landAmount)}/-` : '', labelWidth: 0, valueWidth: valGridW[4], valueBold: true },
     ]);
 
     // 100% completion row
     this.drawKeyValueRow([
       { label: 'Construction Area on 100% completion', value: '', labelWidth: valGridW[0], valueWidth: 0 },
-      { label: `${buaArea} sft`, value: '', labelWidth: valGridW[1], valueWidth: 0 },
-      { label: `${(buaArea * 0.0929).toFixed(2)} sqmt`, value: '', labelWidth: valGridW[2], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(constRate100)}/-`, value: '', labelWidth: valGridW[3], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(constAmount100)}/-`, value: '', labelWidth: valGridW[4], valueWidth: 0 },
+      { label: '', value: buaArea ? `${buaArea} sft` : '', labelWidth: 0, valueWidth: valGridW[1] },
+      { label: '', value: buaArea ? `${(buaArea * 0.0929).toFixed(2)} sqmt` : '', labelWidth: 0, valueWidth: valGridW[2] },
+      { label: '', value: constRate100 ? `Rs.${formatIndianCurrency(constRate100)}/-` : '', labelWidth: 0, valueWidth: valGridW[3] },
+      { label: '', value: constAmount100 ? `Rs.${formatIndianCurrency(constAmount100)}/-` : '', labelWidth: 0, valueWidth: valGridW[4] },
     ]);
 
     // As on date stage row
     this.drawKeyValueRow([
       { label: `As on date ${stagePct}% completion`, value: '', labelWidth: valGridW[0], valueWidth: 0, labelBold: true },
-      { label: `${buaArea} sft`, value: '', labelWidth: valGridW[1], valueWidth: 0 },
-      { label: `${(buaArea * 0.0929).toFixed(2)} sqmt`, value: '', labelWidth: valGridW[2], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(stageRate)}/-`, value: '', labelWidth: valGridW[3], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(stageAmount)}/-`, value: '', labelWidth: valGridW[4], valueWidth: 0, labelBold: true },
+      { label: '', value: buaArea ? `${buaArea} sft` : '', labelWidth: 0, valueWidth: valGridW[1] },
+      { label: '', value: buaArea ? `${(buaArea * 0.0929).toFixed(2)} sqmt` : '', labelWidth: 0, valueWidth: valGridW[2] },
+      { label: '', value: stageRate ? `Rs.${formatIndianCurrency(stageRate)}/-` : '', labelWidth: 0, valueWidth: valGridW[3] },
+      { label: '', value: stageAmount ? `Rs.${formatIndianCurrency(stageAmount)}/-` : '', labelWidth: 0, valueWidth: valGridW[4], valueBold: true },
     ]);
 
     const total100 = landAmount + constAmount100;
@@ -377,32 +377,32 @@ export class PDFIDFCFirstBankRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: 'As per Sale deed', value: '', labelWidth: bndColW[0], valueWidth: 0, labelBold: true },
-      { label: this.getF('boundary_east_deed', ''), value: '', labelWidth: bndColW[1], valueWidth: 0 },
-      { label: this.getF('boundary_west_deed', ''), value: '', labelWidth: bndColW[2], valueWidth: 0 },
-      { label: this.getF('boundary_north_deed', ''), value: '', labelWidth: bndColW[3], valueWidth: 0 },
-      { label: this.getF('boundary_south_deed', ''), value: '', labelWidth: bndColW[4], valueWidth: 0 },
+      { label: '', value: this.getF('boundary_east_deed', 'NA'), labelWidth: 0, valueWidth: bndColW[1] },
+      { label: '', value: this.getF('boundary_west_deed', 'NA'), labelWidth: 0, valueWidth: bndColW[2] },
+      { label: '', value: this.getF('boundary_north_deed', 'NA'), labelWidth: 0, valueWidth: bndColW[3] },
+      { label: '', value: this.getF('boundary_south_deed', 'NA'), labelWidth: 0, valueWidth: bndColW[4] },
     ]);
 
     this.drawKeyValueRow([
       { label: 'As per Sketch map', value: '', labelWidth: bndColW[0], valueWidth: 0, labelBold: true },
-      { label: this.getF('boundary_east_map', 'NA'), value: '', labelWidth: bndColW[1], valueWidth: 0 },
-      { label: this.getF('boundary_west_map', 'NA'), value: '', labelWidth: bndColW[2], valueWidth: 0 },
-      { label: this.getF('boundary_north_map', 'NA'), value: '', labelWidth: bndColW[3], valueWidth: 0 },
-      { label: this.getF('boundary_south_map', 'NA'), value: '', labelWidth: bndColW[4], valueWidth: 0 },
+      { label: '', value: this.getF('boundary_east_map', 'NA'), labelWidth: 0, valueWidth: bndColW[1] },
+      { label: '', value: this.getF('boundary_west_map', 'NA'), labelWidth: 0, valueWidth: bndColW[2] },
+      { label: '', value: this.getF('boundary_north_map', 'NA'), labelWidth: 0, valueWidth: bndColW[3] },
+      { label: '', value: this.getF('boundary_south_map', 'NA'), labelWidth: 0, valueWidth: bndColW[4] },
     ]);
 
     this.drawKeyValueRow([
       { label: 'At site', value: '', labelWidth: bndColW[0], valueWidth: 0, labelBold: true },
-      { label: this.getF('boundary_east_site', ''), value: '', labelWidth: bndColW[1], valueWidth: 0 },
-      { label: this.getF('boundary_west_site', ''), value: '', labelWidth: bndColW[2], valueWidth: 0 },
-      { label: this.getF('boundary_north_site', ''), value: '', labelWidth: bndColW[3], valueWidth: 0 },
-      { label: this.getF('boundary_south_site', ''), value: '', labelWidth: bndColW[4], valueWidth: 0 },
+      { label: '', value: this.getF('boundary_east_site', 'NA'), labelWidth: 0, valueWidth: bndColW[1] },
+      { label: '', value: this.getF('boundary_west_site', 'NA'), labelWidth: 0, valueWidth: bndColW[2] },
+      { label: '', value: this.getF('boundary_north_site', 'NA'), labelWidth: 0, valueWidth: bndColW[3] },
+      { label: '', value: this.getF('boundary_south_site', 'NA'), labelWidth: 0, valueWidth: bndColW[4] },
     ]);
 
-    this.drawIDFCRow('', 'Boundaries Matching', this.getF('boundaries_matching', 'Yes (Boundary is partly matching as per documents)'));
+    this.drawIDFCRow('', 'Boundaries Matching', this.getF('boundaries_matching', 'Yes'));
 
     // Remarks
-    this.drawIDFCRow('', 'Remarks & Observations', this.getF('technical_remarks', 'Subject property is under construction building. Valuation has been done for land & approved BUA of GF only.'));
+    this.drawIDFCRow('', 'Remarks & Observations', this.getF('technical_remarks', ''));
 
     // Flags & Coordinates
     this.drawKeyValueRow([

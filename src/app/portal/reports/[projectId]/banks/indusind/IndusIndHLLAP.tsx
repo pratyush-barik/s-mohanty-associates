@@ -104,27 +104,27 @@ export default function IndusIndHLLAP({
 
       // 4 Documents
       indusLayoutPlanProvided: raw.indusLayoutPlanProvided || 'Yes/No',
-      indusLayoutAuthority: raw.indusLayoutAuthority || 'BDA,Bhubaneswar',
-      indusLayoutDateNumber: raw.indusLayoutDateNumber || 'Vide letter no-738/ BP, BDA, Dated- 07-03-2009',
+      indusLayoutAuthority: raw.indusLayoutAuthority || '',
+      indusLayoutDateNumber: raw.indusLayoutDateNumber || '',
       indusBuildingPlanProvided: raw.indusBuildingPlanProvided || 'Yes/No',
-      indusBuildingAuthority: raw.indusBuildingAuthority || 'BDA,Bhubaneswar',
-      indusBuildingDateNumber: raw.indusBuildingDateNumber || 'Vide letter no-738/ BP, BDA, Dated- 07-03-2009',
+      indusBuildingAuthority: raw.indusBuildingAuthority || '',
+      indusBuildingDateNumber: raw.indusBuildingDateNumber || '',
       indusConstPermissionProvided: raw.indusConstPermissionProvided || 'Yes/No',
-      indusConstAuthority: raw.indusConstAuthority || 'BDA,Bhubaneswar',
-      indusConstDateNumber: raw.indusConstDateNumber || 'Vide letter no-738/ BP, BDA, Dated- 07-03-2009',
+      indusConstAuthority: raw.indusConstAuthority || '',
+      indusConstDateNumber: raw.indusConstDateNumber || '',
       indusApprovedUsage: raw.indusApprovedUsage || 'Residential',
       indusUsageAtSite: raw.indusUsageAtSite || 'Residential',
       indusDocListPerusal: raw.indusDocListPerusal || 'Copy of Sale deed & Approved plan',
 
       // 5 Physical
-      indusBoundaryEastDoc: raw.indusBoundaryEastDoc || 'Road',
-      indusBoundaryEastSite: raw.indusBoundaryEastSite || 'Road',
-      indusBoundaryWestDoc: raw.indusBoundaryWestDoc || 'LB-40',
-      indusBoundaryWestSite: raw.indusBoundaryWestSite || 'Building(LB-40)',
-      indusBoundaryNorthDoc: raw.indusBoundaryNorthDoc || '60 feet wide Road',
-      indusBoundaryNorthSite: raw.indusBoundaryNorthSite || 'Road',
-      indusBoundarySouthDoc: raw.indusBoundarySouthDoc || 'LB-30',
-      indusBoundarySouthSite: raw.indusBoundarySouthSite || 'Building(LB-30)',
+      indusBoundaryEastDoc: raw.indusBoundaryEastDoc || prefill?.boundaryEast || '',
+      indusBoundaryEastSite: raw.indusBoundaryEastSite || prefill?.boundaryEast || '',
+      indusBoundaryWestDoc: raw.indusBoundaryWestDoc || prefill?.boundaryWest || '',
+      indusBoundaryWestSite: raw.indusBoundaryWestSite || prefill?.boundaryWest || '',
+      indusBoundaryNorthDoc: raw.indusBoundaryNorthDoc || prefill?.boundaryNorth || '',
+      indusBoundaryNorthSite: raw.indusBoundaryNorthSite || prefill?.boundaryNorth || '',
+      indusBoundarySouthDoc: raw.indusBoundarySouthDoc || prefill?.boundarySouth || '',
+      indusBoundarySouthSite: raw.indusBoundarySouthSite || prefill?.boundarySouth || '',
       indusBoundariesMatching: raw.indusBoundariesMatching || 'Yes',
       indusBoundariesRemarks: raw.indusBoundariesRemarks || 'Boundary matching as per document',
       indusPlotDetailsDoc: raw.indusPlotDetailsDoc || '',
@@ -133,55 +133,52 @@ export default function IndusIndHLLAP({
       indusSurroundingInfrastructure: raw.indusSurroundingInfrastructure || 'Residential-developed',
       indusNatureOfLocality: raw.indusNatureOfLocality || 'Developed',
       indusClassOfLocality: raw.indusClassOfLocality || 'Middle Class',
-      indusPropertyLocationLimit: raw.indusPropertyLocationLimit || 'B.D.A. Limit',
-      indusDistanceFromOffice: raw.indusDistanceFromOffice || '1-2 Kms',
+      indusPropertyLocationLimit: raw.indusPropertyLocationLimit || 'Municipal Limit',
+      indusDistanceFromOffice: raw.indusDistanceFromOffice || '',
       indusElectricityConnection: raw.indusElectricityConnection || 'Residential',
       indusTypeOfProperty: raw.indusTypeOfProperty || 'Residential',
 
       indusFloorDescriptionItems: raw.indusFloorDescriptionItems || [
-        { floor: 'Basement', rooms: '', kitchens: '', bathrooms: '', halls: '', usage: '' },
-        { floor: 'Ground Floor', rooms: '2', kitchens: '1', bathrooms: '1', halls: '-', usage: 'Residential' },
-        { floor: 'First Floor', rooms: '2', kitchens: '1', bathrooms: '1', halls: '', usage: 'Residential' },
-        { floor: '2nd Floor', rooms: '2', kitchens: '1', bathrooms: '1', halls: '-', usage: 'Residential' },
+        { floor: 'Ground Floor', rooms: '', kitchens: '', bathrooms: '', halls: '', usage: 'Residential' },
       ],
 
       indusTypeOfStructure: raw.indusTypeOfStructure || 'RCC Framed',
       indusInteriorsFinishing: raw.indusInteriorsFinishing || 'Good',
       indusExteriorsFinishing: raw.indusExteriorsFinishing || 'Good',
       indusMaintenanceLevel: raw.indusMaintenanceLevel || 'Good',
-      indusAgeOfProperty: raw.indusAgeOfProperty || '13-Years',
-      indusResidualAge: raw.indusResidualAge || '47-Years',
+      indusAgeOfProperty: raw.indusAgeOfProperty || '',
+      indusResidualAge: raw.indusResidualAge || '',
       indusAmenities: raw.indusAmenities || '',
 
       // 6 Occupancy
       indusOccupancyStatus: raw.indusOccupancyStatus || 'Occupied',
       indusOccupiedBy: raw.indusOccupiedBy || 'Owner',
-      indusRelationshipOccupant: raw.indusRelationshipOccupant || 'NA',
-      indusOccupantSince: raw.indusOccupantSince || 'N.A.',
+      indusRelationshipOccupant: raw.indusRelationshipOccupant || 'Self',
+      indusOccupantSince: raw.indusOccupantSince || '',
       indusCompletionStatus: raw.indusCompletionStatus || '100%',
-      indusRentalValue: raw.indusRentalValue || 'N.A.',
+      indusRentalValue: raw.indusRentalValue || '',
 
       // 7 Specific comments
-      indusSpecificComments: raw.indusSpecificComments || 'Subject property is a G+2 residential apartments.',
+      indusSpecificComments: raw.indusSpecificComments || '',
 
       // 8 Valuation
       indusValuationMode: raw.indusValuationMode || 'land_building', // 'land_building' | 'flat'
 
       // 8.a Land & Building
-      indusValuationLandAreaApp: raw.indusValuationLandAreaApp ?? '875.00',
-      indusValuationLandAreaAct: raw.indusValuationLandAreaAct ?? '875.00',
-      indusPrevailingLandRange: raw.indusPrevailingLandRange || 'Rs.6,000/- to @ Rs. 6,500 /- Per Sqft',
-      indusLandRateAdopted: raw.indusLandRateAdopted ?? '6500',
-      indusLandRateUnit: raw.indusLandRateUnit || 'Per sqyds',
+      indusValuationLandAreaApp: raw.indusValuationLandAreaApp ?? (prefill?.property?.plotArea ? String(prefill.property.plotArea) : ''),
+      indusValuationLandAreaAct: raw.indusValuationLandAreaAct ?? (prefill?.property?.plotArea ? String(prefill.property.plotArea) : ''),
+      indusPrevailingLandRange: raw.indusPrevailingLandRange || '',
+      indusLandRateAdopted: raw.indusLandRateAdopted ?? (prefill?.property?.marketRate ? String(prefill.property.marketRate) : '0'),
+      indusLandRateUnit: raw.indusLandRateUnit || 'Per sq.ft',
 
       indusBldgValueRows: raw.indusBldgValueRows || [
         { desc: 'Basement Floor', appArea: '0.00', actArea: '0.00', rate: '0', total: '0' },
-        { desc: 'Ground Floor', appArea: '875.00', actArea: '792.00', rate: '1700', total: '1346400' },
-        { desc: 'First Floor', appArea: '875.00', actArea: '792.00', rate: '1700', total: '1346400' },
+        { desc: 'Ground Floor', appArea: '0.00', actArea: '0.00', rate: '0', total: '0' },
+        { desc: 'First Floor', appArea: '0.00', actArea: '0.00', rate: '0', total: '0' },
         { desc: 'Second Floor', appArea: '0.00', actArea: '0.00', rate: '0', total: '0' },
       ],
-      indusDepreciationPct: raw.indusDepreciationPct ?? '12',
-      indusDepreciationPctText: raw.indusDepreciationPctText || '12% (average cost)',
+      indusDepreciationPct: raw.indusDepreciationPct ?? '0',
+      indusDepreciationPctText: raw.indusDepreciationPctText || '',
 
       // 8.b Flat / Shop
       indusFlatApp_UDS: raw.indusFlatApp_UDS || 'N.A.',
@@ -205,10 +202,10 @@ export default function IndusIndHLLAP({
         { detail: 'Total Plot area (sq.ft)', app: '0.00 sqft', site: '0.00 sqft', dev: '0.00 sqft', pct: 'NA' },
         { detail: 'No. of Floors', app: '0', site: '0', dev: '-', pct: 'NA' },
         { detail: 'No. Of Units', app: '0', site: '0', dev: '-', pct: 'NA' },
-        { detail: 'Total Built-up area (sqft)', app: '1750.00 sqft', site: '1584.00 sqft', dev: '-166.00 sqft', pct: 'NA' },
+        { detail: 'Total Built-up area (sqft)', app: '0.00 sqft', site: '0.00 sqft', dev: '0.00 sqft', pct: 'NA' },
         { detail: 'Basement', app: '0.00 sqft', site: '0.00 sqft', dev: '0.00 sqft', pct: 'NA' },
-        { detail: 'Ground Floor', app: '875.00 sqft', site: '792.00 sqft', dev: '-83.00 sqft', pct: 'NA' },
-        { detail: 'First Floor', app: '875.00 sqft', site: '792.00 sqft', dev: '-83.00 sqft', pct: 'NA' },
+        { detail: 'Ground Floor', app: '0.00 sqft', site: '0.00 sqft', dev: '0.00 sqft', pct: 'NA' },
+        { detail: 'First Floor', app: '0.00 sqft', site: '0.00 sqft', dev: '0.00 sqft', pct: 'NA' },
         { detail: 'Second Floor', app: '0.00 sqft', site: '0.00 sqft', dev: '0.00 sqft', pct: 'NA' },
         { detail: 'FSI', app: 'N.A.', site: '', dev: 'N.A.', pct: 'N.A.' },
         { detail: 'Plot Coverage', app: 'N.A.', site: '', dev: 'N.A.', pct: 'N.A.' },
@@ -216,7 +213,7 @@ export default function IndusIndHLLAP({
       indusSetbackPlanNote: raw.indusSetbackPlanNote || 'Plan details not provided',
 
       // 10 Remarks & Declaration
-      indusSynthesizedRemarks: raw.indusSynthesizedRemarks || 'Subject property is a G+2 residential building having land extend 875sqft, having measured BUA 1884sqft(RCC GF & FF-792 X 2=1584sqft & SF ACC roofing-300sqft). Plan has been approved by Bhubaneswar Development Authority, Vide letter no-738/ BP, BDA, Dated- 07-03-2009. All civic amenities are present within 1-2 Kms from the property & accessible with 60-feet wide Road. This building is vacant at the time of technical visit. Valuation has been done for land & least BUA of G+1 residential building.',
+      indusSynthesizedRemarks: raw.indusSynthesizedRemarks || '',
       indusValuationPlace: raw.indusValuationPlace || 'Bhubaneswar',
 
       // Attachments

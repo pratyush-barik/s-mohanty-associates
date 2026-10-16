@@ -80,49 +80,47 @@ export default function UtkarshSmallFinanceBank({
     const p = (prefill || {}) as any;
 
     // Application Details
-    if (!d.fileRefNo) d.fileRefNo = projectCode || '1537260505111947';
-    if (!d.reportDate) d.reportDate = earliestVisit ? formatReportDate(earliestVisit.date) : '13/06/2026';
+    if (!d.fileRefNo) d.fileRefNo = projectCode || '';
+    if (!d.reportDate) d.reportDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
     if (!d.loanType) d.loanType = 'LAP';
-    if (!d.applicantName) d.applicantName = p.applicantName || 'Mahammada Imran';
-    const cPhone = p.contactPhone || '9238305224/8260205224/9658715707';
-    const cName = p.contactName || p.applicantName || 'Mahammada Imran';
-    if (!d.contactPersonsNos) d.contactPersonsNos = `${cName}: ${cPhone}`;
-    if (!d.ownerName) d.ownerName = p.contactName || 'Mahammad Ershad, S/O-Mahammad Ekram';
-    if (!d.propertyArea) d.propertyArea = '(805sqft)';
+    if (!d.applicantName) d.applicantName = p.applicantName || '';
+    const cPhone = p.contactPhone || '';
+    const cName = p.contactName || p.applicantName || '';
+    if (!d.contactPersonsNos) d.contactPersonsNos = cPhone ? `${cName}: ${cPhone}` : cName;
+    if (!d.ownerName) d.ownerName = p.contactName || '';
+    if (!d.propertyArea) d.propertyArea = '';
     if (!d.holdingType) d.holdingType = 'Free Hold';
     if (!d.propertyUsage) d.propertyUsage = 'Residential';
-    if (!d.areaAuthorisedTCP) d.areaAuthorisedTCP = 'WithinBDA limit';
+    if (!d.areaAuthorisedTCP) d.areaAuthorisedTCP = '';
 
     // Location Details
-    const defaultAddress =
-      p.propertyAddress ||
-      'Hall Khata No-1611/309, Hall Plot No-4403/6312, Baragarh Housing Scheme and House No. EB-358, Plot No- 2405, (Area=805sqft) Mouza-Bhubaneswar Town Unit No-35 Baragarh, Tahasil/PS-Bhubaneswar, Dist-Khurda, Odisha, Pin-751018';
+    const defaultAddress = p.propertyAddress || '';
     if (!d.addressAsPerFiring) d.addressAsPerFiring = defaultAddress;
     if (!d.addressOnInspection) d.addressOnInspection = defaultAddress;
     if (!d.addressAsPerDocs) d.addressAsPerDocs = defaultAddress;
 
-    if (!d.personMetNos) d.personMetNos = `${cName}: ${cPhone}`;
+    if (!d.personMetNos) d.personMetNos = cPhone ? `${cName}: ${cPhone}` : cName;
     if (!d.addressMatching) d.addressMatching = 'Yes';
-    if (!d.landmark) d.landmark = 'Near Shree Jagannath Temple';
+    if (!d.landmark) d.landmark = '';
     if (!d.zoneAsPerCity) d.zoneAsPerCity = 'Residential';
-    if (!d.locationGPS) d.locationGPS = '20.248472, 85.853611';
+    if (!d.locationGPS) d.locationGPS = '';
 
     // Boundaries
-    if (!d.bndActualNorth) d.bndActualNorth = "Other's Building";
-    if (!d.bndDocNorth) d.bndDocNorth = 'EB-557';
-    if (!d.bndActualEast) d.bndActualEast = "Other's Building";
-    if (!d.bndDocEast) d.bndDocEast = 'EB-347';
-    if (!d.bndActualWest) d.bndActualWest = 'Road';
-    if (!d.bndDocWest) d.bndDocWest = 'Road';
-    if (!d.bndActualSouth) d.bndActualSouth = "Other's Building";
-    if (!d.bndDocSouth) d.bndDocSouth = 'EB-359';
-    if (!d.boundaryTalliedRemark) d.boundaryTalliedRemark = 'Boundary is matching as per documents';
+    if (!d.bndActualNorth) d.bndActualNorth = '';
+    if (!d.bndDocNorth) d.bndDocNorth = '';
+    if (!d.bndActualEast) d.bndActualEast = '';
+    if (!d.bndDocEast) d.bndDocEast = '';
+    if (!d.bndActualWest) d.bndActualWest = '';
+    if (!d.bndDocWest) d.bndDocWest = '';
+    if (!d.bndActualSouth) d.bndActualSouth = '';
+    if (!d.bndDocSouth) d.bndDocSouth = '';
+    if (!d.boundaryTalliedRemark) d.boundaryTalliedRemark = '';
 
     // Accessibility
     if (!d.neighbourhoodType) d.neighbourhoodType = 'Middle';
     if (!d.marketability) d.marketability = 'Good';
-    if (!d.proximityAmenities) d.proximityAmenities = '1-2 Kms';
-    if (!d.siteAccess) d.siteAccess = '15-Feet wide Road';
+    if (!d.proximityAmenities) d.proximityAmenities = '';
+    if (!d.siteAccess) d.siteAccess = '';
     if (!d.withinMunicipalLimits) d.withinMunicipalLimits = 'Yes';
     if (!d.plotDemarcation) d.plotDemarcation = 'Yes';
     if (!d.neighboursInquiry) d.neighboursInquiry = 'Yes';
@@ -134,16 +132,16 @@ export default function UtkarshSmallFinanceBank({
     if (!d.validTill) d.validTill = 'NA';
     if (!d.floorsSanctioned) d.floorsSanctioned = 'NA';
     if (!d.sanctionedAreas) d.sanctionedAreas = 'NA';
-    if (!d.sanctioningAuthority) d.sanctioningAuthority = 'Plan not provided';
-    if (!d.municipalCompliance) d.municipalCompliance = 'Municipal Limit';
-    if (!d.localByLawsCompliance) d.localByLawsCompliance = 'WithinBDA limit';
+    if (!d.sanctioningAuthority) d.sanctioningAuthority = '';
+    if (!d.municipalCompliance) d.municipalCompliance = '';
+    if (!d.localByLawsCompliance) d.localByLawsCompliance = '';
     if (!d.commencementCertDetails) d.commencementCertDetails = 'NA';
     if (!d.legalDocsProvided) d.legalDocsProvided = 'Yes';
-    if (!d.legalDocsDetails) d.legalDocsDetails = 'Copy of Allotment deed, ROR';
+    if (!d.legalDocsDetails) d.legalDocsDetails = '';
 
     // Technical Details
     if (!d.technicalPropertyType) d.technicalPropertyType = p.propertyType || 'Residential';
-    if (!d.noOfStories) d.noOfStories = 'G+2';
+    if (!d.noOfStories) d.noOfStories = '';
     if (!d.tenementPosition) d.tenementPosition = 'Self occupied';
     if (!d.constructionType) d.constructionType = 'RCC';
     if (!d.noOfLifts) d.noOfLifts = 'Nil';
@@ -151,9 +149,9 @@ export default function UtkarshSmallFinanceBank({
     // Accommodation
     if (!d.accoBF) d.accoBF = 'Nil';
     if (!d.accoMezz) d.accoMezz = 'Nil';
-    if (!d.accoGF) d.accoGF = '805sqft';
-    if (!d.accoSF) d.accoSF = '568sqft';
-    if (!d.accoFF) d.accoFF = '805sqft';
+    if (!d.accoGF) d.accoGF = '';
+    if (!d.accoSF) d.accoSF = '';
+    if (!d.accoFF) d.accoFF = '';
     if (!d.accoTF) d.accoTF = 'NA';
     if (!d.acco4thF) d.acco4thF = 'NA';
 
@@ -162,59 +160,56 @@ export default function UtkarshSmallFinanceBank({
     if (!d.independentAccessUnit) d.independentAccessUnit = 'Yes';
 
     if (!d.occupancyStatus) d.occupancyStatus = 'Owner';
-    if (!d.occupantName) d.occupantName = 'Mahammada Imran';
-    if (!d.finishExterior) d.finishExterior = 'Good';
-    if (!d.finishInterior) d.finishInterior = 'Good';
-    if (!d.finishFlooring) d.finishFlooring = 'Tiles';
-    if (!d.finishWood) d.finishWood = 'Wood';
+    if (!d.occupantName) d.occupantName = '';
+    if (!d.finishExterior) d.finishExterior = '';
+    if (!d.finishInterior) d.finishInterior = '';
+    if (!d.finishFlooring) d.finishFlooring = '';
+    if (!d.finishWood) d.finishWood = '';
     if (!d.commercialUsageDetails) d.commercialUsageDetails = 'NA';
     if (!d.completionStatus) d.completionStatus = '100% Completed';
-    if (!d.currentAge) d.currentAge = '20-Years';
-    if (!d.residualAge) d.residualAge = '40-Years';
+    if (!d.currentAge) d.currentAge = '';
+    if (!d.residualAge) d.residualAge = '';
 
     // Valuation calculation numbers
-    if (!d.valConstAreaNum) d.valConstAreaNum = 2178;
-    if (!d.valConstRateNum) d.valConstRateNum = 2200;
-    if (!d.valConstTotalNum) d.valConstTotalNum = 4791600;
+    if (d.valConstAreaNum === undefined) d.valConstAreaNum = 0;
+    if (d.valConstRateNum === undefined) d.valConstRateNum = 0;
+    if (d.valConstTotalNum === undefined) d.valConstTotalNum = 0;
 
-    if (!d.valLandAreaNum) d.valLandAreaNum = 805;
-    if (!d.valLandRateNum) d.valLandRateNum = 8000;
-    if (!d.valLandTotalNum) d.valLandTotalNum = 6440000;
+    if (d.valLandAreaNum === undefined) d.valLandAreaNum = 0;
+    if (d.valLandRateNum === undefined) d.valLandRateNum = 0;
+    if (d.valLandTotalNum === undefined) d.valLandTotalNum = 0;
 
-    if (!d.netMortgageValueNum) d.netMortgageValueNum = 11231600;
-    if (!d.forcedValueNum) d.forcedValueNum = 8985280;
+    if (d.netMortgageValueNum === undefined) d.netMortgageValueNum = 0;
+    if (d.forcedValueNum === undefined) d.forcedValueNum = 0;
 
-    if (!d.valConstArea) d.valConstArea = '2178sqft';
-    if (!d.valConstRate) d.valConstRate = 'Rs.2200/-';
-    if (!d.valConstTotal) d.valConstTotal = 'Rs.47,91,600/-';
-    if (!d.valTotalBUA) d.valTotalBUA = 'Rs.47,91,600/-';
-    if (!d.valDepDesc) d.valDepDesc = '1.00% per years for 20-Years i.e. 20%';
+    if (!d.valConstArea) d.valConstArea = '';
+    if (!d.valConstRate) d.valConstRate = '';
+    if (!d.valConstTotal) d.valConstTotal = '';
+    if (!d.valTotalBUA) d.valTotalBUA = '';
+    if (!d.valDepDesc) d.valDepDesc = '';
     if (!d.valDepAmount) d.valDepAmount = 'Nil';
-    if (!d.valConstAfterDep) d.valConstAfterDep = 'Rs.47,91,600/-';
+    if (!d.valConstAfterDep) d.valConstAfterDep = '';
 
-    if (!d.valLandArea) d.valLandArea = '805sqft';
-    if (!d.valLandRate) d.valLandRate = 'Rs.8000/-';
-    if (!d.valLandTotal) d.valLandTotal = 'Rs.64,40,000/-';
+    if (!d.valLandArea) d.valLandArea = '';
+    if (!d.valLandRate) d.valLandRate = '';
+    if (!d.valLandTotal) d.valLandTotal = '';
 
     if (!d.carParkingNos) d.carParkingNos = 'NA';
     if (!d.carParkingRate) d.carParkingRate = 'NA';
     if (!d.carParkingTotal) d.carParkingTotal = 'NA';
     if (!d.otherOneTimeCost) d.otherOneTimeCost = 'NA';
 
-    if (!d.netMortgageValue) d.netMortgageValue = 'Rs.1,12,31,600/-';
-    if (!d.govtRate) d.govtRate = 'Rs.2048/-';
-    if (!d.forcedValue) d.forcedValue = 'Rs.89,85,280/-';
-    if (!d.valuationDoneEarlier) d.valuationDoneEarlier = '13/05/2026';
-    if (!d.inDemolitionList) d.inDemolitionList = 'No (Within BDAlimit)';
+    if (!d.netMortgageValue) d.netMortgageValue = '';
+    if (!d.govtRate) d.govtRate = '';
+    if (!d.forcedValue) d.forcedValue = '';
+    if (!d.valuationDoneEarlier) d.valuationDoneEarlier = 'No';
+    if (!d.inDemolitionList) d.inDemolitionList = 'No';
     if (!d.inNegativeArea) d.inNegativeArea = 'NO';
     if (!d.litigationObserved) d.litigationObserved = 'NO';
     if (!d.deviationsAccepted) d.deviationsAccepted = 'NA';
 
     // Remarks & Declaration
-    if (!d.remarks) {
-      d.remarks =
-        'Remarks: Subject property is a G+2 storied residential building, having land extent of 805sqft, having measured BUA 2178sqft (GF-805sqft, FF-805sqft&SF-568sqft). Approved plan is not provided. It is accessible with 15-feet wide road & surrounding areas are residential in nature. Age of the property is about20-years. All civicamenities are present with 1-2 kms from the property. This plot is coming under BDA limit& Primary residential use zone. Entire building isused by the customer for residential purpose. Valuation has been done for land & measured BUA of G+2storied residential building.As approved plan is not provided, it is up to sole discretion of Utkarsh Bank to consider the BUA value or not.';
-    }
+    if (!d.remarks) d.remarks = '';
     if (!d.place) d.place = 'Bhubaneswar';
 
     // Attachments
@@ -801,7 +796,7 @@ export default function UtkarshSmallFinanceBank({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valConstAreaNum ?? 2178}
+                  value={fields.valConstAreaNum ?? 0}
                   onChange={(e) => updateField('valConstAreaNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />
@@ -810,7 +805,7 @@ export default function UtkarshSmallFinanceBank({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valConstRateNum ?? 2200}
+                  value={fields.valConstRateNum ?? 0}
                   onChange={(e) => updateField('valConstRateNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />
@@ -827,7 +822,7 @@ export default function UtkarshSmallFinanceBank({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valLandAreaNum ?? 805}
+                  value={fields.valLandAreaNum ?? 0}
                   onChange={(e) => updateField('valLandAreaNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />
@@ -836,7 +831,7 @@ export default function UtkarshSmallFinanceBank({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valLandRateNum ?? 8000}
+                  value={fields.valLandRateNum ?? 0}
                   onChange={(e) => updateField('valLandRateNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />
@@ -845,6 +840,18 @@ export default function UtkarshSmallFinanceBank({
                 <div className="p-2.5 rounded-lg bg-slate-100 font-bold text-slate-900 border border-slate-200">
                   {formatIndianCurrency(fields.valLandTotalNum)}
                 </div>
+              </Field>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Field label="Car Parking (Nos.)">
+                <input type="text" className={inputCls} value={fields.carParkingNos || 'NA'} onChange={(e) => updateField('carParkingNos', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Car Parking Rate (Rs)">
+                <input type="text" className={inputCls} value={fields.carParkingRate || 'NA'} onChange={(e) => updateField('carParkingRate', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Other One Time Cost (Rs)">
+                <input type="text" className={inputCls} value={fields.otherOneTimeCost || 'NA'} onChange={(e) => updateField('otherOneTimeCost', e.target.value)} disabled={isReadOnly} />
               </Field>
             </div>
 
@@ -869,7 +876,7 @@ export default function UtkarshSmallFinanceBank({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Field label="Government Rate (Rs/Sqft)">
                 <input type="text" className={inputCls} value={fields.govtRate || ''} onChange={(e) => updateField('govtRate', e.target.value)} disabled={isReadOnly} />
               </Field>
@@ -879,8 +886,14 @@ export default function UtkarshSmallFinanceBank({
               <Field label="In Demolition List?">
                 <input type="text" className={inputCls} value={fields.inDemolitionList || ''} onChange={(e) => updateField('inDemolitionList', e.target.value)} disabled={isReadOnly} />
               </Field>
+              <Field label="In Negative Area?">
+                <input type="text" className={inputCls} value={fields.inNegativeArea || 'NO'} onChange={(e) => updateField('inNegativeArea', e.target.value)} disabled={isReadOnly} />
+              </Field>
               <Field label="Any Litigation Observed?">
-                <input type="text" className={inputCls} value={fields.litigationObserved || ''} onChange={(e) => updateField('litigationObserved', e.target.value)} disabled={isReadOnly} />
+                <input type="text" className={inputCls} value={fields.litigationObserved || 'NO'} onChange={(e) => updateField('litigationObserved', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Deviations Accepted (LAP/BL)">
+                <input type="text" className={inputCls} value={fields.deviationsAccepted || 'NA'} onChange={(e) => updateField('deviationsAccepted', e.target.value)} disabled={isReadOnly} />
               </Field>
             </div>
           </Section>

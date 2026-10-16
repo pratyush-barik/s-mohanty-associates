@@ -69,28 +69,28 @@ export default function LICPVR5({
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const raw = rawInitialFields || {};
     return {
-      fileNo: raw.fileNo || (prefill as any)?.loanAccountNo || '2104009055',
+      fileNo: raw.fileNo || (prefill as any)?.loanAccountNo || (prefill as any)?.projectCode || '',
       nameOfValuer: raw.nameOfValuer || 'Er. Satyajit Mohanty',
       codeNo: raw.codeNo || 'BH-AOV0078',
       dateOfValuation: raw.dateOfValuation || formatReportDate(new Date().toISOString()),
       areaOffice: raw.areaOffice || 'Bhubaneswar',
 
       // A. General
-      previousReportDateRef: raw.previousReportDateRef || '19/12/2020',
-      applicantName: raw.applicantName || (prefill as any)?.applicantName || (prefill as any)?.contactName || 'Mr. Jyoti Ranjan Dash,S/o-Late Birendranath Dash',
-      dateOfInspection: raw.dateOfInspection || earliestVisit?.date || '05/11/2020',
-      propertyLocation: raw.propertyLocation || 'Mouza- Unit No-4,Bhatia,P.s-Jajpur Road,Tahasil-Vyasanagar',
-      plotSurveyNo: raw.plotSurveyNo || 'Plot no-459,489 & 493, Khata no-643/1194 & 440,Sub Plot No-17 "NAKSHATRA VILLA"',
-      villageTalukWard: raw.villageTalukWard || 'Dist-Jajpur,Odisha, Pin-755019',
-      districtMunicipality: raw.districtMunicipality || 'Jajpur',
+      previousReportDateRef: raw.previousReportDateRef || '',
+      applicantName: raw.applicantName || (prefill as any)?.applicantName || (prefill as any)?.contactName || '',
+      dateOfInspection: raw.dateOfInspection || earliestVisit?.date || '',
+      propertyLocation: raw.propertyLocation || (prefill as any)?.property?.propertyAddress || '',
+      plotSurveyNo: raw.plotSurveyNo || (prefill as any)?.property?.plotNo || '',
+      villageTalukWard: raw.villageTalukWard || (prefill as any)?.property?.mouza || '',
+      districtMunicipality: raw.districtMunicipality || (prefill as any)?.property?.district || '',
 
       // B. Inspection
-      plinthApproved: raw.plinthApproved || '858sqft',
-      plinthActual: raw.plinthActual || '858sqft',
-      fsiApproved: raw.fsiApproved || '1.17',
-      fsiActual: raw.fsiActual || '1.17',
-      unitsApproved: raw.unitsApproved || '2',
-      unitsActual: raw.unitsActual || '2',
+      plinthApproved: raw.plinthApproved || '',
+      plinthActual: raw.plinthActual || '',
+      fsiApproved: raw.fsiApproved || '',
+      fsiActual: raw.fsiActual || '',
+      unitsApproved: raw.unitsApproved || '1',
+      unitsActual: raw.unitsActual || '1',
 
       constructionAsPerPlan: raw.constructionAsPerPlan || 'Yes',
       deviationApprovedActual: raw.deviationApprovedActual || 'NA',
@@ -100,13 +100,13 @@ export default function LICPVR5({
       highTensionLines: raw.highTensionLines || 'No',
 
       // C. Total Value
-      landMarketValue: raw.landMarketValue || '1437000',
+      landMarketValue: raw.landMarketValue || ((prefill as any)?.property?.plotArea && (prefill as any)?.property?.marketRate ? String(Math.round((prefill as any).property.plotArea * (prefill as any).property.marketRate)) : '0'),
       stageOfConstructionPct: raw.stageOfConstructionPct || '100',
-      stageConstMarketValue: raw.stageConstMarketValue || '3203400',
-      bldg100CompletionValue: raw.bldg100CompletionValue || '4809000',
+      stageConstMarketValue: raw.stageConstMarketValue || '0',
+      bldg100CompletionValue: raw.bldg100CompletionValue || '0',
 
       // Certificate
-      inspectionDate: raw.inspectionDate || earliestVisit?.date || '19/12/2020',
+      inspectionDate: raw.inspectionDate || earliestVisit?.date || '',
       valuationStation: raw.valuationStation || 'Bhubaneswar',
 
       // Attachments

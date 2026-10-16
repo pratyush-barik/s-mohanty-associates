@@ -82,59 +82,59 @@ export default function MahindraFinance({
     if (!d.reportDate) d.reportDate = formatReportDate(new Date().toISOString());
     if (!d.contactPerson) {
       d.contactPerson = p.applicantName || p.contactName
-        ? `${p.applicantName || p.contactName}, Mob: ${p.contactPhone || '9040003000'}`
-        : 'Mohammed Aliakram Khan, Mob: 9040003000 / 9437038829';
+        ? `${p.applicantName || p.contactName}${p.contactPhone ? `, Mob: ${p.contactPhone}` : ''}`
+        : '';
     }
 
     // 1-4 Basic Details
-    if (!d.applicantName) d.applicantName = p.applicantName || p.contactName || 'MEDZOR';
-    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || 'G+1 storied Commercial building';
-    if (!d.currentUsage) d.currentUsage = 'Commercial';
-    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || 'Khata no-224, Plot no-753 (AC.0.090Decs, Homestead), Mouza-Bhairpur, Tahasil/PS-Salipur, Dist- Cuttack, Odisha, Pin- 754200';
-    if (!d.addressAsPerDoc) d.addressAsPerDoc = p.propertyAddress || 'Khata no-224, Plot no-753 (AC.0.090Decs, Homestead), Mouza-Bhairpur, Tahasil/PS-Salipur, Dist- Cuttack, Odisha, Pin- 754200';
+    if (!d.applicantName) d.applicantName = p.applicantName || p.contactName || '';
+    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || '';
+    if (!d.currentUsage) d.currentUsage = p.currentUsage || '';
+    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || '';
+    if (!d.addressAsPerDoc) d.addressAsPerDoc = p.propertyAddress || '';
     if (!d.priorValuation) d.priorValuation = 'No';
 
     // 5-8 Locality Details
-    if (!d.localityType) d.localityType = 'Commercial';
+    if (!d.localityType) d.localityType = 'Residential';
     if (!d.localityClass) d.localityClass = 'Middle Class';
     if (!d.siteStatus) d.siteStatus = 'Developing';
     if (!d.proximityAmenities) d.proximityAmenities = 'Within 1-2 Kms';
-    if (!d.railwayStation) d.railwayStation = '05- Kms (Kendrapada Road Railway Station)';
-    if (!d.busStop) d.busStop = '500-Mtrs (Bhairpur Square Bus Stop)';
-    if (!d.landmark) d.landmark = 'Near Bhoipur U.P.M.E School, Peer Bazar, Bhairpur';
-    if (!d.distanceCityCenter) d.distanceCityCenter = '10 Kms from Cuttack city center';
-    if (!d.approachRoad) d.approachRoad = '30 feet wide Road';
+    if (!d.railwayStation) d.railwayStation = '';
+    if (!d.busStop) d.busStop = '';
+    if (!d.landmark) d.landmark = p.landmark || '';
+    if (!d.distanceCityCenter) d.distanceCityCenter = '';
+    if (!d.approachRoad) d.approachRoad = '';
 
     // 9-13 Property Details
-    if (!d.occupantStatus) d.occupantStatus = 'Tenant';
-    if (!d.occupantName) d.occupantName = 'NA';
-    if (!d.occupantRelation) d.occupantRelation = 'NA';
+    if (!d.occupantStatus) d.occupantStatus = 'Owner';
+    if (!d.occupantName) d.occupantName = p.applicantName || p.contactName || 'NA';
+    if (!d.occupantRelation) d.occupantRelation = 'Self';
 
-    if (!d.propertyDemarcation) d.propertyDemarcation = 'No';
-    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = '(Customer) Mohammed Aliakram Khan, Mob: 9040003000 / 9437038829';
-    if (!d.structureType) d.structureType = 'Load Bearing structure';
-    if (!d.landPlotAreaDesc) d.landPlotAreaDesc = '3920sqft (As per ROR)';
-    if (!d.noOfBlocks) d.noOfBlocks = 'N.A';
-    if (!d.noOfUnits) d.noOfUnits = 'N.A';
+    if (!d.propertyDemarcation) d.propertyDemarcation = 'Yes';
+    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = p.applicantName || p.contactName || '';
+    if (!d.structureType) d.structureType = 'RCC framed structure';
+    if (!d.landPlotAreaDesc) d.landPlotAreaDesc = p.landArea ? `${p.landArea} sq.ft` : '';
+    if (!d.noOfBlocks) d.noOfBlocks = '1';
+    if (!d.noOfUnits) d.noOfUnits = '1';
     if (!d.noOfFloors) d.noOfFloors = 'GF';
-    if (!d.noOfLifts) d.noOfLifts = 'N.A';
+    if (!d.noOfLifts) d.noOfLifts = 'NA';
 
-    if (!d.unitFloorNo) d.unitFloorNo = 'N.A';
+    if (!d.unitFloorNo) d.unitFloorNo = 'NA';
     if (!d.unitRooms) d.unitRooms = 'NA';
-    if (!d.unitBuaMeasured) d.unitBuaMeasured = 'G+1 (GF-2850sqft, FF-840sqft), Total BUA=3690sqft';
-    if (!d.unitCarpetArea) d.unitCarpetArea = '3136sqft (approx.)';
+    if (!d.unitBuaMeasured) d.unitBuaMeasured = p.builtUpArea ? `${p.builtUpArea} sq.ft` : '';
+    if (!d.unitCarpetArea) d.unitCarpetArea = '';
     if (!d.unitRemarksView) d.unitRemarksView = 'NA';
 
     if (!d.qualityExteriors) d.qualityExteriors = 'Average';
     if (!d.qualityInteriors) d.qualityInteriors = 'Average';
-    if (!d.ageOfProperty) d.ageOfProperty = '16-Years';
-    if (!d.residualLife) d.residualLife = '44-Years';
+    if (!d.ageOfProperty) d.ageOfProperty = '';
+    if (!d.residualLife) d.residualLife = '';
 
     // 14-20 Sanctions & Setbacks
     if (!d.sanctionApprovalNo) d.sanctionApprovalNo = 'Plan not provided';
     if (!d.ownershipType) d.ownershipType = 'Freehold';
-    if (!d.documentsVerified) d.documentsVerified = 'Copy of Sale deed, ROR & Sketch map';
-    if (!d.municipalLimits) d.municipalLimits = 'Within Mutarifa GP limit';
+    if (!d.documentsVerified) d.documentsVerified = 'Copy of Sale deed, ROR';
+    if (!d.municipalLimits) d.municipalLimits = '';
     if (!d.permissibleUsageMasterPlan) d.permissibleUsageMasterPlan = 'NA';
 
     // Setbacks
@@ -168,20 +168,20 @@ export default function MahindraFinance({
 
     if (!d.constBasement) d.constBasement = 'NA';
     if (!d.constStilt) d.constStilt = 'NA';
-    if (!d.constGround) d.constGround = '2850sqft';
-    if (!d.constFirst) d.constFirst = '840sqft';
+    if (!d.constGround) d.constGround = '';
+    if (!d.constFirst) d.constFirst = '';
     if (!d.constSecond) d.constSecond = 'NA';
     if (!d.constThird) d.constThird = 'NA';
 
     // 21 Valuation
-    if (!d.landAreaSqft) d.landAreaSqft = 3920;
-    if (!d.landRateSqft) d.landRateSqft = 2200;
-    if (!d.landValuationVal) d.landValuationVal = 8624000;
+    if (!d.landAreaSqft) d.landAreaSqft = p.landArea || 0;
+    if (!d.landRateSqft) d.landRateSqft = 0;
+    if (!d.landValuationVal) d.landValuationVal = 0;
 
-    if (!d.constructionDesc) d.constructionDesc = 'Construction (G+1) {GF-2850sqft, FF-840sqft}, Total BUA-3690sqft';
-    if (!d.constructionAreaSqft) d.constructionAreaSqft = 3690;
-    if (!d.constructionRateSqft) d.constructionRateSqft = 1200;
-    if (!d.constructionValuationVal) d.constructionValuationVal = 4428000;
+    if (!d.constructionDesc) d.constructionDesc = p.builtUpArea ? `Construction (${p.builtUpArea} sq.ft)` : 'Construction';
+    if (!d.constructionAreaSqft) d.constructionAreaSqft = p.builtUpArea || 0;
+    if (!d.constructionRateSqft) d.constructionRateSqft = 0;
+    if (!d.constructionValuationVal) d.constructionValuationVal = 0;
     if (!d.stageOfConstruction) d.stageOfConstruction = '100%';
 
     if (!d.amenityCarParking) d.amenityCarParking = 'NA';
@@ -192,31 +192,29 @@ export default function MahindraFinance({
     if (!d.amenityOther) d.amenityOther = 'NA';
     if (!d.totalAmenitiesCharges) d.totalAmenitiesCharges = 'Nil';
 
-    if (!d.totalMarketValue) d.totalMarketValue = 13052000;
+    if (!d.totalMarketValue) d.totalMarketValue = 0;
     if (!d.forcedSalePercent) d.forcedSalePercent = 80;
-    if (!d.forcedSaleValue) d.forcedSaleValue = 10441600;
-    if (!d.approxRentals) d.approxRentals = 'Rs. 25,000/-';
+    if (!d.forcedSaleValue) d.forcedSaleValue = 0;
+    if (!d.approxRentals) d.approxRentals = '';
 
     // 22 Boundaries & Remarks
-    if (!d.boundaryEastDeed) d.boundaryEastDeed = 'Not Mentioned';
-    if (!d.boundaryWestDeed) d.boundaryWestDeed = 'Not Mentioned';
-    if (!d.boundaryNorthDeed) d.boundaryNorthDeed = 'Not Mentioned';
-    if (!d.boundarySouthDeed) d.boundarySouthDeed = 'Not Mentioned';
+    if (!d.boundaryEastDeed) d.boundaryEastDeed = p.boundaryEast || 'Not Mentioned';
+    if (!d.boundaryWestDeed) d.boundaryWestDeed = p.boundaryWest || 'Not Mentioned';
+    if (!d.boundaryNorthDeed) d.boundaryNorthDeed = p.boundaryNorth || 'Not Mentioned';
+    if (!d.boundarySouthDeed) d.boundarySouthDeed = p.boundarySouth || 'Not Mentioned';
 
-    if (!d.boundaryEastSite) d.boundaryEastSite = "Other's Building";
-    if (!d.boundaryWestSite) d.boundaryWestSite = "Other's Building";
-    if (!d.boundaryNorthSite) d.boundaryNorthSite = '30-ft wide Road';
-    if (!d.boundarySouthSite) d.boundarySouthSite = "Other's Building";
+    if (!d.boundaryEastSite) d.boundaryEastSite = p.boundaryEast || '';
+    if (!d.boundaryWestSite) d.boundaryWestSite = p.boundaryWest || '';
+    if (!d.boundaryNorthSite) d.boundaryNorthSite = p.boundaryNorth || '';
+    if (!d.boundarySouthSite) d.boundarySouthSite = p.boundarySouth || '';
 
-    if (!d.boundaryEastSketch) d.boundaryEastSketch = 'Plot No-757 (Gani Das)';
-    if (!d.boundaryWestSketch) d.boundaryWestSketch = 'Plot No-752 (Govt.)';
-    if (!d.boundaryNorthSketch) d.boundaryNorthSketch = 'Plot No-755 (Govt.) & Plot No-707 (Govt. Road)';
-    if (!d.boundarySouthSketch) d.boundarySouthSketch = 'Plot No-761/3058 (Sumitra Sahoo)';
+    if (!d.boundaryEastSketch) d.boundaryEastSketch = '';
+    if (!d.boundaryWestSketch) d.boundaryWestSketch = '';
+    if (!d.boundaryNorthSketch) d.boundaryNorthSketch = '';
+    if (!d.boundarySouthSketch) d.boundarySouthSketch = '';
 
-    if (!d.boundariesMatching) d.boundariesMatching = 'Yes (Boundary matching as per sketch map)';
-    if (!d.remarks) {
-      d.remarks = 'This is a Top up case. Subject property is G+1 storied commercial building having land extent of 3920Sqft, having total measured built area 3690Sqft. {GF-2850sqft, FF-840sqft}, Approved plan is not provided. Age of the building about 16-years. It is accessible with 30-feet wide road & surrounding areas are residential cum commercial in nature. Property is near about 10 Kms from Cuttack city center & all civic amenities are present within 1-2 kms. This property is coming under Mutarifa GP limit. Entire building is used by single tenant for commercial purpose. Valuation has been done for land & measured BUA G+1 storied commercial building. As approved plan is not provided, it is upto the sole discretion of Mahindra Finance to consider the BUA value or not.\nNote-Subject property consists of 2 nos deed, Deed No 6089, Dated 06/06/74 and Deed No 7728, Dated 27/09/73. Land area under the 2 deeds are: 4 decimal under Settlement plot no 1294 and 6 decimal land under Settlement plot no 1228. After Settlement done the subject Plot nos have been merged in to a new HAL Plot no 753 and was recorded as 9 decimal. ROR No 224 corresponding plot no 753 is available.';
-    }
+    if (!d.boundariesMatching) d.boundariesMatching = 'Yes';
+    if (!d.remarks) d.remarks = '';
 
     if (!d.engineerName) d.engineerName = 'Er. Satyajit Mohanty';
 

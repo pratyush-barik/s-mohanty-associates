@@ -74,74 +74,74 @@ export default function PNBHousingHLLAP({
     const p = (prefill || {}) as any;
 
     // Meta Header
-    if (!d.branchName) d.branchName = p.branch || 'Bhubaneswar';
-    if (!d.typeOfCase) d.typeOfCase = 'RPCL';
+    if (!d.branchName) d.branchName = p.branch || '';
+    if (!d.typeOfCase) d.typeOfCase = '';
     if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty';
-    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '07/05/2026';
-    if (!d.caseRefNo) d.caseRefNo = projectCode || 'NHL/BBSR/0526/5085031';
+    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '';
+    if (!d.caseRefNo) d.caseRefNo = projectCode || '';
     if (!d.reportDate) d.reportDate = formatReportDate(new Date().toISOString());
     if (!d.contactPerson) {
       d.contactPerson = p.applicantName || p.contactName
-        ? `${p.applicantName || p.contactName}, Mob:- ${p.contactPhone || '9437131573'}`
-        : 'Purna Chandra Sahoo, Mob:- 9437131573';
+        ? `${p.applicantName || p.contactName}${p.contactPhone ? ', Mob:- ' + p.contactPhone : ''}`
+        : '';
     }
 
     // 1-4 Basic Details
-    if (!d.applicantName) d.applicantName = p.applicantName || p.contactName || 'Purna Chandra Sahoo';
-    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || 'G+2 storied residential building';
-    if (!d.currentUsage) d.currentUsage = 'Residential';
-    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || 'Khata no-540/4623,Plot no- 2478/12114(AC.0.030Dec,Homestead),Mouza- Mancheswar,Tahasil-Bhubaneswar, PS-New Capital,Dist-Khurda,Odisha,Pin-751007';
-    if (!d.addressAsPerDoc) d.addressAsPerDoc = p.propertyAddress || 'Khata no-540/4623,Plot no- 2478/12114(AC.0.030Dec,Homestead),Mouza- Mancheswar,Tahasil-Bhubaneswar, PS-New Capital,Dist-Khurda,Odisha,Pin-751007';
+    if (!d.applicantName) d.applicantName = p.applicantName || p.contactName || '';
+    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || '';
+    if (!d.currentUsage) d.currentUsage = '';
+    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || '';
+    if (!d.addressAsPerDoc) d.addressAsPerDoc = p.propertyAddress || '';
     if (!d.priorValuation) d.priorValuation = 'No';
 
     // 5-8 Locality Details
-    if (!d.localityType) d.localityType = 'Residential';
-    if (!d.localityClass) d.localityClass = 'Middle Class';
-    if (!d.siteStatus) d.siteStatus = 'Developed';
-    if (!d.proximityAmenities) d.proximityAmenities = 'Within 1-2 Kms';
-    if (!d.railwayStation) d.railwayStation = '2Kms( Vani Vihar Railway station)';
-    if (!d.busStop) d.busStop = '1 Kms (Palasuni Bus-Stop)';
-    if (!d.landmark) d.landmark = 'Near Manchanath Enclave';
-    if (!d.distanceCityCenter) d.distanceCityCenter = '5 Kms';
-    if (!d.approachRoad) d.approachRoad = "20'-0\" Wide Road";
+    if (!d.localityType) d.localityType = '';
+    if (!d.localityClass) d.localityClass = '';
+    if (!d.siteStatus) d.siteStatus = '';
+    if (!d.proximityAmenities) d.proximityAmenities = '';
+    if (!d.railwayStation) d.railwayStation = '';
+    if (!d.busStop) d.busStop = '';
+    if (!d.landmark) d.landmark = p.nearestLandmark || '';
+    if (!d.distanceCityCenter) d.distanceCityCenter = '';
+    if (!d.approachRoad) d.approachRoad = '';
 
     // 9-13 Property Details
-    if (!d.occupantStatus) d.occupantStatus = 'Occupied';
-    if (!d.occupantName) d.occupantName = 'Owner/Tenants';
+    if (!d.occupantStatus) d.occupantStatus = '';
+    if (!d.occupantName) d.occupantName = '';
     if (!d.occupantRelation) d.occupantRelation = 'NA';
-    if (!d.propertyDemarcation) d.propertyDemarcation = 'Yes';
+    if (!d.propertyDemarcation) d.propertyDemarcation = '';
 
-    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = 'Purna Chandra Sahoo, Mob:- 9437131573';
-    if (!d.structureType) d.structureType = 'RCC';
-    if (!d.landPlotAreaDesc) d.landPlotAreaDesc = '1307 Sq.ft';
+    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = '';
+    if (!d.structureType) d.structureType = '';
+    if (!d.landPlotAreaDesc) d.landPlotAreaDesc = '';
     if (!d.noOfBlocks) d.noOfBlocks = 'N.A';
     if (!d.noOfUnits) d.noOfUnits = 'N.A';
-    if (!d.noOfFloors) d.noOfFloors = 'G+2';
+    if (!d.noOfFloors) d.noOfFloors = '';
     if (!d.noOfLifts) d.noOfLifts = 'N.A';
 
     if (!d.unitFloorNo) d.unitFloorNo = 'N.A';
-    if (!d.unitRooms) d.unitRooms = '6-beds, 6-kitchen, 7-toilets';
-    if (!d.unitBuaMeasured) d.unitBuaMeasured = '3X1206sqft=3618sqft (Measured G+2),\n3X1200sqft=3600sqft(Approved G+2)';
-    if (!d.unitCarpetArea) d.unitCarpetArea = '2259 sqft';
+    if (!d.unitRooms) d.unitRooms = '';
+    if (!d.unitBuaMeasured) d.unitBuaMeasured = '';
+    if (!d.unitCarpetArea) d.unitCarpetArea = '';
     if (!d.unitRemarksView) d.unitRemarksView = 'NA';
 
-    if (!d.qualityExteriors) d.qualityExteriors = 'Good';
-    if (!d.qualityInteriors) d.qualityInteriors = 'good';
-    if (!d.ageOfProperty) d.ageOfProperty = '3';
-    if (!d.residualLife) d.residualLife = '57-Years';
+    if (!d.qualityExteriors) d.qualityExteriors = '';
+    if (!d.qualityInteriors) d.qualityInteriors = '';
+    if (!d.ageOfProperty) d.ageOfProperty = '';
+    if (!d.residualLife) d.residualLife = '';
 
     // 14-20 Sanctions & Setbacks
-    if (!d.sanctionApprovalNo) d.sanctionApprovalNo = 'Yes (Plan has been approved by Sarapanch Kalarahanga GP for G+2 residential building)';
-    if (!d.ownershipType) d.ownershipType = 'Freehold';
-    if (!d.documentsVerified) d.documentsVerified = 'Copy of sale deed, ROR,Approved plan & Estimate';
-    if (!d.municipalLimits) d.municipalLimits = 'Yes(Within BDA limit)';
+    if (!d.sanctionApprovalNo) d.sanctionApprovalNo = '';
+    if (!d.ownershipType) d.ownershipType = '';
+    if (!d.documentsVerified) d.documentsVerified = '';
+    if (!d.municipalLimits) d.municipalLimits = '';
     if (!d.permissibleUsageMasterPlan) d.permissibleUsageMasterPlan = 'Residential';
 
     // Setbacks
     if (!d.setbackFrontPlan) d.setbackFrontPlan = '';
     if (!d.setbackFrontSite) d.setbackFrontSite = '';
     if (!d.setbackFrontDev) d.setbackFrontDev = '';
-    if (!d.setbackFrontRem) d.setbackFrontRem = 'Not mentioned in plan';
+    if (!d.setbackFrontRem) d.setbackFrontRem = '';
 
     if (!d.setbackSide1Plan) d.setbackSide1Plan = '';
     if (!d.setbackSide1Site) d.setbackSide1Site = '';
@@ -161,27 +161,27 @@ export default function PNBHousingHLLAP({
     // Floor Wise Area
     if (!d.permBasement) d.permBasement = 'NA';
     if (!d.permStilt) d.permStilt = 'NA';
-    if (!d.permGround) d.permGround = '1200sqft';
-    if (!d.permFirst) d.permFirst = '1200sqft';
-    if (!d.permSecond) d.permSecond = '1200sqft';
+    if (!d.permGround) d.permGround = '';
+    if (!d.permFirst) d.permFirst = '';
+    if (!d.permSecond) d.permSecond = '';
     if (!d.permThird) d.permThird = 'Nil';
 
     if (!d.constBasement) d.constBasement = 'NA';
     if (!d.constStilt) d.constStilt = 'NA';
-    if (!d.constGround) d.constGround = '1206sqft';
-    if (!d.constFirst) d.constFirst = '1206sqft';
-    if (!d.constSecond) d.constSecond = '1206sqft';
+    if (!d.constGround) d.constGround = '';
+    if (!d.constFirst) d.constFirst = '';
+    if (!d.constSecond) d.constSecond = '';
     if (!d.constThird) d.constThird = 'Nil';
 
     // 21 Valuation
-    if (!d.landAreaSqft) d.landAreaSqft = 1307;
-    if (!d.landRateSqft) d.landRateSqft = 3500;
-    if (!d.landValuationVal) d.landValuationVal = 4574500;
+    if (!d.landAreaSqft) d.landAreaSqft = '';
+    if (!d.landRateSqft) d.landRateSqft = '';
+    if (!d.landValuationVal) d.landValuationVal = '';
 
-    if (!d.constructionDesc) d.constructionDesc = 'B. Construction';
-    if (!d.constructionAreaSqft) d.constructionAreaSqft = 3600;
-    if (!d.constructionRateSqft) d.constructionRateSqft = 1800;
-    if (!d.constructionValuationVal) d.constructionValuationVal = 6480000;
+    if (!d.constructionDesc) d.constructionDesc = '';
+    if (!d.constructionAreaSqft) d.constructionAreaSqft = '';
+    if (!d.constructionRateSqft) d.constructionRateSqft = '';
+    if (!d.constructionValuationVal) d.constructionValuationVal = '';
     if (!d.stageOfConstruction) d.stageOfConstruction = '100%';
 
     if (!d.amenityCarParking) d.amenityCarParking = 'NA';
@@ -192,27 +192,24 @@ export default function PNBHousingHLLAP({
     if (!d.amenityOther) d.amenityOther = 'NA';
     if (!d.totalAmenitiesCharges) d.totalAmenitiesCharges = 'Nil';
 
-    if (!d.totalMarketValue) d.totalMarketValue = 11054500;
+    if (!d.totalMarketValue) d.totalMarketValue = '';
     if (!d.forcedSalePercent) d.forcedSalePercent = 80;
-    if (!d.forcedSaleValue) d.forcedSaleValue = 8843600;
+    if (!d.forcedSaleValue) d.forcedSaleValue = '';
     if (!d.approxRentals) d.approxRentals = 'NA';
 
     // 22 Boundaries & Remarks
-    if (!d.boundaryEastDeed) d.boundaryEastDeed = 'Part of this plot';
-    if (!d.boundaryWestDeed) d.boundaryWestDeed = 'Part of this plot';
-    if (!d.boundaryNorthDeed) d.boundaryNorthDeed = 'Road';
-    if (!d.boundarySouthDeed) d.boundarySouthDeed = 'Rev. Plot no-2477';
+    if (!d.boundaryEastDeed) d.boundaryEastDeed = '';
+    if (!d.boundaryWestDeed) d.boundaryWestDeed = '';
+    if (!d.boundaryNorthDeed) d.boundaryNorthDeed = '';
+    if (!d.boundarySouthDeed) d.boundarySouthDeed = '';
 
-    if (!d.boundaryEastSite) d.boundaryEastSite = 'Vacant Plot';
-    if (!d.boundaryWestSite) d.boundaryWestSite = 'Vacant Plot';
-    if (!d.boundaryNorthSite) d.boundaryNorthSite = '15-Feet wide Road';
-    if (!d.boundarySouthSite) d.boundarySouthSite = 'Vacant Plot';
+    if (!d.boundaryEastSite) d.boundaryEastSite = '';
+    if (!d.boundaryWestSite) d.boundaryWestSite = '';
+    if (!d.boundaryNorthSite) d.boundaryNorthSite = '';
+    if (!d.boundarySouthSite) d.boundarySouthSite = '';
 
-    if (!d.boundariesMatching) d.boundariesMatching = 'Yes(Boundary matching as per documents)';
-
-    if (!d.remarks) {
-      d.remarks = 'Subject Property is a proposed G+2 storied residential building having land extent of 1307sqft. having total measured BUA is 2658sqft sqft. Plan has been approved by Sarapanch Kalarahanga GP for G+2 residential building. Property located in a developed residential area of Bhubaneswar & all civic amenities are present within 1-2 Kms from the property. Property is coming under BDA limit & primary residential zone. GF & SF is used by two tenants for residential purpose. FF is occupied by the customer for residential purpose. Valuation has been done for land & least BUA of G+2 building only.\nNote- The property is coming under BDA limit & primary residential zone. But customer has submitted GP approved plan. It is sole discretion of PNB HFL to consider the GP approved BUA value or note.';
-    }
+    if (!d.boundariesMatching) d.boundariesMatching = 'Yes';
+    if (!d.remarks) d.remarks = '';
 
     if (!d.engineerName) d.engineerName = 'Er. Satyajit Mohanty';
 

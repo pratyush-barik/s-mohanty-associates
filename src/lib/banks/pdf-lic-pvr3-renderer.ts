@@ -32,13 +32,11 @@ export class PDFLICPVR3Renderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: letter, value: '', labelWidth: numW, valueWidth: 0, labelBold: true },
       { label, value: '', labelWidth: labelW, valueWidth: 0 },
-      { label: value || 'NA', value: '', labelWidth: valW, valueWidth: 0, labelBold: boldVal },
+      { label: '', value: value || 'NA', labelWidth: 0, valueWidth: valW, valueBold: boldVal },
     ]);
   }
 
   async drawContent(): Promise<void> {
-    this.addPage();
-
     // Top Header Banner
     this.drawCenteredTitle('PVR-3', 13, true);
     this.drawCenteredTitle('LIC HOUSING FINANCE LIMITED', 14, true);
@@ -83,13 +81,13 @@ export class PDFLICPVR3Renderer extends PDFBankRenderer {
     const bSubW = (CONTENT_W - 24) / 2;
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
-      { label: `North/Front: ${this.getF('boundaryNorth', '')}`, value: '', labelWidth: bSubW, valueWidth: 0 },
-      { label: `South/Rear: ${this.getF('boundarySouth', '')}`, value: '', labelWidth: bSubW, valueWidth: 0 },
+      { label: 'North/Front:', value: this.getF('boundaryNorth', 'NA'), labelWidth: 80, valueWidth: bSubW - 80 },
+      { label: 'South/Rear:', value: this.getF('boundarySouth', 'NA'), labelWidth: 80, valueWidth: bSubW - 80 },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
-      { label: `East/Left (side 1): ${this.getF('boundaryEast', '')}`, value: '', labelWidth: bSubW, valueWidth: 0 },
-      { label: `West/Right (side 2): ${this.getF('boundaryWest', '')}`, value: '', labelWidth: bSubW, valueWidth: 0 },
+      { label: 'East/Left (side 1):', value: this.getF('boundaryEast', 'NA'), labelWidth: 100, valueWidth: bSubW - 100 },
+      { label: 'West/Right (side 2):', value: this.getF('boundaryWest', 'NA'), labelWidth: 100, valueWidth: bSubW - 100 },
     ]);
 
     this.drawLICRow('', 'Extent', `Plot Area: ${this.getF('plotAreaSqft', '')} sqft | Appr BUA: ${this.getF('approvedBua', '')} sqft | Meas BUA: ${this.getF('measuredBua', '')} sqft`);
@@ -170,40 +168,40 @@ export class PDFLICPVR3Renderer extends PDFBankRenderer {
 
     // Land row
     this.drawKeyValueRow([
-      { label: 'Land', value: '', labelWidth: vColW[0], valueWidth: 0, labelBold: true },
-      { label: `${landArea} sqft`, value: '', labelWidth: vColW[1], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(landRate)}/-`, value: '', labelWidth: vColW[2], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(landVal)}/-`, value: '', labelWidth: vColW[3], valueWidth: 0, labelBold: true },
-      { label: `Rs.${formatIndianCurrency(landGuideRate)}/-`, value: '', labelWidth: vColW[4], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(landGuideVal)}/-`, value: '', labelWidth: vColW[5], valueWidth: 0 },
+      { label: '', value: 'Land', labelWidth: 0, valueWidth: vColW[0], valueBold: true },
+      { label: '', value: `${landArea} sqft`, labelWidth: 0, valueWidth: vColW[1] },
+      { label: '', value: `Rs.${formatIndianCurrency(landRate)}/-`, labelWidth: 0, valueWidth: vColW[2] },
+      { label: '', value: `Rs.${formatIndianCurrency(landVal)}/-`, labelWidth: 0, valueWidth: vColW[3], valueBold: true },
+      { label: '', value: `Rs.${formatIndianCurrency(landGuideRate)}/-`, labelWidth: 0, valueWidth: vColW[4] },
+      { label: '', value: `Rs.${formatIndianCurrency(landGuideVal)}/-`, labelWidth: 0, valueWidth: vColW[5] },
     ]);
 
     // Building GF
     this.drawKeyValueRow([
-      { label: 'Building GF', value: '', labelWidth: vColW[0], valueWidth: 0 },
-      { label: `${gfArea} sqft`, value: '', labelWidth: vColW[1], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(gfRate)}/-`, value: '', labelWidth: vColW[2], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(gfVal)}/-`, value: '', labelWidth: vColW[3], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(gfGuideRate)}/-`, value: '', labelWidth: vColW[4], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(gfGuideVal)}/-`, value: '', labelWidth: vColW[5], valueWidth: 0 },
+      { label: '', value: 'Building GF', labelWidth: 0, valueWidth: vColW[0] },
+      { label: '', value: `${gfArea} sqft`, labelWidth: 0, valueWidth: vColW[1] },
+      { label: '', value: `Rs.${formatIndianCurrency(gfRate)}/-`, labelWidth: 0, valueWidth: vColW[2] },
+      { label: '', value: `Rs.${formatIndianCurrency(gfVal)}/-`, labelWidth: 0, valueWidth: vColW[3] },
+      { label: '', value: `Rs.${formatIndianCurrency(gfGuideRate)}/-`, labelWidth: 0, valueWidth: vColW[4] },
+      { label: '', value: `Rs.${formatIndianCurrency(gfGuideVal)}/-`, labelWidth: 0, valueWidth: vColW[5] },
     ]);
 
     // Building FF
     this.drawKeyValueRow([
-      { label: 'Building FF', value: '', labelWidth: vColW[0], valueWidth: 0 },
-      { label: `${ffArea} sqft`, value: '', labelWidth: vColW[1], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(ffRate)}/-`, value: '', labelWidth: vColW[2], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(ffVal)}/-`, value: '', labelWidth: vColW[3], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(ffGuideRate)}/-`, value: '', labelWidth: vColW[4], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(ffGuideVal)}/-`, value: '', labelWidth: vColW[5], valueWidth: 0 },
+      { label: '', value: 'Building FF', labelWidth: 0, valueWidth: vColW[0] },
+      { label: '', value: `${ffArea} sqft`, labelWidth: 0, valueWidth: vColW[1] },
+      { label: '', value: `Rs.${formatIndianCurrency(ffRate)}/-`, labelWidth: 0, valueWidth: vColW[2] },
+      { label: '', value: `Rs.${formatIndianCurrency(ffVal)}/-`, labelWidth: 0, valueWidth: vColW[3] },
+      { label: '', value: `Rs.${formatIndianCurrency(ffGuideRate)}/-`, labelWidth: 0, valueWidth: vColW[4] },
+      { label: '', value: `Rs.${formatIndianCurrency(ffGuideVal)}/-`, labelWidth: 0, valueWidth: vColW[5] },
     ]);
 
     // Total Value
     this.drawKeyValueRow([
       { label: 'Total Value:', value: '', labelWidth: vColW[0] + vColW[1] + vColW[2], valueWidth: 0, labelBold: true, highlight: true },
-      { label: `Rs.${formatIndianCurrency(totalMV)}/-`, value: '', labelWidth: vColW[3], valueWidth: 0, labelBold: true, highlight: true },
-      { label: '', value: '', labelWidth: vColW[4], valueWidth: 0, highlight: true },
-      { label: `Rs.${formatIndianCurrency(totalGV)}/-`, value: '', labelWidth: vColW[5], valueWidth: 0, labelBold: true, highlight: true },
+      { label: '', value: `Rs.${formatIndianCurrency(totalMV)}/-`, labelWidth: 0, valueWidth: vColW[3], valueBold: true, highlight: true },
+      { label: '', value: '', labelWidth: 0, valueWidth: vColW[4], highlight: true },
+      { label: '', value: `Rs.${formatIndianCurrency(totalGV)}/-`, labelWidth: 0, valueWidth: vColW[5], valueBold: true, highlight: true },
     ]);
 
     this.drawLICRow('', 'State the source for arriving at Market Value', this.getF('marketValueSource', 'By analysis of rates of material, labour etc & from local market data of similar properties.'));
@@ -230,7 +228,7 @@ export class PDFLICPVR3Renderer extends PDFBankRenderer {
     ];
     statements.forEach((stmt) => {
       this.drawKeyValueRow([
-        { label: stmt, value: '', labelWidth: CONTENT_W, valueWidth: 0 },
+        { label: '', value: stmt, labelWidth: 0, valueWidth: CONTENT_W },
       ]);
     });
 
@@ -242,7 +240,7 @@ export class PDFLICPVR3Renderer extends PDFBankRenderer {
     this.drawSectionHeader('9. CERTIFICATE');
     const certText = `I declare that I am not associated with the builder or with any of his associate companies or with the borrower directly or indirectly in the past or in the present and this report has been prepared by me with highest professional integrity.\n\nI further declare that I have personally inspected the site and building on ${this.getF('inspectionDate', '13/12/2020')}.\n\nI further declare that all the above particulars and information given in this report are true to the best of my knowledge and belief.`;
     this.drawKeyValueRow([
-      { label: certText, value: '', labelWidth: CONTENT_W, valueWidth: 0 },
+      { label: '', value: certText, labelWidth: 0, valueWidth: CONTENT_W },
     ]);
 
     this.advanceCursor(12);

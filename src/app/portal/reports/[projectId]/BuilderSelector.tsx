@@ -123,7 +123,12 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'ICICI BANK::NPA': dynamic(() => import('./banks/icici/ICICIBankNPA')),
   'ICICI BANK': dynamic(() => import('./banks/icici/ICICIBankHLLAPBBG')),
 
-  // IDFC, IKF, Indian, IndusInd, ISFC, Jana
+  // IDBI, IDFC, IKF, Indian, IndusInd, ISFC, Jana
+  'IDBI BANK::BELOW 5CR': dynamic(() => import('./banks/idbi/IDBIBankBelow5CR')),
+  'IDBI BANK::ABOVE 5CR': dynamic(() => import('./banks/idbi/IDBIBankAbove5CR')),
+  'IDBI BANK::Land & Building': dynamic(() => import('./banks/idbi/IDBIBankBelow5CR')),
+  'IDBI BANK::Flat & Apartment': dynamic(() => import('./banks/idbi/IDBIBankAbove5CR')),
+  'IDBI BANK': dynamic(() => import('./banks/idbi/IDBIBankBelow5CR')),
   'IDFC FIRST BANK': dynamic(() => import('./banks/idfc/IDFCFirstBank')),
   'IKF FINANCE': dynamic(() => import('./banks/ikf/IKFFinance')),
   'INDIAN BANK': dynamic(() => import('./banks/indian-bank/IndianBank')),
@@ -163,12 +168,6 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'PUNJAB NATIONAL BANK': dynamic(() => import('./banks/punjab-national/PunjabNationalBank')),
   'PURPLE FINANCE': dynamic(() => import('./banks/purple/PurpleFinance')),
 
-  // IDBI Bank
-  'IDBI BANK::Land & Building': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
-  'IDBI BANK::Flat & Apartment': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
-  'IDBI BANK::BELOW 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
-  'IDBI BANK::ABOVE 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
-  'IDBI BANK': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
 
   // Direct Format Keys
   'BELOW 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),

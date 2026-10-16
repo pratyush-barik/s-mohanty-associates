@@ -34,7 +34,6 @@ export class PDFClixCapitalRenderer extends PDFBankRenderer {
   }
 
   async drawContent(): Promise<void> {
-    this.addPage();
     this.drawMainHeader('VALUATION REPORT');
 
     this.drawSectionHeader('1. REPORT TYPE');
@@ -214,7 +213,7 @@ export class PDFClixCapitalRenderer extends PDFBankRenderer {
       this.drawKeyValueRow([
         { label: dir.d, value: this.getF(dir.ana) ? 'NA' : this.getF(dir.app), labelWidth: 80, valueWidth: (CONTENT_W - 180) / 3 },
         { label: this.getF(dir.acna) ? 'NA' : this.getF(dir.act), value: this.getF(dir.dna) ? 'NA' : this.getF(dir.dev), labelWidth: (CONTENT_W - 180) / 3, valueWidth: (CONTENT_W - 180) / 3, labelBold: false },
-        { label: this.getF(dir.rna) ? 'NA' : this.getF(dir.rem), value: '', labelWidth: 100, valueWidth: 0, labelBold: false },
+        { label: '', value: this.getF(dir.rna) ? 'NA' : this.getF(dir.rem), labelWidth: 0, valueWidth: 100, labelBold: false },
       ]);
     }
 
@@ -230,7 +229,7 @@ export class PDFClixCapitalRenderer extends PDFBankRenderer {
         this.drawKeyValueRow([
           { label: row.floor || '', value: row.asPerDeedNA ? 'NA' : row.asPerDeed, labelWidth: 80, valueWidth: (CONTENT_W - 80) / 4 },
           { label: row.asPerSiteNA ? 'NA' : row.asPerSite, value: row.adoptedNA ? 'NA' : row.adopted, labelWidth: (CONTENT_W - 80) / 4, valueWidth: (CONTENT_W - 80) / 4, labelBold: false },
-          { label: row.usageNA ? 'NA' : row.usage, value: '', labelWidth: (CONTENT_W - 80) / 4, valueWidth: 0, labelBold: false },
+          { label: '', value: row.usageNA ? 'NA' : row.usage, labelWidth: 0, valueWidth: (CONTENT_W - 80) / 4, labelBold: false },
         ]);
       }
     }

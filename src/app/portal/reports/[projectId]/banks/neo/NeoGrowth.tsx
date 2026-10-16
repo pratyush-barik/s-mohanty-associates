@@ -74,67 +74,67 @@ export default function NeoGrowth({
     const p = (prefill || {}) as any;
 
     // Meta Header
-    if (!d.branchName) d.branchName = p.branch || 'Bhubaneswar';
-    if (!d.typeOfCase) d.typeOfCase = 'Plus – Secured';
+    if (!d.branchName) d.branchName = p.branch || '';
+    if (!d.typeOfCase) d.typeOfCase = '';
     if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty';
-    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '07.09.2024';
-    if (!d.caseRefNo) d.caseRefNo = projectCode || '133905';
+    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '';
+    if (!d.caseRefNo) d.caseRefNo = projectCode || '';
     if (!d.reportDate) d.reportDate = formatReportDate(new Date().toISOString());
     if (!d.contactPerson) {
       d.contactPerson = p.applicantName || p.contactName
-        ? `${p.applicantName || p.contactName}, Mob:- ${p.contactPhone || '8457807802'}`
-        : 'Paresh Chandra Bohidar, Mob:- 8457807802';
+        ? `${p.applicantName || p.contactName}${p.contactPhone ? ', Mob:- ' + p.contactPhone : ''}`
+        : '';
     }
 
     // 1-4 Basic Details
-    if (!d.applicantName) d.applicantName = p.applicantName || p.contactName || 'BHH MARKETING PVT LTD';
-    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || 'Single storied Residential building';
-    if (!d.currentUsage) d.currentUsage = 'Vacant';
-    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || 'Khata No-1091/995, Plot No-3978/3774(AC.0.022.5Decs), Plot No- 3979/3775 (AC.0.012.5Decs), Total land area=AC.0.035Decs, Homestead, Mouza- Biranarasinghpur, PS-Puri Sadar, Tahasil-Puri, Dist-Puri, Odisha, Pin-752010';
-    if (!d.addressAsPerDoc) d.addressAsPerDoc = p.propertyAddress || 'Khata No-1091/995, Plot No-3978/3774(AC.0.022.5Decs), Plot No- 3979/3775 (AC.0.012.5Decs), Total land area=AC.0.035Decs, Homestead, Mouza- Biranarasinghpur, PS-Puri Sadar, Tahasil-Puri, Dist-Puri, Odisha, Pin-752010';
+    if (!d.applicantName) d.applicantName = p.applicantName || p.contactName || '';
+    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || '';
+    if (!d.currentUsage) d.currentUsage = '';
+    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || '';
+    if (!d.addressAsPerDoc) d.addressAsPerDoc = p.propertyAddress || '';
     if (!d.priorValuation) d.priorValuation = 'No';
 
     // 5-8 Locality Details
-    if (!d.localityType) d.localityType = 'Residential';
-    if (!d.localityClass) d.localityClass = 'Middle Class';
-    if (!d.siteStatus) d.siteStatus = 'Developed';
-    if (!d.proximityAmenities) d.proximityAmenities = 'Within 1-2 Kms';
-    if (!d.railwayStation) d.railwayStation = '2Kms (Janakadeipur Railway station)';
-    if (!d.busStop) d.busStop = '500 Mtrs (Narasinghpur Square Bus Stop)';
-    if (!d.landmark) d.landmark = 'Near Chandanpur CHC Govt. Hospital';
-    if (!d.distanceCityCenter) d.distanceCityCenter = '10Kms from Puri center';
-    if (!d.approachRoad) d.approachRoad = '15-Feet wide Road';
+    if (!d.localityType) d.localityType = '';
+    if (!d.localityClass) d.localityClass = '';
+    if (!d.siteStatus) d.siteStatus = '';
+    if (!d.proximityAmenities) d.proximityAmenities = '';
+    if (!d.railwayStation) d.railwayStation = '';
+    if (!d.busStop) d.busStop = '';
+    if (!d.landmark) d.landmark = p.nearestLandmark || '';
+    if (!d.distanceCityCenter) d.distanceCityCenter = '';
+    if (!d.approachRoad) d.approachRoad = '';
 
     // 9-13 Property Details
-    if (!d.occupantStatus) d.occupantStatus = 'Vacant';
-    if (!d.occupantName) d.occupantName = 'Vacant';
-    if (!d.occupantRelation) d.occupantRelation = 'Self';
-    if (!d.propertyDemarcation) d.propertyDemarcation = 'Yes';
+    if (!d.occupantStatus) d.occupantStatus = '';
+    if (!d.occupantName) d.occupantName = '';
+    if (!d.occupantRelation) d.occupantRelation = '';
+    if (!d.propertyDemarcation) d.propertyDemarcation = '';
 
-    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = 'Paresh Chandra Bohidar, Mob:- 8457807802';
-    if (!d.structureType) d.structureType = 'RCC framed structure';
-    if (!d.landPlotAreaDesc) d.landPlotAreaDesc = '1524sqft';
+    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = '';
+    if (!d.structureType) d.structureType = '';
+    if (!d.landPlotAreaDesc) d.landPlotAreaDesc = '';
     if (!d.noOfBlocks) d.noOfBlocks = 'NA';
     if (!d.noOfUnits) d.noOfUnits = 'NA';
-    if (!d.noOfFloors) d.noOfFloors = '1 (GF)';
+    if (!d.noOfFloors) d.noOfFloors = '';
     if (!d.noOfLifts) d.noOfLifts = 'Nil';
 
     if (!d.unitFloorNo) d.unitFloorNo = 'NA';
-    if (!d.unitRooms) d.unitRooms = 'GF-(3-Bed Room,2-Toilet,1-Kitchen)';
-    if (!d.unitBuaMeasured) d.unitBuaMeasured = '1315sqft (GF) Actual\n2X1306sqft (G+1) Approval';
-    if (!d.unitCarpetArea) d.unitCarpetArea = '1110Sqft (Actual)';
-    if (!d.landFreeholdLeasehold) d.landFreeholdLeasehold = 'Freehold';
+    if (!d.unitRooms) d.unitRooms = '';
+    if (!d.unitBuaMeasured) d.unitBuaMeasured = '';
+    if (!d.unitCarpetArea) d.unitCarpetArea = '';
+    if (!d.landFreeholdLeasehold) d.landFreeholdLeasehold = '';
 
-    if (!d.qualityExteriors) d.qualityExteriors = 'Good';
-    if (!d.qualityInteriors) d.qualityInteriors = 'Good';
-    if (!d.ageOfProperty) d.ageOfProperty = '1-Years';
-    if (!d.residualLife) d.residualLife = '59-Years';
+    if (!d.qualityExteriors) d.qualityExteriors = '';
+    if (!d.qualityInteriors) d.qualityInteriors = '';
+    if (!d.ageOfProperty) d.ageOfProperty = '';
+    if (!d.residualLife) d.residualLife = '';
 
     // 14-20 Sanctions & Setbacks
-    if (!d.sanctionApprovalNo) d.sanctionApprovalNo = 'Plan has been approved by Sarapanch Biranarasinghpur GP, dated-24/01/2023 for G+1 storied residential building.';
-    if (!d.ownershipType) d.ownershipType = 'Leasehold';
-    if (!d.documentsVerified) d.documentsVerified = 'Copy of Sale deed, ROR, Approved plan';
-    if (!d.municipalLimits) d.municipalLimits = 'Yes (Within GP limit)';
+    if (!d.sanctionApprovalNo) d.sanctionApprovalNo = '';
+    if (!d.ownershipType) d.ownershipType = '';
+    if (!d.documentsVerified) d.documentsVerified = '';
+    if (!d.municipalLimits) d.municipalLimits = '';
     if (!d.permissibleUsageMasterPlan) d.permissibleUsageMasterPlan = 'Residential';
 
     // Setbacks
@@ -161,27 +161,27 @@ export default function NeoGrowth({
     // Floor Wise Area
     if (!d.permBasement) d.permBasement = 'NA';
     if (!d.permStilt) d.permStilt = 'NA';
-    if (!d.permGround) d.permGround = '1306Sqft';
-    if (!d.permFirst) d.permFirst = '1306Sqft';
+    if (!d.permGround) d.permGround = '';
+    if (!d.permFirst) d.permFirst = '';
     if (!d.permSecond) d.permSecond = 'Nil';
     if (!d.permThird) d.permThird = 'Nil';
 
     if (!d.constBasement) d.constBasement = 'NA';
     if (!d.constStilt) d.constStilt = 'NA';
-    if (!d.constGround) d.constGround = '1315Sqft';
-    if (!d.constFirst) d.constFirst = 'NA';
-    if (!d.constSecond) d.constSecond = 'NA';
+    if (!d.constGround) d.constGround = '';
+    if (!d.constFirst) d.constFirst = '';
+    if (!d.constSecond) d.constSecond = '';
     if (!d.constThird) d.constThird = 'Nil';
 
     // 21 Valuation
-    if (!d.landAreaSqft) d.landAreaSqft = 1524;
-    if (!d.landRateSqft) d.landRateSqft = 1200;
-    if (!d.landValuationVal) d.landValuationVal = 1828800;
+    if (!d.landAreaSqft) d.landAreaSqft = '';
+    if (!d.landRateSqft) d.landRateSqft = '';
+    if (!d.landValuationVal) d.landValuationVal = '';
 
-    if (!d.constructionDesc) d.constructionDesc = 'Construction (GF) Approved';
-    if (!d.constructionAreaSqft) d.constructionAreaSqft = 1306;
-    if (!d.constructionRateSqft) d.constructionRateSqft = 2000;
-    if (!d.constructionValuationVal) d.constructionValuationVal = 2612000;
+    if (!d.constructionDesc) d.constructionDesc = '';
+    if (!d.constructionAreaSqft) d.constructionAreaSqft = '';
+    if (!d.constructionRateSqft) d.constructionRateSqft = '';
+    if (!d.constructionValuationVal) d.constructionValuationVal = '';
     if (!d.stageOfConstruction) d.stageOfConstruction = '100%';
 
     if (!d.amenityCarParking) d.amenityCarParking = 'NA';
@@ -192,30 +192,28 @@ export default function NeoGrowth({
     if (!d.amenityOther) d.amenityOther = 'NA';
     if (!d.totalAmenitiesCharges) d.totalAmenitiesCharges = 'Nil';
 
-    if (!d.totalMarketValue) d.totalMarketValue = 4440800;
+    if (!d.totalMarketValue) d.totalMarketValue = '';
     if (!d.forcedSalePercent) d.forcedSalePercent = 80;
-    if (!d.forcedSaleValue) d.forcedSaleValue = 3552640;
+    if (!d.forcedSaleValue) d.forcedSaleValue = '';
     if (!d.approxRentals) d.approxRentals = 'NA';
 
     // 22-23 Boundaries & Risk of Demolition
-    if (!d.boundaryEastDeed) d.boundaryEastDeed = 'Road';
-    if (!d.boundaryWestDeed) d.boundaryWestDeed = 'Laxmidhar Dixit';
-    if (!d.boundaryNorthDeed) d.boundaryNorthDeed = 'Nalini Ranjan Mohapatra';
-    if (!d.boundarySouthDeed) d.boundarySouthDeed = 'Nalini Ranjan Mohapatra';
+    if (!d.boundaryEastDeed) d.boundaryEastDeed = '';
+    if (!d.boundaryWestDeed) d.boundaryWestDeed = '';
+    if (!d.boundaryNorthDeed) d.boundaryNorthDeed = '';
+    if (!d.boundarySouthDeed) d.boundarySouthDeed = '';
 
-    if (!d.boundaryEastSite) d.boundaryEastSite = '15 feet wide Road';
-    if (!d.boundaryWestSite) d.boundaryWestSite = 'Land of Laxmidhar Dixit';
-    if (!d.boundaryNorthSite) d.boundaryNorthSite = 'Land of Nalini Ranjan Mohapatra';
-    if (!d.boundarySouthSite) d.boundarySouthSite = 'Under constructed building';
+    if (!d.boundaryEastSite) d.boundaryEastSite = '';
+    if (!d.boundaryWestSite) d.boundaryWestSite = '';
+    if (!d.boundaryNorthSite) d.boundaryNorthSite = '';
+    if (!d.boundarySouthSite) d.boundarySouthSite = '';
 
-    if (!d.boundariesMatching) d.boundariesMatching = 'Yes (Boundary matching as per documents)';
+    if (!d.boundariesMatching) d.boundariesMatching = 'Yes';
     if (!d.riskOfDemolition) d.riskOfDemolition = 'Nil';
 
-    if (!d.remarks) {
-      d.remarks = 'Subject property is a single storied residential building land extent of 1524sqft, having measured BUA 1315sqft. Plan has been approved by Sarapanch Biranarasinghpur GP, dated-24/01/2023 for G+1 storied residential building. All civic amenities are within 1-2Kms & about 10Kms from Puri city centre. This property is identified by the customer. The building is vacant at the time of technical visit. Valuation has been done for land & approved BUA of GF only.';
-    }
+    if (!d.remarks) d.remarks = '';
 
-    if (!d.engineerName) d.engineerName = 'Satyajit Mohanty';
+    if (!d.engineerName) d.engineerName = 'Er. Satyajit Mohanty';
 
     // Attachments
     if (!d.documentImages) d.documentImages = [];

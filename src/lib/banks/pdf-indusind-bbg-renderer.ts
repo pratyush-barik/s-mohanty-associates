@@ -70,12 +70,12 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: String(num), value: '', labelWidth: numW, valueWidth: 0, labelBold: true },
       { label, value: '', labelWidth: labelW, valueWidth: 0 },
-      { label: value || 'NA', value: '', labelWidth: valW, valueWidth: 0 },
+      { label: '', value: value || 'NA', labelWidth: 0, valueWidth: valW },
     ]);
   }
 
   async drawContent(): Promise<void> {
-    this.addPage();
+    // NOTE: init() already adds page 1. Do NOT call this.addPage() here.
 
     // Top Main Title
     this.drawCenteredTitle('VALUATION REPORT', 14, true);
@@ -137,7 +137,7 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
       this.drawKeyValueRow([
         { label: i === 0 ? '4' : '', value: '', labelWidth: numW, valueWidth: 0, labelBold: i === 0 },
         { label: i === 0 ? 'Proximity to civic amenities' : '', value: '', labelWidth: labelW, valueWidth: 0 },
-        { label: `: ${amenities[i]}`, value: '', labelWidth: valW, valueWidth: 0 },
+        { label: '', value: `: ${amenities[i]}`, labelWidth: 0, valueWidth: valW },
       ]);
     }
 
@@ -149,27 +149,27 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: '7', value: '', labelWidth: numW, valueWidth: 0, labelBold: true },
       { label: 'Boundaries as per document', value: '', labelWidth: labelW, valueWidth: 0 },
-      { label: `North: ${this.getF('indusBBGBoundaryDocNorth', '')}`, value: '', labelWidth: bSubW, valueWidth: 0, highlight: true },
-      { label: `South: ${this.getF('indusBBGBoundaryDocSouth', '')}`, value: '', labelWidth: bSubW, valueWidth: 0, highlight: true },
+      { label: '', value: `North: ${this.getF('indusBBGBoundaryDocNorth', '')}`, labelWidth: 0, valueWidth: bSubW, highlight: true },
+      { label: '', value: `South: ${this.getF('indusBBGBoundaryDocSouth', '')}`, labelWidth: 0, valueWidth: bSubW, highlight: true },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: numW, valueWidth: 0 },
       { label: '', value: '', labelWidth: labelW, valueWidth: 0 },
-      { label: `East: ${this.getF('indusBBGBoundaryDocEast', '')}`, value: '', labelWidth: bSubW, valueWidth: 0, highlight: true },
-      { label: `West: ${this.getF('indusBBGBoundaryDocWest', '')}`, value: '', labelWidth: bSubW, valueWidth: 0, highlight: true },
+      { label: '', value: `East: ${this.getF('indusBBGBoundaryDocEast', '')}`, labelWidth: 0, valueWidth: bSubW, highlight: true },
+      { label: '', value: `West: ${this.getF('indusBBGBoundaryDocWest', '')}`, labelWidth: 0, valueWidth: bSubW, highlight: true },
     ]);
 
     this.drawKeyValueRow([
       { label: '8', value: '', labelWidth: numW, valueWidth: 0, labelBold: true },
       { label: 'Boundaries as per site', value: '', labelWidth: labelW, valueWidth: 0 },
-      { label: `North: ${this.getF('indusBBGBoundarySiteNorth', '')}`, value: '', labelWidth: bSubW, valueWidth: 0, highlight: true },
-      { label: `South: ${this.getF('indusBBGBoundarySiteSouth', '')}`, value: '', labelWidth: bSubW, valueWidth: 0, highlight: true },
+      { label: '', value: `North: ${this.getF('indusBBGBoundarySiteNorth', '')}`, labelWidth: 0, valueWidth: bSubW, highlight: true },
+      { label: '', value: `South: ${this.getF('indusBBGBoundarySiteSouth', '')}`, labelWidth: 0, valueWidth: bSubW, highlight: true },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: numW, valueWidth: 0 },
       { label: '', value: '', labelWidth: labelW, valueWidth: 0 },
-      { label: `East: ${this.getF('indusBBGBoundarySiteEast', '')}`, value: '', labelWidth: bSubW, valueWidth: 0, highlight: true },
-      { label: `West: ${this.getF('indusBBGBoundarySiteWest', '')}`, value: '', labelWidth: bSubW, valueWidth: 0, highlight: true },
+      { label: '', value: `East: ${this.getF('indusBBGBoundarySiteEast', '')}`, labelWidth: 0, valueWidth: bSubW, highlight: true },
+      { label: '', value: `West: ${this.getF('indusBBGBoundarySiteWest', '')}`, labelWidth: 0, valueWidth: bSubW, highlight: true },
     ]);
 
     this.drawBBGRow(9, 'Boundaries Matching (Yes/No)', this.getF('indusBBGBoundariesMatching', 'Yes'));
@@ -195,7 +195,7 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
         { label: i === 0 ? '3' : '', value: '', labelWidth: numW, valueWidth: 0, labelBold: i === 0 },
         { label: i === 0 ? 'Type of usage of entire property' : '', value: '', labelWidth: labelW, valueWidth: 0 },
         { label: floorList[i].name, value: '', labelWidth: 70, valueWidth: 0, highlight: true },
-        { label: `: ${this.getF(floorList[i].usageKey, '')}`, value: '', labelWidth: valW - 70, valueWidth: 0 },
+        { label: '', value: `: ${this.getF(floorList[i].usageKey, '')}`, labelWidth: 0, valueWidth: valW - 70 },
       ]);
     }
 
@@ -204,7 +204,7 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
         { label: i === 0 ? '4' : '', value: '', labelWidth: numW, valueWidth: 0, labelBold: i === 0 },
         { label: i === 0 ? 'Accommodation details' : '', value: '', labelWidth: labelW, valueWidth: 0 },
         { label: floorList[i].name, value: '', labelWidth: 70, valueWidth: 0, highlight: true },
-        { label: `: ${this.getF(floorList[i].accKey, '')}`, value: '', labelWidth: valW - 70, valueWidth: 0 },
+        { label: '', value: `: ${this.getF(floorList[i].accKey, '')}`, labelWidth: 0, valueWidth: valW - 70 },
       ]);
     }
 
@@ -226,14 +226,14 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
         { label: i === 0 ? '9' : '', value: '', labelWidth: numW, valueWidth: 0, labelBold: i === 0 },
         { label: i === 0 ? 'Area of property (permitted as per approved plan/building byelaws)' : '', value: '', labelWidth: labelW, valueWidth: 0 },
         { label: permFloors[i].name, value: '', labelWidth: 70, valueWidth: 0, highlight: true },
-        { label: `: ${this.getF(permFloors[i].key, '0.00 sqft')}`, value: '', labelWidth: valW - 70, valueWidth: 0 },
+        { label: '', value: `: ${this.getF(permFloors[i].key, '0.00 sqft')}`, labelWidth: 0, valueWidth: valW - 70 },
       ]);
     }
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: numW, valueWidth: 0 },
       { label: '', value: '', labelWidth: labelW, valueWidth: 0 },
       { label: 'Total', value: '', labelWidth: 70, valueWidth: 0, labelBold: true, highlight: true },
-      { label: `: ${this.getF('indusBBGPerm_Total', '0.00 sqft')}`, value: '', labelWidth: valW - 70, valueWidth: 0, labelBold: true },
+      { label: '', value: `: ${this.getF('indusBBGPerm_Total', '0.00 sqft')}`, labelWidth: 0, valueWidth: valW - 70, valueBold: true },
     ]);
 
     this.drawBBGRow(10, 'Area as per sale Deed/Sale agreement', this.getF('indusBBGAreaSaleDeed', ''));
@@ -268,12 +268,12 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
     for (const dr of devRows) {
       this.drawKeyValueRow([
         { label: dr.floor, value: '', labelWidth: devH1, valueWidth: 0, labelBold: true },
-        { label: dr.actual || '-', value: '', labelWidth: devColW, valueWidth: 0 },
-        { label: dr.actPct || '-', value: '', labelWidth: devColW, valueWidth: 0 },
-        { label: dr.perm || '-', value: '', labelWidth: devColW, valueWidth: 0 },
-        { label: dr.permPct || '-', value: '', labelWidth: devColW, valueWidth: 0 },
-        { label: dr.excess || '-', value: '', labelWidth: devColW, valueWidth: 0 },
-        { label: dr.excessPct || '-', value: '', labelWidth: devColW, valueWidth: 0 },
+        { label: '', value: dr.actual || '-', labelWidth: 0, valueWidth: devColW },
+        { label: '', value: dr.actPct || '-', labelWidth: 0, valueWidth: devColW },
+        { label: '', value: dr.perm || '-', labelWidth: 0, valueWidth: devColW },
+        { label: '', value: dr.permPct || '-', labelWidth: 0, valueWidth: devColW },
+        { label: '', value: dr.excess || '-', labelWidth: 0, valueWidth: devColW },
+        { label: '', value: dr.excessPct || '-', labelWidth: 0, valueWidth: devColW },
       ]);
     }
 
@@ -325,7 +325,7 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
         { label: i === 0 ? 'A.4' : '', value: '', labelWidth: numW, valueWidth: 0, labelBold: i === 0 },
         { label: i === 0 ? 'Common areas remarks' : '', value: '', labelWidth: labelW, valueWidth: 0 },
         { label: caList[i].name, value: '', labelWidth: 90, valueWidth: 0, highlight: true },
-        { label: `: ${this.getF(caList[i].key, 'Good')}`, value: '', labelWidth: valW - 90, valueWidth: 0 },
+        { label: '', value: `: ${this.getF(caList[i].key, 'Good')}`, labelWidth: 0, valueWidth: valW - 90 },
       ]);
     }
 
@@ -361,8 +361,8 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: numW, valueWidth: 0 },
       { label: '', value: '', labelWidth: labelW, valueWidth: 0 },
-      { label: this.getF('indusBBGAgeYrs', '10'), value: '', labelWidth: ageHalfW, valueWidth: 0 },
-      { label: this.getF('indusBBGFutureLifeYrs', '50'), value: '', labelWidth: ageHalfW, valueWidth: 0 },
+      { label: '', value: this.getF('indusBBGAgeYrs', ''), labelWidth: 0, valueWidth: ageHalfW },
+      { label: '', value: this.getF('indusBBGFutureLifeYrs', ''), labelWidth: 0, valueWidth: ageHalfW },
     ]);
 
     this.drawBBGRow(4, 'Present condition of property and structure', this.getF('indusBBGPresentCondition', 'Good & Sound'));
@@ -399,9 +399,9 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 20, valueWidth: 0 },
-      { label: this.getF('indusBBGLandAreaSqft', '0.00'), value: '', labelWidth: lbCol1W - 20, valueWidth: 0 },
-      { label: this.getF('indusBBGLandRate', '0.00'), value: '', labelWidth: lbCol2W, valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(parseFloat(this.getF('indusBBGLandValue', '0')) || 0)}/-`, value: '', labelWidth: lbCol3W, valueWidth: 0, labelBold: true },
+      { label: '', value: this.getF('indusBBGLandAreaSqft', '0.00'), labelWidth: 0, valueWidth: lbCol1W - 20 },
+      { label: '', value: this.getF('indusBBGLandRate', '0.00'), labelWidth: 0, valueWidth: lbCol2W },
+      { label: '', value: `Rs.${formatIndianCurrency(parseFloat(this.getF('indusBBGLandValue', '0')) || 0)}/-`, labelWidth: 0, valueWidth: lbCol3W, valueBold: true },
     ]);
 
     const b4W = (CONTENT_W - 20) / 4;
@@ -414,22 +414,22 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 20, valueWidth: 0 },
-      { label: this.getF('indusBBGBuiltUpAreaSqft', '0.00'), value: '', labelWidth: b4W, valueWidth: 0 },
-      { label: this.getF('indusBBGBldgRateDep', '0.00'), value: '', labelWidth: b4W, valueWidth: 0 },
-      { label: this.getF('indusBBGLessRepairs', '0.00'), value: '', labelWidth: b4W, valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(parseFloat(this.getF('indusBBGBuildingValue', '0')) || 0)}/-`, value: '', labelWidth: b4W, valueWidth: 0, labelBold: true },
+      { label: '', value: this.getF('indusBBGBuiltUpAreaSqft', '0.00'), labelWidth: 0, valueWidth: b4W },
+      { label: '', value: this.getF('indusBBGBldgRateDep', '0.00'), labelWidth: 0, valueWidth: b4W },
+      { label: '', value: this.getF('indusBBGLessRepairs', '0.00'), labelWidth: 0, valueWidth: b4W },
+      { label: '', value: `Rs.${formatIndianCurrency(parseFloat(this.getF('indusBBGBuildingValue', '0')) || 0)}/-`, labelWidth: 0, valueWidth: b4W, valueBold: true },
     ]);
 
     const totalVal = (parseFloat(this.getF('indusBBGLandValue', '0')) || 0) + (parseFloat(this.getF('indusBBGBuildingValue', '0')) || 0);
     this.drawKeyValueRow([
       { label: 'C', value: '', labelWidth: 20, valueWidth: 0, labelBold: true },
       { label: 'Total value of property (A + B ) (In Rs.)', value: '', labelWidth: 220, valueWidth: 0, labelBold: true },
-      { label: `Rs.${formatIndianCurrency(totalVal)}/-`, value: '', labelWidth: CONTENT_W - 240, valueWidth: 0, labelBold: true, highlight: true },
+      { label: '', value: `Rs.${formatIndianCurrency(totalVal)}/-`, labelWidth: 0, valueWidth: CONTENT_W - 240, valueBold: true, highlight: true },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 20, valueWidth: 0 },
       { label: 'Valuation in words :', value: '', labelWidth: 150, valueWidth: 0, labelBold: true },
-      { label: `(${rupeesInWords(totalVal)})`, value: '', labelWidth: CONTENT_W - 170, valueWidth: 0, labelBold: true },
+      { label: '', value: `(${rupeesInWords(totalVal)})`, labelWidth: 0, valueWidth: CONTENT_W - 170, valueBold: true },
     ]);
 
     // (II) For Flat/Shop/Floor
@@ -443,9 +443,9 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
       { label: 'Present value', value: '', labelWidth: f3W, valueWidth: 0, labelBold: true, highlight: true },
     ]);
     this.drawKeyValueRow([
-      { label: `${this.getF('indusBBGFlatBUA', '0.00')} Sq. ft`, value: '', labelWidth: f3W, valueWidth: 0 },
-      { label: `Rs. ${this.getF('indusBBGFlatRate', '0.00')}`, value: '', labelWidth: f3W, valueWidth: 0 },
-      { label: `Rs. ${formatIndianCurrency(parseFloat(this.getF('indusBBGFlatPresentValue', '0')) || 0)}`, value: '', labelWidth: f3W, valueWidth: 0, labelBold: true },
+      { label: '', value: `${this.getF('indusBBGFlatBUA', '0.00')} Sq. ft`, labelWidth: 0, valueWidth: f3W },
+      { label: '', value: `Rs. ${this.getF('indusBBGFlatRate', '0.00')}`, labelWidth: 0, valueWidth: f3W },
+      { label: '', value: `Rs. ${formatIndianCurrency(parseFloat(this.getF('indusBBGFlatPresentValue', '0')) || 0)}`, labelWidth: 0, valueWidth: f3W, valueBold: true },
     ]);
 
     this.drawBBGRow(11, 'Construction estimate given by the customer', this.getF('indusBBGConstructionEstimate', ''));

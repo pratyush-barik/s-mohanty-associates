@@ -111,14 +111,14 @@ export default function IndusIndBBG({
       indusBBGPlotDemarcated: raw.indusBBGPlotDemarcated || 'Yes',
 
       // Boundaries
-      indusBBGBoundaryDocNorth: raw.indusBBGBoundaryDocNorth || 'Road',
-      indusBBGBoundaryDocSouth: raw.indusBBGBoundaryDocSouth || 'Plot No. 102',
-      indusBBGBoundaryDocEast: raw.indusBBGBoundaryDocEast || 'Plot No. 103',
-      indusBBGBoundaryDocWest: raw.indusBBGBoundaryDocWest || 'Plot No. 104',
-      indusBBGBoundarySiteNorth: raw.indusBBGBoundarySiteNorth || 'Road',
-      indusBBGBoundarySiteSouth: raw.indusBBGBoundarySiteSouth || 'Building (Plot 102)',
-      indusBBGBoundarySiteEast: raw.indusBBGBoundarySiteEast || 'Building (Plot 103)',
-      indusBBGBoundarySiteWest: raw.indusBBGBoundarySiteWest || 'Open Land (Plot 104)',
+      indusBBGBoundaryDocNorth: raw.indusBBGBoundaryDocNorth || prefill?.property?.boundaries?.north?.asPerDeed || prefill?.property?.northBoundary || '',
+      indusBBGBoundaryDocSouth: raw.indusBBGBoundaryDocSouth || prefill?.property?.boundaries?.south?.asPerDeed || prefill?.property?.southBoundary || '',
+      indusBBGBoundaryDocEast: raw.indusBBGBoundaryDocEast || prefill?.property?.boundaries?.east?.asPerDeed || prefill?.property?.eastBoundary || '',
+      indusBBGBoundaryDocWest: raw.indusBBGBoundaryDocWest || prefill?.property?.boundaries?.west?.asPerDeed || prefill?.property?.westBoundary || '',
+      indusBBGBoundarySiteNorth: raw.indusBBGBoundarySiteNorth || prefill?.property?.boundaries?.north?.asPerSite || prefill?.property?.northBoundary || '',
+      indusBBGBoundarySiteSouth: raw.indusBBGBoundarySiteSouth || prefill?.property?.boundaries?.south?.asPerSite || prefill?.property?.southBoundary || '',
+      indusBBGBoundarySiteEast: raw.indusBBGBoundarySiteEast || prefill?.property?.boundaries?.east?.asPerSite || prefill?.property?.eastBoundary || '',
+      indusBBGBoundarySiteWest: raw.indusBBGBoundarySiteWest || prefill?.property?.boundaries?.west?.asPerSite || prefill?.property?.westBoundary || '',
       indusBBGBoundariesMatching: raw.indusBBGBoundariesMatching || 'Yes',
       indusBBGPropertyIdentified: raw.indusBBGPropertyIdentified || 'Boundaries matching as per document',
 
@@ -134,24 +134,24 @@ export default function IndusIndBBG({
       indusBBGAcc_FF: raw.indusBBGAcc_FF || 'Rooms, Pantry, Bathrooms',
       indusBBGAcc_SF: raw.indusBBGAcc_SF || 'Rooms, Bathrooms',
       indusBBGAdditionalAmenities: raw.indusBBGAdditionalAmenities || 'Power Backup, Lift, CCTV',
-      indusBBGAreaActual: raw.indusBBGAreaActual || '1500.00 sqft',
-      indusBBGCarpetArea: raw.indusBBGCarpetArea || '1200.00 sqft',
-      indusBBGBuiltUpSaleableArea: raw.indusBBGBuiltUpSaleableArea || '1800.00 sqft',
+      indusBBGAreaActual: raw.indusBBGAreaActual || (prefill?.property?.plotArea ? `${prefill.property.plotArea} sqft` : ''),
+      indusBBGCarpetArea: raw.indusBBGCarpetArea || '',
+      indusBBGBuiltUpSaleableArea: raw.indusBBGBuiltUpSaleableArea || '',
 
       indusBBGPerm_BF: raw.indusBBGPerm_BF || '0.00',
-      indusBBGPerm_GF: raw.indusBBGPerm_GF || '600.00',
-      indusBBGPerm_FF: raw.indusBBGPerm_FF || '600.00',
-      indusBBGPerm_SF: raw.indusBBGPerm_SF || '600.00',
+      indusBBGPerm_GF: raw.indusBBGPerm_GF || '0.00',
+      indusBBGPerm_FF: raw.indusBBGPerm_FF || '0.00',
+      indusBBGPerm_SF: raw.indusBBGPerm_SF || '0.00',
       indusBBGPerm_TF: raw.indusBBGPerm_TF || '0.00',
 
-      indusBBGAreaSaleDeed: raw.indusBBGAreaSaleDeed || '1500.00 sqft',
+      indusBBGAreaSaleDeed: raw.indusBBGAreaSaleDeed || (prefill?.property?.plotArea ? `${prefill.property.plotArea} sqft` : ''),
       indusBBGAdherenceSanctionPlan: raw.indusBBGAdherenceSanctionPlan || 'Adhered with minor internal deviations',
 
       indusBBGDeviationRows: raw.indusBBGDeviationRows || [
         { floor: 'BF', actual: '0.00', actPct: '0%', perm: '0.00', permPct: '0%', excess: '0.00', excessPct: '0%' },
-        { floor: 'GF', actual: '650.00', actPct: '36%', perm: '600.00', permPct: '33%', excess: '50.00', excessPct: '8.33%' },
-        { floor: 'FF', actual: '650.00', actPct: '36%', perm: '600.00', permPct: '33%', excess: '50.00', excessPct: '8.33%' },
-        { floor: 'SF', actual: '600.00', actPct: '33%', perm: '600.00', permPct: '33%', excess: '0.00', excessPct: '0%' },
+        { floor: 'GF', actual: '0.00', actPct: '0%', perm: '0.00', permPct: '0%', excess: '0.00', excessPct: '0%' },
+        { floor: 'FF', actual: '0.00', actPct: '0%', perm: '0.00', permPct: '0%', excess: '0.00', excessPct: '0%' },
+        { floor: 'SF', actual: '0.00', actPct: '0%', perm: '0.00', permPct: '0%', excess: '0.00', excessPct: '0%' },
         { floor: 'TF', actual: '0.00', actPct: '0%', perm: '0.00', permPct: '0%', excess: '0.00', excessPct: '0%' },
       ],
       indusBBGRiskDemolition: raw.indusBBGRiskDemolition || 'Low',
@@ -194,21 +194,21 @@ export default function IndusIndBBG({
 
       // Section G: Valuation
       indusBBGValDrawingsApprovals: raw.indusBBGValDrawingsApprovals || 'Approved by Local Planning Authority',
-      indusBBGValAreaConsidered: raw.indusBBGValAreaConsidered || '1500.00 sqft',
-      indusBBGAgeYrs: raw.indusBBGAgeYrs || '10',
-      indusBBGFutureLifeYrs: raw.indusBBGFutureLifeYrs || '50',
+      indusBBGValAreaConsidered: raw.indusBBGValAreaConsidered || (prefill?.property?.plotArea ? `${prefill.property.plotArea} sqft` : ''),
+      indusBBGAgeYrs: raw.indusBBGAgeYrs || '',
+      indusBBGFutureLifeYrs: raw.indusBBGFutureLifeYrs || '',
       indusBBGPresentCondition: raw.indusBBGPresentCondition || 'Good & Habitable',
       indusBBGCommentsSpecs: raw.indusBBGCommentsSpecs || 'All civic amenities and motorable access road available',
-      indusBBGMarketRatesVicinity: raw.indusBBGMarketRatesVicinity || 'Rs. 4,500/- to Rs. 5,500/- per sqft',
+      indusBBGMarketRatesVicinity: raw.indusBBGMarketRatesVicinity || '',
       indusBBGInquiriesFrom: raw.indusBBGInquiriesFrom || 'Local Property Consultants & Direct Market Verification',
       indusBBGValRemarks: raw.indusBBGValRemarks || 'Valuation reflects Fair Market Value as on inspection date',
-      indusBBGGovtGuidelineValue: raw.indusBBGGovtGuidelineValue || 'Rs. 2,800/- per sqft (IGR Benchmark)',
+      indusBBGGovtGuidelineValue: raw.indusBBGGovtGuidelineValue || '',
 
       // (I) Land & Building Math
-      indusBBGLandAreaSqft: raw.indusBBGLandAreaSqft ?? '1200.00',
-      indusBBGLandRate: raw.indusBBGLandRate ?? '3500.00',
-      indusBBGBuiltUpAreaSqft: raw.indusBBGBuiltUpAreaSqft ?? '1800.00',
-      indusBBGBldgRateDep: raw.indusBBGBldgRateDep ?? '1800.00',
+      indusBBGLandAreaSqft: raw.indusBBGLandAreaSqft ?? (prefill?.property?.plotArea ? String(prefill.property.plotArea) : '0.00'),
+      indusBBGLandRate: raw.indusBBGLandRate ?? (prefill?.property?.marketRate ? String(prefill.property.marketRate) : '0.00'),
+      indusBBGBuiltUpAreaSqft: raw.indusBBGBuiltUpAreaSqft ?? '0.00',
+      indusBBGBldgRateDep: raw.indusBBGBldgRateDep ?? '0.00',
       indusBBGLessRepairs: raw.indusBBGLessRepairs ?? '0.00',
 
       // (II) Flat Math
@@ -222,7 +222,7 @@ export default function IndusIndBBG({
       indusBBGDistressValue: raw.indusBBGDistressValue || '',
       indusBBGInsuranceValue: raw.indusBBGInsuranceValue || '',
       indusBBGForSale: raw.indusBBGForSale || 'High Demand Locality',
-      indusBBGForLeaseRental: raw.indusBBGForLeaseRental || 'Rs. 30,000/- per month',
+      indusBBGForLeaseRental: raw.indusBBGForLeaseRental || '',
       indusBBGVolatility: raw.indusBBGVolatility || 'Low / Stable',
 
       // Sign-off

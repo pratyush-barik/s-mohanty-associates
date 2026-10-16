@@ -74,87 +74,85 @@ export default function YesBank({
     const p = (prefill || {}) as any;
 
     // Meta Header
-    if (!d.branchName) d.branchName = p.branch || 'Bhubaneswar';
+    if (!d.branchName) d.branchName = p.branch || '';
     if (!d.typeOfCase) d.typeOfCase = 'NA';
     if (!d.valuerName) d.valuerName = 'M/s. S Mohanty Associates';
-    if (!d.visitingEnggName) d.visitingEnggName = 'Mr. Biswa Ranjan Biswal';
-    if (!d.timeOfVisit) d.timeOfVisit = '07.55AM';
-    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '18/06/2026';
-    if (!d.caseRefNo) d.caseRefNo = projectCode || 'R260610/269';
+    if (!d.visitingEnggName) d.visitingEnggName = 'M/s. S Mohanty Associates';
+    if (!d.timeOfVisit) d.timeOfVisit = '';
+    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '';
+    if (!d.caseRefNo) d.caseRefNo = projectCode || '';
     if (!d.reportDate) d.reportDate = formatReportDate(new Date().toISOString());
     if (!d.contactPerson) {
       d.contactPerson = p.applicantName || p.contactName
-        ? `${p.applicantName || p.contactName}, Mob-${p.contactPhone || '8338944892'}`
-        : 'Farzana Kashmi, Mob-8338944892';
+        ? `${p.applicantName || p.contactName}${p.contactPhone ? ', Mob-' + p.contactPhone : ''}`
+        : '';
     }
 
     // 1. Basic Details
-    if (!d.applicantName) d.applicantName = p.applicantName || 'M/S.Saimah Enterprises';
-    if (!d.ownerName) d.ownerName = p.contactName || 'Farzana Kashmi';
-    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || 'G+2 storied Commercial building';
-    if (!d.currentUsage) d.currentUsage = 'Residential';
-    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || 'Khata No-68/673, Plot No-611/1764(Area=AC.0.040Decs, Homestead), Mouza-Ranibandha, Tahasil/PS- Rajgangpur, Dist-Sundargarh, Odisha, Pin-770017';
-    if (!d.addressAsPerDoc) d.addressAsPerDoc = p.propertyAddress || 'Khata No-68/673, Plot No-611/1764(Area=AC.0.040Decs, Homestead), Mouza-Ranibandha, Tahasil/PS- Rajgangpur, Dist-Sundargarh, Odisha, Pin-770017';
+    if (!d.applicantName) d.applicantName = p.applicantName || '';
+    if (!d.ownerName) d.ownerName = p.contactName || '';
+    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || '';
+    if (!d.currentUsage) d.currentUsage = '';
+    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || '';
+    if (!d.addressAsPerDoc) d.addressAsPerDoc = p.propertyAddress || '';
     if (!d.priorValuation) d.priorValuation = 'No';
 
     // 2. Surroundings & Locality Details
-    if (!d.zoningMasterPlan) d.zoningMasterPlan = 'Master Plan not Published';
-    if (!d.proximityAmenities) d.proximityAmenities = 'All civic amenities are within 1-2Kms from the property.';
-    if (!d.localityClass) d.localityClass = 'Middle Class';
-    if (!d.railwayStation) d.railwayStation = '2-Kms from Rajgangpur Railway Station';
-    if (!d.siteStatus) d.siteStatus = 'Developing';
-    if (!d.busStop) d.busStop = '1.5-Km from Rajgangpur Bus Stop';
-    if (!d.landmark) d.landmark = 'Near Jaika Motors, Rajgangpur';
-    if (!d.distanceCityCenter) d.distanceCityCenter = '3-Kms from Rajgangpur city center';
-    if (!d.approachRoad) d.approachRoad = '20-feet wide Road';
+    if (!d.zoningMasterPlan) d.zoningMasterPlan = '';
+    if (!d.proximityAmenities) d.proximityAmenities = '';
+    if (!d.localityClass) d.localityClass = '';
+    if (!d.railwayStation) d.railwayStation = '';
+    if (!d.siteStatus) d.siteStatus = '';
+    if (!d.busStop) d.busStop = '';
+    if (!d.landmark) d.landmark = p.nearestLandmark || '';
+    if (!d.distanceCityCenter) d.distanceCityCenter = '';
+    if (!d.approachRoad) d.approachRoad = '';
 
     // 3. Property Details
-    if (!d.briefDescription) {
-      d.briefDescription = 'Subject property is G+2 storied commercial building land extent of 1742.4Sqft (AC.0.040Decs) & having measured built-up area of 5226sqft & constructed about 10-years back. Plan not provided. All the civic amenities are present 1-2Kms & about 3-kms from Rajgangpur city center. This property is coming under Rajgangpur municipality limit. GF is used by the customer for commercial purpose. FF & SF is vacant at the time of technical visit. Valuation has been done for land &measured BUA of the G+2 storied residential building, as per internal policy of YES Bank. As approved building plan is not provided it\'s upto YES Bank sole discretion to considered BUA value or not.';
-    }
+    if (!d.briefDescription) d.briefDescription = '';
     if (!d.internalVisitDone) d.internalVisitDone = 'NA';
-    if (!d.occupantStatus) d.occupantStatus = 'Occupied';
-    if (!d.occupantName) d.occupantName = 'Self Occupied';
-    if (!d.occupantRelation) d.occupantRelation = 'Self/ Tenant / any other';
+    if (!d.occupantStatus) d.occupantStatus = '';
+    if (!d.occupantName) d.occupantName = '';
+    if (!d.occupantRelation) d.occupantRelation = 'Self';
 
-    if (!d.propertyDemarcated) d.propertyDemarcated = 'Yes';
-    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = 'Customer (Farzana Kashmi, Mob- 8338944892)';
-    if (!d.structureType) d.structureType = 'RCC/ Load Bearing';
-    if (!d.landPlotAreaDesc) d.landPlotAreaDesc = '1742.4sqft';
+    if (!d.propertyDemarcated) d.propertyDemarcated = '';
+    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = '';
+    if (!d.structureType) d.structureType = '';
+    if (!d.landPlotAreaDesc) d.landPlotAreaDesc = '';
     if (!d.noOfBlocks) d.noOfBlocks = 'NA';
-    if (!d.noOfFloors) d.noOfFloors = 'G+2';
+    if (!d.noOfFloors) d.noOfFloors = '';
     if (!d.noOfUnitsPerFloor) d.noOfUnitsPerFloor = 'NA';
     if (!d.noOfLifts) d.noOfLifts = 'NA';
-    if (!d.amenitiesDesc) d.amenitiesDesc = 'All civic amenities is present within 1-2Kms.';
+    if (!d.amenitiesDesc) d.amenitiesDesc = '';
 
     if (!d.unitFloorNo) d.unitFloorNo = 'NA';
-    if (!d.unitRooms) d.unitRooms = 'G+2= 10 rooms';
+    if (!d.unitRooms) d.unitRooms = '';
     if (!d.remarksView) d.remarksView = 'No';
 
-    if (!d.qualityExteriors) d.qualityExteriors = 'Good';
-    if (!d.qualityInteriors) d.qualityInteriors = 'Good';
-    if (!d.ageOfProperty) d.ageOfProperty = '10-Years';
-    if (!d.residualLife) d.residualLife = '50-Years';
+    if (!d.qualityExteriors) d.qualityExteriors = '';
+    if (!d.qualityInteriors) d.qualityInteriors = '';
+    if (!d.ageOfProperty) d.ageOfProperty = '';
+    if (!d.residualLife) d.residualLife = '';
 
     // Boundaries
-    if (!d.boundaryNorthSite) d.boundaryNorthSite = 'Plot No-611(P)';
-    if (!d.boundarySouthSite) d.boundarySouthSite = 'Road';
-    if (!d.boundaryEastSite) d.boundaryEastSite = 'Plot No-611(P)';
-    if (!d.boundaryWestSite) d.boundaryWestSite = 'Plot No-611(P)';
+    if (!d.boundaryNorthSite) d.boundaryNorthSite = '';
+    if (!d.boundarySouthSite) d.boundarySouthSite = '';
+    if (!d.boundaryEastSite) d.boundaryEastSite = '';
+    if (!d.boundaryWestSite) d.boundaryWestSite = '';
 
-    if (!d.boundaryNorthDoc) d.boundaryNorthDoc = 'Plot No-611(P)';
-    if (!d.boundarySouthDoc) d.boundarySouthDoc = 'Road';
-    if (!d.boundaryEastDoc) d.boundaryEastDoc = 'Plot No-611(P)';
-    if (!d.boundaryWestDoc) d.boundaryWestDoc = 'Plot No-611(P)';
+    if (!d.boundaryNorthDoc) d.boundaryNorthDoc = '';
+    if (!d.boundarySouthDoc) d.boundarySouthDoc = '';
+    if (!d.boundaryEastDoc) d.boundaryEastDoc = '';
+    if (!d.boundaryWestDoc) d.boundaryWestDoc = '';
 
-    if (!d.boundariesMatching) d.boundariesMatching = 'No';
+    if (!d.boundariesMatching) d.boundariesMatching = 'Yes';
 
     // 4. Sanctions & Documents
-    if (!d.sanctionApprovalNo) d.sanctionApprovalNo = 'Approved plan is not provided';
+    if (!d.sanctionApprovalNo) d.sanctionApprovalNo = '';
     if (!d.commencementCert) d.commencementCert = 'NA';
-    if (!d.ownershipType) d.ownershipType = 'Freehold';
-    if (!d.documentsVerified) d.documentsVerified = 'Copy of Sale deed, ROR';
-    if (!d.municipalLimits) d.municipalLimits = 'Yes / No(Within Rajgangpur municipality)';
+    if (!d.ownershipType) d.ownershipType = '';
+    if (!d.documentsVerified) d.documentsVerified = '';
+    if (!d.municipalLimits) d.municipalLimits = '';
     if (!d.permissibleUsageMasterPlan) d.permissibleUsageMasterPlan = 'NA';
 
     // Setbacks
@@ -179,23 +177,23 @@ export default function YesBank({
     if (!d.setbackRearDev) d.setbackRearDev = 'NA';
 
     if (!d.deviations) d.deviations = 'NA';
-    if (!d.demolitionRisk) d.demolitionRisk = 'High / Medium / Low / Nil.';
+    if (!d.demolitionRisk) d.demolitionRisk = 'Low';
 
     // 5. Valuation (Area & Rates)
     if (!d.areaDeedCarpet) d.areaDeedCarpet = 'NA';
     if (!d.areaDeedSft) d.areaDeedSft = 'Sft';
     if (!d.areaPlanCarpet) d.areaPlanCarpet = 'NA';
     if (!d.areaPlanSft) d.areaPlanSft = 'NA';
-    if (!d.areaMeasureCarpet) d.areaMeasureCarpet = '{G+2}: -3 X 1742sqft=5226sqft';
+    if (!d.areaMeasureCarpet) d.areaMeasureCarpet = '';
     if (!d.areaMeasureSft) d.areaMeasureSft = 'NA';
 
-    if (!d.landAreaSqft) d.landAreaSqft = 1742.4;
-    if (!d.landRateSqft) d.landRateSqft = 2000;
-    if (!d.landValuationVal) d.landValuationVal = 3484800;
+    if (!d.landAreaSqft) d.landAreaSqft = '';
+    if (!d.landRateSqft) d.landRateSqft = '';
+    if (!d.landValuationVal) d.landValuationVal = '';
 
-    if (!d.constructionAreaSqft) d.constructionAreaSqft = 5226;
-    if (!d.constructionRateSqft) d.constructionRateSqft = 1800;
-    if (!d.constructionValuationVal) d.constructionValuationVal = 9406800;
+    if (!d.constructionAreaSqft) d.constructionAreaSqft = '';
+    if (!d.constructionRateSqft) d.constructionRateSqft = '';
+    if (!d.constructionValuationVal) d.constructionValuationVal = '';
 
     if (!d.comparisonCarpetArea) d.comparisonCarpetArea = 'NA';
     if (!d.comparisonLoading) d.comparisonLoading = 'NA';
@@ -203,37 +201,35 @@ export default function YesBank({
     if (!d.comparisonRateSft) d.comparisonRateSft = 'NA';
     if (!d.realizableComparison) d.realizableComparison = 'NA';
 
-    if (!d.noOfCarParks) d.noOfCarParks = 'NA.....Nos';
+    if (!d.noOfCarParks) d.noOfCarParks = 'NA';
     if (!d.rateCarParking) d.rateCarParking = 'NA';
     if (!d.valCarPark) d.valCarPark = 'NA';
     if (!d.totalAmenitiesB) d.totalAmenitiesB = 'NA';
 
-    if (!d.totalRealizableValue) d.totalRealizableValue = 12891600;
-    if (!d.forcedSaleValue) d.forcedSaleValue = 9668700;
-    if (!d.readyReckonerRate) d.readyReckonerRate = 'Rs.362/-Per sqft of land';
-    if (!d.readyReckonerTotal) d.readyReckonerTotal = 630748;
+    if (!d.totalRealizableValue) d.totalRealizableValue = '';
+    if (!d.forcedSaleValue) d.forcedSaleValue = '';
+    if (!d.readyReckonerRate) d.readyReckonerRate = '';
+    if (!d.readyReckonerTotal) d.readyReckonerTotal = '';
     if (!d.insuranceValue) d.insuranceValue = 'NA';
     if (!d.approxRentals) d.approxRentals = 'NA';
-    if (!d.fmvReckonerDiffExplanation) {
-      d.fmvReckonerDiffExplanation = 'FMV is 0.18 times more than Circle rate.The difference is due to the reason that the circle rate of that area has not been revised since a long time.';
-    }
+    if (!d.fmvReckonerDiffExplanation) d.fmvReckonerDiffExplanation = '';
 
     // 6-8. Market Comparison, Stage & Remarks
-    if (!d.comp1Prop) d.comp1Prop = 'Independent residential building';
-    if (!d.comp1Val) d.comp1Val = 'Rs. 2,000/sqft';
-    if (!d.comp1Date) d.comp1Date = 'Recent local enquiry';
+    if (!d.comp1Prop) d.comp1Prop = '';
+    if (!d.comp1Val) d.comp1Val = '';
+    if (!d.comp1Date) d.comp1Date = '';
 
-    if (!d.comp2Prop) d.comp2Prop = 'Nearby commercial land';
-    if (!d.comp2Val) d.comp2Val = 'Rs. 2,200/sqft';
-    if (!d.comp2Date) d.comp2Date = 'Recent local enquiry';
+    if (!d.comp2Prop) d.comp2Prop = '';
+    if (!d.comp2Val) d.comp2Val = '';
+    if (!d.comp2Date) d.comp2Date = '';
 
     if (!d.stageProgress) d.stageProgress = '100%';
     if (!d.stageReco) d.stageReco = '100%';
 
-    if (!d.negativeRemarks) d.negativeRemarks = 'Property Sketch map is not provided.';
-    if (!d.positiveRemarks) d.positiveRemarks = 'Property located in a developed area of Barbil Municipality & all civic amenities are within present 1-2Kms.';
-    if (!d.latitude) d.latitude = '22.209611';
-    if (!d.longitude) d.longitude = '84.591222';
+    if (!d.negativeRemarks) d.negativeRemarks = '';
+    if (!d.positiveRemarks) d.positiveRemarks = '';
+    if (!d.latitude) d.latitude = p.latitude || '';
+    if (!d.longitude) d.longitude = p.longitude || '';
     if (!d.tentativeCompletion) d.tentativeCompletion = 'NA';
     if (!d.place) d.place = 'Bhubaneswar';
 

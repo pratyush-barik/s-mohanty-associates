@@ -90,21 +90,21 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
         labelBold: false,
       },
       {
-        label: value || 'NA',
-        value: '',
-        labelWidth: val1W,
-        valueWidth: 0,
-        labelBold: false,
+        label: '',
+        value: value || 'NA',
+        labelWidth: 0,
+        valueWidth: val1W,
+        valueBold: false,
       },
     ];
 
     if (valCol2 !== undefined) {
       cols.push({
-        label: valCol2 || 'NA',
-        value: '',
-        labelWidth: val2W,
-        valueWidth: 0,
-        labelBold: false,
+        label: '',
+        value: valCol2 || 'NA',
+        labelWidth: 0,
+        valueWidth: val2W,
+        valueBold: false,
       });
     }
 
@@ -112,7 +112,7 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
   }
 
   async drawContent(): Promise<void> {
-    this.addPage();
+    // NOTE: init() already adds page 1. Do NOT call this.addPage() here.
 
     // Main Title Banner
     this.drawCenteredTitle('Valuation Report for LAP – INDUSIND BANK LTD.', 14, true);
@@ -185,9 +185,9 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
       this.drawKeyValueRow([
         { label: letter, value: '', labelWidth: numW, valueWidth: 0, labelBold: true },
         { label: docTitle, value: '', labelWidth: labelW, valueWidth: 0 },
-        { label: provided || 'NA', value: '', labelWidth: ynW, valueWidth: 0, labelBold: true },
-        { label: auth || 'NA', value: '', labelWidth: authW, valueWidth: 0 },
-        { label: dateNum || 'NA', value: '', labelWidth: dateNumW, valueWidth: 0 },
+        { label: '', value: provided || 'NA', labelWidth: 0, valueWidth: ynW, valueBold: true },
+        { label: '', value: auth || 'NA', labelWidth: 0, valueWidth: authW },
+        { label: '', value: dateNum || 'NA', labelWidth: 0, valueWidth: dateNumW },
       ]);
     };
 
@@ -234,8 +234,8 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
         { label: isFirst ? 'A' : '', value: '', labelWidth: bNumW, valueWidth: 0, labelBold: true },
         { label: isFirst ? 'Boundaries on Site' : '', value: '', labelWidth: bTitleW, valueWidth: 0, labelBold: isFirst },
         { label: dir, value: '', labelWidth: bDirW, valueWidth: 0 },
-        { label: docVal || 'NA', value: '', labelWidth: bDocW, valueWidth: 0 },
-        { label: siteVal || 'NA', value: '', labelWidth: bSiteW, valueWidth: 0 },
+        { label: '', value: docVal || 'NA', labelWidth: 0, valueWidth: bDocW },
+        { label: '', value: siteVal || 'NA', labelWidth: 0, valueWidth: bSiteW },
       ]);
     };
 
@@ -260,9 +260,9 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: 'B', value: '', labelWidth: numW, valueWidth: 0, labelBold: true },
       { label: 'Boundaries Matching', value: '', labelWidth: labelW, valueWidth: 0 },
-      { label: this.getF('indusBoundariesMatching', 'Yes / No'), value: '', labelWidth: bMatchW, valueWidth: 0, labelBold: true },
+      { label: '', value: this.getF('indusBoundariesMatching', 'Yes'), labelWidth: 0, valueWidth: bMatchW, valueBold: true },
       { label: 'Remarks', value: '', labelWidth: bRemLabelW, valueWidth: 0, labelBold: true },
-      { label: this.getF('indusBoundariesRemarks', 'Boundary matching as per document'), value: '', labelWidth: bRemValW, valueWidth: 0 },
+      { label: '', value: this.getF('indusBoundariesRemarks', 'Boundary matching as per document'), labelWidth: 0, valueWidth: bRemValW },
     ]);
 
     this.drawIndusRow('C', 'Plot details as per document', this.getF('indusPlotDetailsDoc', ''));
@@ -291,25 +291,22 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     ]);
 
     const floorItems = this.getF('indusFloorDescriptionItems', [
-      { floor: 'Basement', rooms: '', kitchens: '', bathrooms: '', halls: '', usage: '' },
-      { floor: 'Ground Floor', rooms: '2', kitchens: '1', bathrooms: '1', halls: '-', usage: 'Residential' },
-      { floor: 'First Floor', rooms: '2', kitchens: '1', bathrooms: '1', halls: '', usage: 'Residential' },
-      { floor: '2nd Floor', rooms: '2', kitchens: '1', bathrooms: '1', halls: '-', usage: 'Residential' },
+      { floor: 'Ground Floor', rooms: '', kitchens: '', bathrooms: '', halls: '', usage: 'Residential' },
     ]);
 
     for (const item of floorItems) {
       this.drawKeyValueRow([
         { label: '', value: '', labelWidth: numW, valueWidth: 0 },
         { label: item.floor, value: '', labelWidth: fTitleW, valueWidth: 0 },
-        { label: item.rooms || '-', value: '', labelWidth: fColW, valueWidth: 0 },
-        { label: item.kitchens || '-', value: '', labelWidth: fColW, valueWidth: 0 },
-        { label: item.bathrooms || '-', value: '', labelWidth: fColW, valueWidth: 0 },
-        { label: item.halls || '-', value: '', labelWidth: fColW, valueWidth: 0 },
-        { label: item.usage || '-', value: '', labelWidth: fColW, valueWidth: 0 },
+        { label: '', value: item.rooms || '-', labelWidth: 0, valueWidth: fColW },
+        { label: '', value: item.kitchens || '-', labelWidth: 0, valueWidth: fColW },
+        { label: '', value: item.bathrooms || '-', labelWidth: 0, valueWidth: fColW },
+        { label: '', value: item.halls || '-', labelWidth: 0, valueWidth: fColW },
+        { label: '', value: item.usage || '-', labelWidth: 0, valueWidth: fColW },
       ]);
     }
 
-    this.drawIndusRow('N', 'Type of Structure', this.getF('indusTypeOfStructure', 'RCC Framed / Load Bearing / Mixed'));
+    this.drawIndusRow('N', 'Type of Structure', this.getF('indusTypeOfStructure', 'RCC Framed'));
 
     // 5.O Interiors and Exteriors
     const intLabelW = 90;
@@ -319,12 +316,12 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: 'O', value: '', labelWidth: numW, valueWidth: 0, labelBold: true },
       { label: 'Interiors finishing', value: '', labelWidth: intLabelW, valueWidth: 0 },
-      { label: this.getF('indusInteriorsFinishing', 'Good / Fair/ Average / Poor'), value: '', labelWidth: intValW, valueWidth: 0, labelBold: true },
+      { label: '', value: this.getF('indusInteriorsFinishing', 'Good'), labelWidth: 0, valueWidth: intValW, valueBold: true },
       { label: 'Exteriors', value: '', labelWidth: extLabelW, valueWidth: 0 },
-      { label: this.getF('indusExteriorsFinishing', 'Good /Fair/ Average / Poor'), value: '', labelWidth: extValW, valueWidth: 0, labelBold: true },
+      { label: '', value: this.getF('indusExteriorsFinishing', 'Good'), labelWidth: 0, valueWidth: extValW, valueBold: true },
     ]);
 
-    this.drawIndusRow('P', 'Maintenance level', this.getF('indusMaintenanceLevel', 'Good / Fair/ Average / Poor'));
+    this.drawIndusRow('P', 'Maintenance level', this.getF('indusMaintenanceLevel', 'Good'));
 
     // 5.Q Age and Residual Age
     const ageW = 140;
@@ -333,9 +330,9 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: 'Q', value: '', labelWidth: numW, valueWidth: 0, labelBold: true },
       { label: 'Age of Property', value: '', labelWidth: labelW, valueWidth: 0 },
-      { label: this.getF('indusAgeOfProperty', '13-Years'), value: '', labelWidth: ageW, valueWidth: 0 },
+      { label: '', value: this.getF('indusAgeOfProperty', ''), labelWidth: 0, valueWidth: ageW },
       { label: 'Residual age (in years):', value: '', labelWidth: resW, valueWidth: 0 },
-      { label: this.getF('indusResidualAge', '47-Years'), value: '', labelWidth: resValW, valueWidth: 0 },
+      { label: '', value: this.getF('indusResidualAge', ''), labelWidth: 0, valueWidth: resValW },
     ]);
 
     this.drawIndusRow('R', 'Amenities', this.getF('indusAmenities', ''));
@@ -352,23 +349,23 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: 'Status of Occupancy (Mention floor wise)', value: '', labelWidth: occCol1W, valueWidth: 0 },
-      { label: this.getF('indusOccupancyStatus', 'Occupied'), value: '', labelWidth: occVal1W, valueWidth: 0 },
+      { label: '', value: this.getF('indusOccupancyStatus', 'Occupied'), labelWidth: 0, valueWidth: occVal1W },
       { label: 'Occupied by', value: '', labelWidth: occCol2W, valueWidth: 0 },
-      { label: this.getF('indusOccupiedBy', 'Owner'), value: '', labelWidth: occVal2W, valueWidth: 0 },
+      { label: '', value: this.getF('indusOccupiedBy', 'Owner'), labelWidth: 0, valueWidth: occVal2W },
     ]);
 
     this.drawKeyValueRow([
       { label: 'Relationship of Occupant with customer', value: '', labelWidth: occCol1W, valueWidth: 0 },
-      { label: this.getF('indusRelationshipOccupant', 'NA'), value: '', labelWidth: occVal1W, valueWidth: 0 },
+      { label: '', value: this.getF('indusRelationshipOccupant', 'Self'), labelWidth: 0, valueWidth: occVal1W },
       { label: 'Since', value: '', labelWidth: occCol2W, valueWidth: 0 },
-      { label: this.getF('indusOccupantSince', 'N.A.'), value: '', labelWidth: occVal2W, valueWidth: 0 },
+      { label: '', value: this.getF('indusOccupantSince', 'NA'), labelWidth: 0, valueWidth: occVal2W },
     ]);
 
     this.drawKeyValueRow([
       { label: 'Completion Status of building / property', value: '', labelWidth: occCol1W, valueWidth: 0 },
-      { label: this.getF('indusCompletionStatus', '100%'), value: '', labelWidth: occVal1W, valueWidth: 0 },
+      { label: '', value: this.getF('indusCompletionStatus', '100%'), labelWidth: 0, valueWidth: occVal1W },
       { label: 'Rental value', value: '', labelWidth: occCol2W, valueWidth: 0 },
-      { label: this.getF('indusRentalValue', 'N.A.'), value: '', labelWidth: occVal2W, valueWidth: 0 },
+      { label: '', value: this.getF('indusRentalValue', 'NA'), labelWidth: 0, valueWidth: occVal2W },
     ]);
 
     // ─────────────────────────────────────────────────────────────
@@ -418,26 +415,23 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     ]);
 
     const valuationAreaRows = this.getF('indusValuationAreaRows', [
-      { desc: 'Land area', app: '875.00 sqft', act: '875.00 sqft' },
-      { desc: 'Basement Floor', app: '0.00 sqft', act: '0.00 sqft' },
-      { desc: 'Ground Floor', app: '875.00 sqft', act: '792.00 sqft' },
-      { desc: 'First Floor', app: '875.00 sqft', act: '792.00 sqft' },
-      { desc: 'Second Floor', app: '0.00 sqft', act: '0.00 sqft' },
+      { desc: 'Land area', app: '', act: '' },
+      { desc: 'Ground Floor', app: '', act: '' },
     ]);
 
     for (const r of valuationAreaRows) {
       this.drawKeyValueRow([
         { label: r.desc, value: '', labelWidth: vCol1W, valueWidth: 0 },
-        { label: r.app || '0.00 sqft', value: '', labelWidth: vCol2W, valueWidth: 0 },
-        { label: r.act || '0.00 sqft', value: '', labelWidth: vCol2W, valueWidth: 0 },
+        { label: '', value: r.app || '-', labelWidth: 0, valueWidth: vCol2W },
+        { label: '', value: r.act || '-', labelWidth: 0, valueWidth: vCol2W },
       ]);
     }
 
     // Total Built-up Area
     this.drawKeyValueRow([
       { label: 'Total Built-up Area', value: '', labelWidth: vCol1W, valueWidth: 0, labelBold: true },
-      { label: this.getF('indusTotalAppBUA', '1750.00 sqft'), value: '', labelWidth: vCol2W, valueWidth: 0, labelBold: true },
-      { label: this.getF('indusTotalActBUA', '1584.00 sqft'), value: '', labelWidth: vCol2W, valueWidth: 0, labelBold: true },
+      { label: '', value: this.getF('indusTotalAppBUA', ''), labelWidth: 0, valueWidth: vCol2W, valueBold: true },
+      { label: '', value: this.getF('indusTotalActBUA', ''), labelWidth: 0, valueWidth: vCol2W, valueBold: true },
     ]);
 
     // Land rates
@@ -445,15 +439,15 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     const lrValW = CONTENT_W - lrLabelW;
     this.drawKeyValueRow([
       { label: 'Prevailing Market Range/ Rate of Land in the locality', value: '', labelWidth: lrLabelW, valueWidth: 0 },
-      { label: this.getF('indusPrevailingLandRange', 'Rs.6,000/- to @ Rs. 6,500 /- Per Sqft'), value: '', labelWidth: lrValW, valueWidth: 0 },
+      { label: '', value: this.getF('indusPrevailingLandRange', ''), labelWidth: 0, valueWidth: lrValW },
     ]);
     this.drawKeyValueRow([
       { label: 'Land Rate adopted in Rs. (In Per Sqyds)', value: '', labelWidth: lrLabelW, valueWidth: 0 },
-      { label: this.getF('indusLandRateAdopted', 'Rs.6,500/- Per sqyds'), value: '', labelWidth: lrValW, valueWidth: 0 },
+      { label: '', value: this.getF('indusLandRateAdopted', ''), labelWidth: 0, valueWidth: lrValW },
     ]);
     this.drawKeyValueRow([
       { label: 'Total Land value:', value: '', labelWidth: lrLabelW, valueWidth: 0, labelBold: true },
-      { label: this.getF('indusTotalLandValue', 'Rs.56,87,500/-'), value: '', labelWidth: lrValW, valueWidth: 0, labelBold: true },
+      { label: '', value: this.getF('indusTotalLandValue', ''), labelWidth: 0, valueWidth: lrValW, valueBold: true },
     ]);
 
     // Building value rows
@@ -470,24 +464,22 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     ]);
 
     const bldgRows = this.getF('indusBldgValueRows', [
-      { desc: 'Basement Floor', area: '', rate: '', total: '' },
-      { desc: 'Ground Floor', area: '792.00 sqft', rate: '@ Rs.1,700/- Per Sqft', total: 'Rs.13,46,400/-' },
-      { desc: 'Second Floor', area: '792.00 sqft', rate: '@ Rs.1,700/- Per Sqft', total: 'Rs.13,46,400/-' },
+      { desc: 'Ground Floor', area: '', rate: '', total: '' },
     ]);
 
     for (const b of bldgRows) {
       this.drawKeyValueRow([
         { label: b.desc, value: '', labelWidth: bvLabelW, valueWidth: 0 },
-        { label: b.area || '', value: '', labelWidth: bvAreaW, valueWidth: 0 },
-        { label: b.rate || '', value: '', labelWidth: bvRateW, valueWidth: 0 },
-        { label: b.total || '', value: '', labelWidth: bvTotW, valueWidth: 0 },
+        { label: '', value: b.area || '', labelWidth: 0, valueWidth: bvAreaW },
+        { label: '', value: b.rate || '', labelWidth: 0, valueWidth: bvRateW },
+        { label: '', value: b.total || '', labelWidth: 0, valueWidth: bvTotW },
       ]);
     }
 
     // Total Construction & Depreciated value
     this.drawKeyValueRow([
       { label: 'Total Construction:', value: '', labelWidth: CONTENT_W - bvTotW, valueWidth: 0, labelBold: true },
-      { label: this.getF('indusTotalConstructionVal', 'Rs.26,92,800/-'), value: '', labelWidth: bvTotW, valueWidth: 0, labelBold: true },
+      { label: '', value: this.getF('indusTotalConstructionVal', ''), labelWidth: 0, valueWidth: bvTotW, valueBold: true },
     ]);
 
     const depLabelW = 230;
@@ -495,18 +487,18 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     const depTotW = CONTENT_W - depLabelW - depPctW;
     this.drawKeyValueRow([
       { label: 'Depreciation considered (on building value)', value: '', labelWidth: depLabelW, valueWidth: 0 },
-      { label: this.getF('indusDepreciationPctText', '12% (average cost)'), value: '', labelWidth: depPctW, valueWidth: 0 },
-      { label: this.getF('indusDepreciatedConstVal', 'Rs.23,69,664/-'), value: '', labelWidth: depTotW, valueWidth: 0 },
+      { label: '', value: this.getF('indusDepreciationPctText', ''), labelWidth: 0, valueWidth: depPctW },
+      { label: '', value: this.getF('indusDepreciatedConstVal', ''), labelWidth: 0, valueWidth: depTotW },
     ]);
 
     this.drawKeyValueRow([
       { label: 'Total value of construction (after depreciated)', value: '', labelWidth: depLabelW + depPctW, valueWidth: 0, labelBold: true },
-      { label: this.getF('indusDepreciatedConstVal', 'Rs.23,69,664/-'), value: '', labelWidth: depTotW, valueWidth: 0, labelBold: true },
+      { label: '', value: this.getF('indusDepreciatedConstVal', ''), labelWidth: 0, valueWidth: depTotW, valueBold: true },
     ]);
 
     this.drawKeyValueRow([
       { label: 'Fair market value of the property (Land & Building):', value: '', labelWidth: depLabelW + depPctW, valueWidth: 0, labelBold: true, highlight: true },
-      { label: this.getF('indusTotalFMVLandBldg', 'Rs.80,57,164/-'), value: '', labelWidth: depTotW, valueWidth: 0, labelBold: true, highlight: true },
+      { label: '', value: this.getF('indusTotalFMVLandBldg', ''), labelWidth: 0, valueWidth: depTotW, valueBold: true, highlight: true },
     ]);
 
     // 8.b Flat / Shop
@@ -539,32 +531,32 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     for (const fr of flatRows) {
       this.drawKeyValueRow([
         { label: fr.label, value: '', labelWidth: f8Col1W, valueWidth: 0 },
-        { label: this.getF(`indusFlatApp_${fr.label}`, fr.app), value: '', labelWidth: f8Col2W, valueWidth: 0 },
-        { label: this.getF(`indusFlatAct_${fr.label}`, fr.act), value: '', labelWidth: f8Col2W, valueWidth: 0 },
+        { label: '', value: this.getF(`indusFlatApp_${fr.label}`, fr.app), labelWidth: 0, valueWidth: f8Col2W },
+        { label: '', value: this.getF(`indusFlatAct_${fr.label}`, fr.act), labelWidth: 0, valueWidth: f8Col2W },
       ]);
     }
 
     this.drawKeyValueRow([
       { label: 'Fair market value of the Flat Rs.', value: '', labelWidth: f8Col1W, valueWidth: 0, labelBold: true },
-      { label: this.getF('indusFlatFMV', 'NA'), value: '', labelWidth: f8Col2W, valueWidth: 0, labelBold: true },
-      { label: '', value: '', labelWidth: f8Col2W, valueWidth: 0 },
+      { label: '', value: this.getF('indusFlatFMV', 'NA'), labelWidth: 0, valueWidth: f8Col2W, valueBold: true },
+      { label: '', value: '', labelWidth: 0, valueWidth: f8Col2W },
     ]);
     this.drawKeyValueRow([
       { label: 'Fair market value of the Terrace Rs.', value: '', labelWidth: f8Col1W, valueWidth: 0 },
-      { label: this.getF('indusTerraceFMV', 'NA'), value: '', labelWidth: f8Col2W, valueWidth: 0 },
-      { label: '', value: '', labelWidth: f8Col2W, valueWidth: 0 },
+      { label: '', value: this.getF('indusTerraceFMV', 'NA'), labelWidth: 0, valueWidth: f8Col2W },
+      { label: '', value: '', labelWidth: 0, valueWidth: f8Col2W },
     ]);
     this.drawKeyValueRow([
       { label: 'Fair market value of the property Rs.', value: '', labelWidth: f8Col1W, valueWidth: 0, labelBold: true },
-      { label: this.getF('indusPropertyFMVFlat', 'NA'), value: '', labelWidth: f8Col2W, valueWidth: 0, labelBold: true },
-      { label: '', value: '', labelWidth: f8Col2W, valueWidth: 0 },
+      { label: '', value: this.getF('indusPropertyFMVFlat', 'NA'), labelWidth: 0, valueWidth: f8Col2W, valueBold: true },
+      { label: '', value: '', labelWidth: 0, valueWidth: f8Col2W },
     ]);
 
     // 8.c Remarks
     this.drawKeyValueRow([
       { label: 'c', value: '', labelWidth: 20, valueWidth: 0, labelBold: true },
       { label: 'Remarks', value: '', labelWidth: 150, valueWidth: 0, labelBold: true },
-      { label: this.getF('indusValuationRemarks', 'NA'), value: '', labelWidth: CONTENT_W - 170, valueWidth: 0 },
+      { label: '', value: this.getF('indusValuationRemarks', 'NA'), labelWidth: 0, valueWidth: CONTENT_W - 170 },
     ]);
 
     // ─────────────────────────────────────────────────────────────
@@ -587,25 +579,20 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     ]);
 
     const deviationRows = this.getF('indusDeviationRows', [
-      { detail: 'Total Plot area (sq.ft)', app: '0.00 sqft', site: '0.00 sqft', dev: '0.00 sqft', pct: 'NA' },
-      { detail: 'No. of Floors', app: '0', site: '0', dev: '-', pct: 'NA' },
-      { detail: 'No. Of Units', app: '0', site: '0', dev: '-', pct: 'NA' },
-      { detail: 'Total Built-up area (sqft)', app: '1750.00 sqft', site: '1584.00 sqft', dev: '-166.00 sqft', pct: 'NA' },
-      { detail: 'Basement', app: '0.00 sqft', site: '0.00 sqft', dev: '0.00 sqft', pct: 'NA' },
-      { detail: 'Ground Floor', app: '875.00 sqft', site: '792.00 sqft', dev: '-83.00 sqft', pct: 'NA' },
-      { detail: 'First Floor', app: '875.00 sqft', site: '792.00 sqft', dev: '-83.00 sqft', pct: 'NA' },
-      { detail: 'Second Floor', app: '0.00 sqft', site: '0.00 sqft', dev: '0.00 sqft', pct: 'NA' },
-      { detail: 'FSI', app: 'N.A.', site: '', dev: 'N.A.', pct: 'N.A.' },
-      { detail: 'Plot Coverage', app: 'N.A.', site: '', dev: 'N.A.', pct: 'N.A.' },
+      { detail: 'Total Plot area (sq.ft)', app: '', site: '', dev: '', pct: 'NA' },
+      { detail: 'No. of Floors', app: '', site: '', dev: '-', pct: 'NA' },
+      { detail: 'Total Built-up area (sqft)', app: '', site: '', dev: '', pct: 'NA' },
+      { detail: 'Ground Floor', app: '', site: '', dev: '', pct: 'NA' },
+      { detail: 'First Floor', app: '', site: '', dev: '', pct: 'NA' },
     ]);
 
     for (const dr of deviationRows) {
       this.drawKeyValueRow([
         { label: dr.detail, value: '', labelWidth: devCol1W, valueWidth: 0 },
-        { label: dr.app || '-', value: '', labelWidth: devCol2W, valueWidth: 0 },
-        { label: dr.site || '-', value: '', labelWidth: devCol3W, valueWidth: 0 },
-        { label: dr.dev || '-', value: '', labelWidth: devCol4W, valueWidth: 0 },
-        { label: dr.pct || '-', value: '', labelWidth: devCol5W, valueWidth: 0 },
+        { label: '', value: dr.app || '-', labelWidth: 0, valueWidth: devCol2W },
+        { label: '', value: dr.site || '-', labelWidth: 0, valueWidth: devCol3W },
+        { label: '', value: dr.dev || '-', labelWidth: 0, valueWidth: devCol4W },
+        { label: '', value: dr.pct || '-', labelWidth: 0, valueWidth: devCol5W },
       ]);
     }
 
@@ -625,10 +612,10 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     for (const sb of setbackRows) {
       this.drawKeyValueRow([
         { label: sb.side, value: '', labelWidth: devCol1W, valueWidth: 0 },
-        { label: this.getF(`indusSetbackApp_${sb.side}`, sb.app), value: '', labelWidth: devCol2W, valueWidth: 0 },
-        { label: this.getF(`indusSetbackSite_${sb.side}`, sb.site), value: '', labelWidth: devCol3W, valueWidth: 0 },
-        { label: this.getF(`indusSetbackDev_${sb.side}`, sb.dev), value: '', labelWidth: devCol4W, valueWidth: 0 },
-        { label: this.getF(`indusSetbackPct_${sb.side}`, sb.pct), value: '', labelWidth: devCol5W, valueWidth: 0 },
+        { label: '', value: this.getF(`indusSetbackApp_${sb.side}`, sb.app), labelWidth: 0, valueWidth: devCol2W },
+        { label: '', value: this.getF(`indusSetbackSite_${sb.side}`, sb.site), labelWidth: 0, valueWidth: devCol3W },
+        { label: '', value: this.getF(`indusSetbackDev_${sb.side}`, sb.dev), labelWidth: 0, valueWidth: devCol4W },
+        { label: '', value: this.getF(`indusSetbackPct_${sb.side}`, sb.pct), labelWidth: 0, valueWidth: devCol5W },
       ]);
     }
 
@@ -638,10 +625,7 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       {
         label: 'Remarks : ',
-        value: this.getF(
-          'indusSynthesizedRemarks',
-          'Subject property is a G+2 residential building having land extend 875sqft, having measured BUA 1884sqft(RCC GF & FF-792 X 2=1584sqft & SF ACC roofing-300sqft). Plan has been approved by Bhubaneswar Development Authority, Vide letter no-738/ BP, BDA, Dated- 07-03-2009. All civic amenities are present within 1-2 Kms from the property & accessible with 60-feet wide Road. This building is vacant at the time of technical visit. Valuation has been done for land & least BUA of G+1 residential building.'
-        ),
+        value: this.getF('indusSynthesizedRemarks', ''),
         labelWidth: 80,
         valueWidth: CONTENT_W - 80,
         labelBold: true,
@@ -665,19 +649,18 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
       { label: '(3) The information furnished above is true and correct to my/our knowledge', value: '', labelWidth: CONTENT_W, valueWidth: 0 },
     ]);
 
-    const fmvVal = this.getF('indusTotalFMVLandBldg', 'Rs.80,57,164/-');
-    const fmvWords = this.getF(
-      'indusFMVWords',
-      '(Rupees Eighty Lakhs Fifty Seven Thousand & One hundred Sixty Four Only)'
-    );
+    const fmvVal = this.getF('indusTotalFMVLandBldg', '');
+    const fmvWords = this.getF('indusFMVWords', '');
 
     this.drawKeyValueRow([
       { label: '(4) Total Fair Market Value of the property is', value: '', labelWidth: 230, valueWidth: 0, labelBold: true },
-      { label: fmvVal, value: '', labelWidth: CONTENT_W - 230, valueWidth: 0, labelBold: true },
+      { label: '', value: fmvVal, labelWidth: 0, valueWidth: CONTENT_W - 230, valueBold: true },
     ]);
-    this.drawKeyValueRow([
-      { label: fmvWords, value: '', labelWidth: CONTENT_W, valueWidth: 0, labelBold: true },
-    ]);
+    if (fmvWords) {
+      this.drawKeyValueRow([
+        { label: '', value: fmvWords, labelWidth: 0, valueWidth: CONTENT_W, valueBold: true },
+      ]);
+    }
 
     // ─────────────────────────────────────────────────────────────
     // SIGNATURE & SEAL BLOCK

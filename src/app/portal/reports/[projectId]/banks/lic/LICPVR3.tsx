@@ -73,7 +73,7 @@ export default function LICPVR3({
     const raw = rawInitialFields || {};
     return {
       // Top Meta
-      fileNo: raw.fileNo || (prefill as any)?.loanAccountNo || '2116005704',
+      fileNo: raw.fileNo || (prefill as any)?.loanAccountNo || (prefill as any)?.projectCode || '',
       nameOfValuer: raw.nameOfValuer || 'Er. Satyajit Mohanty',
       codeNo: raw.codeNo || 'BH-AOV0078',
       appointingAuthority: raw.appointingAuthority || 'LIC HFL(Cuttack)',
@@ -82,66 +82,66 @@ export default function LICPVR3({
       areaOffice: raw.areaOffice || 'Bhubaneswar',
 
       // 1. Property Details
-      applicantName: raw.applicantName || (prefill as any)?.applicantName || (prefill as any)?.contactName || 'Mr. Bijay Kumar Pradhan,S/o:-Mr. Dukhishyam Pradhan',
-      documentPerused: raw.documentPerused || 'Copy of Sale Deed,ROR,Rent receipt & Approved Plan',
-      surveyNumber: raw.surveyNumber || 'Plot No-95/1132,Khata no-238/142',
-      blockVillage: raw.blockVillage || 'Mouza- Nuagaon,PS-Jajpur Road(232)',
-      wardTaluk: raw.wardTaluk || 'Danagadi(232)',
-      districtMunicipality: raw.districtMunicipality || 'Dist-Jajpur,Odisha, Pin-758034',
-      locationSketchVerified: raw.locationSketchVerified || 'Yes/No',
+      applicantName: raw.applicantName || (prefill as any)?.applicantName || (prefill as any)?.contactName || '',
+      documentPerused: raw.documentPerused || 'Copy of Sale Deed, ROR, Rent receipt & Approved Plan',
+      surveyNumber: raw.surveyNumber || (prefill as any)?.property?.plotNo || '',
+      blockVillage: raw.blockVillage || (prefill as any)?.property?.mouza || '',
+      wardTaluk: raw.wardTaluk || (prefill as any)?.property?.tahasil || '',
+      districtMunicipality: raw.districtMunicipality || (prefill as any)?.property?.district || '',
+      locationSketchVerified: raw.locationSketchVerified || 'Yes',
 
-      boundaryNorth: raw.boundaryNorth || 'Recent Buyer Partha Sarathi Sahoo/Building of Satyajit Mohanty',
-      boundarySouth: raw.boundarySouth || 'Rest Part of Plot/Building of Susant Nayak',
-      boundaryEast: raw.boundaryEast || '20-Feet Wide Road',
-      boundaryWest: raw.boundaryWest || 'Plot No-95/Vacant Plot of Gopal Palei',
+      boundaryNorth: raw.boundaryNorth || (prefill as any)?.property?.boundaries?.north?.asPerDeed || (prefill as any)?.property?.northBoundary || '',
+      boundarySouth: raw.boundarySouth || (prefill as any)?.property?.boundaries?.south?.asPerDeed || (prefill as any)?.property?.southBoundary || '',
+      boundaryEast: raw.boundaryEast || (prefill as any)?.property?.boundaries?.east?.asPerDeed || (prefill as any)?.property?.eastBoundary || '',
+      boundaryWest: raw.boundaryWest || (prefill as any)?.property?.boundaries?.west?.asPerDeed || (prefill as any)?.property?.westBoundary || '',
 
-      plotAreaSqft: raw.plotAreaSqft || '1176',
-      approvedBua: raw.approvedBua || '1440',
-      measuredBua: raw.measuredBua || '1440',
+      plotAreaSqft: raw.plotAreaSqft || ((prefill as any)?.property?.plotArea ? String((prefill as any).property.plotArea) : ''),
+      approvedBua: raw.approvedBua || '',
+      measuredBua: raw.measuredBua || '',
 
       propertyType: raw.propertyType || 'Bungalow',
-      occupantStatus: raw.occupantStatus || 'Self-Occupied(For G+1 only)',
+      occupantStatus: raw.occupantStatus || 'Self-Occupied',
       occupantName: raw.occupantName || 'Self',
       buildingUsage: raw.buildingUsage || 'Residential',
-      landmark: raw.landmark || 'Near Military Chhak,Nuagaon,Jajpur Road',
+      landmark: raw.landmark || (prefill as any)?.property?.landmark || '',
       surroundingDevelopment: raw.surroundingDevelopment || 'Middle Class',
       basicAmenitiesAvailable: raw.basicAmenitiesAvailable || 'Yes',
       negativesToLocality: raw.negativesToLocality || 'No',
-      favourableConsiderations: raw.favourableConsiderations || 'All civic amenities like school,hospital,market area are within 1-2Kms.',
+      favourableConsiderations: raw.favourableConsiderations || 'All civic amenities like school, hospital, market area are within 1-2Kms.',
       otherFinancierNotice: raw.otherFinancierNotice || 'Not Observed',
 
       // 2. Drawing
       approvedDrawingAvailable: raw.approvedDrawingAvailable || 'Yes.',
-      approvalNoDate: raw.approvalNoDate || 'Plan has been approved by Junior Engineer,Danagadi Block,dated- 17/05/2017 for G+1 storied residential building.',
+      approvalNoDate: raw.approvalNoDate || '',
       constructionAsPerPlan: raw.constructionAsPerPlan || 'Yes',
       deviationsDrawingActual: raw.deviationsDrawingActual || 'NA',
       deviationsNature: raw.deviationsNature || 'NA',
 
       // 3. Building Details
       marketability: raw.marketability || 'Good',
-      ageOfBuilding: raw.ageOfBuilding || '2',
-      residualLife: raw.residualLife || '58',
-      fsiApproved: raw.fsiApproved || '0.60',
-      fsiActual: raw.fsiActual || '0.90',
+      ageOfBuilding: raw.ageOfBuilding || '',
+      residualLife: raw.residualLife || '',
+      fsiApproved: raw.fsiApproved || '',
+      fsiActual: raw.fsiActual || '',
       specFoundation: raw.specFoundation || 'R.C.C. Framed Structure',
       specRoof: raw.specRoof || 'R.C.C',
-      specFlooring: raw.specFlooring || 'Marble/Tile Flooring(For G+1 only)',
+      specFlooring: raw.specFlooring || 'Marble/Tile Flooring',
       qualityConstruction: raw.qualityConstruction || 'Good',
       safetySpecsComplied: raw.safetySpecsComplied || 'Yes',
       highTensionLines: raw.highTensionLines || 'No',
 
       // 4. Valuation Point 4
-      landAreaSqft: raw.landAreaSqft || '1176',
-      landRateSft: raw.landRateSft || '200',
-      landGuidelineRate: raw.landGuidelineRate || '42.17',
+      landAreaSqft: raw.landAreaSqft || ((prefill as any)?.property?.plotArea ? String((prefill as any).property.plotArea) : '0'),
+      landRateSft: raw.landRateSft || ((prefill as any)?.property?.marketRate ? String((prefill as any).property.marketRate) : '0'),
+      landGuidelineRate: raw.landGuidelineRate || '0',
 
-      bldgGfArea: raw.bldgGfArea || '720',
-      bldgGfRate: raw.bldgGfRate || '1800',
-      bldgGfGuideRate: raw.bldgGfGuideRate || '1427',
+      bldgGfArea: raw.bldgGfArea || '0',
+      bldgGfRate: raw.bldgGfRate || '0',
+      bldgGfGuideRate: raw.bldgGfGuideRate || '0',
 
-      bldgFfArea: raw.bldgFfArea || '720',
-      bldgFfRate: raw.bldgFfRate || '1800',
-      bldgFfGuideRate: raw.bldgFfGuideRate || '1242',
+      bldgFfArea: raw.bldgFfArea || '0',
+      bldgFfRate: raw.bldgFfRate || '0',
+      bldgFfGuideRate: raw.bldgFfGuideRate || '0',
 
       extraAmenitiesValue: raw.extraAmenitiesValue || '0',
       extraAmenitiesGuideVal: raw.extraAmenitiesGuideVal || '0',
@@ -154,15 +154,15 @@ export default function LICPVR3({
       estimatedValueAfterImprovements: raw.estimatedValueAfterImprovements || 'NA',
 
       // 8. Remarks & Methodology
-      technicalRemarks: raw.technicalRemarks || 'Subject property is a G+1 storied residential building. Plan has been approved by Junior Engineer,Danagadi Block,dated- 17/05/2017 for G+1 storied residential building. All the civic amenities are present within 1-2Kms. Valuation has been done for land & approved built up area of G+1 only.',
-      methodologyBackground: raw.methodologyBackground || 'Subject property is a G+1 storied residential building. It accessed 20-feet wide road.',
+      technicalRemarks: raw.technicalRemarks || '',
+      methodologyBackground: raw.methodologyBackground || '',
       methodologySources: raw.methodologySources || 'Recent transactions, Property Brokers, local market feedback.',
       methodologyProcedures: raw.methodologyProcedures || 'Land value arrived by comparing similar land parcels in that locality while building value arrived by cost incurred to construct a similar house as on date.',
       methodologyAdopted: raw.methodologyAdopted || 'Land & Building method of valuation adopted',
       methodologyFactors: raw.methodologyFactors || 'Location & accessibility to civic amenities etc.',
 
       // 9. Certificate
-      inspectionDate: raw.inspectionDate || earliestVisit?.date || '13/12/2020',
+      inspectionDate: raw.inspectionDate || earliestVisit?.date || '',
       valuationStation: raw.valuationStation || 'Bhubaneswar',
 
       // Attachments

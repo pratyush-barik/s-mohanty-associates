@@ -74,68 +74,68 @@ export default function NavdhanFinance({
     const p = (prefill || {}) as any;
 
     // Meta Header
-    if (!d.branchName) d.branchName = p.branch || 'Bhubaneswar';
-    if (!d.typeOfCase) d.typeOfCase = 'Non-BT Case';
+    if (!d.branchName) d.branchName = p.branch || '';
+    if (!d.typeOfCase) d.typeOfCase = '';
     if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty';
-    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '07.03.2026';
-    if (!d.caseRefNo) d.caseRefNo = projectCode || 'OD007LE000912';
+    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '';
+    if (!d.caseRefNo) d.caseRefNo = projectCode || '';
     if (!d.reportDate) d.reportDate = formatReportDate(new Date().toISOString());
     if (!d.contactPerson) {
       d.contactPerson = p.applicantName || p.contactName
-        ? `${p.applicantName || p.contactName}- ${p.contactPhone || '7377263112'}`
-        : 'Burudi Rukmini Patra- 7377263112';
+        ? `${p.applicantName || p.contactName}${p.contactPhone ? '- ' + p.contactPhone : ''}`
+        : '';
     }
 
     // 1-4 Basic Details
-    if (!d.applicantName) d.applicantName = p.applicantName || p.contactName || 'Burudi Rukmini Patra';
-    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || 'Single storied Residential building';
-    if (!d.currentUsage) d.currentUsage = 'Residential building';
-    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || 'Khata No-547/1589, Plot No- 3926/8464 (AC.0.027Decs, Homestead), Plot No- 3927/8465(AC.0.028Decs, Homestead), Total BUA-(AC.0.055Decs, Homestead), Mouza- Sabulia, Tahasil-Khallikote, PS- Rambha, Dist- Ganjam, Odisha, Pin-761028';
-    if (!d.addressAsPerDoc) d.addressAsPerDoc = p.propertyAddress || 'Khata No-547/1589, Plot No- 3926/8464 (AC.0.027Decs, Homestead), Plot No- 3927/8465(AC.0.028Decs, Homestead), Total BUA-(AC.0.055Decs, Homestead), Mouza- Sabulia, Tahasil-Khallikote, PS- Rambha, Dist- Ganjam, Odisha, Pin-761028';
+    if (!d.applicantName) d.applicantName = p.applicantName || p.contactName || '';
+    if (!d.propertyTypeDesc) d.propertyTypeDesc = p.propertyType || '';
+    if (!d.currentUsage) d.currentUsage = '';
+    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || '';
+    if (!d.addressAsPerDoc) d.addressAsPerDoc = p.propertyAddress || '';
     if (!d.priorValuation) d.priorValuation = 'No';
 
     // 5-8 Locality Details
-    if (!d.localityType) d.localityType = 'Residential';
-    if (!d.localityClass) d.localityClass = 'Middle Class';
-    if (!d.siteStatus) d.siteStatus = 'Developing';
-    if (!d.proximityAmenities) d.proximityAmenities = 'Within 1-2 Kms';
-    if (!d.railwayStation) d.railwayStation = '1-Km (Rambha Railway Station)';
-    if (!d.busStop) d.busStop = '1-Kms (Rambha bus stand)';
-    if (!d.landmark) d.landmark = 'Near Aurobindo UP School';
-    if (!d.surroundingHabitation) d.surroundingHabitation = '(40%)';
-    if (!d.distanceCityCenter) d.distanceCityCenter = '11-Kms from Khallikote market Area';
-    if (!d.approachRoad) d.approachRoad = '15-Feet wide Road';
+    if (!d.localityType) d.localityType = '';
+    if (!d.localityClass) d.localityClass = '';
+    if (!d.siteStatus) d.siteStatus = '';
+    if (!d.proximityAmenities) d.proximityAmenities = '';
+    if (!d.railwayStation) d.railwayStation = '';
+    if (!d.busStop) d.busStop = '';
+    if (!d.landmark) d.landmark = p.nearestLandmark || '';
+    if (!d.surroundingHabitation) d.surroundingHabitation = '';
+    if (!d.distanceCityCenter) d.distanceCityCenter = '';
+    if (!d.approachRoad) d.approachRoad = '';
 
     // 9-13 Property Details
-    if (!d.occupantStatus) d.occupantStatus = 'Self-Occupied';
-    if (!d.occupantName) d.occupantName = 'Owner';
-    if (!d.occupantRelation) d.occupantRelation = 'Self';
-    if (!d.propertyDemarcation) d.propertyDemarcation = 'No';
+    if (!d.occupantStatus) d.occupantStatus = '';
+    if (!d.occupantName) d.occupantName = '';
+    if (!d.occupantRelation) d.occupantRelation = '';
+    if (!d.propertyDemarcation) d.propertyDemarcation = '';
 
-    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = 'Customer';
-    if (!d.structureType) d.structureType = 'RCC framed structure';
-    if (!d.landPlotAreaDesc) d.landPlotAreaDesc = '2395sqft';
+    if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = '';
+    if (!d.structureType) d.structureType = '';
+    if (!d.landPlotAreaDesc) d.landPlotAreaDesc = '';
     if (!d.noOfBlocks) d.noOfBlocks = 'NA';
     if (!d.noOfUnits) d.noOfUnits = 'NA';
-    if (!d.noOfFloors) d.noOfFloors = 'GF';
+    if (!d.noOfFloors) d.noOfFloors = '';
     if (!d.noOfLifts) d.noOfLifts = 'Nil';
 
     if (!d.unitFloorNo) d.unitFloorNo = 'NA';
-    if (!d.unitRooms) d.unitRooms = 'GF=10-rooms';
-    if (!d.unitBuaMeasured) d.unitBuaMeasured = 'GF -1508sqft';
-    if (!d.unitCarpetArea) d.unitCarpetArea = '1281sqft (Actual)';
+    if (!d.unitRooms) d.unitRooms = '';
+    if (!d.unitBuaMeasured) d.unitBuaMeasured = '';
+    if (!d.unitCarpetArea) d.unitCarpetArea = '';
     if (!d.unitRemarksView) d.unitRemarksView = 'NA';
 
-    if (!d.qualityExteriors) d.qualityExteriors = 'Average';
-    if (!d.qualityInteriors) d.qualityInteriors = 'Average';
-    if (!d.ageOfProperty) d.ageOfProperty = '12-Year';
-    if (!d.residualLife) d.residualLife = '48-Years';
+    if (!d.qualityExteriors) d.qualityExteriors = '';
+    if (!d.qualityInteriors) d.qualityInteriors = '';
+    if (!d.ageOfProperty) d.ageOfProperty = '';
+    if (!d.residualLife) d.residualLife = '';
 
     // 14-20 Sanctions & Setbacks
-    if (!d.sanctionApprovalNo) d.sanctionApprovalNo = 'Approved plan is not provided';
-    if (!d.ownershipType) d.ownershipType = 'Freehold (Homestead)';
-    if (!d.documentsVerified) d.documentsVerified = 'Copy of Sale deed, ROR & Sketch map';
-    if (!d.municipalLimits) d.municipalLimits = 'Yes (Within Subalaya GP limit)';
+    if (!d.sanctionApprovalNo) d.sanctionApprovalNo = '';
+    if (!d.ownershipType) d.ownershipType = '';
+    if (!d.documentsVerified) d.documentsVerified = '';
+    if (!d.municipalLimits) d.municipalLimits = '';
     if (!d.permissibleUsageMasterPlan) d.permissibleUsageMasterPlan = 'NA';
 
     // Setbacks
@@ -161,28 +161,28 @@ export default function NavdhanFinance({
 
     // Floor Wise Area
     if (!d.permBasement) d.permBasement = 'NA';
-    if (!d.permGround) d.permGround = 'NA';
+    if (!d.permGround) d.permGround = '';
     if (!d.permFirst) d.permFirst = 'NA';
     if (!d.permSecond) d.permSecond = 'NA';
     if (!d.permThird) d.permThird = 'NA';
     if (!d.permFourth) d.permFourth = 'Nil';
 
     if (!d.constBasement) d.constBasement = 'NA';
-    if (!d.constGround) d.constGround = '1508sqft';
+    if (!d.constGround) d.constGround = '';
     if (!d.constFirst) d.constFirst = 'NA';
     if (!d.constSecond) d.constSecond = 'NA';
     if (!d.constThird) d.constThird = 'NA';
     if (!d.constFourth) d.constFourth = 'NA';
 
     // 21 Valuation
-    if (!d.landAreaSqft) d.landAreaSqft = 2395;
-    if (!d.landRateSqft) d.landRateSqft = 600;
-    if (!d.landValuationVal) d.landValuationVal = 1437000;
+    if (!d.landAreaSqft) d.landAreaSqft = '';
+    if (!d.landRateSqft) d.landRateSqft = '';
+    if (!d.landValuationVal) d.landValuationVal = '';
 
-    if (!d.constructionDesc) d.constructionDesc = 'Construction (RCC GF)';
-    if (!d.constructionAreaSqft) d.constructionAreaSqft = 1508;
-    if (!d.constructionRateSqft) d.constructionRateSqft = 1200;
-    if (!d.constructionValuationVal) d.constructionValuationVal = 1809600;
+    if (!d.constructionDesc) d.constructionDesc = '';
+    if (!d.constructionAreaSqft) d.constructionAreaSqft = '';
+    if (!d.constructionRateSqft) d.constructionRateSqft = '';
+    if (!d.constructionValuationVal) d.constructionValuationVal = '';
     if (!d.stageOfConstruction) d.stageOfConstruction = '100%';
 
     if (!d.amenityCarParking) d.amenityCarParking = 'NA';
@@ -193,33 +193,31 @@ export default function NavdhanFinance({
     if (!d.amenityOther) d.amenityOther = 'NA';
     if (!d.totalAmenitiesCharges) d.totalAmenitiesCharges = 'NA';
 
-    if (!d.totalMarketValue) d.totalMarketValue = 3246600;
+    if (!d.totalMarketValue) d.totalMarketValue = '';
     if (!d.forcedSalePercent) d.forcedSalePercent = 80;
-    if (!d.forcedSaleValue) d.forcedSaleValue = 2597280;
+    if (!d.forcedSaleValue) d.forcedSaleValue = '';
     if (!d.approxRentals) d.approxRentals = 'NA';
 
     // 22 Boundaries & Remarks
-    if (!d.boundaryEastDeed) d.boundaryEastDeed = 'Seller';
-    if (!d.boundaryWestDeed) d.boundaryWestDeed = 'Rajalaxmi Behera';
-    if (!d.boundaryNorthDeed) d.boundaryNorthDeed = 'Canal';
-    if (!d.boundarySouthDeed) d.boundarySouthDeed = 'Harikrushna Patra';
+    if (!d.boundaryEastDeed) d.boundaryEastDeed = '';
+    if (!d.boundaryWestDeed) d.boundaryWestDeed = '';
+    if (!d.boundaryNorthDeed) d.boundaryNorthDeed = '';
+    if (!d.boundarySouthDeed) d.boundarySouthDeed = '';
 
-    if (!d.boundaryEastSketch) d.boundaryEastSketch = 'K Lingaraj Patra';
-    if (!d.boundaryWestSketch) d.boundaryWestSketch = 'K Rajalaxmi Behera';
-    if (!d.boundaryNorthSketch) d.boundaryNorthSketch = 'Road';
-    if (!d.boundarySouthSketch) d.boundarySouthSketch = 'Harikrushna Patra';
+    if (!d.boundaryEastSketch) d.boundaryEastSketch = '';
+    if (!d.boundaryWestSketch) d.boundaryWestSketch = '';
+    if (!d.boundaryNorthSketch) d.boundaryNorthSketch = '';
+    if (!d.boundarySouthSketch) d.boundarySouthSketch = '';
 
-    if (!d.boundaryEastSite) d.boundaryEastSite = 'Vacant land of Karei Lingaraj Patra';
-    if (!d.boundaryWestSite) d.boundaryWestSite = 'Vacant land of Rajalaxmi Behera';
-    if (!d.boundaryNorthSite) d.boundaryNorthSite = '15 feet wide Road';
-    if (!d.boundarySouthSite) d.boundarySouthSite = "Other's vacant land";
+    if (!d.boundaryEastSite) d.boundaryEastSite = '';
+    if (!d.boundaryWestSite) d.boundaryWestSite = '';
+    if (!d.boundaryNorthSite) d.boundaryNorthSite = '';
+    if (!d.boundarySouthSite) d.boundarySouthSite = '';
 
-    if (!d.boundariesMatching) d.boundariesMatching = 'Yes (Boundary matching as per sketch map)';
-    if (!d.remarks) {
-      d.remarks = 'Subject property is a single storied residential building land extent of 2395sqft, having total measured BUA 1508sqft. Approved plan is not provided. All civic amenities are present within 1-2 Kms from the property & about 11-Km from Khallikote market are. Property accessible with 15-feet wide road. The property is coming under Subalaya GP limit & surrounding areas are residential in nature. This building is occupied by customer for residential purpose.\nNote- There is no provision for road in sale deed boundary. Customer has submitted an RI sketch map for the identification & access road-. Report is released basing upon the sketch map.';
-    }
+    if (!d.boundariesMatching) d.boundariesMatching = 'Yes';
+    if (!d.remarks) d.remarks = '';
 
-    if (!d.engineerName) d.engineerName = 'Satyajit Mohanty';
+    if (!d.engineerName) d.engineerName = 'Er. Satyajit Mohanty';
 
     // Attachments
     if (!d.documentImages) d.documentImages = [];

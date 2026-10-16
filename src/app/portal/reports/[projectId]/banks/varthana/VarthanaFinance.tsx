@@ -79,139 +79,134 @@ export default function VarthanaFinance({
     const p = (prefill || {}) as any;
 
     // Header & Application Details
-    if (!d.refNo) d.refNo = projectCode || 'VER/02-20/04';
-    if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '29/02/2020';
+    if (!d.refNo) d.refNo = projectCode || '';
+    if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
     if (!d.valuerName) d.valuerName = 'M/s. S MOHANTY ASSOCIATES';
-    if (!d.schoolName) d.schoolName = p.applicantName || 'Regional College,Nimapada';
-    if (!d.customerRepName) d.customerRepName = p.contactName ? `${p.contactName} (Customer)` : 'Mr. Srikant Kumar Samantray (Customer)';
-    if (!d.contactNos) d.contactNos = p.contactPhone ? `${p.contactName || 'Mr. Srikant Kumar Samantray'}, Mob-${p.contactPhone}` : 'Mr. Srikant Kumar Samantray, Mob-9861045563';
-    if (!d.ownerName) d.ownerName = p.contactName ? `${p.contactName}` : 'Mr. Srikant Kumar Samantray,\nS/O-Mahendra Kumar Samantray';
+    if (!d.schoolName) d.schoolName = p.applicantName || '';
+    if (!d.customerRepName) d.customerRepName = p.contactName ? `${p.contactName} (Customer)` : '';
+    if (!d.contactNos) d.contactNos = p.contactPhone ? `${p.contactName || ''}, Mob-${p.contactPhone}` : '';
+    if (!d.ownerName) d.ownerName = p.contactName ? `${p.contactName}` : '';
     if (!d.holdingType) d.holdingType = 'Free Hold';
-    if (!d.propertyDescription) d.propertyDescription = 'Institutional Premises';
-    if (!d.documentsProvided) d.documentsProvided = 'Copy of Sale deed & approved plan';
-    if (!d.planAndDeedDetails) d.planAndDeedDetails = 'Sale deed No-Top up case\nLayout Plan No- Not Provided, Dated: NA\nApproved Building plan No- Top up case, Dated: NA';
-    if (!d.withinMunicipalLimits) d.withinMunicipalLimits = 'Within Nimapada NAC Limit';
-    if (!d.propertyUsageActual) d.propertyUsageActual = 'Institutional / School';
+    if (!d.propertyDescription) d.propertyDescription = '';
+    if (!d.documentsProvided) d.documentsProvided = '';
+    if (!d.planAndDeedDetails) d.planAndDeedDetails = '';
+    if (!d.withinMunicipalLimits) d.withinMunicipalLimits = '';
+    if (!d.propertyUsageActual) d.propertyUsageActual = '';
 
-    const defaultAddress =
-      p.propertyAddress ||
-      'Hal Khata no-639,Hall Plot no-1949,Sabak Khata no-502,Sabak Plot no-1767(Area=AC.0.100Decs,Kisama-Sarada-2),Mouza-Andia,Tahasil-Nimapada,PS-Nimapada,Dist-Puri,Odisha,Pin-752106';
+    const defaultAddress = p.propertyAddress || '';
     if (!d.addressAsPerDoc) d.addressAsPerDoc = defaultAddress;
     if (!d.addressAtSite) d.addressAtSite = defaultAddress;
-    if (!d.landmark) d.landmark = 'Near Petaghai Road,Nimapada';
-    if (!d.latitude) d.latitude = '20.063900';
-    if (!d.longitude) d.longitude = '85.987783';
+    if (!d.landmark) d.landmark = '';
+    if (!d.latitude) d.latitude = '';
+    if (!d.longitude) d.longitude = '';
     if (!d.natureOfLocation) d.natureOfLocation = 'Institutional';
 
     // Accessibility & Proximity
-    if (!d.existingRoadWidth) d.existingRoadWidth = "20'-00\" wide Road";
+    if (!d.existingRoadWidth) d.existingRoadWidth = '';
     if (!d.siteAccessType) d.siteAccessType = 'Independent access';
-    if (!d.proximityPostOffice) d.proximityPostOffice = '2 Kms';
-    if (!d.proximityBanks) d.proximityBanks = '2 Kms';
-    if (!d.proximityPoliceStation) d.proximityPoliceStation = '2 Kms';
-    if (!d.proximityOtherAmenities) d.proximityOtherAmenities = 'All within 2 to 3 Kms';
+    if (!d.proximityPostOffice) d.proximityPostOffice = '';
+    if (!d.proximityBanks) d.proximityBanks = '';
+    if (!d.proximityPoliceStation) d.proximityPoliceStation = '';
+    if (!d.proximityOtherAmenities) d.proximityOtherAmenities = '';
 
-    if (!d.conversionOrderDetails) d.conversionOrderDetails = 'As per latest ROR all plots are not converted to Homestead';
+    if (!d.conversionOrderDetails) d.conversionOrderDetails = '';
     if (!d.riskHiTension) d.riskHiTension = 'No';
     if (!d.riskWaterBody) d.riskWaterBody = 'No';
 
     // Boundaries
-    if (!d.bndDocEast) d.bndDocEast = 'Plot no-1763';
-    if (!d.bndDocWest) d.bndDocWest = 'Pratibha Chhatoi';
-    if (!d.bndDocNorth) d.bndDocNorth = 'Plot no-1771';
-    if (!d.bndDocSouth) d.bndDocSouth = 'Plot no-1766';
+    if (!d.bndDocEast) d.bndDocEast = '';
+    if (!d.bndDocWest) d.bndDocWest = '';
+    if (!d.bndDocNorth) d.bndDocNorth = '';
+    if (!d.bndDocSouth) d.bndDocSouth = '';
 
-    if (!d.bndSiteEast) d.bndSiteEast = 'Self land & Main Road';
-    if (!d.bndSiteWest) d.bndSiteWest = 'College Building';
-    if (!d.bndSiteNorth) d.bndSiteNorth = 'Pvt. Road(Self)';
-    if (!d.bndSiteSouth) d.bndSiteSouth = '20-feet wide Nala';
+    if (!d.bndSiteEast) d.bndSiteEast = '';
+    if (!d.bndSiteWest) d.bndSiteWest = '';
+    if (!d.bndSiteNorth) d.bndSiteNorth = '';
+    if (!d.bndSiteSouth) d.bndSiteSouth = '';
 
-    if (!d.propertyIdentification) d.propertyIdentification = 'Customer representative Identified';
-    if (!d.sanctionPlanDetails) d.sanctionPlanDetails = 'Plan has been approved by executive officer,NAC Nimapada';
-    if (!d.sanctionedFloors) d.sanctionedFloors = 'G+1';
-    if (!d.constructedUptoFloors) d.constructedUptoFloors = 'G+1';
-    if (!d.sanctionedArea) d.sanctionedArea = 'GF-4000sqft\nFF-4000sqft\nTotal=8000sqft';
-    if (!d.constructedAreaAtSite) d.constructedAreaAtSite = 'GF-4212sqft,\nFF-4212sqft\nTotal=8424sqft';
-    if (!d.farDeviationPercent) d.farDeviationPercent = '5%';
-    if (!d.setbackDeviationComments) d.setbackDeviationComments = '96% plot coverage';
-    if (!d.noOfUnitsSanctioned) d.noOfUnitsSanctioned = 'NA';
-    if (!d.noOfUnitsConstructed) d.noOfUnitsConstructed = 'NA';
+    if (!d.propertyIdentification) d.propertyIdentification = '';
+    if (!d.sanctionPlanDetails) d.sanctionPlanDetails = '';
+    if (!d.sanctionedFloors) d.sanctionedFloors = '';
+    if (!d.constructedUptoFloors) d.constructedUptoFloors = '';
+    if (!d.sanctionedArea) d.sanctionedArea = '';
+    if (!d.constructedAreaAtSite) d.constructedAreaAtSite = '';
+    if (!d.farDeviationPercent) d.farDeviationPercent = '';
+    if (!d.setbackDeviationComments) d.setbackDeviationComments = '';
+    if (!d.noOfUnitsSanctioned) d.noOfUnitsSanctioned = '';
+    if (!d.noOfUnitsConstructed) d.noOfUnitsConstructed = '';
     if (!d.deviationRegularized) d.deviationRegularized = 'NA';
-    if (!d.deviationRegularizedHow) d.deviationRegularizedHow = 'NA';
+    if (!d.deviationRegularizedHow) d.deviationRegularizedHow = '';
 
     // Technical Details
     if (!d.typeOfProperty) d.typeOfProperty = 'Institutional';
-    if (!d.noOfStories) d.noOfStories = '2';
+    if (!d.noOfStories) d.noOfStories = '';
     if (!d.tenementPosition) d.tenementPosition = 'Self Occupied';
     if (!d.constructionType) d.constructionType = 'R.C.C framed structure';
     if (!d.noOfLifts) d.noOfLifts = 'Nil';
     if (!d.occupancyStatus) d.occupancyStatus = 'Self-owned';
-    if (!d.noOfOccupants) d.noOfOccupants = '1 (Regional College)';
-    if (!d.commercialUsageDetails) d.commercialUsageDetails = 'NA';
+    if (!d.noOfOccupants) d.noOfOccupants = '';
+    if (!d.commercialUsageDetails) d.commercialUsageDetails = '';
 
     // Finishes
-    if (!d.finishExterior) d.finishExterior = 'Good';
-    if (!d.finishWall) d.finishWall = 'Good';
-    if (!d.finishFlooring) d.finishFlooring = 'Tile flooring';
-    if (!d.finishDoorWindow) d.finishDoorWindow = 'Hard wood door & windows';
-    if (!d.finishFittings) d.finishFittings = 'Good Quality';
+    if (!d.finishExterior) d.finishExterior = '';
+    if (!d.finishWall) d.finishWall = '';
+    if (!d.finishFlooring) d.finishFlooring = '';
+    if (!d.finishDoorWindow) d.finishDoorWindow = '';
+    if (!d.finishFittings) d.finishFittings = '';
 
-    if (!d.totalPermissibleArea) d.totalPermissibleArea = '8000sqft';
-    if (!d.totalConstructedArea) d.totalConstructedArea = '8424sqft';
-    if (!d.landArea) d.landArea = '4356sqft (AC.0.100Decs)';
+    if (!d.totalPermissibleArea) d.totalPermissibleArea = '';
+    if (!d.totalConstructedArea) d.totalConstructedArea = '';
+    if (!d.landArea) d.landArea = '';
 
     // Floor-wise
-    if (!d.floorConstGF) d.floorConstGF = '4212 sqft';
-    if (!d.floorConstFF) d.floorConstFF = '4212 sqft';
-    if (!d.floorPermGF) d.floorPermGF = '4000 sqft';
-    if (!d.floorPermFF) d.floorPermFF = '4000 sqft';
+    if (!d.floorConstGF) d.floorConstGF = '';
+    if (!d.floorConstFF) d.floorConstFF = '';
+    if (!d.floorPermGF) d.floorPermGF = '';
+    if (!d.floorPermFF) d.floorPermFF = '';
 
     // Completion Status
-    if (!d.stageOfConstruction) d.stageOfConstruction = '100%';
-    if (!d.ageOfProperty) d.ageOfProperty = 'GF-5-Years, FF-Recently Constructed';
-    if (!d.residualAge) d.residualAge = '70-Years';
+    if (!d.stageOfConstruction) d.stageOfConstruction = '';
+    if (!d.ageOfProperty) d.ageOfProperty = '';
+    if (!d.residualAge) d.residualAge = '';
 
     // Valuation
-    if (!d.valLandAreaNum) d.valLandAreaNum = 4356;
-    if (!d.valLandRateNum) d.valLandRateNum = 400;
-    if (!d.valLandTotalNum) d.valLandTotalNum = 1742400;
+    if (d.valLandAreaNum === undefined) d.valLandAreaNum = 0;
+    if (d.valLandRateNum === undefined) d.valLandRateNum = 0;
+    if (d.valLandTotalNum === undefined) d.valLandTotalNum = 0;
 
-    if (!d.valConstAreaNum) d.valConstAreaNum = 8000;
-    if (!d.valConstRateNum) d.valConstRateNum = 1300;
-    if (!d.valConstTotalNum) d.valConstTotalNum = 10400000;
+    if (d.valConstAreaNum === undefined) d.valConstAreaNum = 0;
+    if (d.valConstRateNum === undefined) d.valConstRateNum = 0;
+    if (d.valConstTotalNum === undefined) d.valConstTotalNum = 0;
 
-    if (!d.valDepPercentNum) d.valDepPercentNum = 6;
-    if (!d.valDepAmountNum) d.valDepAmountNum = 624000;
-    if (!d.valPresentAfterDepNum) d.valPresentAfterDepNum = 9776000;
-    if (!d.valTotalValueNum) d.valTotalValueNum = 11518400;
+    if (d.valDepPercentNum === undefined) d.valDepPercentNum = 0;
+    if (d.valDepAmountNum === undefined) d.valDepAmountNum = 0;
+    if (d.valPresentAfterDepNum === undefined) d.valPresentAfterDepNum = 0;
+    if (d.valTotalValueNum === undefined) d.valTotalValueNum = 0;
 
-    if (!d.valLandArea) d.valLandArea = '4356sqft';
-    if (!d.valLandRate) d.valLandRate = 'Rs.400/-';
-    if (!d.valLandTotal) d.valLandTotal = 'Rs.17,42,400/-';
+    if (!d.valLandArea) d.valLandArea = '';
+    if (!d.valLandRate) d.valLandRate = '';
+    if (!d.valLandTotal) d.valLandTotal = '';
 
-    if (!d.valConstArea) d.valConstArea = '8000Sqfts';
-    if (!d.valConstRate) d.valConstRate = 'Rs.1300/-';
-    if (!d.valConstTotal) d.valConstTotal = 'Rs.1,04,00,000/-';
+    if (!d.valConstArea) d.valConstArea = '';
+    if (!d.valConstRate) d.valConstRate = '';
+    if (!d.valConstTotal) d.valConstTotal = '';
 
-    if (!d.valDepPercent) d.valDepPercent = '6%';
-    if (!d.valDepAmount) d.valDepAmount = '6,24,000/-';
-    if (!d.valPresentAfterDep) d.valPresentAfterDep = 'Rs.97,76,000/-';
-    if (!d.valTotalValue) d.valTotalValue = 'Rs.1,15,18,400/-';
+    if (!d.valDepPercent) d.valDepPercent = '';
+    if (!d.valDepAmount) d.valDepAmount = '';
+    if (!d.valPresentAfterDep) d.valPresentAfterDep = '';
+    if (!d.valTotalValue) d.valTotalValue = '';
 
     // Net Mortgagable
-    if (!d.govtRateValue) d.govtRateValue = 'NA';
+    if (!d.govtRateValue) d.govtRateValue = '';
     if (!d.forcedMarketPercent) d.forcedMarketPercent = '75% of the market value';
-    if (!d.forcedMarketValue) d.forcedMarketValue = 'Rs.86,38,800/-';
+    if (!d.forcedMarketValue) d.forcedMarketValue = '';
     if (!d.earlierValued) d.earlierValued = 'No';
     if (!d.demolitionRisk) d.demolitionRisk = 'No';
     if (!d.marketabilityComments) d.marketabilityComments = 'High';
-    if (!d.adverseRemarks) d.adverseRemarks = 'NA';
+    if (!d.adverseRemarks) d.adverseRemarks = '';
 
     // Remarks & Sign-off
-    if (!d.remarks) {
-      d.remarks =
-        'REMARKS:- Subject property is a G+1 institutional building land extent of AC.0.100sqft (4356sqft),whose GF was constructed about 6-years back. Plan has been approved by executive officer Nimapada NAC for G+1 institutional building Property located in developing area of Nimapada NAC & all civic amenities are present within 1-2Kms. Valuation has been done for land and approved built up area of G+1 building only. In sale deed boundaries there is no provision for road but at site there is a 15-feet wide access pvt. road available at site. Customer has submitted Amin report for perusal. Detailed Amin sketch map & boundary declaration affidavit to be documented for access road details.';
-    }
+    if (!d.remarks) d.remarks = '';
     if (!d.place) d.place = 'Bhubaneswar';
 
     // Attachments
@@ -801,6 +796,16 @@ export default function VarthanaFinance({
               <Field label="Setback Comments">
                 <input type="text" className={inputCls} value={fields.setbackDeviationComments || ''} onChange={(e) => updateField('setbackDeviationComments', e.target.value)} disabled={isReadOnly} />
               </Field>
+              <Field label="Can Deviation be Regularized?">
+                <select className={selectCls} value={fields.deviationRegularized || 'NA'} onChange={(e) => updateField('deviationRegularized', e.target.value)} disabled={isReadOnly}>
+                  <option value="NA">NA</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              </Field>
+              <Field label="If Regularized, How?">
+                <input type="text" className={inputCls} value={fields.deviationRegularizedHow || ''} onChange={(e) => updateField('deviationRegularizedHow', e.target.value)} disabled={isReadOnly} />
+              </Field>
             </div>
           </Section>
         </div>
@@ -888,7 +893,7 @@ export default function VarthanaFinance({
               </table>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <Field label="Total Permissible Area">
                 <input type="text" className={inputCls} value={fields.totalPermissibleArea || ''} onChange={(e) => updateField('totalPermissibleArea', e.target.value)} disabled={isReadOnly} />
               </Field>
@@ -897,6 +902,19 @@ export default function VarthanaFinance({
               </Field>
               <Field label="Land Area Extent">
                 <input type="text" className={inputCls} value={fields.landArea || ''} onChange={(e) => updateField('landArea', e.target.value)} disabled={isReadOnly} />
+              </Field>
+            </div>
+
+            <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mt-4 mb-2">Completion Status</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Field label="Stage of Construction">
+                <input type="text" className={inputCls} value={fields.stageOfConstruction || ''} onChange={(e) => updateField('stageOfConstruction', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Age of Property">
+                <input type="text" className={inputCls} value={fields.ageOfProperty || ''} onChange={(e) => updateField('ageOfProperty', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Residual Age">
+                <input type="text" className={inputCls} value={fields.residualAge || ''} onChange={(e) => updateField('residualAge', e.target.value)} disabled={isReadOnly} />
               </Field>
             </div>
           </Section>
@@ -910,7 +928,7 @@ export default function VarthanaFinance({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valLandAreaNum ?? 4356}
+                  value={fields.valLandAreaNum ?? 0}
                   onChange={(e) => updateField('valLandAreaNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />
@@ -919,7 +937,7 @@ export default function VarthanaFinance({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valLandRateNum ?? 400}
+                  value={fields.valLandRateNum ?? 0}
                   onChange={(e) => updateField('valLandRateNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />
@@ -936,7 +954,7 @@ export default function VarthanaFinance({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valConstAreaNum ?? 8000}
+                  value={fields.valConstAreaNum ?? 0}
                   onChange={(e) => updateField('valConstAreaNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />
@@ -945,7 +963,7 @@ export default function VarthanaFinance({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valConstRateNum ?? 1300}
+                  value={fields.valConstRateNum ?? 0}
                   onChange={(e) => updateField('valConstRateNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />
@@ -962,7 +980,7 @@ export default function VarthanaFinance({
                 <input
                   type="number"
                   className={inputCls}
-                  value={fields.valDepPercentNum ?? 6}
+                  value={fields.valDepPercentNum ?? 0}
                   onChange={(e) => updateField('valDepPercentNum', parseFloat(e.target.value) || 0)}
                   disabled={isReadOnly}
                 />
@@ -1000,7 +1018,7 @@ export default function VarthanaFinance({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <Field label="Value as per Govt Rates">
                 <input type="text" className={inputCls} value={fields.govtRateValue || ''} onChange={(e) => updateField('govtRateValue', e.target.value)} disabled={isReadOnly} />
               </Field>
@@ -1011,8 +1029,17 @@ export default function VarthanaFinance({
                   <option value="Low">Low</option>
                 </select>
               </Field>
-              <Field label="Any Demolition Risk?">
+              <Field label="Demolition Risk?">
                 <input type="text" className={inputCls} value={fields.demolitionRisk || ''} onChange={(e) => updateField('demolitionRisk', e.target.value)} disabled={isReadOnly} />
+              </Field>
+              <Field label="Earlier Valued by You?">
+                <select className={selectCls} value={fields.earlierValued || 'No'} onChange={(e) => updateField('earlierValued', e.target.value)} disabled={isReadOnly}>
+                  <option value="No">No</option>
+                  <option value="Yes">Yes</option>
+                </select>
+              </Field>
+              <Field label="Other Adverse Remarks">
+                <input type="text" className={inputCls} value={fields.adverseRemarks || ''} onChange={(e) => updateField('adverseRemarks', e.target.value)} disabled={isReadOnly} />
               </Field>
             </div>
           </Section>

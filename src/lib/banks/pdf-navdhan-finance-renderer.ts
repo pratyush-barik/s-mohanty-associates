@@ -49,23 +49,17 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
       },
       {
         label: label,
-        value: '',
+        value: value || 'NA',
         labelWidth: labelW,
-        valueWidth: 0,
+        valueWidth: valW,
         labelBold: false,
-      },
-      {
-        label: value || 'NA',
-        value: '',
-        labelWidth: valW,
-        valueWidth: 0,
-        labelBold: boldVal,
+        bold: boldVal,
       },
     ]);
   }
 
   async drawContent(): Promise<void> {
-    this.addPage();
+    // NOTE: init() already adds page 1. Do NOT call this.addPage() here.
 
     // Top Header Title
     this.drawCenteredTitle('VALUATION REPORT', 14, true);
@@ -76,21 +70,21 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
     // ==========================================
     const halfW = CONTENT_W / 2;
     this.drawKeyValueRow([
-      { label: 'Branch Name', value: this.getF('branchName', 'Bhubaneswar'), labelWidth: 100, valueWidth: halfW - 100 },
-      { label: 'Type of Case', value: this.getF('typeOfCase', 'Non-BT Case'), labelWidth: 100, valueWidth: halfW - 100 },
+      { label: 'Branch Name', value: this.getF('branchName', ''), labelWidth: 100, valueWidth: halfW - 100 },
+      { label: 'Type of Case', value: this.getF('typeOfCase', ''), labelWidth: 100, valueWidth: halfW - 100 },
     ]);
     this.drawKeyValueRow([
       { label: 'Valuer Name', value: this.getF('valuerName', 'Er. Satyajit Mohanty'), labelWidth: 100, valueWidth: halfW - 100, labelBold: true },
-      { label: 'Date of Visit', value: this.getF('dateOfVisit', '07.03.2026'), labelWidth: 100, valueWidth: halfW - 100 },
+      { label: 'Date of Visit', value: this.getF('dateOfVisit', ''), labelWidth: 100, valueWidth: halfW - 100 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Case Ref. No', value: this.getF('caseRefNo', this.projectCode || 'OD007LE000912'), labelWidth: 100, valueWidth: halfW - 100 },
-      { label: 'Date of Report', value: this.getF('reportDate', '09.03.2026'), labelWidth: 100, valueWidth: halfW - 100 },
+      { label: 'Case Ref. No', value: this.getF('caseRefNo', this.projectCode || ''), labelWidth: 100, valueWidth: halfW - 100 },
+      { label: 'Date of Report', value: this.getF('reportDate', ''), labelWidth: 100, valueWidth: halfW - 100 },
     ]);
     this.drawKeyValueRow([
       {
         label: 'Contacted Person for property inspection (Name/ Mobile)',
-        value: this.getF('contactPerson', 'Burudi Rukmini Patra- 7377263112'),
+        value: this.getF('contactPerson', ''),
         labelWidth: 180,
         valueWidth: CONTENT_W - 180,
       },
@@ -103,17 +97,17 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
     // ==========================================
     this.drawNavdhanSectionHeader('BASIC DETAILS');
 
-    this.drawNavdhanRow('1', "Applicant/s Name/s", this.getF('applicantName', 'Burudi Rukmini Patra'), true);
+    this.drawNavdhanRow('1', "Applicant/s Name/s", this.getF('applicantName', ''), true);
 
     // Row 2: Type of property & Current Usage
-    const p2LabelW = 200;
-    const p2RemW = CONTENT_W - 24 - p2LabelW;
-    const p2SubW = p2RemW / 2;
+    const p2LabelW = 120;
+    const p2ValW = 120;
+    const p2SubLabelW = 90;
+    const p2SubValW = CONTENT_W - 24 - p2LabelW - p2ValW - p2SubLabelW;
     this.drawKeyValueRow([
       { label: '2', value: '', labelWidth: 24, valueWidth: 0, labelBold: true },
-      { label: 'Type of property', value: '', labelWidth: p2LabelW, valueWidth: 0 },
-      { label: this.getF('propertyTypeDesc', 'Single storied Residential building'), value: '', labelWidth: p2SubW - 60, valueWidth: 0 },
-      { label: 'Current Usage', value: this.getF('currentUsage', 'Residential building'), labelWidth: 70, valueWidth: p2SubW - 10 },
+      { label: 'Type of property', value: this.getF('propertyTypeDesc', ''), labelWidth: p2LabelW, valueWidth: p2ValW },
+      { label: 'Current Usage', value: this.getF('currentUsage', ''), labelWidth: p2SubLabelW, valueWidth: p2SubValW },
     ]);
 
     this.drawNavdhanRow('3', 'Address at site', this.getF('addressAtSite', ''));
@@ -133,27 +127,26 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
 
     // Row 5: Location sub-breakdown
     const locRows = [
-      { label: 'Type (Comm., Res, Ind, Mix)', val: this.getF('localityType', 'Residential') },
-      { label: 'Class of Locality', val: this.getF('localityClass', 'Middle Class') },
-      { label: 'Site is (Dev, Under Dev)', val: this.getF('siteStatus', 'Developing') },
-      { label: 'Proximity to civic amenities/public transport', val: this.getF('proximityAmenities', 'Within 1-2 Kms') },
-      { label: 'Railway Station', val: this.getF('railwayStation', '1-Km (Rambha Railway Station)') },
-      { label: 'Bus Stop', val: this.getF('busStop', '1-Kms (Rambha bus stand)') },
+      { label: 'Type (Comm., Res, Ind, Mix)', val: this.getF('localityType', '') },
+      { label: 'Class of Locality', val: this.getF('localityClass', '') },
+      { label: 'Site is (Dev, Under Dev)', val: this.getF('siteStatus', '') },
+      { label: 'Proximity to civic amenities/public transport', val: this.getF('proximityAmenities', '') },
+      { label: 'Railway Station', val: this.getF('railwayStation', '') },
+      { label: 'Bus Stop', val: this.getF('busStop', '') },
     ];
 
     locRows.forEach((r, idx) => {
       this.drawKeyValueRow([
         { label: idx === 0 ? '5' : '', value: '', labelWidth: 24, valueWidth: 0, labelBold: true },
         { label: idx === 0 ? 'Location' : '', value: '', labelWidth: 130, valueWidth: 0, labelBold: idx === 0 },
-        { label: r.label, value: '', labelWidth: 170, valueWidth: 0 },
-        { label: r.val || 'NA', value: '', labelWidth: CONTENT_W - 24 - 130 - 170, valueWidth: 0 },
+        { label: r.label, value: r.val || 'NA', labelWidth: 170, valueWidth: CONTENT_W - 24 - 130 - 170 },
       ]);
     });
 
-    this.drawNavdhanRow('6', 'Close Vicinity / Landmark', this.getF('landmark', 'Near Aurobindo UP School'));
-    this.drawNavdhanRow('', 'Surrounding Habitation', this.getF('surroundingHabitation', '(40%)'));
-    this.drawNavdhanRow('7', 'Distance from City Center', this.getF('distanceCityCenter', '11-Kms from Khallikote market Area'));
-    this.drawNavdhanRow('8', 'Condition and width of approach road', this.getF('approachRoad', '15-Feet wide Road'));
+    this.drawNavdhanRow('6', 'Close Vicinity / Landmark', this.getF('landmark', ''));
+    this.drawNavdhanRow('', 'Surrounding Habitation', this.getF('surroundingHabitation', ''));
+    this.drawNavdhanRow('7', 'Distance from City Center', this.getF('distanceCityCenter', ''));
+    this.drawNavdhanRow('8', 'Condition and width of approach road', this.getF('approachRoad', ''));
 
     this.advanceCursor(4);
 
@@ -166,57 +159,55 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: '9', value: '', labelWidth: 24, valueWidth: 0, labelBold: true },
       { label: 'Occupant', value: '', labelWidth: 130, valueWidth: 0, labelBold: true },
-      { label: 'Vacant/Occupied', value: this.getF('occupantStatus', 'Self-Occupied'), labelWidth: 170, valueWidth: CONTENT_W - 24 - 130 - 170 },
+      { label: 'Vacant/Occupied', value: this.getF('occupantStatus', ''), labelWidth: 170, valueWidth: CONTENT_W - 24 - 130 - 170 },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
       { label: '', value: '', labelWidth: 130, valueWidth: 0 },
-      { label: 'Name of Occupant', value: this.getF('occupantName', 'Owner'), labelWidth: 170, valueWidth: CONTENT_W - 24 - 130 - 170 },
+      { label: 'Name of Occupant', value: this.getF('occupantName', ''), labelWidth: 170, valueWidth: CONTENT_W - 24 - 130 - 170 },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
       { label: '', value: '', labelWidth: 130, valueWidth: 0 },
-      { label: 'Relation with applicant', value: this.getF('occupantRelation', 'Self'), labelWidth: 170, valueWidth: CONTENT_W - 24 - 130 - 170 },
+      { label: 'Relation with applicant', value: this.getF('occupantRelation', ''), labelWidth: 170, valueWidth: CONTENT_W - 24 - 130 - 170 },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
       { label: '', value: '', labelWidth: 130, valueWidth: 0 },
-      { label: 'Property Demarcation', value: this.getF('propertyDemarcation', 'No'), labelWidth: 170, valueWidth: CONTENT_W - 24 - 130 - 170 },
+      { label: 'Property Demarcation', value: this.getF('propertyDemarcation', ''), labelWidth: 170, valueWidth: CONTENT_W - 24 - 130 - 170 },
     ]);
 
     // 10. Building details
     const bldRows = [
-      { label: 'Property Identified through', val: this.getF('propertyIdentifiedThrough', 'Customer') },
-      { label: 'Type of structure', val: this.getF('structureType', 'RCC framed structure') },
-      { label: 'Land', val: this.getF('landPlotAreaDesc', '2395sqft') },
+      { label: 'Property Identified through', val: this.getF('propertyIdentifiedThrough', '') },
+      { label: 'Type of structure', val: this.getF('structureType', '') },
+      { label: 'Land', val: this.getF('landPlotAreaDesc', '') },
       { label: 'No of Blocks', val: this.getF('noOfBlocks', 'NA') },
       { label: 'No of Units', val: this.getF('noOfUnits', 'NA') },
-      { label: 'No. of Floors', val: this.getF('noOfFloors', 'GF') },
+      { label: 'No. of Floors', val: this.getF('noOfFloors', '') },
       { label: 'No. of Lifts', val: this.getF('noOfLifts', 'Nil') },
     ];
     bldRows.forEach((r, idx) => {
       this.drawKeyValueRow([
         { label: idx === 0 ? '10' : '', value: '', labelWidth: 24, valueWidth: 0, labelBold: true },
         { label: idx === 0 ? 'Building details' : '', value: '', labelWidth: 130, valueWidth: 0, labelBold: idx === 0 },
-        { label: r.label, value: '', labelWidth: 170, valueWidth: 0 },
-        { label: r.val || 'NA', value: '', labelWidth: CONTENT_W - 24 - 130 - 170, valueWidth: 0 },
+        { label: r.label, value: r.val || 'NA', labelWidth: 170, valueWidth: CONTENT_W - 24 - 130 - 170 },
       ]);
     });
 
     // 11. Unit details
     const unitRows = [
       { label: 'Located on Floor No.', val: this.getF('unitFloorNo', 'NA') },
-      { label: 'No. of rooms', val: this.getF('unitRooms', 'GF=10-rooms') },
-      { label: 'Built up area', val: this.getF('unitBuaMeasured', 'GF -1508sqft') },
-      { label: 'Carpet area(approx.)', val: this.getF('unitCarpetArea', '1281sqft (Actual)') },
+      { label: 'No. of rooms', val: this.getF('unitRooms', '') },
+      { label: 'Built up area', val: this.getF('unitBuaMeasured', '') },
+      { label: 'Carpet area(approx.)', val: this.getF('unitCarpetArea', '') },
       { label: 'Remarks on view from property', val: this.getF('unitRemarksView', 'NA') },
     ];
     unitRows.forEach((r, idx) => {
       this.drawKeyValueRow([
         { label: idx === 0 ? '11' : '', value: '', labelWidth: 24, valueWidth: 0, labelBold: true },
         { label: idx === 0 ? 'Unit details' : '', value: '', labelWidth: 130, valueWidth: 0, labelBold: idx === 0 },
-        { label: r.label, value: '', labelWidth: 170, valueWidth: 0 },
-        { label: r.val || 'NA', value: '', labelWidth: CONTENT_W - 24 - 130 - 170, valueWidth: 0 },
+        { label: r.label, value: r.val || 'NA', labelWidth: 170, valueWidth: CONTENT_W - 24 - 130 - 170 },
       ]);
     });
 
@@ -224,16 +215,16 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: '12', value: '', labelWidth: 24, valueWidth: 0, labelBold: true },
       { label: 'Quality of construction (Good /Avg./ Bad)', value: '', labelWidth: 200, valueWidth: 0 },
-      { label: 'Exteriors', value: this.getF('qualityExteriors', 'Average'), labelWidth: 60, valueWidth: (CONTENT_W - 224) / 2 - 60 },
-      { label: 'Interiors', value: this.getF('qualityInteriors', 'Average'), labelWidth: 60, valueWidth: (CONTENT_W - 224) / 2 - 60 },
+      { label: 'Exteriors', value: this.getF('qualityExteriors', ''), labelWidth: 60, valueWidth: (CONTENT_W - 224) / 2 - 60 },
+      { label: 'Interiors', value: this.getF('qualityInteriors', ''), labelWidth: 60, valueWidth: (CONTENT_W - 224) / 2 - 60 },
     ]);
 
     // 13. Age of property & Residual life
     const halfRowW = (CONTENT_W - 24 - 200) / 2;
     this.drawKeyValueRow([
       { label: '13', value: '', labelWidth: 24, valueWidth: 0, labelBold: true },
-      { label: 'Age of the property', value: this.getF('ageOfProperty', '12-Year'), labelWidth: 200, valueWidth: halfRowW },
-      { label: 'Residual life', value: this.getF('residualLife', '48-Years'), labelWidth: 70, valueWidth: halfRowW - 70 },
+      { label: 'Age of the property', value: this.getF('ageOfProperty', ''), labelWidth: 200, valueWidth: halfRowW },
+      { label: 'Residual life', value: this.getF('residualLife', ''), labelWidth: 70, valueWidth: halfRowW - 70 },
     ]);
 
     this.advanceCursor(4);
@@ -243,10 +234,10 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
     // ==========================================
     this.drawNavdhanSectionHeader('SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS');
 
-    this.drawNavdhanRow('14', 'Sanctioned plans verified with approval no', this.getF('sanctionApprovalNo', 'Approved plan is not provided'));
-    this.drawNavdhanRow('15', 'Ownership type (Leasehold/ Freehold)', this.getF('ownershipType', 'Freehold (Homestead)'));
-    this.drawNavdhanRow('16', 'Property documents verified', this.getF('documentsVerified', 'Copy of Sale deed, ROR & Sketch map'));
-    this.drawNavdhanRow('17', 'Is the property within Municipal Limits', this.getF('municipalLimits', 'Yes (Within Subalaya GP limit)'));
+    this.drawNavdhanRow('14', 'Sanctioned plans verified with approval no', this.getF('sanctionApprovalNo', ''));
+    this.drawNavdhanRow('15', 'Ownership type (Leasehold/ Freehold)', this.getF('ownershipType', ''));
+    this.drawNavdhanRow('16', 'Property documents verified', this.getF('documentsVerified', ''));
+    this.drawNavdhanRow('17', 'Is the property within Municipal Limits', this.getF('municipalLimits', ''));
     this.drawNavdhanRow('18', 'Permissible usage allow as per master plan', this.getF('permissibleUsageMasterPlan', 'NA'));
 
     // 19. Setbacks Table
@@ -290,22 +281,22 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
       { label: 'Permissible area', value: '', labelWidth: 130, valueWidth: 0 },
-      { label: this.getF('permBasement', 'NA'), value: '', labelWidth: 50, valueWidth: 0 },
-      { label: this.getF('permGround', 'NA'), value: '', labelWidth: 55, valueWidth: 0 },
-      { label: this.getF('permFirst', 'NA'), value: '', labelWidth: 55, valueWidth: 0 },
-      { label: this.getF('permSecond', 'NA'), value: '', labelWidth: 55, valueWidth: 0 },
-      { label: this.getF('permThird', 'NA'), value: '', labelWidth: 50, valueWidth: 0 },
-      { label: this.getF('permFourth', 'Nil'), value: '', labelWidth: CONTENT_W - 364, valueWidth: 0 },
+      { label: '', value: this.getF('permBasement', 'NA'), labelWidth: 0, valueWidth: 50 },
+      { label: '', value: this.getF('permGround', 'NA'), labelWidth: 0, valueWidth: 55 },
+      { label: '', value: this.getF('permFirst', 'NA'), labelWidth: 0, valueWidth: 55 },
+      { label: '', value: this.getF('permSecond', 'NA'), labelWidth: 0, valueWidth: 55 },
+      { label: '', value: this.getF('permThird', 'NA'), labelWidth: 0, valueWidth: 50 },
+      { label: '', value: this.getF('permFourth', 'Nil'), labelWidth: 0, valueWidth: CONTENT_W - 364 },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
       { label: 'Total Constructed', value: '', labelWidth: 130, valueWidth: 0, labelBold: true },
-      { label: this.getF('constBasement', 'NA'), value: '', labelWidth: 50, valueWidth: 0 },
-      { label: this.getF('constGround', '1508sqft'), value: '', labelWidth: 55, valueWidth: 0 },
-      { label: this.getF('constFirst', 'NA'), value: '', labelWidth: 55, valueWidth: 0 },
-      { label: this.getF('constSecond', 'NA'), value: '', labelWidth: 55, valueWidth: 0 },
-      { label: this.getF('constThird', 'NA'), value: '', labelWidth: 50, valueWidth: 0 },
-      { label: this.getF('constFourth', 'NA'), value: '', labelWidth: CONTENT_W - 364, valueWidth: 0 },
+      { label: '', value: this.getF('constBasement', 'NA'), labelWidth: 0, valueWidth: 50 },
+      { label: '', value: this.getF('constGround', ''), labelWidth: 0, valueWidth: 55 },
+      { label: '', value: this.getF('constFirst', 'NA'), labelWidth: 0, valueWidth: 55 },
+      { label: '', value: this.getF('constSecond', 'NA'), labelWidth: 0, valueWidth: 55 },
+      { label: '', value: this.getF('constThird', 'NA'), labelWidth: 0, valueWidth: 50 },
+      { label: '', value: this.getF('constFourth', 'NA'), labelWidth: 0, valueWidth: CONTENT_W - 364 },
     ]);
 
     this.advanceCursor(4);
@@ -336,7 +327,7 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
     ]);
 
     // Construction row
-    const constrDesc = this.getF('constructionDesc', 'Construction (RCC GF)');
+    const constrDesc = this.getF('constructionDesc', 'Construction');
     const constrArea = this.getF('constructionAreaSqft', '1508');
     const constrRate = this.getF('constructionRateSqft', '1200');
     const constrVal = Number(this.getF('constructionValuationVal', 1809600));
@@ -381,17 +372,16 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
-      { label: this.getF('amenityCarParking', 'NA'), value: '', labelWidth: amColW, valueWidth: 0 },
-      { label: this.getF('amenityPlc', 'NA'), value: '', labelWidth: amColW, valueWidth: 0 },
-      { label: this.getF('amenityIdc', 'NA'), value: '', labelWidth: amColW, valueWidth: 0 },
-      { label: this.getF('amenityEdc', 'NA'), value: '', labelWidth: amColW, valueWidth: 0 },
-      { label: this.getF('amenityPowerBackup', 'NA'), value: '', labelWidth: amColW, valueWidth: 0 },
-      { label: this.getF('amenityOther', 'NA'), value: '', labelWidth: CONTENT_W - 24 - 5 * amColW, valueWidth: 0 },
+      { label: '', value: this.getF('amenityCarParking', 'NA'), labelWidth: 0, valueWidth: amColW },
+      { label: '', value: this.getF('amenityPlc', 'NA'), labelWidth: 0, valueWidth: amColW },
+      { label: '', value: this.getF('amenityIdc', 'NA'), labelWidth: 0, valueWidth: amColW },
+      { label: '', value: this.getF('amenityEdc', 'NA'), labelWidth: 0, valueWidth: amColW },
+      { label: '', value: this.getF('amenityPowerBackup', 'NA'), labelWidth: 0, valueWidth: amColW },
+      { label: '', value: this.getF('amenityOther', 'NA'), labelWidth: 0, valueWidth: CONTENT_W - 24 - 5 * amColW },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
-      { label: 'Total Amenities charges', value: '', labelWidth: 220, valueWidth: 0, labelBold: true },
-      { label: this.getF('totalAmenitiesCharges', 'NA'), value: '', labelWidth: CONTENT_W - 244, valueWidth: 0 },
+      { label: 'Total Amenities charges', value: this.getF('totalAmenitiesCharges', 'NA'), labelWidth: 220, valueWidth: CONTENT_W - 244, labelBold: true },
     ]);
 
     // Market Value Summary
@@ -402,18 +392,15 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
-      { label: 'Total Market Value of Property (A+B) as on date', value: '', labelWidth: 290, valueWidth: 0, labelBold: true },
-      { label: `Rs.${formatIndianCurrency(totalMarketVal)}/-`, value: '', labelWidth: CONTENT_W - 314, valueWidth: 0, labelBold: true },
+      { label: 'Total Market Value of Property (A+B) as on date', value: totalMarketVal ? `Rs.${formatIndianCurrency(totalMarketVal)}/-` : '', labelWidth: 290, valueWidth: CONTENT_W - 314, labelBold: true, bold: true },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
-      { label: 'Forced Sale Value', value: '', labelWidth: 290, valueWidth: 0, labelBold: true },
-      { label: `Rs.${formatIndianCurrency(forcedSaleVal)}/-`, value: '', labelWidth: CONTENT_W - 314, valueWidth: 0, labelBold: true },
+      { label: 'Forced Sale Value', value: forcedSaleVal ? `Rs.${formatIndianCurrency(forcedSaleVal)}/-` : '', labelWidth: 290, valueWidth: CONTENT_W - 314, labelBold: true, bold: true },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
-      { label: 'Approx. Rentals in case of 100% complete property', value: '', labelWidth: 290, valueWidth: 0 },
-      { label: approxRentals, value: '', labelWidth: CONTENT_W - 314, valueWidth: 0 },
+      { label: 'Approx. Rentals in case of 100% complete property', value: approxRentals, labelWidth: 290, valueWidth: CONTENT_W - 314 },
     ]);
 
     this.advanceCursor(4);
@@ -434,54 +421,54 @@ export class PDFNavdhanFinanceRenderer extends PDFBankRenderer {
     ]);
 
     const bDeed = [
-      this.getF('boundaryEastDeed', 'Seller'),
-      this.getF('boundaryWestDeed', 'Rajalaxmi Behera'),
-      this.getF('boundaryNorthDeed', 'Canal'),
-      this.getF('boundarySouthDeed', 'Harikrushna Patra'),
+      this.getF('boundaryEastDeed', ''),
+      this.getF('boundaryWestDeed', ''),
+      this.getF('boundaryNorthDeed', ''),
+      this.getF('boundarySouthDeed', ''),
     ];
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
       { label: 'As per Sale deed', value: '', labelWidth: 110, valueWidth: 0 },
-      { label: bDeed[0], value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: bDeed[1], value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: bDeed[2], value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: bDeed[3], value: '', labelWidth: CONTENT_W - 24 - 110 - 3 * bColW, valueWidth: 0 },
+      { label: '', value: bDeed[0], labelWidth: 0, valueWidth: bColW },
+      { label: '', value: bDeed[1], labelWidth: 0, valueWidth: bColW },
+      { label: '', value: bDeed[2], labelWidth: 0, valueWidth: bColW },
+      { label: '', value: bDeed[3], labelWidth: 0, valueWidth: CONTENT_W - 24 - 110 - 3 * bColW },
     ]);
 
     const bSketch = [
-      this.getF('boundaryEastSketch', 'K Lingaraj Patra'),
-      this.getF('boundaryWestSketch', 'K Rajalaxmi Behera'),
-      this.getF('boundaryNorthSketch', 'Road'),
-      this.getF('boundarySouthSketch', 'Harikrushna Patra'),
+      this.getF('boundaryEastSketch', ''),
+      this.getF('boundaryWestSketch', ''),
+      this.getF('boundaryNorthSketch', ''),
+      this.getF('boundarySouthSketch', ''),
     ];
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
       { label: 'As per Sketch map', value: '', labelWidth: 110, valueWidth: 0 },
-      { label: bSketch[0], value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: bSketch[1], value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: bSketch[2], value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: bSketch[3], value: '', labelWidth: CONTENT_W - 24 - 110 - 3 * bColW, valueWidth: 0 },
+      { label: '', value: bSketch[0], labelWidth: 0, valueWidth: bColW },
+      { label: '', value: bSketch[1], labelWidth: 0, valueWidth: bColW },
+      { label: '', value: bSketch[2], labelWidth: 0, valueWidth: bColW },
+      { label: '', value: bSketch[3], labelWidth: 0, valueWidth: CONTENT_W - 24 - 110 - 3 * bColW },
     ]);
 
     const bSite = [
-      this.getF('boundaryEastSite', 'Vacant land of Karei Lingaraj Patra'),
-      this.getF('boundaryWestSite', 'Vacant land of Rajalaxmi Behera'),
-      this.getF('boundaryNorthSite', '15 feet wide Road'),
-      this.getF('boundarySouthSite', "Other's vacant land"),
+      this.getF('boundaryEastSite', ''),
+      this.getF('boundaryWestSite', ''),
+      this.getF('boundaryNorthSite', ''),
+      this.getF('boundarySouthSite', ''),
     ];
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: 24, valueWidth: 0 },
       { label: 'At site', value: '', labelWidth: 110, valueWidth: 0 },
-      { label: bSite[0], value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: bSite[1], value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: bSite[2], value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: bSite[3], value: '', labelWidth: CONTENT_W - 24 - 110 - 3 * bColW, valueWidth: 0 },
+      { label: '', value: bSite[0], labelWidth: 0, valueWidth: bColW },
+      { label: '', value: bSite[1], labelWidth: 0, valueWidth: bColW },
+      { label: '', value: bSite[2], labelWidth: 0, valueWidth: bColW },
+      { label: '', value: bSite[3], labelWidth: 0, valueWidth: CONTENT_W - 24 - 110 - 3 * bColW },
     ]);
 
     this.drawNavdhanRow(
       '',
       'Boundaries Matching',
-      this.getF('boundariesMatching', 'Yes (Boundary matching as per sketch map)'),
+      this.getF('boundariesMatching', 'Yes'),
       true
     );
 

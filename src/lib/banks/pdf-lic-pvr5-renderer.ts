@@ -32,13 +32,11 @@ export class PDFLICPVR5Renderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: num, value: '', labelWidth: numW, valueWidth: 0, labelBold: true },
       { label, value: '', labelWidth: labelW, valueWidth: 0 },
-      { label: value || 'NA', value: '', labelWidth: valW, valueWidth: 0, labelBold: boldVal },
+      { label: '', value: value || 'NA', labelWidth: 0, valueWidth: valW, valueBold: boldVal },
     ]);
   }
 
   async drawContent(): Promise<void> {
-    this.addPage();
-
     // Top Header Banner
     this.drawCenteredTitle('PVR-5', 13, true);
     this.drawCenteredTitle('LIC HOUSING FINANCE LIMITED', 14, true);
@@ -89,19 +87,19 @@ export class PDFLICPVR5Renderer extends PDFBankRenderer {
       { label: 'As per actual', value: '', labelWidth: cColW[2], valueWidth: 0, labelBold: true, highlight: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'i) Plinth area', value: '', labelWidth: cColW[0], valueWidth: 0 },
-      { label: this.getF('plinthApproved', '858sqft'), value: '', labelWidth: cColW[1], valueWidth: 0 },
-      { label: this.getF('plinthActual', '858sqft'), value: '', labelWidth: cColW[2], valueWidth: 0 },
+      { label: '', value: 'i) Plinth area', labelWidth: 0, valueWidth: cColW[0] },
+      { label: '', value: this.getF('plinthApproved', '858sqft'), labelWidth: 0, valueWidth: cColW[1] },
+      { label: '', value: this.getF('plinthActual', '858sqft'), labelWidth: 0, valueWidth: cColW[2] },
     ]);
     this.drawKeyValueRow([
-      { label: 'ii) F.S.I.', value: '', labelWidth: cColW[0], valueWidth: 0 },
-      { label: this.getF('fsiApproved', '1.17'), value: '', labelWidth: cColW[1], valueWidth: 0 },
-      { label: this.getF('fsiActual', '1.17'), value: '', labelWidth: cColW[2], valueWidth: 0 },
+      { label: '', value: 'ii) F.S.I.', labelWidth: 0, valueWidth: cColW[0] },
+      { label: '', value: this.getF('fsiApproved', '1.17'), labelWidth: 0, valueWidth: cColW[1] },
+      { label: '', value: this.getF('fsiActual', '1.17'), labelWidth: 0, valueWidth: cColW[2] },
     ]);
     this.drawKeyValueRow([
-      { label: 'iii) No. Of dwelling units', value: '', labelWidth: cColW[0], valueWidth: 0 },
-      { label: this.getF('unitsApproved', '2'), value: '', labelWidth: cColW[1], valueWidth: 0 },
-      { label: this.getF('unitsActual', '2'), value: '', labelWidth: cColW[2], valueWidth: 0 },
+      { label: '', value: 'iii) No. Of dwelling units', labelWidth: 0, valueWidth: cColW[0] },
+      { label: '', value: this.getF('unitsApproved', '2'), labelWidth: 0, valueWidth: cColW[1] },
+      { label: '', value: this.getF('unitsActual', '2'), labelWidth: 0, valueWidth: cColW[2] },
     ]);
 
     this.drawLICRow('2', 'Whether construction is as per approved plan?', this.getF('constructionAsPerPlan', 'Yes'));
@@ -135,35 +133,35 @@ export class PDFLICPVR5Renderer extends PDFBankRenderer {
     const bldg100Val = parseFloat(this.getF('bldg100CompletionValue', '4809000')) || 0;
 
     this.drawKeyValueRow([
-      { label: '1', value: '', labelWidth: tvColW[0], valueWidth: 0, labelBold: true },
-      { label: 'Value of land *', value: '', labelWidth: tvColW[1], valueWidth: 0 },
-      { label: this.getF('landAsPerApp', 'NA'), value: '', labelWidth: tvColW[2], valueWidth: 0 },
-      { label: this.getF('landGuidelineVal', 'NA'), value: '', labelWidth: tvColW[3], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(landVal)}/-`, value: '', labelWidth: tvColW[4], valueWidth: 0, labelBold: true },
+      { label: '', value: '1', labelWidth: 0, valueWidth: tvColW[0], valueBold: true },
+      { label: '', value: 'Value of land *', labelWidth: 0, valueWidth: tvColW[1] },
+      { label: '', value: this.getF('landAsPerApp', 'NA'), labelWidth: 0, valueWidth: tvColW[2] },
+      { label: '', value: this.getF('landGuidelineVal', 'NA'), labelWidth: 0, valueWidth: tvColW[3] },
+      { label: '', value: `Rs.${formatIndianCurrency(landVal)}/-`, labelWidth: 0, valueWidth: tvColW[4], valueBold: true },
     ]);
 
     this.drawKeyValueRow([
-      { label: '2', value: '', labelWidth: tvColW[0], valueWidth: 0, labelBold: true },
-      { label: `Present Stage of construction is ${stagePct}%`, value: '', labelWidth: tvColW[1], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(bldg100Val)}/-`, value: '', labelWidth: tvColW[2], valueWidth: 0 },
-      { label: this.getF('stageGuidelineVal', 'NA'), value: '', labelWidth: tvColW[3], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(stageConstVal)}/-`, value: '', labelWidth: tvColW[4], valueWidth: 0, labelBold: true },
+      { label: '', value: '2', labelWidth: 0, valueWidth: tvColW[0], valueBold: true },
+      { label: '', value: `Present Stage of construction is ${stagePct}%`, labelWidth: 0, valueWidth: tvColW[1] },
+      { label: '', value: `Rs.${formatIndianCurrency(bldg100Val)}/-`, labelWidth: 0, valueWidth: tvColW[2] },
+      { label: '', value: this.getF('stageGuidelineVal', 'NA'), labelWidth: 0, valueWidth: tvColW[3] },
+      { label: '', value: `Rs.${formatIndianCurrency(stageConstVal)}/-`, labelWidth: 0, valueWidth: tvColW[4], valueBold: true },
     ]);
 
     this.drawKeyValueRow([
-      { label: '3', value: '', labelWidth: tvColW[0], valueWidth: 0, labelBold: true },
-      { label: 'Total present value of existing building (1+2)', value: '', labelWidth: tvColW[1], valueWidth: 0, labelBold: true },
-      { label: '', value: '', labelWidth: tvColW[2], valueWidth: 0 },
-      { label: '', value: '', labelWidth: tvColW[3], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(totalPresentVal)}/-`, value: '', labelWidth: tvColW[4], valueWidth: 0, labelBold: true, highlight: true },
+      { label: '', value: '3', labelWidth: 0, valueWidth: tvColW[0], valueBold: true },
+      { label: '', value: 'Total present value of existing building (1+2)', labelWidth: 0, valueWidth: tvColW[1], valueBold: true },
+      { label: '', value: '', labelWidth: 0, valueWidth: tvColW[2] },
+      { label: '', value: '', labelWidth: 0, valueWidth: tvColW[3] },
+      { label: '', value: `Rs.${formatIndianCurrency(totalPresentVal)}/-`, labelWidth: 0, valueWidth: tvColW[4], valueBold: true, highlight: true },
     ]);
 
     this.drawKeyValueRow([
-      { label: '4', value: '', labelWidth: tvColW[0], valueWidth: 0, labelBold: true },
-      { label: 'Value of building on 100% completion', value: '', labelWidth: tvColW[1], valueWidth: 0, labelBold: true },
-      { label: '', value: '', labelWidth: tvColW[2], valueWidth: 0 },
-      { label: '', value: '', labelWidth: tvColW[3], valueWidth: 0 },
-      { label: `Rs.${formatIndianCurrency(bldg100Val)}/-`, value: '', labelWidth: tvColW[4], valueWidth: 0, labelBold: true, highlight: true },
+      { label: '', value: '4', labelWidth: 0, valueWidth: tvColW[0], valueBold: true },
+      { label: '', value: 'Value of building on 100% completion', labelWidth: 0, valueWidth: tvColW[1], valueBold: true },
+      { label: '', value: '', labelWidth: 0, valueWidth: tvColW[2] },
+      { label: '', value: '', labelWidth: 0, valueWidth: tvColW[3] },
+      { label: '', value: `Rs.${formatIndianCurrency(bldg100Val)}/-`, labelWidth: 0, valueWidth: tvColW[4], valueBold: true, highlight: true },
     ]);
 
     this.advanceCursor(6);
@@ -176,9 +174,9 @@ export class PDFLICPVR5Renderer extends PDFBankRenderer {
     const certBullet2 = `• I further declare that I have personally inspected the site and building on ${this.getF('inspectionDate', '19/12/2020')}.`;
     const certBullet3 = `• I further declare that all the above particulars and information given in this report are true to the best of my knowledge and belief.`;
 
-    this.drawKeyValueRow([{ label: certBullet1, value: '', labelWidth: CONTENT_W, valueWidth: 0 }]);
-    this.drawKeyValueRow([{ label: certBullet2, value: '', labelWidth: CONTENT_W, valueWidth: 0 }]);
-    this.drawKeyValueRow([{ label: certBullet3, value: '', labelWidth: CONTENT_W, valueWidth: 0 }]);
+    this.drawKeyValueRow([{ label: '', value: certBullet1, labelWidth: 0, valueWidth: CONTENT_W }]);
+    this.drawKeyValueRow([{ label: '', value: certBullet2, labelWidth: 0, valueWidth: CONTENT_W }]);
+    this.drawKeyValueRow([{ label: '', value: certBullet3, labelWidth: 0, valueWidth: CONTENT_W }]);
 
     this.advanceCursor(12);
 
