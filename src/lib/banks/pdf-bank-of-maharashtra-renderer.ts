@@ -1,0 +1,1646 @@
+/**
+ * pdf-bank-of-maharashtra-renderer.ts — Dedicated PDF renderer for Bank of Maharashtra.
+ *
+ * Section 1 (Cover Page): Double-border cover page with Property Owners, Address,
+ * Value of Property, Purpose of Valuation, and Prepared By details.
+ * Section 2 (Part I — GENERAL): Inspection details, ownership, location, classification, boundaries.
+ * Section 3 (Part II — CHARACTERISTICS): Site environment, infrastructure, remarks.
+ * Section 4 (Part A — Land Valuation): Land metrics and estimated value.
+ * Section 5 (Part B — Building Valuation): Technical details, structural descriptions, specifications.
+ * Section 6 (Valuation & Amenities): Building valuation table, amenities, miscellaneous, services.
+ * Section 7 (Abstract & Remarks): Final values abstract table, sign-off.
+ * Section 8 (Questionnaire): Declaration questionnaire table.
+ * Section 9 (Affirmations): Declaration affirmation statements.
+ * Section 10 (Code of Conduct): Model Code of Conduct for Valuers (30 items).
+ */
+
+import { rgb } from 'pdf-lib';
+import { rupeesInWords } from '@/lib/numberToWords';
+import {
+  PDFBankRenderer,
+  PAGE_W,
+  PAGE_H,
+  MARGIN_L,
+  MARGIN_T,
+  MARGIN_B,
+  MARGIN_R,
+  CONTENT_W,
+  FONT_SIZE,
+  FONT_SIZE_HEADER,
+  FONT_SIZE_TITLE,
+  FONT_SIZE_SMALL,
+  FONT_SIZE_TABLE_BANK,
+  FONT_SIZE_TABLE_BANK_COMPACT,
+  hexToRgb,
+  LINE_HEIGHT,
+  formatReportDate
+} from '../pdf-bank-renderer';
+
+export class PDFBankOfMaharashtraRenderer extends PDFBankRenderer {
+  private fields: any;
+  private drawnCover = false;
+  private isBomDrawing = false;
+
+  constructor(fields?: any) {
+    super();
+    this.fields = fields || {};
+  }
+
+  // ── Helper: field value ──
+  override drawKeyValueRow(items: any[]): void { if (this.isBomDrawing) super.drawKeyValueRow(items); }
+  override drawTextBlock(text: string, opts?: any): void { if (this.isBomDrawing) super.drawTextBlock(text, opts); }
+  override drawRichTextBlock(segments: any[]): void { if (this.isBomDrawing) super.drawRichTextBlock(segments); }
+
+  private fv(key: string, defaultVal = ''): string {
+    return String((this.fields as any)[key] ?? defaultVal).replace(/[\t\n\r]+/g, ' ').trim();
+  }
+
+  /** Extract Year of Construction: labeled pattern first, then smallest year */
+  private extractYearOfConstruction(): number {
+    const raw = this.fv('bomYearOfConstruction');
+    if (!raw) return 0;
+    const labeledMatch = raw.match(/year\s*of\s*construction\s*[-\u2013\u2014:]\s*(\d{4})/i);
+    if (labeledMatch) return parseInt(labeledMatch[1]);
+    const allYears = Array.from(raw.matchAll(/(\d{4})/g)).map(m => parseInt(m[1])).filter(y => y >= 1900 && y <= 2100);
+    return allYears.length > 0 ? Math.min(...allYears) : 0;
+  }
+
+  // ── Helper: drawSimpleRow override for BOM 40/60 layout ──
+  override drawSimpleRow(label: string, value: string, highlight?: boolean, bold?: boolean): void {
+    if (!this.isBomDrawing) return;
+    const labelW = Math.round(CONTENT_W * 0.40);
+    const valueW = CONTENT_W - labelW;
+    super.drawKeyValueRow([{
+      label,
+      value: value || 'NA',
+      labelWidth: labelW,
+      valueWidth: valueW,
+      highlight,
+      labelBold: true,
+      valueBold: !!bold,
+    }]);
+  }
+
+  /**
+   * Override drawCenteredTitle to intercept the first call from BankReportBuilder
+   * and draw the BOM cover page + all custom sections.
+   */
+  override drawCenteredTitle(title: string, fontSize?: number, underline?: boolean) {
+    if (!this.drawnCover) {
+      this.drawnCover = true;
+      this.isBomDrawing = true;
+      this.drawBomCoverPage();
+      this.newPage();
+      this.drawBomSection2();
+      this.drawBomSection3();
+      this.drawBomSection4();
+      this.drawBomSection5();
+      this.drawBomSection6();
+      this.drawBomSection7();
+      this.drawBomSection8();
+      this.drawBomSection9();
+      this.drawBomSection10();
+      this.isBomDrawing = false;
+      return;
+    }
+
+    if (this.isBomDrawing) {
+      const isValuationReport = title.trim().toLowerCase() === 'valuation report';
+      const finalTitle = isValuationReport
+        ? 'VALUATION REPORT FOR BANK OF MAHARASHTRA'
+        : title;
+      super.drawCenteredTitle(finalTitle, fontSize, isValuationReport ? true : underline);
+    } else {
+      const u = title.toUpperCase();
+      if (u.includes('ANNEXURE')) {
+        super.drawCenteredTitle(title, fontSize, underline);
+      }
+    }
+  }
+
+  override drawSectionHeader(title: string, addSpaceBefore?: boolean, preserveCase?: boolean) {
+    if (!this.isBomDrawing) {
+      const u = title.toUpperCase();
+      if (u.includes('PHOTOGRAPH') || u.includes('MAP') || u.includes('BENCHMARK') || u.includes('ANNEXURE')) {
+        super.drawSectionHeader(title, addSpaceBefore, preserveCase);
+      }
+      return;
+    }
+    
+    if (title.toUpperCase() === 'CASE DETAILS & REPORT METADATA') {
+      if (this.doc.getPages().length === 1) {
+        this.newPage();
+      }
+      super.drawCenteredTitle('VALUATION REPORT', FONT_SIZE_TITLE, false);
+      super.drawCenteredTitle('FOR BANK OF MAHARASHTRA', FONT_SIZE_TITLE, true);
+      this.cursorY += 15;
+    }
+    super.drawSectionHeader(title, addSpaceBefore, preserveCase);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 1: COVER PAGE
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBomCoverPage() {
+    const fields = this.fields;
+
+    this.cursorY = 60;
+
+    const bmx = 36;
+    const bmyTop = MARGIN_T + 4;   // just below the letterhead header
+    const bmyBot = MARGIN_B + 4;   // just above the letterhead footer
+    const borderColor = hexToRgb('#8B6914'); // dark goldenrod — matches reference doc border
+
+    // Outer border (thick)
+    this.page.drawRectangle({
+      x: bmx, y: bmyBot,
+      width: PAGE_W - 2 * bmx, height: PAGE_H - bmyBot - bmyTop,
+      borderColor: borderColor, borderWidth: 3,
+    });
+    // Inner border (thin) — 5pt inset from outer
+    this.page.drawRectangle({
+      x: bmx + 5, y: bmyBot + 5,
+      width: PAGE_W - 2 * bmx - 10, height: PAGE_H - bmyBot - bmyTop - 10,
+      borderColor: borderColor, borderWidth: 1,
+    });
+
+    // Helper: draw centered bold text with optional underline on EVERY line
+    const drawCenteredBold = (text: string, size: number, ySpaceAfter: number, underline: boolean = false) => {
+      const cleanText = this.sanitizeText(text);
+      const maxWidth = PAGE_W - 2 * bmx - 140;
+      const lines = this.wrapText(cleanText, maxWidth, size, true);
+
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const tw = this.fontBold.widthOfTextAtSize(line, size);
+        const startX = MARGIN_L + (CONTENT_W - tw) / 2;
+        const startY = this.pdfY(this.cursorY);
+        this.page.drawText(line, { x: startX, y: startY, size, font: this.fontBold, color: rgb(0, 0, 0) });
+        if (underline) {
+          this.page.drawLine({
+            start: { x: startX, y: startY - 2 },
+            end: { x: startX + tw, y: startY - 2 },
+            thickness: 1, color: rgb(0, 0, 0)
+          });
+        }
+        if (i < lines.length - 1) {
+          this.cursorY += size + 4;
+        } else {
+          this.cursorY += ySpaceAfter;
+        }
+      }
+    };
+
+    // ── 1. Main Title ──
+    // "REPORT ON VALUATION OF" — bold, NO underline
+    drawCenteredBold('REPORT ON VALUATION OF', FONT_SIZE_TITLE + 3, 25, false);
+    // "IMMOVABLE PROPERTIES" — bold, underlined
+    drawCenteredBold('IMMOVABLE PROPERTIES', FONT_SIZE_TITLE + 3, 30, true);
+
+    // ── 2a. Bank & Branch Details ──
+    const bankBranch = this.fv('bomBankBranchDetails');
+    if (bankBranch) {
+      drawCenteredBold(bankBranch, FONT_SIZE, 20); // increased bottom space before AS ON DATE
+    }
+
+    // ── 2b. As On Date (Subheading style spacing) ──
+    const asOnDate = this.fv('bomAsOnDate');
+    if (asOnDate) {
+      drawCenteredBold(`AS ON DATE: ${formatReportDate(asOnDate)}`, FONT_SIZE_HEADER - 1, 48); // larger font, larger bottom space
+    }
+
+    // ── 2c. Full Legal Property Description (no heading, just the value) ──
+    const legalDesc = this.fv('bomFullLegalPropertyDescription');
+    if (legalDesc) {
+      drawCenteredBold(legalDesc, FONT_SIZE_SMALL + 1, 25);
+    }
+
+    // ── 3. NAME OF THE OWNER (underlined subheading) ──
+    drawCenteredBold('NAME OF THE OWNER', FONT_SIZE_HEADER, 14, true);
+
+    // ── 4a. Owner details with address ──
+    const owners = Array.isArray(fields.bomPropertyOwners) && fields.bomPropertyOwners.length > 0
+      ? fields.bomPropertyOwners
+      : [{ name: '', relationship: 'S/O', relativeName: '', fatherName: '' }];
+    const validOwners = owners.filter((o: any) => o.name);
+    const address = this.fv('bomAddressOfTheProperty');
+
+    if (validOwners.length > 0) {
+      const ownerStrings = validOwners.map((owner: any) => {
+        const rel = owner.relationship || 'S/O';
+        const relName = owner.relativeName || owner.fatherName;
+        return relName ? `${owner.name}, ${rel}: ${relName}` : owner.name;
+      });
+      let ownersText = '';
+      if (ownerStrings.length === 1) ownersText = ownerStrings[0];
+      else if (ownerStrings.length === 2) ownersText = ownerStrings.join(' & ');
+      else { const last = ownerStrings.pop(); ownersText = ownerStrings.join(', ') + ' & ' + last; }
+      
+      // Append address logic: Prevent duplicate "At:"
+      if (address) {
+        const cleanAddr = address.trim();
+        if (/^at\s*:/i.test(cleanAddr)) {
+          ownersText += `, ${cleanAddr}`;
+        } else {
+          ownersText += `, At: ${cleanAddr}`;
+        }
+      }
+      drawCenteredBold(ownersText, FONT_SIZE, 14);
+    } else {
+      drawCenteredBold('NA', FONT_SIZE, 14);
+    }
+    this.cursorY += 10;
+
+    // ── 4b. Value of the Property (2-column grid) ──
+    const dimensions = this.fields.bomDimensions || {};
+    const deedArea = (parseFloat(dimensions.deedEast || '0') || 0) + (parseFloat(dimensions.deedWest || '0') || 0) + (parseFloat(dimensions.deedNorth || '0') || 0) + (parseFloat(dimensions.deedSouth || '0') || 0);
+    const actualArea = (parseFloat(dimensions.actualEast || '0') || 0) + (parseFloat(dimensions.actualWest || '0') || 0) + (parseFloat(dimensions.actualNorth || '0') || 0) + (parseFloat(dimensions.actualSouth || '0') || 0);
+    const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+    const areaSft = minArea * 43560;
+
+    const acreValue = parseFloat(this.fv('bomGovtBenchmarkPerAcre', '0')) || 0;
+    const sftRate = acreValue > 0 ? Math.round(acreValue / 43560) : 0;
+    const landGovtValue = areaSft > 0 && sftRate > 0 ? Math.round(areaSft * sftRate) : 0;
+
+    const adoptedRate = parseFloat(this.fv('bomAdoptedRate', '0')) || 0;
+    const calculatedLandMarketValue = areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
+    const landMarketValue = this.fields.bomEstimatedLandValueEditOn
+      ? (parseFloat(this.fv('bomEstimatedLandValue', '0')) || 0)
+      : calculatedLandMarketValue;
+
+    const currentYear = new Date().getFullYear();
+    const yearOfConstStr = this.fv('bomYearOfConstruction', '');
+    const yearMatch = yearOfConstStr.match(/\d{4}/);
+    const yearOfConst = yearMatch ? parseInt(yearMatch[0], 10) : 0;
+    const bAge = this.fields.bomBuildingAgeEditOn ? (parseFloat(this.fv('bomBuildingAge', '0')) || 0) : (yearOfConst > 0 ? currentYear - yearOfConst : 0);
+    
+    const buildingRows: any[] = this.fields.bomBuildingValuationRows || [];
+    const buildingMarketValue = buildingRows.reduce((sum: number, row: any) => {
+      const p = parseFloat(row.plinthArea || '0') || 0;
+      const r = parseFloat(row.replacementRate || '0') || 0;
+      const est = row.estCostEditOn ? (parseFloat(row.estCost || '0') || 0) : p * r;
+      const dep = row.depreciationEditOn ? (parseFloat(row.depreciation || '0') || 0) : est * 0.01 * bAge;
+      const net = row.netValueEditOn ? (parseFloat(row.netValue || '0') || 0) : est - dep;
+      return sum + net;
+    }, 0);
+
+    const amenitiesMarketValue = Array.from({ length: 10 }, (_, i) => parseFloat(this.fv(`bomAmenity_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+    const miscMarketValue = Array.from({ length: 4 }, (_, i) => parseFloat(this.fv(`bomMisc_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+    const servicesMarketValue = Array.from({ length: 5 }, (_, i) => parseFloat(this.fv(`bomService_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+
+    const calcTotalGovt = landGovtValue + amenitiesMarketValue + miscMarketValue + servicesMarketValue;
+    const calcTotalMarket = landMarketValue + buildingMarketValue + amenitiesMarketValue + miscMarketValue + servicesMarketValue;
+    const calcTotalRealizable = calcTotalMarket * 0.95;
+    const calcTotalDistress = calcTotalMarket * 0.85;
+
+    const presentMarketValue = Math.round(calcTotalMarket / 1000) * 1000;
+    const realizableValue = Math.round(calcTotalRealizable / 1000) * 1000;
+    const forcedSaleValue = Math.round(calcTotalDistress / 1000) * 1000;
+    const govtValue = Math.round(calcTotalGovt / 1000) * 1000;
+
+    const formatVal = (val: number) => {
+      return val.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
+    const valueLabels = [
+      { label: 'PRESENT MARKET VALUE', val: presentMarketValue },
+      { label: 'REALIZABLE VALUE', val: realizableValue },
+      { label: 'FORCED SALE VALUE', val: forcedSaleValue },
+      { label: 'GOVT. VALUE', val: govtValue },
+    ];
+
+    const labelColW = Math.round(CONTENT_W * 0.42);
+    const valueColW = Math.round(CONTENT_W * 0.42);
+    const gridTotalW = labelColW + valueColW;
+    const gridStartX = MARGIN_L + (CONTENT_W - gridTotalW) / 2;
+
+    for (const item of valueLabels) {
+      const valText = `RS. ${formatVal(item.val)}`;
+      const labelY = this.pdfY(this.cursorY);
+      this.page.drawText(item.label, { x: gridStartX, y: labelY, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
+      this.page.drawText(valText, { x: gridStartX + labelColW, y: labelY, size: FONT_SIZE, font: this.fontBold, color: rgb(0, 0, 0) });
+      this.cursorY += FONT_SIZE + 8;
+    }
+    this.cursorY += 16;
+
+    // ── 5 & 6. Purpose of Valuation ──
+    const purposeText = this.fv('bomPurposeOfValuation') || 'NA';
+    // Render as italic bold: "PURPOSE : <value>"
+    const purposeStr = `PURPOSE : ${purposeText.toUpperCase()}`;
+    const purposeClean = this.sanitizeText(purposeStr);
+    const purposeMaxW = PAGE_W - 2 * bmx - 140;
+    const purposeLines = this.wrapText(purposeClean, purposeMaxW, FONT_SIZE_SMALL + 1, true);
+    for (let i = 0; i < purposeLines.length; i++) {
+      const line = purposeLines[i];
+      const tw = this.fontBold.widthOfTextAtSize(line, FONT_SIZE_SMALL + 1);
+      const startX = MARGIN_L + (CONTENT_W - tw) / 2;
+      const startY = this.pdfY(this.cursorY);
+      this.page.drawText(line, { x: startX, y: startY, size: FONT_SIZE_SMALL + 1, font: this.fontBold, color: rgb(0, 0, 0) });
+      if (i < purposeLines.length - 1) {
+        this.cursorY += FONT_SIZE_SMALL + 5;
+      } else {
+        this.cursorY += 30;
+      }
+    }
+
+    // ── 7. Prepared By (underlined subheading) ──
+    drawCenteredBold('Prepared By', FONT_SIZE_HEADER - 1, 14, true);
+
+    // ── 8. Valuer credential lines ──
+    if (this.fv('bomPreparedByValuerName')) drawCenteredBold(this.fv('bomPreparedByValuerName'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bomPreparedByGovtReg')) drawCenteredBold(this.fv('bomPreparedByGovtReg'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bomPreparedByAcademicDegrees')) drawCenteredBold(this.fv('bomPreparedByAcademicDegrees'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bomPreparedByIoVMembership')) drawCenteredBold(this.fv('bomPreparedByIoVMembership'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bomPreparedByIoEMembership')) drawCenteredBold(this.fv('bomPreparedByIoEMembership'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bomPreparedByCharteredEng')) drawCenteredBold(this.fv('bomPreparedByCharteredEng'), FONT_SIZE_SMALL + 1, 16);
+    if (this.fv('bomPreparedByBankEmpanelment')) drawCenteredBold(this.fv('bomPreparedByBankEmpanelment'), FONT_SIZE_SMALL + 1, 16);
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 2: PART I — GENERAL
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBomSection2() {
+    let addressee = this.fv('bomAddressee') || 'TO,\nTHE BRANCH MANAGER,';
+    if (addressee === 'TO, THE BRANCH MANAGER,') addressee = 'TO,\nTHE BRANCH MANAGER,';
+
+    let bankDetails = this.fv('bomBankBranchDetails') || 'BANK OF MAHARASHTRA,\nBARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA';
+    if (bankDetails === 'BANK OF MAHARASHTRA, BARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA') bankDetails = 'BANK OF MAHARASHTRA,\nBARAMUNDA BRANCH, BHUBANESWAR, DIST: KHURDA, ODISHA';
+    const reportTitle = this.fv('bomReportTitle') || 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)';
+    const refNo = this.fv('bomRefNo') || '';
+    const asOnDate = formatReportDate(this.fv('bomAsOnDate') || '');
+
+    // Address block (left-aligned, bold)
+    const addressBlock = `${addressee}\n${bankDetails}`.replace(/\\n/g, '\n');
+    const addressH = this.drawWrappedTextAt(addressBlock, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE, bold: true });
+    this.cursorY += addressH + 15;
+
+    // Title Block (centered, bold)
+    super.drawCenteredTitle(reportTitle, FONT_SIZE, false);
+    this.cursorY += 10;
+
+    // Ref No & Date (bold)
+    this.drawTextAt(`REF. NO: ${refNo}`, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE, bold: true });
+    const dateStr = `DATE: ${asOnDate}`;
+    const dateFont = this.getFont(true);
+    const dateW = dateFont.widthOfTextAtSize(dateStr, FONT_SIZE);
+    this.drawTextAt(dateStr, PAGE_W - MARGIN_R - dateW, this.cursorY, { fontSize: FONT_SIZE, bold: true });
+    this.cursorY += 20;
+
+    let allRows: string[][] = [
+      ['1.', 'Purpose for which the valuation is made', '', this.fv('bomPurposeForValuation') || 'NA'],
+      ['2.', 'a)', 'Date of inspection', formatReportDate(this.fv('bomDateOfInspection')) || 'NA'],
+      ['',   'b)', 'Date on which the valuation is made', formatReportDate(this.fv('bomDateOfValuationMade')) || 'NA'],
+      ['3.', 'List of documents produced for perusal', '', '']
+    ];
+    let allMerges = [
+      { sr: 0, sc: 1, er: 0, ec: 2 },
+      { sr: 1, sc: 0, er: 2, ec: 0 },
+      { sr: 3, sc: 1, er: 3, ec: 3 },
+    ];
+    
+    let rIdx = 4;
+    let docList = [];
+    if (this.fv('bomDocumentI')) docList.push(`i)|${this.fv('bomDocumentI')}`);
+    if (this.fv('bomDocumentII')) docList.push(`ii)|${this.fv('bomDocumentII')}`);
+    if (this.fv('bomDocumentIII')) docList.push(`iii)|${this.fv('bomDocumentIII')}`);
+
+    if (docList.length === 0) {
+      allRows[3][3] = 'NA';
+      allMerges.pop(); // remove the span across all columns if it's NA
+      allMerges.push({ sr: 3, sc: 1, er: 3, ec: 2 });
+    } else {
+      allMerges.push({ sr: 3, sc: 0, er: 3 + docList.length, ec: 0 }); // merge '3.' vertically
+      for (const d of docList) {
+        const [label, val] = d.split('|');
+        allRows.push(['', label, '', val]);
+        allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+        rIdx++;
+      }
+    }
+
+    allRows.push(['4.', 'Name of the owner(s) and his / their address (es) with Phone no. (details of share of each owner incase of joint ownership)', '', this.fv('bomOwnerNamesAddresses') || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+
+    allRows.push(['5.', 'Brief description of the property\n(Including leasehold / freehold etc)', '', this.fv('bomBriefDescription') || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+
+    allRows.push(['6.', 'Location of property', '', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 3 });
+    const p6StartRow = rIdx;
+    rIdx++;
+
+    const locFields = [
+      ['a)', 'Plot No. / Survey No.', this.fv('bomPlotNo') || 'NA'],
+      ['b)', 'Door No.', this.fv('bomDoorNo') || 'NA'],
+      ['c)', 'T. S. No. / Village', this.fv('bomTSNoVillage') || 'NA'],
+      ['d)', 'Ward / Taluka', this.fv('bomWardTaluka') || 'NA'],
+      ['e)', 'Mandal / District', this.fv('bomMandalDistrict') || 'NA'],
+    ];
+
+    // allMerges.push({ sr: p6StartRow, sc: 0, er: p6StartRow + locFields.length, ec: 0 });
+    for (const f of locFields) {
+      allRows.push(['', f[0], f[1], f[2]]);
+      rIdx++;
+    }
+
+    const postalAddress = this.fv('bomPostalAddress') || '';
+    const pinCode = this.fv('bomPinCode');
+    const finalPostal = pinCode ? (postalAddress ? `${postalAddress}. Pin: ${pinCode}` : `Pin: ${pinCode}`) : postalAddress;
+    
+    allRows.push(['7.', 'Postal address of the property', '', finalPostal || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+
+    this.drawSectionHeader('PART I — GENERAL', false, false);
+    // Note: To switch to 5 columns, we need to update the previous allMerges!
+    // But since the previous code was already executed and we are just appending to it, we can't easily change the `ec: 2` to `ec: 3` without a full rewrite!
+    // Wait, since I'm only replacing from line 443 downwards, I must do a hack or rewrite it properly.
+    // Instead of a hack, let's just close the 4-column table at line 443, and create a NEW 5-column table for points 8-17 directly below it!
+    // Or better, just create a new 4-column table for points 8-12, a 3-column table for 13, a 3-column table for 14, etc...
+    // Wait, the user wants the WHOLE thing to look exactly like Image 1 table formatting!
+    // It's perfectly fine to draw multiple tables seamlessly if they have no top margin!
+    // But they have different column widths. If I draw multiple tables, the columns won't align perfectly if the widths differ.
+    // Let's rewrite the `allRows` array entirely to 5 cols!
+    // Actually, I can just map over `allRows` and `allMerges` to update them to 5 columns!
+    allRows = allRows.map(row => {
+      // row currently has 4 elements
+      if (row.length === 4) {
+        return [row[0], row[1], row[2], row[3], ''];
+      }
+      return row;
+    });
+    
+    // For allMerges, any merge that ended at column 3 (ec: 3) should now end at column 4 (ec: 4).
+    // Any merge that ended at column 2 (ec: 2) remains ending at column 2 (or Col 3 if it was Col 3).
+    // Wait, earlier my widths were [0.05, 0.05, 0.35, 0.55].
+    // New widths: [0.05, 0.05, 0.35, 0.275, 0.275].
+    // Col 0, 1, 2 are identical!
+    // Col 3 in old table is now Col 3 + Col 4 in new table!
+    allMerges = allMerges.map(m => {
+      // If a merge covered Col 3, it should now cover Col 3 AND Col 4 (ec: 4).
+      if (m.ec === 3 || m.ec === 2 && m.sc === 3) {
+        return { ...m, ec: 4 };
+      }
+      // Note: in Point 6, 'Location of property' merged to ec: 3 (which was the last col). It should now be ec: 4.
+      if (m.ec === 3 && m.sc === 1) {
+        return { ...m, ec: 4 };
+      }
+      return m;
+    });
+
+    // Point 8: City / Town
+    allRows.push(['8.', 'City / Town', '', this.fv('bomCityTown') || 'NA', '']);
+    // allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 3, ec: 0 }); // 8. vertically
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 }); // City/Town
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', 'Residential Area', '', this.fv('bomResidentialArea') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', 'Commercial Area', '', this.fv('bomCommercialArea') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', 'Industrial Area', '', this.fv('bomIndustrialArea') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 9: Classification
+    allRows.push(['9.', 'Classification of the area', '', '', '']);
+    // allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 2, ec: 0 }); // 9. vertically
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', 'i)', 'High / Middle / Poor', this.fv('bomClassHighMiddlePoor') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', 'ii)', 'Urban / Semi Urban / Rural', this.fv('bomClassUrbanRural') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 10
+    allRows.push(['10.', 'Coming under Corporation limit/ Village Panchayat / Municipality', '', this.fv('bomCorporationLimit') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 11
+    allRows.push(['11.', 'Whether covered under any State / Central Govt. enactments (e.g. Urban Land Ceiling Act) or notified under agency area / scheduled area / cantonment area', '', this.fv('bomCoveredUnderEnactments') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 12
+    allRows.push(['12.', 'In case it is an agricultural land, any conversion to house site plots is contemplated', '', this.fv('bomAgriculturalConversion') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 13: Boundaries
+    const boundaries = this.fields.bomBoundaries || {};
+    allRows.push(['13.', 'Boundaries of the property', '', '', '']);
+    // allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 5, ec: 0 }); // 13. vertically
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', '', '', 'As per Sketch Map', 'As per Verification']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'East', '', boundaries.sketchEast || 'NA', boundaries.verifyEast || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'West', '', boundaries.sketchWest || 'NA', boundaries.verifyWest || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'North', '', boundaries.sketchNorth || 'NA', boundaries.verifyNorth || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'South', '', boundaries.sketchSouth || 'NA', boundaries.verifySouth || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+
+    // Point 14: Dimensions
+    const dimensions = this.fields.bomDimensions || {};
+    allRows.push(['14.1', 'Dimensions of the site', '', '', '']);
+    // allMerges.push({ sr: rIdx, sc: 0, er: rIdx + 6, ec: 0 }); // 14.1 vertically
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 4 });
+    rIdx++;
+    allRows.push(['', '', '', 'A', 'B']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx + 1, ec: 2 }); // empty space merged vertically and horizontally
+    rIdx++;
+    allRows.push(['', '', '', 'As per the Deed', 'Actual']);
+    // no merge needed for col 1-2, already handled by previous row merge
+    rIdx++;
+    allRows.push(['', 'East', '', dimensions.deedEast || 'NA', dimensions.actualEast || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'West', '', dimensions.deedWest || 'NA', dimensions.actualWest || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'North', '', dimensions.deedNorth || 'NA', dimensions.actualNorth || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+    allRows.push(['', 'South', '', dimensions.deedSouth || 'NA', dimensions.actualSouth || 'NA']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    rIdx++;
+
+    // Point 14.2
+    const lat = this.fv('latitude');
+    const lon = this.fv('longitude');
+    const coords = this.fv('bomCoordinates');
+    const latLongStr = [
+      lat ? `Latitude: ${lat}` : '',
+      lon ? `Longitude: ${lon}` : '',
+      coords ? `Coordinates: ${coords}` : ''
+    ].filter(Boolean).join(', ');
+    allRows.push(['14.2', 'Latitude, Longitude and Coordinates of\nthe site', '', latLongStr || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 15
+    allRows.push(['15.', 'Extent of the site', '', this.fv('bomExtentOfSite') || 'NA', '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 16
+    const deedArea = (parseFloat(dimensions.deedEast || '0') || 0)
+      + (parseFloat(dimensions.deedWest || '0') || 0)
+      + (parseFloat(dimensions.deedNorth || '0') || 0)
+      + (parseFloat(dimensions.deedSouth || '0') || 0);
+    const actualArea = (parseFloat(dimensions.actualEast || '0') || 0)
+      + (parseFloat(dimensions.actualWest || '0') || 0)
+      + (parseFloat(dimensions.actualNorth || '0') || 0)
+      + (parseFloat(dimensions.actualSouth || '0') || 0);
+    const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+    const sftValue = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(minArea * 43560);
+    const calcExtent = minArea > 0 
+      ? `Total Area: Ac. ${minArea} Dec i.e. ${sftValue} Sft` 
+      : 'Total Area: Ac. 0.00 Dec i.e. 0.00 Sft';
+    allRows.push(['16.', 'Extent of the site considered for valuation (least of 14 A & 14 B)', '', calcExtent, '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    // Point 17
+    let occStr = this.fv('bomOccupancy') || 'NA';
+    if (this.fv('bomOccupancyDetails')) occStr += `\n${this.fv('bomOccupancyDetails')}`;
+    allRows.push(['17.', 'Whether occupied by the owner/ tenant? If occupied by tenant, since how long? Rent Received per month.', '', occStr, '']);
+    allMerges.push({ sr: rIdx, sc: 1, er: rIdx, ec: 2 });
+    allMerges.push({ sr: rIdx, sc: 3, er: rIdx, ec: 4 });
+    rIdx++;
+
+    const styleOpts = (ri: number, ci: number) => {
+      const row = allRows[ri];
+      const isSubTableHdr = row[3] === 'As per Sketch Map' || row[3] === 'A' || row[3] === 'As per the Deed';
+      const isSubTableRow = row[1] && ['East', 'West', 'North', 'South'].includes(row[1]);
+      
+      let align: 'left' | 'center' | 'right' = 'left';
+      let bold = false;
+      let fillColor: any = undefined;
+      let bgOpacity = 0.5;
+      let hideBorder: any = undefined;
+
+      // Hide horizontal borders for grouped cells in Column 0
+      if (ci === 0) {
+        if (row[0] === '') {
+          hideBorder = { top: true };
+        }
+        if (ri < allRows.length - 1 && allRows[ri + 1][0] === '') {
+          hideBorder = { ...(hideBorder || {}), bottom: true };
+        }
+      }
+
+      let isFieldName = false;
+
+      if (isSubTableHdr) {
+        align = 'center';
+        isFieldName = true; // Subtable headers are field names
+      } else if (isSubTableRow) {
+        if (ci >= 1) align = 'center';
+        if (ci < 3) isFieldName = true; // 'East', 'West' etc. are field names
+        else isFieldName = false; // Values are not
+      } else {
+        if (ci < 3) isFieldName = true;
+        else isFieldName = false;
+      }
+
+      if (isFieldName) {
+        bold = true;
+        fillColor = '#DBE6F0'; // LBL_BG (Blue background color)
+      } else {
+        bold = false;
+        fillColor = undefined;
+      }
+      
+      return { align, bold, fillColor, bgOpacity, hideBorder };
+    };
+
+    // We pass tableOpts with fontSize: 12 (FONT_SIZE) which mimics drawSimpleRow
+    // We adjust widths slightly so "14.1" and "14.2" don't wrap: [0.06, 0.04, 0.35, 0.275, 0.275]
+    this.drawMergedTable(allRows, allMerges, [0.06, 0.04, 0.35, 0.275, 0.275], styleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 3: PART II — CHARACTERISTICS OF THE SITE
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBomSection3() {
+    this.drawSectionHeader('PART II — CHARACTERISTICS OF THE SITE');
+
+    let allRows: string[][] = [
+      ['1.', 'Classification of locality', this.fv('bomClassificationOfLocality') || 'NA'],
+      ['2.', 'Development of surrounding areas', this.fv('bomDevelopmentOfSurrounding') || 'NA'],
+      ['3.', 'Possibility of frequent flooding / sub-merging', this.fv('bomFloodingPossibility') || 'NA'],
+      ['4.', 'Feasibility to the Civic amenities like school, hospital, bus stop, market etc.', this.fv('bomCivicAmenities') || 'NA'],
+      ['5.', 'Level of land with topographical Conditions', this.fv('bomLevelOfLand') || 'NA'],
+      ['6.', 'Shape of land', this.fv('bomShapeOfLand') || 'NA'],
+      ['7.', 'Type of use to which it can be put', this.fv('bomTypeOfUse') || 'NA'],
+      ['8.', 'Any usage restriction', this.fv('bomUsageRestriction') || 'NA'],
+      ['9.', 'Is plot in town planning approved layout?', this.fv('bomTownPlanningApproved') || 'NA'],
+      ['10.', 'Corner plot or intermittent plot?', this.fv('bomCornerOrIntermittent') || 'NA'],
+      ['11.', 'Road facilities', this.fv('bomRoadFacilities') || 'NA'],
+      ['12.', 'Type of road available at present', this.fv('bomTypeOfRoad') || 'NA'],
+      ['13.', 'Width of road – is it below 20 ft. or more than 20 ft.', this.fv('bomWidthOfRoad') || 'NA'],
+      ['14.', 'Is it a land – locked land?', this.fv('bomLandLocked') || 'NA'],
+      ['15.', 'Water potentiality', this.fv('bomWaterPotentiality') || 'NA'],
+      ['16.', 'Underground sewerage system', this.fv('bomSewerage') || 'NA'],
+      ['17.', 'Is power supply available at the site?', this.fv('bomPowerSupply') || 'NA'],
+      ['18.', 'Advantage of the site', this.fv('bomAdvantageOfSite') || 'NA'],
+      ['19.', 'Special remarks, if any, like threat of acquisition of land for public service purposes, road widening or applicability of CRZ provisions etc. (Distance from sea-coast / tidal level must be incorporated)', this.fv('bomSpecialRemarks') || 'NA'],
+    ];
+
+    const styleOpts = (ri: number, ci: number) => {
+      let align: 'left' | 'center' | 'right' = 'left';
+      let bold = false;
+      let fillColor: any = undefined;
+      let bgOpacity = 0.5;
+      let hideBorder: any = undefined;
+
+      const row = allRows[ri];
+
+      if (ci === 0) {
+        if (row[0] === '') {
+          hideBorder = { top: true };
+        }
+        if (ri < allRows.length - 1 && allRows[ri + 1][0] === '') {
+          hideBorder = { ...(hideBorder || {}), bottom: true };
+        }
+      }
+
+      if (ci < 2) {
+        bold = true;
+        fillColor = '#DBE6F0'; // LBL_BG
+      } else {
+        bold = false;
+        fillColor = undefined;
+      }
+      
+      return { align, bold, fillColor, bgOpacity, hideBorder };
+    };
+
+    // Columns: Number (0.06), Label (0.34), Value (0.60)
+    this.drawMergedTable(allRows, [], [0.06, 0.34, 0.60], styleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 4: PART A — VALUATION OF LAND
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBomSection4() {
+    this.drawSectionHeader('PART A — VALUATION OF LAND', false, false);
+
+    const dimensions = this.fields.bomDimensions || {};
+
+    // Field 1: Size of plot — prefill from 14.1
+    const deedNorth = dimensions.deedNorth || '';
+    const deedSouth = dimensions.deedSouth || '';
+    const deedEast = dimensions.deedEast || '';
+    const deedWest = dimensions.deedWest || '';
+    const calcNS = (deedNorth && deedSouth && deedNorth !== deedSouth) ? `${deedNorth} & ${deedSouth}` : (deedNorth || deedSouth || '');
+    const calcEW = (deedEast && deedWest && deedEast !== deedWest) ? `${deedEast} & ${deedWest}` : (deedEast || deedWest || '');
+    const displayNS = this.fields.bomLandSizeNSEditOn ? this.fv('bomLandSizeNS') : calcNS;
+    const displayEW = this.fields.bomLandSizeEWEditOn ? this.fv('bomLandSizeEW') : calcEW;
+
+    // Field 2: Total extent — mirror Field 16
+    const deedArea = (parseFloat(deedEast || '0') || 0) + (parseFloat(deedWest || '0') || 0) + (parseFloat(deedNorth || '0') || 0) + (parseFloat(deedSouth || '0') || 0);
+    const actualArea = (parseFloat(dimensions.actualEast || '0') || 0) + (parseFloat(dimensions.actualWest || '0') || 0) + (parseFloat(dimensions.actualNorth || '0') || 0) + (parseFloat(dimensions.actualSouth || '0') || 0);
+    const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+    const areaSft = minArea * 43560;
+    const areaSftFormatted = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(areaSft);
+    const calcTotalExtent = minArea > 0
+      ? `Total Area: Ac. ${minArea} Dec i.e. ${areaSftFormatted} Sft`
+      : 'Total Area: Ac. 0.00 Dec i.e. 0.00 Sft';
+    const displayTotalExtent = this.fields.bomLandTotalExtentEditOn ? this.fv('bomLandTotalExtent') : calcTotalExtent;
+
+    // Field 4: Guideline rate
+    const fmtINR = (v: number) => new Intl.NumberFormat('en-IN').format(v);
+    const acreValue = parseFloat(this.fv('bomGovtBenchmarkPerAcre', '0')) || 0;
+    const sftRate = acreValue > 0 ? Math.round(acreValue / 43560) : 0;
+    const totalGuideline = areaSft > 0 && sftRate > 0 ? Math.round(areaSft * sftRate) : 0;
+    const guidelineStr1 = acreValue > 0 ? `Govt. Benchmark Value: Rs.${fmtINR(acreValue)}/- Per Acre i.e. Rs.${fmtINR(sftRate)}/- Per Sft` : 'Govt. Benchmark Value: Rs.00.00/- Per Acre i.e. Rs.00.00/- Per Sft';
+    const guidelineStr2 = totalGuideline > 0 ? `Guideline Value of Land= ${areaSftFormatted} Sft X Rs.${fmtINR(sftRate)}/- Per Sft = Rs.${fmtINR(totalGuideline)}/-` : 'Guideline Value of Land= 00.00 Sft X Rs.00.00/- Per Sft = Rs.00.00/-';
+
+    // Field 6: Estimated value
+    const adoptedRate = parseFloat(this.fv('bomAdoptedRate', '0')) || 0;
+    const estimatedValue = areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
+    const calcEstimatedStr = estimatedValue > 0
+      ? `Total Market Value of Land: ${areaSftFormatted} Sft X Rs.${fmtINR(adoptedRate)}/- Per Sft = Rs.${fmtINR(estimatedValue)}/-`
+      : 'Total Market Value of Land: 0.00 Sft X Rs.0/- Per Sft = Rs.0/-';
+
+    let allRows: string[][] = [
+      ['1.', 'Size of plot', ''],
+      ['', 'North & South', displayNS || 'As Per Sketch Map'],
+      ['', 'East & West', displayEW || 'As Per Sketch Map'],
+      ['2.', 'Total extent of the plot', displayTotalExtent],
+      ['3.', 'Prevailing market rate (Along with details /reference of at least two latest deals/ transactions with respect to adjacent properties in the areas)', this.fv('bomPrevailingMarketRate') || 'NA'],
+      ['4.', 'Guideline rate obtained from the Registrar\'s\u00A0Office (an evidence thereof to be enclosed)', guidelineStr1],
+      ['', 'Guideline Value', guidelineStr2],
+      ['5.', 'Assessed / adopted rate of valuation', this.fv('bomAdoptedRate') || 'NA'],
+      ['6.', 'Estimated value of land', calcEstimatedStr]
+    ];
+
+    const styleOpts = (ri: number, ci: number) => {
+      let align: 'left' | 'center' | 'right' = 'left';
+      let bold = false;
+      let fillColor: any = undefined;
+      let bgOpacity = 0.5;
+      let hideBorder: any = undefined;
+
+      const row = allRows[ri];
+
+      if (ci === 0) {
+        if (row[0] === '') {
+          hideBorder = { top: true };
+        }
+        if (ri < allRows.length - 1 && allRows[ri + 1][0] === '') {
+          hideBorder = { ...(hideBorder || {}), bottom: true };
+        }
+      }
+
+      if (ci < 2) {
+        bold = true;
+        fillColor = '#DBE6F0'; // LBL_BG
+      } else {
+        bold = false;
+        fillColor = undefined;
+      }
+      
+      return { align, bold, fillColor, bgOpacity, hideBorder };
+    };
+
+    // Columns: Number (0.06), Label (0.44), Value (0.50)
+    this.drawMergedTable(allRows, [], [0.06, 0.44, 0.50], styleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 5: PART B — VALUATION OF BUILDING
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBomSection5() {
+    this.drawSectionHeader('PART B — VALUATION OF BUILDING');
+
+    const currentYear = new Date().getFullYear();
+    const yearOfConstruction = this.extractYearOfConstruction();
+    const calcAge = yearOfConstruction > 0 ? (currentYear - yearOfConstruction) : 0;
+
+    const displayYoc = this.fv('bomYearOfConstruction') || 'NA';
+
+    const plinthApproval = this.fv('bomPlinthAreaApproval');
+    const plinthActual = this.fv('bomPlinthAreaActual');
+    let plinthVal = [plinthApproval, plinthActual].filter(Boolean).join('\n') || 'NA';
+
+    // ──────────────────────────────────────────────────────────
+    // Table 1: Technical details
+    let t1Rows: string[][] = [
+      ['1.', 'Technical details of the building', '', ''],
+      ['a)', 'Type of Building (Residential / Commercial/ Industrial)', '', this.fv('bomBuildingType') || 'NA'],
+      ['b)', 'Type of construction (Load bearing / RCC/ Steel Framed)', '', this.fv('bomConstructionType') || 'NA'],
+      ['c)', 'Year of construction', '', displayYoc],
+      ['d)', 'Number of floors and height of each floor including basement, if any', '', this.fv('bomFloorsDescription') || 'NA'],
+      ['e)', 'Plinth area floor-wise', '', plinthVal],
+      ['f)', 'Condition of the building', '', ''],
+      ['', 'i)', 'Exterior \u2013 Excellent, Good, Normal, Poor', this.fv('bomConditionExterior') || 'NA'],
+      ['', 'ii)', 'Interior - Excellent, Good, Normal, Poor', this.fv('bomConditionInterior') || 'NA'],
+      ['g)', 'Date of issue and validity of layout of approved map / plan', '', this.fv('bomApprovedMapDate') || 'NA'],
+      ['h)', 'Approved map / plan issuing authority', '', this.fv('bomApprovedMapAuthority') || 'NA'],
+      ['i)', 'Whether genuineness or authenticity of approved map / plan is verified', '', this.fv('bomApprovedMapVerified') || 'NA'],
+      ['j)', 'Any other comments by our empanelled valuers on authentic of approved plan', '', this.fv('bomApprovedMapComments') || 'NA'],
+      ['k)', 'Age of the Building', '', this.fields.bomBuildingAgeEditOn ? this.fv('bomBuildingAge') : (calcAge > 0 ? `${calcAge} years` : '0')],
+      ['l)', 'Residual life of the building', '', this.fv('bomResidualLife') || 'NA'],
+    ];
+
+    let t1Merges = [];
+    for (let r = 0; r < t1Rows.length; r++) {
+      if (t1Rows[r][0] !== '') {
+        t1Merges.push({ sr: r, sc: 1, er: r, ec: 2 });
+      }
+    }
+
+    const t1StyleOpts = (ri: number, ci: number) => {
+      const row = t1Rows[ri];
+      let align: 'left' | 'center' | 'right' = 'left';
+      let bold = false;
+      let fillColor: any = undefined;
+      let hideBorder: any = undefined;
+
+      if (ci === 0) {
+        if (row[0] === '') hideBorder = { top: true };
+        if (ri < t1Rows.length - 1 && t1Rows[ri + 1][0] === '') hideBorder = { ...(hideBorder || {}), bottom: true };
+      }
+
+      if (ci < 3) {
+        bold = true;
+        fillColor = '#DBE6F0';
+      }
+
+      return { align, bold, fillColor, bgOpacity: 0.5, hideBorder };
+    };
+
+    this.drawMergedTable(t1Rows, t1Merges, [0.06, 0.04, 0.40, 0.50], t1StyleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
+    this.advanceCursor(5);
+
+    // ──────────────────────────────────────────────────────────
+    // Table 2: Structural Descriptions
+    const structural = this.fields.bomStructuralDetails || {};
+    const structKeys = ['foundation', 'basement', 'superstructure', 'joinery', 'rccWorks', 'plastering', 'flooring', 'specialFinish', 'roofing', 'drainage'];
+    const structLabels = [
+      'Foundation', 'Basement', 'Superstructure', 
+      'Joinery / Doors & Windows (please furnish details about size of frames, shutters, glazing, fitting etc. and specify the species of timber)', 
+      'RCC works', 'Plastering', 'Flooring, Skirting, dadoing', 
+      'Special finish as marble, granite, wooden paneling, grills, etc.', 
+      'Roofing including weather proof course', 'Drainage'
+    ];
+
+    let t2Rows: string[][] = [
+      ['Sl.\nNo.', 'Description', 'Ground floor', 'Other floors']
+    ];
+    for (let i = 0; i < structKeys.length; i++) {
+      const key = structKeys[i];
+      const gVal = [structural[`${key}_ground`] || structural[`${key}_groundCustom`], structural[`${key}_groundInput`]].filter(Boolean).join(' ') || 'NA';
+      const oVal = this.fields.bomOtherFloorsNA ? 'NA' : ([structural[`${key}_other`] || structural[`${key}_otherCustom`], structural[`${key}_otherInput`]].filter(Boolean).join(' ') || 'NA');
+      t2Rows.push([
+        `${i + 1}.`,
+        structLabels[i],
+        gVal,
+        oVal
+      ]);
+    }
+
+    const t2StyleOpts = (ri: number, ci: number, isHeader: boolean) => {
+      let align: 'left' | 'center' | 'right' = 'left';
+      if (isHeader || ci === 0) align = 'center';
+      let bold = isHeader || ci < 2;
+      let fillColor = (isHeader || ci < 2) ? '#DBE6F0' : undefined;
+      return { align, bold, fillColor, bgOpacity: 0.5 };
+    };
+
+    this.drawMergedTable(t2Rows, [], [0.06, 0.34, 0.30, 0.30], t2StyleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
+    this.advanceCursor(5);
+
+    // ──────────────────────────────────────────────────────────
+    // Table 3: Specifications
+    this.drawSectionHeader('Specifications of construction (floor-wise) in respect of', false, false);
+    
+    let t3Rows: string[][] = [
+      ['S.\nNo.', 'Description', '', ''],
+      ['1.', 'Compound wall', '', this.fv('bomCompoundWall') || 'NA'],
+    ];
+    if (this.fv('bomCompoundWall') === 'Yes') {
+      t3Rows.push(
+        ['', 'Height', '', this.fv('bomCompoundWallHeight') || 'NA'],
+        ['', 'Length', '', this.fv('bomCompoundWallLength') || 'NA'],
+        ['', 'Type', '', this.fv('bomCompoundWallType') || 'NA']
+      );
+    }
+
+    t3Rows.push(
+      ['', 'Type of construction', '', ''],
+      ['', 'Electrical installation', '', ''],
+      ['2.', 'Type of wiring', '', this.fv('bomElectricalWiring') || 'NA'],
+      ['', 'Class of fittings (superior / ordinary / poor)', '', this.fv('bomElectricalFittings') || 'NA'],
+      ['', 'Number of light points', '', this.fv('bomElectricalLightPoints') || 'NA'],
+      ['', 'Fan points', '', this.fv('bomElectricalFanPoints') || 'NA'],
+      ['', 'Spare plug points', '', this.fv('bomElectricalPlugPoints') || 'NA'],
+      ['', 'Any other item', '', 'NA'],
+      ['', 'Plumbing installation', '', this.fv('bomPlumbing') || 'NA']
+    );
+
+    if (this.fv('bomPlumbing') === 'Yes') {
+      t3Rows.push(
+        ['3.', 'a)', 'No. of water closets and their type', this.fv('bomWaterClosets') || 'NA'],
+        ['', 'b)', 'No. of wash basins', this.fv('bomWashBasins') || 'NA'],
+        ['', 'c)', 'No. of urinals', this.fv('bomUrinals') || 'NA'],
+        ['', 'd)', 'No. of bath tubs', this.fv('bomBathTubs') || 'NA'],
+        ['', 'e)', 'Water meter, taps, etc.', this.fv('bomWaterMeterTaps') || 'NA'],
+        ['', 'f)', 'Any other fixtures', this.fv('bomOtherFixtures') || 'NA']
+      );
+    }
+
+    let t3Merges = [
+      { sr: 0, sc: 1, er: 0, ec: 2 }
+    ];
+    for (let r = 1; r < t3Rows.length; r++) {
+      if (t3Rows[r][1] !== 'a)' && t3Rows[r][1] !== 'b)' && t3Rows[r][1] !== 'c)' && t3Rows[r][1] !== 'd)' && t3Rows[r][1] !== 'e)' && t3Rows[r][1] !== 'f)') {
+        t3Merges.push({ sr: r, sc: 1, er: r, ec: 2 });
+      }
+    }
+
+    const t3StyleOpts = (ri: number, ci: number, isHeader: boolean) => {
+      const row = t3Rows[ri];
+      let align: 'left' | 'center' | 'right' = 'left';
+      if (isHeader || ci === 0 || ci === 1) align = 'center';
+      if (ci === 2) align = 'left';
+
+      let hideBorder: any = undefined;
+      if (ci === 0) {
+        if (row[0] === '') hideBorder = { top: true };
+        if (ri < t3Rows.length - 1 && t3Rows[ri + 1][0] === '') hideBorder = { ...(hideBorder || {}), bottom: true };
+      }
+
+      let bold = isHeader || ci < 3;
+      let fillColor = (isHeader || ci < 3) ? '#DBE6F0' : undefined;
+      return { align, bold, fillColor, bgOpacity: 0.5, hideBorder };
+    };
+
+    this.drawMergedTable(t3Rows, t3Merges, [0.06, 0.04, 0.40, 0.50], t3StyleOpts, { fontSize: FONT_SIZE_TABLE_BANK });
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 6: DETAILS OF VALUATION & AMENITIES
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBomSection6() {
+    this.drawSectionHeader('DETAILS OF VALUATION & AMENITIES');
+
+    const currentYear = new Date().getFullYear();
+    const yearOfConstruction = parseInt(this.fv('bomYearOfConstruction', '0')) || 0;
+    const buildingAge = this.fields.bomBuildingAgeEditOn ? (parseFloat(this.fv('bomBuildingAge', '0')) || 0) : (yearOfConstruction > 0 ? currentYear - yearOfConstruction : 0);
+
+    // Building Valuation Table
+    if (this.fields.bomBuildingValuationMode === 'annexure') {
+      const parsedData = this.fields.bomBuildingValuationMode_parsedData;
+      if (parsedData && parsedData.headers && parsedData.rows) {
+        this.cursorY += 5;
+        this.drawDataTable(parsedData.headers, parsedData.rows);
+        this.cursorY += 5;
+      } else {
+        this.drawSimpleRow('Building Valuation', 'No data uploaded.');
+      }
+    } else {
+    const buildingRows: any[] = this.fields.bomBuildingValuationRows || [];
+    if (buildingRows.length > 0) {
+      let mergedData = [
+        ['PARTICULARS OF ITEMS', 'PLINTH AREA IN SQFT', 'ROOF HEIGHT', 'AGE OF THE BUILDING IN YEARS', 'REPLACEMENT RATE OF CONSTRUCTION', 'ESTIMATED REPLACEMENT COST OF CONSTRUCTION', 'DEPRECIATION AMOUNT IN RS. (1% per Anm)', 'NET VALUE AFTER DEPRECIATION']
+      ];
+      let totalNet = 0;
+      for (const row of buildingRows) {
+        const plinth = parseFloat(row.plinthArea || '0') || 0;
+        const rate = parseFloat(row.replacementRate || '0') || 0;
+        const estCost = row.estCostEditOn ? (parseFloat(row.estCost || '0') || 0) : plinth * rate;
+        const depreciation = row.depreciationEditOn ? (parseFloat(row.depreciation || '0') || 0) : estCost * 0.01 * buildingAge;
+        const netValue = row.netValueEditOn ? (parseFloat(row.netValue || '0') || 0) : estCost - depreciation;
+        totalNet += netValue;
+        mergedData.push([
+          row.particulars || row.particularsCustom || '',
+          plinth.toFixed(2),
+          row.roofHeight || '',
+          String(buildingAge),
+          rate.toFixed(2),
+          estCost.toFixed(2),
+          depreciation.toFixed(2),
+          netValue.toFixed(2),
+        ]);
+      }
+      mergedData.push(['TOTAL', '', '', '', '', '', '', totalNet.toFixed(2)]);
+
+      let merges = [{ sr: mergedData.length - 1, sc: 0, er: mergedData.length - 1, ec: 6 }];
+
+      const styleOpts = (ri: number, ci: number, isHeader: boolean) => {
+        let align: 'left' | 'center' | 'right' = 'center';
+        if (ri > 0 && ci === 0 && ri < mergedData.length - 1) align = 'left';
+        if (ri === mergedData.length - 1 && ci === 0) align = 'right';
+        let bold = isHeader || ri === mergedData.length - 1;
+        let fillColor = isHeader ? '#e6f0ff' : undefined;
+        return { align, bold, fillColor, bgOpacity: 0.5 };
+      };
+
+      this.drawMergedTable(
+        mergedData,
+        merges,
+        [0.18, 0.10, 0.08, 0.07, 0.10, 0.16, 0.16, 0.15],
+        styleOpts,
+        { fontSize: 9 }
+      );
+    }
+    }
+
+    // Part D: Amenities
+    this.drawSectionHeader('PART D — AMENITIES', true, true);
+    if (this.fields.bomAmenitiesMode === 'annexure') {
+      const parsedData = this.fields.bomAmenitiesMode_parsedData;
+      if (parsedData && parsedData.headers && parsedData.rows) {
+        this.cursorY += 5;
+        this.drawDataTable(parsedData.headers, parsedData.rows);
+        this.cursorY += 5;
+      } else {
+        this.drawSimpleRow('Amenities', 'No data uploaded.');
+      }
+    } else {
+    const amenityItems = ['Wardrobes & Cupboard', 'Modular Kitchen', 'Extra sinks and bath tub', 'Marble / Ceramic tiles flooring', 'Interior decorations', 'Architectural elevation works', 'Paneling works', 'Aluminium works', 'Aluminium hand rails', 'False ceiling'];
+    const amenityRows: string[][] = [];
+    let amenitiesTotal = 0;
+    for (let i = 0; i < amenityItems.length; i++) {
+      const val = parseFloat(this.fv(`bomAmenity_${i}`, '0')) || 0;
+      amenitiesTotal += val;
+      amenityRows.push([String(i + 1), amenityItems[i], val > 0 ? val.toFixed(2) : '']);
+    }
+    amenityRows.push(['', 'TOTAL', amenitiesTotal.toFixed(2)]);
+    this.drawTable(
+      ['SL NO.', 'PARTICULARS OF ITEM', 'AMOUNT'],
+      amenityRows,
+      [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
+      [], [0], [],
+      [{ r: amenityRows.length - 1, c: 1 }, { r: amenityRows.length - 1, c: 2 }],
+      [{ r: amenityRows.length - 1, c: 1 }, { r: amenityRows.length - 1, c: 2 }]
+    );
+    }
+
+    // Part E: Miscellaneous
+    this.drawSectionHeader('PART E — MISCELLANEOUS', true, true);
+    if (this.fields.bomMiscMode === 'annexure') {
+      const parsedData = this.fields.bomMiscMode_parsedData;
+      if (parsedData && parsedData.headers && parsedData.rows) {
+        this.cursorY += 5;
+        this.drawDataTable(parsedData.headers, parsedData.rows);
+        this.cursorY += 5;
+      } else {
+        this.drawSimpleRow('Miscellaneous', 'No data uploaded.');
+      }
+    } else {
+    const miscItems = ['Separate toilet room', 'Separate lumber room', 'Separate water tank/ sump', 'Trees, gardening'];
+    const miscRows: string[][] = [];
+    let miscTotal = 0;
+    for (let i = 0; i < miscItems.length; i++) {
+      const val = parseFloat(this.fv(`bomMisc_${i}`, '0')) || 0;
+      miscTotal += val;
+      miscRows.push([String(i + 1), miscItems[i], val > 0 ? val.toFixed(2) : '']);
+    }
+    miscRows.push(['', 'TOTAL', miscTotal.toFixed(2)]);
+    this.drawTable(
+      ['SL NO.', 'PARTICULARS OF ITEM', 'AMOUNT'],
+      miscRows,
+      [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
+      [], [0], [],
+      [{ r: miscRows.length - 1, c: 1 }, { r: miscRows.length - 1, c: 2 }],
+      [{ r: miscRows.length - 1, c: 1 }, { r: miscRows.length - 1, c: 2 }]
+    );
+    }
+
+    // Part F: Services
+    this.drawSectionHeader('PART F — SERVICES', true, true);
+    if (this.fields.bomServicesMode === 'annexure') {
+      const parsedData = this.fields.bomServicesMode_parsedData;
+      if (parsedData && parsedData.headers && parsedData.rows) {
+        this.cursorY += 5;
+        this.drawDataTable(parsedData.headers, parsedData.rows);
+        this.cursorY += 5;
+      } else {
+        this.drawSimpleRow('Services', 'No data uploaded.');
+      }
+    } else {
+    const serviceItems = ['Bore Well with Motor', 'Head Room, Parapet Wall, Grinding', 'Compound Wall', 'Marble Flooring in staircase & Steel Handrail', 'Extra cost for Lifts with installation'];
+    const serviceRows: string[][] = [];
+    let servicesTotal = 0;
+    for (let i = 0; i < serviceItems.length; i++) {
+      const val = parseFloat(this.fv(`bomService_${i}`, '0')) || 0;
+      servicesTotal += val;
+      serviceRows.push([String(i + 1), serviceItems[i], val > 0 ? val.toFixed(2) : '']);
+    }
+    serviceRows.push(['', 'TOTAL', servicesTotal.toFixed(2)]);
+    this.drawTable(
+      ['SL NO.', 'PARTICULARS OF ITEM', 'AMOUNT'],
+      serviceRows,
+      [CONTENT_W * 0.1, CONTENT_W * 0.6, CONTENT_W * 0.3],
+      [], [0], [],
+      [{ r: serviceRows.length - 1, c: 1 }, { r: serviceRows.length - 1, c: 2 }],
+      [{ r: serviceRows.length - 1, c: 1 }, { r: serviceRows.length - 1, c: 2 }]
+    );
+    }
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 7: TOTAL ABSTRACT & REMARKS
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBomSection7() {
+    this.drawSectionHeader('TOTAL ABSTRACT');
+
+    // Compute prefill values
+    const dimensions = this.fields.bomDimensions || {};
+    const deedArea = (parseFloat(dimensions.deedEast || '0') || 0) + (parseFloat(dimensions.deedWest || '0') || 0) + (parseFloat(dimensions.deedNorth || '0') || 0) + (parseFloat(dimensions.deedSouth || '0') || 0);
+    const actualArea = (parseFloat(dimensions.actualEast || '0') || 0) + (parseFloat(dimensions.actualWest || '0') || 0) + (parseFloat(dimensions.actualNorth || '0') || 0) + (parseFloat(dimensions.actualSouth || '0') || 0);
+    const minArea = (deedArea > 0 && actualArea > 0) ? Math.min(deedArea, actualArea) : (deedArea || actualArea || 0);
+    const areaSft = minArea * 43560;
+
+    const acreValue = parseFloat(this.fv('bomGovtBenchmarkPerAcre', '0')) || 0;
+    const sftRate = acreValue > 0 ? Math.round(acreValue / 43560) : 0;
+    const landGovtValue = areaSft > 0 && sftRate > 0 ? Math.round(areaSft * sftRate) : 0;
+
+    const adoptedRate = parseFloat(this.fv('bomAdoptedRate', '0')) || 0;
+    const calculatedLandMarketValue = areaSft > 0 && adoptedRate > 0 ? Math.round(areaSft * adoptedRate) : 0;
+    const landMarketValue = this.fields.bomEstimatedLandValueEditOn
+      ? (parseFloat(this.fv('bomEstimatedLandValue', '0')) || 0)
+      : calculatedLandMarketValue;
+
+    const currentYear = new Date().getFullYear();
+    const yearOfConstStr = this.fv('bomYearOfConstruction', '');
+    const yearMatch = yearOfConstStr.match(/\d{4}/);
+    const yearOfConst = yearMatch ? parseInt(yearMatch[0], 10) : 0;
+    const bAge = this.fields.bomBuildingAgeEditOn ? (parseFloat(this.fv('bomBuildingAge', '0')) || 0) : (yearOfConst > 0 ? currentYear - yearOfConst : 0);
+    
+    const buildingRows: any[] = this.fields.bomBuildingValuationRows || [];
+    const buildingMarketValue = buildingRows.reduce((sum: number, row: any) => {
+      const p = parseFloat(row.plinthArea || '0') || 0;
+      const r = parseFloat(row.replacementRate || '0') || 0;
+      const est = row.estCostEditOn ? (parseFloat(row.estCost || '0') || 0) : p * r;
+      const dep = row.depreciationEditOn ? (parseFloat(row.depreciation || '0') || 0) : est * 0.01 * bAge;
+      const net = row.netValueEditOn ? (parseFloat(row.netValue || '0') || 0) : est - dep;
+      return sum + net;
+    }, 0);
+
+    const amenitiesMarketValue = Array.from({ length: 10 }, (_, i) => parseFloat(this.fv(`bomAmenity_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+    const miscMarketValue = Array.from({ length: 4 }, (_, i) => parseFloat(this.fv(`bomMisc_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+    const servicesMarketValue = Array.from({ length: 5 }, (_, i) => parseFloat(this.fv(`bomService_${i}`, '0')) || 0).reduce((a, b) => a + b, 0);
+
+    const abstractRows = [
+      { label: 'LAND', govtVal: landGovtValue, marketVal: landMarketValue },
+      { label: 'BUILDING', govtVal: 0, marketVal: buildingMarketValue },
+      { label: 'EXTRA ITEMS', govtVal: 0, marketVal: 0 },
+      { label: 'AMENITIES', govtVal: 0, marketVal: amenitiesMarketValue },
+      { label: 'MISCELLANEOUS', govtVal: 0, marketVal: miscMarketValue },
+      { label: 'SERVICES', govtVal: 0, marketVal: servicesMarketValue },
+    ].map(row => ({
+      ...row,
+      realizableVal: row.marketVal * 0.95,
+      distressVal: row.marketVal * 0.85
+    }));
+
+    const fmtINR = (val: number) => new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val);
+
+    const tableRows: string[][] = [];
+    let totalGovt = 0, totalMarket = 0, totalRealizable = 0, totalDistress = 0;
+
+    for (const row of abstractRows) {
+      totalGovt += row.govtVal;
+      totalMarket += row.marketVal;
+      totalRealizable += row.realizableVal;
+      totalDistress += row.distressVal;
+
+      tableRows.push([
+        row.label,
+        row.govtVal > 0 ? `Rs. ${fmtINR(row.govtVal)}` : 'Rs. 0.00',
+        `Rs. ${fmtINR(row.marketVal)}`,
+        `Rs. ${fmtINR(row.realizableVal)}`,
+        `Rs. ${fmtINR(row.distressVal)}`,
+      ]);
+    }
+
+    // TOTAL row 
+    tableRows.push([
+      'TOTAL',
+      `Rs. ${fmtINR(totalGovt)}`,
+      `Rs. ${fmtINR(totalMarket)}`,
+      `Rs. ${fmtINR(totalRealizable)}`,
+      `Rs. ${fmtINR(totalDistress)}`
+    ]);
+
+    // OR SAY row
+    const orSayGovt = Math.round(totalGovt / 1000) * 1000;
+    const orSayMarket = Math.round(totalMarket / 1000) * 1000;
+    const orSayRealizable = Math.round(totalRealizable / 1000) * 1000;
+    const orSayDistress = Math.round(totalDistress / 1000) * 1000;
+
+    tableRows.push([
+      'OR SAY',
+      `Rs. ${fmtINR(orSayGovt)}`,
+      `Rs. ${fmtINR(orSayMarket)}`,
+      `Rs. ${fmtINR(orSayRealizable)}`,
+      `Rs. ${fmtINR(orSayDistress)}`,
+    ]);
+
+    if (this.fields.bomAbstractMode === 'annexure') {
+      const parsedData = this.fields.bomAbstractMode_parsedData;
+      if (parsedData && parsedData.headers && parsedData.rows) {
+        this.cursorY += 5;
+        this.drawDataTable(parsedData.headers, parsedData.rows);
+        this.cursorY += 5;
+      } else {
+        this.drawSimpleRow('Total Abstract', 'No data uploaded.');
+      }
+    } else {
+      this.drawTable(
+        ['PARTICULARS', 'GOVT. VALUE IN RS.', 'MARKET VALUE IN RS.', 'REALIZABLE VALUE (95%)', 'DISTRESS VALUE (85%)'],
+        tableRows,
+        [CONTENT_W * 0.22, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195, CONTENT_W * 0.195],
+        [], [0], [],
+        // Bold the TOTAL and OR SAY rows
+        [
+          { r: tableRows.length - 2, c: 0 }, { r: tableRows.length - 2, c: 1 }, { r: tableRows.length - 2, c: 2 }, { r: tableRows.length - 2, c: 3 }, { r: tableRows.length - 2, c: 4 },
+          { r: tableRows.length - 1, c: 0 },
+        ],
+        [
+          { r: tableRows.length - 2, c: 0 }, { r: tableRows.length - 2, c: 1 }, { r: tableRows.length - 2, c: 2 }, { r: tableRows.length - 2, c: 3 }, { r: tableRows.length - 2, c: 4 },
+        ]
+      );
+    }
+
+    // Remarks
+    this.cursorY += 10;
+    this.checkPageBreak(50);
+    this.drawTextAt('REMARKS', MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    const tw = this.fontBold.widthOfTextAtSize('REMARKS', FONT_SIZE);
+    this.drawHLine(MARGIN_L, MARGIN_L + tw, this.cursorY + FONT_SIZE + 2);
+    this.cursorY += 15;
+
+    const propLegal = this.fv('bomPropertyLegalRemarks');
+    if (propLegal) {
+      const h = this.drawWrappedTextAt(propLegal, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
+      this.cursorY += h + 10;
+    }
+    
+    const marketValNum = this.fields.bomEnableCoverPageValueEdit ? (parseFloat(this.fv('bomPresentMarketValue', '0')) || 0) : orSayMarket;
+    const realizableValNum = this.fields.bomEnableCoverPageValueEdit ? (parseFloat(this.fv('bomRealizableValue', '0')) || 0) : orSayRealizable;
+    const distressValNum = this.fields.bomEnableCoverPageValueEdit ? (parseFloat(this.fv('bomForcedSaleValue', '0')) || 0) : orSayDistress;
+    const govtValNum = this.fields.bomEnableCoverPageValueEdit ? (parseFloat(this.fv('bomGovtValue', '0')) || 0) : orSayGovt;
+
+    const defaultValuationConclusion = `As a result of my appraisal and analysis, it is my considered opinion that the present Fair Market Value of the above property in the prevailing condition with aforesaid specifications is Rs.${fmtINR(marketValNum)}/- (${rupeesInWords(marketValNum)}). The Realizable Value of the above Property is Rs.${fmtINR(realizableValNum)}/- (${rupeesInWords(realizableValNum)}). The book value of the above property as of Land is Rs.${fmtINR(govtValNum)}/- (${rupeesInWords(govtValNum)}) and the distress value Rs.${fmtINR(distressValNum)}/- (${rupeesInWords(distressValNum)})`;
+    const valConclusion = this.fields.bomValuationConclusionEditOn ? this.fv('bomValuationConclusion', '') : defaultValuationConclusion;
+
+    this.checkPageBreak(40);
+    const h2 = this.drawWrappedTextAt(`• ${valConclusion}`, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
+    this.cursorY += h2 + 30;
+
+    // Sign-off
+    const place = this.fv('bomSignoffPlace') || 'Bhubaneswar';
+    
+    let parsedEndorsementDate = '';
+    const asOnDate = this.fv('bomAsOnDate');
+    if (asOnDate) {
+      const m = asOnDate.match(/(\d{4})-(\d{2})-(\d{2})/);
+      parsedEndorsementDate = m ? `${m[3]}-${m[2]}-${m[1]}` : asOnDate;
+    }
+    const date = parsedEndorsementDate || '________';
+    
+    const defaultEndorsement = `The undersigned has inspected the property detailed in the Valuation Report on dated ${date}. We are satisfied that the fair and reasonable market value of the property is Rs.${fmtINR(marketValNum)}/- (${rupeesInWords(marketValNum)}).`;
+    const endorsement = this.fields.bomBankEndorsementEditOn ? this.fv('bomBankEndorsement', '') : defaultEndorsement;
+    
+    const h3 = this.measureTextHeight(endorsement, CONTENT_W, FONT_SIZE);
+    this.checkPageBreak(120 + h3);
+    
+    const sigBlockW = 220;
+    const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
+    this.drawTextAt(`Place: ${place}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
+    this.cursorY += 12;
+    this.drawTextAt(`Date: ${date}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
+    
+    this.cursorY += 40;
+
+    let parsedManagerDate = '';
+    const endDate = this.fv('bomEndorsementDate');
+    if (endDate) {
+      const m = endDate.match(/(\d{4})-(\d{2})-(\d{2})/);
+      parsedManagerDate = m ? `${m[3]}-${m[2]}-${m[1]}` : endDate;
+    }
+
+    this.drawWrappedTextAt(endorsement, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
+    this.cursorY += h3 + 30;
+    this.drawTextAt(`Date: ${parsedManagerDate}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
+    this.cursorY += 12;
+    this.drawTextAt(`(Name of the Branch Manager with Official seal)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
+    
+    // Add padding before Section 8
+    this.cursorY += 40;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 9: DECLARATION FROM VALUERS (Questionnaire)
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBomSection9() {
+    this.drawSectionHeader('DECLARATION FROM VALUERS (QUESTIONNAIRE)');
+
+    const questionnaireItems = [
+      'Background information of the asset being valued;',
+      'Purpose of valuation and appointing authority',
+      'Identity of the Valuers and any other experts involved in the valuation;',
+      'Disclosure of Valuers interest or conflict, if any;',
+      'Date of appointment, valuation date and date of report;',
+      'Inspections and/or investigations undertaken;',
+      'Nature and sources of the information used or relied upon;',
+      'Procedures adopted in carrying out the valuation and valuation standards followed;',
+      'Restrictions on use of the report, if any;',
+      'Major factors that were taken into account during the valuation;',
+      'Caveats, limitations and disclaimers to the extent they explain or elucidate the limitations faced by valuers.',
+    ];
+
+    const vName = this.fv('bomTSNoVillage') || '[Village]';
+    const pOffice = this.fv('bomWardTaluka') || '[Post Office]';
+    const dName = this.fv('bomMandalDistrict') || '[District]';
+    const generatedBackground = `The property is situated in a good developed Residential area of ${vName}, ${pOffice},${dName}`;
+
+    const bomPurpose = this.fv('bomPurposeOfValuation');
+    const generatedPurpose = bomPurpose ? `${bomPurpose}. The Manager of above said bank is the Appointing authority.` : 'The Manager of above said bank is the Appointing authority.';
+    
+    const fDate = (dStr: string) => {
+      if (!dStr) return '';
+      const parts = dStr.split('-');
+      if (parts.length === 3 && parts[0].length === 4) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+      if (dStr.includes('/')) return dStr;
+      return dStr;
+    };
+
+    const appDateStr = fDate(this.fv('bomQuestionnaireAppointmentDate'));
+    const valDateStr = fDate(this.fv('bomDateOfInspection'));
+    const repDateStr = fDate(this.fv('bomAsOnDate'));
+    const generatedDates = `Date of Appointment: ${appDateStr}\nValuation Date: ${valDateStr}\nDate of Report: ${repDateStr}`;
+
+    const qAnswers: string[] = this.fields.bomDeclarationQuestionnaire || [];
+    
+    const getDisplayValue = (idx: number) => {
+      const val = qAnswers[idx];
+      if (val === '__CLEARED__') return '';
+      if (val && val !== '') return val;
+      if (idx === 0) return generatedBackground;
+      if (idx === 1) return generatedPurpose;
+      if (idx === 4) return generatedDates;
+      return '';
+    };
+
+    const tableRows: string[][] = questionnaireItems.map((item, idx) => [
+      String(idx + 1),
+      item,
+      getDisplayValue(idx),
+    ]);
+
+    this.drawTable(
+      ['Sl No.', 'Particulars', "Valuer's Comment"],
+      tableRows,
+      [CONTENT_W * 0.08, CONTENT_W * 0.47, CONTENT_W * 0.45],
+      [], [0], [], [], []
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 8: DECLARATION FROM VALUERS (Affirmations)
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBomSection8() {
+    this.drawSectionHeader('DECLARATION FROM VALUERS (AFFIRMATIONS)');
+
+    const name = this.fields.bomAffirmationName ?? (this.fv('bomAffirmationName') || 'Satyajit Mohanty');
+    const father = this.fields.bomAffirmationFatherName ?? (this.fv('bomAffirmationFatherName') || 'Nityananda Mohanty');
+    this.cursorY += 2;
+    const introText = `I Mr. ${name}, S/o: Mr. ${father} do hereby solemnly affirm and state that:`;
+    const introH = this.drawWrappedTextAt(introText, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
+    this.cursorY += introH + 4;
+
+    const formatDotDate = (dateStr?: string) => {
+      if (!dateStr) return '________';
+      const m = dateStr.match(/(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return `${m[3]}.${m[2]}.${m[1]}`;
+      return dateStr;
+    };
+
+    const affirmChecks = this.fields.bomAffirmationChecks || {};
+    const panNumber = this.fv('bomAffirmationPAN');
+    const panText = panNumber ? `My PAN Card number as applicable is: ${panNumber}` : `My PAN Card number as applicable is:`;
+
+    const affirmationItems: { key: string; text: string }[] = [
+      { key: 'a', text: 'I am citizen of India.' },
+      { key: 'b', text: 'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.' },
+      { key: 'c', text: `The information furnished in my valuation report dated ${formatDotDate(this.fv('bomAsOnDate'))} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.` },
+      { key: 'd', text: `I have personally inspected the property on ${formatDotDate(this.fv('bomDateOfInspection'))} & I have valued the property which is identified by documents & help of customer. The work is not sub-contracted to any other valuer & carried out by myself.` },
+      { key: 'e', text: 'Valuation report is submitted in the format as prescribed by the bank.' },
+      { key: 'f', text: 'I have not been depanelled by any other bank and in case any such depanelment by other banks during my empanelment with you, I will inform you within three days of such depanelment.' },
+      { key: 'g', text: 'I have not been removed from service earlier.' },
+      { key: 'h', text: 'I have not been convicted of any offence & sentenced to a term of imprisonment' },
+      { key: 'i', text: 'I have not been declared to be unsound mind.' },
+      { key: 'j', text: 'I have not been found guilty of misconduct in my professional capacity.' },
+      { key: 'k', text: 'I am not an undischarged bankrupt, or have not applied to be adjudicated as a bankrupt.' },
+      { key: 'l', text: 'I have not undischarged insolvent.' },
+      { key: 'm', text: 'I have not been levied a penalty under section 271J of Income-Tax Act, 1961 (43 of 1961) and time limit for filing appeal before commissioner of Income Tax (Appeals) or Income-Tax Appellate Tribunal, as the case may be has expired, or such penalty has been confirmed by Income-Tax Appellate Tribunal, and five years have not elapsed after levy of such penalty.' },
+      { key: 'n', text: 'I have not been convicted of an offence connected with any proceeding under the Income-Tax Act 1961, wealth Tax Act 1957 or Gift Tax Act 1958.' },
+      { key: 'o', text: panText },
+      { key: 'p', text: 'I undertake to keep you informed of any events or happenings which would make me ineligible for empanelment as a valuer.' },
+      { key: 'q', text: 'I have not concealed or suppressed any material information, facts and records and I have made a complete and full disclosure' },
+      { key: 'r', text: 'I have read the hand book on policy, standards & procedure for real Estate valuation, 2011 of the IBA & this report is in conformity to the "Standards" enshrined for valuation in the part -B of the above handbook to the best of my knowledge.' },
+      { key: 's', text: 'I have read the International Valuation Standards (IVS) & the report submitted to the Bank for the respective asset class is in conformity to the "Standards" enshrined for valuation in the IVS in "General Standards" & "Asset Standards" as applicable.' },
+      { key: 't', text: 'I abide by the Model Code of Conduct for empanelment of valuer in the Bank.' },
+      { key: 'u', text: 'I am registered under Section 34 AB of the Wealth Tax Act,1957.' },
+      { key: 'v', text: 'I am valuer registered with Insolvency & Bankruptcy Board of India (IBBI)' },
+      { key: 'w', text: "My CIBIL Score and credit worthiness is as per Bank's guidelines." },
+      { key: 'x', text: 'I am the authorized official of the firm who is competent to sign this valuation report' },
+      { key: 'y', text: 'I will undertake the valuation work on receipt of letter of Engagement generated from the System. (i.e. LLMS/LOS) only' },
+      { key: 'z', text: 'Further, I hereby provide the following information.' },
+    ];
+
+    affirmationItems.forEach(item => {
+      if (affirmChecks[item.key] === false) return;
+      
+      const bullet = `${item.key}.`;
+      const text = item.text;
+      
+      this.drawTextAt(bullet, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+      const textH = this.drawWrappedTextAt(text, MARGIN_L + 15, this.cursorY, CONTENT_W - 15, { fontSize: FONT_SIZE_SMALL });
+      this.cursorY += textH + 4;
+      this.checkPageBreak(20);
+    });
+
+    const additionalInfo = this.fv('bomAffirmationAdditionalInfo');
+    if (affirmChecks['z'] !== false && additionalInfo) {
+      this.cursorY += 2;
+      const h = this.drawWrappedTextAt(additionalInfo, MARGIN_L + 15, this.cursorY, CONTENT_W - 15, { fontSize: FONT_SIZE_SMALL, italic: true });
+      this.cursorY += h + 6;
+      this.checkPageBreak(30);
+    }
+
+    // Sign-off
+    this.cursorY += 10;
+    this.checkPageBreak(60);
+    const affirmDate = formatReportDate(this.fv('bomAsOnDate'));
+    const affirmPlace = this.fields.bomAffirmationPlace ?? (this.fv('bomAffirmationPlace') || 'Bhubaneswar');
+    
+    const sigBlockW = 200;
+    const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
+
+    this.drawTextAt(`Date: ${affirmDate}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+    
+    this.cursorY += 12;
+    this.drawTextAt(`Place: ${affirmPlace}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+    
+    this.cursorY += 40;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════
+  // SECTION 10: MODEL CODE OF CONDUCT FOR VALUERS
+  // ═══════════════════════════════════════════════════════════════════════
+  private drawBomSection10() {
+    if (this.fields.bomCodeOfConductAccepted === false) {
+      return;
+    }
+
+    this.drawSectionHeader('MODEL CODE OF CONDUCT FOR VALUERS\n{Adopted in line with Companies (Registered Valuers and Valuation Rules, 2017)}', true, true);
+
+    // Render as text paragraphs with headings
+    const fontSize = FONT_SIZE_SMALL;
+    const pad = 4;
+
+    const renderParagraph = (text: string, isBold: boolean = false, isHeading: boolean = false) => {
+      const font = isBold || isHeading ? this.fontBold : this.fontRegular;
+      const size = isHeading ? FONT_SIZE_HEADER : fontSize;
+      const lines = this.wrapText(this.sanitizeText(text), CONTENT_W - pad * 2, size, isBold || isHeading);
+      const needed = lines.length * size * LINE_HEIGHT + (isHeading ? 10 : 8);
+      this.checkPageBreak(needed);
+
+      if (isHeading) this.cursorY += 8;
+      else this.cursorY += 6; // Add top padding before paragraph
+
+      for (const line of lines) {
+        // Move cursor down by line height BEFORE drawing, so baseline is at the bottom of the line
+        this.cursorY += size * LINE_HEIGHT;
+        const y = this.pdfY(this.cursorY);
+        this.page.drawText(line, { x: MARGIN_L + pad, y, size, font, color: rgb(0, 0, 0) });
+      }
+
+      if (isHeading) this.cursorY += 4;
+      else this.cursorY += 4; // Add bottom padding after paragraph
+    };
+
+    renderParagraph('All Valuers empanelled with bank shall strictly adhere to the following code of conduct:');
+
+    const sections: { heading: string; items: { num: number; text: string }[] }[] = [
+      { heading: 'Integrity and Fairness', items: [
+        { num: 1, text: 'A Valuer shall, in the conduct of his/its business, follow high standards of integrity and fairness in all his/its dealings with his/its clients and other Valuers.' },
+        { num: 2, text: 'A Valuer shall maintain integrity by being honest, straightforward, and forthright in all professional relationships.' },
+        { num: 3, text: 'A Valuer shall endeavor to ensure that he/it provides true and adequate information and shall not misrepresent any facts or situations.' },
+        { num: 4, text: 'A Valuer shall refrain from being involved in any action that would bring disrepute to the profession.' },
+        { num: 5, text: 'A Valuer shall keep public interest foremost while delivering his services.' },
+      ]},
+      { heading: 'Professional Competence and Due Care', items: [
+        { num: 6, text: 'A Valuer shall render at all times high standards of service, exercise due diligence, ensure proper care and exercise independent professional judgment.' },
+        { num: 7, text: 'A Valuer shall carry out professional services in accordance with the relevant technical and professional standards.' },
+        { num: 8, text: 'A Valuer shall continuously maintain professional knowledge and skill to provide competent professional service.' },
+        { num: 9, text: 'In the preparation of a valuation report, the Valuer shall not disclaim liability for his/its expertise or deny his/its duty of care.' },
+        { num: 10, text: 'A Valuer shall not carry out any instruction of the client insofar as they are incompatible with integrity, objectivity and independence.' },
+        { num: 11, text: 'A Valuer shall clearly state to his client the services that he would be competent to provide.' },
+      ]},
+      { heading: 'Independence and Disclosure of Interest', items: [
+        { num: 12, text: 'A Valuer shall act with objectivity in his/its professional dealings.' },
+        { num: 13, text: 'A Valuer shall not take up an assignment if he/it or any of his/its relatives or associates is not independent.' },
+        { num: 14, text: 'A Valuer shall maintain complete independence in his/its professional relationships.' },
+        { num: 15, text: 'A Valuer shall wherever necessary disclose to the clients, possible sources of conflicts.' },
+        { num: 16, text: 'A Valuer shall not deal in securities of any subject company during valuation period.' },
+        { num: 17, text: 'A Valuer shall not indulge in "mandate snatching" or offering "convenience valuations".' },
+        { num: 18, text: 'As an independent Valuer, the Valuer shall not charge success fee.' },
+        { num: 19, text: 'In any fairness opinion, prior engagement shall be declared.' },
+      ]},
+      { heading: 'Confidentiality', items: [
+        { num: 20, text: 'A Valuer shall not use or divulge any confidential information about the subject company.' },
+        { num: 21, text: 'A Valuer shall ensure maintenance of written contemporaneous records for decisions taken.' },
+        { num: 22, text: 'A Valuer shall appear, co-operate and be available for inspections and investigations.' },
+        { num: 23, text: 'A Valuer shall provide all information and records as may be required by the authority.' },
+        { num: 24, text: 'A Valuer shall maintain proper working papers for a period of three years.' },
+      ]},
+      { heading: 'Gifts and Hospitality', items: [
+        { num: 25, text: 'A Valuer or his/its relative shall not accept gifts or hospitality which undermines independence.' },
+        { num: 26, text: 'A Valuer shall not offer gifts or hospitality to a public servant to obtain or retain work.' },
+      ]},
+      { heading: 'Remuneration and Costs', items: [
+        { num: 27, text: 'A Valuer shall provide services for remuneration which is charged in a transparent manner.' },
+        { num: 28, text: 'A Valuer shall not accept any fees other than those disclosed in a written contract.' },
+      ]},
+      { heading: 'Occupation, Employability and Restrictions', items: [
+        { num: 29, text: 'A Valuer shall refrain from accepting too many assignments if unable to devote adequate time.' },
+        { num: 30, text: 'A Valuer shall not conduct business which discredits the profession.' },
+      ]},
+    ];
+
+    for (const section of sections) {
+      renderParagraph(section.heading, false, true);
+      for (const item of section.items) {
+        // Use the user's prefilled value if it exists in fields, otherwise use the default text
+        const cocValues = this.fields.bomCodeOfConductValues || {};
+        const displayText = cocValues[`item_${item.num}`] || item.text;
+        renderParagraph(`${item.num}. ${displayText}`);
+      }
+    }
+
+    // Custom sign-off block matching @image5
+    this.cursorY += 20;
+    this.checkPageBreak(60);
+
+    const fDate = (dStr: string) => {
+      if (!dStr) return '';
+      const parts = dStr.split('-');
+      if (parts.length === 3 && parts[0].length === 4) return `${parts[2]}.${parts[1]}.${parts[0]}`;
+      if (dStr.includes('/')) return dStr.replace(/\//g, '.');
+      return dStr.replace(/-/g, '.');
+    };
+
+    const cDate = fDate(this.fv('bomAsOnDate'));
+    const cPlace = this.fv('bomCodeOfConductPlace') || 'Bhubaneswar';
+    const sigBlockW = 200;
+    const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
+
+    this.drawTextAt(`Date: ${cDate}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    
+    this.cursorY += 12;
+    this.drawTextAt(`Place: ${cPlace}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+
+    this.cursorY += 12;
+    this.drawTextAt(`Signature of the Approved Valuer and Seal`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+  }
+}
