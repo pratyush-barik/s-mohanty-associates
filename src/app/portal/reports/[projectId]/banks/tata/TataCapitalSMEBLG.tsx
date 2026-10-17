@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -75,9 +76,9 @@ export default function TataCapitalSMEBLG({
     { id: 'tata-sec-assumptions', title: 'Assumptions & Basis' },
     { id: 'tata-sec-valuation', title: 'Valuation & Calculations' },
     { id: 'tata-sec-remarks', title: 'Remarks & Declaration' },
-    { id: 'tata-sec-docs', title: 'Property Documents' },
-    { id: 'tata-sec-maps', title: 'Location Maps' },
-    { id: 'tata-sec-photos', title: 'Property Photographs' },
+    { id: 'tata-sec-docs', title: 'Documents' },
+    { id: 'tata-sec-maps', title: 'Maps' },
+    { id: 'tata-sec-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -465,20 +466,23 @@ export default function TataCapitalSMEBLG({
         sticky={false}
       />
 
-      {earliestVisit && (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <EarliestFieldVisitBadge fieldVisit={earliestVisit} />
-        </div>
-      )}
-
-      {/* Main Grid: Form Left, Floating Navigator Right */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row gap-8 items-start">
+      {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
+        {/* ── Left Form Column ── */}
         <div className="flex-1 w-full space-y-8 min-w-0">
+          {/* Title Header Card */}
+          <BankReportTitleCard
+            bankName="TATA CAPITAL LTD"
+            subclass="SME-BLG"
+            description="Tata Capital SME & Business Loan Against Property Format with Schedule Valuation & Approvals."
+            earliestVisit={earliestVisit}
+            projectCode={projectCode}
+          />
 
           {/* ═══════════════════════════════════════════════
               SECTION 1: GENERAL DETAILS (PART A)
           ═══════════════════════════════════════════════ */}
-          <Section title="General Details" id="tata-sec-general">
+          <Section title="General Details" id="tata-sec-general" number={1}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Field label="1. Purpose of valuation">
                 <input
@@ -737,7 +741,7 @@ export default function TataCapitalSMEBLG({
           {/* ═══════════════════════════════════════════════
               SECTION 2: STRUCTURE & BOUNDARIES (PART B)
           ═══════════════════════════════════════════════ */}
-          <Section title="Structure & Boundaries" id="tata-sec-structure">
+          <Section title="Structure & Boundaries" id="tata-sec-structure" number={2}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Field label="1. Year of construction">
                 <input
@@ -910,7 +914,7 @@ export default function TataCapitalSMEBLG({
           {/* ═══════════════════════════════════════════════
               SECTION 3: PROPERTY SPECIFICATIONS (PART C)
           ═══════════════════════════════════════════════ */}
-          <Section title="Property Specifications" id="tata-sec-specs">
+          <Section title="Property Specifications" id="tata-sec-specs" number={3}>
             <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">
               Building Level Specifications (Points 1 - 11)
             </div>
@@ -1226,7 +1230,7 @@ export default function TataCapitalSMEBLG({
           {/* ═══════════════════════════════════════════════
               SECTION 4: ASSUMPTIONS & BASIS (PART D)
           ═══════════════════════════════════════════════ */}
-          <Section title="Assumptions & Basis" id="tata-sec-assumptions">
+          <Section title="Assumptions & Basis" id="tata-sec-assumptions" number={4}>
             <div className="space-y-4">
               <Field label="1. Drawings and approvals">
                 <textarea
@@ -1295,7 +1299,7 @@ export default function TataCapitalSMEBLG({
           {/* ═══════════════════════════════════════════════
               SECTION 5: VALUATION & CALCULATIONS (PART E)
           ═══════════════════════════════════════════════ */}
-          <Section title="Valuation & Calculations" id="tata-sec-valuation">
+          <Section title="Valuation & Calculations" id="tata-sec-valuation" number={5}>
             {/* Live Financial Calculation Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-950/60 to-slate-900 border border-emerald-500/30">
@@ -1472,7 +1476,7 @@ export default function TataCapitalSMEBLG({
           {/* ═══════════════════════════════════════════════
               SECTION 6: REMARKS & DECLARATION
           ═══════════════════════════════════════════════ */}
-          <Section title="Remarks & Declaration" id="tata-sec-remarks">
+          <Section title="Remarks & Declaration" id="tata-sec-remarks" number={6}>
             <div className="space-y-4">
               <Field label="Synthesis & Valuation Remarks">
                 <textarea
@@ -1534,8 +1538,9 @@ export default function TataCapitalSMEBLG({
               SECTION 7: PROPERTY DOCUMENTS (NO SECTION NUMBER)
           ═══════════════════════════════════════════════ */}
           <BaseDocumentsSection
-            title="Property Documents"
+            title="Documents"
             sectionId="tata-sec-docs"
+            sectionNumber={7}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1559,8 +1564,9 @@ export default function TataCapitalSMEBLG({
               SECTION 8: LOCATION MAPS (NO SECTION NUMBER)
           ═══════════════════════════════════════════════ */}
           <BaseMapsSection
-            title="Location Maps"
+            title="Maps"
             sectionId="tata-sec-maps"
+            sectionNumber={8}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1589,8 +1595,9 @@ export default function TataCapitalSMEBLG({
               SECTION 9: PROPERTY PHOTOGRAPHS (NO SECTION NUMBER)
           ═══════════════════════════════════════════════ */}
           <BasePhotographsSection
-            title="Property Photographs"
+            title="Photographs"
             sectionId="tata-sec-photos"
+            sectionNumber={9}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

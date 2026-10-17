@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -57,14 +58,16 @@ export default function NeoGrowth({
 
   const navSections: NavItem[] = [
     { id: 'neo-sec-header', title: 'Header & Branch' },
-    { id: 'neo-sec-basic', title: '1-4. Basic Details' },
-    { id: 'neo-sec-locality', title: '5-8. Locality & Surrounding' },
-    { id: 'neo-sec-property', title: '9-13. Property & Building' },
-    { id: 'neo-sec-sanction', title: '14-20. Sanction & Setbacks' },
-    { id: 'neo-sec-valuation', title: '21. Valuation & Rates' },
-    { id: 'neo-sec-boundaries', title: '22-23. Boundaries & Risk' },
+    { id: 'neo-sec-basic', title: 'Basic Details' },
+    { id: 'neo-sec-locality', title: 'Locality & Surrounding' },
+    { id: 'neo-sec-property', title: 'Property & Building' },
+    { id: 'neo-sec-sanction', title: 'Sanction & Setbacks' },
+    { id: 'neo-sec-valuation', title: 'Valuation & Rates' },
+    { id: 'neo-sec-boundaries', title: 'Boundaries & Risk' },
     { id: 'neo-sec-declaration', title: 'Declaration & Sign-off' },
-    { id: 'neo-sec-attachments', title: 'Attachments' },
+    { id: 'neo-sec-docs', title: 'Documents' },
+    { id: 'neo-sec-maps', title: 'Maps' },
+    { id: 'neo-sec-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -462,21 +465,18 @@ export default function NeoGrowth({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-        <div className="bg-white rounded-xl shadow border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              NEOGROWTH - VALUATION REPORT
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              NeoGrowth Credit Pvt Ltd Format • Case Ref. No: <span className="font-semibold text-slate-700">{fields.caseRefNo || projectCode}</span>
-            </p>
-          </div>
-          <EarliestFieldVisitBadge fieldVisit={earliestVisit} />
-        </div>
+          {/* Title Card */}
+          <BankReportTitleCard
+            bankName="NeoGrowth Credit Pvt Ltd"
+            subclass="Standard Format"
+            description="Business Loan & Collateral Asset Valuation Format."
+            earliestVisit={earliestVisit}
+            projectCode={projectCode}
+          />
 
         {/* 1. Header & Branch */}
         <div id="neo-sec-header">
-          <Section title="Header & Branch Meta Details">
+          <Section title="Header & Branch Meta Details" number={1}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Branch Name">
                 <input
@@ -549,7 +549,7 @@ export default function NeoGrowth({
 
         {/* 2. Basic Details (Points 1 - 4) */}
         <div id="neo-sec-basic">
-          <Section title="BASIC DETAILS (Points 1 - 4)">
+          <Section title="Basic Details (Points 1 - 4)" number={2}>
             <div className="space-y-4">
               <Field label="1. Applicant/s Name/s">
                 <input
@@ -613,7 +613,7 @@ export default function NeoGrowth({
 
         {/* 3. Locality & Surrounding (Points 5 - 8) */}
         <div id="neo-sec-locality">
-          <Section title="SURROUNDING & LOCALITY DETAILS (Points 5 - 8)">
+          <Section title="Surrounding & Locality Details (Points 5 - 8)" number={3}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="5. Location - Type (Comm., Res, Ind, Mix)">
                 <input
@@ -704,7 +704,7 @@ export default function NeoGrowth({
 
         {/* 4. Property & Building Details (Points 9 - 13) */}
         <div id="neo-sec-property">
-          <Section title="PROPERTY & BUILDING DETAILS (Points 9 - 13)">
+          <Section title="Property & Building Details (Points 9 - 13)" number={4}>
             {/* 9. Occupant */}
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg mb-4 space-y-4">
               <h4 className="font-semibold text-slate-800 text-sm">9. Occupant</h4>
@@ -914,7 +914,7 @@ export default function NeoGrowth({
 
         {/* 5. Sanction Plan Approval & Setbacks (Points 14 - 20) */}
         <div id="neo-sec-sanction">
-          <Section title="SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS (Points 14 - 20)">
+          <Section title="Sanction Plan Approval & Other Documents Details (Points 14 - 20)" number={5}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="14. Sanctioned plans verified with approval no">
                 <textarea
@@ -1085,7 +1085,7 @@ export default function NeoGrowth({
 
         {/* 6. Valuation & Rates (Point 21) */}
         <div id="neo-sec-valuation">
-          <Section title="21. VALUATION (Description of Constructed Area, Amenities & Rates)">
+          <Section title="Valuation (Description of Constructed Area, Amenities & Rates)" number={6}>
             <div className="space-y-6">
               {/* Land Component */}
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-3">
@@ -1295,7 +1295,7 @@ export default function NeoGrowth({
 
         {/* 7. Boundaries & Remarks (Point 22 & 23) */}
         <div id="neo-sec-boundaries">
-          <Section title="22. BOUNDARIES & 23. RISK OF DEMOLITION">
+          <Section title="Boundaries & Risk of Demolition (Points 22 & 23)" number={7}>
             <div className="overflow-x-auto border border-slate-200 rounded-lg mb-4">
               <table className="w-full text-sm text-left">
                 <thead className="bg-slate-100 text-slate-700 font-semibold border-b">
@@ -1376,7 +1376,7 @@ export default function NeoGrowth({
 
         {/* 8. Declaration & Sign Off */}
         <div id="neo-sec-declaration">
-          <Section title="Declaration & Sign-off">
+          <Section title="Declaration & Sign-off" number={8}>
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-2 text-xs text-slate-700 leading-relaxed">
               <p><strong>1.</strong> I hereby declare that; I have no direct and indirect interest in the property valued and the information furnished in the report is true and correct to the best of my knowledge of belief.</p>
               <p><strong>2.</strong> Any additions or alterations after the date of inspection shall not fall under the scope of this report.</p>
@@ -1410,7 +1410,8 @@ export default function NeoGrowth({
         {/* 9. Attachments: Maps, Documents, Photographs */}
         <div id="neo-sec-attachments" className="space-y-6">
           <BaseDocumentsSection
-            title="Verified Property Documents"
+            title="Documents"
+            sectionNumber={9}
             sectionId="neo-sec-docs"
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
@@ -1432,7 +1433,8 @@ export default function NeoGrowth({
           />
 
           <BaseMapsSection
-            title="Location Sketch & Route Maps"
+            title="Maps"
+            sectionNumber={10}
             sectionId="neo-sec-maps"
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
@@ -1459,7 +1461,8 @@ export default function NeoGrowth({
           />
 
           <BasePhotographsSection
-            title="Property Site Photographs"
+            title="Photographs"
+            sectionNumber={11}
             sectionId="neo-sec-photos"
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}

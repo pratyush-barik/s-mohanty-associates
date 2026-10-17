@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -69,7 +70,9 @@ export default function VarthanaFinance({
     { id: 'varthana-sec-technical', title: 'Technical Details & Areas' },
     { id: 'varthana-sec-valuation', title: 'Valuation & Net Mortgagable' },
     { id: 'varthana-sec-remarks', title: 'Declaration & Remarks' },
-    { id: 'varthana-sec-attachments', title: 'Amin Map, Documents & Photos' },
+    { id: 'varthana-sec-docs', title: 'Documents' },
+    { id: 'varthana-sec-maps', title: 'Maps' },
+    { id: 'varthana-sec-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -475,17 +478,14 @@ export default function VarthanaFinance({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-        <div className="bg-white rounded-xl shadow border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              VARTHANA FINANCE — VALUATION REPORT
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Varthana Finance Format • Ref No: <span className="font-semibold text-slate-700">{fields.refNo || projectCode}</span>
-            </p>
-          </div>
-          <EarliestFieldVisitBadge fieldVisit={earliestVisit} />
-        </div>
+          {/* Title Card */}
+          <BankReportTitleCard
+            bankName="Varthana Finance"
+            subclass="School Loans Format"
+            description="School & Educational Institution Infrastructure Valuation Engine."
+            earliestVisit={earliestVisit}
+            projectCode={projectCode}
+          />
 
         {earliestVisit && (
           <div className="flex items-center justify-between p-4 bg-blue-50/80 border border-blue-200 rounded-xl text-blue-900 text-sm">
@@ -505,7 +505,7 @@ export default function VarthanaFinance({
 
         {/* 1. Header & Application Details */}
         <div id="varthana-sec-meta">
-          <Section title="Application Details">
+          <Section title="Application Details" number={1}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <Field label="Ref No">
                 <input
@@ -640,7 +640,7 @@ export default function VarthanaFinance({
 
         {/* 2. Location, Access & Boundaries */}
         <div id="varthana-sec-access">
-          <Section title="Location, Accessibility & Boundaries">
+          <Section title="Location, Accessibility & Boundaries" number={2}>
             <div className="space-y-3 mb-4">
               <Field label="Address of Property (As per documents)">
                 <input
@@ -826,7 +826,7 @@ export default function VarthanaFinance({
 
         {/* 3. Technical Details & Areas */}
         <div id="varthana-sec-technical">
-          <Section title="Technical Details & Finishes">
+          <Section title="Technical Details & Finishes" number={3}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <Field label="Type of Property">
                 <input type="text" className={inputCls} value={fields.typeOfProperty || ''} onChange={(e) => updateField('typeOfProperty', e.target.value)} disabled={isReadOnly} />
@@ -936,7 +936,7 @@ export default function VarthanaFinance({
 
         {/* 4. Valuation & Net Mortgagable */}
         <div id="varthana-sec-valuation">
-          <Section title="Valuation (Live Calculation)">
+          <Section title="Valuation (Live Calculation)" number={4}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <Field label="Land Area (Sqft)">
                 <input
@@ -1061,7 +1061,7 @@ export default function VarthanaFinance({
 
         {/* 5. Declaration & Remarks */}
         <div id="varthana-sec-remarks">
-          <Section title="Declaration, Observations & Sign-off">
+          <Section title="Declaration, Observations & Sign-off" number={5}>
             <div className="space-y-4">
               <Field label="Valuation Remarks & Observations">
                 <textarea
@@ -1085,10 +1085,38 @@ export default function VarthanaFinance({
           </Section>
         </div>
 
-        {/* 6. Attachments: Amin Map, Documents & Photographs */}
+        {/* 6. Attachments: Documents, Maps & Photographs */}
         <div id="varthana-sec-attachments" className="space-y-6">
+          <BaseDocumentsSection
+            title="Documents"
+            sectionNumber={6}
+            sectionId="varthana-sec-docs"
+            documentImages={fields.documentImages || []}
+            documentImageNames={fields.documentImageNames || []}
+            isReadOnly={isReadOnly}
+            uploading={uploading}
+            onUploadDocuments={handleDocUpload}
+            onRemoveDocument={(idx) =>
+              setFields((p) => ({
+                ...p,
+                documentImages: (p.documentImages || []).filter((_: any, i: number) => i !== idx),
+                documentImageNames: (p.documentImageNames || []).filter((_: any, i: number) => i !== idx),
+              }))
+            }
+            onDocumentNameChange={(idx, name) => {
+              const arr = [...(fields.documentImageNames || [])];
+              while (arr.length <= idx) arr.push('');
+              arr[idx] = name;
+              setFields((p) => ({ ...p, documentImageNames: arr }));
+            }}
+            onReorderDocuments={(newImgs, newNames) =>
+              setFields((p) => ({ ...p, documentImages: newImgs, documentImageNames: newNames }))
+            }
+          />
+
           <BaseMapsSection
-            title="Amin Sketch-Map & Location Plans"
+            title="Maps"
+            sectionNumber={7}
             sectionId="varthana-sec-maps"
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
@@ -1139,34 +1167,9 @@ export default function VarthanaFinance({
             onReorderBdaMap={(newImgs) => setFields((p) => ({ ...p, bdaMapImages: newImgs }))}
           />
 
-          <BaseDocumentsSection
-            title="Verified Property Documents"
-            sectionId="varthana-sec-docs"
-            documentImages={fields.documentImages || []}
-            documentImageNames={fields.documentImageNames || []}
-            isReadOnly={isReadOnly}
-            uploading={uploading}
-            onUploadDocuments={handleDocUpload}
-            onRemoveDocument={(idx) =>
-              setFields((p) => ({
-                ...p,
-                documentImages: (p.documentImages || []).filter((_: any, i: number) => i !== idx),
-                documentImageNames: (p.documentImageNames || []).filter((_: any, i: number) => i !== idx),
-              }))
-            }
-            onDocumentNameChange={(idx, name) => {
-              const arr = [...(fields.documentImageNames || [])];
-              while (arr.length <= idx) arr.push('');
-              arr[idx] = name;
-              setFields((p) => ({ ...p, documentImageNames: arr }));
-            }}
-            onReorderDocuments={(newImgs, newNames) =>
-              setFields((p) => ({ ...p, documentImages: newImgs, documentImageNames: newNames }))
-            }
-          />
-
           <BasePhotographsSection
-            title="Property Site Photographs"
+            title="Photographs"
+            sectionNumber={8}
             sectionId="varthana-sec-photos"
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}

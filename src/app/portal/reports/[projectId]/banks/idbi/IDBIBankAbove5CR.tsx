@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -52,6 +54,7 @@ export default function IDBIBankAbove5CR({
 }: IDBIAbove5CRProps) {
   const router = useRouter();
   const isReadOnly = isReadOnlyProp || status === 'COMPLETED';
+  const earliestVisit = useMemo(() => getEarliestFieldVisit(bucketImages, prefill), [bucketImages, prefill]);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -453,66 +456,14 @@ export default function IDBIBankAbove5CR({
       />
 
       {/* ── Top Header Card with Dynamic Mode Toggle ── */}
-      <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-              IDBI BANK — ABOVE 5CR
-            </span>
-            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
-              {isFlat ? '🏢 Flat / Apartment Format' : '🏡 Land & Building Format'}
-            </span>
-          </div>
-          <h2 className="text-xl font-bold text-slate-900 mt-2">Valuation Report Questionnaire</h2>
-          <p className="text-xs text-slate-500">
-            Standard Statutory Bank Format addressing Asst. General Manager with full schedules.
-          </p>
-        </div>
-
-        {/* Property Type Mode Toggle */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-          <div className="flex rounded-xl bg-slate-100 p-1 border border-slate-200">
-            <button
-              type="button"
-              onClick={() => handleChange('propertyValuationType', 'FLAT')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                isFlat
-                  ? 'bg-white text-blue-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              🏢 Flat / Apartment
-            </button>
-            <button
-              type="button"
-              onClick={() => handleChange('propertyValuationType', 'LAND_AND_BUILDING')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                !isFlat
-                  ? 'bg-white text-emerald-700 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              🏡 Land & Building
-            </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleSaveInternal}
-            disabled={saving || isReadOnly}
-            className="btn btn-secondary text-xs px-4 py-2"
-          >
-            {saving ? 'Saving...' : saveSuccess ? '✓ Saved' : 'Save Draft'}
-          </button>
-          <button
-            type="button"
-            onClick={handleDownloadPdfInternal}
-            className="btn btn-primary text-xs px-4 py-2 flex items-center gap-2"
-          >
-            <span>Download PDF</span>
-          </button>
-        </div>
-      </div>
+      <BankReportTitleCard
+        bankName="IDBI Bank"
+        subclass={isFlat ? 'Above 5CR (Flat / Apartment)' : 'Above 5CR (Land & Building)'}
+        title="Valuation Report Builder"
+        description="Standard Statutory Bank Format addressing Asst. General Manager with full schedules."
+        earliestVisit={earliestVisit}
+        projectCode={projectCode}
+      />
 
       {/* ── Section 1: Bank Authority & Customer Information ── */}
       <Section title="Bank Header, Reference & Ownership Details" number={1} defaultOpen={true}>
@@ -1013,7 +964,7 @@ export default function IDBIBankAbove5CR({
 
       {/* ── Section: Base Documents ── */}
       <BaseDocumentsSection
-        title="Verified Property Documents"
+        title="Documents" sectionNumber={10}
         documentImages={fields.documentImages || []}
         documentImageNames={fields.documentImageNames || []}
         isReadOnly={isReadOnly}
@@ -1023,7 +974,7 @@ export default function IDBIBankAbove5CR({
 
       {/* ── Section: Base Maps ── */}
       <BaseMapsSection
-        title="Location Maps"
+        title="Maps" sectionNumber={11}
         locationMapImages={fields.locationMapImages || []}
         mouzaMapImages={fields.mouzaMapImages || []}
         sketchMapImages={fields.sketchMapImages || []}
@@ -1040,7 +991,7 @@ export default function IDBIBankAbove5CR({
 
       {/* ── Section: Photographs ── */}
       <BasePhotographsSection
-        title="Property Photographs"
+        title="Photographs" sectionNumber={12}
         propertyImages={fields.propertyImages || []}
         propertyImageNames={fields.propertyImageNames || []}
         isReadOnly={isReadOnly}

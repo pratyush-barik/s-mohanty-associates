@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -70,7 +71,9 @@ export default function UtkarshSmallFinanceBank({
     { id: 'utkarsh-sec-technical', title: 'Technical Details & Accommodations' },
     { id: 'utkarsh-sec-valuation', title: 'Valuation & Net Mortgage' },
     { id: 'utkarsh-sec-remarks', title: 'Remarks & Declaration' },
-    { id: 'utkarsh-sec-attachments', title: 'Maps, Documents & Photos' },
+    { id: 'utkarsh-sec-docs', title: 'Documents' },
+    { id: 'utkarsh-sec-maps', title: 'Maps' },
+    { id: 'utkarsh-sec-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -470,17 +473,14 @@ export default function UtkarshSmallFinanceBank({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-        <div className="bg-white rounded-xl shadow border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              UTKARSH SMALL FINANCE BANK — VALUATION REPORT
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Valuation Report Format • LAN No: <span className="font-semibold text-slate-700">{fields.fileRefNo || projectCode}</span>
-            </p>
-          </div>
-          <EarliestFieldVisitBadge fieldVisit={earliestVisit} />
-        </div>
+          {/* Title Card */}
+          <BankReportTitleCard
+            bankName="Utkarsh Small Finance Bank"
+            subclass="Standard Format"
+            description="Comprehensive Housing Loan, LAP & Micro-Mortgage Valuation Report."
+            earliestVisit={earliestVisit}
+            projectCode={projectCode}
+          />
 
         {earliestVisit && (
           <div className="flex items-center justify-between p-4 bg-blue-50/80 border border-blue-200 rounded-xl text-blue-900 text-sm">
@@ -500,7 +500,7 @@ export default function UtkarshSmallFinanceBank({
 
         {/* 1. Application Details */}
         <div id="utkarsh-sec-app">
-          <Section title="Application Details">
+          <Section title="Application Details" number={1}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               <Field label="File Ref NO. / LAN No.">
                 <input
@@ -603,7 +603,7 @@ export default function UtkarshSmallFinanceBank({
 
         {/* 2. Location Details & Boundaries */}
         <div id="utkarsh-sec-location">
-          <Section title="Location Details & Site Boundaries">
+          <Section title="Location Details & Site Boundaries" number={2}>
             <div className="space-y-3 mb-4">
               <Field label="Address as per Firing">
                 <input
@@ -712,7 +712,7 @@ export default function UtkarshSmallFinanceBank({
 
         {/* 3. Municipal & Legal Docs */}
         <div id="utkarsh-sec-municipal">
-          <Section title="Municipal Details & Legal Documents">
+          <Section title="Municipal Details & Legal Documents" number={3}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <Field label="Sanction Plan Provided?">
                 <select className={selectCls} value={fields.sanctionPlanProvided || 'No'} onChange={(e) => updateField('sanctionPlanProvided', e.target.value)} disabled={isReadOnly}>
@@ -756,7 +756,7 @@ export default function UtkarshSmallFinanceBank({
 
         {/* 4. Technical Details & Accommodations */}
         <div id="utkarsh-sec-technical">
-          <Section title="Technical Details & Accommodations">
+          <Section title="Technical Details & Accommodations" number={4}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <Field label="Type of Property">
                 <input type="text" className={inputCls} value={fields.technicalPropertyType || ''} onChange={(e) => updateField('technicalPropertyType', e.target.value)} disabled={isReadOnly} />
@@ -804,7 +804,7 @@ export default function UtkarshSmallFinanceBank({
 
         {/* 5. Valuation & Net Mortgage Value */}
         <div id="utkarsh-sec-valuation">
-          <Section title="Valuation (Live Calculation)">
+          <Section title="Valuation (Live Calculation)" number={5}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <Field label="Construction Area (Sqft)">
                 <input
@@ -915,7 +915,7 @@ export default function UtkarshSmallFinanceBank({
 
         {/* 6. Remarks & Declaration */}
         <div id="utkarsh-sec-remarks">
-          <Section title="Remarks & Sign-off">
+          <Section title="Remarks & Sign-off" number={6}>
             <div className="space-y-4">
               <Field label="Remarks & Observations">
                 <textarea
@@ -939,10 +939,38 @@ export default function UtkarshSmallFinanceBank({
           </Section>
         </div>
 
-        {/* 7. Attachments: Maps, Documents & Photographs */}
+        {/* 7. Attachments: Documents, Maps & Photographs */}
         <div id="utkarsh-sec-attachments" className="space-y-6">
+          <BaseDocumentsSection
+            title="Documents"
+            sectionNumber={7}
+            sectionId="utkarsh-sec-docs"
+            documentImages={fields.documentImages || []}
+            documentImageNames={fields.documentImageNames || []}
+            isReadOnly={isReadOnly}
+            uploading={uploading}
+            onUploadDocuments={handleDocUpload}
+            onRemoveDocument={(idx) =>
+              setFields((p) => ({
+                ...p,
+                documentImages: (p.documentImages || []).filter((_: any, i: number) => i !== idx),
+                documentImageNames: (p.documentImageNames || []).filter((_: any, i: number) => i !== idx),
+              }))
+            }
+            onDocumentNameChange={(idx, name) => {
+              const arr = [...(fields.documentImageNames || [])];
+              while (arr.length <= idx) arr.push('');
+              arr[idx] = name;
+              setFields((p) => ({ ...p, documentImageNames: arr }));
+            }}
+            onReorderDocuments={(newImgs, newNames) =>
+              setFields((p) => ({ ...p, documentImages: newImgs, documentImageNames: newNames }))
+            }
+          />
+
           <BaseMapsSection
-            title="Location Plan & Sketch Map"
+            title="Maps"
+            sectionNumber={8}
             sectionId="utkarsh-sec-maps"
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
@@ -993,34 +1021,9 @@ export default function UtkarshSmallFinanceBank({
             onReorderBdaMap={(newImgs) => setFields((p) => ({ ...p, bdaMapImages: newImgs }))}
           />
 
-          <BaseDocumentsSection
-            title="Verified Property Documents"
-            sectionId="utkarsh-sec-docs"
-            documentImages={fields.documentImages || []}
-            documentImageNames={fields.documentImageNames || []}
-            isReadOnly={isReadOnly}
-            uploading={uploading}
-            onUploadDocuments={handleDocUpload}
-            onRemoveDocument={(idx) =>
-              setFields((p) => ({
-                ...p,
-                documentImages: (p.documentImages || []).filter((_: any, i: number) => i !== idx),
-                documentImageNames: (p.documentImageNames || []).filter((_: any, i: number) => i !== idx),
-              }))
-            }
-            onDocumentNameChange={(idx, name) => {
-              const arr = [...(fields.documentImageNames || [])];
-              while (arr.length <= idx) arr.push('');
-              arr[idx] = name;
-              setFields((p) => ({ ...p, documentImageNames: arr }));
-            }}
-            onReorderDocuments={(newImgs, newNames) =>
-              setFields((p) => ({ ...p, documentImages: newImgs, documentImageNames: newNames }))
-            }
-          />
-
           <BasePhotographsSection
-            title="Property Site Photographs"
+            title="Photographs"
+            sectionNumber={9}
             sectionId="utkarsh-sec-photos"
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}

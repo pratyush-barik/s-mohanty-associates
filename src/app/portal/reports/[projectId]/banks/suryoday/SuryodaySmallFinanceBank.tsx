@@ -18,10 +18,11 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   ActiveConfigBanner,
   FloatingNavigator,
   ReportActionBar,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   Field,
   Section,
@@ -504,9 +505,9 @@ export default function SuryodaySmallFinanceBank({
       { id: 'sec-observations', title: 'Observations & Remarks' },
       { id: 'sec-marketability', title: 'Marketability & Declaration' },
       { id: 'sec-schedule-i', title: 'Schedule I - Stage of Construction' },
-      { id: 'sec-documents-annexure', title: 'Verified Property Documents' },
-      { id: 'sec-maps-annexure', title: 'Location Maps' },
-      { id: 'sec-photos-annexure', title: 'Property Site Photographs' },
+      { id: 'sec-documents-annexure', title: 'Documents' },
+      { id: 'sec-maps-annexure', title: 'Maps' },
+      { id: 'sec-photos-annexure', title: 'Photographs' },
     ],
     []
   );
@@ -527,24 +528,13 @@ export default function SuryodaySmallFinanceBank({
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* Title Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
-                  Suryoday Small Finance Bank Limited
-                </span>
-                <span className="text-xs text-slate-400">|</span>
-                <span className="text-xs text-slate-500 font-medium">Standard Format</span>
-              </div>
-              <h1 className="text-xl font-bold text-slate-900 mt-2">Valuation Report Builder</h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Dual valuation engines (Land & Building + Sales Comparison Approach) with Schedule I construction matrix.
-              </p>
-            </div>
-            {earliestVisit?.dateStr && (
-              <EarliestFieldVisitBadge visitInfo={earliestVisit} />
-            )}
-          </div>
+          <BankReportTitleCard
+            bankName="Suryoday Small Finance Bank Limited"
+            subclass="Standard Format"
+            description="Dual valuation engines (Land & Building + Sales Comparison Approach) with Schedule I construction matrix."
+            earliestVisit={earliestVisit}
+            projectCode={projectCode}
+          />
 
           {/* Banner Alert Message */}
           {message && (
@@ -562,7 +552,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 1. General Details */}
           <div id="sec-general">
-            <Section title="General Details" defaultOpen={true}>
+            <Section title="General Details" number={1} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Application No.">
                   <input
@@ -701,7 +691,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 2. Surrounding Locality */}
           <div id="sec-surrounding">
-            <Section title="Surrounding Locality" defaultOpen={true}>
+            <Section title="Surrounding Locality" number={2} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Within the Limitation of">
                   <input
@@ -757,7 +747,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 3. Property Details & Boundaries */}
           <div id="sec-property">
-            <Section title="Property Details & Boundaries" defaultOpen={true}>
+            <Section title="Property Details & Boundaries" number={3} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Brief Description of Property">
                   <input
@@ -919,7 +909,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 4. Structural Details */}
           <div id="sec-structural">
-            <Section title="Structural Details" defaultOpen={true}>
+            <Section title="Structural Details" number={4} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Type of Structure">
                   <input
@@ -1014,7 +1004,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 5. Document Details */}
           <div id="sec-documents">
-            <Section title="Document Details" defaultOpen={true}>
+            <Section title="Document Details" number={5} defaultOpen={true}>
               <Field label="Documents produced for perusal">
                 <textarea
                   rows={2}
@@ -1052,7 +1042,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 6. Valuation & Market Rates */}
           <div id="sec-valuation-market">
-            <Section title="Valuation & Market Rates" defaultOpen={true}>
+            <Section title="Valuation & Market Rates" number={6} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Market Rate of Land (Rs/Sqft)">
                   <input
@@ -1087,7 +1077,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 7. Area Details (Land & Building) */}
           <div id="sec-area-details">
-            <Section title="Area Details (Land & Building)" defaultOpen={true}>
+            <Section title="Area Details (Land & Building)" number={7} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Land Area as per Deed (Sq. ft.)">
                   <input
@@ -1225,7 +1215,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 8. Land & Building Valuation */}
           <div id="sec-land-building-val">
-            <Section title="Land & Building Valuation" defaultOpen={true}>
+            <Section title="Land & Building Valuation" number={8} defaultOpen={true}>
               {/* Land Valuation Section */}
               <div className="p-4 bg-slate-50/70 rounded-xl border border-slate-200 space-y-4">
                 <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
@@ -1411,7 +1401,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 9. Flat / Shop Area Details */}
           <div id="sec-flat-area-details">
-            <Section title="Flat / Shop Area Details" defaultOpen={true}>
+            <Section title="Flat / Shop Area Details" number={9} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Approved Plan Area (Sq. ft.)">
                   <input
@@ -1478,7 +1468,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 10. Sales Comparison Valuation */}
           <div id="sec-sales-comparison">
-            <Section title="Sales Comparison Valuation" defaultOpen={true}>
+            <Section title="Sales Comparison Valuation" number={10} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="SBUA Area (Sq. ft.)">
                   <input
@@ -1552,7 +1542,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 11. Observations & Remarks */}
           <div id="sec-observations">
-            <Section title="Observations & Remarks" defaultOpen={true}>
+            <Section title="Observations & Remarks" number={11} defaultOpen={true}>
               <Field label="Specific Observations">
                 <textarea
                   rows={3}
@@ -1577,7 +1567,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 12. Marketability & Declaration */}
           <div id="sec-marketability">
-            <Section title="Marketability & Declaration" defaultOpen={true}>
+            <Section title="Marketability & Declaration" number={12} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Marketability for Sale">
                   <input
@@ -1642,7 +1632,7 @@ export default function SuryodaySmallFinanceBank({
 
           {/* 13. Schedule I - Stage of Construction */}
           <div id="sec-schedule-i">
-            <Section title="Schedule I - Stage of Construction" defaultOpen={true}>
+            <Section title="Schedule I - Stage of Construction" number={13} defaultOpen={true}>
               <p className="text-xs text-slate-500 mb-3">
                 Mandatory milestone progress schedule for Suryoday Small Finance Bank Limited.
               </p>
@@ -1725,11 +1715,12 @@ export default function SuryodaySmallFinanceBank({
             </Section>
           </div>
 
-          {/* 14. Verified Property Documents */}
+          {/* 14. Documents */}
           <div id="sec-documents-annexure">
             <BaseDocumentsSection
-              title="Verified Property Documents"
+              title="Documents"
               sectionId="sec-documents-annexure"
+              sectionNumber={14}
               documentImages={form.documentImages || []}
               documentImageNames={form.documentImageNames || []}
               isReadOnly={isReadOnly}
@@ -1760,11 +1751,12 @@ export default function SuryodaySmallFinanceBank({
             />
           </div>
 
-          {/* 15. Location Maps */}
+          {/* 15. Maps */}
           <div id="sec-maps-annexure">
             <BaseMapsSection
-              title="Location Maps"
+              title="Maps"
               sectionId="sec-maps-annexure"
+              sectionNumber={15}
               locationMapImages={form.locationMapImages || []}
               mouzaMapImages={form.mouzaMapImages || []}
               sketchMapImages={form.sketchMapImages || []}
@@ -1790,11 +1782,12 @@ export default function SuryodaySmallFinanceBank({
             />
           </div>
 
-          {/* 16. Property Site Photographs */}
+          {/* 16. Photographs */}
           <div id="sec-photos-annexure">
             <BasePhotographsSection
-              title="Property Site Photographs"
+              title="Photographs"
               sectionId="sec-photos-annexure"
+              sectionNumber={16}
               propertyImages={form.propertyImages || []}
               propertyImageNames={form.propertyImageNames || []}
               isReadOnly={isReadOnly}

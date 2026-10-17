@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -65,14 +66,16 @@ export default function UnitySmallFinanceBank({
 
   const navSections: NavItem[] = [
     { id: 'unity-sec-header', title: 'Header & Branch' },
-    { id: 'unity-sec-basic', title: '1-4. Basic Details' },
-    { id: 'unity-sec-locality', title: '5-8. Locality & Surrounding' },
-    { id: 'unity-sec-property', title: '9-13. Property & Building' },
-    { id: 'unity-sec-sanction', title: '14-20. Sanction & Setbacks' },
-    { id: 'unity-sec-valuation', title: '21. Valuation & Rates' },
-    { id: 'unity-sec-boundaries', title: '22. Four Boundaries' },
+    { id: 'unity-sec-basic', title: 'Basic Details' },
+    { id: 'unity-sec-locality', title: 'Locality & Surrounding' },
+    { id: 'unity-sec-property', title: 'Property & Building' },
+    { id: 'unity-sec-sanction', title: 'Sanction & Setbacks' },
+    { id: 'unity-sec-valuation', title: 'Valuation & Rates' },
+    { id: 'unity-sec-boundaries', title: 'Four Boundaries' },
     { id: 'unity-sec-remarks', title: 'Remarks & Declaration' },
-    { id: 'unity-sec-attachments', title: 'Maps, Documents & Photos' },
+    { id: 'unity-sec-docs', title: 'Documents' },
+    { id: 'unity-sec-maps', title: 'Maps' },
+    { id: 'unity-sec-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -484,17 +487,14 @@ export default function UnitySmallFinanceBank({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-        <div className="bg-white rounded-xl shadow border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              UNITY SMALL FINANCE BANK — VALUATION REPORT
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Unity SFB Format • Case Ref. No: <span className="font-semibold text-slate-700">{fields.caseRefNo || projectCode}</span>
-            </p>
-          </div>
-          <EarliestFieldVisitBadge fieldVisit={earliestVisit} />
-        </div>
+          {/* Title Card */}
+          <BankReportTitleCard
+            bankName="Unity Small Finance Bank"
+            subclass="Standard Format"
+            description="Comprehensive Housing Loan, Business Finance & LAP Valuation Report."
+            earliestVisit={earliestVisit}
+            projectCode={projectCode}
+          />
 
         {earliestVisit && (
           <div className="flex items-center justify-between p-4 bg-blue-50/80 border border-blue-200 rounded-xl text-blue-900 text-sm">
@@ -514,7 +514,7 @@ export default function UnitySmallFinanceBank({
 
         {/* 1. Header & Branch */}
         <div id="unity-sec-header">
-          <Section title="Header & Branch Meta Details">
+          <Section title="Header & Branch Meta Details" number={1}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Branch Name">
                 <input type="text" className={inputCls} value={fields.branchName || ''} onChange={(e) => updateField('branchName', e.target.value)} disabled={isReadOnly} />
@@ -545,7 +545,7 @@ export default function UnitySmallFinanceBank({
 
         {/* 2. Basic Details */}
         <div id="unity-sec-basic">
-          <Section title="1-4. Basic Details">
+          <Section title="Basic Details (Points 1 - 4)" number={2}>
             <div className="space-y-4">
               <Field label="1. Applicant/s Name/s">
                 <input type="text" className={inputCls} value={fields.applicantName || ''} onChange={(e) => updateField('applicantName', e.target.value)} disabled={isReadOnly} />
@@ -573,7 +573,7 @@ export default function UnitySmallFinanceBank({
 
         {/* 3. Locality & Surrounding */}
         <div id="unity-sec-locality">
-          <Section title="5-8. Locality & Surrounding Details">
+          <Section title="Locality & Surrounding Details (Points 5 - 8)" number={3}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
               <Field label="5. Locality Type">
                 <input type="text" className={inputCls} value={fields.localityType || ''} onChange={(e) => updateField('localityType', e.target.value)} disabled={isReadOnly} />
@@ -610,7 +610,7 @@ export default function UnitySmallFinanceBank({
 
         {/* 4. Property & Building Details */}
         <div id="unity-sec-property">
-          <Section title="9-13. Property & Building Details">
+          <Section title="Property & Building Details (Points 9 - 13)" number={4}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <Field label="9. Vacant / Occupied">
                 <input type="text" className={inputCls} value={fields.occupancyStatus || ''} onChange={(e) => updateField('occupancyStatus', e.target.value)} disabled={isReadOnly} />
@@ -675,7 +675,7 @@ export default function UnitySmallFinanceBank({
 
         {/* 5. Sanction & Setbacks */}
         <div id="unity-sec-sanction">
-          <Section title="14-20. Sanction Plan Approval & Setbacks">
+          <Section title="Sanction Plan Approval & Setbacks (Points 14 - 20)" number={5}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="14. Sanctioned Plans Verified">
                 <input type="text" className={inputCls} value={fields.sanctionPlanVerified || ''} onChange={(e) => updateField('sanctionPlanVerified', e.target.value)} disabled={isReadOnly} />
@@ -756,7 +756,7 @@ export default function UnitySmallFinanceBank({
 
         {/* 6. Valuation & Rates */}
         <div id="unity-sec-valuation">
-          <Section title="21. Valuation & Rates (Live Calculation)">
+          <Section title="Valuation & Rates (Point 21)" number={6}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               <Field label="Land Area (Sqft)">
                 <input
@@ -843,7 +843,7 @@ export default function UnitySmallFinanceBank({
 
         {/* 7. Four Boundaries */}
         <div id="unity-sec-boundaries">
-          <Section title="22. Four Boundaries Matrix">
+          <Section title="Four Boundaries Matrix (Point 22)" number={7}>
             <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg mb-4">
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
                 <thead className="bg-slate-100 dark:bg-slate-800 font-medium">
@@ -889,7 +889,7 @@ export default function UnitySmallFinanceBank({
 
         {/* 8. Remarks & Declaration */}
         <div id="unity-sec-remarks">
-          <Section title="Remarks & Sign-off">
+          <Section title="Remarks & Sign-off" number={8}>
             <div className="space-y-4">
               <Field label="Remarks & Observations">
                 <textarea rows={6} className={inputCls} value={fields.remarks || ''} onChange={(e) => updateField('remarks', e.target.value)} disabled={isReadOnly} />
@@ -907,10 +907,38 @@ export default function UnitySmallFinanceBank({
           </Section>
         </div>
 
-        {/* 9. Attachments: Maps, Documents & Photographs */}
+        {/* 9. Attachments: Documents, Maps & Photographs */}
         <div id="unity-sec-attachments" className="space-y-6">
+          <BaseDocumentsSection
+            title="Documents"
+            sectionNumber={9}
+            sectionId="unity-sec-docs"
+            documentImages={fields.documentImages || []}
+            documentImageNames={fields.documentImageNames || []}
+            isReadOnly={isReadOnly}
+            uploading={uploading}
+            onUploadDocuments={handleDocUpload}
+            onRemoveDocument={(idx) =>
+              setFields((p) => ({
+                ...p,
+                documentImages: (p.documentImages || []).filter((_: any, i: number) => i !== idx),
+                documentImageNames: (p.documentImageNames || []).filter((_: any, i: number) => i !== idx),
+              }))
+            }
+            onDocumentNameChange={(idx, name) => {
+              const arr = [...(fields.documentImageNames || [])];
+              while (arr.length <= idx) arr.push('');
+              arr[idx] = name;
+              setFields((p) => ({ ...p, documentImageNames: arr }));
+            }}
+            onReorderDocuments={(newImgs, newNames) =>
+              setFields((p) => ({ ...p, documentImages: newImgs, documentImageNames: newNames }))
+            }
+          />
+
           <BaseMapsSection
-            title="Location Plan & Sketch Map"
+            title="Maps"
+            sectionNumber={10}
             sectionId="unity-sec-maps"
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
@@ -961,34 +989,9 @@ export default function UnitySmallFinanceBank({
             onReorderBdaMap={(newImgs) => setFields((p) => ({ ...p, bdaMapImages: newImgs }))}
           />
 
-          <BaseDocumentsSection
-            title="Verified Property Documents"
-            sectionId="unity-sec-docs"
-            documentImages={fields.documentImages || []}
-            documentImageNames={fields.documentImageNames || []}
-            isReadOnly={isReadOnly}
-            uploading={uploading}
-            onUploadDocuments={handleDocUpload}
-            onRemoveDocument={(idx) =>
-              setFields((p) => ({
-                ...p,
-                documentImages: (p.documentImages || []).filter((_: any, i: number) => i !== idx),
-                documentImageNames: (p.documentImageNames || []).filter((_: any, i: number) => i !== idx),
-              }))
-            }
-            onDocumentNameChange={(idx, name) => {
-              const arr = [...(fields.documentImageNames || [])];
-              while (arr.length <= idx) arr.push('');
-              arr[idx] = name;
-              setFields((p) => ({ ...p, documentImageNames: arr }));
-            }}
-            onReorderDocuments={(newImgs, newNames) =>
-              setFields((p) => ({ ...p, documentImages: newImgs, documentImageNames: newNames }))
-            }
-          />
-
           <BasePhotographsSection
-            title="Property Site Photographs"
+            title="Photographs"
+            sectionNumber={11}
             sectionId="unity-sec-photos"
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}

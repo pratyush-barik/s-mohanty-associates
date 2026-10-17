@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -73,9 +74,9 @@ export default function TataHousingFinance({
     { id: 'tata-housing-sec-technical', title: 'Technical & Floor Areas' },
     { id: 'tata-housing-sec-valuation', title: 'Valuation & Calculations' },
     { id: 'tata-housing-sec-remarks', title: 'Remarks & Due Diligence' },
-    { id: 'tata-housing-sec-docs', title: 'Property Documents' },
-    { id: 'tata-housing-sec-maps', title: 'Location Maps' },
-    { id: 'tata-housing-sec-photos', title: 'Property Photographs' },
+    { id: 'tata-housing-sec-docs', title: 'Documents' },
+    { id: 'tata-housing-sec-maps', title: 'Maps' },
+    { id: 'tata-housing-sec-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -469,17 +470,14 @@ export default function TataHousingFinance({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* Left Form Column */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          <div className="bg-slate-900/90 rounded-xl shadow border border-slate-800 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
-                TATA HOUSING FINANCE LTD — VALUATION REPORT
-              </h1>
-              <p className="text-sm text-slate-400 mt-1">
-                Self Construction / HEL / HIL • WebTop No: <span className="font-semibold text-slate-200">{fields.webTopNo || projectCode}</span>
-              </p>
-            </div>
-            {earliestVisit && <EarliestFieldVisitBadge fieldVisit={earliestVisit} />}
-          </div>
+          {/* Title Header Card */}
+          <BankReportTitleCard
+            bankName="TATA HOUSING FINANCE LTD"
+            subclass="Self Construction / HEL / HIL"
+            description="Tata Capital Housing Finance Technical Valuation Report with Plot Boundaries & Floor Areas."
+            earliestVisit={earliestVisit}
+            projectCode={fields.webTopNo || projectCode}
+          />
 
           {message && (
             <div
@@ -496,7 +494,7 @@ export default function TataHousingFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 1: GENERAL DETAILS
           ═══════════════════════════════════════════════ */}
-          <Section title="General Details" id="tata-housing-sec-general">
+          <Section title="General Details" id="tata-housing-sec-general" number={1}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Field label="Case Type / Subtitle">
                 <input
@@ -722,7 +720,7 @@ export default function TataHousingFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 2: BOUNDARIES & ROAD
           ═══════════════════════════════════════════════ */}
-          <Section title="Boundaries & Road" id="tata-housing-sec-boundaries">
+          <Section title="Boundaries & Road" id="tata-housing-sec-boundaries" number={2}>
             <div className="flex justify-between items-center mb-2">
               <div className="text-sm font-semibold text-slate-300">Four Boundaries Comparison</div>
               <button
@@ -879,7 +877,7 @@ export default function TataHousingFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 3: TECHNICAL & FLOOR AREAS
           ═══════════════════════════════════════════════ */}
-          <Section title="Technical & Floor Areas" id="tata-housing-sec-technical">
+          <Section title="Technical & Floor Areas" id="tata-housing-sec-technical" number={3}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Field label="Approval Details">
                 <input
@@ -1083,7 +1081,7 @@ export default function TataHousingFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 4: VALUATION & CALCULATIONS
           ═══════════════════════════════════════════════ */}
-          <Section title="Valuation & Calculations" id="tata-housing-sec-valuation">
+          <Section title="Valuation & Calculations" id="tata-housing-sec-valuation" number={4}>
             {/* Live Financial Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-950/60 to-slate-900 border border-emerald-500/40 shadow-lg">
@@ -1270,7 +1268,7 @@ export default function TataHousingFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 5: REMARKS & DUE DILIGENCE
           ═══════════════════════════════════════════════ */}
-          <Section title="Remarks & Due Diligence" id="tata-housing-sec-remarks">
+          <Section title="Remarks & Due Diligence" id="tata-housing-sec-remarks" number={5}>
             <Field label="Valuation Synthesis Remarks">
               <textarea
                 rows={4}
@@ -1428,8 +1426,9 @@ export default function TataHousingFinance({
               ATTACHMENTS (DOCUMENTS, MAPS, PHOTOGRAPHS)
           ═══════════════════════════════════════════════ */}
           <BaseDocumentsSection
-            title="Property Documents"
+            title="Documents"
             sectionId="tata-housing-sec-docs"
+            sectionNumber={6}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1450,8 +1449,9 @@ export default function TataHousingFinance({
           />
 
           <BaseMapsSection
-            title="Location Maps"
+            title="Maps"
             sectionId="tata-housing-sec-maps"
+            sectionNumber={7}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1477,8 +1477,9 @@ export default function TataHousingFinance({
           />
 
           <BasePhotographsSection
-            title="Property Photographs"
+            title="Photographs"
             sectionId="tata-housing-sec-photos"
+            sectionNumber={8}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

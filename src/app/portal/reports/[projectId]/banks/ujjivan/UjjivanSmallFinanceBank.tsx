@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -76,9 +77,9 @@ export default function UjjivanSmallFinanceBank({
     { id: 'ujjivan-sec-valuation', title: 'Valuation Engine' },
     { id: 'ujjivan-sec-workstatus', title: 'Work Status & Recommendations' },
     { id: 'ujjivan-sec-remarks', title: 'Remarks & Declaration' },
-    { id: 'ujjivan-sec-docs', title: 'Property Documents' },
-    { id: 'ujjivan-sec-maps', title: 'Location Maps' },
-    { id: 'ujjivan-sec-photos', title: 'Property Photographs' },
+    { id: 'ujjivan-sec-docs', title: 'Documents' },
+    { id: 'ujjivan-sec-maps', title: 'Maps' },
+    { id: 'ujjivan-sec-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -530,17 +531,14 @@ export default function UjjivanSmallFinanceBank({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* Left Form Column */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          <div className="bg-slate-900/90 rounded-xl shadow border border-slate-800 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
-                UJJIVAN SMALL FINANCE BANK — TECHNICAL VALUATION REPORT
-              </h1>
-              <p className="text-sm text-slate-400 mt-1">
-                Immovable Property Valuation Format • Client ID: <span className="font-semibold text-slate-200">{fields.clientId || projectCode}</span>
-              </p>
-            </div>
-            {earliestVisit && <EarliestFieldVisitBadge fieldVisit={earliestVisit} />}
-          </div>
+          {/* Title Header Card */}
+          <BankReportTitleCard
+            bankName="UJJIVAN SMALL FINANCE BANK"
+            subclass="Immovable Property Valuation Format"
+            description="Ujjivan Small Finance Bank Technical Valuation Report with Schedule & Dimensions Matrix."
+            earliestVisit={earliestVisit}
+            projectCode={fields.clientId || projectCode}
+          />
 
           {message && (
             <div
@@ -557,7 +555,7 @@ export default function UjjivanSmallFinanceBank({
           {/* ═══════════════════════════════════════════════
               SECTION 1: GENERAL DETAILS
           ═══════════════════════════════════════════════ */}
-          <Section title="General Details" id="ujjivan-sec-general">
+          <Section title="General Details" id="ujjivan-sec-general" number={1}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Field label="Applicant Name">
                 <input
@@ -793,7 +791,7 @@ export default function UjjivanSmallFinanceBank({
           {/* ═══════════════════════════════════════════════
               SECTION 2: LAYOUT & AMENITIES
           ═══════════════════════════════════════════════ */}
-          <Section title="Layout & Amenities" id="ujjivan-sec-layout">
+          <Section title="Layout & Amenities" id="ujjivan-sec-layout" number={2}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Field label="Water Facility">
                 <select
@@ -907,7 +905,7 @@ export default function UjjivanSmallFinanceBank({
           {/* ═══════════════════════════════════════════════
               SECTION 3: SCHEDULE & DIMENSIONS
           ═══════════════════════════════════════════════ */}
-          <Section title="Schedule & Dimensions" id="ujjivan-sec-schedule">
+          <Section title="Schedule & Dimensions" id="ujjivan-sec-schedule" number={3}>
             <div className="text-sm font-semibold text-slate-300 mb-2">Boundaries Comparison</div>
             <div className="overflow-x-auto border border-slate-800 rounded-xl mb-6">
               <table className="w-full text-left text-sm">
@@ -1091,7 +1089,7 @@ export default function UjjivanSmallFinanceBank({
           {/* ═══════════════════════════════════════════════
               SECTION 4: TECHNICAL DETAILS
           ═══════════════════════════════════════════════ */}
-          <Section title="Technical Details" id="ujjivan-sec-tech">
+          <Section title="Technical Details" id="ujjivan-sec-tech" number={4}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Field label="Type of Construction">
                 <input
@@ -1245,7 +1243,7 @@ export default function UjjivanSmallFinanceBank({
           {/* ═══════════════════════════════════════════════
               SECTION 5: STATUTORY & FLOOR AREAS
           ═══════════════════════════════════════════════ */}
-          <Section title="Statutory & Floor Areas" id="ujjivan-sec-statutory">
+          <Section title="Statutory & Floor Areas" id="ujjivan-sec-statutory" number={5}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Field label="Site Area as per Schedule">
                 <input
@@ -1553,7 +1551,7 @@ export default function UjjivanSmallFinanceBank({
           {/* ═══════════════════════════════════════════════
               SECTION 6: VALUATION ENGINE (TABLE 22)
           ═══════════════════════════════════════════════ */}
-          <Section title="Valuation Engine" id="ujjivan-sec-valuation">
+          <Section title="Valuation Engine" id="ujjivan-sec-valuation" number={6}>
             {/* Live Financial Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
               <div className="p-4 rounded-xl bg-gradient-to-br from-yellow-950/60 to-slate-900 border border-yellow-500/40 shadow-lg">
@@ -1789,7 +1787,7 @@ export default function UjjivanSmallFinanceBank({
           {/* ═══════════════════════════════════════════════
               SECTION 7: WORK STATUS & RECOMMENDATIONS
           ═══════════════════════════════════════════════ */}
-          <Section title="Work Status & Recommendations" id="ujjivan-sec-workstatus">
+          <Section title="Work Status & Recommendations" id="ujjivan-sec-workstatus" number={7}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Geographical Latitude">
                 <input
@@ -1891,7 +1889,7 @@ export default function UjjivanSmallFinanceBank({
           {/* ═══════════════════════════════════════════════
               SECTION 8: REMARKS & DECLARATION
           ═══════════════════════════════════════════════ */}
-          <Section title="Remarks & Declaration" id="ujjivan-sec-remarks">
+          <Section title="Remarks & Declaration" id="ujjivan-sec-remarks" number={8}>
             <Field label="Valuation Synthesis Remarks / Comments">
               <textarea
                 rows={5}
@@ -1929,8 +1927,9 @@ export default function UjjivanSmallFinanceBank({
               ATTACHMENTS (DOCUMENTS, MAPS, PHOTOGRAPHS)
           ═══════════════════════════════════════════════ */}
           <BaseDocumentsSection
-            title="Property Documents"
+            title="Documents"
             sectionId="ujjivan-sec-docs"
+            sectionNumber={9}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1951,8 +1950,9 @@ export default function UjjivanSmallFinanceBank({
           />
 
           <BaseMapsSection
-            title="Location Maps"
+            title="Maps"
             sectionId="ujjivan-sec-maps"
+            sectionNumber={10}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1978,8 +1978,9 @@ export default function UjjivanSmallFinanceBank({
           />
 
           <BasePhotographsSection
-            title="Property Photographs"
+            title="Photographs"
             sectionId="ujjivan-sec-photos"
+            sectionNumber={11}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

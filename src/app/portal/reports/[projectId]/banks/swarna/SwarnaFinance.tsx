@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -74,9 +75,9 @@ export default function SwarnaFinance({
     { id: 'swarna-sec-unit', title: 'Approvals & Unit Details' },
     { id: 'swarna-sec-valuation', title: 'Valuation & Boundaries' },
     { id: 'swarna-sec-remarks', title: 'Remarks & Declaration' },
-    { id: 'swarna-sec-docs', title: 'Property Documents' },
-    { id: 'swarna-sec-maps', title: 'Location Maps' },
-    { id: 'swarna-sec-photos', title: 'Property Photographs' },
+    { id: 'swarna-sec-docs', title: 'Documents' },
+    { id: 'swarna-sec-maps', title: 'Maps' },
+    { id: 'swarna-sec-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -447,17 +448,14 @@ export default function SwarnaFinance({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* Left Form Column */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          <div className="bg-slate-900/90 rounded-xl shadow border border-slate-800 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold text-white tracking-tight">
-                SWARNA FINANCE — TECHNICAL VALUATION REPORT
-              </h1>
-              <p className="text-sm text-slate-400 mt-1">
-                SwarnaPragati Housing Microfinance Pvt Ltd • Ref: <span className="font-semibold text-slate-200">{fields.refNo || projectCode}</span>
-              </p>
-            </div>
-            {earliestVisit && <EarliestFieldVisitBadge fieldVisit={earliestVisit} />}
-          </div>
+          {/* Title Card */}
+          <BankReportTitleCard
+            bankName="SwarnaPragati Housing Microfinance"
+            subclass="Standard Format"
+            description="Technical Valuation Report Format with Schedule I Construction Details."
+            earliestVisit={earliestVisit}
+            projectCode={projectCode}
+          />
 
           {message && (
             <div
@@ -474,7 +472,7 @@ export default function SwarnaFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 1: GENERAL DETAILS (A, B, C)
           ═══════════════════════════════════════════════ */}
-          <Section title="General Details" id="swarna-sec-general">
+          <Section title="General Details" id="swarna-sec-general" number={1}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <Field label="Reference Number">
                 <input
@@ -605,7 +603,7 @@ export default function SwarnaFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 2: SURROUNDING LOCALITY (D)
           ═══════════════════════════════════════════════ */}
-          <Section title="Surrounding Locality" id="swarna-sec-locality">
+          <Section title="Surrounding Locality" id="swarna-sec-locality" number={2}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="1. Ward No. / Municipal Land No.">
                 <input
@@ -663,7 +661,7 @@ export default function SwarnaFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 3: USAGE & OCCUPANCY (E)
           ═══════════════════════════════════════════════ */}
-          <Section title="Usage & Occupancy" id="swarna-sec-occupancy">
+          <Section title="Usage & Occupancy" id="swarna-sec-occupancy" number={3}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Field label="1. Type Of Premises">
                 <select
@@ -727,7 +725,7 @@ export default function SwarnaFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 4: BUILDING DETAILS (F)
           ═══════════════════════════════════════════════ */}
-          <Section title="Building Details" id="swarna-sec-building">
+          <Section title="Building Details" id="swarna-sec-building" number={4}>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field label="1. Types of Structure">
                 <input
@@ -828,7 +826,7 @@ export default function SwarnaFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 5: QUALITY OF CONSTRUCTION (G)
           ═══════════════════════════════════════════════ */}
-          <Section title="Quality of Construction" id="swarna-sec-quality">
+          <Section title="Quality of Construction" id="swarna-sec-quality" number={5}>
             <div className="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">
               Exterior Quality
             </div>
@@ -935,7 +933,7 @@ export default function SwarnaFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 6: APPROVALS & UNIT DETAILS (H, I)
           ═══════════════════════════════════════════════ */}
-          <Section title="Approvals & Unit Details" id="swarna-sec-unit">
+          <Section title="Approvals & Unit Details" id="swarna-sec-unit" number={6}>
             <div className="mb-4">
               <Field label="H.1. Details of Plan & Approvals">
                 <input
@@ -1036,7 +1034,7 @@ export default function SwarnaFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 7: VALUATION & BOUNDARIES (J)
           ═══════════════════════════════════════════════ */}
-          <Section title="Valuation & Boundaries" id="swarna-sec-valuation">
+          <Section title="Valuation & Boundaries" id="swarna-sec-valuation" number={7}>
             {/* Live Financial Valuation Cards */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
               <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-950/60 to-slate-900 border border-emerald-500/40 shadow-lg">
@@ -1286,7 +1284,7 @@ export default function SwarnaFinance({
           {/* ═══════════════════════════════════════════════
               SECTION 8: REMARKS & DECLARATION (K)
           ═══════════════════════════════════════════════ */}
-          <Section title="Remarks & Declaration" id="swarna-sec-remarks">
+          <Section title="Remarks & Declaration" id="swarna-sec-remarks" number={8}>
             <Field label="K. Remarks / Valuation Synthesis">
               <textarea
                 rows={5}
@@ -1324,7 +1322,8 @@ export default function SwarnaFinance({
               ATTACHMENTS (DOCUMENTS, MAPS, PHOTOGRAPHS)
           ═══════════════════════════════════════════════ */}
           <BaseDocumentsSection
-            title="Property Documents"
+            title="Documents"
+            sectionNumber={9}
             sectionId="swarna-sec-docs"
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
@@ -1346,7 +1345,8 @@ export default function SwarnaFinance({
           />
 
           <BaseMapsSection
-            title="Location Maps"
+            title="Maps"
+            sectionNumber={10}
             sectionId="swarna-sec-maps"
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
@@ -1373,7 +1373,8 @@ export default function SwarnaFinance({
           />
 
           <BasePhotographsSection
-            title="Property Photographs"
+            title="Photographs"
+            sectionNumber={11}
             sectionId="swarna-sec-photos"
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}

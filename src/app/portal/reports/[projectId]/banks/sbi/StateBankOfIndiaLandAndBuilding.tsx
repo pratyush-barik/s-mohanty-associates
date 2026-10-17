@@ -6,7 +6,9 @@ import { saveReportDraft, submitReportForVerification } from '@/app/actions/proj
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
-  Section,
+  getEarliestFieldVisit,
+BankReportTitleCard,
+Section,
   Field,
   inputCls,
   selectCls,
@@ -137,6 +139,7 @@ export default function StateBankOfIndiaLandAndBuilding({
 }: SBILandBuildingProps) {
   const router = useRouter();
   const isReadOnly = isReadOnlyProp || status === 'COMPLETED';
+  const earliestVisit = useMemo(() => getEarliestFieldVisit(bucketImages, prefill), [bucketImages, prefill]);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -824,9 +827,9 @@ export default function StateBankOfIndiaLandAndBuilding({
     { id: 'sbi-lb-sec-10', title: 'Declaration & Valuer Details' },
     { id: 'sbi-lb-sec-11', title: 'DETAILS OF VALUATION & TOTAL ABSTRACT' },
     { id: 'sbi-lb-sec-12', title: 'DECLARATION CUM UNDERTAKING FROM VALUERS' },
-    { id: 'section-documents', title: 'Verified Property Documents' },
-    { id: 'section-maps', title: 'Location Maps' },
-    { id: 'section-photographs', title: 'Property Photographs' },
+    { id: 'section-documents', title: 'Documents' },
+    { id: 'section-maps', title: 'Maps' },
+    { id: 'section-photographs', title: 'Photographs' },
   ];
 
   return (
@@ -849,8 +852,18 @@ export default function StateBankOfIndiaLandAndBuilding({
         <div className="flex-1 min-w-0 space-y-6 w-full">
 
 
-      {/* ── Section 1: COVER PAGE & BANK DETAILS ── */}
-      <Section id="sbi-lb-cover-and-customer" title="Cover Page & Bank Details" defaultOpen={true}>
+              {/* Standardized Title Card */}
+        <BankReportTitleCard
+          bankName="State Bank of India (SBI)"
+          subclass="Land & Building (Below 5CR)"
+          title="Valuation Report Builder"
+          description="Detailed SBI Format for Valuation of Land & Building Assets with Schedules."
+          earliestVisit={earliestVisit}
+          projectCode={projectCode}
+        />
+
+{/* ── Section 1: COVER PAGE & BANK DETAILS ── */}
+      <Section id="sbi-lb-cover-and-customer" title="Cover Page & Bank Details" number={1} defaultOpen={true}>
         <div className="space-y-6">
           {/* Container 1: COVER PAGE & BANK DETAILS (Color: Light Gray #f5f5f5) */}
           <div style={{ backgroundColor: '#f5f5f5', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-gray-300">
@@ -1093,7 +1106,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 2: Property Details ── */}
-      <Section id="sbi-lb-sec-2" title="Property Details" defaultOpen={true}>
+      <Section id="sbi-lb-sec-2" title="Property Details" number={2} defaultOpen={true}>
         <div style={{ backgroundColor: '#e8f5e9', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-emerald-200">
           {/* Header Title inside light green box */}
           <div className="border-b border-emerald-300 pb-2 flex justify-between items-center">
@@ -1135,7 +1148,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 3: Document Details ── */}
-      <Section id="sbi-lb-sec-3" title="Document Details" defaultOpen={true}>
+      <Section id="sbi-lb-sec-3" title="Document Details" number={3} defaultOpen={true}>
         <div style={{ backgroundColor: '#fffde7', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-amber-200">
           {/* Header Title inside light yellow box */}
           <div className="border-b border-amber-300 pb-2 flex justify-between items-center">
@@ -1320,7 +1333,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 4: Physical Details ── */}
-      <Section id="sbi-lb-sec-4" title="Physical Details" defaultOpen={true}>
+      <Section id="sbi-lb-sec-4" title="Physical Details" number={4} defaultOpen={true}>
         <div style={{ backgroundColor: '#f3e5f5', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-purple-200">
           {/* Header Title inside light purple box */}
           <div className="border-b border-purple-300 pb-2 flex justify-between items-center">
@@ -1561,7 +1574,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 5: Tenure & Occupancy Details ── */}
-      <Section id="sbi-lb-sec-5" title="Tenure & Occupancy Details" defaultOpen={true}>
+      <Section id="sbi-lb-sec-5" title="Tenure & Occupancy Details" number={5} defaultOpen={true}>
         <div style={{ backgroundColor: '#e0f7fa', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-cyan-200">
           {/* Header Title inside light cyan box */}
           <div className="border-b border-cyan-300 pb-2 flex justify-between items-center">
@@ -1619,7 +1632,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 6: Stage of Construction ── */}
-      <Section id="sbi-lb-sec-6" title="Stage of Construction" defaultOpen={true}>
+      <Section id="sbi-lb-sec-6" title="Stage of Construction" number={6} defaultOpen={true}>
         <div style={{ backgroundColor: '#fff3e0', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-orange-200">
           {/* Header Title inside light orange box */}
           <div className="border-b border-orange-300 pb-2 flex justify-between items-center">
@@ -1665,7 +1678,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 7: Violations Observed ── */}
-      <Section id="sbi-lb-sec-7" title="Violations Observed" defaultOpen={true}>
+      <Section id="sbi-lb-sec-7" title="Violations Observed" number={7} defaultOpen={true}>
         <div style={{ backgroundColor: '#fce4ec', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-pink-200">
           {/* Header Title inside light pink box */}
           <div className="border-b border-pink-300 pb-2 flex justify-between items-center">
@@ -1692,7 +1705,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 8: Area details of the property ── */}
-      <Section id="sbi-lb-sec-8" title="Area Details of Property" defaultOpen={true}>
+      <Section id="sbi-lb-sec-8" title="Area Details of Property" number={8} defaultOpen={true}>
         <div style={{ backgroundColor: '#e0f2f1', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-teal-200">
           {/* Header Title inside light teal box */}
           <div className="border-b border-teal-300 pb-2 flex justify-between items-center">
@@ -1771,7 +1784,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 9: Valuation ── */}
-      <Section id="sbi-lb-sec-9" title="Valuation & Rates" defaultOpen={true}>
+      <Section id="sbi-lb-sec-9" title="Valuation & Rates" number={9} defaultOpen={true}>
         <div style={{ backgroundColor: '#e8eaf6', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-indigo-200">
           {/* Header Title inside light indigo box */}
           <div className="border-b border-indigo-300 pb-2 flex justify-between items-center">
@@ -1915,7 +1928,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 10: Declaration & Valuer Details ── */}
-      <Section id="sbi-lb-sec-10" title="Declaration & Valuer Details" defaultOpen={true}>
+      <Section id="sbi-lb-sec-10" title="Declaration & Valuer Details" number={10} defaultOpen={true}>
         <div style={{ backgroundColor: '#fff8e1', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-amber-200">
           {/* Header Title inside light amber box */}
           <div className="border-b border-amber-300 pb-2 flex justify-between items-center">
@@ -2014,7 +2027,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 11: DETAILS OF VALUATION & TOTAL ABSTRACT + ENCLOSURES & APPRAISAL STATEMENT ── */}
-      <Section id="sbi-lb-sec-11" title="DETAILS OF VALUATION & TOTAL ABSTRACT" defaultOpen={true}>
+      <Section id="sbi-lb-sec-11" title="DETAILS OF VALUATION & TOTAL ABSTRACT" number={11} defaultOpen={true}>
         <div className="space-y-6">
           {/* Container 1: DETAILS OF VALUATION & TOTAL ABSTRACT (Color: Light Purple #f3e5f5) */}
           <div style={{ backgroundColor: '#f3e5f5', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-purple-200">
@@ -2499,7 +2512,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       </Section>
 
       {/* ── Section 12: DECLARATION CUM UNDERTAKING FROM VALUERS ── */}
-      <Section id="sbi-lb-sec-12" title="DECLARATION CUM UNDERTAKING FROM VALUERS" defaultOpen={true}>
+      <Section id="sbi-lb-sec-12" title="DECLARATION CUM UNDERTAKING FROM VALUERS" number={12} defaultOpen={true}>
         <div className="space-y-6">
           {/* Container 1: DECLARATION CUM UNDERTAKING FROM VALUERS (Color: Light Red #ffebee) */}
           <div style={{ backgroundColor: '#ffebee', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-rose-200">
@@ -2737,7 +2750,7 @@ export default function StateBankOfIndiaLandAndBuilding({
 
       {/* ── Section 13: Base Documents ── */}
       <BaseDocumentsSection
-        title="Verified Property Documents"
+        title="Documents" sectionNumber={13}
         documentImages={fields.documentImages || []}
         documentImageNames={fields.documentImageNames || []}
         isReadOnly={isReadOnly}
@@ -2747,7 +2760,7 @@ export default function StateBankOfIndiaLandAndBuilding({
 
       {/* ── Section 14: Base Maps ── */}
       <BaseMapsSection
-        title="Location Maps"
+        title="Maps" sectionNumber={14}
         locationMapImages={fields.locationMapImages || []}
         mouzaMapImages={fields.mouzaMapImages || []}
         sketchMapImages={fields.sketchMapImages || []}
@@ -2764,7 +2777,7 @@ export default function StateBankOfIndiaLandAndBuilding({
 
       {/* ── Section 15: Photographs ── */}
       <BasePhotographsSection
-        title="Property Photographs"
+        title="Photographs" sectionNumber={15}
         propertyImages={fields.propertyImages || []}
         propertyImageNames={fields.propertyImageNames || []}
         isReadOnly={isReadOnly}

@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -63,9 +64,9 @@ export default function LICPVR3({
     { id: 'pvr3-valuation', title: '5. Valuation Details' },
     { id: 'pvr3-improvements', title: '6. Improvements & Progress' },
     { id: 'pvr3-remarks', title: '7. Remarks & Methodology' },
-    { id: 'pvr3-docs', title: '8. Documents' },
-    { id: 'pvr3-maps', title: '9. Maps' },
-    { id: 'pvr3-photos', title: '10. Photographs' },
+    { id: 'pvr3-docs', title: 'Documents' },
+    { id: 'pvr3-maps', title: 'Maps' },
+    { id: 'pvr3-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -428,16 +429,14 @@ export default function LICPVR3({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8 pt-6">
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* Action Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              <span>🏠 LIC Housing Finance Ltd — PVR-3 (Completed Building / LAP)</span>
-            </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Valuation Report by Panel Valuer for Home Loan (Dual Market & Guideline calculation).
-            </p>
-          </div>
-        </div>
+        <BankReportTitleCard
+        bankName="LIC Housing Finance Ltd"
+        subclass="PVR-3 (Completed Building / LAP)"
+        title="Valuation Report Builder"
+        description="Valuation Report by Panel Valuer for Completed Building / LAP."
+        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+        projectCode={projectCode}
+      />
 
         {/* 1. Header & Case */}
         <div id="pvr3-header" className={softCardCls}>
@@ -647,9 +646,8 @@ export default function LICPVR3({
         {/* Attachments */}
         <div id="pvr3-docs">
           <BaseDocumentsSection
-            title="Verified Property Documents"
+            title="Documents"
             sectionId="pvr3-docs"
-            sectionNumber={8}
             documentImages={formData.documentImages || []}
             documentImageNames={formData.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -672,9 +670,8 @@ export default function LICPVR3({
 
         <div id="pvr3-maps">
           <BaseMapsSection
-            title="Location Sketch & Route Maps"
+            title="Maps"
             sectionId="pvr3-maps"
-            sectionNumber={9}
             locationMapImages={formData.locationMapImages || []}
             mouzaMapImages={formData.mouzaMapImages || []}
             sketchMapImages={formData.sketchMapImages || []}
@@ -702,9 +699,8 @@ export default function LICPVR3({
 
         <div id="pvr3-photos">
           <BasePhotographsSection
-            title="Property Photographs"
+            title="Photographs"
             sectionId="pvr3-photos"
-            sectionNumber={10}
             propertyImages={formData.propertyImages || []}
             propertyImageNames={formData.propertyImageNames || []}
             isReadOnly={isReadOnly}

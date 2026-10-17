@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -330,32 +332,14 @@ export default function LICPVR1({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* ── Top Header Card ── */}
-      <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200">
-            LIC Housing Finance Ltd
-          </span>
-          <h1 className="text-xl font-bold text-slate-800 mt-2">PVR-1: HOUSE CONSTRUCTION (LAND & BUILDING)</h1>
-          <p className="text-xs text-slate-500">Valuation Report by Panel Valuer for Home Loan</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSaveInternal}
-            disabled={saving || isReadOnly}
-            className="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-700 transition"
-          >
-            {saving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Draft'}
-          </button>
-          <button
-            type="button"
-            onClick={handleDownloadPdf}
-            className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition"
-          >
-            Download PDF
-          </button>
-        </div>
-      </div>
+      <BankReportTitleCard
+        bankName="LIC Housing Finance Ltd"
+        subclass="PVR-1 (Self Construction - Land & Building)"
+        title="Valuation Report Builder"
+        description="Valuation Report by Panel Valuer for Home Loan (House Construction)"
+        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+        projectCode={projectCode}
+      />
 
       {/* ── Section Header Metadata ── */}
       <Section id="sec-meta" title="Header & File Metadata" number={1} defaultOpen={true}>
@@ -758,7 +742,7 @@ export default function LICPVR1({
 
       {/* ── Section: Inherited Photographs ── */}
       <BasePhotographsSection
-        title="Property Photographs"
+        title="Photographs"
         propertyImages={fields.propertyImages || []}
         propertyImageNames={fields.propertyImageNames || []}
         isReadOnly={isReadOnly}

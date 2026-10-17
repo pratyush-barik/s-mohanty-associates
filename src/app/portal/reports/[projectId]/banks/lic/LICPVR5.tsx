@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -60,9 +61,9 @@ export default function LICPVR5({
     { id: 'pvr5-general', title: '2. General Details' },
     { id: 'pvr5-inspection', title: '3. Inspection Details' },
     { id: 'pvr5-value', title: '4. Total Value' },
-    { id: 'pvr5-photos', title: '5. Photographs' },
-    { id: 'pvr5-maps', title: '6. Maps' },
-    { id: 'pvr5-docs', title: '7. Documents' },
+    { id: 'pvr5-docs', title: 'Documents' },
+    { id: 'pvr5-maps', title: 'Maps' },
+    { id: 'pvr5-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -333,16 +334,14 @@ export default function LICPVR5({
 
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8 pt-6">
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              <span>🏗️ LIC Housing Finance Ltd — PVR-5 (Subsequent Valuation Report)</span>
-            </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              House Construction Subsequent Progress Valuation Report.
-            </p>
-          </div>
-        </div>
+          <BankReportTitleCard
+        bankName="LIC Housing Finance Ltd"
+        subclass="PVR-5 (Subsequent Valuation Report)"
+        title="Valuation Report Builder"
+        description="Subsequent Progress & Stage Disbursement Inspection Valuation Report."
+        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+        projectCode={projectCode}
+      />
 
         {/* 1. Header & Case */}
         <div id="pvr5-header" className={softCardCls}>
@@ -483,39 +482,35 @@ export default function LICPVR5({
           </div>
         </div>
 
-        {/* Attachments */}
-        <div id="pvr5-photos">
-          <BasePhotographsSection
-            title="Property Photographs"
-            sectionId="pvr5-photos"
-            sectionNumber={5}
-            propertyImages={formData.propertyImages || []}
-            propertyImageNames={formData.propertyImageNames || []}
+        {/* Attachments: Documents, Maps, Photographs */}
+        <div id="pvr5-docs">
+          <BaseDocumentsSection
+            title="Documents"
+            sectionId="pvr5-docs"
+            documentImages={formData.documentImages || []}
+            documentImageNames={formData.documentImageNames || []}
             isReadOnly={isReadOnly}
             uploading={uploading}
-            bucketCount={bucketImages?.length || 0}
-            onOpenBucketPicker={() => setShowBucketModal(true)}
-            onUploadImages={handlePhotoUpload}
-            onRemoveImage={(idx) => setFormData((p) => ({
+            onUploadDocuments={handleDocUpload}
+            onRemoveDocument={(idx) => setFormData((p) => ({
               ...p,
-              propertyImages: (p.propertyImages || []).filter((_: any, i: number) => i !== idx),
-              propertyImageNames: (p.propertyImageNames || []).filter((_: any, i: number) => i !== idx),
+              documentImages: (p.documentImages || []).filter((_: any, i: number) => i !== idx),
+              documentImageNames: (p.documentImageNames || []).filter((_: any, i: number) => i !== idx),
             }))}
-            onImageNameChange={(idx, name) => {
-              const arr = [...(formData.propertyImageNames || [])];
+            onDocumentNameChange={(idx, name) => {
+              const arr = [...(formData.documentImageNames || [])];
               while (arr.length <= idx) arr.push('');
               arr[idx] = name;
-              setFormData((p) => ({ ...p, propertyImageNames: arr }));
+              setFormData((p) => ({ ...p, documentImageNames: arr }));
             }}
-            onReorderImages={(newImgs, newNames) => setFormData((p) => ({ ...p, propertyImages: newImgs, propertyImageNames: newNames }))}
+            onReorderDocuments={(newImgs, newNames) => setFormData((p) => ({ ...p, documentImages: newImgs, documentImageNames: newNames }))}
           />
         </div>
 
         <div id="pvr5-maps">
           <BaseMapsSection
-            title="Location Sketch & Route Maps"
+            title="Maps"
             sectionId="pvr5-maps"
-            sectionNumber={6}
             locationMapImages={formData.locationMapImages || []}
             mouzaMapImages={formData.mouzaMapImages || []}
             sketchMapImages={formData.sketchMapImages || []}
@@ -541,28 +536,29 @@ export default function LICPVR5({
           />
         </div>
 
-        <div id="pvr5-docs">
-          <BaseDocumentsSection
-            title="Verified Property Documents"
-            sectionId="pvr5-docs"
-            sectionNumber={7}
-            documentImages={formData.documentImages || []}
-            documentImageNames={formData.documentImageNames || []}
+        <div id="pvr5-photos">
+          <BasePhotographsSection
+            title="Photographs"
+            sectionId="pvr5-photos"
+            propertyImages={formData.propertyImages || []}
+            propertyImageNames={formData.propertyImageNames || []}
             isReadOnly={isReadOnly}
             uploading={uploading}
-            onUploadDocuments={handleDocUpload}
-            onRemoveDocument={(idx) => setFormData((p) => ({
+            bucketCount={bucketImages?.length || 0}
+            onOpenBucketPicker={() => setShowBucketModal(true)}
+            onUploadImages={handlePhotoUpload}
+            onRemoveImage={(idx) => setFormData((p) => ({
               ...p,
-              documentImages: (p.documentImages || []).filter((_: any, i: number) => i !== idx),
-              documentImageNames: (p.documentImageNames || []).filter((_: any, i: number) => i !== idx),
+              propertyImages: (p.propertyImages || []).filter((_: any, i: number) => i !== idx),
+              propertyImageNames: (p.propertyImageNames || []).filter((_: any, i: number) => i !== idx),
             }))}
-            onDocumentNameChange={(idx, name) => {
-              const arr = [...(formData.documentImageNames || [])];
+            onImageNameChange={(idx, name) => {
+              const arr = [...(formData.propertyImageNames || [])];
               while (arr.length <= idx) arr.push('');
               arr[idx] = name;
-              setFormData((p) => ({ ...p, documentImageNames: arr }));
+              setFormData((p) => ({ ...p, propertyImageNames: arr }));
             }}
-            onReorderDocuments={(newImgs, newNames) => setFormData((p) => ({ ...p, documentImages: newImgs, documentImageNames: newNames }))}
+            onReorderImages={(newImgs, newNames) => setFormData((p) => ({ ...p, propertyImages: newImgs, propertyImageNames: newNames }))}
           />
         </div>
       </div>

@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -71,7 +72,9 @@ export default function VistaarFinance({
     { id: 'vistaar-sec-plan', title: 'Plan & Cost Analysis' },
     { id: 'vistaar-sec-valuation', title: 'Property Valuation' },
     { id: 'vistaar-sec-remarks', title: 'Remarks & Certification' },
-    { id: 'vistaar-sec-attachments', title: 'Photos, Maps & Documents' },
+    { id: 'vistaar-sec-docs', title: 'Documents' },
+    { id: 'vistaar-sec-maps', title: 'Maps' },
+    { id: 'vistaar-sec-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -471,17 +474,13 @@ export default function VistaarFinance({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-        <div className="bg-white rounded-xl shadow border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              VISTAAR FINANCE — VALUATION REPORT
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Vistaar Financial Services Pvt Ltd • Proposal No: <span className="font-semibold text-slate-700">{fields.proposalNo || projectCode}</span>
-            </p>
-          </div>
-          <EarliestFieldVisitBadge fieldVisit={earliestVisit} />
-        </div>
+        <BankReportTitleCard
+          bankName="VISTAAR FINANCIAL SERVICES"
+          subclass="Micro / SME Loan Format"
+          description="Technical Valuation Report with Boundaries, Setbacks, BUA & Cost Analysis."
+          earliestVisit={earliestVisit}
+          projectCode={fields.proposalNo || projectCode}
+        />
 
         {earliestVisit && (
           <div className="flex items-center justify-between p-4 bg-blue-50/80 border border-blue-200 rounded-xl text-blue-900 text-sm">
@@ -503,7 +502,7 @@ export default function VistaarFinance({
 
         {/* 1. Header & Technical Initiation */}
         <div id="vistaar-sec-meta">
-          <Section title="Technical Initiation Request Form Data">
+          <Section title="Technical Initiation Request Form Data" number={1}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <Field label="Valuation Agency">
                 <input
@@ -637,7 +636,7 @@ export default function VistaarFinance({
 
         {/* 2. Locational & Property Specific Details */}
         <div id="vistaar-sec-locational">
-          <Section title="Locational & Property Specific Details (based on site visit)">
+          <Section title="Locational & Property Specific Details (based on site visit)" number={2}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <Field label="Status of Land Holding">
                 <input
@@ -829,7 +828,7 @@ export default function VistaarFinance({
 
         {/* 3. Boundaries & Setbacks */}
         <div id="vistaar-sec-boundaries">
-          <Section title="Boundaries & Setbacks">
+          <Section title="Boundaries & Setbacks" number={3}>
             <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Four Boundaries Comparison</h4>
             <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg mb-4">
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
@@ -924,7 +923,7 @@ export default function VistaarFinance({
 
         {/* 4. Built-up Area & Accommodations */}
         <div id="vistaar-sec-bua">
-          <Section title="Built-up Area & Accommodation Details">
+          <Section title="Built-up Area & Accommodation Details" number={4}>
             <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-lg mb-4">
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700 text-sm">
                 <thead className="bg-slate-100 dark:bg-slate-800 font-medium">
@@ -974,7 +973,7 @@ export default function VistaarFinance({
 
         {/* 5. Plan Approvals & Estimate Analysis */}
         <div id="vistaar-sec-plan">
-          <Section title="Plan Approvals & Estimate Analysis">
+          <Section title="Plan Approvals & Estimate Analysis" number={5}>
             <h4 className="text-sm font-semibold text-slate-700 dark:text-slate-200 mb-2">Plan Approvals</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <Field label="Construction as per approved/sanctioned plans">
@@ -1016,7 +1015,7 @@ export default function VistaarFinance({
 
         {/* 6. Property Valuation */}
         <div id="vistaar-sec-valuation">
-          <Section title="Valuation of Property (Fair Market Valuation / Distress Valuation)">
+          <Section title="Valuation of Property (Fair Market Valuation / Distress Valuation)" number={6}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
               <Field label="Land Area (In Sqft)">
                 <input
@@ -1134,7 +1133,7 @@ export default function VistaarFinance({
 
         {/* 7. Remarks & Certification */}
         <div id="vistaar-sec-remarks">
-          <Section title="Property Specific Remarks & Observation">
+          <Section title="Property Specific Remarks & Observation" number={7}>
             <div className="space-y-4">
               <Field label="Detailed Remarks & Observation">
                 <textarea
@@ -1167,8 +1166,9 @@ export default function VistaarFinance({
         {/* 8. Attachments: Photographs, Maps & Verified Documents */}
         <div id="vistaar-sec-attachments" className="space-y-6">
           <BaseDocumentsSection
-            title="Verified Property Documents"
+            title="Documents"
             sectionId="vistaar-sec-docs"
+            sectionNumber={8}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1193,8 +1193,9 @@ export default function VistaarFinance({
           />
 
           <BaseMapsSection
-            title="Location Sketch & Route Maps"
+            title="Maps"
             sectionId="vistaar-sec-maps"
+            sectionNumber={9}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1245,8 +1246,9 @@ export default function VistaarFinance({
           />
 
           <BasePhotographsSection
-            title="Property Site Photographs"
+            title="Photographs"
             sectionId="vistaar-sec-photos"
+            sectionNumber={10}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

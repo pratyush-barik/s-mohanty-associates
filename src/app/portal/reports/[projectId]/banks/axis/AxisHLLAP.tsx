@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -22,7 +24,6 @@ import {
   fetchBytes,
   DEFAULT_PHOTO_LABEL,
   DEFAULT_DOCUMENT_LABEL,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -800,14 +801,24 @@ export default function AxisHLLAP({
     { id: 'axis-sec7', title: 'Undertaking & Valuer Signatory' },
     { id: 'axis-documents', title: 'Documents' },
     { id: 'axis-maps', title: 'Maps' },
-    { id: 'axis-photos', title: 'Property Photographs' },
+    { id: 'axis-photos', title: 'Photographs' },
   ];
 
   return (
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        {/* Top Active Configuration Banner */}
+                {/* Standardized Title Card */}
+        <BankReportTitleCard
+          bankName="Axis Bank"
+          subclass="HL-LAP Format"
+          title="Valuation Report Builder"
+          description="Axis Bank Retail Assets Valuation Engine."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+        />
+
+{/* Top Active Configuration Banner */}
         <ActiveConfigBanner
           clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
@@ -2405,9 +2416,9 @@ export default function AxisHLLAP({
 
         {/* SECTION 8: Documents */}
         <BaseDocumentsSection
-          title="Documents"
+          title="Documents" sectionNumber={8}
           sectionId="axis-documents"
-          sectionNumber={8}
+          
           documentImages={fields.documentImages || []}
           documentImageNames={fields.documentImageNames || []}
           isReadOnly={isReadOnly}
@@ -2420,9 +2431,9 @@ export default function AxisHLLAP({
 
         {/* SECTION 9: Maps */}
         <BaseMapsSection
-          title="Maps"
+          title="Maps" sectionNumber={9}
           sectionId="axis-maps"
-          sectionNumber={9}
+          
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
@@ -2459,9 +2470,9 @@ export default function AxisHLLAP({
 
         {/* SECTION 10: Property Photographs */}
         <BasePhotographsSection
-          title="Property Photographs"
+          title="Photographs" sectionNumber={10}
           sectionId="axis-photos"
-          sectionNumber={10}
+          
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}

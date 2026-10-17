@@ -4,6 +4,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -262,7 +264,7 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-annexure-a', title: 'Annexure-A' },
   { id: 'sec-documents', title: 'Documents' },
   { id: 'sec-maps', title: 'Maps' },
-  { id: 'sec-photos', title: 'Property Photographs' },
+  { id: 'sec-photos', title: 'Photographs' },
 ];
 
 export default function BandhanHLLAP({
@@ -1437,7 +1439,17 @@ export default function BandhanHLLAP({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        {/* Top Active Configuration Banner */}
+                {/* Standardized Title Card */}
+        <BankReportTitleCard
+          bankName="Bandhan Bank"
+          subclass="HL-LAP Format"
+          title="Valuation Report Builder"
+          description="Bandhan Bank Home Loan & Loan Against Property Format."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+        />
+
+{/* Top Active Configuration Banner */}
         <ActiveConfigBanner
           clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
@@ -5339,9 +5351,9 @@ export default function BandhanHLLAP({
 
             {/* 12. Documents */}
             <BaseDocumentsSection
-              title="Documents"
+              title="Documents" sectionNumber={12}
               sectionId="sec-documents"
-              sectionNumber={12}
+              
               documentImages={fields.documentImages || []}
               documentImageNames={fields.documentImageNames || []}
               isReadOnly={isReadOnly}
@@ -5355,9 +5367,9 @@ export default function BandhanHLLAP({
 
             {/* 13. Maps */}
             <BaseMapsSection
-              title="Maps"
+              title="Maps" sectionNumber={13}
               sectionId="sec-maps"
-              sectionNumber={13}
+              
               locationMapImages={fields.locationMapImages || (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : [])}
               mouzaMapImages={fields.mouzaMapImages || (fields.rorImageUrl ? [fields.rorImageUrl] : [])}
               sketchMapImages={fields.sketchMapImages || (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : [])}
@@ -5391,8 +5403,8 @@ export default function BandhanHLLAP({
 
             {/* 14. Property Photographs */}
             <BasePhotographsSection
-              title="Property Photographs"
-              sectionNumber={14}
+              title="Photographs" sectionNumber={14}
+              
               sectionId="sec-photos"
               propertyImages={propertyImages}
               propertyImageNames={propertyImageNames}

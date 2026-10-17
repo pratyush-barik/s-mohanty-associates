@@ -16,10 +16,11 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   ActiveConfigBanner,
   FloatingNavigator,
   ReportActionBar,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   Field,
   Section,
@@ -455,9 +456,9 @@ export default function KarurVysyaBank({
       { id: 'sec-final-val', title: 'Final Valuation & Insurance' },
       { id: 'sec-remarks', title: 'Remarks' },
       { id: 'sec-declaration', title: 'Declaration' },
-      { id: 'sec-documents-annexure', title: 'Verified Property Documents' },
-      { id: 'sec-maps-annexure', title: 'Location Maps' },
-      { id: 'sec-photos-annexure', title: 'Property Site Photographs' },
+      { id: 'sec-documents-annexure', title: 'Documents' },
+      { id: 'sec-maps-annexure', title: 'Maps' },
+      { id: 'sec-photos-annexure', title: 'Photographs' },
     ],
     []
   );
@@ -478,24 +479,13 @@ export default function KarurVysyaBank({
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* Title Header Card */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
-                  Karur Vysya Bank Limited
-                </span>
-                <span className="text-xs text-slate-400">|</span>
-                <span className="text-xs text-slate-500 font-medium">Standard Valuation Format</span>
-              </div>
-              <h1 className="text-xl font-bold text-slate-900 mt-2">Valuation Report Builder</h1>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Commercial / Industrial valuation format with 11 core sections, multi-deed legal matrix, and media annexures.
-              </p>
-            </div>
-            {earliestVisit?.dateStr && (
-              <EarliestFieldVisitBadge visitInfo={earliestVisit} />
-            )}
-          </div>
+          <BankReportTitleCard
+            bankName="Karur Vysya Bank Limited"
+            subclass="Standard Valuation Format"
+            description="Commercial / Industrial valuation format with 11 core sections, multi-deed legal matrix, and media annexures."
+            earliestVisit={earliestVisit}
+            projectCode={projectCode}
+          />
 
           {/* Banner Alert Message */}
           {message && (
@@ -513,7 +503,7 @@ export default function KarurVysyaBank({
 
           {/* 1. General Information */}
           <div id="sec-general">
-            <Section title="General Information" defaultOpen={true}>
+            <Section title="General Information" number={1} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Report Number">
                   <input
@@ -611,7 +601,7 @@ export default function KarurVysyaBank({
 
           {/* 2. Property Details */}
           <div id="sec-property">
-            <Section title="Property Details" defaultOpen={true}>
+            <Section title="Property Details" number={2} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Electric Meter Number">
                   <input
@@ -858,7 +848,7 @@ export default function KarurVysyaBank({
 
           {/* 3. Surroundings & Boundaries */}
           <div id="sec-surroundings">
-            <Section title="Surroundings & Boundaries" defaultOpen={true}>
+            <Section title="Surroundings & Boundaries" number={3} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <Field label="Distance from City Center">
                   <input
@@ -1118,7 +1108,7 @@ export default function KarurVysyaBank({
 
           {/* 4. Survey of Construction */}
           <div id="sec-construction">
-            <Section title="Survey of Construction" defaultOpen={true}>
+            <Section title="Survey of Construction" number={4} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Type of Construction">
                   <input
@@ -1204,7 +1194,7 @@ export default function KarurVysyaBank({
 
           {/* 5. Documents Verified */}
           <div id="sec-documents">
-            <Section title="Documents Verified" defaultOpen={true}>
+            <Section title="Documents Verified" number={5} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Approved Layout Plans Details">
                   <input
@@ -1280,7 +1270,7 @@ export default function KarurVysyaBank({
 
           {/* 6. Area Details */}
           <div id="sec-area-details">
-            <Section title="Area Details" defaultOpen={true}>
+            <Section title="Area Details" number={6} defaultOpen={true}>
               <div className="overflow-x-auto rounded-xl border border-slate-200">
                 <table className="w-full text-sm text-left">
                   <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
@@ -1400,7 +1390,7 @@ export default function KarurVysyaBank({
 
           {/* 7. Valuation Details */}
           <div id="sec-valuation">
-            <Section title="Valuation Details" defaultOpen={true}>
+            <Section title="Valuation Details" number={7} defaultOpen={true}>
               <div className="overflow-x-auto rounded-xl border border-slate-200">
                 <table className="w-full text-sm text-left">
                   <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
@@ -1543,7 +1533,7 @@ export default function KarurVysyaBank({
 
           {/* 8. Government Value */}
           <div id="sec-govt-val">
-            <Section title="Government Value" defaultOpen={true}>
+            <Section title="Government Value" number={8} defaultOpen={true}>
               <div className="overflow-x-auto rounded-xl border border-slate-200">
                 <table className="w-full text-sm text-left">
                   <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
@@ -1633,7 +1623,7 @@ export default function KarurVysyaBank({
 
           {/* 9. Final Valuation & Insurance */}
           <div id="sec-final-val">
-            <Section title="Final Valuation & Insurance" defaultOpen={true}>
+            <Section title="Final Valuation & Insurance" number={9} defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* FMV Card */}
                 <div className="p-4 rounded-xl bg-blue-50/50 border border-blue-200 space-y-1">
@@ -1696,7 +1686,7 @@ export default function KarurVysyaBank({
 
           {/* 10. Remarks */}
           <div id="sec-remarks">
-            <Section title="Remarks" defaultOpen={true}>
+            <Section title="Remarks" number={10} defaultOpen={true}>
               <Field label="Remarks & Specific Clauses">
                 <textarea
                   rows={14}
@@ -1711,7 +1701,7 @@ export default function KarurVysyaBank({
 
           {/* 11. Declaration */}
           <div id="sec-declaration">
-            <Section title="Declaration" defaultOpen={true}>
+            <Section title="Declaration" number={11} defaultOpen={true}>
               <Field label="Declaration Clauses">
                 <textarea
                   rows={12}
@@ -1741,11 +1731,12 @@ export default function KarurVysyaBank({
             </Section>
           </div>
 
-          {/* 12. Verified Property Documents */}
+          {/* 12. Documents */}
           <div id="sec-documents-annexure">
             <BaseDocumentsSection
-              title="Verified Property Documents"
+              title="Documents"
               sectionId="sec-documents-annexure"
+              sectionNumber={12}
               documentImages={form.documentImages || []}
               documentImageNames={form.documentImageNames || []}
               isReadOnly={isReadOnly}
@@ -1776,11 +1767,12 @@ export default function KarurVysyaBank({
             />
           </div>
 
-          {/* 13. Location Maps */}
+          {/* 13. Maps */}
           <div id="sec-maps-annexure">
             <BaseMapsSection
-              title="Location Maps"
+              title="Maps"
               sectionId="sec-maps-annexure"
+              sectionNumber={13}
               locationMapImages={form.locationMapImages || []}
               mouzaMapImages={form.mouzaMapImages || []}
               sketchMapImages={form.sketchMapImages || []}
@@ -1806,11 +1798,12 @@ export default function KarurVysyaBank({
             />
           </div>
 
-          {/* 14. Property Site Photographs */}
+          {/* 14. Photographs */}
           <div id="sec-photos-annexure">
             <BasePhotographsSection
-              title="Property Site Photographs"
+              title="Photographs"
               sectionId="sec-photos-annexure"
+              sectionNumber={14}
               propertyImages={form.propertyImages || []}
               propertyImageNames={form.propertyImageNames || []}
               isReadOnly={isReadOnly}

@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -62,9 +63,9 @@ export default function LICPVR4({
     { id: 'pvr4-attributes', title: '4. Plot Attributes' },
     { id: 'pvr4-valuation', title: '5. Land Valuation' },
     { id: 'pvr4-remarks', title: '6. Remarks & Methodology' },
-    { id: 'pvr4-docs', title: '7. Documents' },
-    { id: 'pvr4-maps', title: '8. Maps' },
-    { id: 'pvr4-photos', title: '9. Photographs' },
+    { id: 'pvr4-docs', title: 'Documents' },
+    { id: 'pvr4-maps', title: 'Maps' },
+    { id: 'pvr4-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -358,16 +359,14 @@ export default function LICPVR4({
 
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8 pt-6">
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              <span>📐 LIC Housing Finance Ltd — PVR-4 (Residential Plot Purchase)</span>
-            </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Purchase of Residential Plot Valuation Report (Dual Market & Guideline calculation).
-            </p>
-          </div>
-        </div>
+          <BankReportTitleCard
+        bankName="LIC Housing Finance Ltd"
+        subclass="PVR-4 (Land Purchase Only)"
+        title="Valuation Report Builder"
+        description="Valuation Report for Pure Land Purchase Proposals."
+        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+        projectCode={projectCode}
+      />
 
         {/* 1. Header & Case */}
         <div id="pvr4-header" className={softCardCls}>
@@ -532,9 +531,8 @@ export default function LICPVR4({
         {/* Attachments */}
         <div id="pvr4-docs">
           <BaseDocumentsSection
-            title="Verified Property Documents"
+            title="Documents"
             sectionId="pvr4-docs"
-            sectionNumber={7}
             documentImages={formData.documentImages || []}
             documentImageNames={formData.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -557,9 +555,8 @@ export default function LICPVR4({
 
         <div id="pvr4-maps">
           <BaseMapsSection
-            title="Location Sketch & Route Maps"
+            title="Maps"
             sectionId="pvr4-maps"
-            sectionNumber={8}
             locationMapImages={formData.locationMapImages || []}
             mouzaMapImages={formData.mouzaMapImages || []}
             sketchMapImages={formData.sketchMapImages || []}
@@ -587,9 +584,8 @@ export default function LICPVR4({
 
         <div id="pvr4-photos">
           <BasePhotographsSection
-            title="Property Photographs"
+            title="Photographs"
             sectionId="pvr4-photos"
-            sectionNumber={9}
             propertyImages={formData.propertyImages || []}
             propertyImageNames={formData.propertyImageNames || []}
             isReadOnly={isReadOnly}

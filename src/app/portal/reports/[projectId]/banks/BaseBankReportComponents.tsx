@@ -171,6 +171,58 @@ export function EarliestFieldVisitBadge({
   );
 }
 
+// ─── Standardized Bank Report Title Card ─────────────────────────────
+export function BankReportTitleCard({
+  bankName,
+  subclass = 'Standard Format',
+  title = 'Valuation Report Builder',
+  description,
+  earliestVisit,
+  projectCode,
+  className = '',
+}: {
+  bankName: string;
+  subclass?: string;
+  title?: string;
+  description?: string;
+  earliestVisit?: FieldVisitInfo | null;
+  projectCode?: string;
+  className?: string;
+}) {
+  return (
+    <div className={`bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 ${className}`}>
+      <div>
+        <div className="flex items-center gap-2">
+          <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
+            {bankName}
+          </span>
+          {subclass && (
+            <>
+              <span className="text-xs text-slate-400">|</span>
+              <span className="text-xs text-slate-500 font-medium">{subclass}</span>
+            </>
+          )}
+          {projectCode && (
+            <>
+              <span className="text-xs text-slate-400">•</span>
+              <span className="text-xs text-slate-500 font-medium">Ref: <strong className="text-slate-700">{projectCode}</strong></span>
+            </>
+          )}
+        </div>
+        <h1 className="text-xl font-bold text-slate-900 mt-2">{title}</h1>
+        {description && (
+          <p className="text-xs text-slate-500 mt-0.5">
+            {description}
+          </p>
+        )}
+      </div>
+      {earliestVisit && (earliestVisit.dateStr || earliestVisit.date) && (
+        <EarliestFieldVisitBadge visitInfo={earliestVisit} />
+      )}
+    </div>
+  );
+}
+
 // ─── Universal Dynamic Structure Derivation Utilities ────────────────
 export function getConstructionDetailsForStructure(structureType?: string): string {
   const st = (structureType || 'RCC').trim().toLowerCase();
@@ -732,9 +784,9 @@ export function BasePhotographsSection({
   onRemoveImage,
   onImageNameChange,
   onReorderImages,
-  sectionNumber = 11,
-  sectionId = 'section-11',
-  title = 'Property Photographs',
+  sectionNumber,
+  sectionId = 'section-photographs',
+  title = 'Photographs',
   withoutSectionWrapper = false,
   defaultOpen = false,
 }: {
@@ -1282,8 +1334,8 @@ export function BaseMapsSection({
   onBdaMapUpload,
   onBdaMapRemove,
   onReorderBdaMap,
-  sectionNumber = 10,
-  sectionId = 'section-10',
+  sectionNumber,
+  sectionId = 'section-maps',
   title = 'Maps',
   mapOrder = ['location', 'mouza', 'sketch', 'cadastral', 'bda'],
   withoutSectionWrapper = false,

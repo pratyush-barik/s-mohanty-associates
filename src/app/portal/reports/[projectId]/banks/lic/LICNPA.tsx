@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -257,32 +259,14 @@ export default function LICNPA({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* ── Top Header Card ── */}
-      <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-50 text-rose-700 border border-rose-200">
-            LIC Housing Finance Ltd
-          </span>
-          <h1 className="text-xl font-bold text-slate-800 mt-2">PROPERTY INSPECTION REPORT (Default Cases)</h1>
-          <p className="text-xs text-slate-500">Official 2-Page SARFAESI / Default Inspection Report</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={handleSaveInternal}
-            disabled={saving || isReadOnly}
-            className="px-4 py-2 bg-slate-800 text-white rounded-xl text-sm font-semibold hover:bg-slate-700 transition"
-          >
-            {saving ? 'Saving...' : saveSuccess ? 'Saved!' : 'Save Draft'}
-          </button>
-          <button
-            type="button"
-            onClick={handleDownloadPdf}
-            className="px-4 py-2 bg-rose-600 text-white rounded-xl text-sm font-semibold hover:bg-rose-700 transition"
-          >
-            Download PDF
-          </button>
-        </div>
-      </div>
+      <BankReportTitleCard
+        bankName="LIC Housing Finance Ltd"
+        subclass="NPA Default Cases"
+        title="Valuation Report Builder"
+        description="Detailed Statutory Valuation Report for NPA Default Accounts."
+        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+        projectCode={projectCode}
+      />
 
       {/* ── Section 1: Account & Borrower Details ── */}
       <Section id="sec-1" title="Account & Borrower Details" number={1} defaultOpen={true}>
@@ -652,7 +636,7 @@ export default function LICNPA({
 
       {/* ── Section 8: Inherited Photographs ── */}
       <BasePhotographsSection
-        title="Property Photographs"
+        title="Photographs"
         propertyImages={fields.propertyImages || []}
         propertyImageNames={fields.propertyImageNames || []}
         isReadOnly={isReadOnly}

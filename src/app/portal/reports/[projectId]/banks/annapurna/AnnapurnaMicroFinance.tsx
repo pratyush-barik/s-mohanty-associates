@@ -11,6 +11,8 @@ import {
   AnnapurnaMicroReportFields,
 } from '@/lib/banks/pdf-annapurna-micro-finance-renderer';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -29,7 +31,6 @@ import {
   BasePhotoBucketModal,
   BaseAnnexureSection,
   fetchBytes,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
 import { reorderAndLabelAnnexures, AnnexureItem, normalizeMapImages, BankConfig } from '@/lib/bank-fields';
@@ -889,7 +890,17 @@ export default function AnnapurnaMicroFinance({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        <ActiveConfigBanner
+                {/* Standardized Title Card */}
+        <BankReportTitleCard
+          bankName="Annapurna Microfinance"
+          subclass="Standard Format"
+          title="Valuation Report Builder"
+          description="Micro Housing & Rural Asset Valuation Format."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+        />
+
+<ActiveConfigBanner
           clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.organisationTemplate || fields.bankName || 'ANNAPURNA MICRO FINANCE LTD'}
@@ -1851,8 +1862,8 @@ export default function AnnapurnaMicroFinance({
 
         {/* ════ SECTION 10: MAPS (MULTI-PHOTO) ════ */}
         <BaseMapsSection
-          title="Maps"
-          sectionNumber={10}
+          title="Maps" sectionNumber={10}
+          
           sectionId="sec-maps"
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}

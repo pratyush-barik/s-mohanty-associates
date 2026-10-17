@@ -4,6 +4,8 @@ import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -19,7 +21,6 @@ import {
   BaseMapsSection,
   BasePhotoBucketModal,
   fetchBytes,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   DEFAULT_DOCUMENT_LABEL,
   DEFAULT_PHOTO_LABEL,
@@ -72,9 +73,9 @@ export default function IDFCFirstBank({
     { id: 'sec-setbacks', title: 'Setbacks & Area Schedules' },
     { id: 'sec-valuation', title: 'Valuation Engine & Calculations' },
     { id: 'sec-boundaries', title: 'Boundaries & Final Observations' },
-    { id: 'sec-documents', title: 'Verified Property Documents' },
-    { id: 'sec-maps', title: 'Location Sketch & Route Maps' },
-    { id: 'sec-photos', title: 'Property Site Photographs' },
+    { id: 'sec-documents', title: 'Documents' },
+    { id: 'sec-maps', title: 'Maps' },
+    { id: 'sec-photos', title: 'Photographs' },
   ];
 
   // Earliest visit info
@@ -503,16 +504,14 @@ export default function IDFCFirstBank({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8 pt-6">
         <div className="flex-1 min-w-0 space-y-6 w-full">
           {/* Action Header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              <span>🏦 IDFC FIRST Bank — Technical Appraisal Report</span>
-            </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Standard 22-Section format with floor schedules, stage valuation, boundary matrix & attachments.
-            </p>
-          </div>
-        </div>
+        <BankReportTitleCard
+        bankName="IDFC FIRST Bank"
+        subclass="Technical Appraisal Report"
+        title="Valuation Report Builder"
+        description="Standard 22-Section format with floor schedules, stage valuation, boundary matrix & attachments."
+        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+        projectCode={projectCode}
+      />
 
         {/* 1. Case & Ref */}
         <div id="sec-header" className={softCardCls}>
@@ -1437,7 +1436,7 @@ export default function IDFCFirstBank({
         {/* 9. Verified Documents */}
         <div id="sec-documents">
           <BaseDocumentsSection
-            title="Verified Property Documents"
+            title="Documents" sectionNumber={9}
             sectionId="sec-documents"
             documentImages={formData.documentImages || []}
             documentImageNames={formData.documentImageNames || []}
@@ -1466,7 +1465,7 @@ export default function IDFCFirstBank({
         {/* 10. Maps & Location Sketch */}
         <div id="sec-maps">
           <BaseMapsSection
-            title="Location Sketch & Route Maps"
+            title="Maps" sectionNumber={10}
             sectionId="sec-maps"
             locationMapImages={formData.locationMapImages || []}
             mouzaMapImages={formData.mouzaMapImages || []}
@@ -1498,7 +1497,7 @@ export default function IDFCFirstBank({
         {/* 11. Property Photographs */}
         <div id="sec-photos">
           <BasePhotographsSection
-            title="Property Site Photographs"
+            title="Photographs" sectionNumber={11}
             sectionId="sec-photos"
             propertyImages={formData.propertyImages || []}
             propertyImageNames={formData.propertyImageNames || []}

@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   ActiveConfigBanner,
   FloatingNavigator,
   Section,
@@ -158,7 +160,7 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'sec-checklist', title: 'Valuation Report Check-List' },
   { id: 'sec-documents', title: 'Documents' },
   { id: 'sec-maps', title: 'Maps' },
-  { id: 'sec-photos', title: 'Property Photographs' },
+  { id: 'sec-photos', title: 'Photographs' },
 ];
 
 const sanitizePositiveInt = (val: string, maxLen?: number): string => {
@@ -2144,7 +2146,17 @@ export default function BandhanSME({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900 font-sans">
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        {/* Top Active Configuration Banner */}
+                {/* Standardized Title Card */}
+        <BankReportTitleCard
+          bankName="Bandhan Bank"
+          subclass="SME Commercial Format"
+          title="Valuation Report Builder"
+          description="Bandhan Bank SME Banking & Commercial Valuation Format."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+        />
+
+{/* Top Active Configuration Banner */}
         <ActiveConfigBanner
           clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
@@ -6166,9 +6178,9 @@ export default function BandhanSME({
 
         {/* 18. Documents */}
         <BaseDocumentsSection
-          title="Documents"
+          title="Documents" sectionNumber={18}
           sectionId="sec-documents"
-          sectionNumber={18}
+          
           documentImages={fields.documentImages || []}
           documentImageNames={fields.documentImageNames || []}
           isReadOnly={isReadOnly}
@@ -6182,9 +6194,9 @@ export default function BandhanSME({
 
         {/* 19. Maps */}
         <BaseMapsSection
-          title="Maps"
+          title="Maps" sectionNumber={19}
           sectionId="sec-maps"
-          sectionNumber={19}
+          
           locationMapImages={fields.locationMapImages || (fields.locationMapImageUrl ? [fields.locationMapImageUrl] : [])}
           mouzaMapImages={fields.mouzaMapImages || (fields.rorImageUrl ? [fields.rorImageUrl] : [])}
           sketchMapImages={fields.sketchMapImages || (fields.guidelineValueImageUrl ? [fields.guidelineValueImageUrl] : [])}
@@ -6236,8 +6248,8 @@ export default function BandhanSME({
 
         {/* 20. Property Photographs */}
         <BasePhotographsSection
-          title="Property Photographs"
-          sectionNumber={20}
+          title="Photographs" sectionNumber={20}
+          
           sectionId="sec-photos"
           propertyImages={propertyImages}
           propertyImageNames={propertyImageNames}

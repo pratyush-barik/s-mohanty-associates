@@ -8,6 +8,8 @@ import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { PDFArkaFinanceRenderer, ArkaReportFields } from '@/lib/banks/pdf-arka-finance-renderer';
 import { fetchBytes } from '@/lib/pdf-bank-renderer';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -21,7 +23,6 @@ import {
   BasePhotographsSection,
   BaseMapsSection,
   BasePhotoBucketModal,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
 
@@ -375,7 +376,7 @@ export default function ArkaFinance({
     { id: 'arka-sec7', title: 'Remarks & Undertaking' },
     { id: 'arka-docs', title: 'Documents' },
     { id: 'arka-maps', title: 'Maps' },
-    { id: 'arka-photos', title: 'Property Photographs' },
+    { id: 'arka-photos', title: 'Photographs' },
   ];
 
   const handleMapUpload = async (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
@@ -687,7 +688,17 @@ export default function ArkaFinance({
   return (
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        <ActiveConfigBanner
+                {/* Standardized Title Card */}
+        <BankReportTitleCard
+          bankName="Arka Finance Ltd"
+          subclass="Standard Format"
+          title="Valuation Report Builder"
+          description="Secured Business Loan & LAP Valuation Format."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+        />
+
+<ActiveConfigBanner
           clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.organisationTemplate || fields.bankName || 'ARKA FINANCE LTD'}
@@ -1698,9 +1709,9 @@ export default function ArkaFinance({
         </Section>
 
         <BaseDocumentsSection
-          title="Documents"
+          title="Documents" sectionNumber={8}
           sectionId="arka-docs"
-          sectionNumber={8}
+          
           documentImages={fields.documentImages || []}
           documentImageNames={fields.documentImageNames || []}
           isReadOnly={isReadOnly}
@@ -1721,9 +1732,9 @@ export default function ArkaFinance({
         />
 
         <BaseMapsSection
-          title="Maps"
+          title="Maps" sectionNumber={9}
           sectionId="arka-maps"
-          sectionNumber={9}
+          
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
@@ -1755,9 +1766,9 @@ export default function ArkaFinance({
         />
 
         <BasePhotographsSection
-          title="Property Photographs"
+          title="Photographs" sectionNumber={10}
           sectionId="arka-photos"
-          sectionNumber={10}
+          
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}

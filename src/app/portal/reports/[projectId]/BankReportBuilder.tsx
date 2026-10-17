@@ -19,6 +19,7 @@ import {
   BaseAnnexureSection,
   AnnexureRefSelector,
   ActiveConfigBanner,
+  BankReportTitleCard,
   BasePhotoBucketModal,
   BaseDateInput,
   getEarliestFieldVisit,
@@ -2228,6 +2229,16 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
           serviceType={fields.serviceType}
           subjectType={fields.subjectType}
           onResetWizard={onResetWizard}
+        />
+
+        {/* Standardized Title Card */}
+        <BankReportTitleCard
+          bankName={fields.organisationTemplate || fields.bankName || config?.displayName || config?.bankId || 'Valuation Report'}
+          subclass={fields.organisationSubTemplate || config?.subTemplateId || 'Standard Format'}
+          title="Valuation Report Builder"
+          description={config?.displayName ? `${config.displayName} Standard Valuation Format` : 'Standard institutional bank valuation template.'}
+          earliestVisit={firstFieldAgentVisit}
+          projectCode={projectCode}
         />
 
         {/* Rework Banner */}

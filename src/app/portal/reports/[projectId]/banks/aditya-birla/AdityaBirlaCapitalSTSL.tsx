@@ -10,6 +10,8 @@ import { formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFAdityaBirlaSTSLRenderer, STSLReportFields } from '@/lib/banks/pdf-aditya-birla-stsl-renderer';
 import { CONTENT_W } from '@/lib/pdf-bank-renderer';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -29,7 +31,6 @@ import {
   AnnexureRefSelector,
   BaseAnnexureSection,
   fetchBytes,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   DEFAULT_DOCUMENT_LABEL,
   DEFAULT_PHOTO_LABEL,
@@ -2976,8 +2977,8 @@ export default function AdityaBirlaCapitalSTSL({
 
         {/* ═══ SECTION 10: DOCUMENTS ═══ */}
         <BaseDocumentsSection
-          title="Documents"
-          sectionNumber={10}
+          title="Documents" sectionNumber={10}
+          
           sectionId="section-10"
           documentImages={fields.documentImages || []}
           documentImageNames={fields.documentImageNames || []}
@@ -3033,7 +3034,7 @@ export default function AdityaBirlaCapitalSTSL({
 
         {/* ═══ SECTION 11: MAPS ═══ */}
         <BaseMapsSection
-          title="Maps"
+          title="Maps" sectionNumber={11}
           locationMapImages={fields.locationMapImages || (fields.locationMapImage ? [fields.locationMapImage] : [])}
           mouzaMapImages={fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : [])}
           sketchMapImages={fields.sketchMapImages || []}
@@ -3062,13 +3063,12 @@ export default function AdityaBirlaCapitalSTSL({
           onReorderSketchMap={(newImgs) => handleReorderMap('sketchMapImages', newImgs)}
           onReorderCadastralMap={(newImgs) => handleReorderMap('cadastralMapImages', newImgs)}
           onReorderBdaMap={(newImgs) => handleReorderMap('bdaMapImages', newImgs)}
-          sectionNumber={11}
           sectionId="section-11"
         />
 
         {/* ═══ SECTION 12: PHOTOGRAPHS OF PROPERTY ═══ */}
         <BasePhotographsSection
-          title="Photographs of Property"
+          title="Photographs" sectionNumber={12}
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}
           isReadOnly={isReadOnly}
@@ -3094,7 +3094,6 @@ export default function AdityaBirlaCapitalSTSL({
           }}
           onUploadImages={handleUploadMultiplePhotos}
           onOpenBucketPicker={() => setBucketPickerOpen(true)}
-          sectionNumber={12}
           sectionId="section-12"
         />
 

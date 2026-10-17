@@ -22,6 +22,8 @@ import {
   calculatePercentageValue,
 } from '@/lib/banks/pdf-arthan-finance-renderer';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -39,7 +41,6 @@ import {
   BaseMapsSection,
   BasePhotoBucketModal,
   fetchBytes,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
 } from '../BaseBankReportComponents';
 import { normalizeMapImages, BankConfig } from '@/lib/bank-fields';
@@ -923,14 +924,24 @@ export default function ArthanFinance({
     { id: 'sec-11', title: 'Valuer Certification' },
     { id: 'sec-docs', title: 'Documents' },
     { id: 'sec-13', title: 'Maps' },
-    { id: 'sec-12', title: 'Property Photographs' },
+    { id: 'sec-12', title: 'Photographs' },
   ];
 
   return (
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        <ActiveConfigBanner
+                {/* Standardized Title Card */}
+        <BankReportTitleCard
+          bankName="Arthan Finance"
+          subclass="Standard Format"
+          title="Valuation Report Builder"
+          description="Micro Mortgage & Small Business Valuation Format."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+        />
+
+<ActiveConfigBanner
           clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.organisationTemplate || fields.bankName || 'ARTHAN FINANCE'}
@@ -2467,7 +2478,6 @@ export default function ArthanFinance({
 
           {/* Photographs Gallery & Upload */}
           <BasePhotographsSection
-            title="Property Photographs"
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -64,9 +65,9 @@ export default function YesBank({
     { id: 'yes-sec-valuation', title: 'Valuation & Rates' },
     { id: 'yes-sec-market', title: 'Market Comparison & Remarks' },
     { id: 'yes-sec-declaration', title: 'Declaration & Sign-off' },
-    { id: 'yes-sec-docs', title: 'Verified Property Documents' },
-    { id: 'yes-sec-maps', title: 'Location Sketch & Route Maps' },
-    { id: 'yes-sec-photos', title: 'Property Site Photographs' },
+    { id: 'yes-sec-docs', title: 'Documents' },
+    { id: 'yes-sec-maps', title: 'Maps' },
+    { id: 'yes-sec-photos', title: 'Photographs' },
   ];
 
   const earliestVisit = useMemo(() => {
@@ -474,21 +475,17 @@ export default function YesBank({
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-        <div className="bg-white rounded-xl shadow border border-slate-200 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-              YES BANK — VALUATION REPORT
-            </h1>
-            <p className="text-sm text-slate-500 mt-1">
-              YES Bank Limited Format • Case Ref. No: <span className="font-semibold text-slate-700">{fields.caseRefNo || projectCode}</span>
-            </p>
-          </div>
-          <EarliestFieldVisitBadge fieldVisit={earliestVisit} />
-        </div>
+        <BankReportTitleCard
+          bankName={fields.organisationTemplate || 'YES BANK'}
+          subclass={fields.organisationSubTemplate || 'YES Bank Limited Format'}
+          description="Technical Valuation Report with Schedule Approvals, Property Details & Floor Rates."
+          earliestVisit={earliestVisit}
+          projectCode={fields.caseRefNo || projectCode}
+        />
 
         {/* 1. Header & Branch */}
         <div id="yes-sec-header">
-          <Section title="Header & Branch Details">
+          <Section title="Header & Branch Details" number={1}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Branch Name">
                 <input
@@ -579,7 +576,7 @@ export default function YesBank({
 
         {/* 2. Basic Details */}
         <div id="yes-sec-basic">
-          <Section title="Basic Details">
+          <Section title="Basic Details" number={2}>
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Field label="Applicants Name">
@@ -654,7 +651,7 @@ export default function YesBank({
 
         {/* 3. Locality & Surroundings */}
         <div id="yes-sec-locality">
-          <Section title="Locality & Surroundings">
+          <Section title="Locality & Surroundings" number={3}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Zoning as per Master Plan / Development plan">
                 <input
@@ -745,7 +742,7 @@ export default function YesBank({
 
         {/* 4. Property Details */}
         <div id="yes-sec-property">
-          <Section title="Property Details">
+          <Section title="Property Details" number={4}>
             <Field label="Brief description of the property">
               <textarea
                 rows={4}
@@ -972,7 +969,7 @@ export default function YesBank({
 
         {/* 5. Sanction Plan Approval & Setbacks */}
         <div id="yes-sec-sanction">
-          <Section title="Sanction Plan Details">
+          <Section title="Sanction Plan Details" number={5}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Sanctioned plans details">
                 <input
@@ -1102,7 +1099,7 @@ export default function YesBank({
 
         {/* 6. Valuation & Rates */}
         <div id="yes-sec-valuation">
-          <Section title="Valuation & Rates">
+          <Section title="Valuation & Rates" number={6}>
             <div className="space-y-6">
               {/* Land + Construction Method */}
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-4">
@@ -1215,7 +1212,7 @@ export default function YesBank({
 
         {/* 7. Market Comparison, Stage & Remarks */}
         <div id="yes-sec-market">
-          <Section title="Market Comparison & Remarks">
+          <Section title="Market Comparison & Remarks" number={7}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Field label="Stage Progress (%)">
                 <input
@@ -1277,7 +1274,7 @@ export default function YesBank({
 
         {/* 8. Declaration & Sign Off */}
         <div id="yes-sec-declaration">
-          <Section title="Declaration & Sign-off">
+          <Section title="Declaration & Sign-off" number={8}>
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-2 text-xs text-slate-700 leading-relaxed">
               <p><strong>1.</strong> Our representative physically inspected the property.</p>
               <p><strong>2.</strong> We have no direct/indirect interest in the property valued.</p>
@@ -1316,8 +1313,9 @@ export default function YesBank({
         {/* 9. Attachments: Maps, Documents, Photographs */}
         <div id="yes-sec-attachments" className="space-y-6">
           <BaseDocumentsSection
-            title="Verified Property Documents"
+            title="Documents"
             sectionId="yes-sec-docs"
+            sectionNumber={9}
             documentImages={fields.documentImages || []}
             documentImageNames={fields.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -1338,8 +1336,9 @@ export default function YesBank({
           />
 
           <BaseMapsSection
-            title="Location Sketch & Route Maps"
+            title="Maps"
             sectionId="yes-sec-maps"
+            sectionNumber={10}
             locationMapImages={fields.locationMapImages || []}
             mouzaMapImages={fields.mouzaMapImages || []}
             sketchMapImages={fields.sketchMapImages || []}
@@ -1365,8 +1364,9 @@ export default function YesBank({
           />
 
           <BasePhotographsSection
-            title="Property Site Photographs"
+            title="Photographs"
             sectionId="yes-sec-photos"
+            sectionNumber={11}
             propertyImages={fields.propertyImages || []}
             propertyImageNames={fields.propertyImageNames || []}
             isReadOnly={isReadOnly}

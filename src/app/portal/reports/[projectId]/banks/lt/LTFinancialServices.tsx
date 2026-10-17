@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -17,7 +19,6 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
   ActiveConfigBanner,
@@ -437,16 +438,14 @@ export default function LTFinancialServices({
 
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8 pt-6">
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
-          <div>
-            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              <span>🏢 L&T Financial Services — LAP / TOPUP Format</span>
-            </h1>
-            <p className="text-xs text-slate-400 mt-1">
-              Standard 11-Section L&T Format with Configuration Matrix & Requirement Checklist.
-            </p>
-          </div>
-        </div>
+          <BankReportTitleCard
+        bankName="L&T Financial Services"
+        subclass="LAP / TOPUP Format"
+        title="Valuation Report Builder"
+        description="Standard 11-Section L&T Format with Configuration Matrix & Requirement Checklist."
+        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+        projectCode={projectCode}
+      />
 
         {/* Section I */}
         <div id="lt-sec-1" className={softCardCls}>
@@ -787,9 +786,9 @@ export default function LTFinancialServices({
         {/* Attachments */}
         <div id="lt-sec-docs">
           <BaseDocumentsSection
-            title="Verified Property Documents"
+            title="Documents" sectionNumber={10}
             sectionId="lt-sec-docs"
-            sectionNumber={10}
+            
             documentImages={formData.documentImages || []}
             documentImageNames={formData.documentImageNames || []}
             isReadOnly={isReadOnly}
@@ -812,9 +811,9 @@ export default function LTFinancialServices({
 
         <div id="lt-sec-maps">
           <BaseMapsSection
-            title="Location Sketch & Route Maps"
+            title="Maps" sectionNumber={11}
             sectionId="lt-sec-maps"
-            sectionNumber={11}
+            
             locationMapImages={formData.locationMapImages || []}
             mouzaMapImages={formData.mouzaMapImages || []}
             sketchMapImages={formData.sketchMapImages || []}
@@ -842,9 +841,9 @@ export default function LTFinancialServices({
 
         <div id="lt-sec-photos">
           <BasePhotographsSection
-            title="Property Photographs"
+            title="Photographs" sectionNumber={12}
             sectionId="lt-sec-photos"
-            sectionNumber={12}
+            
             propertyImages={formData.propertyImages || []}
             propertyImageNames={formData.propertyImageNames || []}
             isReadOnly={isReadOnly}

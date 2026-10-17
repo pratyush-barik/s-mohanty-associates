@@ -8,6 +8,8 @@ import * as XLSX from 'xlsx';
 import { formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFAdityaBirlaMLAPRenderer, MLAPReportFields } from '@/lib/banks/pdf-aditya-birla-mlap-renderer';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -27,7 +29,6 @@ import {
   AnnexureRefSelector,
   BaseAnnexureSection,
   fetchBytes,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   DEFAULT_DOCUMENT_LABEL,
   DEFAULT_PHOTO_LABEL,
@@ -1886,8 +1887,8 @@ export default function AdityaBirlaCapitalMLAP({
 
         {/* ═══ SECTION 10: DOCUMENTS ═══ */}
         <BaseDocumentsSection
-          title="Documents"
-          sectionNumber={10}
+          title="Documents" sectionNumber={10}
+          
           sectionId="section-10"
           documentImages={fields.documentImages || []}
           documentImageNames={fields.documentImageNames || []}
@@ -1943,7 +1944,7 @@ export default function AdityaBirlaCapitalMLAP({
 
         {/* ═══ SECTION 11: MAPS ═══ */}
         <BaseMapsSection
-          title="Maps"
+          title="Maps" sectionNumber={11}
           locationMapImages={fields.locationMapImages || (fields.locationMapImage ? [fields.locationMapImage] : [])}
           mouzaMapImages={fields.mouzaMapImages || (fields.mouzaMapImage ? [fields.mouzaMapImage] : [])}
           sketchMapImages={fields.sketchMapImages || []}
@@ -1972,7 +1973,6 @@ export default function AdityaBirlaCapitalMLAP({
           onReorderSketchMap={(newImgs) => handleReorderMap('sketchMapImages', newImgs)}
           onReorderCadastralMap={(newImgs) => handleReorderMap('cadastralMapImages', newImgs)}
           onReorderBdaMap={(newImgs) => handleReorderMap('bdaMapImages', newImgs)}
-          sectionNumber={11}
           sectionId="section-11"
         />
 

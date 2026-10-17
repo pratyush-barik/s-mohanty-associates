@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -20,7 +22,6 @@ import {
   BasePhotoBucketModal,
   fetchBytes,
   getFloorName,
-  getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   DEFAULT_DOCUMENT_LABEL,
   DEFAULT_PHOTO_LABEL,
@@ -1174,14 +1175,24 @@ export default function AxisAGRI({
     { id: 'sec-15', title: 'Valuation Report Checklist' },
     { id: 'sec-16', title: 'Documents' },
     { id: 'sec-17', title: 'Maps' },
-    { id: 'sec-18', title: 'Property Photographs' },
+    { id: 'sec-18', title: 'Photographs' },
   ];
 
   return (
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* Main Container */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        {/* Top Header & Bank Banner */}
+                {/* Standardized Title Card */}
+        <BankReportTitleCard
+          bankName="Axis Bank"
+          subclass="Agri Business Format"
+          title="Valuation Report Builder"
+          description="Axis Bank Agricultural Land & Rural Valuation Engine."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+        />
+
+{/* Top Header & Bank Banner */}
         <ActiveConfigBanner
           clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
@@ -3828,8 +3839,8 @@ export default function AxisAGRI({
             SECTION 16: DOCUMENTS
         ═══════════════════════════════════════════════════════════════ */}
         <BaseDocumentsSection
-          title="Documents"
-          sectionNumber={16}
+          title="Documents" sectionNumber={16}
+          
           sectionId="sec-16"
           documentImages={fields.documentImages || []}
           documentImageNames={fields.documentImageNames || []}
@@ -3845,8 +3856,8 @@ export default function AxisAGRI({
             SECTION 17: MAPS
         ═══════════════════════════════════════════════════════════════ */}
         <BaseMapsSection
-          title="Maps"
-          sectionNumber={17}
+          title="Maps" sectionNumber={17}
+          
           sectionId="sec-17"
           isReadOnly={isReadOnly}
           hasExternalCoordinatesField={true}
@@ -3881,8 +3892,8 @@ export default function AxisAGRI({
             SECTION 18: PROPERTY PHOTOGRAPHS (DUAL MODALITY: DEVICE + BUCKET)
         ═══════════════════════════════════════════════════════════════ */}
         <BasePhotographsSection
-          title="Property Photographs"
-          sectionNumber={18}
+          title="Photographs" sectionNumber={18}
+          
           sectionId="sec-18"
           propertyImages={fields.propertyImages || []}
           propertyImageNames={fields.propertyImageNames || []}

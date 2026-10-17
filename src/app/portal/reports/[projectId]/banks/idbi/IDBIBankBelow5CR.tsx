@@ -6,6 +6,8 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  getEarliestFieldVisit,
+  BankReportTitleCard,
   Section,
   Field,
   inputCls,
@@ -52,6 +54,7 @@ export default function IDBIBankBelow5CR({
 }: IDBIBelow5CRProps) {
   const router = useRouter();
   const isReadOnly = isReadOnlyProp || status === 'COMPLETED';
+  const earliestVisit = useMemo(() => getEarliestFieldVisit(bucketImages, prefill), [bucketImages, prefill]);
   const [saving, setSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
 
@@ -367,38 +370,17 @@ export default function IDBIBankBelow5CR({
       />
 
       {/* ── Top Header Card & Actions ── */}
-      <div className="card p-6 bg-white border border-slate-200 shadow-xs rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            IDBI BANK — BELOW 5CR
-          </span>
-          <h2 className="text-xl font-bold text-slate-900 mt-2">Valuation Report Questionnaire</h2>
-          <p className="text-xs text-slate-500">
-            Standard Statutory Bank Format with Sections 1 to 15, Details of Valuation & Value of the Property Matrix.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          <button
-            type="button"
-            onClick={handleSaveInternal}
-            disabled={saving || isReadOnly}
-            className="btn btn-secondary text-xs px-4 py-2"
-          >
-            {saving ? 'Saving...' : saveSuccess ? '✓ Saved' : 'Save Draft'}
-          </button>
-          <button
-            type="button"
-            onClick={handleDownloadPdfInternal}
-            className="btn btn-primary text-xs px-4 py-2 flex items-center gap-2"
-          >
-            <span>Download PDF</span>
-          </button>
-        </div>
-      </div>
+      <BankReportTitleCard
+        bankName="IDBI Bank"
+        subclass="Below 5CR (Land & Building)"
+        title="Valuation Report Builder"
+        description="Standard Statutory Bank Format with Sections 1 to 15, Details of Valuation & Value of the Property Matrix."
+        earliestVisit={earliestVisit}
+        projectCode={projectCode}
+      />
 
       {/* ── Top Header Banner Information ── */}
-      <Section title="Top Header & Reference Details" defaultOpen>
+      <Section title="Top Header & Reference Details" number={1} defaultOpen>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="To Authority / Addressee">
             <input
@@ -452,7 +434,7 @@ export default function IDBIBankBelow5CR({
       </Section>
 
       {/* ── SECTION 1: Customer Details ── */}
-      <Section title="1. Customer Details" defaultOpen>
+      <Section title="Customer Details" number={2} defaultOpen>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Name of the Owner & Address" className="md:col-span-2">
             <textarea
@@ -490,7 +472,7 @@ export default function IDBIBankBelow5CR({
       </Section>
 
       {/* ── SECTION 2: Property Details ── */}
-      <Section title="2. Property Details" defaultOpen>
+      <Section title="Property Details" number={3} defaultOpen>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Address of the Property" className="md:col-span-2">
             <textarea
@@ -521,7 +503,7 @@ export default function IDBIBankBelow5CR({
       </Section>
 
       {/* ── SECTION 3: Document Details ── */}
-      <Section title="3. Document Details" defaultOpen>
+      <Section title="Document Details" number={4} defaultOpen>
         <div className="space-y-4">
           <div className="border border-slate-200 rounded-lg p-3 space-y-3">
             <h4 className="text-xs font-semibold text-slate-700">Layout Plan</h4>
@@ -625,7 +607,7 @@ export default function IDBIBankBelow5CR({
       </Section>
 
       {/* ── SECTION 4: Physical Details ── */}
-      <Section title="4. Physical Details (Boundaries, Rooms, Floors & Structure)" defaultOpen>
+      <Section title="Physical Details (Boundaries, Rooms, Floors & Structure)" number={5} defaultOpen>
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="border border-slate-200 rounded-lg p-3 space-y-2">
@@ -820,7 +802,7 @@ export default function IDBIBankBelow5CR({
       </Section>
 
       {/* ── SECTION 5, 6, 7: Tenure, Construction & Violations ── */}
-      <Section title="5, 6 & 7. Tenure, Construction & Violations">
+      <Section title="5, 6 & 7. Tenure, Construction & Violations" number={6}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Field label="Status of Tenure">
             <input
@@ -882,7 +864,7 @@ export default function IDBIBankBelow5CR({
       </Section>
 
       {/* ── SECTION 8: Area Details of the Property ── */}
-      <Section title="8. Area Details (Site, Carpet, Saleable & Block Plinth Areas)">
+      <Section title="Area Details (Site, Carpet, Saleable & Block Plinth Areas)" number={7}>
         <div className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             <Field label="Site Area (Approved)">
@@ -1008,7 +990,7 @@ export default function IDBIBankBelow5CR({
       </Section>
 
       {/* ── DETAILS OF VALUATION (Floor-wise Construction Grid) ── */}
-      <Section title="Details of Valuation (Floor-wise Plinth Replacement & Depreciation)">
+      <Section title="Details of Valuation (Floor-wise Plinth Replacement & Depreciation)" number={8}>
         <div className="space-y-3">
           <div className="overflow-x-auto">
             <table className="w-full text-xs text-left border border-slate-200">
@@ -1117,7 +1099,7 @@ export default function IDBIBankBelow5CR({
       </Section>
 
       {/* ── VALUE OF THE PROPERTY (4-Row x 4-Col Matrix) ── */}
-      <Section title="Value of the Property (4-Row x 4-Column Matrix)" defaultOpen>
+      <Section title="Value of the Property (4-Row x 4-Column Matrix)" number={9} defaultOpen>
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left border border-slate-200">
             <thead className="bg-amber-50 text-slate-800 font-bold">
@@ -1295,7 +1277,7 @@ export default function IDBIBankBelow5CR({
       </Section>
 
       {/* ── Justification Letter ── */}
-      <Section title="Justification Letter">
+      <Section title="Justification Letter" number={10}>
         <div className="space-y-4">
           <Field label="Subject">
             <input
@@ -1318,7 +1300,7 @@ export default function IDBIBankBelow5CR({
 
       {/* ── Section: Base Documents ── */}
       <BaseDocumentsSection
-        title="Verified Property Documents"
+        title="Documents" sectionNumber={11}
         documentImages={fields.documentImages || []}
         documentImageNames={fields.documentImageNames || []}
         isReadOnly={isReadOnly}
@@ -1328,7 +1310,7 @@ export default function IDBIBankBelow5CR({
 
       {/* ── Section: Base Maps ── */}
       <BaseMapsSection
-        title="Location Maps"
+        title="Maps" sectionNumber={12}
         locationMapImages={fields.locationMapImages || []}
         mouzaMapImages={fields.mouzaMapImages || []}
         sketchMapImages={fields.sketchMapImages || []}
@@ -1345,7 +1327,7 @@ export default function IDBIBankBelow5CR({
 
       {/* ── Section: Photographs ── */}
       <BasePhotographsSection
-        title="Property Photographs"
+        title="Photographs" sectionNumber={13}
         propertyImages={fields.propertyImages || []}
         propertyImageNames={fields.propertyImageNames || []}
         isReadOnly={isReadOnly}
