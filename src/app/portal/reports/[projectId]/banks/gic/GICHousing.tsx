@@ -1488,6 +1488,277 @@ function PlanningApprovalsSection({
   );
 }
 
+// ─── Section 5: Building Details ────────────────────────────────────────────
+
+function BuildingDetailsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+  projectCode?: string;
+}) {
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Construction & Lifespan (Light Purple #f3e5f5) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-purple-200 shadow-sm"
+        style={{ backgroundColor: '#f3e5f5' }}
+      >
+        <h3 className="font-bold text-gray-800 text-sm md:text-base border-b border-purple-200 pb-2 uppercase tracking-wide">
+          Construction & Lifespan
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* MARKETABILITY OF THE PROPERTY */}
+          <Field label={<span className="font-semibold text-gray-700">MARKETABILITY OF THE PROPERTY</span>}>
+            <CustomSelect
+              value={fields.gicMarketability || ''}
+              customValue={fields.gicMarketabilityCustom || ''}
+              onChange={(val) => handleChange('gicMarketability', val)}
+              onCustomChange={(val) => handleChange('gicMarketabilityCustom', val)}
+              options={[
+                { value: 'Good', label: 'Good' },
+                { value: 'Average', label: 'Average' },
+                { value: 'Poor', label: 'Poor' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select marketability..."
+            />
+          </Field>
+
+          {/* AGE OF THE BUILDING */}
+          <Field label={<span className="font-semibold text-gray-700">AGE OF THE BUILDING</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.gicAgeOfBuilding ?? (fields.ageOfProperty || '')}
+              onChange={(e) => handleChange('gicAgeOfBuilding', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. 5 Years"
+            />
+          </Field>
+
+          {/* FUTURE RESIDUAL LIFE EXPECTED */}
+          <Field label={<span className="font-semibold text-gray-700">FUTURE RESIDUAL LIFE EXPECTED</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.gicFutureResidualLife ?? (fields.estimatedFutureLife || '')}
+              onChange={(e) => handleChange('gicFutureResidualLife', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. 55 Years"
+            />
+          </Field>
+
+          {/* FLOOR SPACE INDEX */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">FLOOR SPACE INDEX</span>
+                <NaCheckbox
+                  checked={!!fields.gicFloorSpaceIndexNA}
+                  onChange={(checked) => {
+                    handleChange('gicFloorSpaceIndexNA', checked);
+                    if (checked) handleChange('gicFloorSpaceIndex', 'NA');
+                    else handleChange('gicFloorSpaceIndex', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.gicFloorSpaceIndexNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicFloorSpaceIndexNA ? 'NA' : (fields.gicFloorSpaceIndex || '')}
+              onChange={(e) => handleChange('gicFloorSpaceIndex', e.target.value)}
+              disabled={isReadOnly || !!fields.gicFloorSpaceIndexNA}
+              placeholder="e.g. 1.50"
+            />
+          </Field>
+
+          {/* QUALITY OF CONSTRUCTION */}
+          <Field label={<span className="font-semibold text-gray-700">QUALITY OF CONSTRUCTION</span>}>
+            <CustomSelect
+              value={fields.gicQualityOfConstruction || ''}
+              customValue={fields.gicQualityOfConstructionCustom || ''}
+              onChange={(val) => handleChange('gicQualityOfConstruction', val)}
+              onCustomChange={(val) => handleChange('gicQualityOfConstructionCustom', val)}
+              options={[
+                { value: 'Good', label: 'Good' },
+                { value: 'Average', label: 'Average' },
+                { value: 'Poor', label: 'Poor' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select quality..."
+            />
+          </Field>
+
+          {/* WHETHER OCCUPATION CERTIFICATE IS OBTAINED */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">WHETHER OCCUPATION CERTIFICATE IS OBTAINED</span>
+                <NaCheckbox
+                  checked={!!fields.gicOccupationCertificateNA}
+                  onChange={(checked) => {
+                    handleChange('gicOccupationCertificateNA', checked);
+                    if (checked) handleChange('gicOccupationCertificate', 'NA');
+                    else handleChange('gicOccupationCertificate', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.gicOccupationCertificateNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicOccupationCertificateNA ? 'NA' : (fields.gicOccupationCertificate || '')}
+              onChange={(e) => handleChange('gicOccupationCertificate', e.target.value)}
+              disabled={isReadOnly || !!fields.gicOccupationCertificateNA}
+              placeholder="e.g. Obtained / Under Process / Not Obtained"
+            />
+          </Field>
+        </div>
+
+        {/* 2-col fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
+          {/* IF IT IS A FLAT WHETHER LIFT FACILITY IS AVAILABLE? */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">
+                  IF IT IS A FLAT WHETHER LIFT FACILITY IS AVAILABLE?
+                </span>
+                <NaCheckbox
+                  checked={!!fields.gicLiftFacilityAvailableNA}
+                  onChange={(checked) => {
+                    handleChange('gicLiftFacilityAvailableNA', checked);
+                    if (checked) handleChange('gicLiftFacilityAvailable', 'N.A.');
+                    else handleChange('gicLiftFacilityAvailable', 'No');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="flex flex-wrap gap-4 pt-1">
+              {['Yes', 'No', 'N.A.'].map((opt) => (
+                <label
+                  key={opt}
+                  className={`flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-lg border shadow-sm transition-colors ${
+                    fields.gicLiftFacilityAvailableNA
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                      : 'bg-white text-gray-700 cursor-pointer border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="gicLiftFacilityAvailable"
+                    value={opt}
+                    checked={fields.gicLiftFacilityAvailable === opt && !fields.gicLiftFacilityAvailableNA}
+                    onChange={() => handleChange('gicLiftFacilityAvailable', opt)}
+                    disabled={isReadOnly || !!fields.gicLiftFacilityAvailableNA}
+                    className="text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+          </Field>
+
+          {/* DETAILS OF SPECIFICATION TO BE GIVEN */}
+          <Field label={<span className="font-semibold text-gray-700">DETAILS OF SPECIFICATION TO BE GIVEN</span>}>
+            <CustomSelect
+              value={fields.gicSpecificationClass || ''}
+              customValue={fields.gicSpecificationClassCustom || ''}
+              onChange={(val) => handleChange('gicSpecificationClass', val)}
+              onCustomChange={(val) => handleChange('gicSpecificationClassCustom', val)}
+              options={[
+                { value: 'Class-I', label: 'Class-I' },
+                { value: 'Class-II', label: 'Class-II' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select specification class..."
+            />
+          </Field>
+        </div>
+
+        {/* Full-width textareas */}
+        <div className="space-y-4 pt-1">
+          {/* 5. SPECIFICATION DETAILS */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">5. SPECIFICATION DETAILS</span>
+                <NaCheckbox
+                  checked={!!fields.gicSpecificationDetailsNA}
+                  onChange={(checked) => {
+                    handleChange('gicSpecificationDetailsNA', checked);
+                    if (checked) handleChange('gicSpecificationDetails', 'NA');
+                    else handleChange('gicSpecificationDetails', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <textarea
+              rows={3}
+              className={`${inputCls} resize-y ${
+                fields.gicSpecificationDetailsNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicSpecificationDetailsNA ? 'NA' : (fields.gicSpecificationDetails || '')}
+              onChange={(e) => handleChange('gicSpecificationDetails', e.target.value)}
+              disabled={isReadOnly || !!fields.gicSpecificationDetailsNA}
+              placeholder="Enter detailed specification details (foundation, structure, flooring, doors/windows, fittings)..."
+            />
+          </Field>
+
+          {/* DETAILS OF DIMENSIONS OF EACH ROOM... */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">
+                  DETAILS OF DIMENSIONS OF EACH ROOM...
+                </span>
+                <NaCheckbox
+                  checked={!!fields.gicRoomDimensionsDetailsNA}
+                  onChange={(checked) => {
+                    handleChange('gicRoomDimensionsDetailsNA', checked);
+                    if (checked) handleChange('gicRoomDimensionsDetails', 'NA');
+                    else handleChange('gicRoomDimensionsDetails', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <textarea
+              rows={3}
+              className={`${inputCls} resize-y ${
+                fields.gicRoomDimensionsDetailsNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicRoomDimensionsDetailsNA ? 'NA' : (fields.gicRoomDimensionsDetails || '')}
+              onChange={(e) => handleChange('gicRoomDimensionsDetails', e.target.value)}
+              disabled={isReadOnly || !!fields.gicRoomDimensionsDetailsNA}
+              placeholder="Enter dimensions of each room / plinth / carpet area details..."
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── GIC Housing Finance BankConfig ─────────────────────────────────────────
 
 export const GIC_HOUSING_CONFIG: BankConfig = {
@@ -1518,6 +1789,7 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     { id: 'gic-section-2', title: 'VALUATION REPORT' },
     { id: 'gic-section-3', title: 'PROPERTY DETAILS' },
     { id: 'gic-section-4', title: 'PLANNING APPROVALS' },
+    { id: 'gic-section-5', title: 'BUILDING DETAILS' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -1609,6 +1881,26 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     gicDeviationDrawingActualNA: false,
     gicDeviationsNature: 'None',
     gicDeviationsNatureNA: false,
+
+    // Section 5: Building Details
+    gicMarketability: 'Good',
+    gicMarketabilityCustom: '',
+    gicAgeOfBuilding: '',
+    gicFutureResidualLife: '55 Years',
+    gicFloorSpaceIndex: '',
+    gicFloorSpaceIndexNA: false,
+    gicSpecificationDetails: '',
+    gicSpecificationDetailsNA: false,
+    gicQualityOfConstruction: 'Good',
+    gicQualityOfConstructionCustom: '',
+    gicOccupationCertificate: '',
+    gicOccupationCertificateNA: false,
+    gicLiftFacilityAvailable: 'N.A.',
+    gicLiftFacilityAvailableNA: false,
+    gicSpecificationClass: 'Class-I',
+    gicSpecificationClassCustom: '',
+    gicRoomDimensionsDetails: '',
+    gicRoomDimensionsDetailsNA: false,
   },
   extraSectionsStart: [
     {
@@ -1660,6 +1952,20 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
         <PlanningApprovalsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          projectCode={projectCode}
+        />
+      ),
+    },
+    {
+      id: 'gic-section-5',
+      title: 'BUILDING DETAILS',
+      number: 5,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
+        <BuildingDetailsSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
