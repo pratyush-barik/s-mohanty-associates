@@ -10,9 +10,9 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 
 | Status Category | Count | Description |
 | :--- | :---: | :--- |
-| **✅ Completed** | **24 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
+| **✅ Completed** | **25 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
 | **🔨 In Progress** | **34 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
-| **⏳ Not Started** | **20 formats (18 banks)** | Directory reserved / pending base component creation |
+| **⏳ Not Started** | **19 formats (17 banks)** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
@@ -88,7 +88,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **42** | **PUNJAB & SIND BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **43** | **PUNJAB NATIONAL BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **44** | **PURPLE FINANCE** | `Standard` | ✅ Dedicated Builder & Renderer | ✅ Completed |
-| **45** | **SAMMUNATI FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **45** | **SAMMUNATI FINANCE** | `Standard` | ✅ Dedicated Builder & Renderer | ✅ Completed |
 | **46** | **SHRIRAM FINANCE** | `Standard` | ✅ Dedicated Builder & Renderer | ✅ Completed |
 | **47** | **SMFG INDIA-FULLERTON** | `Standard` | ✅ Dedicated Builder & Renderer | ✅ Completed |
 | **48** | **STATE BANK OF INDIA-SBI** | | | |
@@ -133,6 +133,7 @@ Templates with complete interactive report draft builder UI and full PDF rendere
 | **11.2** | BANDHAN BANK | `SME` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanSME.tsx` | `src/lib/banks/pdf-bandhan-sme-renderer.ts` | ✅ Completed |
 | **12** | BANK OF BARODA-BOB | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-baroda/BankOfBaroda.tsx` | `src/lib/banks/pdf-bank-of-baroda-renderer.ts` | ✅ Completed |
 | **44** | PURPLE FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/purple/PurpleFinance.tsx` | `src/lib/banks/pdf-purple-finance-renderer.ts` | ✅ Completed |
+| **45** | SAMMUNATI FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/sammunati/SammunatiFinance.tsx` | `src/lib/banks/pdf-sammunati-finance-renderer.ts` | ✅ Completed |
 | **46** | SHRIRAM FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/shriram/ShriramFinance.tsx` | `src/lib/banks/pdf-shriram-finance-renderer.ts` | ✅ Completed |
 | **47** | SMFG INDIA-FULLERTON | `Standard` | `src/app/portal/reports/[projectId]/banks/smfg/SMFGIndiaFullerton.tsx` | `src/lib/banks/pdf-smfg-india-fullerton-renderer.ts` | ✅ Completed |
 | **49** | SURYODAY SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/suryoday/SuryodaySmallFinanceBank.tsx` | `src/lib/banks/pdf-suryoday-renderer.ts` | ✅ Completed |
