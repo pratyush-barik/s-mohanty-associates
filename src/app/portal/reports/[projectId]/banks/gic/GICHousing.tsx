@@ -123,6 +123,9 @@ THE BRANCH MANAGER,
 GIC HOUSING FINANCE LTD,
 BHUBANESWAR BRANCH`;
 
+const DEFAULT_PANEL_VALUER = 'Er. Satyajit Mohanty';
+const DEFAULT_VALUER_CODE = 'SMA/GIC/01';
+
 // ─── Section 1: Report of Valuation of Immovable Property ───────────────────
 
 function CoverPageDetailsContainer({
@@ -447,6 +450,180 @@ function CoverPageDetailsContainer({
   );
 }
 
+// ─── Section 2: Valuation Report ────────────────────────────────────────────
+
+function BasicValuationDetailsContainer({
+  fields,
+  handleChange,
+  isReadOnly,
+  projectCode,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+  projectCode?: string;
+}) {
+  // 1. FILE NO (Input Box + NA Checkbox)
+  const isFileNoNA = !!fields.gicFileNoNA;
+  const effectiveFileNo = isFileNoNA ? 'NA' : (fields.gicFileNo ?? projectCode ?? '');
+
+  // 2. NAME OF PANEL VALUER (Prefill field + Edit Switch)
+  const effectivePanelValuer = fields.gicNameOfPanelValuerEditOn
+    ? (fields.gicNameOfPanelValuer ?? '')
+    : (fields.gicNameOfPanelValuer || DEFAULT_PANEL_VALUER);
+
+  // 3. CODE NO (Prefill field + Edit Switch)
+  const effectiveCodeNo = fields.gicCodeNoEditOn
+    ? (fields.gicCodeNo ?? '')
+    : (fields.gicCodeNo || DEFAULT_VALUER_CODE);
+
+  // 4. DATE OF INSPECTION (Date Picker)
+  const effectiveDateOfInspection = fields.gicDateOfInspection || '';
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Basic Valuation Details (Light Blue #e3f2fd) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-blue-200 shadow-sm"
+        style={{ backgroundColor: '#e3f2fd' }}
+      >
+        <h3 className="font-bold text-gray-800 text-sm md:text-base border-b border-blue-200 pb-2 uppercase tracking-wide">
+          Basic Valuation Details
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* FILE NO */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">FILE NO</span>
+                <NaCheckbox
+                  checked={isFileNoNA}
+                  onChange={(checked) => {
+                    handleChange('gicFileNoNA', checked);
+                    if (checked) {
+                      handleChange('gicFileNo', 'NA');
+                    } else {
+                      handleChange('gicFileNo', projectCode || '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                isFileNoNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={effectiveFileNo}
+              onChange={(e) => handleChange('gicFileNo', e.target.value)}
+              disabled={isReadOnly || isFileNoNA}
+              placeholder="e.g. GIC/2026/FN-01"
+            />
+          </Field>
+
+          {/* NAME OF PANEL VALUER */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">NAME OF PANEL VALUER</span>
+                <EditSwitch
+                  checked={!!fields.gicNameOfPanelValuerEditOn}
+                  onChange={(v) => {
+                    handleChange('gicNameOfPanelValuerEditOn', v);
+                    if (v && !fields.gicNameOfPanelValuer) {
+                      handleChange('gicNameOfPanelValuer', DEFAULT_PANEL_VALUER);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className={`${inputCls} pr-8 ${
+                  !fields.gicNameOfPanelValuerEditOn
+                    ? 'bg-gray-100 cursor-not-allowed font-medium text-gray-800'
+                    : 'bg-white'
+                }`}
+                value={effectivePanelValuer}
+                onChange={(e) => handleChange('gicNameOfPanelValuer', e.target.value)}
+                disabled={isReadOnly || !fields.gicNameOfPanelValuerEditOn}
+                placeholder="Enter valuer name..."
+              />
+              {!fields.gicNameOfPanelValuerEditOn && (
+                <div
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                  title="Prefilled with panel valuer name"
+                >
+                  <Lock className="w-4 h-4 text-gray-400" />
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* CODE NO */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">CODE NO</span>
+                <EditSwitch
+                  checked={!!fields.gicCodeNoEditOn}
+                  onChange={(v) => {
+                    handleChange('gicCodeNoEditOn', v);
+                    if (v && !fields.gicCodeNo) {
+                      handleChange('gicCodeNo', DEFAULT_VALUER_CODE);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className={`${inputCls} pr-8 ${
+                  !fields.gicCodeNoEditOn
+                    ? 'bg-gray-100 cursor-not-allowed font-medium text-gray-800'
+                    : 'bg-white'
+                }`}
+                value={effectiveCodeNo}
+                onChange={(e) => handleChange('gicCodeNo', e.target.value)}
+                disabled={isReadOnly || !fields.gicCodeNoEditOn}
+                placeholder="Enter code number..."
+              />
+              {!fields.gicCodeNoEditOn && (
+                <div
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+                  title="Prefilled with valuer code"
+                >
+                  <Lock className="w-4 h-4 text-gray-400" />
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* DATE OF INSPECTION */}
+          <Field label={<span className="font-semibold text-gray-700">DATE OF INSPECTION</span>}>
+            <input
+              type="date"
+              className={`${inputCls} bg-white`}
+              value={effectiveDateOfInspection}
+              onChange={(e) => handleChange('gicDateOfInspection', e.target.value)}
+              disabled={isReadOnly}
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── GIC Housing Finance BankConfig ─────────────────────────────────────────
 
 export const GIC_HOUSING_CONFIG: BankConfig = {
@@ -474,6 +651,7 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
   hideDefaultDeclarationAndCertificate: true,
   navSections: [
     { id: 'gic-section-1', title: 'REPORT OF VALUATION OF IMMOVABLE PROPERTY' },
+    { id: 'gic-section-2', title: 'VALUATION REPORT' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -499,6 +677,13 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     gicTo: DEFAULT_TO,
     gicSubject: '',
     gicSubjectEditOn: false,
+    gicFileNo: '',
+    gicFileNoNA: false,
+    gicNameOfPanelValuer: DEFAULT_PANEL_VALUER,
+    gicNameOfPanelValuerEditOn: false,
+    gicCodeNo: DEFAULT_VALUER_CODE,
+    gicCodeNoEditOn: false,
+    gicDateOfInspection: '',
   },
   extraSectionsStart: [
     {
@@ -508,6 +693,20 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
         <CoverPageDetailsContainer
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          projectCode={projectCode}
+        />
+      ),
+    },
+    {
+      id: 'gic-section-2',
+      title: 'VALUATION REPORT',
+      number: 2,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
+        <BasicValuationDetailsContainer
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
