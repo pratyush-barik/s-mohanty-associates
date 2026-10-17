@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock } from 'lucide-react';
+import { Lock, Plus, Trash2 } from 'lucide-react';
 import { rupeesInWords } from '@/lib/numberToWords';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -126,6 +126,54 @@ BHUBANESWAR BRANCH`;
 const DEFAULT_PANEL_VALUER = 'Er. Satyajit Mohanty';
 const DEFAULT_VALUER_CODE = 'SMA/GIC/01';
 
+export interface ValuationHouseRow {
+  id: string;
+  description: string;
+  areaSqft: string;
+  unitRate: string;
+  estimatedMarketValue: string;
+  estimatedMarketValueEditOn: boolean;
+  guidelineUnitRate: string;
+  guidelineValue: string;
+  guidelineValueEditOn: boolean;
+}
+
+const DEFAULT_HOUSE_ROWS: ValuationHouseRow[] = [
+  {
+    id: 'row-land',
+    description: 'Land',
+    areaSqft: '',
+    unitRate: '',
+    estimatedMarketValue: '',
+    estimatedMarketValueEditOn: false,
+    guidelineUnitRate: '',
+    guidelineValue: '',
+    guidelineValueEditOn: false,
+  },
+  {
+    id: 'row-building',
+    description: 'Building',
+    areaSqft: '',
+    unitRate: '',
+    estimatedMarketValue: '',
+    estimatedMarketValueEditOn: false,
+    guidelineUnitRate: '',
+    guidelineValue: '',
+    guidelineValueEditOn: false,
+  },
+  {
+    id: 'row-amenities',
+    description: 'Amenities',
+    areaSqft: '',
+    unitRate: '',
+    estimatedMarketValue: '',
+    estimatedMarketValueEditOn: false,
+    guidelineUnitRate: '',
+    guidelineValue: '',
+    guidelineValueEditOn: false,
+  },
+];
+
 // ─── Section 1: Report of Valuation of Immovable Property ───────────────────
 
 function CoverPageDetailsContainer({
@@ -146,6 +194,8 @@ function CoverPageDetailsContainer({
 
   // 2. Value of the property (Auto-calculate Number & Words)
   const autoCalculatedValue =
+    fields.gicTotalValueBeforeRenovation ||
+    fields.gicFlatMarketValue ||
     fields.gicTotalValuation ||
     fields.presentMarketValue ||
     fields.netValue ||
@@ -1759,6 +1809,646 @@ function BuildingDetailsSection({
   );
 }
 
+// ─── Section 6: Valuation Details ──────────────────────────────────────────
+
+function ValuationDetailsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+  projectCode?: string;
+}) {
+  const houseRows: ValuationHouseRow[] =
+    fields.gicHouseValuationRows && Array.isArray(fields.gicHouseValuationRows) && fields.gicHouseValuationRows.length > 0
+      ? fields.gicHouseValuationRows
+      : DEFAULT_HOUSE_ROWS;
+
+  const updateHouseRow = (index: number, patch: Partial<ValuationHouseRow>) => {
+    const updated = houseRows.map((r, idx) => {
+      if (idx !== index) return r;
+      const next = { ...r, ...patch };
+      const area = parseFloat(next.areaSqft) || 0;
+      if (!next.estimatedMarketValueEditOn) {
+        const rate = parseFloat(next.unitRate) || 0;
+        next.estimatedMarketValue = area && rate ? String(Math.round(area * rate)) : '';
+      }
+      if (!next.guidelineValueEditOn) {
+        const glRate = parseFloat(next.guidelineUnitRate) || 0;
+        next.guidelineValue = area && glRate ? String(Math.round(area * glRate)) : '';
+      }
+      return next;
+    });
+    handleChange('gicHouseValuationRows', updated);
+
+    if (!fields.gicTotalValueBeforeRenovationEditOn) {
+      const sum = updated.reduce((s, r) => {
+        const area = parseFloat(r.areaSqft) || 0;
+        const rate = parseFloat(r.unitRate) || 0;
+        const val = r.estimatedMarketValueEditOn ? parseFloat(r.estimatedMarketValue) || 0 : area * rate;
+        return s + val;
+      }, 0);
+      if (sum > 0) {
+        handleChange('gicTotalValueBeforeRenovation', String(Math.round(sum)));
+      }
+    }
+  };
+
+  const addHouseRow = () => {
+    const newRow: ValuationHouseRow = {
+      id: `row-${Date.now()}`,
+      description: 'Amenities / Other',
+      areaSqft: '',
+      unitRate: '',
+      estimatedMarketValue: '',
+      estimatedMarketValueEditOn: false,
+      guidelineUnitRate: '',
+      guidelineValue: '',
+      guidelineValueEditOn: false,
+    };
+    handleChange('gicHouseValuationRows', [...houseRows, newRow]);
+  };
+
+  const removeHouseRow = (index: number) => {
+    if (houseRows.length <= 1) return;
+    const updated = houseRows.filter((_, idx) => idx !== index);
+    handleChange('gicHouseValuationRows', updated);
+  };
+
+  // House sum of market values
+  const totalSumHouseMarketValue = useMemo(() => {
+    return houseRows.reduce((sum, r) => {
+      const area = parseFloat(r.areaSqft) || 0;
+      const rate = parseFloat(r.unitRate) || 0;
+      const val = r.estimatedMarketValueEditOn
+        ? parseFloat(r.estimatedMarketValue) || 0
+        : area * rate;
+      return sum + val;
+    }, 0);
+  }, [houseRows]);
+
+  const effectiveTotalBeforeRenovation = fields.gicTotalValueBeforeRenovationEditOn
+    ? (fields.gicTotalValueBeforeRenovation ?? '')
+    : (totalSumHouseMarketValue > 0 ? String(Math.round(totalSumHouseMarketValue)) : (fields.gicTotalValueBeforeRenovation || ''));
+
+  // Flat calculations
+  const flatArea = parseFloat(fields.gicFlatBua) || parseFloat(fields.gicFlatCarpetArea) || 0;
+  const flatAdoptedRate = parseFloat(fields.gicFlatAdoptedRate) || 0;
+  const flatGuidelineRate = parseFloat(fields.gicFlatGuidelineRate) || 0;
+
+  const autoFlatMarketVal = flatArea && flatAdoptedRate ? flatArea * flatAdoptedRate : 0;
+  const effectiveFlatMarketVal = fields.gicFlatMarketValueEditOn
+    ? (fields.gicFlatMarketValue ?? '')
+    : (autoFlatMarketVal > 0 ? String(Math.round(autoFlatMarketVal)) : (fields.gicFlatMarketValue || ''));
+
+  const autoFlatGuidelineVal = flatArea && flatGuidelineRate ? flatArea * flatGuidelineRate : 0;
+  const effectiveFlatGuidelineVal = fields.gicFlatGuidelineValueEditOn
+    ? (fields.gicFlatGuidelineValue ?? '')
+    : (autoFlatGuidelineVal > 0 ? String(Math.round(autoFlatGuidelineVal)) : (fields.gicFlatGuidelineValue || ''));
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Container 1: Table A: Valuation of Property (If it is a House) ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-cyan-200 shadow-sm"
+        style={{ backgroundColor: '#e0f7fa' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            A. VALUATION OF PROPERTY ( IF IT IS A HOUSE )
+          </h3>
+          <div className="flex items-center gap-2 bg-white/70 px-3 py-1.5 rounded-lg border border-cyan-300">
+            <span className="text-xs font-semibold text-gray-700">Entire Table NA:</span>
+            <NaCheckbox
+              checked={!!fields.gicValuationHouseNA}
+              onChange={(checked) => handleChange('gicValuationHouseNA', checked)}
+              disabled={isReadOnly}
+            />
+          </div>
+        </div>
+
+        {fields.gicValuationHouseNA ? (
+          <div className="p-4 bg-white/80 border border-cyan-300 rounded-lg text-sm text-cyan-900 font-medium flex items-center justify-between">
+            <span>Table A (House Valuation) has been marked as Not Applicable (NA).</span>
+            <button
+              type="button"
+              onClick={() => handleChange('gicValuationHouseNA', false)}
+              disabled={isReadOnly}
+              className="text-xs font-bold text-cyan-800 underline hover:text-cyan-950"
+            >
+              Unmark NA
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* Table */}
+            <div className="overflow-x-auto rounded-lg border border-cyan-300 bg-white shadow-sm">
+              <table className="w-full text-xs text-left border-collapse min-w-[800px]">
+                <thead>
+                  <tr className="bg-cyan-100/70 border-b border-cyan-200 text-gray-800 font-semibold uppercase tracking-wider">
+                    <th className="py-2.5 px-3 w-10 text-center">#</th>
+                    <th className="py-2.5 px-3 min-w-[130px]">DESCRIPTION</th>
+                    <th className="py-2.5 px-3 min-w-[100px] text-right">AREA (SQFT)</th>
+                    <th className="py-2.5 px-3 min-w-[110px] text-right">UNIT RATE (RS.)</th>
+                    <th className="py-2.5 px-3 min-w-[185px] text-right">ESTIMATED MARKET VALUE (RS.)</th>
+                    <th className="py-2.5 px-3 min-w-[110px] text-right">UNIT RATE (RS.) [Guideline]</th>
+                    <th className="py-2.5 px-3 min-w-[185px] text-right">GUIDELINE VALUE (RS.)</th>
+                    {!isReadOnly && <th className="py-2.5 px-2 w-10 text-center"></th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {houseRows.map((row, index) => {
+                    const rowArea = parseFloat(row.areaSqft) || 0;
+                    const rowRate = parseFloat(row.unitRate) || 0;
+                    const rowGlRate = parseFloat(row.guidelineUnitRate) || 0;
+                    const calcMkt = rowArea && rowRate ? rowArea * rowRate : 0;
+                    const calcGl = rowArea && rowGlRate ? rowArea * rowGlRate : 0;
+                    const effMkt = row.estimatedMarketValueEditOn
+                      ? row.estimatedMarketValue
+                      : (calcMkt > 0 ? String(Math.round(calcMkt)) : '');
+                    const effGl = row.guidelineValueEditOn
+                      ? row.guidelineValue
+                      : (calcGl > 0 ? String(Math.round(calcGl)) : '');
+
+                    return (
+                      <tr key={row.id || index} className="hover:bg-cyan-50/40 transition-colors">
+                        <td className="py-2 px-3 text-center font-bold text-gray-500">{index + 1}</td>
+                        <td className="py-2 px-3">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={row.description}
+                            onChange={(e) => updateHouseRow(index, { description: e.target.value })}
+                            disabled={isReadOnly}
+                            placeholder="Description"
+                          />
+                        </td>
+                        <td className="py-2 px-3">
+                          <input
+                            type="number"
+                            className={`${inputCls} text-right`}
+                            value={row.areaSqft}
+                            onChange={(e) => updateHouseRow(index, { areaSqft: e.target.value })}
+                            disabled={isReadOnly}
+                            placeholder="0"
+                          />
+                        </td>
+                        <td className="py-2 px-3">
+                          <input
+                            type="number"
+                            className={`${inputCls} text-right`}
+                            value={row.unitRate}
+                            onChange={(e) => updateHouseRow(index, { unitRate: e.target.value })}
+                            disabled={isReadOnly}
+                            placeholder="0"
+                          />
+                        </td>
+                        <td className="py-2 px-3">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center justify-end">
+                              <EditSwitch
+                                checked={!!row.estimatedMarketValueEditOn}
+                                onChange={(checked) => {
+                                  updateHouseRow(index, {
+                                    estimatedMarketValueEditOn: checked,
+                                    estimatedMarketValue: checked ? (row.estimatedMarketValue || String(Math.round(calcMkt))) : String(Math.round(calcMkt)),
+                                  });
+                                }}
+                                disabled={isReadOnly}
+                              />
+                            </div>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                className={`${inputCls} text-right font-semibold ${
+                                  !row.estimatedMarketValueEditOn ? 'bg-cyan-50/50 text-gray-800' : 'bg-white'
+                                }`}
+                                value={effMkt}
+                                onChange={(e) => updateHouseRow(index, { estimatedMarketValue: e.target.value })}
+                                disabled={isReadOnly || !row.estimatedMarketValueEditOn}
+                                placeholder="0"
+                              />
+                              {!row.estimatedMarketValueEditOn && effMkt && (
+                                <span className="absolute left-2 top-2 text-[10px] text-emerald-700 font-semibold flex items-center gap-0.5">
+                                  <Lock className="w-2.5 h-2.5" /> Auto
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-2 px-3">
+                          <input
+                            type="number"
+                            className={`${inputCls} text-right`}
+                            value={row.guidelineUnitRate}
+                            onChange={(e) => updateHouseRow(index, { guidelineUnitRate: e.target.value })}
+                            disabled={isReadOnly}
+                            placeholder="0"
+                          />
+                        </td>
+                        <td className="py-2 px-3">
+                          <div className="flex flex-col gap-1">
+                            <div className="flex items-center justify-end">
+                              <EditSwitch
+                                checked={!!row.guidelineValueEditOn}
+                                onChange={(checked) => {
+                                  updateHouseRow(index, {
+                                    guidelineValueEditOn: checked,
+                                    guidelineValue: checked ? (row.guidelineValue || String(Math.round(calcGl))) : String(Math.round(calcGl)),
+                                  });
+                                }}
+                                disabled={isReadOnly}
+                              />
+                            </div>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                className={`${inputCls} text-right font-semibold ${
+                                  !row.guidelineValueEditOn ? 'bg-cyan-50/50 text-gray-800' : 'bg-white'
+                                }`}
+                                value={effGl}
+                                onChange={(e) => updateHouseRow(index, { guidelineValue: e.target.value })}
+                                disabled={isReadOnly || !row.guidelineValueEditOn}
+                                placeholder="0"
+                              />
+                              {!row.guidelineValueEditOn && effGl && (
+                                <span className="absolute left-2 top-2 text-[10px] text-emerald-700 font-semibold flex items-center gap-0.5">
+                                  <Lock className="w-2.5 h-2.5" /> Auto
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        {!isReadOnly && (
+                          <td className="py-2 px-2 text-center">
+                            {houseRows.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeHouseRow(index)}
+                                className="p-1 text-gray-400 hover:text-red-500 rounded transition"
+                                title="Remove row"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {!isReadOnly && (
+              <div className="flex items-center justify-between pt-1">
+                <button
+                  type="button"
+                  onClick={addHouseRow}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white border border-cyan-300 text-cyan-800 hover:bg-cyan-50 shadow-xs transition"
+                >
+                  <Plus className="w-3.5 h-3.5" /> Add Row
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleChange('gicHouseValuationRows', DEFAULT_HOUSE_ROWS)}
+                  className="text-xs text-gray-500 underline hover:text-gray-700"
+                >
+                  Reset Rows (Land, Building, Amenities)
+                </button>
+              </div>
+            )}
+
+            {/* Total Value & Source in Table A */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-3 border-t border-cyan-200">
+              <Field
+                label={
+                  <div className="flex justify-between items-center w-full">
+                    <span className="font-semibold text-gray-700">TOTAL VALUE BEFORE RENOVATION</span>
+                    <EditSwitch
+                      checked={!!fields.gicTotalValueBeforeRenovationEditOn}
+                      onChange={(checked) => {
+                        handleChange('gicTotalValueBeforeRenovationEditOn', checked);
+                        if (!checked && totalSumHouseMarketValue > 0) {
+                          handleChange('gicTotalValueBeforeRenovation', String(Math.round(totalSumHouseMarketValue)));
+                        }
+                      }}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                }
+              >
+                <div className="relative">
+                  <input
+                    type="number"
+                    className={`${inputCls} font-bold text-gray-900 ${
+                      !fields.gicTotalValueBeforeRenovationEditOn ? 'bg-white/80' : 'bg-white'
+                    }`}
+                    value={effectiveTotalBeforeRenovation}
+                    onChange={(e) => handleChange('gicTotalValueBeforeRenovation', e.target.value)}
+                    disabled={isReadOnly || !fields.gicTotalValueBeforeRenovationEditOn}
+                    placeholder="Auto-calculated (Sum of Market Values)"
+                  />
+                  {!fields.gicTotalValueBeforeRenovationEditOn && effectiveTotalBeforeRenovation && (
+                    <div className="absolute right-3 top-2.5 text-xs text-emerald-700 font-semibold pointer-events-none flex items-center gap-1">
+                      <Lock className="w-3 h-3" /> Auto (Sum)
+                    </div>
+                  )}
+                </div>
+              </Field>
+
+              <Field label={<span className="font-semibold text-gray-700">STATE THE SOURCE FOR ARRIVING AT THE MARKET VALUE</span>}>
+                <CustomSelect
+                  value={fields.gicSourceMarketValueHouse || 'Market Survey'}
+                  customValue={fields.gicSourceMarketValueHouseCustom || ''}
+                  onChange={(val) => handleChange('gicSourceMarketValueHouse', val)}
+                  onCustomChange={(val) => handleChange('gicSourceMarketValueHouseCustom', val)}
+                  options={[
+                    { value: 'Market Survey', label: 'Market Survey' },
+                    { value: 'Local Enquiry', label: 'Local Enquiry' },
+                    { value: 'Sub-Registrar Office Guideline Rates', label: 'Sub-Registrar Office Guideline Rates' },
+                    { value: 'Recent Registered Transactions', label: 'Recent Registered Transactions' },
+                  ]}
+                  disabled={isReadOnly}
+                  placeholder="Select source..."
+                />
+              </Field>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ─── Container 2: Table B: Valuation of Property (If it is a Flat) ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-cyan-200 shadow-sm"
+        style={{ backgroundColor: '#e0f7fa' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            B. VALUATION OF PROPERTY ( IF IT IS A FLAT)
+          </h3>
+          <div className="flex items-center gap-2 bg-white/70 px-3 py-1.5 rounded-lg border border-cyan-300">
+            <span className="text-xs font-semibold text-gray-700">Entire Table NA:</span>
+            <NaCheckbox
+              checked={!!fields.gicValuationFlatNA}
+              onChange={(checked) => handleChange('gicValuationFlatNA', checked)}
+              disabled={isReadOnly}
+            />
+          </div>
+        </div>
+
+        {fields.gicValuationFlatNA ? (
+          <div className="p-4 bg-white/80 border border-cyan-300 rounded-lg text-sm text-cyan-900 font-medium flex items-center justify-between">
+            <span>Table B (Flat Valuation) has been marked as Not Applicable (NA).</span>
+            <button
+              type="button"
+              onClick={() => handleChange('gicValuationFlatNA', false)}
+              disabled={isReadOnly}
+              className="text-xs font-bold text-cyan-800 underline hover:text-cyan-950"
+            >
+              Unmark NA
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {/* FLAT NO */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">FLAT NO</span>
+                  <NaCheckbox
+                    checked={!!fields.gicFlatNoNA}
+                    onChange={(checked) => {
+                      handleChange('gicFlatNoNA', checked);
+                      if (checked) handleChange('gicFlatNo', 'NA');
+                      else handleChange('gicFlatNo', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="text"
+                className={`${inputCls} ${
+                  fields.gicFlatNoNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+                }`}
+                value={fields.gicFlatNoNA ? 'NA' : (fields.gicFlatNo || '')}
+                onChange={(e) => handleChange('gicFlatNo', e.target.value)}
+                disabled={isReadOnly || !!fields.gicFlatNoNA}
+                placeholder="e.g. Flat No. 204, 2nd Floor"
+              />
+            </Field>
+
+            {/* CARPET AREA */}
+            <Field label={<span className="font-semibold text-gray-700">CARPET AREA (SQFT)</span>}>
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.gicFlatCarpetArea || ''}
+                onChange={(e) => handleChange('gicFlatCarpetArea', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Carpet Area in Sqft"
+              />
+            </Field>
+
+            {/* 1. UNDIVIDED SHARE OF LAND */}
+            <Field label={<span className="font-semibold text-gray-700">1. UNDIVIDED SHARE OF LAND (UDS SQFT)</span>}>
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.gicFlatUdsArea || ''}
+                onChange={(e) => handleChange('gicFlatUdsArea', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Undivided share of land in Sqft"
+              />
+            </Field>
+
+            {/* 2. BUILT UP AREA OF THE FLAT */}
+            <Field label={<span className="font-semibold text-gray-700">2. BUILT UP AREA OF THE FLAT (SQFT)</span>}>
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.gicFlatBua || ''}
+                onChange={(e) => handleChange('gicFlatBua', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Built up area in Sqft"
+              />
+            </Field>
+
+            {/* 3. ADOPTED UNIT COMPOSITE RATE */}
+            <Field label={<span className="font-semibold text-gray-700">3. ADOPTED UNIT COMPOSITE RATE (RS./SQFT)</span>}>
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.gicFlatAdoptedRate || ''}
+                onChange={(e) => handleChange('gicFlatAdoptedRate', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Composite rate in Rs./Sqft"
+              />
+            </Field>
+
+            {/* 4. ESTIMATED VALUE / MARKET VALUE */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">4. ESTIMATED VALUE / MARKET VALUE (RS.)</span>
+                  <EditSwitch
+                    checked={!!fields.gicFlatMarketValueEditOn}
+                    onChange={(checked) => {
+                      handleChange('gicFlatMarketValueEditOn', checked);
+                      if (!checked && autoFlatMarketVal > 0) {
+                        handleChange('gicFlatMarketValue', String(Math.round(autoFlatMarketVal)));
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  className={`${inputCls} font-bold text-gray-900 ${
+                    !fields.gicFlatMarketValueEditOn ? 'bg-white/80' : 'bg-white'
+                  }`}
+                  value={effectiveFlatMarketVal}
+                  onChange={(e) => handleChange('gicFlatMarketValue', e.target.value)}
+                  disabled={isReadOnly || !fields.gicFlatMarketValueEditOn}
+                  placeholder="Auto-calculates (BUA × Adopted Rate)"
+                />
+                {!fields.gicFlatMarketValueEditOn && effectiveFlatMarketVal && (
+                  <div className="absolute right-3 top-2.5 text-xs text-emerald-700 font-semibold pointer-events-none flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> Auto (BUA × Rate)
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            {/* GUIDELINE UNIT RATE (RS.) */}
+            <Field label={<span className="font-semibold text-gray-700">GUIDELINE UNIT RATE (RS./SQFT)</span>}>
+              <input
+                type="number"
+                className={inputCls}
+                value={fields.gicFlatGuidelineRate || ''}
+                onChange={(e) => handleChange('gicFlatGuidelineRate', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Guideline composite rate in Rs./Sqft"
+              />
+            </Field>
+
+            {/* GUIDELINE VALUE (RS.) */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">GUIDELINE VALUE (RS.)</span>
+                  <EditSwitch
+                    checked={!!fields.gicFlatGuidelineValueEditOn}
+                    onChange={(checked) => {
+                      handleChange('gicFlatGuidelineValueEditOn', checked);
+                      if (!checked && autoFlatGuidelineVal > 0) {
+                        handleChange('gicFlatGuidelineValue', String(Math.round(autoFlatGuidelineVal)));
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  className={`${inputCls} font-bold text-gray-900 ${
+                    !fields.gicFlatGuidelineValueEditOn ? 'bg-white/80' : 'bg-white'
+                  }`}
+                  value={effectiveFlatGuidelineVal}
+                  onChange={(e) => handleChange('gicFlatGuidelineValue', e.target.value)}
+                  disabled={isReadOnly || !fields.gicFlatGuidelineValueEditOn}
+                  placeholder="Auto-calculates (BUA × Guideline Rate)"
+                />
+                {!fields.gicFlatGuidelineValueEditOn && effectiveFlatGuidelineVal && (
+                  <div className="absolute right-3 top-2.5 text-xs text-emerald-700 font-semibold pointer-events-none flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> Auto (BUA × GL Rate)
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            {/* 5. STATE THE SOURCE FOR ARRIVING AT THE MARKET VALUE */}
+            <Field label={<span className="font-semibold text-gray-700">5. STATE THE SOURCE FOR ARRIVING AT THE MARKET VALUE</span>}>
+              <CustomSelect
+                value={fields.gicSourceMarketValueFlat || 'Market Survey'}
+                customValue={fields.gicSourceMarketValueFlatCustom || ''}
+                onChange={(val) => handleChange('gicSourceMarketValueFlat', val)}
+                onCustomChange={(val) => handleChange('gicSourceMarketValueFlatCustom', val)}
+                options={[
+                  { value: 'Market Survey', label: 'Market Survey' },
+                  { value: 'Local Enquiry', label: 'Local Enquiry' },
+                  { value: 'Sub-Registrar Office Guideline Rates', label: 'Sub-Registrar Office Guideline Rates' },
+                  { value: 'Builder / Developer Rate', label: 'Builder / Developer Rate' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select source..."
+              />
+            </Field>
+          </div>
+        )}
+      </div>
+
+      {/* ─── Container 3: Container: 6. ADD FOR EXTRA AMENITIES IF ANY ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-cyan-200 shadow-sm"
+        style={{ backgroundColor: '#e0f7fa' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            ADD FOR EXTRA AMENITIES IF ANY
+          </h3>
+          <NaCheckbox
+            checked={!!fields.gicDetailsExtraAmenitiesNA}
+            onChange={(checked) => {
+              handleChange('gicDetailsExtraAmenitiesNA', checked);
+              if (checked) handleChange('gicDetailsExtraAmenities', 'NA');
+              else handleChange('gicDetailsExtraAmenities', '');
+            }}
+            disabled={isReadOnly}
+          />
+        </div>
+
+        <Field
+          label={
+            <div className="flex justify-between items-center w-full">
+              <span className="font-semibold text-gray-700">DETAILS OF EXTRA AMENITIES</span>
+              <NaCheckbox
+                checked={!!fields.gicDetailsExtraAmenitiesNA}
+                onChange={(checked) => {
+                  handleChange('gicDetailsExtraAmenitiesNA', checked);
+                  if (checked) handleChange('gicDetailsExtraAmenities', 'NA');
+                  else handleChange('gicDetailsExtraAmenities', '');
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          }
+        >
+          <textarea
+            rows={4}
+            className={`${inputCls} resize-y ${
+              fields.gicDetailsExtraAmenitiesNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+            }`}
+            value={fields.gicDetailsExtraAmenitiesNA ? 'NA' : (fields.gicDetailsExtraAmenities || '')}
+            onChange={(e) => handleChange('gicDetailsExtraAmenities', e.target.value)}
+            disabled={isReadOnly || !!fields.gicDetailsExtraAmenitiesNA}
+            placeholder="Enter details of extra amenities (e.g. modular kitchen, wardrobe, false ceiling, dedicated parking, clubhouse, swimming pool, power backup, etc.)..."
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
 // ─── GIC Housing Finance BankConfig ─────────────────────────────────────────
 
 export const GIC_HOUSING_CONFIG: BankConfig = {
@@ -1790,6 +2480,7 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     { id: 'gic-section-3', title: 'PROPERTY DETAILS' },
     { id: 'gic-section-4', title: 'PLANNING APPROVALS' },
     { id: 'gic-section-5', title: 'BUILDING DETAILS' },
+    { id: 'gic-section-6', title: 'VALUATION DETAILS' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -1901,6 +2592,32 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     gicSpecificationClassCustom: '',
     gicRoomDimensionsDetails: '',
     gicRoomDimensionsDetailsNA: false,
+
+    // Section 6: Valuation Details
+    gicValuationHouseNA: false,
+    gicHouseValuationRows: DEFAULT_HOUSE_ROWS,
+    gicTotalValueBeforeRenovation: '',
+    gicTotalValueBeforeRenovationEditOn: false,
+    gicSourceMarketValueHouse: 'Market Survey',
+    gicSourceMarketValueHouseCustom: '',
+
+    gicValuationFlatNA: false,
+    gicFlatNo: '',
+    gicFlatNoNA: false,
+    gicFlatCarpetArea: '',
+    gicFlatUdsArea: '',
+    gicFlatBua: '',
+    gicFlatAdoptedRate: '',
+    gicFlatMarketValue: '',
+    gicFlatMarketValueEditOn: false,
+    gicFlatGuidelineRate: '',
+    gicFlatGuidelineValue: '',
+    gicFlatGuidelineValueEditOn: false,
+    gicSourceMarketValueFlat: 'Market Survey',
+    gicSourceMarketValueFlatCustom: '',
+
+    gicDetailsExtraAmenities: '',
+    gicDetailsExtraAmenitiesNA: false,
   },
   extraSectionsStart: [
     {
@@ -1966,6 +2683,20 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
         <BuildingDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          projectCode={projectCode}
+        />
+      ),
+    },
+    {
+      id: 'gic-section-6',
+      title: 'VALUATION DETAILS',
+      number: 6,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
+        <ValuationDetailsSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
