@@ -9,9 +9,9 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 ### 📊 Overall Status Summary
 
 | Status Category | Count | Description |
-| **✅ Completed** | **19 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
+| **✅ Completed** | **20 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
 | **🔨 In Progress** | **33 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
-| **⏳ Not Started** | **24 formats (22 banks)** | Directory reserved / pending base component creation |
+| **⏳ Not Started** | **23 formats (21 banks)** | Directory reserved / pending base component creation |
 | **Total Tracked** | **60 institutions** (76 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
@@ -93,7 +93,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **48** | **STATE BANK OF INDIA-SBI** | | | |
 | 48.1 | STATE BANK OF INDIA-SBI | `Flat & Apartment` | ✅ Created Base | 🔨 In Progress |
 | 48.2 | STATE BANK OF INDIA-SBI | `Land & Building` | ✅ Created Base | 🔨 In Progress |
-| **49** | **SURYODAY SMALL FINANCE BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **49** | **SURYODAY SMALL FINANCE BANK** | `Standard` | ✅ Created Base | ✅ Completed |
 | **50** | **SWARNA FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
 | **51** | **TATA CAPITAL LTD** | `SME-BLG` | ✅ Created Base | ✅ Completed |
 | **52** | **TATA HOUSING FINANCE LTD** | `Standard` | ✅ Created Base | ✅ Completed |
@@ -130,6 +130,7 @@ Templates with complete interactive report draft builder UI and full PDF rendere
 | **11.1** | BANDHAN BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanHLLAP.tsx` | `src/lib/banks/pdf-bandhan-hllap-renderer.ts` | ✅ Completed |
 | **11.2** | BANDHAN BANK | `SME` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanSME.tsx` | `src/lib/banks/pdf-bandhan-sme-renderer.ts` | ✅ Completed |
 | **12** | BANK OF BARODA-BOB | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-baroda/BankOfBaroda.tsx` | `src/lib/banks/pdf-bank-of-baroda-renderer.ts` | ✅ Completed |
+| **49** | SURYODAY SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/suryoday/SuryodaySmallFinanceBank.tsx` | `src/lib/banks/pdf-suryoday-renderer.ts` | ✅ Completed |
 | **50** | SWARNA FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/swarna/SwarnaFinance.tsx` | `src/lib/banks/pdf-swarna-finance-renderer.ts` | ✅ Completed |
 | **51** | TATA CAPITAL LTD | `SME-BLG` | `src/app/portal/reports/[projectId]/banks/tata/TataCapitalSMEBLG.tsx` | `src/lib/banks/pdf-tata-capital-sme-blg-renderer.ts` | ✅ Completed |
 | **52** | TATA HOUSING FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/tata-housing/TataHousingFinance.tsx` | `src/lib/banks/pdf-tata-housing-finance-renderer.ts` | ✅ Completed |

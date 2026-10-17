@@ -200,6 +200,7 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'SHRIRAM FINANCE': dynamic(() => import('./banks/shriram/ShriramFinance')),
   'SMFG INDIA-FULLERTON': dynamic(() => import('./banks/smfg/SMFGIndiaFullerton')),
   'SURYODAY SMALL FINANCE BANK': dynamic(() => import('./banks/suryoday/SuryodaySmallFinanceBank')),
+  'SURYODAY SMALL FINANCE BANK LIMITED': dynamic(() => import('./banks/suryoday/SuryodaySmallFinanceBank')),
   'SWARNA FINANCE': dynamic(() => import('./banks/swarna/SwarnaFinance')),
 
   // Tata, UCO, Ujjivan, UBI, Unity, Utkarsh, Varthana, Vistaar, Yes
