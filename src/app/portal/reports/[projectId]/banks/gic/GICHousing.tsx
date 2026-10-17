@@ -2449,6 +2449,177 @@ function ValuationDetailsSection({
   );
 }
 
+// ─── Section 7: Estimate for Repair & Renovation ────────────────────────────
+
+function RepairAndRenovationSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+  projectCode?: string;
+}) {
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Renovation Costs (Light Orange #fff3e0) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-orange-200 shadow-sm"
+        style={{ backgroundColor: '#fff3e0' }}
+      >
+        <h3 className="font-bold text-gray-800 text-sm md:text-base border-b border-orange-200 pb-2 uppercase tracking-wide">
+          Renovation Costs
+        </h3>
+
+        <div className="space-y-5">
+          {/* 1. DESCRIPTION OF REPAIR WORKS AS PER APPLICANTS ESTIMATE */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">
+                  1. DESCRIPTION OF REPAIR WORKS AS PER APPLICANTS ESTIMATE
+                </span>
+                <NaCheckbox
+                  checked={!!fields.gicRepairWorksDescriptionNA}
+                  onChange={(checked) => {
+                    handleChange('gicRepairWorksDescriptionNA', checked);
+                    if (checked) handleChange('gicRepairWorksDescription', 'NA');
+                    else handleChange('gicRepairWorksDescription', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <textarea
+              rows={3}
+              className={`${inputCls} resize-y ${
+                fields.gicRepairWorksDescriptionNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicRepairWorksDescriptionNA ? 'NA' : (fields.gicRepairWorksDescription || '')}
+              onChange={(e) => handleChange('gicRepairWorksDescription', e.target.value)}
+              disabled={isReadOnly || !!fields.gicRepairWorksDescriptionNA}
+              placeholder="Enter description of proposed repair and renovation works as per applicant's estimate..."
+            />
+          </Field>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* 2. AMOUNT ESTIMATED BY THE APPLICANT... */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">
+                    2. AMOUNT ESTIMATED BY THE APPLICANT (RS.)
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.gicRepairEstimateApplicantNA}
+                    onChange={(checked) => {
+                      handleChange('gicRepairEstimateApplicantNA', checked);
+                      if (checked) handleChange('gicRepairEstimateApplicant', 'NA');
+                      else handleChange('gicRepairEstimateApplicant', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="number"
+                className={`${inputCls} ${
+                  fields.gicRepairEstimateApplicantNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+                }`}
+                value={fields.gicRepairEstimateApplicantNA ? 'NA' : (fields.gicRepairEstimateApplicant || '')}
+                onChange={(e) => handleChange('gicRepairEstimateApplicant', e.target.value)}
+                disabled={isReadOnly || !!fields.gicRepairEstimateApplicantNA}
+                placeholder="Enter amount in Rs."
+              />
+            </Field>
+
+            {/* 3. WHETHER THE ESTIMATE SUBMITTED BY THE APPLICANT IS REASONABLE */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">
+                    3. WHETHER THE ESTIMATE SUBMITTED BY THE APPLICANT IS REASONABLE
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.gicIsEstimateReasonableNA}
+                    onChange={(checked) => {
+                      handleChange('gicIsEstimateReasonableNA', checked);
+                      if (checked) handleChange('gicIsEstimateReasonable', 'NA');
+                      else handleChange('gicIsEstimateReasonable', 'Yes');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="flex items-center gap-6 h-10 px-1">
+                {['Yes', 'No'].map((opt) => (
+                  <label
+                    key={opt}
+                    className={`inline-flex items-center gap-2 cursor-pointer font-medium text-sm text-gray-700 ${
+                      fields.gicIsEstimateReasonableNA || isReadOnly ? 'opacity-50 cursor-not-allowed' : ''
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="gicIsEstimateReasonable"
+                      value={opt}
+                      checked={fields.gicIsEstimateReasonable === opt && !fields.gicIsEstimateReasonableNA}
+                      onChange={() => handleChange('gicIsEstimateReasonable', opt)}
+                      disabled={isReadOnly || !!fields.gicIsEstimateReasonableNA}
+                      className="text-orange-600 focus:ring-orange-500"
+                    />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+                {fields.gicIsEstimateReasonableNA && (
+                  <span className="text-xs font-bold text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
+                    NA
+                  </span>
+                )}
+              </div>
+            </Field>
+
+            {/* IF NOT WHAT WOULD BE THE REASONABLE ESTIMATE */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">
+                    IF NOT WHAT WOULD BE THE REASONABLE ESTIMATE (RS.)
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.gicReasonableEstimateAmountNA}
+                    onChange={(checked) => {
+                      handleChange('gicReasonableEstimateAmountNA', checked);
+                      if (checked) handleChange('gicReasonableEstimateAmount', 'NA');
+                      else handleChange('gicReasonableEstimateAmount', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="number"
+                className={`${inputCls} ${
+                  fields.gicReasonableEstimateAmountNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+                }`}
+                value={fields.gicReasonableEstimateAmountNA ? 'NA' : (fields.gicReasonableEstimateAmount || '')}
+                onChange={(e) => handleChange('gicReasonableEstimateAmount', e.target.value)}
+                disabled={isReadOnly || !!fields.gicReasonableEstimateAmountNA}
+                placeholder="Enter reasonable estimate in Rs."
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── GIC Housing Finance BankConfig ─────────────────────────────────────────
 
 export const GIC_HOUSING_CONFIG: BankConfig = {
@@ -2481,6 +2652,7 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     { id: 'gic-section-4', title: 'PLANNING APPROVALS' },
     { id: 'gic-section-5', title: 'BUILDING DETAILS' },
     { id: 'gic-section-6', title: 'VALUATION DETAILS' },
+    { id: 'gic-section-7', title: 'ESTIMATE FOR REPAIR & RENOVATION' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -2618,6 +2790,16 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
 
     gicDetailsExtraAmenities: '',
     gicDetailsExtraAmenitiesNA: false,
+
+    // Section 7: Estimate for Repair & Renovation
+    gicRepairWorksDescription: '',
+    gicRepairWorksDescriptionNA: false,
+    gicRepairEstimateApplicant: '',
+    gicRepairEstimateApplicantNA: false,
+    gicIsEstimateReasonable: 'Yes',
+    gicIsEstimateReasonableNA: false,
+    gicReasonableEstimateAmount: '',
+    gicReasonableEstimateAmountNA: false,
   },
   extraSectionsStart: [
     {
@@ -2697,6 +2879,20 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
         <ValuationDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          projectCode={projectCode}
+        />
+      ),
+    },
+    {
+      id: 'gic-section-7',
+      title: 'ESTIMATE FOR REPAIR & RENOVATION',
+      number: 7,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
+        <RepairAndRenovationSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
