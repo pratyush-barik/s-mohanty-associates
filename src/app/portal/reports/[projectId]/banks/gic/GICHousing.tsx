@@ -2620,6 +2620,326 @@ function RepairAndRenovationSection({
   );
 }
 
+// ─── Section 8: Progress of Work ────────────────────────────────────────────
+
+export interface GICWorkProgressRow {
+  id: string;
+  slNo: string;
+  slNoEditOn?: boolean;
+  description: string;
+  descriptionNA?: boolean;
+  amountIncurred: string;
+  valuersOpinion: string;
+}
+
+const DEFAULT_WORK_PROGRESS_ROWS: GICWorkProgressRow[] = [
+  {
+    id: 'row-prog-1',
+    slNo: '1',
+    slNoEditOn: false,
+    description: '',
+    descriptionNA: false,
+    amountIncurred: '',
+    valuersOpinion: '',
+  },
+];
+
+function ProgressOfWorkSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+  projectCode?: string;
+}) {
+  const rows: GICWorkProgressRow[] =
+    fields.gicWorkProgressRows && Array.isArray(fields.gicWorkProgressRows) && fields.gicWorkProgressRows.length > 0
+      ? fields.gicWorkProgressRows
+      : DEFAULT_WORK_PROGRESS_ROWS;
+
+  const updateRow = (index: number, patch: Partial<GICWorkProgressRow>) => {
+    const updated = rows.map((r, idx) => {
+      if (idx !== index) return r;
+      return { ...r, ...patch };
+    });
+    handleChange('gicWorkProgressRows', updated);
+  };
+
+  const addRow = () => {
+    const newRow: GICWorkProgressRow = {
+      id: `row-prog-${Date.now()}`,
+      slNo: String(rows.length + 1),
+      slNoEditOn: false,
+      description: '',
+      descriptionNA: false,
+      amountIncurred: '',
+      valuersOpinion: '',
+    };
+    handleChange('gicWorkProgressRows', [...rows, newRow]);
+  };
+
+  const removeRow = (index: number) => {
+    if (rows.length <= 1) return;
+    const updated = rows.filter((_, idx) => idx !== index);
+    handleChange('gicWorkProgressRows', updated);
+  };
+
+  // Calculate sum of amounts incurred from rows
+  const sumAmountIncurred = useMemo(() => {
+    return rows.reduce((acc, r) => acc + (parseFloat(r.amountIncurred) || 0), 0);
+  }, [rows]);
+
+  // Base property value + completed repair value
+  const basePropertyValue =
+    parseFloat(fields.gicTotalValueBeforeRenovation) ||
+    parseFloat(fields.gicFlatMarketValue) ||
+    parseFloat(fields.gicValueOfProperty) ||
+    0;
+
+  const completedRepairValue =
+    parseFloat(fields.gicValueOfRepairWorkCompleted) ||
+    sumAmountIncurred ||
+    0;
+
+  const autoPropertyValueAsOnDate = basePropertyValue + completedRepairValue;
+
+  const effectivePropertyValueAsOnDate = fields.gicPropertyValueAsOnDateEditOn
+    ? (fields.gicPropertyValueAsOnDate ?? '')
+    : (autoPropertyValueAsOnDate > 0 ? String(Math.round(autoPropertyValueAsOnDate)) : (fields.gicPropertyValueAsOnDate || ''));
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Work Completion Status (Light Pink #fce4ec) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-pink-200 shadow-sm"
+        style={{ backgroundColor: '#fce4ec' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-pink-200 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            Work Completion Status
+          </h3>
+          <span className="text-xs text-pink-900 font-medium bg-pink-100/80 px-2.5 py-1 rounded-md border border-pink-300">
+            Progress Tracking & Valuation
+          </span>
+        </div>
+
+        {/* 1. VALUE OF REPAIR WORK COMPLETED */}
+        <Field
+          label={
+            <div className="flex justify-between items-center w-full">
+              <span className="font-semibold text-gray-700">
+                1. VALUE OF REPAIR WORK COMPLETED (RS.)
+              </span>
+              <NaCheckbox
+                checked={!!fields.gicValueOfRepairWorkCompletedNA}
+                onChange={(checked) => {
+                  handleChange('gicValueOfRepairWorkCompletedNA', checked);
+                  if (checked) handleChange('gicValueOfRepairWorkCompleted', 'NA');
+                  else handleChange('gicValueOfRepairWorkCompleted', '');
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          }
+        >
+          <input
+            type="number"
+            className={`${inputCls} ${
+              fields.gicValueOfRepairWorkCompletedNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+            }`}
+            value={fields.gicValueOfRepairWorkCompletedNA ? 'NA' : (fields.gicValueOfRepairWorkCompleted || '')}
+            onChange={(e) => handleChange('gicValueOfRepairWorkCompleted', e.target.value)}
+            disabled={isReadOnly || !!fields.gicValueOfRepairWorkCompletedNA}
+            placeholder="Enter value of repair work completed in Rs."
+          />
+        </Field>
+
+        {/* Table: Work Completion Status */}
+        <div className="overflow-x-auto rounded-lg border border-pink-300 bg-white shadow-sm">
+          <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+            <thead>
+              <tr className="bg-pink-100/70 border-b border-pink-200 text-gray-800 font-semibold uppercase tracking-wider">
+                <th className="py-2.5 px-3 min-w-[120px]">SL NO</th>
+                <th className="py-2.5 px-3 min-w-[240px]">DESCRIPTION OF WORK</th>
+                <th className="py-2.5 px-3 min-w-[170px] text-right">
+                  AMOUNT INCURRED AS PER APPLICANT’S ESTIMATE (RS.)
+                </th>
+                <th className="py-2.5 px-3 min-w-[200px]">VALUER’S OPINION</th>
+                {!isReadOnly && <th className="py-2.5 px-2 w-10 text-center"></th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {rows.map((row, index) => {
+                const autoSlNo = String(index + 1);
+                const effSlNo = row.slNoEditOn ? row.slNo : autoSlNo;
+
+                return (
+                  <tr key={row.id || index} className="hover:bg-pink-50/40 transition-colors">
+                    {/* SL NO: Prefill field [Edit Switch] (1, 2, 3...) */}
+                    <td className="py-2.5 px-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-gray-500 uppercase">SL NO</span>
+                          <EditSwitch
+                            checked={!!row.slNoEditOn}
+                            onChange={(checked) => {
+                              updateRow(index, {
+                                slNoEditOn: checked,
+                                slNo: checked ? (row.slNo || autoSlNo) : autoSlNo,
+                              });
+                            }}
+                            disabled={isReadOnly}
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          className={`${inputCls} font-semibold ${
+                            !row.slNoEditOn ? 'bg-pink-50/60 text-gray-800' : 'bg-white'
+                          }`}
+                          value={effSlNo}
+                          onChange={(e) => updateRow(index, { slNo: e.target.value })}
+                          disabled={isReadOnly || !row.slNoEditOn}
+                          placeholder={autoSlNo}
+                        />
+                      </div>
+                    </td>
+
+                    {/* DESCRIPTION OF WORK: Input Box [NA Checkbox] */}
+                    <td className="py-2.5 px-3">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center justify-end">
+                          <NaCheckbox
+                            checked={!!row.descriptionNA}
+                            onChange={(checked) => {
+                              updateRow(index, {
+                                descriptionNA: checked,
+                                description: checked ? 'NA' : '',
+                              });
+                            }}
+                            disabled={isReadOnly}
+                          />
+                        </div>
+                        <input
+                          type="text"
+                          className={`${inputCls} ${
+                            row.descriptionNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+                          }`}
+                          value={row.descriptionNA ? 'NA' : (row.description || '')}
+                          onChange={(e) => updateRow(index, { description: e.target.value })}
+                          disabled={isReadOnly || !!row.descriptionNA}
+                          placeholder="e.g. Foundation & Plinth repair, Painting, Flooring..."
+                        />
+                      </div>
+                    </td>
+
+                    {/* AMOUNT INCURRED AS PER APPLICANT’S ESTIMATE: Input Box (Numeric) */}
+                    <td className="py-2.5 px-3">
+                      <input
+                        type="number"
+                        className={`${inputCls} text-right`}
+                        value={row.amountIncurred || ''}
+                        onChange={(e) => updateRow(index, { amountIncurred: e.target.value })}
+                        disabled={isReadOnly}
+                        placeholder="0"
+                      />
+                    </td>
+
+                    {/* VALUER’S OPINION: Input Box */}
+                    <td className="py-2.5 px-3">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={row.valuersOpinion || ''}
+                        onChange={(e) => updateRow(index, { valuersOpinion: e.target.value })}
+                        disabled={isReadOnly}
+                        placeholder="e.g. Work in progress, satisfactory, 60% done"
+                      />
+                    </td>
+
+                    {/* Action */}
+                    {!isReadOnly && (
+                      <td className="py-2 px-2 text-center">
+                        {rows.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeRow(index)}
+                            className="p-1 text-gray-400 hover:text-red-500 rounded transition"
+                            title="Remove row"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {!isReadOnly && (
+          <div className="flex items-center justify-between pt-1">
+            <button
+              type="button"
+              onClick={addRow}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-white border border-pink-300 text-pink-800 hover:bg-pink-50 shadow-xs transition"
+            >
+              <Plus className="w-3.5 h-3.5" /> Add Row
+            </button>
+            <span className="text-xs text-gray-500">
+              Total Incurred Amount: <strong className="text-gray-800">Rs. {sumAmountIncurred.toLocaleString('en-IN')}</strong>
+            </span>
+          </div>
+        )}
+
+        {/* PROPERTY VALUE AS ON DATE: Auto-calculates field [Edit Switch] */}
+        <div className="pt-3 border-t border-pink-200">
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">
+                  PROPERTY VALUE AS ON DATE (RS.)
+                </span>
+                <EditSwitch
+                  checked={!!fields.gicPropertyValueAsOnDateEditOn}
+                  onChange={(checked) => {
+                    handleChange('gicPropertyValueAsOnDateEditOn', checked);
+                    if (!checked && autoPropertyValueAsOnDate > 0) {
+                      handleChange('gicPropertyValueAsOnDate', String(Math.round(autoPropertyValueAsOnDate)));
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="number"
+                className={`${inputCls} font-bold text-gray-900 ${
+                  !fields.gicPropertyValueAsOnDateEditOn ? 'bg-pink-50/70 border-pink-300' : 'bg-white'
+                }`}
+                value={effectivePropertyValueAsOnDate}
+                onChange={(e) => handleChange('gicPropertyValueAsOnDate', e.target.value)}
+                disabled={isReadOnly || !fields.gicPropertyValueAsOnDateEditOn}
+                placeholder="Auto-calculated (Base Property Value + Completed Work)"
+              />
+              {!fields.gicPropertyValueAsOnDateEditOn && effectivePropertyValueAsOnDate && (
+                <div className="absolute right-3 top-2.5 text-xs text-emerald-700 font-semibold pointer-events-none flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Auto (Base + Completed Work)
+                </div>
+              )}
+            </div>
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── GIC Housing Finance BankConfig ─────────────────────────────────────────
 
 export const GIC_HOUSING_CONFIG: BankConfig = {
@@ -2653,6 +2973,7 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     { id: 'gic-section-5', title: 'BUILDING DETAILS' },
     { id: 'gic-section-6', title: 'VALUATION DETAILS' },
     { id: 'gic-section-7', title: 'ESTIMATE FOR REPAIR & RENOVATION' },
+    { id: 'gic-section-8', title: 'PROGRESS OF WORK' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -2800,6 +3121,13 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     gicIsEstimateReasonableNA: false,
     gicReasonableEstimateAmount: '',
     gicReasonableEstimateAmountNA: false,
+
+    // Section 8: Progress of Work
+    gicValueOfRepairWorkCompleted: '',
+    gicValueOfRepairWorkCompletedNA: false,
+    gicWorkProgressRows: DEFAULT_WORK_PROGRESS_ROWS,
+    gicPropertyValueAsOnDate: '',
+    gicPropertyValueAsOnDateEditOn: false,
   },
   extraSectionsStart: [
     {
@@ -2893,6 +3221,20 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
         <RepairAndRenovationSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          projectCode={projectCode}
+        />
+      ),
+    },
+    {
+      id: 'gic-section-8',
+      title: 'PROGRESS OF WORK',
+      number: 8,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
+        <ProgressOfWorkSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
