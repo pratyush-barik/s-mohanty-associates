@@ -10,8 +10,8 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 
 | Status Category | Count | Description |
 | :--- | :---: | :--- |
-| **✅ Completed** | **21 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
-| **🔨 In Progress** | **38 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
+| **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
+| **🔨 In Progress** | **44 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
 | **⏳ Not Started** | **18 formats (16 banks)** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
@@ -94,19 +94,19 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **48** | **STATE BANK OF INDIA-SBI** | | | |
 | 48.1 | STATE BANK OF INDIA-SBI | `Flat & Apartment` | ✅ Created Base | 🔨 In Progress |
 | 48.2 | STATE BANK OF INDIA-SBI | `Land & Building` | ✅ Created Base | 🔨 In Progress |
-| **49** | **SURYODAY SMALL FINANCE BANK** | `Standard` | ✅ Created Base | ✅ Completed |
-| **50** | **SWARNA FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
-| **51** | **TATA CAPITAL LTD** | `SME-BLG` | ✅ Created Base | ✅ Completed |
-| **52** | **TATA HOUSING FINANCE LTD** | `Standard` | ✅ Created Base | ✅ Completed |
+| **49** | **SURYODAY SMALL FINANCE BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
+| **50** | **SWARNA FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
+| **51** | **TATA CAPITAL LTD** | `SME-BLG` | ✅ Created Base | 🔨 In Progress |
+| **52** | **TATA HOUSING FINANCE LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **53** | **UCO BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **54** | **UJJIVAN SMALL FINANCE BANK** | `Standard` | ✅ Created Base | ✅ Completed |
+| **54** | **UJJIVAN SMALL FINANCE BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **55** | **UNION BANK OF INDIA-UBI** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **56** | **UNITY SMALL FINANCE BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **57** | **UTKARSH SMALL FINANCE BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **58** | **VARTHANA FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **59** | **VISTAAR FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **60** | **YES BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **61** | **KARUR VYSYA BANK LIMITED** | `Standard` | ✅ Created Base | ✅ Completed |
+| **61** | **KARUR VYSYA BANK LIMITED** | `Standard` | ✅ Created Base | 🔨 In Progress |
 
 ---
 
@@ -132,12 +132,6 @@ Templates with complete interactive report draft builder UI and full PDF rendere
 | **11.1** | BANDHAN BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanHLLAP.tsx` | `src/lib/banks/pdf-bandhan-hllap-renderer.ts` | ✅ Completed |
 | **11.2** | BANDHAN BANK | `SME` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanSME.tsx` | `src/lib/banks/pdf-bandhan-sme-renderer.ts` | ✅ Completed |
 | **12** | BANK OF BARODA-BOB | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-baroda/BankOfBaroda.tsx` | `src/lib/banks/pdf-bank-of-baroda-renderer.ts` | ✅ Completed |
-| **49** | SURYODAY SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/suryoday/SuryodaySmallFinanceBank.tsx` | `src/lib/banks/pdf-suryoday-renderer.ts` | ✅ Completed |
-| **50** | SWARNA FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/swarna/SwarnaFinance.tsx` | `src/lib/banks/pdf-swarna-finance-renderer.ts` | ✅ Completed |
-| **51** | TATA CAPITAL LTD | `SME-BLG` | `src/app/portal/reports/[projectId]/banks/tata/TataCapitalSMEBLG.tsx` | `src/lib/banks/pdf-tata-capital-sme-blg-renderer.ts` | ✅ Completed |
-| **52** | TATA HOUSING FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/tata-housing/TataHousingFinance.tsx` | `src/lib/banks/pdf-tata-housing-finance-renderer.ts` | ✅ Completed |
-| **54** | UJJIVAN SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/ujjivan/UjjivanSmallFinanceBank.tsx` | `src/lib/banks/pdf-ujjivan-renderer.ts` | ✅ Completed |
-| **61** | KARUR VYSYA BANK LIMITED | `Standard` | `src/app/portal/reports/[projectId]/banks/karur-vysya/KarurVysyaBank.tsx` | `src/lib/banks/pdf-karur-vysya-renderer.ts` | ✅ Completed |
 
 ### 2. Base Structure Completed (`✅ Created Base` — Builder In Progress)
 Templates with base structure & draft UI files created, currently undergoing field customization or section buildout:
@@ -175,10 +169,16 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **47** | SMFG INDIA-FULLERTON | `Standard` | `src/app/portal/reports/[projectId]/banks/smfg/SMFGIndiaFullerton.tsx` | `src/lib/banks/pdf-smfg-india-fullerton-renderer.ts` | 🔨 In Progress |
 | **48.1** | STATE BANK OF INDIA-SBI | `Flat & Apartment` | `src/app/portal/reports/[projectId]/banks/sbi/StateBankOfIndiaFlatAndApartment.tsx` | `src/lib/banks/pdf-sbi-flat-and-apartment-renderer.ts` | 🔨 In Progress |
 | **48.2** | STATE BANK OF INDIA-SBI | `Land & Building` | `src/app/portal/reports/[projectId]/banks/sbi/StateBankOfIndiaLandAndBuilding.tsx` | `src/lib/banks/pdf-sbi-land-and-building-renderer.ts` | 🔨 In Progress |
+| **49** | SURYODAY SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/suryoday/SuryodaySmallFinanceBank.tsx` | `src/lib/banks/pdf-suryoday-renderer.ts` | 🔨 In Progress |
+| **50** | SWARNA FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/swarna/SwarnaFinance.tsx` | `src/lib/banks/pdf-swarna-finance-renderer.ts` | 🔨 In Progress |
+| **51** | TATA CAPITAL LTD | `SME-BLG` | `src/app/portal/reports/[projectId]/banks/tata/TataCapitalSMEBLG.tsx` | `src/lib/banks/pdf-tata-capital-sme-blg-renderer.ts` | 🔨 In Progress |
+| **52** | TATA HOUSING FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/tata-housing/TataHousingFinance.tsx` | `src/lib/banks/pdf-tata-housing-finance-renderer.ts` | 🔨 In Progress |
 | **53** | UCO BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/uco/UCOBank.tsx` | `src/lib/banks/pdf-uco-bank-renderer.ts` | 🔨 In Progress |
+| **54** | UJJIVAN SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/ujjivan/UjjivanSmallFinanceBank.tsx` | `src/lib/banks/pdf-ujjivan-renderer.ts` | 🔨 In Progress |
 | **55** | UNION BANK OF INDIA-UBI | `Standard` | `src/app/portal/reports/[projectId]/banks/union-bank/UnionBankOfIndia.tsx` | `src/lib/banks/pdf-union-bank-of-india-renderer.ts` | 🔨 In Progress |
 | **56** | UNITY SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/unity-sfb/UnitySmallFinanceBank.tsx` | `src/lib/banks/pdf-unity-sfb-renderer.ts` | 🔨 In Progress |
 | **57** | UTKARSH SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/utkarsh/UtkarshSmallFinanceBank.tsx` | `src/lib/banks/pdf-utkarsh-sfb-renderer.ts` | 🔨 In Progress |
 | **58** | VARTHANA FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/varthana/VarthanaFinance.tsx` | `src/lib/banks/pdf-varthana-finance-renderer.ts` | 🔨 In Progress |
 | **59** | VISTAAR FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/vistaar/VistaarFinance.tsx` | `src/lib/banks/pdf-vistaar-finance-renderer.ts` | 🔨 In Progress |
 | **60** | YES BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/yes-bank/YesBank.tsx` | `src/lib/banks/pdf-yes-bank-renderer.ts` | 🔨 In Progress |
+| **61** | KARUR VYSYA BANK LIMITED | `Standard` | `src/app/portal/reports/[projectId]/banks/karur-vysya/KarurVysyaBank.tsx` | `src/lib/banks/pdf-karur-vysya-renderer.ts` | 🔨 In Progress |
