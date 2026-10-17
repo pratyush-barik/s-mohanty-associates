@@ -138,6 +138,11 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'ISFC': dynamic(() => import('./banks/isfc/ISFC')),
   'JANA SMALL FINANCE BANK': dynamic(() => import('./banks/jana-sfb/JanaSmallFinanceBank')),
 
+  // Karur Vysya Bank
+  'KARUR VYSYA BANK': dynamic(() => import('./banks/karur-vysya/KarurVysyaBank')),
+  'KARUR VYSYA BANK LIMITED': dynamic(() => import('./banks/karur-vysya/KarurVysyaBank')),
+  'KVB': dynamic(() => import('./banks/karur-vysya/KarurVysyaBank')),
+
   // Kotak & L&T
   'KOTAK MAHINDRA BANK::BUSINESS BANKING GROUP': dynamic(() => import('./banks/kotak/KotakBBG')),
   'KOTAK MAHINDRA BANK::HL-LAP': dynamic(() => import('./banks/kotak/KotakHLLAP')),

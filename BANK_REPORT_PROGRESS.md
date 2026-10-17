@@ -9,10 +9,10 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 ### 📊 Overall Status Summary
 
 | Status Category | Count | Description |
-| **✅ Completed** | **20 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
+| **✅ Completed** | **21 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
 | **🔨 In Progress** | **33 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
 | **⏳ Not Started** | **23 formats (21 banks)** | Directory reserved / pending base component creation |
-| **Total Tracked** | **60 institutions** (76 formats) | Full coverage of Indian Banks & NBFCs |
+| **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
 
@@ -105,6 +105,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **58** | **VARTHANA FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **59** | **VISTAAR FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **60** | **YES BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
+| **61** | **KARUR VYSYA BANK LIMITED** | `Standard` | ✅ Created Base | ✅ Completed |
 
 ---
 
@@ -135,6 +136,7 @@ Templates with complete interactive report draft builder UI and full PDF rendere
 | **51** | TATA CAPITAL LTD | `SME-BLG` | `src/app/portal/reports/[projectId]/banks/tata/TataCapitalSMEBLG.tsx` | `src/lib/banks/pdf-tata-capital-sme-blg-renderer.ts` | ✅ Completed |
 | **52** | TATA HOUSING FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/tata-housing/TataHousingFinance.tsx` | `src/lib/banks/pdf-tata-housing-finance-renderer.ts` | ✅ Completed |
 | **54** | UJJIVAN SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/ujjivan/UjjivanSmallFinanceBank.tsx` | `src/lib/banks/pdf-ujjivan-renderer.ts` | ✅ Completed |
+| **61** | KARUR VYSYA BANK LIMITED | `Standard` | `src/app/portal/reports/[projectId]/banks/karur-vysya/KarurVysyaBank.tsx` | `src/lib/banks/pdf-karur-vysya-renderer.ts` | ✅ Completed |
 
 ### 2. Base Structure Completed (`✅ Created Base` — Builder In Progress)
 Templates with base structure & draft UI files created, currently undergoing field customization or section buildout:

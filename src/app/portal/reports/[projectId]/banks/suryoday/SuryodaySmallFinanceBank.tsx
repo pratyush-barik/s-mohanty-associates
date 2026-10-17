@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  ChevronDown,
   Building,
   MapPin,
   FileText,
@@ -25,6 +24,7 @@ import {
   getEarliestFieldVisit,
   EarliestFieldVisitBadge,
   Field,
+  Section,
   inputCls,
   selectCls,
   BaseDocumentsSection,
@@ -158,35 +158,35 @@ export default function SuryodaySmallFinanceBank({
       constructionProgress: f.constructionProgress || '100%',
       constructionRecommend: f.constructionRecommend || '100%',
       ageOfProperty: f.ageOfProperty || '12-Years',
-      futureLife: f.futureLife || '48-Years',
-      qualityOfConstruction: f.qualityOfConstruction || 'Good',
+      residualAge: f.residualAge || '48-Years',
 
-      // Section E: Documents details
-      saleDeedDetails: f.saleDeedDetails || 'Copy of sale deed, ROR, Sketch map',
-      constructionPermission: f.constructionPermission || 'Plan not provide',
-      completionCertificate: f.completionCertificate || 'NA',
-      approvedBuildingPlan: f.approvedBuildingPlan || 'Plan not provide',
-      landTenure: f.landTenure || 'Freehold',
-      otherDocuments: f.otherDocuments || 'NA',
-      reraApplicable: f.reraApplicable || 'Not applicable',
-      reraRegNo: f.reraRegNo || 'REG No:-NA',
+      // Section E: Document details
+      documentsProduced: f.documentsProduced || 'Sale deed, Mutation, Electricity Bill, Legal Opinion',
+      ownershipType: f.ownershipType || 'Free hold',
+      approvedPlanStatus: f.approvedPlanStatus || 'No',
 
       // Section F: Valuation & Market Rates
-      readyReckonerRate: f.readyReckonerRate || 'Not Available',
-      marketRateVicinity: f.marketRateVicinity || 'Rs.3000/- to Rs.3500/- per sqft of land',
-      inquiriesFrom: f.inquiriesFrom || 'Broker & Local Market',
+      marketRateLand: f.marketRateLand || '4000',
+      guidelineRateLand: f.guidelineRateLand || '3500',
+      natureOfLand: f.natureOfLand || 'Homestead',
 
-      // Section G: Area details for Land & Building
-      areaApprovedPlan: f.areaApprovedPlan || 'Plan not provide',
-      areaDocument: f.areaDocument || 'Land are=3484sqft',
-      areaSiteMeasurement: f.areaSiteMeasurement || 'Land are=3484sqft, GF-1311sqft, FF-1311sqft, SF-1311sqft',
-      areaConsideredFar: f.areaConsideredFar || 'Land are=3484sqft, GF-1311sqft, FF-1311sqft, SF-1311sqft',
-      deviationSanctionPlan: f.deviationSanctionPlan || 'NA',
-      riskOfDemolition: f.riskOfDemolition || 'Low',
+      // Section G: Area Details (Land & Building)
+      deedArea: f.deedArea || '3484',
+      actualArea: f.actualArea || '3484',
+      consideredArea: f.consideredArea || '3484',
+      landMeasurementRemark: f.landMeasurementRemark || 'As per deed, converted into sqft',
 
-      // Section H: Land & Building Valuation
-      landArea: f.landArea || '3484',
-      landRate: f.landRate || '3100',
+      carpetAreaPlan: f.carpetAreaPlan || 'NA',
+      carpetAreaSite: f.carpetAreaSite || '3146',
+      builtUpAreaPlan: f.builtUpAreaPlan || 'NA',
+      builtUpAreaSite: f.builtUpAreaSite || '3933',
+      superBuiltUpAreaPlan: f.superBuiltUpAreaPlan || 'NA',
+      superBuiltUpAreaSite: f.superBuiltUpAreaSite || 'NA',
+      areaDeviation: f.areaDeviation || 'NA',
+
+      // Section H: Valuation Details (Land & Building Method)
+      landArea: f.landArea !== undefined ? String(f.landArea) : '3484',
+      landRate: f.landRate !== undefined ? String(f.landRate) : '4000',
       landRemark: f.landRemark || 'Adopted market rate',
 
       buildingRows: f.buildingRows || [
@@ -344,16 +344,13 @@ export default function SuryodaySmallFinanceBank({
   };
 
   const handleRemoveBuildingRow = (index: number) => {
-    setForm((prev: any) => {
-      if (prev.buildingRows.length <= 1) return prev;
-      const nextRows = prev.buildingRows.filter((_: any, i: number) => i !== index);
-      return { ...prev, buildingRows: nextRows };
-    });
+    setForm((prev: any) => ({
+      ...prev,
+      buildingRows: prev.buildingRows.filter((_: any, i: number) => i !== index),
+    }));
   };
 
-  // ═══════════════════════════════════════════════
-  // MEDIA UPLOADS
-  // ═══════════════════════════════════════════════
+  // Upload handlers
   const handleDocUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -491,7 +488,7 @@ export default function SuryodaySmallFinanceBank({
     }
   };
 
-  // Floating Navigator Sections (0 numeric prefixes)
+  // 16 Floating Navigator Sections (0 numeric prefixes)
   const navSections = useMemo(
     () => [
       { id: 'sec-general', title: 'General Details' },
@@ -507,39 +504,16 @@ export default function SuryodaySmallFinanceBank({
       { id: 'sec-observations', title: 'Observations & Remarks' },
       { id: 'sec-marketability', title: 'Marketability & Declaration' },
       { id: 'sec-schedule-i', title: 'Schedule I - Stage of Construction' },
-      { id: 'sec-documents-annexure', title: 'Documents' },
-      { id: 'sec-maps-annexure', title: 'Maps' },
-      { id: 'sec-photos-annexure', title: 'Photographs' },
+      { id: 'sec-documents-annexure', title: 'Verified Property Documents' },
+      { id: 'sec-maps-annexure', title: 'Location Maps' },
+      { id: 'sec-photos-annexure', title: 'Property Site Photographs' },
     ],
     []
   );
 
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
-    'sec-general': true,
-    'sec-surrounding': true,
-    'sec-property': true,
-    'sec-structural': true,
-    'sec-documents': true,
-    'sec-valuation-market': true,
-    'sec-area-details': true,
-    'sec-land-building-val': true,
-    'sec-flat-area-details': true,
-    'sec-sales-comparison': true,
-    'sec-observations': true,
-    'sec-marketability': true,
-    'sec-schedule-i': true,
-    'sec-documents-annexure': true,
-    'sec-maps-annexure': true,
-    'sec-photos-annexure': true,
-  });
-
-  const toggleSection = (id: string) => {
-    setOpenSections(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
   return (
-    <div className="min-h-screen bg-[#F8FAFC] pb-24 text-slate-800">
-      {/* Active Configuration Banner */}
+    <div className="space-y-6 pb-28 w-full">
+      {/* ── Active Configuration Banner with Change Parameters ── */}
       <ActiveConfigBanner
         clientType="organisation"
         category="Bank & FIS"
@@ -548,48 +522,47 @@ export default function SuryodaySmallFinanceBank({
         sticky={false}
       />
 
-      {/* Floating Navigator */}
-      <FloatingNavigator sections={navSections} />
-
-      {/* Main Container */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
-        {/* Title Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
-                Suryoday Small Finance Bank Limited
-              </span>
-              <span className="text-xs text-slate-400">|</span>
-              <span className="text-xs text-slate-500 font-medium">Standard Format</span>
-            </div>
-            <h1 className="text-xl font-bold text-slate-900 mt-2">Valuation Report Builder</h1>
-            <p className="text-xs text-slate-500 mt-0.5">
-              Dual valuation engines (Land & Building + Sales Comparison Approach) with Schedule I construction matrix.
-            </p>
-          </div>
-          {earliestVisit && (
-            <EarliestFieldVisitBadge fieldVisit={earliestVisit} />
-          )}
-        </div>
-
-        {/* 1. General Details */}
-        <div id="sec-general" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-general')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                <Building className="w-5 h-5" />
+      {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8">
+        {/* ── Left Form Column ── */}
+        <div className="flex-1 min-w-0 space-y-6 w-full">
+          {/* Title Card */}
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 bg-amber-50 text-amber-700 text-xs font-semibold rounded-full border border-amber-200">
+                  Suryoday Small Finance Bank Limited
+                </span>
+                <span className="text-xs text-slate-400">|</span>
+                <span className="text-xs text-slate-500 font-medium">Standard Format</span>
               </div>
-              <h2 className="text-base font-bold text-slate-900">General Details</h2>
+              <h1 className="text-xl font-bold text-slate-900 mt-2">Valuation Report Builder</h1>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Dual valuation engines (Land & Building + Sales Comparison Approach) with Schedule I construction matrix.
+              </p>
             </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-general'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-general'] && (
-            <div className="p-6 space-y-4">
+            {earliestVisit?.dateStr && (
+              <EarliestFieldVisitBadge visitInfo={earliestVisit} />
+            )}
+          </div>
+
+          {/* Banner Alert Message */}
+          {message && (
+            <div
+              className={`p-4 rounded-xl text-sm font-medium flex items-center justify-between ${
+                message.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
+              }`}
+            >
+              <span>{message.text}</span>
+              <button onClick={() => setMessage(null)} className="text-xs font-bold underline ml-4">
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          {/* 1. General Details */}
+          <div id="sec-general">
+            <Section title="General Details" defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Application No.">
                   <input
@@ -723,27 +696,12 @@ export default function SuryodaySmallFinanceBank({
                   disabled={isReadOnly}
                 />
               </Field>
-            </div>
-          )}
-        </div>
+            </Section>
+          </div>
 
-        {/* 2. Surrounding Locality */}
-        <div id="sec-surrounding" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-surrounding')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                <MapPin className="w-5 h-5" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900">Surrounding Locality</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-surrounding'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-surrounding'] && (
-            <div className="p-6 space-y-4">
+          {/* 2. Surrounding Locality */}
+          <div id="sec-surrounding">
+            <Section title="Surrounding Locality" defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Within the Limitation of">
                   <input
@@ -754,7 +712,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Habitation & Vicinity">
+                <Field label="Habitation in vicinity">
                   <input
                     type="text"
                     className={inputCls}
@@ -763,7 +721,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Classification of Locality">
+                <Field label="Classification of locality">
                   <input
                     type="text"
                     className={inputCls}
@@ -775,7 +733,7 @@ export default function SuryodaySmallFinanceBank({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Condition of approach road along with width">
+                <Field label="Approach Road condition">
                   <input
                     type="text"
                     className={inputCls}
@@ -784,7 +742,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Availability of Amenities (water, drainage, power) & distance">
+                <Field label="Availability of civic amenities">
                   <input
                     type="text"
                     className={inputCls}
@@ -794,29 +752,14 @@ export default function SuryodaySmallFinanceBank({
                   />
                 </Field>
               </div>
-            </div>
-          )}
-        </div>
+            </Section>
+          </div>
 
-        {/* 3. Property Details & Boundaries */}
-        <div id="sec-property" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-property')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                <Layers className="w-5 h-5" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900">Property Details & Boundaries</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-property'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-property'] && (
-            <div className="p-6 space-y-4">
+          {/* 3. Property Details & Boundaries */}
+          <div id="sec-property">
+            <Section title="Property Details & Boundaries" defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="Description of Property">
+                <Field label="Brief Description of Property">
                   <input
                     type="text"
                     className={inputCls}
@@ -834,7 +777,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Type of Usage of Entire Property">
+                <Field label="Usage of Property">
                   <input
                     type="text"
                     className={inputCls}
@@ -845,94 +788,112 @@ export default function SuryodaySmallFinanceBank({
                 </Field>
               </div>
 
-              {/* 4-Direction Boundaries Table */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden mt-4">
-                <div className="bg-slate-100 px-4 py-2.5 font-bold text-xs text-slate-700 uppercase tracking-wide">
-                  Boundaries Comparison
-                </div>
-                <div className="p-4 space-y-3">
-                  <div className="grid grid-cols-3 gap-3 font-semibold text-xs text-slate-500 border-b border-slate-200 pb-2">
-                    <div>Direction</div>
-                    <div>As Per Site</div>
-                    <div>As Per Sale Deed</div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3 items-center">
-                    <span className="text-sm font-semibold text-slate-700">East</span>
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={form.boundaryEastSite}
-                      onChange={e => updateField('boundaryEastSite', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={form.boundaryEastDeed}
-                      onChange={e => updateField('boundaryEastDeed', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3 items-center">
-                    <span className="text-sm font-semibold text-slate-700">West</span>
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={form.boundaryWestSite}
-                      onChange={e => updateField('boundaryWestSite', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={form.boundaryWestDeed}
-                      onChange={e => updateField('boundaryWestDeed', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3 items-center">
-                    <span className="text-sm font-semibold text-slate-700">North</span>
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={form.boundaryNorthSite}
-                      onChange={e => updateField('boundaryNorthSite', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={form.boundaryNorthDeed}
-                      onChange={e => updateField('boundaryNorthDeed', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-3 items-center">
-                    <span className="text-sm font-semibold text-slate-700">South</span>
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={form.boundarySouthSite}
-                      onChange={e => updateField('boundarySouthSite', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={form.boundarySouthDeed}
-                      onChange={e => updateField('boundarySouthDeed', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </div>
+              {/* Boundaries Matrix Table */}
+              <div className="pt-2">
+                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Boundaries Matrix (As per Site vs Deed)
+                </h3>
+                <div className="overflow-x-auto rounded-xl border border-slate-200">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="px-4 py-2.5 w-32">Direction</th>
+                        <th className="px-4 py-2.5">As per Actual Site</th>
+                        <th className="px-4 py-2.5">As per Deed</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      <tr>
+                        <td className="px-4 py-2 font-medium text-slate-800">East</td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.boundaryEastSite}
+                            onChange={e => updateField('boundaryEastSite', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.boundaryEastDeed}
+                            onChange={e => updateField('boundaryEastDeed', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-2 font-medium text-slate-800">West</td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.boundaryWestSite}
+                            onChange={e => updateField('boundaryWestSite', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.boundaryWestDeed}
+                            onChange={e => updateField('boundaryWestDeed', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-2 font-medium text-slate-800">North</td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.boundaryNorthSite}
+                            onChange={e => updateField('boundaryNorthSite', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.boundaryNorthDeed}
+                            onChange={e => updateField('boundaryNorthDeed', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-2 font-medium text-slate-800">South</td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.boundarySouthSite}
+                            onChange={e => updateField('boundarySouthSite', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.boundarySouthDeed}
+                            onChange={e => updateField('boundarySouthDeed', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                <Field label="Remark on Boundaries">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <Field label="Remark on Boundary Matching">
                   <input
                     type="text"
                     className={inputCls}
@@ -941,7 +902,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Plot demarcated at site">
+                <Field label="Whether plot is demarcated at site">
                   <select
                     className={selectCls}
                     value={form.plotDemarcated}
@@ -953,27 +914,12 @@ export default function SuryodaySmallFinanceBank({
                   </select>
                 </Field>
               </div>
-            </div>
-          )}
-        </div>
+            </Section>
+          </div>
 
-        {/* 4. Structural Details */}
-        <div id="sec-structural" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-structural')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                <Building className="w-5 h-5" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900">Structural Details</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-structural'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-structural'] && (
-            <div className="p-6 space-y-4">
+          {/* 4. Structural Details */}
+          <div id="sec-structural">
+            <Section title="Structural Details" defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Field label="Type of Structure">
                   <input
@@ -984,7 +930,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="No. of floors as per site and as per Plan">
+                <Field label="No. of Floors (Site & Plan)">
                   <input
                     type="text"
                     className={inputCls}
@@ -1004,8 +950,8 @@ export default function SuryodaySmallFinanceBank({
                 </Field>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Field label="Flats on each floor & unit position">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Field label="No. of Flats per Floor">
                   <input
                     type="text"
                     className={inputCls}
@@ -1014,7 +960,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="No. of lifts in Building">
+                <Field label="No. of Lifts">
                   <input
                     type="text"
                     className={inputCls}
@@ -1032,314 +978,261 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Future Life of Property">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.futureLife}
-                    onChange={e => updateField('futureLife', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="Quality of Construction">
-                  <select
-                    className={selectCls}
-                    value={form.qualityOfConstruction}
-                    onChange={e => updateField('qualityOfConstruction', e.target.value)}
-                    disabled={isReadOnly}
-                  >
-                    <option value="Good">Good</option>
-                    <option value="Average">Average</option>
-                    <option value="Poor">Poor</option>
-                    <option value="Excellent">Excellent</option>
-                  </select>
-                </Field>
-                <Field label="Stage of Construction - Progress">
+                <Field label="Construction Progress (%)">
                   <input
                     type="text"
                     className={inputCls}
                     value={form.constructionProgress}
-                    onChange={e => updateField('constructionProgress', e.target.value)}
+                    onChange={e => updateField('constructionProgress', sanitizePercentage(e.target.value))}
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Stage of Construction - Recommend">
+                <Field label="Recommended Stage (%)">
                   <input
                     type="text"
                     className={inputCls}
                     value={form.constructionRecommend}
-                    onChange={e => updateField('constructionRecommend', e.target.value)}
+                    onChange={e => updateField('constructionRecommend', sanitizePercentage(e.target.value))}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Residual Age (Years)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={form.residualAge}
+                    onChange={e => updateField('residualAge', e.target.value)}
                     disabled={isReadOnly}
                   />
                 </Field>
               </div>
-            </div>
-          )}
-        </div>
+            </Section>
+          </div>
 
-        {/* 5. Document Details */}
-        <div id="sec-documents" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-documents')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-                <FileText className="w-5 h-5" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900">Document Details</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-documents'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-documents'] && (
-            <div className="p-6 space-y-4">
-              <Field label="Sale Deed or Agreement for Sale (Parties, Date, Regd. No., SRO, Amount)">
-                <input
-                  type="text"
+          {/* 5. Document Details */}
+          <div id="sec-documents">
+            <Section title="Document Details" defaultOpen={true}>
+              <Field label="Documents produced for perusal">
+                <textarea
+                  rows={2}
                   className={inputCls}
-                  value={form.saleDeedDetails}
-                  onChange={e => updateField('saleDeedDetails', e.target.value)}
+                  value={form.documentsProduced}
+                  onChange={e => updateField('documentsProduced', e.target.value)}
                   disabled={isReadOnly}
                 />
               </Field>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="Construction Permission (Authority & Sanction No.)">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Field label="Type of Ownership">
                   <input
                     type="text"
                     className={inputCls}
-                    value={form.constructionPermission}
-                    onChange={e => updateField('constructionPermission', e.target.value)}
+                    value={form.ownershipType}
+                    onChange={e => updateField('ownershipType', e.target.value)}
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Completion Certificate">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.completionCertificate}
-                    onChange={e => updateField('completionCertificate', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Approved Building Plan (Sanction No & Date)">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.approvedBuildingPlan}
-                    onChange={e => updateField('approvedBuildingPlan', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Field label="Land Tenure">
+                <Field label="Approved Plan Availability Status">
                   <select
                     className={selectCls}
-                    value={form.landTenure}
-                    onChange={e => updateField('landTenure', e.target.value)}
+                    value={form.approvedPlanStatus}
+                    onChange={e => updateField('approvedPlanStatus', e.target.value)}
                     disabled={isReadOnly}
                   >
-                    <option value="Freehold">Freehold</option>
-                    <option value="Leasehold">Leasehold</option>
-                  </select>
-                </Field>
-                <Field label="Other Documents if any">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.otherDocuments}
-                    onChange={e => updateField('otherDocuments', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="RERA Status">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.reraApplicable}
-                    onChange={e => updateField('reraApplicable', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="RERA Registration No.">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.reraRegNo}
-                    onChange={e => updateField('reraRegNo', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 6. Valuation & Market Rates */}
-        <div id="sec-valuation-market" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-valuation-market')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                <DollarSign className="w-5 h-5" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900">Valuation & Market Rates</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-valuation-market'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-valuation-market'] && (
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="Ready Reckoner Rate">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.readyReckonerRate}
-                    onChange={e => updateField('readyReckonerRate', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Market Rates Range (vicinity/sqft)">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.marketRateVicinity}
-                    onChange={e => updateField('marketRateVicinity', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Inquiries Made From">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.inquiriesFrom}
-                    onChange={e => updateField('inquiriesFrom', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* 7. Area Details (Land & Building) */}
-        <div id="sec-area-details" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-area-details')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                <Layers className="w-5 h-5" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900">Area Details (Land & Building)</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-area-details'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-area-details'] && (
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Land Area & BUA as per Approved Plan (Sq. Ft.)">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.areaApprovedPlan}
-                    onChange={e => updateField('areaApprovedPlan', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Land Area & BUA as per Document (Sq. Ft.)">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.areaDocument}
-                    onChange={e => updateField('areaDocument', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Land Area & BUA as per Site Measurement (Sq. Ft.)">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.areaSiteMeasurement}
-                    onChange={e => updateField('areaSiteMeasurement', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Area Considered for Valuation (Sq. Ft.) as per FAR=1.5">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.areaConsideredFar}
-                    onChange={e => updateField('areaConsideredFar', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="Deviation from Sanction Plan / Building Byelaws">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={form.deviationSanctionPlan}
-                    onChange={e => updateField('deviationSanctionPlan', e.target.value)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Risk of Demolition (Valuer's Views)">
-                  <select
-                    className={selectCls}
-                    value={form.riskOfDemolition}
-                    onChange={e => updateField('riskOfDemolition', e.target.value)}
-                    disabled={isReadOnly}
-                  >
-                    <option value="Low">Low</option>
-                    <option value="Nil">Nil</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                   </select>
                 </Field>
               </div>
-            </div>
-          )}
-        </div>
+            </Section>
+          </div>
 
-        {/* 8. Land & Building Valuation (Section H) */}
-        <div id="sec-land-building-val" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-land-building-val')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                <DollarSign className="w-5 h-5" />
+          {/* 6. Valuation & Market Rates */}
+          <div id="sec-valuation-market">
+            <Section title="Valuation & Market Rates" defaultOpen={true}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Field label="Market Rate of Land (Rs/Sqft)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={form.marketRateLand}
+                    onChange={e => updateField('marketRateLand', sanitizePositiveFloat(e.target.value))}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Guideline Rate of Land (Rs/Sqft)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={form.guidelineRateLand}
+                    onChange={e => updateField('guidelineRateLand', sanitizePositiveFloat(e.target.value))}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Nature of Land">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={form.natureOfLand}
+                    onChange={e => updateField('natureOfLand', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
               </div>
-              <h2 className="text-base font-bold text-slate-900">Land & Building Valuation</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-land-building-val'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-land-building-val'] && (
-            <div className="p-6 space-y-6">
-              {/* Land Component */}
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
-                <h3 className="text-sm font-bold text-slate-800">1. Land Valuation</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                  <Field label="Land Area (Sq. Ft.)">
+            </Section>
+          </div>
+
+          {/* 7. Area Details (Land & Building) */}
+          <div id="sec-area-details">
+            <Section title="Area Details (Land & Building)" defaultOpen={true}>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Field label="Land Area as per Deed (Sq. ft.)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={form.deedArea}
+                    onChange={e => updateField('deedArea', sanitizePositiveFloat(e.target.value))}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Land Area as per Actual Site (Sq. ft.)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={form.actualArea}
+                    onChange={e => updateField('actualArea', sanitizePositiveFloat(e.target.value))}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Land Area Considered for Valuation (Sq. ft.)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={form.consideredArea}
+                    onChange={e => updateField('consideredArea', sanitizePositiveFloat(e.target.value))}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
+
+              <Field label="Land Measurement Remark">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={form.landMeasurementRemark}
+                  onChange={e => updateField('landMeasurementRemark', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+
+              {/* Built-Up Area Matrix */}
+              <div className="pt-2">
+                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Building Area Details (Plan vs Site)
+                </h3>
+                <div className="overflow-x-auto rounded-xl border border-slate-200">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="px-4 py-2.5">Area Type</th>
+                        <th className="px-4 py-2.5">As per Plan (Sq. ft.)</th>
+                        <th className="px-4 py-2.5">As per Site (Sq. ft.)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      <tr>
+                        <td className="px-4 py-2 font-medium text-slate-800">Carpet Area</td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.carpetAreaPlan}
+                            onChange={e => updateField('carpetAreaPlan', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.carpetAreaSite}
+                            onChange={e => updateField('carpetAreaSite', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-2 font-medium text-slate-800">Built-Up Area</td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.builtUpAreaPlan}
+                            onChange={e => updateField('builtUpAreaPlan', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.builtUpAreaSite}
+                            onChange={e => updateField('builtUpAreaSite', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      </tr>
+                      <tr>
+                        <td className="px-4 py-2 font-medium text-slate-800">Super Built-Up Area</td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.superBuiltUpAreaPlan}
+                            onChange={e => updateField('superBuiltUpAreaPlan', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="px-3 py-1.5">
+                          <input
+                            type="text"
+                            className={inputCls}
+                            value={form.superBuiltUpAreaSite}
+                            onChange={e => updateField('superBuiltUpAreaSite', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <Field label="Deviation / Violations if any">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={form.areaDeviation}
+                  onChange={e => updateField('areaDeviation', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </Section>
+          </div>
+
+          {/* 8. Land & Building Valuation */}
+          <div id="sec-land-building-val">
+            <Section title="Land & Building Valuation" defaultOpen={true}>
+              {/* Land Valuation Section */}
+              <div className="p-4 bg-slate-50/70 rounded-xl border border-slate-200 space-y-4">
+                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Land Valuation
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <Field label="Considered Land Area (Sq. ft.)">
                     <input
                       type="text"
                       className={inputCls}
@@ -1348,7 +1241,7 @@ export default function SuryodaySmallFinanceBank({
                       disabled={isReadOnly}
                     />
                   </Field>
-                  <Field label="Rate Adopted (Rs./Sq. Ft.)">
+                  <Field label="Adopted Rate per Sq. ft. (Rs)">
                     <input
                       type="text"
                       className={inputCls}
@@ -1357,184 +1250,170 @@ export default function SuryodaySmallFinanceBank({
                       disabled={isReadOnly}
                     />
                   </Field>
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-500 mb-1">Land Value (Rs.)</label>
-                    <div className="px-3 py-2 bg-emerald-50 border border-emerald-200 text-emerald-900 font-bold rounded-lg text-sm">
-                      ₹ {formatIndianCurrency(landValue)}
-                    </div>
-                  </div>
-                  <Field label="Remark (if any)">
+                  <Field label="Computed Land Value (Rs)">
                     <input
                       type="text"
-                      className={inputCls}
-                      value={form.landRemark}
-                      onChange={e => updateField('landRemark', e.target.value)}
-                      disabled={isReadOnly}
+                      className={`${inputCls} bg-emerald-50/50 font-mono font-bold text-emerald-800`}
+                      value={`Rs. ${formatIndianCurrency(landValue)}/-`}
+                      readOnly
                     />
                   </Field>
                 </div>
+                <Field label="Remark for Adopted Land Rate">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={form.landRemark}
+                    onChange={e => updateField('landRemark', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
               </div>
 
-              {/* Building Component (RCC Roofing) */}
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+              {/* Building Floor Rows */}
+              <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-800">2. Built-up Area Valuation (RCC Roofing Only)</h3>
+                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Building Valuation (Floor-wise)
+                  </h3>
                   {!isReadOnly && (
                     <button
                       type="button"
                       onClick={handleAddBuildingRow}
-                      className="px-2.5 py-1 text-xs font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg flex items-center gap-1 transition-colors"
+                      className="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-semibold hover:bg-indigo-100 transition flex items-center gap-1 cursor-pointer"
                     >
-                      <Plus className="w-3.5 h-3.5" /> Add Floor
+                      <Plus className="w-3.5 h-3.5" />
+                      Add Floor
                     </button>
                   )}
                 </div>
 
-                <div className="space-y-2">
-                  <div className="grid grid-cols-12 gap-2 text-xs font-semibold text-slate-500 pb-1">
-                    <div className="col-span-3">Floor / Description</div>
-                    <div className="col-span-2">BUA (Sq. Ft.)</div>
-                    <div className="col-span-2">Rate (Rs./Sq. Ft.)</div>
-                    <div className="col-span-2">Stage (%)</div>
-                    <div className="col-span-2 text-right">Building Value (Rs.)</div>
-                    <div className="col-span-1"></div>
+                <div className="overflow-x-auto rounded-xl border border-slate-200">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+                      <tr>
+                        <th className="px-4 py-2.5">Floor</th>
+                        <th className="px-4 py-2.5">Area (Sq.ft)</th>
+                        <th className="px-4 py-2.5">Rate (Rs/Sq.ft)</th>
+                        <th className="px-4 py-2.5">Stage (%)</th>
+                        <th className="px-4 py-2.5">Present Value (Rs)</th>
+                        {!isReadOnly && <th className="px-4 py-2.5 w-12 text-center">Action</th>}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {(form.buildingRows || []).map((row: BuildingRow, idx: number) => {
+                        const rowArea = parseSafeFloat(row.area);
+                        const rowRate = parseSafeFloat(row.rate);
+                        const rowStage = parseSafeFloat(row.stage || 100);
+                        const rowFull = multiplyExactDecimals(rowArea, rowRate);
+                        const rowPresent = calculatePercentageValue(rowFull, rowStage);
+                        return (
+                          <tr key={row.id || idx}>
+                            <td className="px-3 py-1.5">
+                              <input
+                                type="text"
+                                className={inputCls}
+                                value={row.floor}
+                                onChange={e => handleBuildingRowChange(idx, 'floor', e.target.value)}
+                                disabled={isReadOnly}
+                              />
+                            </td>
+                            <td className="px-3 py-1.5">
+                              <input
+                                type="text"
+                                className={inputCls}
+                                value={row.area}
+                                onChange={e => handleBuildingRowChange(idx, 'area', e.target.value)}
+                                disabled={isReadOnly}
+                              />
+                            </td>
+                            <td className="px-3 py-1.5">
+                              <input
+                                type="text"
+                                className={inputCls}
+                                value={row.rate}
+                                onChange={e => handleBuildingRowChange(idx, 'rate', e.target.value)}
+                                disabled={isReadOnly}
+                              />
+                            </td>
+                            <td className="px-3 py-1.5">
+                              <input
+                                type="text"
+                                className={inputCls}
+                                value={row.stage}
+                                onChange={e => handleBuildingRowChange(idx, 'stage', e.target.value)}
+                                disabled={isReadOnly}
+                              />
+                            </td>
+                            <td className="px-4 py-2 font-mono font-bold text-slate-800">
+                              ₹ {formatIndianCurrency(rowPresent)}
+                            </td>
+                            {!isReadOnly && (
+                              <td className="px-3 py-1.5 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveBuildingRow(idx)}
+                                  className="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded transition cursor-pointer"
+                                  title="Delete Floor"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </td>
+                            )}
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Total Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
+                <div className="p-4 bg-blue-50/50 rounded-xl border border-blue-200">
+                  <span className="text-xs font-semibold text-blue-700 uppercase tracking-wider">Present FMV</span>
+                  <div className="text-xl font-bold text-blue-900 mt-1 font-mono">
+                    ₹ {formatIndianCurrency(presentFMV)}
                   </div>
-
-                  {(form.buildingRows || []).map((row: BuildingRow, idx: number) => {
-                    const rowArea = parseSafeFloat(row.area);
-                    const rowRate = parseSafeFloat(row.rate);
-                    const rowStage = parseSafeFloat(row.stage || 100);
-                    const rowFull = multiplyExactDecimals(rowArea, rowRate);
-                    const rowVal = calculatePercentageValue(rowFull, rowStage);
-
-                    return (
-                      <div key={row.id || idx} className="grid grid-cols-12 gap-2 items-center">
-                        <div className="col-span-3">
-                          <input
-                            type="text"
-                            className={inputCls}
-                            value={row.floor}
-                            onChange={e => handleBuildingRowChange(idx, 'floor', e.target.value)}
-                            disabled={isReadOnly}
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <input
-                            type="text"
-                            className={inputCls}
-                            value={row.area}
-                            onChange={e => handleBuildingRowChange(idx, 'area', e.target.value)}
-                            disabled={isReadOnly}
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <input
-                            type="text"
-                            className={inputCls}
-                            value={row.rate}
-                            onChange={e => handleBuildingRowChange(idx, 'rate', e.target.value)}
-                            disabled={isReadOnly}
-                          />
-                        </div>
-                        <div className="col-span-2">
-                          <input
-                            type="text"
-                            className={inputCls}
-                            value={row.stage}
-                            onChange={e => handleBuildingRowChange(idx, 'stage', e.target.value)}
-                            disabled={isReadOnly}
-                          />
-                        </div>
-                        <div className="col-span-2 text-right font-semibold text-slate-800 text-sm">
-                          ₹ {formatIndianCurrency(rowVal)}
-                        </div>
-                        <div className="col-span-1 flex justify-center">
-                          {!isReadOnly && form.buildingRows.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveBuildingRow(idx)}
-                              className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  <span className="text-[11px] text-blue-600">Land + Current Stage Building</span>
                 </div>
 
-                <div className="flex justify-between items-center pt-2 border-t border-slate-200">
-                  <span className="text-xs font-bold text-slate-700 uppercase">Total Building Value</span>
-                  <span className="text-base font-extrabold text-indigo-700">₹ {formatIndianCurrency(totalBuildingValue)}</span>
+                <div className="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200">
+                  <span className="text-xs font-semibold text-emerald-700 uppercase tracking-wider">Completed FMV</span>
+                  <div className="text-xl font-bold text-emerald-900 mt-1 font-mono">
+                    ₹ {formatIndianCurrency(completedFMV)}
+                  </div>
+                  <span className="text-[11px] text-emerald-600">On 100% Completion</span>
+                </div>
+
+                <div className="p-4 bg-amber-50/50 rounded-xl border border-amber-200">
+                  <span className="text-xs font-semibold text-amber-700 uppercase tracking-wider">Distress Value (80%)</span>
+                  <div className="text-xl font-bold text-amber-900 mt-1 font-mono">
+                    ₹ {formatIndianCurrency(distressValue)}
+                  </div>
+                  <span className="text-[11px] text-amber-600">80% of Present FMV</span>
+                </div>
+
+                <div className="p-4 bg-purple-50/50 rounded-xl border border-purple-200">
+                  <span className="text-xs font-semibold text-purple-700 uppercase tracking-wider">Insurance Value</span>
+                  <div className="text-xl font-bold text-purple-900 mt-1 font-mono">
+                    ₹ {formatIndianCurrency(replacementInsuranceValue)}
+                  </div>
+                  <span className="text-[11px] text-purple-600">Building 100% Cost</span>
                 </div>
               </div>
 
-              {/* Valuation Summary Box */}
-              <div className="p-4 bg-indigo-50/60 rounded-xl border border-indigo-200 space-y-3">
-                <h3 className="text-sm font-bold text-indigo-900">Valuation Summary & Distress Computation</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="flex justify-between p-2.5 bg-white rounded-lg border border-indigo-100">
-                    <span className="text-slate-600 font-medium">3. Fair Market Value (Present Stage) [1+2]:</span>
-                    <span className="font-bold text-slate-900">₹ {formatIndianCurrency(presentFMV)}</span>
-                  </div>
-                  <div className="flex justify-between p-2.5 bg-white rounded-lg border border-indigo-100">
-                    <span className="text-slate-600 font-medium">4. Total Value of Building (100% Completed):</span>
-                    <span className="font-bold text-slate-900">₹ {formatIndianCurrency(totalCompletedBuildingValue)}</span>
-                  </div>
-                  <div className="flex justify-between p-2.5 bg-white rounded-lg border border-indigo-100">
-                    <span className="text-slate-600 font-medium">5. Fair Market Value (100% Completed) [1+4]:</span>
-                    <span className="font-bold text-slate-900">₹ {formatIndianCurrency(completedFMV)}</span>
-                  </div>
-                  <div className="flex justify-between p-2.5 bg-amber-50 rounded-lg border border-amber-200">
-                    <span className="text-amber-800 font-bold">6. Forced / Distress Sale Value (80%):</span>
-                    <span className="font-extrabold text-amber-900">₹ {formatIndianCurrency(distressValue)}</span>
-                  </div>
-                  <div className="flex justify-between p-2.5 bg-white rounded-lg border border-indigo-100">
-                    <span className="text-slate-600 font-medium">7. Replacement Value for Insurance:</span>
-                    <span className="font-bold text-slate-900">₹ {formatIndianCurrency(replacementInsuranceValue)}</span>
-                  </div>
-                  <div className="flex justify-between p-2.5 bg-white rounded-lg border border-indigo-100">
-                    <span className="text-slate-600 font-medium">II) Justified Value of Building:</span>
-                    <span className="font-bold text-slate-900">₹ {formatIndianCurrency(replacementInsuranceValue)}</span>
-                  </div>
-                </div>
-
-                <div className="pt-2">
-                  <Field label="I) Construction estimate given by customer">
-                    <input
-                      type="text"
-                      className={inputCls}
-                      value={form.constructionEstimateCustomer}
-                      onChange={e => updateField('constructionEstimateCustomer', e.target.value)}
-                      disabled={isReadOnly}
-                    />
-                  </Field>
-                </div>
+              <div className="pt-2 text-xs font-medium text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                <strong>Present FMV in Words:</strong> {rupeesInWords(presentFMV)}
               </div>
-            </div>
-          )}
-        </div>
+            </Section>
+          </div>
 
-        {/* 9. Flat / Shop Area Details (Section I) */}
-        <div id="sec-flat-area-details" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-flat-area-details')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                <Building className="w-5 h-5" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900">Flat / Shop Area Details</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-flat-area-details'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-flat-area-details'] && (
-            <div className="p-6 space-y-4">
+          {/* 9. Flat / Shop Area Details */}
+          <div id="sec-flat-area-details">
+            <Section title="Flat / Shop Area Details" defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="Area as per Approved Plan (Carpet) (Sq. Ft.)">
+                <Field label="Approved Plan Area (Sq. ft.)">
                   <input
                     type="text"
                     className={inputCls}
@@ -1543,7 +1422,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Area as per Site Measurement (Carpet)">
+                <Field label="Site Measurement Area (Sq. ft.)">
                   <input
                     type="text"
                     className={inputCls}
@@ -1552,7 +1431,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Area as per Document (Carpet/BUA/SBUA)">
+                <Field label="Document Area (Sq. ft.)">
                   <input
                     type="text"
                     className={inputCls}
@@ -1564,7 +1443,7 @@ export default function SuryodaySmallFinanceBank({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="Super Built-up Area (Sq. Ft.) based on calculation">
+                <Field label="Super Built-Up Area (Sq. ft.)">
                   <input
                     type="text"
                     className={inputCls}
@@ -1573,7 +1452,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Deviation from Sanction Plan / Byelaws">
+                <Field label="Deviation if any">
                   <input
                     type="text"
                     className={inputCls}
@@ -1583,38 +1462,25 @@ export default function SuryodaySmallFinanceBank({
                   />
                 </Field>
                 <Field label="Risk of Demolition">
-                  <input
-                    type="text"
-                    className={inputCls}
+                  <select
+                    className={selectCls}
                     value={form.flatRiskDemolition}
                     onChange={e => updateField('flatRiskDemolition', e.target.value)}
                     disabled={isReadOnly}
-                  />
+                  >
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                  </select>
                 </Field>
               </div>
-            </div>
-          )}
-        </div>
+            </Section>
+          </div>
 
-        {/* 10. Sales Comparison Valuation (Section J) */}
-        <div id="sec-sales-comparison" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-sales-comparison')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                <DollarSign className="w-5 h-5" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900">Sales Comparison Valuation</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-sales-comparison'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-sales-comparison'] && (
-            <div className="p-6 space-y-4">
+          {/* 10. Sales Comparison Valuation */}
+          <div id="sec-sales-comparison">
+            <Section title="Sales Comparison Valuation" defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Field label="Super Built-Up Area (Sq. Ft.)">
+                <Field label="SBUA Area (Sq. ft.)">
                   <input
                     type="text"
                     className={inputCls}
@@ -1623,7 +1489,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Rate Adopted (Rs./Sq. Ft.)">
+                <Field label="Adopted Rate per Sq. ft. (Rs)">
                   <input
                     type="text"
                     className={inputCls}
@@ -1632,7 +1498,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Other Amenities Value (Rs.)">
+                <Field label="Amenities / Parking Cost (Rs)">
                   <input
                     type="text"
                     className={inputCls}
@@ -1643,8 +1509,8 @@ export default function SuryodaySmallFinanceBank({
                 </Field>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="1. Fair Market Value (100% Completed)">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Field label="FMV on Completion (Rs)">
                   <input
                     type="text"
                     className={inputCls}
@@ -1653,16 +1519,16 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="2. Stage of Construction">
+                <Field label="Stage of Construction (%)">
                   <input
                     type="text"
                     className={inputCls}
                     value={form.salesStage}
-                    onChange={e => updateField('salesStage', e.target.value)}
+                    onChange={e => updateField('salesStage', sanitizePercentage(e.target.value))}
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="3. Fair Market Value (Present Stage)">
+                <Field label="Present FMV (Rs)">
                   <input
                     type="text"
                     className={inputCls}
@@ -1671,7 +1537,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="4. Forced / Distress Sale Value (80%)">
+                <Field label="Distress Value (Rs)">
                   <input
                     type="text"
                     className={inputCls}
@@ -1681,38 +1547,13 @@ export default function SuryodaySmallFinanceBank({
                   />
                 </Field>
               </div>
+            </Section>
+          </div>
 
-              <Field label="5. Replacement Value for Insurance Purposes">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={form.salesInsuranceVal}
-                  onChange={e => updateField('salesInsuranceVal', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
-          )}
-        </div>
-
-        {/* 11. Observations & Remarks */}
-        <div id="sec-observations" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-observations')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
-                <FileText className="w-5 h-5" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900">Observations & Remarks</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-observations'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-observations'] && (
-            <div className="p-6 space-y-4">
-              <Field label="Observation (if any)">
+          {/* 11. Observations & Remarks */}
+          <div id="sec-observations">
+            <Section title="Observations & Remarks" defaultOpen={true}>
+              <Field label="Specific Observations">
                 <textarea
                   rows={3}
                   className={inputCls}
@@ -1721,7 +1562,8 @@ export default function SuryodaySmallFinanceBank({
                   disabled={isReadOnly}
                 />
               </Field>
-              <Field label="Remarks (if any)">
+
+              <Field label="Comprehensive Remarks & Valuer Opinion">
                 <textarea
                   rows={6}
                   className={inputCls}
@@ -1730,29 +1572,14 @@ export default function SuryodaySmallFinanceBank({
                   disabled={isReadOnly}
                 />
               </Field>
-            </div>
-          )}
-        </div>
+            </Section>
+          </div>
 
-        {/* 12. Marketability & Declaration */}
-        <div id="sec-marketability" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-marketability')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900">Marketability & Declaration</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-marketability'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-marketability'] && (
-            <div className="p-6 space-y-4">
+          {/* 12. Marketability & Declaration */}
+          <div id="sec-marketability">
+            <Section title="Marketability & Declaration" defaultOpen={true}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Field label="For Sale (Selling Period)">
+                <Field label="Marketability for Sale">
                   <input
                     type="text"
                     className={inputCls}
@@ -1761,7 +1588,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="For Lease – Estimated Rental Income">
+                <Field label="Marketability for Lease">
                   <input
                     type="text"
                     className={inputCls}
@@ -1772,20 +1599,7 @@ export default function SuryodaySmallFinanceBank({
                 </Field>
               </div>
 
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
-                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide">Valuer Declaration Terms (Items 1 - 7)</h3>
-                <ul className="text-xs text-slate-600 space-y-1.5 list-disc pl-5">
-                  <li>Property was Inspected by our Engineer Mr. {form.inspectingEngineer || 'Deepak Bhoi'} on dated-{form.inspectionDate || '29.05.2024'}.</li>
-                  <li>I have no direct or indirect interest in the property valued.</li>
-                  <li>Information furnished in the report is true and correct to the best of my knowledge and belief.</li>
-                  <li>Documents to be verified at your end to ascertain the right title & areas.</li>
-                  <li>Fair market value is an opinion based on prevailing market conditions and does not certify title.</li>
-                  <li>Validity of this report is for 45 days from date.</li>
-                  <li>Area considered for valuation are as per Norms & ByLaws.</li>
-                </ul>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
                 <Field label="Inspecting Engineer">
                   <input
                     type="text"
@@ -1795,7 +1609,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Inspection Date">
+                <Field label="Date of Inspection">
                   <input
                     type="text"
                     className={inputCls}
@@ -1804,7 +1618,7 @@ export default function SuryodaySmallFinanceBank({
                     disabled={isReadOnly}
                   />
                 </Field>
-                <Field label="Report Date">
+                <Field label="Date of Report">
                   <input
                     type="text"
                     className={inputCls}
@@ -1823,77 +1637,62 @@ export default function SuryodaySmallFinanceBank({
                   />
                 </Field>
               </div>
-            </div>
-          )}
-        </div>
+            </Section>
+          </div>
 
-        {/* 13. Schedule I - Stage of Construction */}
-        <div id="sec-schedule-i" className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => toggleSection('sec-schedule-i')}
-            className="w-full px-6 py-4 flex items-center justify-between bg-slate-50 hover:bg-slate-100 transition-colors border-b border-slate-200 text-left"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">
-                <Layers className="w-5 h-5" />
-              </div>
-              <h2 className="text-base font-bold text-slate-900">Schedule I - Stage of Construction</h2>
-            </div>
-            <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform ${openSections['sec-schedule-i'] ? 'rotate-180' : ''}`} />
-          </button>
-          {openSections['sec-schedule-i'] && (
-            <div className="p-6 space-y-4">
-              <p className="text-xs text-slate-500 italic">
-                Construction stage is considered based on Building activity / work / Progress, not as per individual Floor / Flat.
+          {/* 13. Schedule I - Stage of Construction */}
+          <div id="sec-schedule-i">
+            <Section title="Schedule I - Stage of Construction" defaultOpen={true}>
+              <p className="text-xs text-slate-500 mb-3">
+                Mandatory milestone progress schedule for Suryoday Small Finance Bank Limited.
               </p>
 
-              <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200 uppercase">
+              <div className="overflow-x-auto rounded-xl border border-slate-200">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-2.5">Schedule I Activity</th>
+                      <th className="px-4 py-2.5">Activity</th>
                       <th className="px-4 py-2.5">Proposed (%)</th>
-                      <th className="px-4 py-2.5">Completed Work on Site</th>
+                      <th className="px-4 py-2.5">Status</th>
                       <th className="px-4 py-2.5">Progress (%)</th>
-                      <th className="px-4 py-2.5">Recommend (%)</th>
+                      <th className="px-4 py-2.5">Recommended (%)</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
+                  <tbody className="divide-y divide-slate-100">
                     {(form.scheduleIRows || []).map((row: ScheduleRow, idx: number) => (
-                      <tr key={idx} className="hover:bg-slate-50">
+                      <tr key={row.activity || idx}>
                         <td className="px-4 py-2 font-medium text-slate-800">{row.activity}</td>
-                        <td className="px-4 py-2">
+                        <td className="px-3 py-1.5 w-28">
                           <input
                             type="text"
-                            className="w-20 px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500"
+                            className={inputCls}
                             value={row.proposed}
                             onChange={e => handleUpdateScheduleRow(idx, 'proposed', e.target.value)}
                             disabled={isReadOnly}
                           />
                         </td>
-                        <td className="px-4 py-2">
+                        <td className="px-3 py-1.5 w-32">
                           <input
                             type="text"
-                            className="w-32 px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500"
+                            className={inputCls}
                             value={row.completed}
                             onChange={e => handleUpdateScheduleRow(idx, 'completed', e.target.value)}
                             disabled={isReadOnly}
                           />
                         </td>
-                        <td className="px-4 py-2">
+                        <td className="px-3 py-1.5 w-28">
                           <input
                             type="text"
-                            className="w-20 px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500"
+                            className={inputCls}
                             value={row.progress}
                             onChange={e => handleUpdateScheduleRow(idx, 'progress', e.target.value)}
                             disabled={isReadOnly}
                           />
                         </td>
-                        <td className="px-4 py-2">
+                        <td className="px-3 py-1.5 w-28">
                           <input
                             type="text"
-                            className="w-20 px-2 py-1 text-xs border border-slate-300 rounded focus:ring-1 focus:ring-indigo-500"
+                            className={inputCls}
                             value={row.recommend}
                             onChange={e => handleUpdateScheduleRow(idx, 'recommend', e.target.value)}
                             disabled={isReadOnly}
@@ -1902,19 +1701,19 @@ export default function SuryodaySmallFinanceBank({
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="bg-slate-100 font-bold text-slate-800 border-t border-slate-200">
+                  <tfoot className="bg-slate-50 font-bold border-t border-slate-200 text-slate-900">
                     <tr>
-                      <td className="px-4 py-2.5">Total</td>
+                      <td className="px-4 py-2.5">Total Schedule</td>
                       <td className="px-4 py-2.5">100%</td>
                       <td className="px-4 py-2.5">—</td>
-                      <td className="px-4 py-2.5 text-indigo-700">{totalScheduleProgress}%</td>
-                      <td className="px-4 py-2.5 text-indigo-700">{totalScheduleRecommend}%</td>
+                      <td className="px-4 py-2.5">{totalScheduleProgress}%</td>
+                      <td className="px-4 py-2.5">{totalScheduleRecommend}%</td>
                     </tr>
                   </tfoot>
                 </table>
               </div>
 
-              <Field label="Description of Work (Summary)">
+              <Field label="Schedule Work Description">
                 <input
                   type="text"
                   className={inputCls}
@@ -1923,141 +1722,129 @@ export default function SuryodaySmallFinanceBank({
                   disabled={isReadOnly}
                 />
               </Field>
-            </div>
-          )}
-        </div>
-
-        {/* 14. Documents Annexure */}
-        <div id="sec-documents-annexure">
-          <BaseDocumentsSection
-            title="Property Documents"
-            sectionId="sec-documents-annexure"
-            documentImages={form.documentImages || []}
-            documentImageNames={form.documentImageNames || []}
-            isReadOnly={isReadOnly}
-            uploading={uploading}
-            onUploadDocuments={handleDocUpload}
-            onRemoveDocument={(idx: number) => {
-              setForm((prev: any) => ({
-                ...prev,
-                documentImages: (prev.documentImages || []).filter((_: any, i: number) => i !== idx),
-                documentImageNames: (prev.documentImageNames || []).filter((_: any, i: number) => i !== idx),
-              }));
-            }}
-            onDocumentNameChange={(idx: number, name: string) => {
-              setForm((prev: any) => {
-                const arr = [...(prev.documentImageNames || [])];
-                while (arr.length <= idx) arr.push('');
-                arr[idx] = name;
-                return { ...prev, documentImageNames: arr };
-              });
-            }}
-            onReorderDocuments={(newImgs: string[], newNames: string[]) => {
-              setForm((prev: any) => ({
-                ...prev,
-                documentImages: newImgs,
-                documentImageNames: newNames,
-              }));
-            }}
-          />
-        </div>
-
-        {/* 15. Maps Annexure */}
-        <div id="sec-maps-annexure">
-          <BaseMapsSection
-            title="Location Maps"
-            sectionId="sec-maps-annexure"
-            locationMapImages={form.locationMapImages || []}
-            mouzaMapImages={form.mouzaMapImages || []}
-            sketchMapImages={form.sketchMapImages || []}
-            cadastralMapImages={form.cadastralMapImages || []}
-            bdaMapImages={form.bdaMapImages || []}
-            isReadOnly={isReadOnly}
-            uploading={uploading}
-            onLocationMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('locationMapImages', e)}
-            onLocationMapRemove={(idx?: number) => setForm((p: any) => ({ ...p, locationMapImages: (p.locationMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)) }))}
-            onMouzaMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('mouzaMapImages', e)}
-            onMouzaMapRemove={(idx?: number) => setForm((p: any) => ({ ...p, mouzaMapImages: (p.mouzaMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)) }))}
-            onSketchMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('sketchMapImages', e)}
-            onSketchMapRemove={(idx?: number) => setForm((p: any) => ({ ...p, sketchMapImages: (p.sketchMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)) }))}
-            onCadastralMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('cadastralMapImages', e)}
-            onCadastralMapRemove={(idx?: number) => setForm((p: any) => ({ ...p, cadastralMapImages: (p.cadastralMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)) }))}
-            onBdaMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('bdaMapImages', e)}
-            onBdaMapRemove={(idx?: number) => setForm((p: any) => ({ ...p, bdaMapImages: (p.bdaMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)) }))}
-            onReorderLocationMap={(newImgs: string[]) => setForm((p: any) => ({ ...p, locationMapImages: newImgs }))}
-            onReorderMouzaMap={(newImgs: string[]) => setForm((p: any) => ({ ...p, mouzaMapImages: newImgs }))}
-            onReorderSketchMap={(newImgs: string[]) => setForm((p: any) => ({ ...p, sketchMapImages: newImgs }))}
-            onReorderCadastralMap={(newImgs: string[]) => setForm((p: any) => ({ ...p, cadastralMapImages: newImgs }))}
-            onReorderBdaMap={(newImgs: string[]) => setForm((p: any) => ({ ...p, bdaMapImages: newImgs }))}
-          />
-        </div>
-
-        {/* 16. Photographs Annexure */}
-        <div id="sec-photos-annexure" className="space-y-4">
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
-            <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <Camera className="w-5 h-5 text-indigo-600" />
-              Photo Cover Header Details
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Field label="List of Photographs">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={form.photoListNames}
-                  onChange={e => updateField('photoListNames', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-              <Field label="Customer Contact / Display Line">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={form.customerName}
-                  onChange={e => updateField('customerName', e.target.value)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-            </div>
+            </Section>
           </div>
 
-          <BasePhotographsSection
-            title="Property Photographs"
-            sectionId="sec-photos-annexure"
-            propertyImages={form.propertyImages || []}
-            propertyImageNames={form.propertyImageNames || []}
-            isReadOnly={isReadOnly}
-            uploading={uploading}
-            bucketCount={bucketImages?.length || 0}
-            onOpenBucketPicker={() => setShowBucketModal(true)}
-            onUploadImages={handlePhotoUpload}
-            onRemoveImage={(idx: number) => {
-              setForm((prev: any) => ({
-                ...prev,
-                propertyImages: (prev.propertyImages || []).filter((_: any, i: number) => i !== idx),
-                propertyImageNames: (prev.propertyImageNames || []).filter((_: any, i: number) => i !== idx),
-              }));
-            }}
-            onImageNameChange={(idx: number, name: string) => {
-              setForm((prev: any) => {
-                const arr = [...(prev.propertyImageNames || [])];
-                while (arr.length <= idx) arr.push('');
-                arr[idx] = name;
-                return { ...prev, propertyImageNames: arr };
-              });
-            }}
-            onReorderImages={(newImgs: string[], newNames: string[]) => {
-              setForm((prev: any) => ({
-                ...prev,
-                propertyImages: newImgs,
-                propertyImageNames: newNames,
-              }));
-            }}
-          />
+          {/* 14. Verified Property Documents */}
+          <div id="sec-documents-annexure">
+            <BaseDocumentsSection
+              title="Verified Property Documents"
+              sectionId="sec-documents-annexure"
+              documentImages={form.documentImages || []}
+              documentImageNames={form.documentImageNames || []}
+              isReadOnly={isReadOnly}
+              uploading={uploading}
+              onUploadDocuments={handleDocUpload}
+              onRemoveDocument={(idx: number) => {
+                setForm((prev: any) => ({
+                  ...prev,
+                  documentImages: (prev.documentImages || []).filter((_: any, i: number) => i !== idx),
+                  documentImageNames: (prev.documentImageNames || []).filter((_: any, i: number) => i !== idx),
+                }));
+              }}
+              onDocumentNameChange={(idx: number, name: string) => {
+                setForm((prev: any) => {
+                  const arr = [...(prev.documentImageNames || [])];
+                  while (arr.length <= idx) arr.push('');
+                  arr[idx] = name;
+                  return { ...prev, documentImageNames: arr };
+                });
+              }}
+              onReorderDocuments={(newImgs: string[], newNames: string[]) => {
+                setForm((prev: any) => ({
+                  ...prev,
+                  documentImages: newImgs,
+                  documentImageNames: newNames,
+                }));
+              }}
+            />
+          </div>
+
+          {/* 15. Location Maps */}
+          <div id="sec-maps-annexure">
+            <BaseMapsSection
+              title="Location Maps"
+              sectionId="sec-maps-annexure"
+              locationMapImages={form.locationMapImages || []}
+              mouzaMapImages={form.mouzaMapImages || []}
+              sketchMapImages={form.sketchMapImages || []}
+              cadastralMapImages={form.cadastralMapImages || []}
+              bdaMapImages={form.bdaMapImages || []}
+              isReadOnly={isReadOnly}
+              uploading={uploading}
+              onLocationMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('locationMapImages', e)}
+              onLocationMapRemove={(idx?: number) => setForm((p: any) => ({ ...p, locationMapImages: (p.locationMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)) }))}
+              onMouzaMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('mouzaMapImages', e)}
+              onMouzaMapRemove={(idx?: number) => setForm((p: any) => ({ ...p, mouzaMapImages: (p.mouzaMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)) }))}
+              onSketchMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('sketchMapImages', e)}
+              onSketchMapRemove={(idx?: number) => setForm((p: any) => ({ ...p, sketchMapImages: (p.sketchMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)) }))}
+              onCadastralMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('cadastralMapImages', e)}
+              onCadastralMapRemove={(idx?: number) => setForm((p: any) => ({ ...p, cadastralMapImages: (p.cadastralMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)) }))}
+              onBdaMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('bdaMapImages', e)}
+              onBdaMapRemove={(idx?: number) => setForm((p: any) => ({ ...p, bdaMapImages: (p.bdaMapImages || []).filter((_: any, i: number) => i !== (idx ?? 0)) }))}
+              onReorderLocationMap={(newImgs: string[]) => setForm((p: any) => ({ ...p, locationMapImages: newImgs }))}
+              onReorderMouzaMap={(newImgs: string[]) => setForm((p: any) => ({ ...p, mouzaMapImages: newImgs }))}
+              onReorderSketchMap={(newImgs: string[]) => setForm((p: any) => ({ ...p, sketchMapImages: newImgs }))}
+              onReorderCadastralMap={(newImgs: string[]) => setForm((p: any) => ({ ...p, cadastralMapImages: newImgs }))}
+              onReorderBdaMap={(newImgs: string[]) => setForm((p: any) => ({ ...p, bdaMapImages: newImgs }))}
+            />
+          </div>
+
+          {/* 16. Property Site Photographs */}
+          <div id="sec-photos-annexure">
+            <BasePhotographsSection
+              title="Property Site Photographs"
+              sectionId="sec-photos-annexure"
+              propertyImages={form.propertyImages || []}
+              propertyImageNames={form.propertyImageNames || []}
+              isReadOnly={isReadOnly}
+              uploading={uploading}
+              bucketCount={bucketImages?.length || 0}
+              onOpenBucketPicker={() => setShowBucketModal(true)}
+              onUploadImages={handlePhotoUpload}
+              onRemoveImage={(idx: number) => {
+                setForm((prev: any) => ({
+                  ...prev,
+                  propertyImages: (prev.propertyImages || []).filter((_: any, i: number) => i !== idx),
+                  propertyImageNames: (prev.propertyImageNames || []).filter((_: any, i: number) => i !== idx),
+                }));
+              }}
+              onImageNameChange={(idx: number, name: string) => {
+                setForm((prev: any) => {
+                  const arr = [...(prev.propertyImageNames || [])];
+                  while (arr.length <= idx) arr.push('');
+                  arr[idx] = name;
+                  return { ...prev, propertyImageNames: arr };
+                });
+              }}
+              onReorderImages={(newImgs: string[], newNames: string[]) => {
+                setForm((prev: any) => ({
+                  ...prev,
+                  propertyImages: newImgs,
+                  propertyImageNames: newNames,
+                }));
+              }}
+            />
+          </div>
         </div>
+
+        {/* ── Right Sections Nav Panel ── */}
+        <FloatingNavigator sections={navSections} />
       </div>
 
-      {/* Bucket Photo Picker Modal */}
+      {/* Action Bar */}
+      <ReportActionBar
+        autoSaveStatus={autoSaveStatus}
+        userRole={userRole}
+        message={message}
+        loading={saving || previewing || !!uploading}
+        onSaveDraft={handleSaveDraft}
+        onPreviewPDF={handlePreviewPDF}
+        onDownloadPDF={handleDownloadPDF}
+        isReadOnly={isReadOnly}
+      />
+
+      {/* Cloud Storage Photo Picker Modal */}
       {showBucketModal && (
         <BasePhotoBucketModal
           isOpen={showBucketModal}
@@ -2065,39 +1852,20 @@ export default function SuryodaySmallFinanceBank({
           mode="propertyImages"
           onClose={() => setShowBucketModal(false)}
           onConfirm={(selectedUrls: string[]) => {
+            const nextImgs = [...(form.propertyImages || []), ...selectedUrls];
+            const nextNames = [...(form.propertyImageNames || [])];
+            selectedUrls.forEach((_, i) => {
+              nextNames.push(`Photograph ${(form.propertyImages?.length || 0) + i + 1}`);
+            });
             setForm((prev: any) => ({
               ...prev,
-              propertyImages: [...(prev.propertyImages || []), ...selectedUrls],
-              propertyImageNames: [
-                ...(prev.propertyImageNames || []),
-                ...selectedUrls.map((_, i) => `Photograph ${(prev.propertyImages?.length || 0) + i + 1}`),
-              ],
+              propertyImages: nextImgs,
+              propertyImageNames: nextNames,
             }));
             setShowBucketModal(false);
           }}
         />
       )}
-
-      {/* Fixed Action Bar */}
-      <ReportActionBar
-        isReadOnly={isReadOnly}
-        userRole={userRole}
-        autoSaveStatus={autoSaveStatus}
-        message={message}
-        loading={saving || submitting || previewing || !!uploading}
-        onSaveDraft={handleSaveDraft}
-        onSubmit={async () => {
-          setSubmitting(true);
-          try {
-            await handleSaveDraft();
-            router.push(`/portal/projects/${projectId}`);
-          } finally {
-            setSubmitting(false);
-          }
-        }}
-        onPreviewPDF={handlePreviewPDF}
-        onDownloadPDF={handleDownloadPDF}
-      />
     </div>
   );
 }
