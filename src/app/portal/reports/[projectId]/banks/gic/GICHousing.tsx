@@ -1326,6 +1326,168 @@ function PropertyDetailsSection({
   );
 }
 
+// ─── Section 4: Planning Approvals ──────────────────────────────────────────
+
+function PlanningApprovalsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+  projectCode?: string;
+}) {
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Approval Documents (Light Yellow #fffde7) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-amber-200 shadow-sm"
+        style={{ backgroundColor: '#fffde7' }}
+      >
+        <h3 className="font-bold text-gray-800 text-sm md:text-base border-b border-amber-200 pb-2 uppercase tracking-wide">
+          Approval Documents
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* APPROVAL DETAILS (Authority) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">APPROVAL DETAILS (Authority)</span>
+                <NaCheckbox
+                  checked={!!fields.gicApprovalAuthorityDetailsNA}
+                  onChange={(checked) => {
+                    handleChange('gicApprovalAuthorityDetailsNA', checked);
+                    if (checked) handleChange('gicApprovalAuthorityDetails', 'NA');
+                    else handleChange('gicApprovalAuthorityDetails', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <textarea
+              rows={3}
+              className={`${inputCls} resize-y ${
+                fields.gicApprovalAuthorityDetailsNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicApprovalAuthorityDetailsNA ? 'NA' : (fields.gicApprovalAuthorityDetails || '')}
+              onChange={(e) => handleChange('gicApprovalAuthorityDetails', e.target.value)}
+              disabled={isReadOnly || !!fields.gicApprovalAuthorityDetailsNA}
+              placeholder="Enter approval authority details..."
+            />
+          </Field>
+
+          {/* APPROVAL NO. & DATE */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">APPROVAL NO. & DATE</span>
+                <NaCheckbox
+                  checked={!!fields.gicApprovalNoAndDateNA}
+                  onChange={(checked) => {
+                    handleChange('gicApprovalNoAndDateNA', checked);
+                    if (checked) handleChange('gicApprovalNoAndDate', 'NA');
+                    else handleChange('gicApprovalNoAndDate', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.gicApprovalNoAndDateNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicApprovalNoAndDateNA ? 'NA' : (fields.gicApprovalNoAndDate || '')}
+              onChange={(e) => handleChange('gicApprovalNoAndDate', e.target.value)}
+              disabled={isReadOnly || !!fields.gicApprovalNoAndDateNA}
+              placeholder="e.g. Letter No: BP/BDA/009678 on dated 07.05.2024"
+            />
+          </Field>
+        </div>
+
+        {/* C. WHAT ARE THE DEVIATION BETWEEN APPROVAL DRAWING & ACTUAL */}
+        <Field
+          label={
+            <div className="flex justify-between items-center w-full">
+              <span className="font-semibold text-gray-700">
+                C. WHAT ARE THE DEVIATION BETWEEN APPROVAL DRAWING & ACTUAL
+              </span>
+              <NaCheckbox
+                checked={!!fields.gicDeviationDrawingActualNA}
+                onChange={(checked) => {
+                  handleChange('gicDeviationDrawingActualNA', checked);
+                  if (checked) handleChange('gicDeviationDrawingActual', 'NA');
+                  else handleChange('gicDeviationDrawingActual', '');
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          }
+        >
+          <textarea
+            rows={3}
+            className={`${inputCls} resize-y ${
+              fields.gicDeviationDrawingActualNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+            }`}
+            value={fields.gicDeviationDrawingActualNA ? 'NA' : (fields.gicDeviationDrawingActual || '')}
+            onChange={(e) => handleChange('gicDeviationDrawingActual', e.target.value)}
+            disabled={isReadOnly || !!fields.gicDeviationDrawingActualNA}
+            placeholder="Describe any deviation between approved drawing and actual construction..."
+          />
+        </Field>
+
+        {/* WHETHER DEVIATIONS ARE MINOR/MAJOR IN NATURE */}
+        <Field
+          label={
+            <div className="flex justify-between items-center w-full">
+              <span className="font-semibold text-gray-700">
+                WHETHER DEVIATIONS ARE MINOR/MAJOR IN NATURE
+              </span>
+              <NaCheckbox
+                checked={!!fields.gicDeviationsNatureNA}
+                onChange={(checked) => {
+                  handleChange('gicDeviationsNatureNA', checked);
+                  if (checked) handleChange('gicDeviationsNature', 'NA');
+                  else handleChange('gicDeviationsNature', 'None');
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          }
+        >
+          <div className="flex flex-wrap gap-4 pt-1">
+            {['Minor', 'Major', 'None'].map((opt) => (
+              <label
+                key={opt}
+                className={`flex items-center gap-2 text-sm font-medium px-3 py-1.5 rounded-lg border shadow-sm transition-colors ${
+                  fields.gicDeviationsNatureNA
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
+                    : 'bg-white text-gray-700 cursor-pointer border-gray-200 hover:bg-gray-50'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="gicDeviationsNature"
+                  value={opt}
+                  checked={fields.gicDeviationsNature === opt && !fields.gicDeviationsNatureNA}
+                  onChange={() => handleChange('gicDeviationsNature', opt)}
+                  disabled={isReadOnly || !!fields.gicDeviationsNatureNA}
+                  className="text-emerald-600 focus:ring-emerald-500"
+                />
+                <span>{opt}</span>
+              </label>
+            ))}
+          </div>
+        </Field>
+      </div>
+    </div>
+  );
+}
+
 // ─── GIC Housing Finance BankConfig ─────────────────────────────────────────
 
 export const GIC_HOUSING_CONFIG: BankConfig = {
@@ -1355,6 +1517,7 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     { id: 'gic-section-1', title: 'REPORT OF VALUATION OF IMMOVABLE PROPERTY' },
     { id: 'gic-section-2', title: 'VALUATION REPORT' },
     { id: 'gic-section-3', title: 'PROPERTY DETAILS' },
+    { id: 'gic-section-4', title: 'PLANNING APPROVALS' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -1436,6 +1599,16 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     gicNegativeToLocalityNA: false,
     gicAnyOtherFeature: '',
     gicAnyOtherFeatureNA: false,
+
+    // Section 4: Planning Approvals
+    gicApprovalAuthorityDetails: '',
+    gicApprovalAuthorityDetailsNA: false,
+    gicApprovalNoAndDate: '',
+    gicApprovalNoAndDateNA: false,
+    gicDeviationDrawingActual: '',
+    gicDeviationDrawingActualNA: false,
+    gicDeviationsNature: 'None',
+    gicDeviationsNatureNA: false,
   },
   extraSectionsStart: [
     {
@@ -1473,6 +1646,20 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
         <PropertyDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          projectCode={projectCode}
+        />
+      ),
+    },
+    {
+      id: 'gic-section-4',
+      title: 'PLANNING APPROVALS',
+      number: 4,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
+        <PlanningApprovalsSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
