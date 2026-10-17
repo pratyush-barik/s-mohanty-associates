@@ -624,6 +624,708 @@ function BasicValuationDetailsContainer({
   );
 }
 
+// ─── Section 3: Property Details ────────────────────────────────────────────
+
+function PropertyDetailsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+  projectCode?: string;
+}) {
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container 1: Applicant & Location Information (Light Green #e8f5e9) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-green-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <h3 className="font-bold text-gray-800 text-sm md:text-base border-b border-green-200 pb-2 uppercase tracking-wide">
+          Applicant & Location Information
+        </h3>
+
+        {/* NAME OF APPLICANT/ CO- APPLICANT */}
+        <Field label={<span className="font-semibold text-gray-700">NAME OF APPLICANT/ CO- APPLICANT</span>}>
+          <input
+            type="text"
+            className={inputCls}
+            value={fields.gicApplicantName ?? fields.ownerName ?? ''}
+            onChange={(e) => handleChange('gicApplicantName', e.target.value)}
+            disabled={isReadOnly}
+            placeholder="Enter name of applicant / co-applicant..."
+          />
+        </Field>
+
+        {/* DOCUMENT PERUSED & VERIFIED */}
+        <Field label={<span className="font-semibold text-gray-700">DOCUMENT PERUSED & VERIFIED</span>}>
+          <div className="flex flex-wrap gap-4 pt-1">
+            {['Sale Deed', 'ROR', 'Approved Plan', 'Estimate'].map((doc) => {
+              const selected = (fields.gicDocsVerified || []).includes(doc);
+              return (
+                <label
+                  key={doc}
+                  className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50"
+                >
+                  <input
+                    type="checkbox"
+                    checked={selected}
+                    onChange={(e) => {
+                      const current = fields.gicDocsVerified || [];
+                      if (e.target.checked) {
+                        handleChange('gicDocsVerified', [...current, doc]);
+                      } else {
+                        handleChange('gicDocsVerified', current.filter((item: string) => item !== doc));
+                      }
+                    }}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span>{doc}</span>
+                </label>
+              );
+            })}
+          </div>
+        </Field>
+
+        {/* ADDRESS OF PROPERTY Section Header */}
+        <div className="pt-2">
+          <h4 className="font-bold text-gray-700 text-xs md:text-sm border-b border-green-300 pb-1 uppercase tracking-wide">
+            ADDRESS OF PROPERTY
+          </h4>
+        </div>
+
+        {/* Address Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* SURVEY NO */}
+          <Field label={<span className="font-semibold text-gray-700">SURVEY NO</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.gicSurveyNo || ''}
+              onChange={(e) => handleChange('gicSurveyNo', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Enter Survey No..."
+            />
+          </Field>
+
+          {/* /MOUZA */}
+          <Field label={<span className="font-semibold text-gray-700">/MOUZA</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.gicMouza || ''}
+              onChange={(e) => handleChange('gicMouza', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Enter Mouza..."
+            />
+          </Field>
+
+          {/* WARD NO/ TALUK */}
+          <Field label={<span className="font-semibold text-gray-700">WARD NO/ TALUK</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.gicWardNoTaluk || ''}
+              onChange={(e) => handleChange('gicWardNoTaluk', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Enter Ward No / Taluk..."
+            />
+          </Field>
+
+          {/* DISTRICT */}
+          <Field label={<span className="font-semibold text-gray-700">DISTRICT</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.gicDistrict || ''}
+              onChange={(e) => handleChange('gicDistrict', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Enter District..."
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* Container 2: Boundaries (Light Green #e8f5e9) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-green-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <h3 className="font-bold text-gray-800 text-sm md:text-base border-b border-green-200 pb-2 uppercase tracking-wide">
+          Boundaries
+        </h3>
+
+        {/* LOCATION SALE DEED VERIFIED */}
+        <Field label={<span className="font-semibold text-gray-700">LOCATION SALE DEED VERIFIED</span>}>
+          <CustomSelect
+            value={fields.gicLocationSaleDeedVerified || ''}
+            customValue={fields.gicLocationSaleDeedVerifiedCustom || ''}
+            onChange={(val) => handleChange('gicLocationSaleDeedVerified', val)}
+            onCustomChange={(val) => handleChange('gicLocationSaleDeedVerifiedCustom', val)}
+            options={[
+              { value: 'Sketch Map', label: 'Sketch Map' },
+              { value: 'Physical', label: 'Physical' },
+            ]}
+            disabled={isReadOnly}
+            placeholder="Select verification method..."
+          />
+        </Field>
+
+        {/* Boundaries (Sale Deed) */}
+        <div>
+          <span className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-2">
+            Sale Deed Boundaries
+          </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* NORTH (Sale Deed) */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">NORTH (Sale Deed)</span>
+                  <NaCheckbox
+                    checked={!!fields.gicBoundarySaleDeedNorthNA}
+                    onChange={(checked) => {
+                      handleChange('gicBoundarySaleDeedNorthNA', checked);
+                      if (checked) handleChange('gicBoundarySaleDeedNorth', 'NA');
+                      else handleChange('gicBoundarySaleDeedNorth', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="text"
+                className={`${inputCls} ${
+                  fields.gicBoundarySaleDeedNorthNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+                }`}
+                value={fields.gicBoundarySaleDeedNorthNA ? 'NA' : (fields.gicBoundarySaleDeedNorth || '')}
+                onChange={(e) => handleChange('gicBoundarySaleDeedNorth', e.target.value)}
+                disabled={isReadOnly || !!fields.gicBoundarySaleDeedNorthNA}
+                placeholder="North boundary..."
+              />
+            </Field>
+
+            {/* SOUTH (Sale Deed) */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">SOUTH (Sale Deed)</span>
+                  <NaCheckbox
+                    checked={!!fields.gicBoundarySaleDeedSouthNA}
+                    onChange={(checked) => {
+                      handleChange('gicBoundarySaleDeedSouthNA', checked);
+                      if (checked) handleChange('gicBoundarySaleDeedSouth', 'NA');
+                      else handleChange('gicBoundarySaleDeedSouth', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="text"
+                className={`${inputCls} ${
+                  fields.gicBoundarySaleDeedSouthNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+                }`}
+                value={fields.gicBoundarySaleDeedSouthNA ? 'NA' : (fields.gicBoundarySaleDeedSouth || '')}
+                onChange={(e) => handleChange('gicBoundarySaleDeedSouth', e.target.value)}
+                disabled={isReadOnly || !!fields.gicBoundarySaleDeedSouthNA}
+                placeholder="South boundary..."
+              />
+            </Field>
+
+            {/* EAST (Sale Deed) */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">EAST (Sale Deed)</span>
+                  <NaCheckbox
+                    checked={!!fields.gicBoundarySaleDeedEastNA}
+                    onChange={(checked) => {
+                      handleChange('gicBoundarySaleDeedEastNA', checked);
+                      if (checked) handleChange('gicBoundarySaleDeedEast', 'NA');
+                      else handleChange('gicBoundarySaleDeedEast', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="text"
+                className={`${inputCls} ${
+                  fields.gicBoundarySaleDeedEastNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+                }`}
+                value={fields.gicBoundarySaleDeedEastNA ? 'NA' : (fields.gicBoundarySaleDeedEast || '')}
+                onChange={(e) => handleChange('gicBoundarySaleDeedEast', e.target.value)}
+                disabled={isReadOnly || !!fields.gicBoundarySaleDeedEastNA}
+                placeholder="East boundary..."
+              />
+            </Field>
+
+            {/* WEST (Sale Deed) */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">WEST (Sale Deed)</span>
+                  <NaCheckbox
+                    checked={!!fields.gicBoundarySaleDeedWestNA}
+                    onChange={(checked) => {
+                      handleChange('gicBoundarySaleDeedWestNA', checked);
+                      if (checked) handleChange('gicBoundarySaleDeedWest', 'NA');
+                      else handleChange('gicBoundarySaleDeedWest', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="text"
+                className={`${inputCls} ${
+                  fields.gicBoundarySaleDeedWestNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+                }`}
+                value={fields.gicBoundarySaleDeedWestNA ? 'NA' : (fields.gicBoundarySaleDeedWest || '')}
+                onChange={(e) => handleChange('gicBoundarySaleDeedWest', e.target.value)}
+                disabled={isReadOnly || !!fields.gicBoundarySaleDeedWestNA}
+                placeholder="West boundary..."
+              />
+            </Field>
+          </div>
+        </div>
+
+        {/* BOUNDARIES & DIMENSIONS */}
+        <Field label={<span className="font-semibold text-gray-700">BOUNDARIES & DIMENSIONS</span>}>
+          <input
+            type="text"
+            className={inputCls}
+            value={fields.gicBoundariesAndDimensions || ''}
+            onChange={(e) => handleChange('gicBoundariesAndDimensions', e.target.value)}
+            disabled={isReadOnly}
+            placeholder="Enter boundaries & dimensions details..."
+          />
+        </Field>
+
+        {/* Actual Boundaries */}
+        <div>
+          <span className="text-xs font-bold text-gray-600 uppercase tracking-wider block mb-2">
+            Actual Boundaries
+          </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* NORTH (Actual) */}
+            <Field label={<span className="font-semibold text-gray-700">NORTH (Actual)</span>}>
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.gicBoundaryActualNorth || ''}
+                onChange={(e) => handleChange('gicBoundaryActualNorth', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="North boundary actual..."
+              />
+            </Field>
+
+            {/* SOUTH (Actual) */}
+            <Field label={<span className="font-semibold text-gray-700">SOUTH (Actual)</span>}>
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.gicBoundaryActualSouth || ''}
+                onChange={(e) => handleChange('gicBoundaryActualSouth', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="South boundary actual..."
+              />
+            </Field>
+
+            {/* EAST (Actual) */}
+            <Field label={<span className="font-semibold text-gray-700">EAST (Actual)</span>}>
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.gicBoundaryActualEast || ''}
+                onChange={(e) => handleChange('gicBoundaryActualEast', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="East boundary actual..."
+              />
+            </Field>
+
+            {/* WEST (Actual) */}
+            <Field label={<span className="font-semibold text-gray-700">WEST (Actual)</span>}>
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.gicBoundaryActualWest || ''}
+                onChange={(e) => handleChange('gicBoundaryActualWest', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="West boundary actual..."
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+
+      {/* Container 3: Surroundings & Usage (Light Green #e8f5e9) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-green-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <h3 className="font-bold text-gray-800 text-sm md:text-base border-b border-green-200 pb-2 uppercase tracking-wide">
+          Surroundings & Usage
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* F. TYPE OF PROPERTY */}
+          <Field label={<span className="font-semibold text-gray-700">F. TYPE OF PROPERTY</span>}>
+            <CustomSelect
+              value={fields.gicTypeOfProperty || ''}
+              customValue={fields.gicTypeOfPropertyCustom || ''}
+              onChange={(val) => handleChange('gicTypeOfProperty', val)}
+              onCustomChange={(val) => handleChange('gicTypeOfPropertyCustom', val)}
+              options={[
+                { value: 'Residential Land & Building', label: 'Residential Land & Building' },
+                { value: 'Commercial', label: 'Commercial' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select property type..."
+            />
+          </Field>
+
+          {/* G. OCCUPANT */}
+          <Field label={<span className="font-semibold text-gray-700">G. OCCUPANT</span>}>
+            <div className="flex flex-wrap gap-4 pt-1">
+              {['Owner', 'Tenant', 'Vacant'].map((occ) => (
+                <label
+                  key={occ}
+                  className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50"
+                >
+                  <input
+                    type="radio"
+                    name="gicOccupant"
+                    value={occ}
+                    checked={fields.gicOccupant === occ}
+                    onChange={() => handleChange('gicOccupant', occ)}
+                    disabled={isReadOnly}
+                    className="text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span>{occ}</span>
+                </label>
+              ))}
+            </div>
+          </Field>
+
+          {/* IF OCCUPIED NAME OF THE OCCUPANT */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">IF OCCUPIED NAME OF THE OCCUPANT</span>
+                <NaCheckbox
+                  checked={!!fields.gicOccupantNameNA}
+                  onChange={(checked) => {
+                    handleChange('gicOccupantNameNA', checked);
+                    if (checked) handleChange('gicOccupantName', 'NA');
+                    else handleChange('gicOccupantName', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.gicOccupantNameNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicOccupantNameNA ? 'NA' : (fields.gicOccupantName || '')}
+              onChange={(e) => handleChange('gicOccupantName', e.target.value)}
+              disabled={isReadOnly || !!fields.gicOccupantNameNA}
+              placeholder="Enter name of occupant..."
+            />
+          </Field>
+
+          {/* IF RENTED LIST OF OCCUPANT */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">IF RENTED LIST OF OCCUPANT</span>
+                <NaCheckbox
+                  checked={!!fields.gicRentedListOfOccupantsNA}
+                  onChange={(checked) => {
+                    handleChange('gicRentedListOfOccupantsNA', checked);
+                    if (checked) handleChange('gicRentedListOfOccupants', 'NA');
+                    else handleChange('gicRentedListOfOccupants', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <textarea
+              rows={2}
+              className={`${inputCls} resize-y ${
+                fields.gicRentedListOfOccupantsNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicRentedListOfOccupantsNA ? 'NA' : (fields.gicRentedListOfOccupants || '')}
+              onChange={(e) => handleChange('gicRentedListOfOccupants', e.target.value)}
+              disabled={isReadOnly || !!fields.gicRentedListOfOccupantsNA}
+              placeholder="Enter list of occupants if rented..."
+            />
+          </Field>
+
+          {/* H. USAGE OF THE BUILDING */}
+          <Field label={<span className="font-semibold text-gray-700">H. USAGE OF THE BUILDING</span>}>
+            <CustomSelect
+              value={fields.gicUsageOfBuilding || ''}
+              customValue={fields.gicUsageOfBuildingCustom || ''}
+              onChange={(val) => handleChange('gicUsageOfBuilding', val)}
+              onCustomChange={(val) => handleChange('gicUsageOfBuildingCustom', val)}
+              options={[
+                { value: 'Residential', label: 'Residential' },
+                { value: 'Commercial', label: 'Commercial' },
+                { value: 'Mixed', label: 'Mixed' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select usage of building..."
+            />
+          </Field>
+
+          {/* I. DETAILS OF NEARBY PROMINENT LANDMARK */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">I. DETAILS OF NEARBY PROMINENT LANDMARK</span>
+                <NaCheckbox
+                  checked={!!fields.gicNearbyLandmarkNA}
+                  onChange={(checked) => {
+                    handleChange('gicNearbyLandmarkNA', checked);
+                    if (checked) handleChange('gicNearbyLandmark', 'NA');
+                    else handleChange('gicNearbyLandmark', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.gicNearbyLandmarkNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicNearbyLandmarkNA ? 'NA' : (fields.gicNearbyLandmark || '')}
+              onChange={(e) => handleChange('gicNearbyLandmark', e.target.value)}
+              disabled={isReadOnly || !!fields.gicNearbyLandmarkNA}
+              placeholder="Enter nearby landmark..."
+            />
+          </Field>
+
+          {/* J. DEVELOPMENT OF SURROUNDING AREA... */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700">
+                J. DEVELOPMENT OF SURROUNDING AREA...
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.gicSurroundingDevelopment || ''}
+              customValue={fields.gicSurroundingDevelopmentCustom || ''}
+              onChange={(val) => handleChange('gicSurroundingDevelopment', val)}
+              onCustomChange={(val) => handleChange('gicSurroundingDevelopmentCustom', val)}
+              options={[
+                { value: 'Developing Residential Area', label: 'Developing Residential Area' },
+                { value: 'Developed', label: 'Developed' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select development status..."
+            />
+          </Field>
+
+          {/* K. WHETHER BASIC AMENITIES LIKE WATER ELECTRICITY, ROADS, SEWERAGE ARE AVAILABLE? */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700">
+                K. WHETHER BASIC AMENITIES LIKE WATER ELECTRICITY, ROADS, SEWERAGE ARE AVAILABLE?
+              </span>
+            }
+          >
+            <div className="flex gap-4 pt-1">
+              {['Yes', 'No'].map((val) => (
+                <label
+                  key={val}
+                  className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm hover:bg-gray-50"
+                >
+                  <input
+                    type="radio"
+                    name="gicBasicAmenitiesAvailable"
+                    value={val}
+                    checked={fields.gicBasicAmenitiesAvailable === val}
+                    onChange={() => handleChange('gicBasicAmenitiesAvailable', val)}
+                    disabled={isReadOnly}
+                    className="text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span>{val}</span>
+                </label>
+              ))}
+            </div>
+          </Field>
+
+          {/* DISTANCE OF NEARBY RAILWAY STATION */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">DISTANCE OF NEARBY RAILWAY STATION</span>
+                <NaCheckbox
+                  checked={!!fields.gicDistanceRailwayStationNA}
+                  onChange={(checked) => {
+                    handleChange('gicDistanceRailwayStationNA', checked);
+                    if (checked) handleChange('gicDistanceRailwayStation', 'NA');
+                    else handleChange('gicDistanceRailwayStation', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.gicDistanceRailwayStationNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicDistanceRailwayStationNA ? 'NA' : (fields.gicDistanceRailwayStation || '')}
+              onChange={(e) => handleChange('gicDistanceRailwayStation', e.target.value)}
+              disabled={isReadOnly || !!fields.gicDistanceRailwayStationNA}
+              placeholder="e.g. 5 km"
+            />
+          </Field>
+
+          {/* BUS STAND */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">BUS STAND</span>
+                <NaCheckbox
+                  checked={!!fields.gicDistanceBusStandNA}
+                  onChange={(checked) => {
+                    handleChange('gicDistanceBusStandNA', checked);
+                    if (checked) handleChange('gicDistanceBusStand', 'NA');
+                    else handleChange('gicDistanceBusStand', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.gicDistanceBusStandNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicDistanceBusStandNA ? 'NA' : (fields.gicDistanceBusStand || '')}
+              onChange={(e) => handleChange('gicDistanceBusStand', e.target.value)}
+              disabled={isReadOnly || !!fields.gicDistanceBusStandNA}
+              placeholder="e.g. 1.5 km"
+            />
+          </Field>
+        </div>
+
+        {/* Full-width Variable-size Text Areas */}
+        <div className="space-y-4 pt-2">
+          {/* L. ANY FAVORABLE CONSIDERATION... */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">
+                  L. ANY FAVORABLE CONSIDERATION...
+                </span>
+                <NaCheckbox
+                  checked={!!fields.gicFavorableConsiderationNA}
+                  onChange={(checked) => {
+                    handleChange('gicFavorableConsiderationNA', checked);
+                    if (checked) handleChange('gicFavorableConsideration', 'NA');
+                    else handleChange('gicFavorableConsideration', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <textarea
+              rows={2}
+              className={`${inputCls} resize-y ${
+                fields.gicFavorableConsiderationNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicFavorableConsiderationNA ? 'NA' : (fields.gicFavorableConsideration || '')}
+              onChange={(e) => handleChange('gicFavorableConsideration', e.target.value)}
+              disabled={isReadOnly || !!fields.gicFavorableConsiderationNA}
+              placeholder="Enter any favorable consideration..."
+            />
+          </Field>
+
+          {/* M. ANY NEGATIVE TO THE LOCALITY */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">M. ANY NEGATIVE TO THE LOCALITY</span>
+                <NaCheckbox
+                  checked={!!fields.gicNegativeToLocalityNA}
+                  onChange={(checked) => {
+                    handleChange('gicNegativeToLocalityNA', checked);
+                    if (checked) handleChange('gicNegativeToLocality', 'NA');
+                    else handleChange('gicNegativeToLocality', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <textarea
+              rows={2}
+              className={`${inputCls} resize-y ${
+                fields.gicNegativeToLocalityNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicNegativeToLocalityNA ? 'NA' : (fields.gicNegativeToLocality || '')}
+              onChange={(e) => handleChange('gicNegativeToLocality', e.target.value)}
+              disabled={isReadOnly || !!fields.gicNegativeToLocalityNA}
+              placeholder="Enter any negative factors to the locality..."
+            />
+          </Field>
+
+          {/* N. ANY OTHER FEATURE... */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">N. ANY OTHER FEATURE...</span>
+                <NaCheckbox
+                  checked={!!fields.gicAnyOtherFeatureNA}
+                  onChange={(checked) => {
+                    handleChange('gicAnyOtherFeatureNA', checked);
+                    if (checked) handleChange('gicAnyOtherFeature', 'NA');
+                    else handleChange('gicAnyOtherFeature', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <textarea
+              rows={2}
+              className={`${inputCls} resize-y ${
+                fields.gicAnyOtherFeatureNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+              }`}
+              value={fields.gicAnyOtherFeatureNA ? 'NA' : (fields.gicAnyOtherFeature || '')}
+              onChange={(e) => handleChange('gicAnyOtherFeature', e.target.value)}
+              disabled={isReadOnly || !!fields.gicAnyOtherFeatureNA}
+              placeholder="Enter any other features..."
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── GIC Housing Finance BankConfig ─────────────────────────────────────────
 
 export const GIC_HOUSING_CONFIG: BankConfig = {
@@ -652,6 +1354,7 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
   navSections: [
     { id: 'gic-section-1', title: 'REPORT OF VALUATION OF IMMOVABLE PROPERTY' },
     { id: 'gic-section-2', title: 'VALUATION REPORT' },
+    { id: 'gic-section-3', title: 'PROPERTY DETAILS' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -684,6 +1387,55 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     gicCodeNo: DEFAULT_VALUER_CODE,
     gicCodeNoEditOn: false,
     gicDateOfInspection: '',
+
+    // Section 3: Property Details
+    gicApplicantName: '',
+    gicDocsVerified: ['Sale Deed', 'ROR'],
+    gicSurveyNo: '',
+    gicMouza: '',
+    gicWardNoTaluk: '',
+    gicDistrict: '',
+
+    gicLocationSaleDeedVerified: 'Sketch Map',
+    gicLocationSaleDeedVerifiedCustom: '',
+    gicBoundarySaleDeedNorth: '',
+    gicBoundarySaleDeedNorthNA: false,
+    gicBoundarySaleDeedSouth: '',
+    gicBoundarySaleDeedSouthNA: false,
+    gicBoundarySaleDeedEast: '',
+    gicBoundarySaleDeedEastNA: false,
+    gicBoundarySaleDeedWest: '',
+    gicBoundarySaleDeedWestNA: false,
+    gicBoundariesAndDimensions: '',
+    gicBoundaryActualNorth: '',
+    gicBoundaryActualSouth: '',
+    gicBoundaryActualEast: '',
+    gicBoundaryActualWest: '',
+
+    gicTypeOfProperty: 'Residential Land & Building',
+    gicTypeOfPropertyCustom: '',
+    gicOccupant: 'Owner',
+    gicOccupantName: '',
+    gicOccupantNameNA: false,
+    gicRentedListOfOccupants: '',
+    gicRentedListOfOccupantsNA: true,
+    gicUsageOfBuilding: 'Residential',
+    gicUsageOfBuildingCustom: '',
+    gicNearbyLandmark: '',
+    gicNearbyLandmarkNA: false,
+    gicSurroundingDevelopment: 'Developing Residential Area',
+    gicSurroundingDevelopmentCustom: '',
+    gicBasicAmenitiesAvailable: 'Yes',
+    gicDistanceRailwayStation: '',
+    gicDistanceRailwayStationNA: false,
+    gicDistanceBusStand: '',
+    gicDistanceBusStandNA: false,
+    gicFavorableConsideration: '',
+    gicFavorableConsiderationNA: false,
+    gicNegativeToLocality: '',
+    gicNegativeToLocalityNA: false,
+    gicAnyOtherFeature: '',
+    gicAnyOtherFeatureNA: false,
   },
   extraSectionsStart: [
     {
@@ -707,6 +1459,20 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
         <BasicValuationDetailsContainer
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          projectCode={projectCode}
+        />
+      ),
+    },
+    {
+      id: 'gic-section-3',
+      title: 'PROPERTY DETAILS',
+      number: 3,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
+        <PropertyDetailsSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
