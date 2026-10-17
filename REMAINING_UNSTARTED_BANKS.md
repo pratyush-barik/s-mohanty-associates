@@ -1,6 +1,6 @@
 # ⏳ Pending Bank Valuation Report Templates (Not Started)
 
-This document contains all 22 remaining unstarted Bank and Financial Institution valuation report template formats across 20 institutions, with their respective format/subclass and directory locations.
+This document contains all 21 remaining unstarted Bank and Financial Institution valuation report template formats across 19 institutions, with their respective format/subclass and directory locations.
 
 | # | Bank / Financial Institution | Subclass / Format | Directory |
 |---|---|---|---|
@@ -23,9 +23,8 @@ This document contains all 22 remaining unstarted Bank and Financial Institution
 | **17** | **PROTEUM FINANCE** (#41) | `Standard` | `src/app/portal/reports/[projectId]/banks/proteum` |
 | **18** | **PUNJAB & SIND BANK** (#42) | `Standard` | `src/app/portal/reports/[projectId]/banks/punjab-sind` |
 | **19** | **PUNJAB NATIONAL BANK (PNB)** (#43) | `Standard` | `src/app/portal/reports/[projectId]/banks/punjab-national` |
-| **20** | **PURPLE FINANCE** (#44) | `Standard` | `src/app/portal/reports/[projectId]/banks/purple` |
-| **21** | **SAMMUNATI FINANCE** (#45) | `Standard` | `src/app/portal/reports/[projectId]/banks/sammunati` |
-| **22** | **SMFG INDIA (FULLERTON)** (#47) | `Standard` | `src/app/portal/reports/[projectId]/banks/smfg` |
+| **20** | **SAMMUNATI FINANCE** (#45) | `Standard` | `src/app/portal/reports/[projectId]/banks/sammunati` |
+| **21** | **SMFG INDIA (FULLERTON)** (#47) | `Standard` | `src/app/portal/reports/[projectId]/banks/smfg` |
 
 ---
 *Extracted from [BANK_REPORT_PROGRESS.md](file:///d:/Internship's%20Project/s-mohanty-associates/BANK_REPORT_PROGRESS.md)*

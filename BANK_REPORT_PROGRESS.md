@@ -87,7 +87,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **41** | **PROTEUM FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **42** | **PUNJAB & SIND BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **43** | **PUNJAB NATIONAL BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
-| **44** | **PURPLE FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **44** | **PURPLE FINANCE** | `Standard` | ✅ Dedicated Builder & Renderer | ✅ Completed |
 | **45** | **SAMMUNATI FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **46** | **SHRIRAM FINANCE** | `Standard` | ✅ Dedicated Builder & Renderer | ✅ Completed |
 | **47** | **SMFG INDIA-FULLERTON** | `Standard` | ⏳ Not Created | ⏳ Not Started |
