@@ -11,8 +11,8 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | Status Category | Count | Description |
 | :--- | :---: | :--- |
 | **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
-| **🔨 In Progress** | **44 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
-| **⏳ Not Started** | **18 formats (16 banks)** | Directory reserved / pending base component creation |
+| **🔨 In Progress** | **45 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
+| **⏳ Not Started** | **17 formats (15 banks)** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
@@ -27,7 +27,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **3** | **ANNAPURNA MICRO FINANCE LTD** | `Standard` | ✅ Created Base | ✅ Completed |
 | **4** | **ARKA FINANCE LTD** | `Standard` | ✅ Created Base | ✅ Completed |
 | **5** | **ARTHAN FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
-| **6** | **AU SMALL FINANCE BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **6** | **AU SMALL FINANCE BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **7** | **AXIS BANK** | | | |
 | 7.1 | AXIS BANK | `AGRI` | ✅ Created Base | ✅ Completed |
 | 7.2 | AXIS BANK | `HL-LAP` | ✅ Created Base | ✅ Completed |
@@ -138,6 +138,7 @@ Templates with base structure & draft UI files created, currently undergoing fie
 
 | # | Bank / Organization | Format / Key | Report Draft UI Component | PDF Renderer File | Status |
 |---|---|---|---|---|---|
+| **6** | AU SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/au-sfb/AUSmallFinanceBank.tsx` | `src/lib/banks/pdf-au-small-finance-bank-renderer.ts` | 🔨 In Progress |
 | **13** | BANK OF INDIA-BOI | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-india/BankOfIndia.tsx` | `src/lib/banks/pdf-bank-of-india-renderer.ts` | 🔨 In Progress |
 | **14** | BANK OF MAHARASHTRA-BOM | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-maharashtra/BankOfMaharashtra.tsx` | `src/lib/banks/pdf-bank-of-maharashtra-renderer.ts` | 🔨 In Progress |
 | **15** | CANARA BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/canara/CanaraBank.tsx` | `src/lib/banks/pdf-canara-bank-renderer.ts` | 🔨 In Progress |
