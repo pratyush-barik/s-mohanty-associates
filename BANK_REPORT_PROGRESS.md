@@ -89,7 +89,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **43** | **PUNJAB NATIONAL BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **44** | **PURPLE FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **45** | **SAMMUNATI FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
-| **46** | **SHRIRAM FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **46** | **SHRIRAM FINANCE** | `Standard` | ✅ Dedicated Builder & Renderer | ✅ Completed |
 | **47** | **SMFG INDIA-FULLERTON** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **48** | **STATE BANK OF INDIA-SBI** | | | |
 | 48.1 | STATE BANK OF INDIA-SBI | `Flat & Apartment` | ✅ Created Base | 🔨 In Progress |
