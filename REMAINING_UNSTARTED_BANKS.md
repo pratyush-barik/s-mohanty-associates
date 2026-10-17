@@ -1,6 +1,6 @@
 # ⏳ Pending Bank Valuation Report Templates (Not Started)
 
-This document contains all 28 remaining unstarted Bank and Financial Institution valuation report template formats across 26 institutions, with their respective format/subclass and directory locations.
+This document contains all 24 remaining unstarted Bank and Financial Institution valuation report template formats across 22 institutions, with their respective format/subclass and directory locations.
 
 | # | Bank / Financial Institution | Subclass / Format | Directory |
 |---|---|---|---|
@@ -28,10 +28,6 @@ This document contains all 28 remaining unstarted Bank and Financial Institution
 | **22** | **SHRIRAM FINANCE** (#46) | `Standard` | `src/app/portal/reports/[projectId]/banks/shriram` |
 | **23** | **SMFG INDIA (FULLERTON)** (#47) | `Standard` | `src/app/portal/reports/[projectId]/banks/smfg` |
 | **24** | **SURYODAY SMALL FINANCE BANK** (#49) | `Standard` | `src/app/portal/reports/[projectId]/banks/suryoday` |
-| **25** | **SWARNA FINANCE** (#50) | `Standard` | `src/app/portal/reports/[projectId]/banks/swarna` |
-| **26** | **TATA CAPITAL LTD** (#51) | `SME-BLG` | `src/app/portal/reports/[projectId]/banks/tata` |
-| **27** | **TATA HOUSING FINANCE LTD** (#52) | `Standard` | `src/app/portal/reports/[projectId]/banks/tata-housing` |
-| **28** | **UJJIVAN SMALL FINANCE BANK** (#54) | `Standard` | `src/app/portal/reports/[projectId]/banks/ujjivan` |
 
 ---
 *Extracted from [BANK_REPORT_PROGRESS.md](file:///d:/Internship's%20Project/s-mohanty-associates/BANK_REPORT_PROGRESS.md)*
