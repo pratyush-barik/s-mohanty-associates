@@ -2940,6 +2940,234 @@ function ProgressOfWorkSection({
   );
 }
 
+// ─── Section 9: Estimated Value of the Property After Above Renovation ───────
+
+function EstimatedValueAfterRenovationSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+  projectCode?: string;
+}) {
+  // Extract values from Section 6 House rows
+  const houseRows: ValuationHouseRow[] =
+    fields.gicHouseValuationRows && Array.isArray(fields.gicHouseValuationRows) && fields.gicHouseValuationRows.length > 0
+      ? fields.gicHouseValuationRows
+      : DEFAULT_HOUSE_ROWS;
+
+  const landRow = houseRows.find((r) => r.id === 'row-land' || r.description?.toLowerCase().includes('land')) || houseRows[0];
+  const bldgRow = houseRows.find((r) => r.id === 'row-building' || r.description?.toLowerCase().includes('building')) || houseRows[1];
+  const amenitiesRow = houseRows.find((r) => r.id === 'row-amenities' || r.description?.toLowerCase().includes('amenities')) || houseRows[2];
+
+  const landVal = landRow
+    ? (landRow.estimatedMarketValueEditOn ? parseFloat(landRow.estimatedMarketValue) || 0 : (parseFloat(landRow.areaSqft) || 0) * (parseFloat(landRow.unitRate) || 0))
+    : 0;
+
+  const bldgVal = bldgRow
+    ? (bldgRow.estimatedMarketValueEditOn ? parseFloat(bldgRow.estimatedMarketValue) || 0 : (parseFloat(bldgRow.areaSqft) || 0) * (parseFloat(bldgRow.unitRate) || 0))
+    : 0;
+
+  const amenitiesVal = amenitiesRow
+    ? (amenitiesRow.estimatedMarketValueEditOn ? parseFloat(amenitiesRow.estimatedMarketValue) || 0 : (parseFloat(amenitiesRow.areaSqft) || 0) * (parseFloat(amenitiesRow.unitRate) || 0))
+    : 0;
+
+  const renovVal =
+    parseFloat(fields.gicReasonableEstimateAmount) ||
+    parseFloat(fields.gicRepairEstimateApplicant) ||
+    parseFloat(fields.gicValueOfRepairWorkCompleted) ||
+    0;
+
+  const basePropVal =
+    parseFloat(fields.gicTotalValueBeforeRenovation) ||
+    (landVal + bldgVal + amenitiesVal) ||
+    parseFloat(fields.gicFlatMarketValue) ||
+    parseFloat(fields.gicValueOfProperty) ||
+    0;
+
+  const totalAfterRenov = basePropVal + renovVal;
+
+  // Auto Equation String
+  const autoEquationString = useMemo(() => {
+    if (landVal > 0 || bldgVal > 0) {
+      const parts: string[] = [];
+      if (landVal > 0) parts.push(`Land: Rs. ${landVal.toLocaleString('en-IN')}`);
+      if (bldgVal > 0) parts.push(`Building: Rs. ${bldgVal.toLocaleString('en-IN')}`);
+      if (amenitiesVal > 0) parts.push(`Amenities: Rs. ${amenitiesVal.toLocaleString('en-IN')}`);
+      if (renovVal > 0) parts.push(`Renovation: Rs. ${renovVal.toLocaleString('en-IN')}`);
+      return parts.length > 0 ? `${parts.join(' + ')} = Rs. ${totalAfterRenov.toLocaleString('en-IN')}` : '';
+    }
+    if (basePropVal > 0) {
+      if (renovVal > 0) {
+        return `Property: Rs. ${basePropVal.toLocaleString('en-IN')} + Renovation: Rs. ${renovVal.toLocaleString('en-IN')} = Rs. ${totalAfterRenov.toLocaleString('en-IN')}`;
+      }
+      return `Rs. ${basePropVal.toLocaleString('en-IN')}`;
+    }
+    return '';
+  }, [landVal, bldgVal, amenitiesVal, renovVal, basePropVal, totalAfterRenov]);
+
+  const effectiveEquationString = fields.gicTotalValueLandBuildingEditOn
+    ? (fields.gicTotalValueLandBuilding ?? '')
+    : (autoEquationString || fields.gicTotalValueLandBuilding || '');
+
+  // Calculate numeric total for distress & realisable value
+  const numericTotalForFactors =
+    totalAfterRenov > 0
+      ? totalAfterRenov
+      : (parseFloat(String(fields.gicTotalValueLandBuilding).replace(/[^0-9.]/g, '')) || 0);
+
+  const autoRealisableVal = numericTotalForFactors > 0 ? Math.round(numericTotalForFactors * 0.90) : 0;
+  const effectiveRealisableVal = fields.gicRealisableValue90EditOn
+    ? (fields.gicRealisableValue90 ?? '')
+    : (autoRealisableVal > 0 ? String(autoRealisableVal) : (fields.gicRealisableValue90 || ''));
+
+  const autoDistressVal = numericTotalForFactors > 0 ? Math.round(numericTotalForFactors * 0.80) : 0;
+  const effectiveDistressVal = fields.gicDistressValue80EditOn
+    ? (fields.gicDistressValue80 ?? '')
+    : (autoDistressVal > 0 ? String(autoDistressVal) : (fields.gicDistressValue80 || ''));
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Final Calculation Values (Light Teal #e0f2f1) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-teal-200 shadow-sm"
+        style={{ backgroundColor: '#e0f2f1' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-teal-200 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            Final Calculation Values
+          </h3>
+          <span className="text-xs text-teal-900 font-medium bg-teal-100/80 px-2.5 py-1 rounded-md border border-teal-300">
+            Post-Renovation Valuation
+          </span>
+        </div>
+
+        {/* TOTAL VALUE(LAND+BUILDING): Auto-calculates field [Edit Switch] (Equation string) */}
+        <Field
+          label={
+            <div className="flex justify-between items-center w-full">
+              <span className="font-semibold text-gray-700">
+                TOTAL VALUE(LAND+BUILDING) (EQUATION STRING)
+              </span>
+              <EditSwitch
+                checked={!!fields.gicTotalValueLandBuildingEditOn}
+                onChange={(checked) => {
+                  handleChange('gicTotalValueLandBuildingEditOn', checked);
+                  if (!checked && autoEquationString) {
+                    handleChange('gicTotalValueLandBuilding', autoEquationString);
+                  }
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          }
+        >
+          <div className="relative">
+            <input
+              type="text"
+              className={`${inputCls} font-bold text-gray-900 ${
+                !fields.gicTotalValueLandBuildingEditOn ? 'bg-teal-50/70 border-teal-300' : 'bg-white'
+              }`}
+              value={effectiveEquationString}
+              onChange={(e) => handleChange('gicTotalValueLandBuilding', e.target.value)}
+              disabled={isReadOnly || !fields.gicTotalValueLandBuildingEditOn}
+              placeholder="e.g. Land: Rs. 15,00,000 + Building: Rs. 10,00,000 + Renovation: Rs. 5,00,000 = Rs. 30,00,000"
+            />
+            {!fields.gicTotalValueLandBuildingEditOn && effectiveEquationString && (
+              <div className="absolute right-3 top-2.5 text-xs text-emerald-700 font-semibold pointer-events-none flex items-center gap-1">
+                <Lock className="w-3 h-3" /> Auto (Equation)
+              </div>
+            )}
+          </div>
+        </Field>
+
+        {/* Grid for REALISABLE VALUER(90%) and DISTRESS VALUE (80%) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+          {/* REALISABLE VALUER(90%) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">
+                  REALISABLE VALUER(90%) (RS.)
+                </span>
+                <EditSwitch
+                  checked={!!fields.gicRealisableValue90EditOn}
+                  onChange={(checked) => {
+                    handleChange('gicRealisableValue90EditOn', checked);
+                    if (!checked && autoRealisableVal > 0) {
+                      handleChange('gicRealisableValue90', String(autoRealisableVal));
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="number"
+                className={`${inputCls} font-bold text-gray-900 ${
+                  !fields.gicRealisableValue90EditOn ? 'bg-teal-50/70 border-teal-300' : 'bg-white'
+                }`}
+                value={effectiveRealisableVal}
+                onChange={(e) => handleChange('gicRealisableValue90', e.target.value)}
+                disabled={isReadOnly || !fields.gicRealisableValue90EditOn}
+                placeholder="Auto-calculated (90% of Total Value)"
+              />
+              {!fields.gicRealisableValue90EditOn && effectiveRealisableVal && (
+                <div className="absolute right-3 top-2.5 text-xs text-emerald-700 font-semibold pointer-events-none flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Auto (90%)
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* DISTRESS VALUE (80%) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">
+                  DISTRESS VALUE (80%) (RS.)
+                </span>
+                <EditSwitch
+                  checked={!!fields.gicDistressValue80EditOn}
+                  onChange={(checked) => {
+                    handleChange('gicDistressValue80EditOn', checked);
+                    if (!checked && autoDistressVal > 0) {
+                      handleChange('gicDistressValue80', String(autoDistressVal));
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="number"
+                className={`${inputCls} font-bold text-gray-900 ${
+                  !fields.gicDistressValue80EditOn ? 'bg-teal-50/70 border-teal-300' : 'bg-white'
+                }`}
+                value={effectiveDistressVal}
+                onChange={(e) => handleChange('gicDistressValue80', e.target.value)}
+                disabled={isReadOnly || !fields.gicDistressValue80EditOn}
+                placeholder="Auto-calculated (80% of Total Value)"
+              />
+              {!fields.gicDistressValue80EditOn && effectiveDistressVal && (
+                <div className="absolute right-3 top-2.5 text-xs text-emerald-700 font-semibold pointer-events-none flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Auto (80%)
+                </div>
+              )}
+            </div>
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── GIC Housing Finance BankConfig ─────────────────────────────────────────
 
 export const GIC_HOUSING_CONFIG: BankConfig = {
@@ -2974,6 +3202,7 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     { id: 'gic-section-6', title: 'VALUATION DETAILS' },
     { id: 'gic-section-7', title: 'ESTIMATE FOR REPAIR & RENOVATION' },
     { id: 'gic-section-8', title: 'PROGRESS OF WORK' },
+    { id: 'gic-section-9', title: 'ESTIMATED VALUE OF THE PROPERTY AFTER ABOVE RENOVATION' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -3128,6 +3357,14 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     gicWorkProgressRows: DEFAULT_WORK_PROGRESS_ROWS,
     gicPropertyValueAsOnDate: '',
     gicPropertyValueAsOnDateEditOn: false,
+
+    // Section 9: Estimated Value of the Property After Above Renovation
+    gicTotalValueLandBuilding: '',
+    gicTotalValueLandBuildingEditOn: false,
+    gicRealisableValue90: '',
+    gicRealisableValue90EditOn: false,
+    gicDistressValue80: '',
+    gicDistressValue80EditOn: false,
   },
   extraSectionsStart: [
     {
@@ -3235,6 +3472,20 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
         <ProgressOfWorkSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          projectCode={projectCode}
+        />
+      ),
+    },
+    {
+      id: 'gic-section-9',
+      title: 'ESTIMATED VALUE OF THE PROPERTY AFTER ABOVE RENOVATION',
+      number: 9,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
+        <EstimatedValueAfterRenovationSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
