@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
@@ -3168,6 +3168,323 @@ function EstimatedValueAfterRenovationSection({
   );
 }
 
+// ─── Signature Upload or Digital Canvas Helper ──────────────────────────────
+
+export function SignatureUploadOrCanvas({
+  value,
+  onChange,
+  disabled = false,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  disabled?: boolean;
+}) {
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [mode, setMode] = useState<'upload' | 'draw'>('upload');
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (disabled) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    ctx.beginPath();
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    setIsDrawing(true);
+  };
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing || disabled) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
+    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#1e3a8a';
+    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    if (!isDrawing) return;
+    setIsDrawing(false);
+    const canvas = canvasRef.current;
+    if (canvas) {
+      onChange(canvas.toDataURL('image/png'));
+    }
+  };
+
+  const clearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    onChange('');
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          onChange(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className={`border border-lime-300 rounded-lg p-3 bg-white/95 shadow-sm ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+      <div className="flex items-center justify-between mb-2">
+        <div className="inline-flex rounded-md shadow-sm border border-lime-300 p-0.5 bg-lime-50">
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => setMode('upload')}
+            className={`px-3 py-1 text-xs font-medium rounded transition ${mode === 'upload' ? 'bg-emerald-600 text-white shadow' : 'text-gray-700 hover:text-gray-900'}`}
+          >
+            Upload File
+          </button>
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={() => setMode('draw')}
+            className={`px-3 py-1 text-xs font-medium rounded transition ${mode === 'draw' ? 'bg-emerald-600 text-white shadow' : 'text-gray-700 hover:text-gray-900'}`}
+          >
+            Digital Canvas
+          </button>
+        </div>
+
+        {value && !disabled && (
+          <button
+            type="button"
+            onClick={clearCanvas}
+            className="text-xs text-red-600 hover:text-red-800 font-medium inline-flex items-center gap-1"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Clear Signature
+          </button>
+        )}
+      </div>
+
+      {mode === 'upload' ? (
+        <div className="space-y-2">
+          <input
+            type="file"
+            accept="image/*"
+            disabled={disabled}
+            onChange={handleFileUpload}
+            className="block w-full text-xs text-gray-500 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-lime-100 file:text-lime-900 hover:file:bg-lime-200 cursor-pointer disabled:cursor-not-allowed"
+          />
+          {value && (
+            <div className="mt-2 p-2 border border-dashed border-lime-400 rounded bg-lime-50/50 flex justify-center">
+              <img src={value} alt="Signature of the Valuer" className="max-h-24 object-contain" />
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <div className="text-[11px] text-gray-500">Sign inside the box below with mouse or touch:</div>
+          <canvas
+            ref={canvasRef}
+            width={400}
+            height={110}
+            onMouseDown={startDrawing}
+            onMouseMove={draw}
+            onMouseUp={stopDrawing}
+            onMouseLeave={stopDrawing}
+            onTouchStart={startDrawing}
+            onTouchMove={draw}
+            onTouchEnd={stopDrawing}
+            className="w-full border-2 border-dashed border-lime-300 rounded bg-white touch-none cursor-crosshair h-28"
+          />
+          {value && (
+            <div className="flex justify-between items-center text-xs text-emerald-700">
+              <span>✓ Digital Signature captured</span>
+              {!disabled && (
+                <button type="button" onClick={clearCanvas} className="text-red-500 hover:underline">Clear & Redraw</button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Section 10: Remarks & Certificate ──────────────────────────────────────
+
+const DEFAULT_GIC_REMARKS =
+  'The property is easily accessible and located in a well-developed / developing residential locality. All basic civic amenities like water supply, electricity, and approach roads are available. The property has clear and marketable title.';
+
+const DEFAULT_GIC_NOTE =
+  '1. The valuation is carried out based on the documents produced by the applicant / client.\n2. Measurements and boundaries have been verified at site as per available records.\n3. The estimated value reflects prevailing local market conditions.';
+
+function RemarksAndCertificateSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+  projectCode?: string;
+}) {
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  const effectiveRemarks = fields.gicRemarks ?? DEFAULT_GIC_REMARKS;
+  const isNoteNA = !!fields.gicNoteNA;
+  const effectiveNote = isNoteNA ? 'NA' : (fields.gicNote ?? DEFAULT_GIC_NOTE);
+
+  const effectiveCertificateDate = fields.gicCertificateDateEditOn
+    ? (fields.gicCertificateDate ?? '')
+    : (fields.gicCertificateDate || todayStr);
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Container 1: Summaries (Light Indigo #e8eaf6) ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-indigo-200 shadow-sm"
+        style={{ backgroundColor: '#e8eaf6' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-200 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            Summaries
+          </h3>
+          <span className="text-xs text-indigo-900 font-medium bg-indigo-100/80 px-2.5 py-1 rounded-md border border-indigo-300">
+            Remarks & Notes
+          </span>
+        </div>
+
+        {/* 8. REMARKS */}
+        <Field label={<span className="font-semibold text-gray-700">8. REMARKS</span>}>
+          <textarea
+            rows={4}
+            className={`${inputCls} resize-y bg-white`}
+            value={effectiveRemarks}
+            onChange={(e) => handleChange('gicRemarks', e.target.value)}
+            disabled={isReadOnly}
+            placeholder="Enter general remarks, observations on marketability, neighbourhood, etc..."
+          />
+        </Field>
+
+        {/* NOTE- */}
+        <Field
+          label={
+            <div className="flex justify-between items-center w-full">
+              <span className="font-semibold text-gray-700">NOTE-</span>
+              <NaCheckbox
+                checked={isNoteNA}
+                onChange={(checked) => {
+                  handleChange('gicNoteNA', checked);
+                  if (checked) handleChange('gicNote', 'NA');
+                  else handleChange('gicNote', DEFAULT_GIC_NOTE);
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          }
+        >
+          <textarea
+            rows={3}
+            className={`${inputCls} resize-y ${
+              isNoteNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
+            }`}
+            value={effectiveNote}
+            onChange={(e) => handleChange('gicNote', e.target.value)}
+            disabled={isReadOnly || isNoteNA}
+            placeholder="Enter valuation notes or terms of assessment..."
+          />
+        </Field>
+      </div>
+
+      {/* ─── Container 2: Signatures & Dates (Mint Green #f1f8e9) ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-lime-200 shadow-sm"
+        style={{ backgroundColor: '#f1f8e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-lime-200 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            Signatures & Dates
+          </h3>
+          <span className="text-xs text-lime-900 font-medium bg-lime-100/80 px-2.5 py-1 rounded-md border border-lime-300">
+            Valuer Certificate
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* PLACE */}
+          <Field label={<span className="font-semibold text-gray-700">PLACE</span>}>
+            <input
+              type="text"
+              className={`${inputCls} bg-white`}
+              value={fields.gicPlace ?? 'Bhubaneswar'}
+              onChange={(e) => handleChange('gicPlace', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. Bhubaneswar"
+            />
+          </Field>
+
+          {/* DATE */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">DATE</span>
+                <EditSwitch
+                  checked={!!fields.gicCertificateDateEditOn}
+                  onChange={(checked) => {
+                    handleChange('gicCertificateDateEditOn', checked);
+                    if (!checked) {
+                      handleChange('gicCertificateDate', todayStr);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="date"
+                className={`${inputCls} ${
+                  !fields.gicCertificateDateEditOn ? 'bg-lime-50/70 border-lime-300' : 'bg-white'
+                }`}
+                value={effectiveCertificateDate}
+                onChange={(e) => handleChange('gicCertificateDate', e.target.value)}
+                disabled={isReadOnly || !fields.gicCertificateDateEditOn}
+              />
+              {!fields.gicCertificateDateEditOn && (
+                <div className="absolute right-8 top-2.5 text-xs text-emerald-700 font-semibold pointer-events-none flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Current Date
+                </div>
+              )}
+            </div>
+          </Field>
+        </div>
+
+        {/* SIGNATURE OF THE VALUER */}
+        <Field label={<span className="font-semibold text-gray-700">SIGNATURE OF THE VALUER</span>}>
+          <SignatureUploadOrCanvas
+            value={fields.gicValuerSignature || ''}
+            onChange={(val) => handleChange('gicValuerSignature', val)}
+            disabled={isReadOnly}
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
 // ─── GIC Housing Finance BankConfig ─────────────────────────────────────────
 
 export const GIC_HOUSING_CONFIG: BankConfig = {
@@ -3203,6 +3520,7 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     { id: 'gic-section-7', title: 'ESTIMATE FOR REPAIR & RENOVATION' },
     { id: 'gic-section-8', title: 'PROGRESS OF WORK' },
     { id: 'gic-section-9', title: 'ESTIMATED VALUE OF THE PROPERTY AFTER ABOVE RENOVATION' },
+    { id: 'gic-section-10', title: 'REMARKS & CERTIFICATE' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -3365,6 +3683,15 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
     gicRealisableValue90EditOn: false,
     gicDistressValue80: '',
     gicDistressValue80EditOn: false,
+
+    // Section 10: Remarks & Certificate
+    gicRemarks: DEFAULT_GIC_REMARKS,
+    gicNote: DEFAULT_GIC_NOTE,
+    gicNoteNA: false,
+    gicPlace: 'Bhubaneswar',
+    gicCertificateDate: '',
+    gicCertificateDateEditOn: false,
+    gicValuerSignature: '',
   },
   extraSectionsStart: [
     {
@@ -3486,6 +3813,20 @@ export const GIC_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
         <EstimatedValueAfterRenovationSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+          projectCode={projectCode}
+        />
+      ),
+    },
+    {
+      id: 'gic-section-10',
+      title: 'REMARKS & CERTIFICATE',
+      number: 10,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => (
+        <RemarksAndCertificateSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
