@@ -149,6 +149,7 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **15** | CANARA BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/canara/CanaraBank.tsx` | `src/lib/banks/pdf-canara-bank-renderer.ts` | 🔨 In Progress |
 | **16** | CANFIN HOMES LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/canfin/CanFinHomes.tsx` | `src/lib/banks/pdf-canfin-homes-renderer.ts` | 🔨 In Progress |
 | **18** | CLIX CAPITAL LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/clix/ClixCapital.tsx` | `src/lib/banks/pdf-clix-capital-renderer.ts` | 🔨 In Progress |
+| **20** | GIC HOUSING FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/gic/GICHousing.tsx` | `src/lib/banks/pdf-gic-housing-render.ts` | 🔨 In Progress |
 | **24.1** | ICICI BANK | `HL-LAP-BBG` (`icici-hllap-bbg`) | `src/app/portal/reports/[projectId]/banks/icici/ICICIBankHLLAPBBG.tsx` | `src/lib/banks/pdf-icici-bank-hllap-bbg-renderer.ts` | 🔨 In Progress |
 | **24.2** | ICICI BANK | `NPA` (`icici-npa`) | `src/app/portal/reports/[projectId]/banks/icici/ICICIBankNPA.tsx` | `src/lib/banks/pdf-icici-bank-npa-renderer.ts` | 🔨 In Progress |
 | **25.1** | IDBI BANK | `Land & Building` / `BELOW 5CR` | `src/app/portal/reports/[projectId]/banks/idbi/IDBIBankBelow5CR.tsx` | `src/lib/banks/pdf-sbi-land-and-building-renderer.ts` | 🔨 In Progress |
