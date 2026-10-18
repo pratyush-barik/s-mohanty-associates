@@ -1222,6 +1222,566 @@ export function ValuationReportSection({
   );
 }
 
+// ─── Section 2: II) DETAILS OF STRUCTURE AND SPECIFICATIONS Component ───────
+
+const CRITICAL_OBSERVATION_OPTIONS = [
+  'Railway Track (within 50m)',
+  'Nala > 10 feet / Open Drain',
+  'Lake / River / Water Body',
+  'High Tension Power Line (HT Line)',
+  'Graveyard / Cremation Ground',
+  'Low Lying / Water Logging Area',
+  'Steep Slope / Hilly Terrain',
+  'Industrial Pollution / Hazardous Unit',
+  'No Critical Observations (Clear / Favorable)',
+];
+
+export function StructureAndSpecificationsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
+
+  // Auto-calculated age & future life based on "Year of construction" vs Current Year:
+  const calculatedAge = useMemo(() => {
+    const yoc = parseInt(fields.ikfYearOfConstruction || '', 10);
+    if (!isNaN(yoc) && yoc > 1800 && yoc <= currentYear) {
+      const age = currentYear - yoc;
+      const expectedLife = 60; // standard RCC design life
+      const futureLife = Math.max(0, expectedLife - age);
+      return `${age} Years (Anticipated Future Life: ${futureLife} Years)`;
+    }
+    return '';
+  }, [fields.ikfYearOfConstruction, currentYear]);
+
+  const effectiveAgeAndLife = fields.ikfAgeAndLifeOfBuildingEditOn
+    ? (fields.ikfAgeAndLifeOfBuilding ?? '')
+    : (fields.ikfAgeAndLifeOfBuilding || calculatedAge || 'Age: 0 Years (Future Life: 60 Years)');
+
+  // Parse critical observations
+  const checkedObs: string[] = useMemo(() => {
+    if (Array.isArray(fields.ikfCriticalObservations)) return fields.ikfCriticalObservations;
+    if (typeof fields.ikfCriticalObservations === 'string') {
+      try {
+        const parsed = JSON.parse(fields.ikfCriticalObservations);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        return fields.ikfCriticalObservations.split(',').map((s: string) => s.trim()).filter(Boolean);
+      }
+    }
+    return [];
+  }, [fields.ikfCriticalObservations]);
+
+  const handleObsToggle = (obs: string) => {
+    let next: string[];
+    if (checkedObs.includes(obs)) {
+      next = checkedObs.filter((o) => o !== obs);
+    } else {
+      next = [...checkedObs, obs];
+    }
+    handleChange('ikfCriticalObservations', next);
+  };
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Container: Building Information (Light Blue '#e3f2fd') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-blue-200 shadow-sm"
+        style={{ backgroundColor: '#e3f2fd' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Building className="w-5 h-5 text-blue-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Building Information
+            </h3>
+          </div>
+          <span className="text-xs text-blue-800 font-medium bg-blue-100 px-2.5 py-1 rounded-md border border-blue-300">
+            Structural Details & Specifications
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Year of construction of the building: Input Box (Number/Year) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Year of construction of the building</span>
+                <NaCheckbox
+                  checked={!!fields.ikfYearOfConstructionNA}
+                  onChange={(checked) => {
+                    handleChange('ikfYearOfConstructionNA', checked);
+                    if (checked) handleChange('ikfYearOfConstruction', 'NA');
+                    else if (fields.ikfYearOfConstruction === 'NA') handleChange('ikfYearOfConstruction', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfYearOfConstructionNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. 2018"
+              value={fields.ikfYearOfConstructionNA ? 'NA' : (fields.ikfYearOfConstruction || '')}
+              onChange={(e) => handleChange('ikfYearOfConstruction', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfYearOfConstructionNA}
+            />
+          </Field>
+
+          {/* Age of the building and anticipated future life of the building: Input Box (Number) (Auto-calculate Age based on "Year of construction" vs Current Year, Edit button: OFF) [with NA Checkbox] [Lock UI Hover: >>Auto calculating from [Current Year - Year of construction of the building]<<] */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">
+                    Age of the building and anticipated future life of the building
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <NaCheckbox
+                      checked={!!fields.ikfAgeAndLifeOfBuildingNA}
+                      onChange={(checked) => {
+                        handleChange('ikfAgeAndLifeOfBuildingNA', checked);
+                        if (checked) handleChange('ikfAgeAndLifeOfBuilding', 'NA');
+                        else if (fields.ikfAgeAndLifeOfBuilding === 'NA') handleChange('ikfAgeAndLifeOfBuilding', '');
+                      }}
+                      disabled={isReadOnly}
+                    />
+                    <EditSwitch
+                      checked={!!fields.ikfAgeAndLifeOfBuildingEditOn}
+                      onChange={(checked) => {
+                        handleChange('ikfAgeAndLifeOfBuildingEditOn', checked);
+                        if (!checked) {
+                          handleChange('ikfAgeAndLifeOfBuilding', calculatedAge);
+                        }
+                      }}
+                      disabled={isReadOnly || !!fields.ikfAgeAndLifeOfBuildingNA}
+                    />
+                  </div>
+                </div>
+              }
+            >
+              <LockedFieldWrapper
+                isLocked={!fields.ikfAgeAndLifeOfBuildingEditOn && !fields.ikfAgeAndLifeOfBuildingNA}
+                tooltipMessage=">>Auto calculating from [Current Year - Year of construction of the building]<<"
+              >
+                <div className="relative">
+                  <input
+                    type="text"
+                    className={`${inputCls} ${
+                      fields.ikfAgeAndLifeOfBuildingNA
+                        ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed'
+                        : fields.ikfAgeAndLifeOfBuildingEditOn
+                        ? 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-medium focus:ring-emerald-500'
+                        : 'bg-gray-100/80 text-gray-700 cursor-not-allowed font-medium'
+                    }`}
+                    placeholder="e.g. 8 Years (Anticipated Future Life: 52 Years)"
+                    value={
+                      fields.ikfAgeAndLifeOfBuildingNA
+                        ? 'NA'
+                        : effectiveAgeAndLife
+                    }
+                    onChange={(e) => handleChange('ikfAgeAndLifeOfBuilding', e.target.value)}
+                    disabled={isReadOnly || !!fields.ikfAgeAndLifeOfBuildingNA || !fields.ikfAgeAndLifeOfBuildingEditOn}
+                  />
+                  {!fields.ikfAgeAndLifeOfBuildingEditOn && !fields.ikfAgeAndLifeOfBuildingNA && (
+                    <div className="absolute right-3 top-2.5 text-xs text-amber-700 font-semibold pointer-events-none flex items-center gap-1 bg-amber-50/90 px-2 py-0.5 rounded border border-amber-200">
+                      <Lock className="w-3.5 h-3.5 text-amber-600" /> Auto-calculated
+                    </div>
+                  )}
+                </div>
+              </LockedFieldWrapper>
+            </Field>
+          </div>
+
+          {/* Present condition of the flat or building or Structure: Dropdown (Excellent / Good / Average / Poor / Not Applicable / Custom) [Custom Option: ON] */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700">
+                Present condition of the flat or building or Structure
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.ikfPresentCondition || 'Good'}
+              customValue={fields.ikfPresentConditionCustom || ''}
+              onChange={(val) => handleChange('ikfPresentCondition', val)}
+              onCustomChange={(val) => handleChange('ikfPresentConditionCustom', val)}
+              options={[
+                { value: 'Excellent', label: 'Excellent' },
+                { value: 'Good', label: 'Good' },
+                { value: 'Average', label: 'Average' },
+                { value: 'Poor', label: 'Poor' },
+                { value: 'Not Applicable', label: 'Not Applicable' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select condition..."
+            />
+          </Field>
+
+          {/* Type of construction: Dropdown (RCC / Load Bearing / ACC / Mangalore Roof / Plot / Custom) [Custom Option: ON] */}
+          <Field label={<span className="font-semibold text-gray-700">Type of construction</span>}>
+            <CustomSelect
+              value={fields.ikfTypeOfConstruction || 'RCC'}
+              customValue={fields.ikfTypeOfConstructionCustom || ''}
+              onChange={(val) => handleChange('ikfTypeOfConstruction', val)}
+              onCustomChange={(val) => handleChange('ikfTypeOfConstructionCustom', val)}
+              options={[
+                { value: 'RCC', label: 'RCC' },
+                { value: 'Load Bearing', label: 'Load Bearing' },
+                { value: 'ACC', label: 'ACC' },
+                { value: 'Mangalore Roof', label: 'Mangalore Roof' },
+                { value: 'Plot', label: 'Plot' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select construction type..."
+            />
+          </Field>
+
+          {/* Permitted use of the property: Input Box (Text) */}
+          <Field label={<span className="font-semibold text-gray-700">Permitted use of the property</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              placeholder="e.g. Residential"
+              value={fields.ikfPermittedUse ?? (fields.propertyType || 'Residential')}
+              onChange={(e) => handleChange('ikfPermittedUse', e.target.value)}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* Actual use of the Property: Input Box (Text) */}
+          <Field label={<span className="font-semibold text-gray-700">Actual use of the Property</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              placeholder="e.g. Residential (Self-Occupied)"
+              value={fields.ikfActualUse ?? (fields.propertyType || 'Residential (Self-Occupied)')}
+              onChange={(e) => handleChange('ikfActualUse', e.target.value)}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* No. of floors for building and additional structures: Input Box (Number) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">
+                  No. of floors for building and additional structures
+                </span>
+                <NaCheckbox
+                  checked={!!fields.ikfNoOfFloorsNA}
+                  onChange={(checked) => {
+                    handleChange('ikfNoOfFloorsNA', checked);
+                    if (checked) handleChange('ikfNoOfFloors', 'NA');
+                    else if (fields.ikfNoOfFloors === 'NA') handleChange('ikfNoOfFloors', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfNoOfFloorsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. G + 1 Floor"
+              value={fields.ikfNoOfFloorsNA ? 'NA' : (fields.ikfNoOfFloors || '')}
+              onChange={(e) => handleChange('ikfNoOfFloors', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfNoOfFloorsNA}
+            />
+          </Field>
+
+          {/* No. of lifts with capacity and type: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">No. of lifts with capacity and type</span>
+                <NaCheckbox
+                  checked={!!fields.ikfNoOfLiftsNA}
+                  onChange={(checked) => {
+                    handleChange('ikfNoOfLiftsNA', checked);
+                    if (checked) handleChange('ikfNoOfLifts', 'NA');
+                    else if (fields.ikfNoOfLifts === 'NA') handleChange('ikfNoOfLifts', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfNoOfLiftsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. 1 Lift (6 Passenger) / NA"
+              value={fields.ikfNoOfLiftsNA ? 'NA' : (fields.ikfNoOfLifts || '')}
+              onChange={(e) => handleChange('ikfNoOfLifts', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfNoOfLiftsNA}
+            />
+          </Field>
+
+          {/* Type of underground, overhead tanks and pumps: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">
+                  Type of underground, overhead tanks and pumps
+                </span>
+                <NaCheckbox
+                  checked={!!fields.ikfTanksAndPumpsNA}
+                  onChange={(checked) => {
+                    handleChange('ikfTanksAndPumpsNA', checked);
+                    if (checked) handleChange('ikfTanksAndPumps', 'NA');
+                    else if (fields.ikfTanksAndPumps === 'NA') handleChange('ikfTanksAndPumps', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfTanksAndPumpsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. PVC Syntex OHT 1000L with 0.5 HP Pump"
+              value={fields.ikfTanksAndPumpsNA ? 'NA' : (fields.ikfTanksAndPumps || '')}
+              onChange={(e) => handleChange('ikfTanksAndPumps', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfTanksAndPumpsNA}
+            />
+          </Field>
+
+          {/* Flooring in open spaces and stilts and staircase: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">
+                  Flooring in open spaces and stilts and staircase
+                </span>
+                <NaCheckbox
+                  checked={!!fields.ikfFlooringOpenStiltsStairsNA}
+                  onChange={(checked) => {
+                    handleChange('ikfFlooringOpenStiltsStairsNA', checked);
+                    if (checked) handleChange('ikfFlooringOpenStiltsStairs', 'NA');
+                    else if (fields.ikfFlooringOpenStiltsStairs === 'NA') handleChange('ikfFlooringOpenStiltsStairs', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfFlooringOpenStiltsStairsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. PCC / Paver Tiles in open, Marble/Tiles in staircase"
+              value={fields.ikfFlooringOpenStiltsStairsNA ? 'NA' : (fields.ikfFlooringOpenStiltsStairs || '')}
+              onChange={(e) => handleChange('ikfFlooringOpenStiltsStairs', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfFlooringOpenStiltsStairsNA}
+            />
+          </Field>
+
+          {/* Compound wall and gates & security: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Compound wall and gates & security</span>
+                <NaCheckbox
+                  checked={!!fields.ikfCompoundWallAndGateNA}
+                  onChange={(checked) => {
+                    handleChange('ikfCompoundWallAndGateNA', checked);
+                    if (checked) handleChange('ikfCompoundWallAndGate', 'NA');
+                    else if (fields.ikfCompoundWallAndGate === 'NA') handleChange('ikfCompoundWallAndGate', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfCompoundWallAndGateNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Brick wall up to 5 ft height with MS Iron Gate"
+              value={fields.ikfCompoundWallAndGateNA ? 'NA' : (fields.ikfCompoundWallAndGate || '')}
+              onChange={(e) => handleChange('ikfCompoundWallAndGate', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfCompoundWallAndGateNA}
+            />
+          </Field>
+
+          {/* Building elevation: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Building elevation</span>
+                <NaCheckbox
+                  checked={!!fields.ikfBuildingElevationNA}
+                  onChange={(checked) => {
+                    handleChange('ikfBuildingElevationNA', checked);
+                    if (checked) handleChange('ikfBuildingElevation', 'NA');
+                    else if (fields.ikfBuildingElevation === 'NA') handleChange('ikfBuildingElevation', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfBuildingElevationNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Standard aesthetic finish with weather coat painting"
+              value={fields.ikfBuildingElevationNA ? 'NA' : (fields.ikfBuildingElevation || '')}
+              onChange={(e) => handleChange('ikfBuildingElevation', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfBuildingElevationNA}
+            />
+          </Field>
+
+          {/* Critical Observations at the Property / Boundary: Checkbox group (Railway Track, Nala >10 feet, Lake, etc.) with Input Box for "Other" [with NA Checkbox] */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">
+                    Critical Observations at the Property / Boundary
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.ikfCriticalObservationsNA}
+                    onChange={(checked) => {
+                      handleChange('ikfCriticalObservationsNA', checked);
+                      if (checked) {
+                        handleChange('ikfCriticalObservations', ['NA']);
+                        handleChange('ikfCriticalObservationsOther', 'NA');
+                      } else {
+                        handleChange('ikfCriticalObservations', []);
+                        handleChange('ikfCriticalObservationsOther', '');
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className={`p-4 rounded-lg border border-blue-200 transition-colors ${fields.ikfCriticalObservationsNA ? 'bg-gray-100/90' : 'bg-white'}`}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 mb-3">
+                  {CRITICAL_OBSERVATION_OPTIONS.map((obs) => {
+                    const isChecked = checkedObs.includes(obs);
+                    return (
+                      <label
+                        key={obs}
+                        className={`flex items-start gap-2 p-2 rounded cursor-pointer transition-colors text-xs select-none ${
+                          fields.ikfCriticalObservationsNA
+                            ? 'opacity-50 cursor-not-allowed'
+                            : isChecked
+                            ? 'bg-blue-50 border border-blue-300 text-blue-900 font-medium'
+                            : 'hover:bg-gray-50 border border-transparent text-gray-700'
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleObsToggle(obs)}
+                          disabled={isReadOnly || !!fields.ikfCriticalObservationsNA}
+                          className="mt-0.5 h-3.5 w-3.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <span>{obs}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                <div className="pt-2 border-t border-gray-200">
+                  <input
+                    type="text"
+                    className={`${inputCls} ${fields.ikfCriticalObservationsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
+                    placeholder="Other critical observations (if any)..."
+                    value={fields.ikfCriticalObservationsNA ? 'NA' : (fields.ikfCriticalObservationsOther || '')}
+                    onChange={(e) => handleChange('ikfCriticalObservationsOther', e.target.value)}
+                    disabled={isReadOnly || !!fields.ikfCriticalObservationsNA}
+                  />
+                </div>
+              </div>
+            </Field>
+          </div>
+
+          {/* Other amenities and special amenities and features: Input Box (Variable Size) [with NA Checkbox] */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">
+                    Other amenities and special amenities and features
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.ikfOtherAmenitiesFeaturesNA}
+                    onChange={(checked) => {
+                      handleChange('ikfOtherAmenitiesFeaturesNA', checked);
+                      if (checked) handleChange('ikfOtherAmenitiesFeatures', 'NA');
+                      else if (fields.ikfOtherAmenitiesFeatures === 'NA') handleChange('ikfOtherAmenitiesFeatures', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <AutoResizeTextarea
+                rows={2}
+                placeholder="e.g. 24-hr Water Supply, Concealed Copper Wiring, Good Quality Sanitary Fittings, etc."
+                className={fields.ikfOtherAmenitiesFeaturesNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+                value={fields.ikfOtherAmenitiesFeaturesNA ? 'NA' : (fields.ikfOtherAmenitiesFeatures || '')}
+                onChange={(e) => handleChange('ikfOtherAmenitiesFeatures', e.target.value)}
+                disabled={isReadOnly || !!fields.ikfOtherAmenitiesFeaturesNA}
+              />
+            </Field>
+          </div>
+
+          {/* General comments on specifications: Input Box (Variable Size) [with NA Checkbox] */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">
+                    General comments on specifications
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.ikfGeneralCommentsSpecificationsNA}
+                    onChange={(checked) => {
+                      handleChange('ikfGeneralCommentsSpecificationsNA', checked);
+                      if (checked) handleChange('ikfGeneralCommentsSpecifications', 'NA');
+                      else if (fields.ikfGeneralCommentsSpecifications === 'NA') handleChange('ikfGeneralCommentsSpecifications', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <AutoResizeTextarea
+                rows={2}
+                placeholder="e.g. The building is constructed with quality workmanship and standard materials. Maintenance level is good and structure is sound."
+                className={fields.ikfGeneralCommentsSpecificationsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+                value={fields.ikfGeneralCommentsSpecificationsNA ? 'NA' : (fields.ikfGeneralCommentsSpecifications || '')}
+                onChange={(e) => handleChange('ikfGeneralCommentsSpecifications', e.target.value)}
+                disabled={isReadOnly || !!fields.ikfGeneralCommentsSpecificationsNA}
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── IKF Finance BankConfig ──────────────────────────────────────────────────
 
 export const IKF_FINANCE_CONFIG: BankConfig = {
@@ -1230,11 +1790,12 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
   displayName: 'IKF Finance',
   hiddenSections: [
     'section-1', // Replaced by Section 1: VALUATION REPORT
+    'section-2', // Replaced by Section 2: II) DETAILS OF STRUCTURE AND SPECIFICATIONS
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
     { id: 'ikf-section-1', title: 'VALUATION REPORT' },
-    { id: 'section-2', title: 'Locality Details' },
+    { id: 'ikf-section-2', title: 'II) DETAILS OF STRUCTURE AND SPECIFICATIONS' },
     { id: 'section-3', title: 'Property Details' },
     { id: 'section-4', title: 'Subject Property' },
     { id: 'section-5', title: 'Street and Details' },
@@ -1264,6 +1825,19 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'ikf-section-2',
+      title: 'II) DETAILS OF STRUCTURE AND SPECIFICATIONS',
+      number: 2,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <StructureAndSpecificationsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Mortgage / MSME Loan',
@@ -1273,9 +1847,12 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     ikfPropertyIdentifiable: 'YES',
     ikfBranch: 'Bhubaneswar',
     ikfMarketability: 'Good',
+    ikfPresentCondition: 'Good',
+    ikfTypeOfConstruction: 'RCC',
   },
 };
 
 export default function IKFFinance(props: BankReportBuilderProps) {
   return <BankReportBuilder config={IKF_FINANCE_CONFIG} {...props} />;
 }
+
