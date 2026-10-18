@@ -4,6 +4,7 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
+import { numberToWords } from '@/lib/numberToWords';
 import {
   Lock,
   Building,
@@ -86,6 +87,7 @@ export function AutoResizeTextarea({
   placeholder = '',
   rows = 2,
   className = '',
+  title,
 }: {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -93,6 +95,7 @@ export function AutoResizeTextarea({
   placeholder?: string;
   rows?: number;
   className?: string;
+  title?: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -119,6 +122,7 @@ export function AutoResizeTextarea({
       onChange={handleInput}
       disabled={disabled}
       placeholder={placeholder}
+      title={title}
       className={`${inputCls} overflow-hidden resize-none transition-[height] duration-100 ${className}`}
     />
   );
@@ -3744,6 +3748,266 @@ export function ValuationSection({
   );
 }
 
+// ─── Section 6: NET MORTGAGABLE VALUATION ───────────────────────────────────
+
+export function generateNetMortgagableValuationText(fields: any): string {
+  const propertyType =
+    (fields.isfcTypeOfProperty === 'Custom'
+      ? fields.isfcTypeOfPropertyCustom
+      : fields.isfcTypeOfProperty) ||
+    fields.propertyType ||
+    'School Building';
+
+  const owner = fields.propertyOwner || fields.ownerName || '';
+  const applicant = fields.applicantName || fields.nameOfApplicant || '';
+
+  const address =
+    fields.propertyAddress ||
+    fields.address ||
+    [fields.city, fields.state].filter(Boolean).join(', ') ||
+    '';
+
+  const landArea = fields.isfcValuationLandArea || fields.isfcLandArea || fields.landArea || '';
+  const builtUpArea =
+    fields.isfcValuationBuildingArea ||
+    fields.isfcTotalConstructedArea ||
+    fields.constructedArea ||
+    '';
+
+  const constructionType =
+    (fields.isfcConstructionType === 'Custom'
+      ? fields.isfcConstructionTypeCustom
+      : fields.isfcConstructionType) ||
+    'RCC framed structure';
+
+  const age = fields.isfcAgeOfProperty ? `${fields.isfcAgeOfProperty} years` : '';
+  const residualAge = fields.isfcResidualAge ? `${fields.isfcResidualAge} years` : '';
+  const stage = fields.isfcStageOfConstruction || '100%';
+
+  const totalValueNum =
+    parseFloat(
+      String(
+        fields.isfcSection5TotalValue ||
+          fields.isfcTotalValue ||
+          fields.totalMarketValue ||
+          fields.presentMarketValue ||
+          '0'
+      ).replace(/,/g, '')
+    ) || 0;
+
+  const forcedValueNum =
+    parseFloat(
+      String(
+        fields.isfcForcedMarketValue ||
+          fields.distressSaleValue ||
+          Math.round(totalValueNum * 0.75)
+      ).replace(/,/g, '')
+    ) || Math.round(totalValueNum * 0.75);
+
+  const totalValueFormatted = totalValueNum > 0 ? `₹${totalValueNum.toLocaleString('en-IN')}/-` : '₹0/-';
+  const forcedValueFormatted = forcedValueNum > 0 ? `₹${forcedValueNum.toLocaleString('en-IN')}/-` : '₹0/-';
+
+  let wordsText = '';
+  if (totalValueNum > 0) {
+    try {
+      wordsText = ` (Rupees ${numberToWords(totalValueNum)})`;
+    } catch {
+      wordsText = '';
+    }
+  }
+
+  const landAmtNum = parseFloat(String(fields.isfcValuationLandAmount || '0').replace(/,/g, '')) || 0;
+  const buildingAmtNum = parseFloat(String(fields.isfcPresentValueAfterDepreciation || '0').replace(/,/g, '')) || 0;
+
+  const parts: string[] = [];
+
+  // Sentence 1: Property Description & Identification
+  let intro = `The subject property is an immovable asset comprising a ${propertyType}`;
+  if (owner) {
+    intro += ` owned by ${owner}`;
+  }
+  if (applicant && applicant !== owner) {
+    intro += ` (Applicant: ${applicant})`;
+  }
+  if (address) {
+    intro += `, located at ${address}`;
+  }
+  intro += '.';
+  parts.push(intro);
+
+  // Sentence 2: Technical & Area Details
+  let techDetails = '';
+  if (landArea && builtUpArea) {
+    techDetails = `The property comprises a total land area of ${landArea} Sq.Ft. and a total constructed area of ${builtUpArea} Sq.Ft., built with a ${constructionType}.`;
+  } else if (landArea) {
+    techDetails = `The property comprises a total land area of ${landArea} Sq.Ft., built with a ${constructionType}.`;
+  } else if (builtUpArea) {
+    techDetails = `The property comprises a total constructed area of ${builtUpArea} Sq.Ft., built with a ${constructionType}.`;
+  } else {
+    techDetails = `The structure is developed as a ${constructionType}.`;
+  }
+  parts.push(techDetails);
+
+  // Sentence 3: Age & Stage of Completion
+  let ageDetails = `The building has an estimated age of ${age || 'N/A'}`;
+  if (residualAge) {
+    ageDetails += ` with an estimated residual life of ${residualAge}`;
+  }
+  ageDetails += ` and is currently at ${stage} completion stage.`;
+  parts.push(ageDetails);
+
+  // Sentence 4: Valuation Breakdown & Net Mortgagable Fair Market Value
+  let valDetails = `Based on technical verification, physical site inspection, and prevailing localized market conditions, the Net Mortgagable Fair Market Value of the property is assessed at ${totalValueFormatted}${wordsText}`;
+  if (landAmtNum > 0 || buildingAmtNum > 0) {
+    valDetails += ` [comprising Land Valuation: ₹${landAmtNum.toLocaleString('en-IN')}/- and Net Present Value of Building after depreciation: ₹${buildingAmtNum.toLocaleString('en-IN')}/-]`;
+  }
+  valDetails += `.`;
+  parts.push(valDetails);
+
+  // Sentence 5: Forced / Distress Sale Value & Recommendation
+  const forcedDetails = `The Forced / Distress Sale Value is estimated at ${forcedValueFormatted} (calculated at 75% of fair market value). The property is deemed acceptable security for mortgage financing as per institutional norms.`;
+  parts.push(forcedDetails);
+
+  return parts.join(' ');
+}
+
+function NetMortgagableValuationSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const isMortgagableValuationEdit = Boolean(fields.isfcNetMortgagableValuationEditOn);
+
+  const autoMortgagableValuation = useMemo(
+    () => generateNetMortgagableValuationText(fields),
+    [
+      fields.isfcTypeOfProperty,
+      fields.isfcTypeOfPropertyCustom,
+      fields.propertyType,
+      fields.propertyOwner,
+      fields.ownerName,
+      fields.applicantName,
+      fields.nameOfApplicant,
+      fields.propertyAddress,
+      fields.address,
+      fields.city,
+      fields.state,
+      fields.isfcValuationLandArea,
+      fields.isfcLandArea,
+      fields.landArea,
+      fields.isfcValuationBuildingArea,
+      fields.isfcTotalConstructedArea,
+      fields.constructedArea,
+      fields.isfcConstructionType,
+      fields.isfcConstructionTypeCustom,
+      fields.isfcAgeOfProperty,
+      fields.isfcResidualAge,
+      fields.isfcStageOfConstruction,
+      fields.isfcSection5TotalValue,
+      fields.isfcTotalValue,
+      fields.totalMarketValue,
+      fields.presentMarketValue,
+      fields.isfcForcedMarketValue,
+      fields.distressSaleValue,
+      fields.isfcValuationLandAmount,
+      fields.isfcPresentValueAfterDepreciation,
+    ]
+  );
+
+  const effectiveMortgagableValuation = isMortgagableValuationEdit
+    ? (fields.isfcNetMortgagableValuation ?? autoMortgagableValuation)
+    : autoMortgagableValuation;
+
+  useEffect(() => {
+    if (
+      !isMortgagableValuationEdit &&
+      autoMortgagableValuation &&
+      fields.isfcNetMortgagableValuation !== autoMortgagableValuation
+    ) {
+      handleChange('isfcNetMortgagableValuation', autoMortgagableValuation);
+    }
+  }, [isMortgagableValuationEdit, autoMortgagableValuation, fields.isfcNetMortgagableValuation, handleChange]);
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container 1: Net Mortgagable Valuation Summary (Light Cyan '#e0f7fa') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-cyan-200 shadow-sm"
+        style={{ backgroundColor: '#e0f7fa' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200 pb-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-cyan-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Net Mortgagable Valuation Summary
+            </h3>
+          </div>
+          <span className="text-xs text-cyan-800 font-medium bg-cyan-100 px-2.5 py-1 rounded-md border border-cyan-300">
+            Section 6: Container 1
+          </span>
+        </div>
+
+        <div>
+          {/* NET MORTGAGABLE VALUATION: Textarea (Variable size) + Lock UI + Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-bold text-cyan-950 text-xs md:text-sm uppercase tracking-wide">
+                  NET MORTGAGABLE VALUATION:
+                </span>
+                <EditSwitch
+                  checked={isMortgagableValuationEdit}
+                  onChange={(val) => {
+                    handleChange('isfcNetMortgagableValuationEditOn', val);
+                    if (val && !fields.isfcNetMortgagableValuation) {
+                      handleChange('isfcNetMortgagableValuation', autoMortgagableValuation);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!isMortgagableValuationEdit}
+              tooltipMessage=">>Auto calculating from [Interpolation of previous section variables: Property Type, Area, Location, Age, Valuation]<<"
+            >
+              <div className="relative">
+                <AutoResizeTextarea
+                  rows={5}
+                  placeholder="Generating net mortgagable valuation paragraph..."
+                  value={effectiveMortgagableValuation}
+                  onChange={(e) => handleChange('isfcNetMortgagableValuation', e.target.value)}
+                  disabled={isReadOnly || !isMortgagableValuationEdit}
+                  className={`pr-9 leading-relaxed ${
+                    !isMortgagableValuationEdit
+                      ? 'bg-gray-100 cursor-not-allowed text-gray-800 font-medium'
+                      : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-medium'
+                  }`}
+                  title={
+                    !isMortgagableValuationEdit
+                      ? '>>Auto calculating from [Interpolation of previous section variables: Property Type, Area, Location, Age, Valuation]<<'
+                      : undefined
+                  }
+                />
+                {!isMortgagableValuationEdit && (
+                  <div className="absolute top-3 right-3 pointer-events-none">
+                    <Lock className="w-4 h-4 text-cyan-700" />
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── ISFC BankConfig ─────────────────────────────────────────────────────────
 
 export const ISFC_CONFIG: BankConfig = {
@@ -3756,6 +4020,7 @@ export const ISFC_CONFIG: BankConfig = {
     'section-3', // Replaced by Section 3: TECHNICAL DETAILS
     'section-4', // Replaced by Section 4: COMPLETION STATUS
     'section-5', // Replaced by Section 5: VALUATION
+    'section-6', // Replaced by Section 6: NET MORTGAGABLE VALUATION
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -3764,7 +4029,7 @@ export const ISFC_CONFIG: BankConfig = {
     { id: 'isfc-section-3', title: 'TECHNICAL DETAILS' },
     { id: 'isfc-section-4', title: 'COMPLETION STATUS' },
     { id: 'isfc-section-5', title: 'VALUATION' },
-    { id: 'section-6', title: 'NDMA & ESG' },
+    { id: 'isfc-section-6', title: 'NET MORTGAGABLE VALUATION' },
     { id: 'section-7', title: 'Critical Checks & Summary' },
     { id: 'section-9', title: 'Valuation Abstract' },
     { id: 'section-10', title: 'Remarks' },
@@ -3841,6 +4106,19 @@ export const ISFC_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'isfc-section-6',
+      title: 'NET MORTGAGABLE VALUATION',
+      number: 6,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <NetMortgagableValuationSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY',
@@ -3874,6 +4152,7 @@ export const ISFC_CONFIG: BankConfig = {
     isfcSalebilityComments: 'Attracts standard marketability',
     isfcAdverseRemarks: 'No adverse remarks.',
     isfcAdverseRemarksNA: true,
+    isfcNetMortgagableValuationEditOn: false,
   },
 };
 
