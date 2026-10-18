@@ -98,8 +98,11 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'BANDHAN BANK': dynamic(() => import('./banks/bandhan/BandhanHLLAP')),
 
   // BOB, BOI, BOM
+  'BANK OF BARODA': dynamic(() => import('./banks/bank-of-baroda/BankOfBaroda')),
   'BANK OF BARODA-BOB': dynamic(() => import('./banks/bank-of-baroda/BankOfBaroda')),
+  'BANK OF INDIA': dynamic(() => import('./banks/bank-of-india/BankOfIndia')),
   'BANK OF INDIA-BOI': dynamic(() => import('./banks/bank-of-india/BankOfIndia')),
+  'BANK OF MAHARASHTRA': dynamic(() => import('./banks/bank-of-maharashtra/BankOfMaharashtra')),
   'BANK OF MAHARASHTRA-BOM': dynamic(() => import('./banks/bank-of-maharashtra/BankOfMaharashtra')),
 
   // Canara, CanFin, Chola, Clix
@@ -115,7 +118,8 @@ const BANK_BUILDER_MAP: Record<string, any> = {
 
   // GIC, Griham, HDB, HDFC
   'GIC HOUSING FINANCE': dynamic(() => import('./banks/gic/GICHousing')),
-  'GRIHAM HOUSING FINANCE': dynamic(() => import('./banks/griham/GrihamHousing')),
+  'GRIHUM HOUSING FINANCE': dynamic(() => import('./banks/grihum/GrihumHousing')),
+  'GRIHAM HOUSING FINANCE': dynamic(() => import('./banks/grihum/GrihumHousing')),
   'HDB FINANCIAL SERVICES': dynamic(() => import('./banks/hdb/HDBFinancial')),
   'HDB FINANCIAL SERVICES LTD': dynamic(() => import('./banks/hdb/HDBFinancial')),
   'HDB FINANCIAL SERVICES LIMITED': dynamic(() => import('./banks/hdb/HDBFinancial')),
@@ -183,9 +187,9 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'POONAWALLA FINCORP LIMITED': dynamic(() => import('./banks/poonawalla/PoonawallaFinance')),
   'POONAWALA': dynamic(() => import('./banks/poonawalla/PoonawallaFinance')),
   'POONAWALA FINANCE': dynamic(() => import('./banks/poonawalla/PoonawallaFinance')),
-  'PROTEUM FINANCE': dynamic(() => import('./banks/proteum/ProteumFinance')),
-  'PROTIUM FINANCE': dynamic(() => import('./banks/proteum/ProteumFinance')),
-  'PROTIUM FINANCE LIMITED': dynamic(() => import('./banks/proteum/ProteumFinance')),
+  'PROTIUM FINANCE': dynamic(() => import('./banks/protium/ProtiumFinance')),
+  'PROTEUM FINANCE': dynamic(() => import('./banks/protium/ProtiumFinance')),
+  'PROTIUM FINANCE LIMITED': dynamic(() => import('./banks/protium/ProtiumFinance')),
   'PUNJAB & SIND BANK': dynamic(() => import('./banks/punjab-sind/PunjabSindBank')),
   'PUNJAB NATIONAL BANK': dynamic(() => import('./banks/punjab-national/PunjabNationalBank')),
   'PURPLE FINANCE': dynamic(() => import('./banks/purple/PurpleFinance')),
@@ -198,7 +202,8 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'Land & Building': dynamic(() => import('./banks/sbi/StateBankOfIndiaLandAndBuilding')),
 
   // Sammunati, SBI, Shriram, SMFG, Suryoday, Swarna
-  'SAMMUNATI FINANCE': dynamic(() => import('./banks/sammunati/SammunatiFinance')),
+  'SAMUNNATI FINANCE': dynamic(() => import('./banks/samunnati/SamunnatiFinance')),
+  'SAMMUNATI FINANCE': dynamic(() => import('./banks/samunnati/SamunnatiFinance')),
   // State Bank of India (SBI) - Flat & Apartment / Above 5CR
   'STATE BANK OF INDIA-SBI::ABOVE 5CR': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
   'STATE BANK OF INDIA-SBI::Flat & Apartment': dynamic(() => import('./banks/sbi/StateBankOfIndiaFlatAndApartment')),
@@ -231,7 +236,10 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'TATA HOUSING FINANCE LTD': dynamic(() => import('./banks/tata-housing/TataHousingFinance')),
   'UCO BANK': dynamic(() => import('./banks/uco/UCOBank')),
   'UJJIVAN SMALL FINANCE BANK': dynamic(() => import('./banks/ujjivan/UjjivanSmallFinanceBank')),
+  'UNION BANK OF INDIA': dynamic(() => import('./banks/union-bank/UnionBankOfIndia')),
   'UNION BANK OF INDIA-UBI': dynamic(() => import('./banks/union-bank/UnionBankOfIndia')),
+  'UNION BANK': dynamic(() => import('./banks/union-bank/UnionBankOfIndia')),
+  'UBI': dynamic(() => import('./banks/union-bank/UnionBankOfIndia')),
   'UNITY SMALL FINANCE BANK': dynamic(() => import('./banks/unity-sfb/UnitySmallFinanceBank')),
   'UTKARSH SMALL FINANCE BANK': dynamic(() => import('./banks/utkarsh/UtkarshSmallFinanceBank')),
   'VARTHANA FINANCE': dynamic(() => import('./banks/varthana/VarthanaFinance')),

@@ -26,10 +26,10 @@ import {
   BasePhotoBucketModal,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
-import { PDFProteumFinanceRenderer } from '@/lib/banks/pdf-proteum-finance-renderer';
+import { PDFProtiumFinanceRenderer } from '@/lib/banks/pdf-protium-finance-renderer';
 
-export const PROTEUM_FINANCE_CONFIG: BankConfig = {
-  bankId: 'PROTEUM FINANCE',
+export const PROTIUM_FINANCE_CONFIG: BankConfig = {
+  bankId: 'PROTIUM FINANCE LIMITED',
   subTemplateId: '',
   displayName: 'Protium Finance Limited',
   defaultValues: {
@@ -37,13 +37,13 @@ export const PROTEUM_FINANCE_CONFIG: BankConfig = {
   },
 };
 
-export interface ProteumFinanceProps extends BankReportBuilderProps {
+export interface ProtiumFinanceProps extends BankReportBuilderProps {
   initialData?: any;
   isReadOnly?: boolean;
   onResetWizard?: () => void;
 }
 
-export default function ProteumFinance({
+export default function ProtiumFinance({
   projectId,
   projectCode,
   initialFields: rawInitialFields,
@@ -53,7 +53,7 @@ export default function ProteumFinance({
   bucketImages = [],
   prefill = {},
   onResetWizard,
-}: ProteumFinanceProps) {
+}: ProtiumFinanceProps) {
   const router = useRouter();
   const isReadOnly = isReadOnlyProp || userRole === 'viewer' || status === 'completed';
 
@@ -330,7 +330,7 @@ export default function ProteumFinance({
         totalPropertyValueWords,
         distressSaleValue: calculatedDistressValue,
       };
-      const renderer = new PDFProteumFinanceRenderer(payload);
+      const renderer = new PDFProtiumFinanceRenderer(payload);
       await renderer.generateAndDownload(`Valuation_Report_Protium_${projectCode || fields.leadIdLan}.pdf`);
     } catch (err: any) {
       alert(`PDF Generation failed: ${err.message}`);

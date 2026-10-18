@@ -3645,10 +3645,10 @@ export function ValuationApproachesSection({
 
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
-export const GRIHAM_HOUSING_CONFIG: BankConfig = {
-  bankId: 'GRIHAM HOUSING FINANCE',
+export const GRIHUM_HOUSING_CONFIG: BankConfig = {
+  bankId: 'GRIHUM HOUSING FINANCE',
   subTemplateId: '',
-  displayName: 'Griham Housing Finance',
+  displayName: 'Grihum Housing Finance',
   hiddenSections: [
     'section-1',
     'section-1a',
@@ -4043,7 +4043,9 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
   ],
 };
 
-export default function GrihamHousing(props: BankReportBuilderProps) {
-  return <BankReportBuilder config={GRIHAM_HOUSING_CONFIG} {...props} />;
+export default function GrihumHousing(props: BankReportBuilderProps) {
+  return <BankReportBuilder config={GRIHUM_HOUSING_CONFIG} {...props} />;
 }
+
+export { GRIHUM_HOUSING_CONFIG as GRIHAM_HOUSING_CONFIG, GrihumHousing as GrihamHousing };
 

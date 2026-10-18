@@ -23,24 +23,25 @@ import {
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
-import { PDFSammunatiFinanceRenderer } from '@/lib/banks/pdf-sammunati-finance-renderer';
+import { PDFSamunnatiFinanceRenderer } from '@/lib/banks/pdf-samunnati-finance-renderer';
 
-export const SAMMUNATI_FINANCE_CONFIG: BankConfig = {
-  bankId: 'SAMMUNATI FINANCE',
+export const SAMUNNATI_FINANCE_CONFIG: BankConfig = {
+  bankId: 'SAMUNNATI FINANCE',
   subTemplateId: '',
-  displayName: 'Sammunati Financial Intermediation & Services Pvt Ltd',
+  displayName: 'Samunnati Financial Intermediation & Services Pvt Ltd',
   defaultValues: {
     purpose: 'Agri-Commerce / Warehouse / Land Valuation',
   },
 };
 
-export interface SammunatiFinanceProps extends BankReportBuilderProps {
+export interface SamunnatiFinanceProps extends BankReportBuilderProps {
   initialData?: any;
   isReadOnly?: boolean;
   onResetWizard?: () => void;
 }
+export type SammunatiFinanceProps = SamunnatiFinanceProps;
 
-export default function SammunatiFinance({
+export default function SamunnatiFinance({
   projectId,
   projectCode,
   initialFields: rawInitialFields,
@@ -50,7 +51,7 @@ export default function SammunatiFinance({
   bucketImages = [],
   prefill = {},
   onResetWizard,
-}: SammunatiFinanceProps) {
+}: SamunnatiFinanceProps) {
   const router = useRouter();
   const isReadOnly = isReadOnlyProp || status === 'COMPLETED';
 
@@ -259,7 +260,7 @@ export default function SammunatiFinance({
   };
 
   const generatePdfBytes = async (): Promise<Uint8Array> => {
-    const renderer = new PDFSammunatiFinanceRenderer({ ...fields, projectCode });
+    const renderer = new PDFSamunnatiFinanceRenderer({ ...fields, projectCode });
     return await renderer.render();
   };
 
@@ -285,7 +286,7 @@ export default function SammunatiFinance({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Valuation_Report_Sammunati_${projectCode || fields.customerName || 'Draft'}.pdf`;
+      a.download = `Valuation_Report_Samunnati_${projectCode || fields.customerName || 'Draft'}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

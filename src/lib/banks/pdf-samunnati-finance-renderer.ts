@@ -4,7 +4,7 @@ import {
 } from '../pdf-bank-renderer';
 import { formatIndianCurrency, rupeesInWords } from '../numberToWords';
 
-export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
+export class PDFSamunnatiFinanceRenderer extends PDFBankRenderer {
   private fields: any;
   private projectCode?: string;
 
@@ -59,7 +59,7 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
     this.drawCenteredTitle('ANNEXURE - II', 11, true);
     this.advanceCursor(2);
     this.drawCenteredTitle('VALUATION REPORT', 14, true);
-    this.drawCenteredTitle('(SAMMUNATI FINANCIAL INTERMEDIATION & SERVICES PVT. LTD.)', 10, true);
+    this.drawCenteredTitle('(SAMUNNATI FINANCIAL INTERMEDIATION & SERVICES PVT. LTD.)', 10, true);
     this.advanceCursor(4);
 
     const halfW = CONTENT_W / 2;

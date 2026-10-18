@@ -14,7 +14,7 @@ import {
 import { formatIndianCurrency, rupeesInWords } from '../numberToWords';
 import { rgb } from 'pdf-lib';
 
-export interface ProteumFinanceFields {
+export interface ProtiumFinanceFields {
   // Header metadata
   leadIdLan?: string;
   reportDate?: string;
@@ -186,17 +186,17 @@ export interface ProteumFinanceFields {
   [key: string]: any;
 }
 
-export class PDFProteumFinanceRenderer extends PDFBankRenderer {
-  private fields: ProteumFinanceFields;
+export class PDFProtiumFinanceRenderer extends PDFBankRenderer {
+  private fields: ProtiumFinanceFields;
   private projectCode?: string;
 
-  constructor(opts: ProteumFinanceFields = {}) {
+  constructor(opts: ProtiumFinanceFields = {}) {
     super();
     this.fields = opts || {};
     this.projectCode = opts.projectCode || opts.leadIdLan;
   }
 
-  private getF(key: keyof ProteumFinanceFields, defaultVal: string = ''): string {
+  private getF(key: keyof ProtiumFinanceFields, defaultVal: string = ''): string {
     const v = this.fields[key];
     if (v === undefined || v === null || v === '') return defaultVal;
     return String(v);

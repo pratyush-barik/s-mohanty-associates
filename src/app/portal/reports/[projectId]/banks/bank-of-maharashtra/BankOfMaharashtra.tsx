@@ -571,9 +571,9 @@ export function EditSwitch({ checked, onChange, disabled }: { checked: boolean, 
 }
 
 export const BANK_OF_MAHARASHTRA_CONFIG: BankConfig = {
-  bankId: 'BANK OF MAHARASHTRA-BOM',
+  bankId: 'BANK OF MAHARASHTRA',
   subTemplateId: '',
-  displayName: 'Bank of Maharashtra (BOM)',
+  displayName: 'Bank of Maharashtra',
   hiddenSections: [
     'section-1', 'section-1a', 'section-2', 'section-3', 'section-4', 'section-5',
     'section-6', 'section-7', 'section-7b', 'section-7c', 'section-8', 'section-9', 'section-10',
