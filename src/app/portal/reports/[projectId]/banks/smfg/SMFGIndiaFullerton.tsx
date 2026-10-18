@@ -170,11 +170,34 @@ export default function SMFGIndiaFullerton({
     if (!d.marketability) d.marketability = 'Good';
     if (!d.electricityMeterNo) d.electricityMeterNo = '';
 
-    // Floor Wise Area
+    // 21. Floor Wise Area
+    if (!d.actualBuaBase) d.actualBuaBase = 'NA';
+    if (!d.actualBuaStilt) d.actualBuaStilt = 'NA';
     if (!d.actualBuaGround) d.actualBuaGround = '';
-    if (!d.totalActualBua) d.totalActualBua = '';
+    if (!d.actualBuaFirst) d.actualBuaFirst = 'NA';
+    if (!d.actualBuaSecond) d.actualBuaSecond = 'NA';
+    if (!d.actualBuaThird) d.actualBuaThird = 'NA';
 
-    // 5. Valuation
+    if (!d.permissibleBuaBase) d.permissibleBuaBase = 'NA';
+    if (!d.permissibleBuaStilt) d.permissibleBuaStilt = 'NA';
+    if (!d.permissibleBuaGround) d.permissibleBuaGround = 'NA';
+    if (!d.permissibleBuaFirst) d.permissibleBuaFirst = 'NA';
+    if (!d.permissibleBuaSecond) d.permissibleBuaSecond = 'NA';
+    if (!d.permissibleBuaThird) d.permissibleBuaThird = 'Nil';
+
+    if (!d.extraCoverageBase) d.extraCoverageBase = 'NA';
+    if (!d.extraCoverageStilt) d.extraCoverageStilt = 'NA';
+    if (!d.extraCoverageGround) d.extraCoverageGround = 'NA';
+    if (!d.extraCoverageFirst) d.extraCoverageFirst = 'NA';
+    if (!d.extraCoverageSecond) d.extraCoverageSecond = 'NA';
+    if (!d.extraCoverageThird) d.extraCoverageThird = 'NA';
+
+    if (!d.totalActualBua) d.totalActualBua = '';
+    if (!d.totalPermissibleBua) d.totalPermissibleBua = 'NA';
+    if (!d.saleableArea) d.saleableArea = 'NA';
+    if (!d.compositeExtraCoverage) d.compositeExtraCoverage = 'NA';
+
+    // 22. Valuation & Rates
     if (!d.landArea) d.landArea = '';
     if (!d.landRate) d.landRate = '';
     if (!d.landValue) d.landValue = '';
@@ -183,10 +206,23 @@ export default function SMFGIndiaFullerton({
     if (!d.constRate) d.constRate = '';
     if (!d.buildingValue) d.buildingValue = '';
 
-    if (!d.stageOfConstruction) d.stageOfConstruction = '';
+    if (!d.stageOfConstruction) d.stageOfConstruction = '100%';
+    if (!d.stagePercent) d.stagePercent = '100%';
+    if (!d.recommendedPercent) d.recommendedPercent = '100%';
     if (!d.marketValue) d.marketValue = '';
     if (!d.distressValue) d.distressValue = '';
     if (!d.circleRate) d.circleRate = '';
+
+    // Extra Amenities
+    if (!d.amenityCarParking) d.amenityCarParking = 'NA';
+    if (!d.amenityPlc) d.amenityPlc = 'NA';
+    if (!d.amenityIdc) d.amenityIdc = 'NA';
+    if (!d.amenityEdc) d.amenityEdc = 'NA';
+    if (!d.amenityPowerBackup) d.amenityPowerBackup = 'NA';
+    if (!d.amenityClub) d.amenityClub = 'NA';
+    if (!d.amenityOther) d.amenityOther = 'NA';
+    if (!d.totalAmenitiesCharges) d.totalAmenitiesCharges = 'Nil';
+    if (!d.approxRentals) d.approxRentals = '-';
 
     // Structural specs
     if (!d.seismicZone) d.seismicZone = 'III';
@@ -194,6 +230,18 @@ export default function SMFGIndiaFullerton({
     if (!d.roofType) d.roofType = 'RCC slab';
     if (!d.masonryType) d.masonryType = 'Brick';
     if (!d.soilType) d.soilType = 'Red soil';
+
+    // Page 3: Floorwise Details of Usage of Property
+    if (!d.floorwiseUsageRows) {
+      d.floorwiseUsageRows = [
+        { floor: 'Basement', usage: 'NA', units: '', tenantedYear: '', rentalAssessment: '' },
+        { floor: 'Ground', usage: 'Residential', units: '', tenantedYear: 'Self', rentalAssessment: 'NA' },
+        { floor: 'First', usage: 'NA', units: '', tenantedYear: 'NA', rentalAssessment: 'NA' },
+        { floor: 'Second', usage: 'NA', units: '', tenantedYear: 'NA', rentalAssessment: 'NA' },
+        { floor: 'Third', usage: 'NA', units: '', tenantedYear: '', rentalAssessment: '' },
+        { floor: '4th/above', usage: 'NA', units: '', tenantedYear: '', rentalAssessment: '' },
+      ];
+    }
 
     // Remarks & Declaration
     if (!d.remarks) {
@@ -210,6 +258,8 @@ export default function SMFGIndiaFullerton({
     if (!d.locationMapImages) d.locationMapImages = [];
     if (!d.mouzaMapImages) d.mouzaMapImages = [];
     if (!d.sketchMapImages) d.sketchMapImages = [];
+    if (!d.cadastralMapImages) d.cadastralMapImages = [];
+    if (!d.bdaMapImages) d.bdaMapImages = [];
     if (!d.propertyImages) d.propertyImages = [];
     if (!d.propertyImageNames) d.propertyImageNames = [];
 
@@ -239,6 +289,14 @@ export default function SMFGIndiaFullerton({
       }
 
       return next;
+    });
+  }, []);
+
+  const handleFloorwiseUsageChange = useCallback((index: number, colKey: string, val: string) => {
+    setFields(prev => {
+      const rows = [...(prev.floorwiseUsageRows || [])];
+      rows[index] = { ...rows[index], [colKey]: val };
+      return { ...prev, floorwiseUsageRows: rows };
     });
   }, []);
 
@@ -1091,6 +1149,240 @@ export default function SMFGIndiaFullerton({
         ═══════════════════════════════════════════════════════════════ */}
         <Section title="Valuation & Calculations" number={6} id="sec-valuation">
           <div className="space-y-6">
+            {/* 21. Floor Wise Area (In Sqft.) Table */}
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                21. Floor Wise Area (In Sqft.)
+              </h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left border-collapse border border-slate-300">
+                  <thead className="bg-slate-100 font-bold text-slate-700">
+                    <tr>
+                      <th className="border border-slate-300 p-2">Area&apos;s</th>
+                      <th className="border border-slate-300 p-2">Base.</th>
+                      <th className="border border-slate-300 p-2">Stilt</th>
+                      <th className="border border-slate-300 p-2">Ground</th>
+                      <th className="border border-slate-300 p-2">First</th>
+                      <th className="border border-slate-300 p-2">Second</th>
+                      <th className="border border-slate-300 p-2">Third/above</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="border border-slate-300 p-2 font-semibold">Actual BUA</td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.actualBuaBase || 'NA'}
+                          onChange={e => handleChange('actualBuaBase', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.actualBuaStilt || 'NA'}
+                          onChange={e => handleChange('actualBuaStilt', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs font-bold`}
+                          value={fields.actualBuaGround || ''}
+                          onChange={e => handleChange('actualBuaGround', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.actualBuaFirst || 'NA'}
+                          onChange={e => handleChange('actualBuaFirst', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.actualBuaSecond || 'NA'}
+                          onChange={e => handleChange('actualBuaSecond', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.actualBuaThird || 'NA'}
+                          onChange={e => handleChange('actualBuaThird', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-slate-300 p-2 font-semibold">Permissible</td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.permissibleBuaBase || 'NA'}
+                          onChange={e => handleChange('permissibleBuaBase', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.permissibleBuaStilt || 'NA'}
+                          onChange={e => handleChange('permissibleBuaStilt', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.permissibleBuaGround || 'NA'}
+                          onChange={e => handleChange('permissibleBuaGround', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.permissibleBuaFirst || 'NA'}
+                          onChange={e => handleChange('permissibleBuaFirst', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.permissibleBuaSecond || 'NA'}
+                          onChange={e => handleChange('permissibleBuaSecond', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.permissibleBuaThird || 'Nil'}
+                          onChange={e => handleChange('permissibleBuaThird', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="border border-slate-300 p-2 font-semibold">Extra Coverage (%)</td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.extraCoverageBase || 'NA'}
+                          onChange={e => handleChange('extraCoverageBase', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.extraCoverageStilt || 'NA'}
+                          onChange={e => handleChange('extraCoverageStilt', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.extraCoverageGround || 'NA'}
+                          onChange={e => handleChange('extraCoverageGround', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.extraCoverageFirst || 'NA'}
+                          onChange={e => handleChange('extraCoverageFirst', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.extraCoverageSecond || 'NA'}
+                          onChange={e => handleChange('extraCoverageSecond', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="border border-slate-300 p-1">
+                        <input
+                          type="text"
+                          className={`${inputCls} py-1 text-xs`}
+                          value={fields.extraCoverageThird || 'NA'}
+                          onChange={e => handleChange('extraCoverageThird', e.target.value)}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="grid md:grid-cols-4 gap-3 pt-2">
+                <Field label="Total Actual (In Sqft):">
+                  <input
+                    type="text"
+                    className={`${inputCls} font-bold`}
+                    value={fields.totalActualBua || ''}
+                    onChange={e => handleChange('totalActualBua', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Total Permissible (In Sqft):">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.totalPermissibleBua || 'NA'}
+                    onChange={e => handleChange('totalPermissibleBua', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Saleable (In Sqft):">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.saleableArea || 'NA'}
+                    onChange={e => handleChange('saleableArea', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Composite Extra Coverage:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.compositeExtraCoverage || 'NA'}
+                    onChange={e => handleChange('compositeExtraCoverage', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
+            </div>
+
+            {/* 22. (A) Description of Constructed Area and Rates */}
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
               <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-3">
                 22. (A) Description of Constructed Area and Rates
@@ -1158,6 +1450,96 @@ export default function SMFGIndiaFullerton({
               </div>
             </div>
 
+            {/* 22. (B) Value of Extra Amenities */}
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                22. (B) Value of Extra Amenities
+              </h4>
+              <div className="grid md:grid-cols-4 gap-3">
+                <Field label="Car Parking:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.amenityCarParking || 'NA'}
+                    onChange={e => handleChange('amenityCarParking', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="PLC:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.amenityPlc || 'NA'}
+                    onChange={e => handleChange('amenityPlc', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="IDC:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.amenityIdc || 'NA'}
+                    onChange={e => handleChange('amenityIdc', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="EDC:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.amenityEdc || 'NA'}
+                    onChange={e => handleChange('amenityEdc', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Power Backup:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.amenityPowerBackup || 'NA'}
+                    onChange={e => handleChange('amenityPowerBackup', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Club Membership:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.amenityClub || 'NA'}
+                    onChange={e => handleChange('amenityClub', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Other:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.amenityOther || 'NA'}
+                    onChange={e => handleChange('amenityOther', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Total Amenities Charges (in Rs.):">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.totalAmenitiesCharges || 'Nil'}
+                    onChange={e => handleChange('totalAmenitiesCharges', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Approx. Rentals (100% complete):" className="md:col-span-2">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.approxRentals || '-'}
+                    onChange={e => handleChange('approxRentals', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
+            </div>
+
             {/* Valuation Summary Box */}
             <div className="bg-indigo-500/10 border border-indigo-500/30 p-5 rounded-2xl space-y-4">
               <h4 className="text-xs font-bold text-indigo-900 uppercase tracking-wider">
@@ -1203,6 +1585,131 @@ export default function SMFGIndiaFullerton({
                     disabled={isReadOnly}
                   />
                 </Field>
+              </div>
+            </div>
+
+            {/* Structural & Engineering Specifications */}
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+              <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                Structural & Engineering Specifications
+              </h4>
+              <div className="grid md:grid-cols-3 gap-3">
+                <Field label="Seismic Zone:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.seismicZone || 'III'}
+                    onChange={e => handleChange('seismicZone', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Type of Footing:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.footingType || 'Independent Footing'}
+                    onChange={e => handleChange('footingType', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Type of Roof:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.roofType || 'RCC slab'}
+                    onChange={e => handleChange('roofType', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Type of Masonry:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.masonryType || 'Brick'}
+                    onChange={e => handleChange('masonryType', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <Field label="Type of Soil:">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.soilType || 'Red soil'}
+                    onChange={e => handleChange('soilType', e.target.value)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+              </div>
+            </div>
+
+            {/* Page 3: FLOORWISE DETAILS OF USAGE OF PROPERTY */}
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                Floorwise Details of Usage of Property (Page 3)
+              </h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs text-left border-collapse border border-slate-300">
+                  <thead className="bg-slate-100 font-bold text-slate-700">
+                    <tr>
+                      <th className="border border-slate-300 p-2">Floor</th>
+                      <th className="border border-slate-300 p-2">Usage</th>
+                      <th className="border border-slate-300 p-2">Units</th>
+                      <th className="border border-slate-300 p-2">If Tenanted, Yr of Current Tenancy</th>
+                      <th className="border border-slate-300 p-2">Rental Assessment</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(fields.floorwiseUsageRows || []).map((row: any, idx: number) => (
+                      <tr key={idx} className="hover:bg-slate-100/50">
+                        <td className="border border-slate-300 p-2 font-semibold">
+                          <input
+                            type="text"
+                            className={`${inputCls} py-1 text-xs font-bold bg-transparent border-0 focus:ring-1`}
+                            value={row.floor || ''}
+                            onChange={e => handleFloorwiseUsageChange(idx, 'floor', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="border border-slate-300 p-1">
+                          <input
+                            type="text"
+                            className={`${inputCls} py-1 text-xs`}
+                            value={row.usage || ''}
+                            onChange={e => handleFloorwiseUsageChange(idx, 'usage', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="border border-slate-300 p-1">
+                          <input
+                            type="text"
+                            className={`${inputCls} py-1 text-xs`}
+                            value={row.units || ''}
+                            onChange={e => handleFloorwiseUsageChange(idx, 'units', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="border border-slate-300 p-1">
+                          <input
+                            type="text"
+                            className={`${inputCls} py-1 text-xs`}
+                            value={row.tenantedYear || ''}
+                            onChange={e => handleFloorwiseUsageChange(idx, 'tenantedYear', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                        <td className="border border-slate-300 p-1">
+                          <input
+                            type="text"
+                            className={`${inputCls} py-1 text-xs`}
+                            value={row.rentalAssessment || ''}
+                            onChange={e => handleFloorwiseUsageChange(idx, 'rentalAssessment', e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
 
@@ -1271,8 +1778,8 @@ export default function SMFGIndiaFullerton({
           title="Maps"
           sectionNumber={8}
           sectionId="sec-maps"
-          latitude={fields.latitude || '19.829417'}
-          longitude={fields.longitude || '85.866694'}
+          latitude={fields.latitude || ''}
+          longitude={fields.longitude || ''}
           technicalAddress={fields.addressAtSite || ''}
           propertyAddress={fields.addressAsPerDocument || fields.addressAtSite || ''}
           hasExternalCoordinatesField={true}
@@ -1280,8 +1787,12 @@ export default function SMFGIndiaFullerton({
           locationMapImages={fields.locationMapImages || []}
           mouzaMapImages={fields.mouzaMapImages || []}
           sketchMapImages={fields.sketchMapImages || []}
+          cadastralMapImages={fields.cadastralMapImages || []}
+          bdaMapImages={fields.bdaMapImages || []}
           isReadOnly={isReadOnly}
           uploading={typeof uploading === 'string' && uploading.includes('Map')}
+          onLatitudeChange={v => handleChange('latitude', v)}
+          onLongitudeChange={v => handleChange('longitude', v)}
           onLocationMapUpload={e => handleMapUpload('locationMapImages', e)}
           onLocationMapRemove={idx => {
             setFields(prev => ({
@@ -1303,9 +1814,25 @@ export default function SMFGIndiaFullerton({
               sketchMapImages: (prev.sketchMapImages || []).filter((_: any, i: number) => i !== idx),
             }));
           }}
+          onCadastralMapUpload={e => handleMapUpload('cadastralMapImages', e)}
+          onCadastralMapRemove={idx => {
+            setFields(prev => ({
+              ...prev,
+              cadastralMapImages: (prev.cadastralMapImages || []).filter((_: any, i: number) => i !== idx),
+            }));
+          }}
+          onBdaMapUpload={e => handleMapUpload('bdaMapImages', e)}
+          onBdaMapRemove={idx => {
+            setFields(prev => ({
+              ...prev,
+              bdaMapImages: (prev.bdaMapImages || []).filter((_: any, i: number) => i !== idx),
+            }));
+          }}
           onReorderLocationMap={newImgs => handleChange('locationMapImages', newImgs)}
           onReorderMouzaMap={newImgs => handleChange('mouzaMapImages', newImgs)}
           onReorderSketchMap={newImgs => handleChange('sketchMapImages', newImgs)}
+          onReorderCadastralMap={newImgs => handleChange('cadastralMapImages', newImgs)}
+          onReorderBdaMap={newImgs => handleChange('bdaMapImages', newImgs)}
         />
 
         {/* ═══════════════════════════════════════════════════════════════
