@@ -812,6 +812,404 @@ function BriefDescriptionSection({
   );
 }
 
+// ─── Section 5: Town Planning Parameters ────────────────────────────────────
+
+function TownPlanningSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const directions = [
+    { key: 'North', label: 'North' },
+    { key: 'South', label: 'South' },
+    { key: 'East', label: 'East' },
+    { key: 'West', label: 'West' },
+  ];
+
+  const setbacks = [
+    { key: 'Front', label: 'Front' },
+    { key: 'Rear', label: 'Rear' },
+    { key: 'Left', label: 'Left Side' },
+    { key: 'Right', label: 'Right Side' },
+  ];
+
+  // Height / Stories logic
+  const effectiveSanctionedStories = fields.grihamStoriesSanctionedNa
+    ? 'NA'
+    : (fields.grihamStoriesSanctioned ?? '');
+
+  const effectiveActualStories = fields.grihamStoriesActualEditOn
+    ? (fields.grihamStoriesActual ?? '')
+    : (fields.grihamStoriesActual || effectiveSanctionedStories);
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Town Planning Parameters (Light Purple #f3e5f5) */}
+      <div
+        className="rounded-xl p-5 space-y-6 border border-purple-200 shadow-sm"
+        style={{ backgroundColor: '#f3e5f5' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200/80 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            TOWN PLANNING PARAMETERS
+          </h3>
+          <span className="text-xs text-purple-900 font-medium bg-purple-100 px-2.5 py-1 rounded-md border border-purple-200">
+            Planning Regulations & Boundaries
+          </span>
+        </div>
+
+        {/* 1. Boundaries Table */}
+        <div className="space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span className="font-bold text-gray-800 text-xs sm:text-sm uppercase tracking-wide">
+              Boundaries Table
+            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-purple-900 font-semibold">Row 2 (Actual) Override:</span>
+              <EditSwitch
+                checked={!!fields.grihamBoundariesActualEditOn}
+                onChange={(checked) => {
+                  handleChange('grihamBoundariesActualEditOn', checked);
+                  if (!checked) {
+                    directions.forEach((d) => {
+                      const docsVal = fields[`grihamBoundary${d.key}Docs`] ?? (fields[`${d.key.toLowerCase()}Deed`] ?? '');
+                      handleChange(`grihamBoundary${d.key}Actual`, docsVal);
+                    });
+                  }
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-lg border border-purple-200 bg-white">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-purple-100/70 border-b border-purple-200 text-purple-950 font-bold">
+                  <th className="p-3 w-44">Direction</th>
+                  {directions.map((d) => (
+                    <th key={d.key} className="p-3">
+                      {d.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-purple-100">
+                <tr>
+                  <td className="p-3 font-semibold text-gray-700 bg-purple-50/40">
+                    Row 1 (As per Docs)
+                  </td>
+                  {directions.map((d) => {
+                    const docsKey = `grihamBoundary${d.key}Docs`;
+                    const fallbackVal = fields[`${d.key.toLowerCase()}Deed`] ?? '';
+                    return (
+                      <td key={d.key} className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields[docsKey] ?? fallbackVal}
+                          onChange={(e) => handleChange(docsKey, e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder={`${d.label} (Docs)`}
+                        />
+                      </td>
+                    );
+                  })}
+                </tr>
+                <tr>
+                  <td className="p-3 font-semibold text-gray-700 bg-purple-50/40">
+                    <div className="flex items-center justify-between gap-1">
+                      <span>Row 2 (As per Actual)</span>
+                      {!fields.grihamBoundariesActualEditOn && (
+                        <span className="text-[10px] text-purple-800 font-bold bg-purple-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                          <Lock className="w-2.5 h-2.5" /> Mirrors Docs
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  {directions.map((d) => {
+                    const actualKey = `grihamBoundary${d.key}Actual`;
+                    const docsKey = `grihamBoundary${d.key}Docs`;
+                    const docsVal = fields[docsKey] ?? (fields[`${d.key.toLowerCase()}Deed`] ?? '');
+                    const val = fields.grihamBoundariesActualEditOn
+                      ? (fields[actualKey] ?? '')
+                      : (fields[actualKey] || docsVal);
+
+                    return (
+                      <td key={d.key} className="p-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} font-medium ${
+                            !fields.grihamBoundariesActualEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                          }`}
+                          value={val}
+                          onChange={(e) => handleChange(actualKey, e.target.value)}
+                          disabled={isReadOnly || !fields.grihamBoundariesActualEditOn}
+                          placeholder={`${d.label} (Actual)`}
+                        />
+                      </td>
+                    );
+                  })}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 2. Boundaries Matching & Conditional Reason */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
+          {/* Boundaries Matching */}
+          <Field label={<span className="font-semibold text-gray-700">BOUNDARIES MATCHING</span>}>
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              {['Yes', 'Partly matching', 'No'].map((opt) => (
+                <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 select-none">
+                  <input
+                    type="radio"
+                    name="grihamBoundariesMatching"
+                    value={opt}
+                    checked={(fields.grihamBoundariesMatching || 'Yes') === opt}
+                    onChange={(e) => {
+                      handleChange('grihamBoundariesMatching', e.target.value);
+                      if (opt === 'Yes') {
+                        handleChange('grihamBoundariesMismatchReason', '');
+                      }
+                    }}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+                  />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+          </Field>
+
+          {/* If No, then reason thereon */}
+          {(fields.grihamBoundariesMatching === 'Partly matching' || fields.grihamBoundariesMatching === 'No') && (
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">IF NO / PARTLY MATCHING, REASON THEREON</span>
+                  <NaCheckbox
+                    checked={!!fields.grihamBoundariesMismatchReasonNa}
+                    onChange={(checked) => {
+                      handleChange('grihamBoundariesMismatchReasonNa', checked);
+                      handleChange('grihamBoundariesMismatchReason', checked ? 'NA' : '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <textarea
+                rows={2}
+                className={`${inputCls} resize-y ${fields.grihamBoundariesMismatchReasonNa ? 'bg-gray-100 text-gray-500 italic' : ''}`}
+                value={fields.grihamBoundariesMismatchReasonNa ? 'NA' : (fields.grihamBoundariesMismatchReason || '')}
+                onChange={(e) => handleChange('grihamBoundariesMismatchReason', e.target.value)}
+                disabled={isReadOnly || !!fields.grihamBoundariesMismatchReasonNa}
+                placeholder="Specify reason for mismatch in boundaries..."
+              />
+            </Field>
+          )}
+        </div>
+
+        {/* 3. Setbacks / Margins Table */}
+        <div className="space-y-2 pt-1">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span className="font-bold text-gray-800 text-xs sm:text-sm uppercase tracking-wide">
+              Setbacks / Margins Table (in Metres / Feet)
+            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-purple-900 font-semibold">Row 2 (Actual) Override:</span>
+              <EditSwitch
+                checked={!!fields.grihamSetbackActualEditOn}
+                onChange={(checked) => {
+                  handleChange('grihamSetbackActualEditOn', checked);
+                  if (!checked) {
+                    setbacks.forEach((s) => {
+                      const sanctionedVal = fields.grihamSetbackSanctionedNa
+                        ? 'NA'
+                        : (fields[`grihamSetback${s.key}Sanctioned`] || '');
+                      handleChange(`grihamSetback${s.key}Actual`, sanctionedVal);
+                    });
+                  }
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          </div>
+
+          <div className="overflow-x-auto rounded-lg border border-purple-200 bg-white">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-purple-100/70 border-b border-purple-200 text-purple-950 font-bold">
+                  <th className="p-3 w-44">Setback Parameter</th>
+                  {setbacks.map((s) => (
+                    <th key={s.key} className="p-3">
+                      {s.label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-purple-100">
+                <tr>
+                  <td className="p-3 font-semibold text-gray-700 bg-purple-50/40">
+                    <div className="flex items-center justify-between gap-2">
+                      <span>Row 1 (Sanctioned)</span>
+                      <NaCheckbox
+                        checked={!!fields.grihamSetbackSanctionedNa}
+                        onChange={(checked) => {
+                          handleChange('grihamSetbackSanctionedNa', checked);
+                          setbacks.forEach((s) => {
+                            handleChange(`grihamSetback${s.key}Sanctioned`, checked ? 'NA' : '');
+                          });
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                  </td>
+                  {setbacks.map((s) => {
+                    const key = `grihamSetback${s.key}Sanctioned`;
+                    return (
+                      <td key={s.key} className="p-2">
+                        <input
+                          type={fields.grihamSetbackSanctionedNa ? 'text' : 'number'}
+                          step="any"
+                          className={`${inputCls} ${fields.grihamSetbackSanctionedNa ? 'bg-gray-100 text-gray-500 italic' : ''}`}
+                          value={fields.grihamSetbackSanctionedNa ? 'NA' : (fields[key] ?? '')}
+                          onChange={(e) => handleChange(key, e.target.value)}
+                          disabled={isReadOnly || !!fields.grihamSetbackSanctionedNa}
+                          placeholder={fields.grihamSetbackSanctionedNa ? 'NA' : 'e.g. 1.5'}
+                        />
+                      </td>
+                    );
+                  })}
+                </tr>
+                <tr>
+                  <td className="p-3 font-semibold text-gray-700 bg-purple-50/40">
+                    <div className="flex items-center justify-between gap-1">
+                      <span>Row 2 (Actual)</span>
+                      {!fields.grihamSetbackActualEditOn && (
+                        <span className="text-[10px] text-purple-800 font-bold bg-purple-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                          <Lock className="w-2.5 h-2.5" /> Mirrors Sanctioned
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  {setbacks.map((s) => {
+                    const actualKey = `grihamSetback${s.key}Actual`;
+                    const sanctionedKey = `grihamSetback${s.key}Sanctioned`;
+                    const sanctionedVal = fields.grihamSetbackSanctionedNa
+                      ? 'NA'
+                      : (fields[sanctionedKey] ?? '');
+                    const val = fields.grihamSetbackActualEditOn
+                      ? (fields[actualKey] ?? '')
+                      : (fields[actualKey] || sanctionedVal);
+
+                    return (
+                      <td key={s.key} className="p-2">
+                        <input
+                          type={val === 'NA' ? 'text' : 'number'}
+                          step="any"
+                          className={`${inputCls} font-medium ${
+                            !fields.grihamSetbackActualEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                          }`}
+                          value={val}
+                          onChange={(e) => handleChange(actualKey, e.target.value)}
+                          disabled={isReadOnly || !fields.grihamSetbackActualEditOn}
+                          placeholder="Actual setback"
+                        />
+                      </td>
+                    );
+                  })}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 4. Height / Stories (Sanctioned vs Actual) */}
+        <div className="space-y-2 pt-1">
+          <span className="font-bold text-gray-800 text-xs sm:text-sm uppercase tracking-wide">
+            Height / Stories
+          </span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Sanctioned Height/Stories */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">HEIGHT / STORIES (SANCTIONED)</span>
+                  <NaCheckbox
+                    checked={!!fields.grihamStoriesSanctionedNa}
+                    onChange={(checked) => {
+                      handleChange('grihamStoriesSanctionedNa', checked);
+                      handleChange('grihamStoriesSanctioned', checked ? 'NA' : '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type={fields.grihamStoriesSanctionedNa ? 'text' : 'number'}
+                step="any"
+                min="0"
+                className={`${inputCls} ${fields.grihamStoriesSanctionedNa ? 'bg-gray-100 text-gray-500 italic' : ''}`}
+                value={effectiveSanctionedStories}
+                onChange={(e) => handleChange('grihamStoriesSanctioned', e.target.value)}
+                disabled={isReadOnly || !!fields.grihamStoriesSanctionedNa}
+                placeholder={fields.grihamStoriesSanctionedNa ? 'NA' : 'e.g. 2'}
+              />
+            </Field>
+
+            {/* Actual Height/Stories */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">HEIGHT / STORIES (ACTUAL)</span>
+                  <EditSwitch
+                    checked={!!fields.grihamStoriesActualEditOn}
+                    onChange={(checked) => {
+                      handleChange('grihamStoriesActualEditOn', checked);
+                      if (!checked) {
+                        handleChange('grihamStoriesActual', effectiveSanctionedStories);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="relative">
+                <input
+                  type={effectiveActualStories === 'NA' ? 'text' : 'number'}
+                  step="any"
+                  min="0"
+                  className={`${inputCls} font-medium ${
+                    !fields.grihamStoriesActualEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                  }`}
+                  value={effectiveActualStories}
+                  onChange={(e) => handleChange('grihamStoriesActual', e.target.value)}
+                  disabled={isReadOnly || !fields.grihamStoriesActualEditOn}
+                  placeholder="e.g. 2"
+                />
+                {!fields.grihamStoriesActualEditOn && (
+                  <div className="absolute right-3 top-2.5 text-xs text-purple-900 font-semibold pointer-events-none flex items-center gap-1 bg-purple-100/90 px-2 py-0.5 rounded border border-purple-200">
+                    <Lock className="w-3 h-3" /> Mirrors Sanctioned
+                  </div>
+                )}
+              </div>
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -842,6 +1240,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     { id: 'griham-section-2', title: 'SCOPE OF ENQUIRIES AND INVESTIGATION' },
     { id: 'griham-section-3', title: 'BASIS OF VALUATION' },
     { id: 'griham-section-4', title: 'BRIEF DESCRIPTION OF THE PROPERTY' },
+    { id: 'griham-section-5', title: 'TOWN PLANNING PARAMETERS' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -894,6 +1293,33 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     grihamOccupationStatusCustom: '',
     grihamNoOfTenants: '0',
     grihamNoOfTenantsNa: false,
+    // Section 5
+    grihamBoundaryNorthDocs: '',
+    grihamBoundarySouthDocs: '',
+    grihamBoundaryEastDocs: '',
+    grihamBoundaryWestDocs: '',
+    grihamBoundariesActualEditOn: false,
+    grihamBoundaryNorthActual: '',
+    grihamBoundarySouthActual: '',
+    grihamBoundaryEastActual: '',
+    grihamBoundaryWestActual: '',
+    grihamBoundariesMatching: 'Yes',
+    grihamBoundariesMismatchReason: '',
+    grihamBoundariesMismatchReasonNa: false,
+    grihamSetbackSanctionedNa: false,
+    grihamSetbackFrontSanctioned: '',
+    grihamSetbackRearSanctioned: '',
+    grihamSetbackLeftSanctioned: '',
+    grihamSetbackRightSanctioned: '',
+    grihamSetbackActualEditOn: false,
+    grihamSetbackFrontActual: '',
+    grihamSetbackRearActual: '',
+    grihamSetbackLeftActual: '',
+    grihamSetbackRightActual: '',
+    grihamStoriesSanctioned: '',
+    grihamStoriesSanctionedNa: false,
+    grihamStoriesActual: '',
+    grihamStoriesActualEditOn: false,
   },
   extraSectionsStart: [
     {
@@ -937,6 +1363,19 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <BriefDescriptionSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'griham-section-5',
+      title: 'TOWN PLANNING PARAMETERS',
+      number: 5,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <TownPlanningSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
