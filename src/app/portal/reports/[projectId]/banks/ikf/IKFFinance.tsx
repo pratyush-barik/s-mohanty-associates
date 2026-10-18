@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass, Home, Plus, Trash2, ShieldAlert, Leaf, Calculator, Navigation, Zap } from 'lucide-react';
+import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass, Home, Plus, Trash2, ShieldAlert, Leaf, Calculator, Navigation, Zap, Upload, Image as ImageIcon, Calendar } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
 
@@ -4150,6 +4150,270 @@ export function OtherCriticalChecksSection({
   );
 }
 
+// ─── Section 8: NOTE & Declaration Component ──────────────────────────────────
+
+export function SignatureStampUpload({
+  value,
+  onChange,
+  disabled = false,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  disabled?: boolean;
+}) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (typeof reader.result === 'string') {
+          onChange(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleClear = () => {
+    onChange('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  return (
+    <div className="space-y-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <label
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-pink-700 text-white text-xs font-semibold hover:bg-pink-800 transition-colors cursor-pointer shadow-xs ${
+            disabled ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+        >
+          <Upload className="w-4 h-4" /> Upload Signature & Stamp Image
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            disabled={disabled}
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </label>
+        {value && !disabled && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-red-200 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors"
+          >
+            <Trash2 className="w-3.5 h-3.5" /> Remove Image
+          </button>
+        )}
+      </div>
+
+      {value ? (
+        <div className="p-3 border-2 border-dashed border-pink-300 rounded-xl bg-white flex flex-col items-center justify-center gap-2 max-w-md">
+          <img
+            src={value}
+            alt="Valuer Signature & Stamp"
+            className="max-h-36 object-contain rounded"
+          />
+          <span className="text-[11px] font-medium text-emerald-700 flex items-center gap-1">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Signature & stamp image uploaded
+          </span>
+        </div>
+      ) : (
+        <div className="p-4 border-2 border-dashed border-pink-200 rounded-xl bg-white/70 text-center max-w-md">
+          <ImageIcon className="w-8 h-8 text-pink-300 mx-auto mb-1" />
+          <p className="text-xs text-gray-500">
+            Upload valuer signature with official seal/stamp (PNG, JPG, WebP)
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export const DECLARATIONS_LIST = [
+  {
+    key: 'ikfDeclTrueAndCorrect',
+    label: 'Statements of fact are true and correct',
+    description: 'The statements of fact contained in this report are true and correct to the best of our knowledge and belief.',
+  },
+  {
+    key: 'ikfDeclLimitingConditions',
+    label: 'Limiting conditions have been disclosed',
+    description: 'The reported analyses, opinions, and conclusions are limited only by the reported assumptions and limiting conditions.',
+  },
+  {
+    key: 'ikfDeclNoInterest',
+    label: 'We have no interest (present or future) in the transaction or property',
+    description: 'We have no present or prospective interest in the property that is the subject of this report, and no personal interest with respect to the parties involved.',
+  },
+  {
+    key: 'ikfDeclCompensationNotContingent',
+    label: 'Compensation is not contingent upon rendering a specified value',
+    description: 'Our engagement in this assignment was not contingent upon developing or reporting predetermined results or minimum values.',
+  },
+  {
+    key: 'ikfDeclCompliedAppraisalRequirements',
+    label: 'We have complied with all of the real estate appraisal program requirements',
+    description: 'Our analyses, opinions, and conclusions were developed in conformity with the relevant standards of the real estate appraisal program.',
+  },
+  {
+    key: 'ikfDeclInspectionPerformed',
+    label: 'An inspection of the property was performed',
+    description: 'A personal site inspection of the subject property was performed by us.',
+  },
+  {
+    key: 'ikfDeclNoAssistanceReceived',
+    label: 'Assistance was not received in the preparation of the appraisal',
+    description: 'No person other than those named provided professional assistance in the preparation of this appraisal report.',
+  },
+];
+
+export function NoteAndDeclarationSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const handleSelectAllDeclarations = () => {
+    DECLARATIONS_LIST.forEach((item) => {
+      handleChange(item.key, true);
+    });
+  };
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Container 1: Final Remarks (Light Pink '#fce4ec') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-pink-200 shadow-sm"
+        style={{ backgroundColor: '#fce4ec' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-pink-200 pb-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-pink-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Final Remarks
+            </h3>
+          </div>
+          <span className="text-xs text-pink-800 font-medium bg-pink-100 px-2.5 py-1 rounded-md border border-pink-300">
+            Valuer Conclusion & Endorsement
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Remarks: Input Box (Variable Size/Textarea) */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <Field label={<span className="font-semibold text-gray-700">Remarks</span>}>
+              <AutoResizeTextarea
+                rows={4}
+                placeholder="e.g. 1. The property under reference has been physically inspected by us.\n2. Boundaries matching as per site inspection and deed.\n3. The valuation has been assessed as per prevailing market conditions and standard norms."
+                value={fields.ikfFinalRemarks || ''}
+                onChange={(e) => handleChange('ikfFinalRemarks', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+
+          {/* Date: Date Picker */}
+          <Field label={<span className="font-semibold text-gray-700">Date</span>}>
+            <input
+              type="date"
+              className={inputCls}
+              value={fields.ikfValuationDate || ''}
+              onChange={(e) => handleChange('ikfValuationDate', e.target.value)}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* Valuer Signature & stamp: File Upload (Image) */}
+          <div className="col-span-1 md:col-span-2">
+            <Field label={<span className="font-semibold text-gray-700">Valuer Signature & stamp</span>}>
+              <SignatureStampUpload
+                value={fields.ikfValuerSignatureAndStamp || ''}
+                onChange={(val) => handleChange('ikfValuerSignatureAndStamp', val)}
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Container 2: Declarations Checklist (Light Pink '#fce4ec') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-pink-200 shadow-sm"
+        style={{ backgroundColor: '#fce4ec' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-pink-200 pb-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-pink-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Declarations Checklist
+            </h3>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={handleSelectAllDeclarations}
+              disabled={isReadOnly}
+              className="text-xs text-pink-800 hover:text-pink-950 font-semibold underline disabled:opacity-50"
+            >
+              Select All Declarations
+            </button>
+            <span className="text-xs text-pink-800 font-medium bg-pink-100 px-2.5 py-1 rounded-md border border-pink-300">
+              Mandatory Appraiser Undertakings
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {DECLARATIONS_LIST.map((decl) => {
+            const isChecked = !!fields[decl.key];
+            return (
+              <label
+                key={decl.key}
+                className={`flex items-start gap-3 p-3.5 rounded-lg border transition-colors cursor-pointer select-none ${
+                  isChecked
+                    ? 'bg-pink-50/90 border-pink-300 text-pink-950 font-medium'
+                    : 'bg-white border-pink-200 text-gray-700 hover:bg-pink-50/40'
+                } ${isReadOnly ? 'opacity-70 cursor-not-allowed' : ''}`}
+              >
+                <input
+                  type="checkbox"
+                  required
+                  checked={isChecked}
+                  onChange={(e) => handleChange(decl.key, e.target.checked)}
+                  disabled={isReadOnly}
+                  className="mt-1 h-4 w-4 rounded border-pink-300 text-pink-600 focus:ring-pink-500"
+                />
+                <div className="flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs md:text-sm font-semibold text-gray-900">
+                      {decl.label}
+                    </span>
+                    <span className="text-[10px] uppercase font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-200 shrink-0">
+                      Required
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-500 mt-0.5 leading-relaxed">
+                    {decl.description}
+                  </p>
+                </div>
+              </label>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── IKF Finance BankConfig ──────────────────────────────────────────────────
 
 export const IKF_FINANCE_CONFIG: BankConfig = {
@@ -4164,6 +4428,7 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     'section-5', // Replaced by Section 5: ESG Monitoring Parameters
     'section-6', // Replaced by Section 6: CONCLUSION AND VALUATION OF THE PROPERTY:
     'section-7', // Replaced by Section 7: Other Critical Check - Points
+    'section-8', // Replaced by Section 8: NOTE & Declaration
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -4174,7 +4439,7 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     { id: 'ikf-section-5', title: 'ESG Monitoring Parameters' },
     { id: 'ikf-section-6', title: 'CONCLUSION AND VALUATION OF THE PROPERTY:' },
     { id: 'ikf-section-7', title: 'Other Critical Check - Points' },
-    { id: 'section-8', title: 'Land Valuation' },
+    { id: 'ikf-section-8', title: 'NOTE & Declaration' },
     { id: 'section-9', title: 'Valuation Abstract' },
     { id: 'section-10', title: 'Remarks' },
     { id: 'section-12', title: 'Certificate' },
@@ -4276,6 +4541,19 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'ikf-section-8',
+      title: 'NOTE & Declaration',
+      number: 8,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <NoteAndDeclarationSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Mortgage / MSME Loan',
@@ -4321,10 +4599,21 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     ikfOccupancyStatus: 'Self',
     ikfPeriodOfUnoccupancy: 'NA',
     ikfPeriodOfUnoccupancyNA: true,
+    ikfFinalRemarks: '1. The property has been inspected by us personally and all physical observations noted.\n2. Boundaries matching as per site inspection and deed.\n3. The valuation has been assessed as per prevailing market conditions and standard norms.',
+    ikfValuationDate: new Date().toISOString().split('T')[0],
+    ikfValuerSignatureAndStamp: '',
+    ikfDeclTrueAndCorrect: true,
+    ikfDeclLimitingConditions: true,
+    ikfDeclNoInterest: true,
+    ikfDeclCompensationNotContingent: true,
+    ikfDeclCompliedAppraisalRequirements: true,
+    ikfDeclInspectionPerformed: true,
+    ikfDeclNoAssistanceReceived: true,
   },
 };
 
 export default function IKFFinance(props: BankReportBuilderProps) {
   return <BankReportBuilder config={IKF_FINANCE_CONFIG} {...props} />;
 }
+
 
