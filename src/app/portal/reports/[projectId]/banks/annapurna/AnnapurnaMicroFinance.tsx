@@ -12,6 +12,7 @@ import {
 } from '@/lib/banks/pdf-annapurna-micro-finance-renderer';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -890,17 +891,8 @@ export default function AnnapurnaMicroFinance({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-                {/* Standardized Title Card */}
-        <BankReportTitleCard
-          bankName="Annapurna Microfinance"
-          subclass="Standard Format"
-          title="Valuation Report Builder"
-          description="Micro Housing & Rural Asset Valuation Format."
-          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
-          projectCode={projectCode}
-        />
-
-<ActiveConfigBanner
+        {/* Standardized Universal Bank Report Header */}
+        <BankReportHeader
           clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.organisationTemplate || fields.bankName || 'ANNAPURNA MICRO FINANCE LTD'}
@@ -908,22 +900,18 @@ export default function AnnapurnaMicroFinance({
           serviceType={fields.serviceType || prefill?.purpose || undefined}
           subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="Micro Housing & Rural Asset Valuation Format."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+          reworkNotes={fields.reworkNotes}
+          status={status}
+          message={message}
         />
 
-        {message && (
-          <div className={`p-4 rounded-xl text-sm font-semibold ${
-            message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
-          }`}>
-            {message.text}
-          </div>
-        )}
-
-        {/* Header Block */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">
-            Annapurna Finance — Valuation Report
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* ════ SECTION 1: APPLICATION DETAILS ════ */}
+        <Section title="Application Details" number={1} id="sec-1" defaultOpen={true}>
+          <div className="grid md:grid-cols-2 gap-4">
             <Field label="Ref. No:">
               <input
                 type="text"
@@ -941,12 +929,6 @@ export default function AnnapurnaMicroFinance({
                 disabled={isReadOnly}
               />
             </Field>
-          </div>
-        </div>
-
-        {/* ════ SECTION 1: APPLICATION DETAILS ════ */}
-        <Section title="Application Details" number={1} id="sec-1" defaultOpen={true}>
-          <div className="grid md:grid-cols-2 gap-4">
             <Field label="File No. / LAN No. / Lead No.">
               <input className={inputCls} value={fields.fileNo || ''} onChange={e => handleChange('fileNo', e.target.value)} disabled={isReadOnly} placeholder="e.g. 20159644" />
             </Field>

@@ -17,6 +17,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   ActiveConfigBanner,
   FloatingNavigator,
@@ -61,26 +62,9 @@ export interface KarurVysyaBankProps extends BankReportBuilderProps {
   onResetWizard?: () => void;
 }
 
-const DEFAULT_OWNERSHIP_DEEDS = [
-  '1. Deed of Conveyance No. I-5158, dated- 16th June 2022, between Sri Gosta Bihari Das (Vendor), M/S C & B Ecogen Pvt. Ltd. (Purchaser), mentioning total shali land area 24.75 Dec. situated at Mouza- Jayenpur, JL No- 66, R.S Dag No- 507, 517, L.R Dag No- 532, 543, R.S Khatian No- 349, 310, L.R Khatian No- 1639, P.S- Sonarpur now Narendrapur, Dist- South 24 Parganas, Under Bonhooghly 1 No. Gram Panchayat. Having total consideration amount of Rs.22,50,000/-',
-  '2. Sale Deed No. I-7555, dated- 15th September 2023, between M/S C & B Ecogen Pvt. Ltd. (Donee), Sanjay Kumar Ray (Donor), mentioning total shali land area 3.3 Dec. situated at Mouza- Jayenpur, JL No- 66, R.S Dag No- 517, L.R Dag No- 543, R.S Khatian No- 310, L.R Khatian No- 819,820,821,822,823, P.S- Sonarpur now Narendrapur, Dist- South 24 Parganas, Under Bonhooghly 1 No. Gram Panchayat. Having total consideration amount of Rs.4,00,000/-',
-  '3. Sale Deed No. I-7559, dated- 15th September 2023, between M/S C & B Ecogen Pvt. Ltd. (Donee), Sanjay Kumar Ray (Donor), mentioning total shali land area 3.3 Dec. situated at Mouza- Jayenpur, JL No- 66, R.S Dag No- 517, L.R Dag No- 543, R.S Khatian No- 310, L.R Khatian No- 819,820,821,822,823, P.S- Sonarpur now Narendrapur, Dist- South 24 Parganas, Under Bonhooghly 1 No. Gram Panchayat. Having total consideration amount of Rs.4,00,000/-',
-  '4. Sale Deed No. I-7564, dated- 15th September 2023, between M/S C & B Ecogen Pvt. Ltd. (Donee), Sanjay Kumar Ray (Donor), mentioning total shali land area 3.3 Dec. situated at Mouza- Jayenpur, JL No- 66, R.S Dag No- 517, L.R Dag No- 543, R.S Khatian No- 310, L.R Khatian No- 819,820,821,822,823, P.S- Sonarpur now Narendrapur, Dist- South 24 Parganas, Under Bonhooghly 1 No. Gram Panchayat. Having total consideration amount of Rs.4,00,000/-',
-  '5. Sale Deed No. I-7558, dated- 15th September 2023, between M/S C & B Ecogen Pvt. Ltd. (Donee), Sanjay Kumar Ray (Donor), mentioning total shali land area 3.3 Dec. situated at Mouza- Jayenpur, JL No- 66, R.S Dag No- 517, L.R Dag No- 543, R.S Khatian No- 310, L.R Khatian No- 819,820,821,822,823, P.S- Sonarpur now Narendrapur, Dist- South 24 Parganas, Under Bonhooghly 1 No. Gram Panchayat. Having total consideration amount of Rs.4,00,000/-',
-  '6. Sale Deed I-9200/2023 dated 24.11.2023 between M/S C & B Ecogen Pvt. Ltd. (Purchaser) and Sanjay Kumar Ray (Seller) mentioning Shali Land 1 Katha 5 Chatak 09 sqft situated at Mouza- Jayenpur, JL No- 66, R.S Dag No- 520, L.R Dag No- 546, R.S Khatian No- 364, L.R Khatian No- 1855, P.S- Sonarpur now Narendrapur, Dist- South 24 Parganas, Under Bonhooghly 1 No. Gram Panchayat. Having total consideration amount of Rs.2,63,000/-',
-  '7. Sale Deed I-9201/2023 dated 24.11.2023 between M/S C & B Ecogen Pvt. Ltd. (Purchaser) and Sanjay Kumar Ray (Seller) mentioning Shali Land 2 Katha 3 Chatak 28 sqft situated at Mouza- Jayenpur, JL No- 66, R.S Dag No- 521, L.R Dag No- 547, R.S Khatian No- 245, L.R Khatian No- 1855, P.S- Sonarpur now Narendrapur, Dist- South 24 Parganas, Under Bonhooghly 1 No. Gram Panchayat. Having total consideration amount of Rs.5,00,000/-',
-  '8. Sale Deed I-9202/2023 dated 24.11.2023 between M/S C & B Ecogen Pvt. Ltd. (Purchaser) and Sabina Bibi (Seller) mentioning Shali Land 3 Katha 10 Chatak situated at Mouza- Jayenpur, JL No- 66, R.S Dag No- 520, L.R Dag No- 546, R.S Khatian No- 364, L.R Khatian No- 1864, P.S- Sonarpur now Narendrapur, Dist- South 24 Parganas, Under Bonhooghly 1 No. Gram Panchayat. Having total consideration amount of Rs.7,25,000/-',
-  '9. Sale Deed I-9203/2023 dated 24.11.2023 between M/S C & B Ecogen Pvt. Ltd. (Purchaser) and Sanjay Kumar Roy (Seller) mentioning Shali Land 2 Katha 4 Chatak situated at Mouza- Jayenpur, JL No- 66, R.S Dag No- 521, L.R Dag No- 547, R.S Khatian No- 245, L.R Khatian No- 1855, P.S- Sonarpur now Narendrapur, Dist- South 24 Parganas, Under Bonhooghly 1 No. Gram Panchayat. Having total consideration amount of Rs.7,25,000/-',
-  '10. Sale Deed I-9199/2023 dated 24.11.2023 between M/S C & B Ecogen Pvt. Ltd. (Purchaser) and Sanjay Kumar Roy (Seller) mentioning Shali Land 1 Katha 3 Chatak 11 sqft situated at Mouza- Jayenpur, JL No- 66, R.S Dag No- 518, L.R Dag No- 544, R.S Khatian No- 344, L.R Khatian No- 1863, P.S- Sonarpur now Narendrapur, Dist- South 24 Parganas, Under Bonhooghly 1 No. Gram Panchayat. Having total consideration amount of Rs.2,37,000/-'
-].join('\n\n');
+const DEFAULT_OWNERSHIP_DEEDS = '';
 
-const DEFAULT_OTHER_DOCUMENTS = `Land Conversion vide case no. CN/2023/1615/1929 Dated 11.05.2023 in the name of M/s. Ecogen Pvt Ltd of land area 5 decimal at Dag No. 532 & 19 Decimal land at Dag No. 543
-Land Conversion vide case no. CN/2023/1615/9912 Dated 21.02.2024 in the name of M/s. Ecogen Pvt Ltd of land area 12 decimal at Dag No. 543
-Land Conversion vide case no. CN/2024/1615/2662 Dated 01.03.2024 in the name of M/s. Ecogen Pvt Ltd of land area 2 decimal at Dag No. 544, land area 8 Decimal at Dag No. 546 & 7 Decimal land at Dag No. 547
-Sanctioned Plan received for proposed two storied commercial building, Approved by Pradhan of Bonhooghly 1 Gram Panchayat, Plan Number & Date is Unclear
-Sanction Plan for Tin Shed structure, approved by Bonhooghly 1 Gram Panchayat vide Regd No. Bon-IGP/1865/2022-23 dated 30.08.2022
-Draft Plan for Single storied commercial building with truss of area 7405 sqft
-Amalgamated Site Plan for 33K 10CH 3 SQFT land drawn by Imtiaz Ali Mondal (Surveyor & Planner)`;
+const DEFAULT_OTHER_DOCUMENTS = '';
 
 const DEFAULT_REMARKS = `1  Legal aspects are out of scope of valuation.
 2  Genuineness of original documents to be verified by the bank authorities before disbursement.
@@ -90,18 +74,15 @@ const DEFAULT_REMARKS = `1  Legal aspects are out of scope of valuation.
 6  The property is identified through an identifier & provided document received from bank only. Actual measured land area is more or less matched with Deed land area.
 7  The subject property is well demarcated with boundary walls on all side.
 8  This valuation report may give a completely different result if any of the assumptions mentioned above are found to be not true. Lenders should check and think of necessary mitigate, as may found suitable, in case of adverse situation, WRT future sale-ability in the open market, at this existing condition.
-10 As per Deed Total land area 24,213 sqft i.e. 55.58 Decimal & as per measured 25,612 sqft but as per Land Conversion total land area 53 Decimal. We have considered land area as per Land conversion.
-11 Out of the three building plans provided, two are approved by the Gram Panchayat Pradhan and comply with building bye-laws. The third is a draft plan pending approval from the Zilla Parishad. As aligned during discussions with bank officials, the total construction area has been considered based on all three plans, subject to the final approval of the draft plan.
-12 The basic civic amenities are all available within a minimum distance of approx. 2-8 Kms. from the subject property.
-13 Thus, based on the above stated facts the Valuation of the subject property is recommended. Futuristic Complications will not be complying this report.
-14 This valuation report may give a completely different result if any of the assumptions mentioned above are found to be not true. Lenders should check and think of necessary mitigate, as may found suitable, in case of adverse situation, WRT future sale-ability in the open market, at this existing condition.`;
+9  The basic civic amenities are all available within a minimum distance of approx. 2-8 Kms. from the subject property.
+10 Thus, based on the above stated facts the Valuation of the subject property is recommended. Futuristic Complications will not be complying this report.`;
 
 const DEFAULT_DECLARATIONS = `1  The information furnished in our valuation report is true and correct to best of my knowledge and belief and in an impartial and true valuation of the property.
 2  We have no direct or indirect interest in the property valued.
 3  Information furnished in the report is true and correct to the best of our knowledge and belief.
 4  Fair market value indicated in the report is an opinion of the value prevailing on the date of the said report and is based on market feedback on values of similar properties. The client is free to obtain other independent opinions on the same. The fair, market value of such properties/localities may increase or decrease, depending on the future market conditions & scenarios. This report does not certify or confirm any ownership or title of the property that has been valued.
 5  No structural survey was conducted by us.
-6  We have deputed our representative Sougata Sanfui to Inspect the property. Our representative has personally inspected the property.
+6  We have deputed our representative to Inspect the property. Our representative has personally inspected the property.
 7  We are not required to give testimony or appear in court by any reason of this appraisal report, with reference to the property in question.
 8  We have also taken into consideration the slump in the market and the oversupply condition in the market. The demand for quality construction and maintenance for properties is also considered.
 9  We have compared other comparable properties on the basis of many factors and as far as possible tried to remove/ account for the differences in type, location and quality of the properties.
@@ -124,125 +105,125 @@ export default function KarurVysyaBank({
   const [form, setForm] = useState<any>(() => {
     const f = rawInitialFields || {};
     return {
-      reportNumber: f.reportNumber || f.refNo || projectCode || 'VIP/KVB/558',
-      dateOfReport: f.dateOfReport || f.reportDate || '24.09.2026',
+      reportNumber: f.reportNumber || f.refNo || projectCode || '',
+      dateOfReport: f.dateOfReport || f.reportDate || '',
 
       // 1. GENERAL
-      applicantName: f.applicantName || prefill?.contactName || 'C&B Ecogen Pvt Ltd',
-      applicationNumber: f.applicationNumber || 'N.A.',
-      ownerName: f.ownerName || 'M/S C & B Ecogen Pvt. Ltd. (Purchaser)',
-      dateOfTechnicalVisit: f.dateOfTechnicalVisit || f.inspectionDate || (prefill as any)?.fieldVisitDate || '10.08.2026',
-      buildingSocietyName: f.buildingSocietyName || 'N.A.',
-      builderSellerName: f.builderSellerName || 'Sanjay Kumar Roy, Sabina Bibi and others (Seller)',
-      personMetAtSite: f.personMetAtSite || 'Goutam Bag (Workshop In Charge), Contact No.- Not shared',
+      applicantName: f.applicantName || prefill?.contactName || '',
+      applicationNumber: f.applicationNumber || '',
+      ownerName: f.ownerName || '',
+      dateOfTechnicalVisit: f.dateOfTechnicalVisit || f.inspectionDate || (prefill as any)?.fieldVisitDate || '',
+      buildingSocietyName: f.buildingSocietyName || '',
+      builderSellerName: f.builderSellerName || '',
+      personMetAtSite: f.personMetAtSite || '',
 
       // 2. DETAILS OF THE PROPERTY
-      electricMeterNumber: f.electricMeterNumber || 'N.A.',
-      propertyType: f.propertyType || prefill?.propertyType || 'Industrial',
-      basement: f.basement || 'Nil',
-      noOfStories: f.noOfStories || 'Single Storied Shed Structures and 1 Storied RCC structure',
-      propertyLocatedOn: f.propertyLocatedOn || 'Entire Property',
-      totalNoOfUnits: f.totalNoOfUnits || 'Do',
-      lift: f.lift || 'Nil',
-      propertyConfiguration: f.propertyConfiguration || 'GF- 2 Toilet, 2 Office Room, 1st Floor- 1 Room. Rest In CGI Shed Factory Area, Some Vacant Land',
-      noOfBathrooms: f.noOfBathrooms || '2',
-      ageOfProperty: f.ageOfProperty || '5',
-      residualAge: f.residualAge || '75',
-      occupancyStatus: f.occupancyStatus || 'Occupied by Owner',
-      vacantDuration: f.vacantDuration || 'N.A.',
-      selfOccupiedDuration: f.selfOccupiedDuration || 'For 3 years',
-      tenantDuration: f.tenantDuration || 'Not Known',
-      propertyAddressInitiation: f.propertyAddressInitiation || prefill?.propertyAddress || 'Mouza Joyenpur, JL No : 66 RS : Khatian No: 310R S Dag No : 507,517 PS Sonarpur Now Narendrapur Dist : South 24 Parganas Under Bonhoogly-1 Gram Panchayat',
-      propertyAddressSite: f.propertyAddressSite || prefill?.propertyAddress || 'Vill- Jayenpur, P.O. Jayenpur, P.S. Narendrapur, Dist- South 24 Parganas, Pin Code- 700155, Under Bonhoogly I No Gram Panchayat',
-      propertyAddressDocs: f.propertyAddressDocs || prefill?.propertyAddress || 'Mouza- Jayenpur, JL No- 66, Dag No- RS 507,517, 520, 518, 521, L.R 532, 543, 546, 544, 547, Khatian No- R.S 349, 310, 344, 364, 245, L.R 1693, P.S- Sonarpur now Narendrapur, Dist- South 24 Parganas, Under Bonhooghly 1 No. Gram Panchayat',
-      pinCode: f.pinCode || 'Kolkata-700 155',
-      approvedBuildingUsage: f.approvedBuildingUsage || 'Commercial',
-      onSiteBuildingUsage: f.onSiteBuildingUsage || 'Industrial (Factory)',
-      zoningMasterPlan: f.zoningMasterPlan || 'Bonhooghly 1 No. Gram Panchayat',
-      landClassification: f.landClassification || 'Do',
-      crzAsiRegulations: f.crzAsiRegulations || 'N.A.',
+      electricMeterNumber: f.electricMeterNumber || '',
+      propertyType: f.propertyType || prefill?.propertyType || '',
+      basement: f.basement || '',
+      noOfStories: f.noOfStories || '',
+      propertyLocatedOn: f.propertyLocatedOn || '',
+      totalNoOfUnits: f.totalNoOfUnits || '',
+      lift: f.lift || '',
+      propertyConfiguration: f.propertyConfiguration || '',
+      noOfBathrooms: f.noOfBathrooms || '',
+      ageOfProperty: f.ageOfProperty || '',
+      residualAge: f.residualAge || '',
+      occupancyStatus: f.occupancyStatus || '',
+      vacantDuration: f.vacantDuration || '',
+      selfOccupiedDuration: f.selfOccupiedDuration || '',
+      tenantDuration: f.tenantDuration || '',
+      propertyAddressInitiation: f.propertyAddressInitiation || prefill?.propertyAddress || '',
+      propertyAddressSite: f.propertyAddressSite || prefill?.propertyAddress || '',
+      propertyAddressDocs: f.propertyAddressDocs || prefill?.propertyAddress || '',
+      pinCode: f.pinCode || '',
+      approvedBuildingUsage: f.approvedBuildingUsage || '',
+      onSiteBuildingUsage: f.onSiteBuildingUsage || '',
+      zoningMasterPlan: f.zoningMasterPlan || '',
+      landClassification: f.landClassification || '',
+      crzAsiRegulations: f.crzAsiRegulations || '',
 
       // 3. SURROUNDINGS, ACCESIBILITY & PROXIMITY
-      distanceCityCenter: f.distanceCityCenter || '28 Km. approx.',
-      nearestRailwayStation: f.nearestRailwayStation || 'Narendrapur Halt (Approx. 9.4 K.M)',
-      nearestBusStand: f.nearestBusStand || 'Nepalgunge Bus Stop (Approx. 3.2 K.M)',
-      nearestHospital: f.nearestHospital || 'Apollo Hospital (6.5 kms. approx.)',
-      widthOfApproachRoad: f.widthOfApproachRoad || '22ft. wide Kuchha Road',
-      nearbyLandmark: f.nearbyLandmark || 'Near Jayenpur More Industrial Area',
-      typeOfLocality: f.typeOfLocality || 'Mixed',
-      occupancyRatio: f.occupancyRatio || 'N.A.',
-      developmentSurroundings: f.developmentSurroundings || 'Developing',
-      plotDemarcatedAtSite: f.plotDemarcatedAtSite || 'The subject property is demarcated by boundary wall from all sides.',
-      demolitionRisk: f.demolitionRisk || 'N.A.',
-      propertyIdentifiedThrough: f.propertyIdentifiedThrough || 'The property is identified through an identifier & provided document received from bank only.',
-      municipalLimit: f.municipalLimit || 'Bonhooghly 1 No. Gram Panchayat',
+      distanceCityCenter: f.distanceCityCenter || '',
+      nearestRailwayStation: f.nearestRailwayStation || '',
+      nearestBusStand: f.nearestBusStand || '',
+      nearestHospital: f.nearestHospital || '',
+      widthOfApproachRoad: f.widthOfApproachRoad || '',
+      nearbyLandmark: f.nearbyLandmark || '',
+      typeOfLocality: f.typeOfLocality || '',
+      occupancyRatio: f.occupancyRatio || '',
+      developmentSurroundings: f.developmentSurroundings || '',
+      plotDemarcatedAtSite: f.plotDemarcatedAtSite || '',
+      demolitionRisk: f.demolitionRisk || '',
+      propertyIdentifiedThrough: f.propertyIdentifiedThrough || '',
+      municipalLimit: f.municipalLimit || '',
 
       // Boundaries Matrix
-      boundNorthSite: f.boundNorthSite || 'Partly Road Partly Vacant Land',
-      boundNorthPlan: f.boundNorthPlan || '20ft wide Common Passage',
-      boundSouthSite: f.boundSouthSite || "22' Wide Road",
-      boundSouthPlan: f.boundSouthPlan || '20ft wide Common Passage',
-      boundEastSite: f.boundEastSite || 'Pond Partly Vacant Low Land',
-      boundEastPlan: f.boundEastPlan || 'Not mentioned',
-      boundWestSite: f.boundWestSite || "22' Wide Road",
-      boundWestPlan: f.boundWestPlan || '20ft wide Common Passage',
-      boundariesMatching: f.boundariesMatching || 'Partly',
-      boundariesDiscrepancy: f.boundariesDiscrepancy || 'East side boundary not mentioned in Site Plan',
+      boundNorthSite: f.boundNorthSite || '',
+      boundNorthPlan: f.boundNorthPlan || '',
+      boundSouthSite: f.boundSouthSite || '',
+      boundSouthPlan: f.boundSouthPlan || '',
+      boundEastSite: f.boundEastSite || '',
+      boundEastPlan: f.boundEastPlan || '',
+      boundWestSite: f.boundWestSite || '',
+      boundWestPlan: f.boundWestPlan || '',
+      boundariesMatching: f.boundariesMatching || '',
+      boundariesDiscrepancy: f.boundariesDiscrepancy || '',
 
       // 4. SURVEY OF CONSTRUCTION
-      typeOfConstruction: f.typeOfConstruction || 'RCC Structure & CGI Shed Structure',
-      qualityOfConstruction: f.qualityOfConstruction || 'Good',
-      exteriors: f.exteriors || 'Do',
-      interiors: f.interiors || 'Do',
-      amenitiesProvided: f.amenitiesProvided || 'Water, Overhead Tank, Drainage, Electricity etc.',
-      constructionProgress: f.constructionProgress || '100% completed',
-      completionStagePct: f.completionStagePct || '100%',
-      recommendedStagePct: f.recommendedStagePct || '100%',
+      typeOfConstruction: f.typeOfConstruction || '',
+      qualityOfConstruction: f.qualityOfConstruction || '',
+      exteriors: f.exteriors || '',
+      interiors: f.interiors || '',
+      amenitiesProvided: f.amenitiesProvided || '',
+      constructionProgress: f.constructionProgress || '',
+      completionStagePct: f.completionStagePct || '',
+      recommendedStagePct: f.recommendedStagePct || '',
 
       // 5. DOCUMENTS VERIFIED
-      approvedLayoutPlans: f.approvedLayoutPlans || 'Not available',
-      approvedBuildingPlans: f.approvedBuildingPlans || 'Sanctioned Plan received for proposed two storied commercial building, approved by Pradhan of Bonhooghly 1 Gram Panchayat, Plan Number & Date is Unclear.\nSanction Plan for Tin Shed structure, approved by Bonhooghly 1 Gram Panchayat vide Regd No. Bon-IGP/1865/2022-23 dated 30.08.2022\nDraft Plan for Single storied commercial building with truss of area 7405 sqft',
-      commencementCertificate: f.commencementCertificate || 'Not available',
-      buPermissionDetails: f.buPermissionDetails || 'Not available',
-      reraNo: f.reraNo || 'Not available',
+      approvedLayoutPlans: f.approvedLayoutPlans || '',
+      approvedBuildingPlans: f.approvedBuildingPlans || '',
+      commencementCertificate: f.commencementCertificate || '',
+      buPermissionDetails: f.buPermissionDetails || '',
+      reraNo: f.reraNo || '',
       ownershipProof: f.ownershipProof || DEFAULT_OWNERSHIP_DEEDS,
       otherDocuments: f.otherDocuments || DEFAULT_OTHER_DOCUMENTS,
 
       // 6. LAND & BUILDING AREA DETAILS
-      landAreaSite: f.landAreaSite || '25,612 Sq. ft.',
-      landAreaPlan: f.landAreaPlan || '31 Katha 12 sqft or 22,332 Sq. ft.',
-      landAreaDocs: f.landAreaDocs || 'As per Deed 24,213 Sq. ft., as per Conversion 23,086 sqft',
-      shedAreaSite: f.shedAreaSite || '11,245 Sq. ft.',
-      shedAreaPlan: f.shedAreaPlan || '8600 Sq. ft.',
-      shedAreaDocs: f.shedAreaDocs || 'NA',
-      rccAreaSite: f.rccAreaSite || '1,117 Sq. ft.',
-      rccAreaPlan: f.rccAreaPlan || '816 Sq.ft.',
-      rccAreaDocs: f.rccAreaDocs || 'NA',
-      violationDetails: f.violationDetails || 'Horizontal deviation found',
+      landAreaSite: f.landAreaSite || '',
+      landAreaPlan: f.landAreaPlan || '',
+      landAreaDocs: f.landAreaDocs || '',
+      shedAreaSite: f.shedAreaSite || '',
+      shedAreaPlan: f.shedAreaPlan || '',
+      shedAreaDocs: f.shedAreaDocs || '',
+      rccAreaSite: f.rccAreaSite || '',
+      rccAreaPlan: f.rccAreaPlan || '',
+      rccAreaDocs: f.rccAreaDocs || '',
+      violationDetails: f.violationDetails || '',
 
       // 7. VALUATION DETAILS
-      valLandArea: f.valLandArea !== undefined ? String(f.valLandArea) : '23086',
-      valLandRate: f.valLandRate !== undefined ? String(f.valLandRate) : '972',
-      valShedArea: f.valShedArea !== undefined ? String(f.valShedArea) : '8600',
-      valShedRate: f.valShedRate !== undefined ? String(f.valShedRate) : '1200',
-      valRccArea: f.valRccArea !== undefined ? String(f.valRccArea) : '816',
-      valRccRate: f.valRccRate !== undefined ? String(f.valRccRate) : '1600',
+      valLandArea: f.valLandArea !== undefined ? String(f.valLandArea) : '0',
+      valLandRate: f.valLandRate !== undefined ? String(f.valLandRate) : '0',
+      valShedArea: f.valShedArea !== undefined ? String(f.valShedArea) : '0',
+      valShedRate: f.valShedRate !== undefined ? String(f.valShedRate) : '0',
+      valRccArea: f.valRccArea !== undefined ? String(f.valRccArea) : '0',
+      valRccRate: f.valRccRate !== undefined ? String(f.valRccRate) : '0',
       valOtherLs: f.valOtherLs !== undefined ? String(f.valOtherLs) : '0',
-      valSayTotal: f.valSayTotal !== undefined ? String(f.valSayTotal) : '34065000',
+      valSayTotal: f.valSayTotal !== undefined ? String(f.valSayTotal) : '0',
 
       // 8. GOVERNMENT VALUE
-      govtLandArea: f.govtLandArea || '23,086 Sq. ft.',
-      govtLandRate: f.govtLandRate || 'Rs. 515.00 per Sq. ft. for Karkhana/Industrial Land',
-      govtLandVal: f.govtLandVal || '1,18,89,290.00',
-      govtConstArea: f.govtConstArea || 'NA',
-      govtConstRate: f.govtConstRate || 'NA',
-      govtConstVal: f.govtConstVal || 'NA',
-      govtTotalVal: f.govtTotalVal || 'Rs. 1,18,89,290.00',
+      govtLandArea: f.govtLandArea || '',
+      govtLandRate: f.govtLandRate || '',
+      govtLandVal: f.govtLandVal || '',
+      govtConstArea: f.govtConstArea || '',
+      govtConstRate: f.govtConstRate || '',
+      govtConstVal: f.govtConstVal || '',
+      govtTotalVal: f.govtTotalVal || '',
 
       // 9. REMARKS & DECLARATION
       remarks: f.remarks || DEFAULT_REMARKS,
       declarations: f.declarations || DEFAULT_DECLARATIONS,
-      visitedPersonName: f.visitedPersonName || 'Sougata Sanfui',
+      visitedPersonName: f.visitedPersonName || '',
 
       // Annexures
       propertyImages: f.propertyImages || [],
@@ -465,41 +446,25 @@ export default function KarurVysyaBank({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* ── Active Configuration Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName="KARUR VYSYA BANK LIMITED"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* Title Header Card */}
-          <BankReportTitleCard
+          {/* Universal Standardized Bank Report Header */}
+          <BankReportHeader
+            clientType="organisation"
+            category="Bank & FIS"
             bankName="Karur Vysya Bank Limited"
             subclass="Standard Valuation Format"
+            onResetWizard={onResetWizard}
+            title="Valuation Report Builder"
             description="Commercial / Industrial valuation format with 11 core sections, multi-deed legal matrix, and media annexures."
             earliestVisit={earliestVisit}
             projectCode={projectCode}
+            status={status}
+            message={message}
+            onDismissMessage={() => setMessage(null)}
           />
-
-          {/* Banner Alert Message */}
-          {message && (
-            <div
-              className={`p-4 rounded-xl text-sm font-medium flex items-center justify-between ${
-                message.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
-              }`}
-            >
-              <span>{message.text}</span>
-              <button onClick={() => setMessage(null)} className="text-xs font-bold underline ml-4">
-                Dismiss
-              </button>
-            </div>
-          )}
 
           {/* 1. General Information */}
           <div id="sec-general">

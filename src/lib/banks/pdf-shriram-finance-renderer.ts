@@ -84,7 +84,7 @@ export class PDFShriramFinanceRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       {
         label: 'Contacted Person for property inspection (Name/ Mobile)',
-        value: this.getF('contactPersonInspection', 'Mr. Rudranarayan, Mob:- 8908015464'),
+        value: this.getF('contactPersonInspection', ''),
         labelWidth: 260,
         valueWidth: CONTENT_W - 260,
         labelBold: true,
@@ -117,34 +117,34 @@ export class PDFShriramFinanceRenderer extends PDFBankRenderer {
     this.drawShriramRow('5', 'Location Type (Comm., Res, Ind, Mix)', this.getF('localityType', 'Residential'));
     this.drawShriramRow('', 'Class of Locality', this.getF('localityClass', 'Middle Class'));
     this.drawShriramRow('', 'Site is (Dev, Under Dev)', this.getF('siteDevStatus', 'Developed'));
-    this.drawShriramRow('', 'Proximity to civic amenities/public transport', this.getF('proximityCivicAmenities', 'Within 1-2 Kms'));
-    this.drawShriramRow('', 'Railway Station', this.getF('railwayStationDistance', '1Km (Patia Railway station)'));
-    this.drawShriramRow('', 'Bus Stop', this.getF('busStopDistance', '2Kms(KIIT Square Bus Stop)'));
-    this.drawShriramRow('6', 'Close Vicinity/Landmark', this.getF('vicinityLandmark', 'Near Gayatri Enclave, Kalarahanga'));
-    this.drawShriramRow('7', 'Distance from City Center', this.getF('distanceFromCityCenter', '15Kms from Bhubaneswar City center'));
-    this.drawShriramRow('8', 'Condition and width of approach road', this.getF('approachRoad', '20-Feet wide Road'));
+    this.drawShriramRow('', 'Proximity to civic amenities/public transport', this.getF('proximityCivicAmenities', ''));
+    this.drawShriramRow('', 'Railway Station', this.getF('railwayStationDistance', ''));
+    this.drawShriramRow('', 'Bus Stop', this.getF('busStopDistance', ''));
+    this.drawShriramRow('6', 'Close Vicinity/Landmark', this.getF('vicinityLandmark', ''));
+    this.drawShriramRow('7', 'Distance from City Center', this.getF('distanceFromCityCenter', ''));
+    this.drawShriramRow('8', 'Condition and width of approach road', this.getF('approachRoad', ''));
 
     // ══════════════════════════════════════════
     // 3. PROPERTY DETAILS
     // ══════════════════════════════════════════
     this.drawShriramSectionHeader('PROPERTY DETAILS');
-    this.drawShriramRow('9', 'Occupant (Vacant/Occupied)', this.getF('occupancyStatus', 'Vacant'));
-    this.drawShriramRow('', 'Name of Occupant', this.getF('occupantName', 'NA(Vacant)'));
-    this.drawShriramRow('', 'Relation with applicant', this.getF('occupantRelation', 'Owner'));
-    this.drawShriramRow('', 'Property Demarcation', this.getF('propertyDemarcation', 'Yes'));
-    this.drawShriramRow('', 'Property Identified through', this.getF('propertyIdentifiedThrough', 'Mr. Rudranarayan, Mob:- 8908015464'));
+    this.drawShriramRow('9', 'Occupant (Vacant/Occupied)', this.getF('occupancyStatus', ''));
+    this.drawShriramRow('', 'Name of Occupant', this.getF('occupantName', ''));
+    this.drawShriramRow('', 'Relation with applicant', this.getF('occupantRelation', ''));
+    this.drawShriramRow('', 'Property Demarcation', this.getF('propertyDemarcation', ''));
+    this.drawShriramRow('', 'Property Identified through', this.getF('propertyIdentifiedThrough', ''));
 
-    this.drawShriramRow('10', 'Type of structure', this.getF('structureType', 'RCC framed structure'));
+    this.drawShriramRow('10', 'Type of structure', this.getF('structureType', ''));
     this.drawShriramRow('', 'Land/Plot Area(UDS)', this.getF('plotAreaUds', 'NA'));
-    this.drawShriramRow('', 'No of Blocks', this.getF('noOfBlocks', '1'));
-    this.drawShriramRow('', 'No of Units', this.getF('noOfUnits', 'Inside visit not done'));
-    this.drawShriramRow('', 'No. of Floors', this.getF('noOfFloors', '5(S+4)'));
-    this.drawShriramRow('', 'No. of Lifts', this.getF('noOfLifts', '1'));
+    this.drawShriramRow('', 'No of Blocks', this.getF('noOfBlocks', ''));
+    this.drawShriramRow('', 'No of Units', this.getF('noOfUnits', ''));
+    this.drawShriramRow('', 'No. of Floors', this.getF('noOfFloors', ''));
+    this.drawShriramRow('', 'No. of Lifts', this.getF('noOfLifts', ''));
 
-    this.drawShriramRow('11', 'Unit details: Located on Floor No.', this.getF('floorNo', '4th Floor'));
-    this.drawShriramRow('', 'No. of rooms', this.getF('noOfRooms', '2BHK'));
-    this.drawShriramRow('', 'Built up area (SBUA)', this.getF('builtUpAreaSbua', '1159 sqft'), true);
-    this.drawShriramRow('', 'Carpet area (approx.)', this.getF('carpetArea', '790sqft'));
+    this.drawShriramRow('11', 'Unit details: Located on Floor No.', this.getF('floorNo', ''));
+    this.drawShriramRow('', 'No. of rooms', this.getF('noOfRooms', ''));
+    this.drawShriramRow('', 'Built up area (SBUA)', this.getF('builtUpAreaSbua', ''), true);
+    this.drawShriramRow('', 'Carpet area (approx.)', this.getF('carpetArea', ''));
     this.drawShriramRow('', 'Remarks on view from property', this.getF('viewRemarks', 'NA'));
 
     this.drawKeyValueRow([
@@ -163,7 +163,7 @@ export class PDFShriramFinanceRenderer extends PDFBankRenderer {
     // 4. SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS
     // ══════════════════════════════════════════
     this.drawShriramSectionHeader('SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS');
-    this.drawShriramRow('14', 'Sanctioned plans verified with approval no', this.getF('sanctionPlanNo', 'Plan has been approved by BDA vide letter no-16240/BP dated-22/12/2009 for S+4 residential apartment(Mentioned in Agreement for sale)'));
+    this.drawShriramRow('14', 'Sanctioned plans verified with approval no', this.getF('sanctionPlanNo', ''));
     this.drawShriramRow('15', 'Ownership type (Leasehold/ Freehold)', this.getF('ownershipType', 'Freehold'));
     this.drawShriramRow('16', 'Property documents verified', this.getF('documentsVerified', 'Copy of Agreement for sale & Allotment letter'));
     this.drawShriramRow('17', 'Is the property within Municipal Limits', this.getF('withinMunicipalLimits', 'No(Within BDA limit)'));
@@ -227,12 +227,12 @@ export class PDFShriramFinanceRenderer extends PDFBankRenderer {
       { label: this.getF('landRate', 'NA'), value: this.getF('landAmount', 'NA'), labelWidth: colValW, valueWidth: colValW },
     ]);
     this.drawKeyValueRow([
-      { label: '21. Construction on 100% completion', value: this.getF('area100', '1159 sqft'), labelWidth: colValW, valueWidth: colValW, bold: true },
-      { label: this.getF('rate100', 'Rs. 3,800/-'), value: this.getF('amount100', 'Rs. 44,04,200/-'), labelWidth: colValW, valueWidth: colValW, bold: true },
+      { label: '21. Construction on 100% completion', value: this.getF('area100', ''), labelWidth: colValW, valueWidth: colValW, bold: true },
+      { label: this.getF('rate100', ''), value: this.getF('amount100', ''), labelWidth: colValW, valueWidth: colValW, bold: true },
     ]);
     this.drawKeyValueRow([
-      { label: `Construction As on date (${this.getF('completionStagePercent', '70')}%)`, value: this.getF('areaAsOnDate', '1159 sqft'), labelWidth: colValW, valueWidth: colValW, bold: true },
-      { label: this.getF('rateAsOnDate', 'Rs. 2,660/-'), value: this.getF('amountAsOnDate', 'Rs. 30,82,940/-'), labelWidth: colValW, valueWidth: colValW, bold: true },
+      { label: `Construction As on date (${this.getF('completionStagePercent', '')}%)`, value: this.getF('areaAsOnDate', ''), labelWidth: colValW, valueWidth: colValW, bold: true },
+      { label: this.getF('rateAsOnDate', ''), value: this.getF('amountAsOnDate', ''), labelWidth: colValW, valueWidth: colValW, bold: true },
     ]);
 
     this.drawShriramSectionHeader('(B) Value of Extra Amenities if applicable');
@@ -249,19 +249,19 @@ export class PDFShriramFinanceRenderer extends PDFBankRenderer {
 
     this.advanceCursor(2);
     this.drawKeyValueRow([
-      { label: 'Total Market Value of Property (100%)', value: this.getF('marketValue100', 'Rs. 44,04,200/-'), labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
+      { label: 'Total Market Value of Property (100%)', value: this.getF('marketValue100', ''), labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
     ]);
     this.drawKeyValueRow([
-      { label: `Total Market Value of Property As on date (${this.getF('completionStagePercent', '70')}%)`, value: this.getF('marketValueAsOnDate', 'Rs. 30,82,940/-'), labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
+      { label: `Total Market Value of Property As on date (${this.getF('completionStagePercent', '')}%)`, value: this.getF('marketValueAsOnDate', ''), labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'Realizable value (85%)', value: this.getF('realizableValue', 'Rs. 26,20,499/-'), labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
+      { label: 'Realizable value (85%)', value: this.getF('realizableValue', ''), labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'Forced Sale Value / Distress Value (80%)', value: this.getF('distressValue', 'Rs. 24,66,352/-'), labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
+      { label: 'Forced Sale Value / Distress Value (80%)', value: this.getF('distressValue', ''), labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'Approx. Rentals in case of 100% complete property', value: this.getF('rentalValue', 'Rs. 10,000/- Per month'), labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
+      { label: 'Approx. Rentals in case of 100% complete property', value: this.getF('rentalValue', ''), labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
     ]);
 
     // ══════════════════════════════════════════
@@ -280,9 +280,9 @@ export class PDFShriramFinanceRenderer extends PDFBankRenderer {
       { label: this.getF('boundarySouthDoc', 'Not Mentioned'), value: '', labelWidth: colBndW, valueWidth: 0 },
     ]);
     this.drawKeyValueRow([
-      { label: 'At site (Project Boundaries)', value: this.getF('boundaryEastSite', 'Others building'), labelWidth: colBndW, valueWidth: colBndW },
-      { label: this.getF('boundaryWestSite', 'Road'), value: this.getF('boundaryNorthSite', 'Vacant land'), labelWidth: colBndW, valueWidth: colBndW },
-      { label: this.getF('boundarySouthSite', 'Road'), value: '', labelWidth: colBndW, valueWidth: 0 },
+      { label: 'At site (Project Boundaries)', value: this.getF('boundaryEastSite', ''), labelWidth: colBndW, valueWidth: colBndW },
+      { label: this.getF('boundaryWestSite', ''), value: this.getF('boundaryNorthSite', ''), labelWidth: colBndW, valueWidth: colBndW },
+      { label: this.getF('boundarySouthSite', ''), value: '', labelWidth: colBndW, valueWidth: 0 },
     ]);
     this.drawKeyValueRow([
       { label: 'Boundaries Matching', value: this.getF('boundariesMatching', 'NA(Not mentioned in agreement for sale)'), labelWidth: 160, valueWidth: CONTENT_W - 160, labelBold: true, bold: true },
@@ -290,7 +290,7 @@ export class PDFShriramFinanceRenderer extends PDFBankRenderer {
 
     this.advanceCursor(4);
     this.drawShriramSectionHeader('Remarks:-');
-    const remarks = this.getF('remarks', 'Subject property is a residential flat located on 4th floor, of a S+4 residential apartment named as "ANANTA SAI ENCLAVE". Plan has been approved by BDA vide letter no-16240/BP dated-22/12/2009 for S+4 residential apartment(Mentioned in Agreement for sale). Property located in a developed area of Bhubaneswar & all the civic amenities are present within 1-2 Kms. It is about 15Kms from Bhubaneswar city center. Flat inside visit not done. Only outside visit completed. At present, total flat wall putty work completed & overall present stage of construction is about 70%. Boundary details are not mentioned in documents. Valuation has been done for SBUA as reflected in agreement for sale.');
+    const remarks = this.getF('remarks', '');
     this.drawKeyValueRow([
       { label: remarks, value: '', labelWidth: CONTENT_W, valueWidth: 0 },
     ]);

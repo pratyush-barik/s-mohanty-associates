@@ -7,7 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -21,7 +21,6 @@ import {
   formatReportDate,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -461,27 +460,28 @@ export default function YesBank({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* ── Active Configuration Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName={fields.organisationTemplate || 'YES BANK'}
-        subclass={fields.organisationSubTemplate || undefined}
+      {/* ── Bank Report Header ── */}
+      <BankReportHeader
+        bankName="YES Bank"
+        subTemplate={fields.organisationSubTemplate || 'Standard Format'}
+        description="Technical Valuation Report with Schedule Approvals, Property Details & Floor Rates."
+        projectCode={fields.caseRefNo || projectCode}
+        earliestVisit={earliestVisit}
         onResetWizard={onResetWizard}
-        sticky={false}
+        onSyncInspectionDate={
+          earliestVisit
+            ? () => {
+                const dt = formatReportDate(earliestVisit.date);
+                handleFieldChange('dateOfVisit', dt);
+              }
+            : undefined
+        }
       />
 
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-        <BankReportTitleCard
-          bankName={fields.organisationTemplate || 'YES BANK'}
-          subclass={fields.organisationSubTemplate || 'YES Bank Limited Format'}
-          description="Technical Valuation Report with Schedule Approvals, Property Details & Floor Rates."
-          earliestVisit={earliestVisit}
-          projectCode={fields.caseRefNo || projectCode}
-        />
 
         {/* 1. Header & Branch */}
         <div id="yes-sec-header">

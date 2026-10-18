@@ -69,8 +69,8 @@ export class PDFSwarnaFinanceRenderer extends PDFBankRenderer {
     // ═══════════════════════════════════════════════
     // TOP HEADER
     // ═══════════════════════════════════════════════
-    const refNo = this.getF('refNo', 'SPHM/2023-24/01');
-    const refDate = this.getF('refDate', this.getF('reportDate', '19/04/2023'));
+    const refNo = this.getF('refNo', this.projectCode || '');
+    const refDate = this.getF('refDate', this.getF('reportDate', ''));
 
     this.drawKeyValueRow([
       {
@@ -106,7 +106,7 @@ export class PDFSwarnaFinanceRenderer extends PDFBankRenderer {
         label: '',
         value: this.getF(
           'subjectText',
-          'Valuation report for House no.- NA, Ward no.-NA ,village- Bija Bahali,Teh.-Puintala, Dist- Bolangir'
+          ''
         ),
         labelWidth: 0,
         valueWidth: CONTENT_W - 230,
@@ -122,7 +122,7 @@ export class PDFSwarnaFinanceRenderer extends PDFBankRenderer {
         label: '',
         value: this.getF(
           'purposeOfValuation',
-          `To determine Fair Market Value & Distress Value of the above mentioned property as on date for SwarnaPragati Housing Microfinance Pvt Ltd, Branch ${this.getF('branchName', 'Bolangir')}`
+          `To determine Fair Market Value & Distress Value of the property for SwarnaPragati Housing Microfinance Pvt Ltd${this.getF('branchName', '') ? `, Branch ${this.getF('branchName', '')}` : ''}`
         ),
         labelWidth: 0,
         valueWidth: CONTENT_W - 230,
@@ -134,13 +134,13 @@ export class PDFSwarnaFinanceRenderer extends PDFBankRenderer {
     // ═══════════════════════════════════════════════
     this.drawSwarnaSectionHeader('C', 'GENERAL DETAILS');
 
-    const customerStr = `${this.getF('customerName', 'Kamalendu Banachhor')}${this.getF('customerPhone') ? `, Mob- ${this.getF('customerPhone')}` : ''}`;
+    const customerStr = `${this.getF('customerName', '')}${this.getF('customerPhone') ? `, Mob- ${this.getF('customerPhone')}` : ''}`;
     this.drawSwarnaRow('1', 'Name Of Customer', customerStr);
     this.drawSwarnaRow('2', 'Property Address File', this.getF('propertyAddressFile', this.getF('propertyAddress', '')));
-    this.drawSwarnaRow('3', 'Land Mark', this.getF('landmark', 'Near Bijabahali Primary School'));
-    this.drawSwarnaRow('4', 'Name Of Document Holder', this.getF('documentHolderName', 'Kamalendu Banachhor, S/O-Kabiraj Banachhor'));
+    this.drawSwarnaRow('3', 'Land Mark', this.getF('landmark', ''));
+    this.drawSwarnaRow('4', 'Name Of Document Holder', this.getF('documentHolderName', ''));
     this.drawSwarnaRow('5', 'Legal Address Of Property', this.getF('legalAddress', this.getF('propertyAddress', '')));
-    this.drawSwarnaRow('6', 'Date Of Inspection', this.getF('dateOfInspection', '18/04/2023'));
+    this.drawSwarnaRow('6', 'Date Of Inspection', this.getF('dateOfInspection', ''));
 
     // ═══════════════════════════════════════════════
     // D: SURROUNDING LOCALITY DETAILS
@@ -263,11 +263,11 @@ export class PDFSwarnaFinanceRenderer extends PDFBankRenderer {
     this.drawSwarnaRow('9', 'Distress Value(75%)', distStr);
 
     // Boundaries as per sale deed
-    const deedBoundStr = `East-${this.getF('boundDeedEast', 'Saina Chhatria')}\nWest-${this.getF('boundDeedWest', 'Self')}\nNorth-${this.getF('boundDeedNorth', 'Sanadev Banachhor')}\nSouth-${this.getF('boundDeedSouth', 'Bansi Banachhor')}`;
+    const deedBoundStr = `East-${this.getF('boundDeedEast', '')}\nWest-${this.getF('boundDeedWest', '')}\nNorth-${this.getF('boundDeedNorth', '')}\nSouth-${this.getF('boundDeedSouth', '')}`;
     this.drawSwarnaRow('10', 'Property Bounded by(As per sale deed)', deedBoundStr);
 
     // Boundaries as per actual
-    const actBoundStr = `East-${this.getF('boundActEast', 'Building of Sanadev Banachhor')}\nWest-${this.getF('boundActWest', 'Building of Rajbihari Banachhor')}\nNorth-${this.getF('boundActNorth', 'Vacant land')}\nSouth-${this.getF('boundActSouth', 'Road')}`;
+    const actBoundStr = `East-${this.getF('boundActEast', '')}\nWest-${this.getF('boundActWest', '')}\nNorth-${this.getF('boundActNorth', '')}\nSouth-${this.getF('boundActSouth', '')}`;
     this.drawSwarnaRow('11', 'Boundary (As per Actual)', actBoundStr);
 
     this.drawSwarnaRow('12', 'Boundary status', this.getF('boundaryMismatchStatus', 'Boundary mis matches'));
@@ -277,10 +277,7 @@ export class PDFSwarnaFinanceRenderer extends PDFBankRenderer {
     // ═══════════════════════════════════════════════
     this.drawSwarnaSectionHeader('K', 'Remarks');
 
-    const remarksText = this.getF(
-      'synthesisRemarks',
-      'Subject property is a single storied residential building having land extent of 1307sqft., having measured BUA is 900sqft. Approved plan is not provided. Age of property is about 1-years. Property located in developing area of Puintala & approaches 15 feet wide Road. The building is occupied by the customer for residential purpose.\nNote- Property shown by the customer/GPS location is mis matching with the revenue mouza map/Bhu-Naksa. Property is located somewhere else. Hence this case is not recommended.'
-    );
+    const remarksText = this.getF('synthesisRemarks', '');
 
     this.checkPageBreak(50);
     this.drawKeyValueRow([
@@ -309,7 +306,7 @@ export class PDFSwarnaFinanceRenderer extends PDFBankRenderer {
       },
     ]);
 
-    const inspectDate = this.getF('dateOfInspection', '18/04/2023');
+    const inspectDate = this.getF('dateOfInspection', '');
     const declarations = [
       `1) Our associate has personally inspected the property on ${inspectDate}.`,
       '2) I have no direct or indirect interest in the property valued.',
@@ -333,7 +330,7 @@ export class PDFSwarnaFinanceRenderer extends PDFBankRenderer {
     this.checkPageBreak(60);
 
     // Valuer Sign-off
-    const rDate = this.getF('reportDate', refDate);
+    const rDate = this.getF('reportDate', refDate || '');
     const rPlace = this.getF('reportPlace', 'Bolangir');
 
     this.drawKeyValueRow([

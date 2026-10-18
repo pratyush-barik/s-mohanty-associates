@@ -6,6 +6,7 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -82,109 +83,110 @@ export default function AUSmallFinanceBank({
   const defaultValues: Record<string, any> = useMemo(() => {
     const today = formatReportDate(new Date());
     const visitDate = earliestVisit || today;
+    const p = (prefill || {}) as any;
 
     return {
       // Header / Meta
-      applicationNo: `AU-VAL-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
+      applicationNo: projectCode || '',
       dateOfTechnicalVisit: visitDate,
-      customerName: prefill.ownerName || 'RAVI RENEWABLES PRIVATE LIMITED',
-      contactNo: prefill.contactPhone || '9937023855 / 9310163176',
+      customerName: p.ownerName || p.applicantName || '',
+      contactNo: p.contactPhone || '',
       productCategory: 'SME / Commercial Mortgage',
       purposeOfValuation: 'Fair Market Value for SME Mortgage Credit',
-      ownershipAsPerDocs: prefill.ownerName || 'Ravi Renewables Private Limited, represented by Director',
+      ownershipAsPerDocs: p.ownerName || p.applicantName || '',
       leaseOrFreehold: 'Freehold',
-      occupationStatus: 'Occupied by Relative / Commercial Use',
-      documentsProvided: 'Copy of Sale deed No -11712600556, DATED-09/04/2026, ROR, Approved Layout Plan, Bhu-Naksha',
-      propertyAddressActual: prefill.propertyAddress || 'Plot No-1680, Khata No-107, Mouza-Raghunathpali, Near Verma Eye Hospital, Dist-Sundargarh, Rourkela, Odisha, Pin-769001',
-      propertyAddressDocs: prefill.propertyAddress || 'Plot No-1680, Khata No-107, Mouza-Raghunathpali, Tahasil-Panposh, Dist-Sundargarh, Odisha',
-      pincode: '769001',
-      subRegistrarOffice: 'Panposh / Rourkela',
-      allocatedBy: 'AU Small Finance Bank, Rourkela Branch',
+      occupationStatus: 'Occupied',
+      documentsProvided: '',
+      propertyAddressActual: p.propertyAddress || '',
+      propertyAddressDocs: p.propertyAddress || '',
+      pincode: '',
+      subRegistrarOffice: '',
+      allocatedBy: '',
 
       // Locality Details
-      localityType: 'Commercial / Semi-Commercial Hub',
-      localityClass: 'Middle Class / Commercial Belt',
-      developmentPercentage: '80',
-      distanceFromBranch: '0.9',
-      nearestRailway: 'Rourkela Railway Station (2.5 KM)',
-      nearestBus: 'Panposh Bus Stand (1.0 KM)',
-      nearestHospital: 'Verma Eye Hospital (0.1 KM)',
-      approachRoadWidth: '40',
+      localityType: '',
+      localityClass: '',
+      developmentPercentage: '',
+      distanceFromBranch: '',
+      nearestRailway: '',
+      nearestBus: '',
+      nearestHospital: '',
+      approachRoadWidth: '',
       approachRoadType: 'Bitumen Road',
-      landmark: 'Near Verma Eye Hospital, Raghunathpali',
+      landmark: p.nearestLandmark || '',
       seismicZone: 'Zone III',
       floodZone: 'Safe / Non-flood',
       cycloneZone: 'Moderate',
-      negativesToLocality: 'None observed (No crematorium, slum, chemical hazard or high tension wire nearby)',
-      basicAmenitiesAvailable: 'Yes, water, electricity, cemented drainage and telecommunication available',
+      negativesToLocality: 'None observed',
+      basicAmenitiesAvailable: 'Yes',
 
       // Property & Boundaries
-      landAreaSqft: '2395',
-      landAreaSqm: '222.5',
-      landAreaSqyd: '266.11',
+      landAreaSqft: '',
+      landAreaSqm: '',
+      landAreaSqyd: '',
       propertyUsage: 'Commercial Building',
-      natureOfConstruction: 'RCC Framed Structure (G+2)',
-      propertyAge: '10',
-      residualAge: '50',
-      occupantName: 'Relative of Director',
-      occupancyStatusDetailed: 'Commercial / Warehouse cum Office',
-      plotDemarcated: 'Yes, fully demarcated on all four boundaries',
-      propertyIdentifiedThrough: 'Boundary verification, ROR, Sale Deed & Local enquiry',
-      dimensionNorthDoc: '50',
-      boundaryNorthDeed: 'Plot No-1681',
-      boundaryNorthActual: 'Plot No-1681',
-      dimensionSouthDoc: '50',
-      boundarySouthDeed: '40ft Wide Main Road',
-      boundarySouthActual: '40ft Wide Main Road',
-      dimensionEastDoc: '48',
-      boundaryEastDeed: 'Plot No-1679',
-      boundaryEastActual: 'Plot No-1679',
-      dimensionWestDoc: '48',
-      boundaryWestDeed: 'Plot No-1682',
-      boundaryWestActual: 'Plot No-1682',
+      natureOfConstruction: 'RCC Framed Structure',
+      propertyAge: '',
+      residualAge: '',
+      occupantName: '',
+      occupancyStatusDetailed: '',
+      plotDemarcated: 'Yes',
+      propertyIdentifiedThrough: '',
+      dimensionNorthDoc: '',
+      boundaryNorthDeed: '',
+      boundaryNorthActual: '',
+      dimensionSouthDoc: '',
+      boundarySouthDeed: '',
+      boundarySouthActual: '',
+      dimensionEastDoc: '',
+      boundaryEastDeed: '',
+      boundaryEastActual: '',
+      dimensionWestDoc: '',
+      boundaryWestDeed: '',
+      boundaryWestActual: '',
       stageOfConstruction: '100% Completed',
       workCompletePercentage: '100',
-      buaGF: '1200',
-      buaFF: '1200',
-      buaSF: '1082',
-      totalBUA: '3482',
+      buaGF: '',
+      buaFF: '',
+      buaSF: '',
+      totalBUA: '',
 
       // Specifications
-      structureType: 'RCC Framed Structure (G+2 Floors)',
+      structureType: 'RCC Framed Structure',
       foundationType: 'Column & Footing',
       roofType: 'RCC Slab',
-      flooringType: 'Vitrified Tiles & Kota Stone',
+      flooringType: 'Vitrified Tiles',
       qualityExterior: 'Good',
       qualityInterior: 'Good',
-      maintenanceLevel: 'Well Maintained / Good',
-      setbackFront: '10 ft',
-      setbackBack: '5 ft',
-      setbackSides: '3 ft / 3 ft',
-      adherenceSanction: 'Constructed generally in adherence to local municipal building byelaws',
+      maintenanceLevel: 'Good',
+      setbackFront: '',
+      setbackBack: '',
+      setbackSides: '',
+      adherenceSanction: '',
 
       // Policy Checks
-      checkAge45: 'No (Property age is ~10 years)',
-      checkDevelopment30: 'No (Area development is ~80%)',
-      checkAreaMismatch20: 'No (Document area matches physical possession at site)',
-      checkValuerSelfie: 'Yes (Attached in report annexure)',
-      checkRoadUnder5Ft: 'No (Road width is 40 ft)',
-      checkDirectAccess: 'Yes, direct approach from 40ft main road',
+      checkAge45: 'No',
+      checkDevelopment30: 'No',
+      checkAreaMismatch20: 'No',
+      checkValuerSelfie: 'Yes',
+      checkRoadUnder5Ft: 'No',
+      checkDirectAccess: 'Yes',
 
       // Valuation
-      dlcRate: '6887',
-      marketLandRate: '15000',
-      constructionRate: '2200',
-      marketValue: '43585400',
-      distressValue: '34868320',
-      conservativeValue: '39226860',
-      insurableValue: '7660400',
-      priceConfirmFrom: 'Local dealers, shop owners and sub-registrar guideline rates',
-      dealerContact: 'M/s Sharma Estates, Rourkela',
-      marketabilityRating: 'Good (Prime location near Verma Eye Hospital)',
+      dlcRate: '',
+      marketLandRate: '',
+      constructionRate: '',
+      marketValue: '',
+      distressValue: '',
+      conservativeValue: '',
+      insurableValue: '',
+      priceConfirmFrom: '',
+      dealerContact: '',
+      marketabilityRating: 'Good',
 
       // Coordinates
-      latitude: '22.227415',
-      longitude: '84.853612',
+      latitude: p.latitude || '',
+      longitude: p.longitude || '',
 
       // Attachments
       documentImages: [],
@@ -435,36 +437,19 @@ export default function AUSmallFinanceBank({
   return (
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        {/* Title Card */}
-        <BankReportTitleCard
-          bankName="AU Small Finance Bank"
-          subclass="Standard / Retail & SME Mortgages"
-          title="Valuation Report Builder"
-          description="Comprehensive retail mortgages, SME lending, and commercial valuation format for AU Small Finance Bank."
-          earliestVisit={earliestVisit}
-          projectCode={projectCode}
-        />
-
-        {/* Active Config Banner */}
-        <ActiveConfigBanner
+        {/* Standardized Universal Bank Report Header */}
+        <BankReportHeader
           clientType="organisation"
           bankName="AU SMALL FINANCE BANK"
           subclass="Standard / Retail & SME Mortgages"
           onResetWizard={onResetWizard}
-          sticky={false}
+          title="Valuation Report Builder"
+          description="Comprehensive retail mortgages, SME lending, and commercial valuation format for AU Small Finance Bank."
+          earliestVisit={earliestVisit}
+          projectCode={projectCode}
+          status={status}
+          message={message}
         />
-
-        {message && (
-          <div
-            className={`p-4 rounded-xl border text-sm font-medium ${
-              message.type === 'success'
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                : 'bg-rose-50 border-rose-200 text-rose-800'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
 
         {/* ══════════════════════════════════════════
             SECTION 1: ASSIGNMENT & CUSTOMER DETAILS

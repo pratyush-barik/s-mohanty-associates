@@ -7,15 +7,17 @@
   3. `Bank of Maharashtra`
   4. `Bank of India`
 
-### 1. Mandatory & Uniform Title Card (`BankReportTitleCard`)
-- Every single bank report builder (all custom bank builders AND delegating builders via `BankReportBuilder.tsx`) MUST render `BankReportTitleCard`.
-- It must be placed directly beneath `ActiveConfigBanner` and display:
-  - `bankName`: Bank / Institution name (e.g. `Shriram Finance Ltd`, `Purple Finance Ltd`)
-  - `subclass`: Format subclass or `'Standard Format'`
-  - `title`: `'Valuation Report Builder'`
-  - `description`: Bank-specific format description
-  - `earliestVisit`: Calculated via `getEarliestFieldVisit(bucketImages, prefill)`
-  - `projectCode`: Current project code
+### 1. Mandatory & Universal `<BankReportHeader />`
+- Every single bank report builder (all 44 custom bank builders AND delegating builders via `BankReportBuilder.tsx`) MUST adopt the universal `<BankReportHeader />` component from `BaseBankReportComponents.tsx`:
+  1. `<BankReportHeader />` replaces legacy separate `ActiveConfigBanner` + `BankReportTitleCard` + inspection date sync banners.
+  2. Renders unified Active Configuration banner with Change Parameters button (`onResetWizard`).
+  3. Displays Bank name, subclass badge, description, Project Code, and Field Visit Date Badge.
+  4. Houses integrated "Sync Inspection Date" action whenever site inspection visits are detected.
+  5. Rework Banner (if `fields.reworkNotes && status === 'REPORT_DRAFTING'`)
+  6. Toast Message Banner (if `message` is present)
+  7. Section 1..N (Unbroken continuous sequence)
+- **STRICT NO AD-HOC HEADERS RULE**: Never render any ad-hoc secondary header card, standalone box, or custom `<h2>... Valuation Report</h2>` block above Section 1. All report metadata (`Ref. No`, `Report Date`, `Date of Valuation`) must reside cleanly inside Section 1.
+- **BANK-ONLY INVARIANT**: This header component is EXCLUSIVELY for Bank & FIS report builders. Never add `BankReportHeader` to General, IBBI-IVS, or Income Tax report builders.
 - Title cards must be identical in visual hierarchy, typography, amber pill styling, and badge presentation across every single builder.
 
 ### 2. Section Navigator (Navbar) Invariants
@@ -78,4 +80,28 @@
   - `BaseDocumentsSection`: Document gallery with upload, preview, and verification checklist.
   - `BaseMapsSection`: Route map, layout plan, mouza map, and site sketch with GPS coordinate tags.
   - `BasePhotographsSection`: Photo grid with category bucket picker (`Front Elevation`, `Interior`, `Surrounding Road`, `Boundary`, etc.) and caption inputs.
+
+### 8. Zero Hardcoded Mock Client Data & Nullable Fields Invariant
+- **CRITICAL DISTINCTION: Client Data vs. Structural Defaults**:
+  - **1. CASE-SPECIFIC CLIENT DATA (MUST BE NULLABLE / DEFAULT STRICTLY TO `''` OR DYNAMIC PREFILL)**:
+    - **Entity Names**: Applicant, Borrower, Co-Applicant, Owner, Builder, Seller, Purchaser, Person Met at site, Visiting Engineer, Inspected By. Strictly default to `p.applicantName || p.contactName || ''` or `''`. NEVER hardcode sample names (e.g. `'C&B Ecogen Pvt Ltd'`, `'Sanjay Kumar Roy'`, `'Deepak Bhoi'`, `'Mr. Mantu Das'`).
+    - **Contact Numbers**: Customer phone or mobile numbers. Fallback strictly to `p.contactPhone || ''`. NEVER hardcode sample personal numbers.
+    - **Case Identifiers**: Application No, Loan No, Deal No, Khata No, Plot No, Dag No, Patta No, Survey No, Electric Meter No. Leave blank (`''`) for field engineer entry.
+    - **Specific Dates**: Never hardcode static visit, inspection, or report dates (e.g. `'27.11.2024'`, `'10.08.2026'`, `'18/06/2026'`). Must dynamically derive from `earliestVisit ? formatReportDate(earliestVisit.date) : ''` or empty string.
+    - **Specific Landmarks & Distances**: Specific railway station distances, bus stop distances, city center distances, and case landmarks (e.g. `'Near Gayatri Enclave'`, `'1Km (Patia Railway station)'`). Fallback strictly to `p.nearestLandmark || ''` or `''`.
+    - **Valuation Figures & Areas**: Plot areas, BUA, carpet areas, land rates, construction rates, market values, and distress values must NEVER have static sample values (e.g. `'1159'`, `'4007'`, `'8466080'`). Leave blank (`''` or `0`) for dynamic auto-calculation.
+    - **Boundaries at Site**: Site boundaries (`boundaryEastSite`, `boundaryWestSite`, etc.) must default to dynamic prefill `p.boundaryEast || ''` or `''`, never static descriptions like `'Others building'`, `'Road'`.
+  - **2. ACCEPTABLE DEFAULTS (CAN HAVE CATEGORICAL DEFAULTS)**:
+    - **Qualitative & Structural Specs**: Universal ratings (`'Good'`, `'Average'`, `'Satisfactory'`), structural types (`'RCC'`, `'RCC Framed Structure'`), tenure (`'Freehold'`), occupancy (`'Occupied'`, `'Vacant'`), locality classes (`'Middle Class'`, `'Developed'`), and Boolean options (`'Yes'`, `'No'`).
+    - **Non-applicable Placeholders**: Universal `'NA'`, `'N.A.'`, `'Nil'` for unapplicable sub-clauses.
+    - **Authorized Agency Sign-off Info**: Valuer agency firm details (M/s S. Mohanty Associates, Er. Satyajit Mohanty, official office landline `06742381145` / mobile `9937023855`, valuer code `SMA/11-25/01`, official email `Smohantyassociates@gmail.com`) are agency sign-offs, NOT mock customer data.
+- **Type-Safe Prefill Reading**:
+  - `BankReportBuilderProps['prefill']` has limited base typing. Always cast `prefill` safely in state initializers:
+    ```typescript
+    const p = (prefill || {}) as any;
+    ```
+- **PDF Renderer Fallbacks**:
+  - `this.getF(key, defaultVal)` in bank PDF renderers must default to empty string `''` for all client-specific data, never hardcoded customer names, static dates, or sample financial figures.
+
+
 

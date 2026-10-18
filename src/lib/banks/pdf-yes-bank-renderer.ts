@@ -474,7 +474,7 @@ export class PDFYesBankRenderer extends PDFBankRenderer {
     this.advanceCursor(12);
 
     this.drawKeyValueRow([
-      { label: 'For : M/s. S Mohanty Associates\n\nSign & Stamp', value: `Date: ${this.getF('reportDate', '18/06/2026')}   Place: ${this.getF('place', 'Bhubaneswar')}`, labelWidth: halfW, valueWidth: halfW, labelBold: true },
+      { label: 'For : M/s. S Mohanty Associates\n\nSign & Stamp', value: `Date: ${this.getF('reportDate', '')}   Place: ${this.getF('place', 'Bhubaneswar')}`, labelWidth: halfW, valueWidth: halfW, labelBold: true },
     ]);
 
     // Attachments

@@ -230,7 +230,7 @@ export class PDFMahindraFinanceRenderer extends PDFBankRenderer {
     this.drawMahindraRow('14', 'Sanctioned plans verified with approval no', this.getF('sanctionApprovalNo', 'Plan not provided'));
     this.drawMahindraRow('15', 'Ownership type (Leasehold/ Freehold)', this.getF('ownershipType', 'Freehold'));
     this.drawMahindraRow('16', 'Property documents verified', this.getF('documentsVerified', 'Copy of Sale deed, ROR & Sketch map'));
-    this.drawMahindraRow('17', 'Is the property within Municipal Limits', this.getF('municipalLimits', 'Within Mutarifa GP limit'));
+    this.drawMahindraRow('17', 'Is the property within Municipal Limits', this.getF('municipalLimits', 'Yes'));
     this.drawMahindraRow('18', 'Permissible usage allow as per master plan', this.getF('permissibleUsageMasterPlan', 'NA'));
 
     // 19. Setbacks Table

@@ -67,7 +67,7 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: 'Legal Address:', value: this.getF('legalAddress', ''), labelWidth: 90, valueWidth: 220 },
-      { label: `City: ${this.getF('city', 'Bhubaneswar')}\nState: ${this.getF('state', 'Odisha')}\nPincode: ${this.getF('pincode', '751024')}\nLandmark: ${this.getF('landmark', '')}\nProject: ${this.getF('projectName', 'NA')}`, value: '', labelWidth: CONTENT_W - 310, valueWidth: 0 },
+      { label: `City: ${this.getF('city', 'Bhubaneswar')}\nState: ${this.getF('state', 'Odisha')}\nPincode: ${this.getF('pincode', '')}\nLandmark: ${this.getF('landmark', '')}\nProject: ${this.getF('projectName', 'NA')}`, value: '', labelWidth: CONTENT_W - 310, valueWidth: 0 },
     ]);
 
     // Boundary Schedule
@@ -112,8 +112,8 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
     ]);
 
     const docs = [
-      { name: 'Lease cum Sale deed', auth: this.getF('docDeedAuth', 'Registering officer'), date: this.getF('docDeedDate', '21-Jan-02'), ref: this.getF('docDeedRef', 'NA') },
-      { name: 'Approved Plan', auth: this.getF('docPlanAuth', 'BDA, Bhubaneswar'), date: this.getF('docPlanDate', '25-Jan-19'), ref: this.getF('docPlanRef', '2282') },
+      { name: 'Lease cum Sale deed', auth: this.getF('docDeedAuth', 'Registering officer'), date: this.getF('docDeedDate', 'NA'), ref: this.getF('docDeedRef', 'NA') },
+      { name: 'Approved Plan', auth: this.getF('docPlanAuth', 'NA'), date: this.getF('docPlanDate', 'NA'), ref: this.getF('docPlanRef', 'NA') },
       { name: 'Occupancy certificate', auth: this.getF('docOccAuth', 'NA'), date: this.getF('docOccDate', 'NA'), ref: this.getF('docOccRef', 'NA') },
     ];
     docs.forEach(d => {
@@ -146,12 +146,12 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
     // ==========================================
     this.drawSectionHeader('V. PROPERTY SPECIFICATIONS');
     this.drawLTRow('Approved use:', this.getF('approvedUse', 'Residential'), 'Property type:', this.getF('propertyType', 'Row House'));
-    this.drawLTRow('Structure type:', this.getF('structureType', 'RCC'), 'No. of Floors:', this.getF('noOfFloors', '3(G+2) (As per Actual), 2(G+1) (As per Plan)'));
-    this.drawLTRow('Property holding:', this.getF('propertyHolding', 'Freehold'), 'Property Residual Age:', `${this.getF('residualAge', '49')} Years`);
-    this.drawLTRow('Property Age:', `${this.getF('propertyAge', '11')} Years`, 'Floor No.:', this.getF('floorNo', '3'));
+    this.drawLTRow('Structure type:', this.getF('structureType', 'RCC'), 'No. of Floors:', this.getF('noOfFloors', 'NA'));
+    this.drawLTRow('Property holding:', this.getF('propertyHolding', 'Freehold'), 'Property Residual Age:', this.getF('residualAge', '') ? `${this.getF('residualAge')} Years` : 'NA');
+    this.drawLTRow('Property Age:', this.getF('propertyAge', '') ? `${this.getF('propertyAge')} Years` : 'NA', 'Floor No.:', this.getF('floorNo', 'NA'));
     this.drawLTRow('Building Structure:', this.getF('buildingStructure', 'RCC'), 'No. of Lifts:', this.getF('noOfLifts', 'NA'));
     this.drawLTRow('No. of wings:', this.getF('noOfWings', 'NA'), 'External Appearance:', this.getF('externalAppearance', 'Good'));
-    this.drawLTRow('Maintenance:', this.getF('maintenance', 'Excellent'), '', '');
+    this.drawLTRow('Maintenance:', this.getF('maintenance', 'Good'), '', '');
 
     // Configuration Schedule
     this.drawSectionHeader('Configuration Schedule :');
@@ -166,9 +166,9 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
     ]);
 
     const configs = [
-      { flr: 'GF', bed: this.getF('cfgGfBed', '3'), kit: this.getF('cfgGfKit', '1'), hall: this.getF('cfgGfHall', '1'), bath: this.getF('cfgGfBath', '1'), rem: this.getF('cfgGfRem', 'Garage') },
-      { flr: 'FF', bed: this.getF('cfgFfBed', '3'), kit: this.getF('cfgFfKit', '1'), hall: this.getF('cfgFfHall', '1'), bath: this.getF('cfgFfBath', '1'), rem: this.getF('cfgFfRem', 'Balcony') },
-      { flr: 'SF', bed: this.getF('cfgSfBed', '1'), kit: this.getF('cfgSfKit', ''), hall: this.getF('cfgSfHall', ''), bath: this.getF('cfgSfBath', ''), rem: this.getF('cfgSfRem', '') },
+      { flr: 'GF', bed: this.getF('cfgGfBed', ''), kit: this.getF('cfgGfKit', ''), hall: this.getF('cfgGfHall', ''), bath: this.getF('cfgGfBath', ''), rem: this.getF('cfgGfRem', '') },
+      { flr: 'FF', bed: this.getF('cfgFfBed', ''), kit: this.getF('cfgFfKit', ''), hall: this.getF('cfgFfHall', ''), bath: this.getF('cfgFfBath', ''), rem: this.getF('cfgFfRem', '') },
+      { flr: 'SF', bed: this.getF('cfgSfBed', ''), kit: this.getF('cfgSfKit', ''), hall: this.getF('cfgSfHall', ''), bath: this.getF('cfgSfBath', ''), rem: this.getF('cfgSfRem', '') },
     ];
     configs.forEach(c => {
       this.drawKeyValueRow([
@@ -187,11 +187,11 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
     // VI. ADDITIONAL DUE DILIGENCE & OCCUPANCY
     // ==========================================
     this.drawSectionHeader('VI. ADDITIONAL DUE DILIGENCE');
-    this.drawLTRow('Name of FPR met at site:', this.getF('fprName', 'Customer Prabuddha Das'), 'Relationship with Applicant:', this.getF('fprRelation', 'Customer'));
-    this.drawLTRow('Contact Number:', this.getF('fprContact', '9861080254'), 'KYC Reference:', this.getF('fprKyc', 'Aadhar'));
+    this.drawLTRow('Name of FPR met at site:', this.getF('fprName', ''), 'Relationship with Applicant:', this.getF('fprRelation', ''));
+    this.drawLTRow('Contact Number:', this.getF('fprContact', ''), 'KYC Reference:', this.getF('fprKyc', 'Aadhar'));
     this.drawLTRow('Society board verified:', this.getF('societyBoardVerified', 'NA'), 'Owner name matching:', this.getF('ownerNameMatching', 'NA'));
     this.drawLTRow('Discrepancies if any:', this.getF('discrepancies', 'No'), 'Occupancy status:', this.getF('occupancyStatus', 'Occupied'));
-    this.drawLTRow('Occupied by:', this.getF('occupiedBy', 'Self occupied'), 'Residing since:', `${this.getF('residingSince', '11')} Years`);
+    this.drawLTRow('Occupied by:', this.getF('occupiedBy', 'Self occupied'), 'Residing since:', this.getF('residingSince', '') ? `${this.getF('residingSince')} Years` : 'NA');
 
     this.advanceCursor(4);
 
@@ -229,15 +229,15 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
 
     // Measured BUA
     this.drawKeyValueRow([
-      { label: '', value: `Built up Area Measured (${this.getF('measuredBuaDesc', 'G+2 RCC GF & FF, Shed SF')})`, labelWidth: 0, valueWidth: vColW[0] },
-      { label: '', value: this.getF('measuredBuaSqft', '3462'), labelWidth: 0, valueWidth: vColW[1] },
+      { label: '', value: `Built up Area Measured (${this.getF('measuredBuaDesc', 'As per site')})`, labelWidth: 0, valueWidth: vColW[0] },
+      { label: '', value: this.getF('measuredBuaSqft', '0'), labelWidth: 0, valueWidth: vColW[1] },
       { label: '', value: '-', labelWidth: 0, valueWidth: vColW[2] },
       { label: '', value: '-', labelWidth: 0, valueWidth: vColW[3] },
     ]);
 
     // Plan BUA
     this.drawKeyValueRow([
-      { label: '', value: `Built up Area as per Plan (${this.getF('planBuaDesc', 'G+1 RCC GF-1332sqft, FF-1332sqft')})`, labelWidth: 0, valueWidth: vColW[0], valueBold: true },
+      { label: '', value: `Built up Area as per Plan (${this.getF('planBuaDesc', 'As per plan')})`, labelWidth: 0, valueWidth: vColW[0], valueBold: true },
       { label: '', value: String(bldgPlanBua), labelWidth: 0, valueWidth: vColW[1] },
       { label: '', value: formatIndianCurrency(bldgRate), labelWidth: 0, valueWidth: vColW[2] },
       { label: '', value: formatIndianCurrency(bldgVal), labelWidth: 0, valueWidth: vColW[3], valueBold: true },
@@ -281,9 +281,9 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
     // X & XI. COORDINATES & SIGN-OFF
     // ==========================================
     this.drawSectionHeader('X. COORDINATES & XI. INSPECTION DETAILS');
-    this.drawLTRow('Latitude:', this.getF('latitude', '20.352472'), 'Longitude:', this.getF('longitude', '85.837694'));
-    this.drawLTRow('Date of Visit:', this.getF('dateOfVisit', '26 March 2026'), 'Visited by:', this.getF('visitedBy', 'Er. Satyajit Mohanty'));
-    this.drawLTRow('Date of Report:', this.getF('dateOfReport', '27 March 2026'), 'Approved by:', this.getF('approvedBy', 'NA'));
+    this.drawLTRow('Latitude:', this.getF('latitude', ''), 'Longitude:', this.getF('longitude', ''));
+    this.drawLTRow('Date of Visit:', this.getF('dateOfVisit', ''), 'Visited by:', this.getF('visitedBy', 'Er. Satyajit Mohanty'));
+    this.drawLTRow('Date of Report:', this.getF('dateOfReport', ''), 'Approved by:', this.getF('approvedBy', 'NA'));
 
     this.advanceCursor(4);
 
@@ -292,10 +292,10 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
     // ==========================================
     this.drawSectionHeader('Requirement Details in Report Format :');
     const reqs = [
-      '1. Setback as per measured / Permissible Bye Laws / Sanctioned Plan: ' + this.getF('reqSetbacks', 'As per site front 5ft, rear 3ft, left 3ft, right 3ft'),
+      '1. Setback as per measured / Permissible Bye Laws / Sanctioned Plan: ' + this.getF('reqSetbacks', 'NA'),
       '2. Setback Deviation: ' + this.getF('reqSetbackDeviation', 'NIL / Minor within permissible limits'),
-      '3. Each Floor BUA as per Measured / Bye Laws / Plan: ' + this.getF('reqFloorBua', 'GF-1332sqft, FF-1332sqft (Plan) | GF-1731sqft, FF-1731sqft (Site)'),
-      '4. Extra Coverage Area on each Floor / Deviation: ' + this.getF('reqExtraCoverage', 'Extra coverage of 399sqft on GF & FF'),
+      '3. Each Floor BUA as per Measured / Bye Laws / Plan: ' + this.getF('reqFloorBua', 'NA'),
+      '4. Extra Coverage Area on each Floor / Deviation: ' + this.getF('reqExtraCoverage', 'NA'),
       '5. Property Address as per Site / Documents: ' + this.getF('reqAddressCheck', 'Matching with physical boundaries at site'),
       '6. Property Boundaries Mismatch: ' + this.getF('reqBoundariesMismatch', 'No (Mismatch: NA)'),
     ];
@@ -308,7 +308,7 @@ export class PDFLTFinancialServicesRenderer extends PDFBankRenderer {
     this.advanceCursor(12);
 
     this.drawKeyValueRow([
-      { label: `Date: ${this.getF('dateOfReport', '27 March 2026')}`, value: '', labelWidth: halfW, valueWidth: 0, labelBold: true },
+      { label: `Date: ${this.getF('dateOfReport', '')}`, value: '', labelWidth: halfW, valueWidth: 0, labelBold: true },
       { label: 'SIGNATURE OF THE VALUER\n(M/s. S MOHANTY ASSOCIATES)', value: '', labelWidth: halfW, valueWidth: 0, labelBold: true },
     ]);
 

@@ -61,17 +61,17 @@ export class PDFSMFGIndiaFullertonRenderer extends PDFBankRenderer {
 
     const halfW = CONTENT_W / 2;
     this.drawKeyValueRow([
-      { label: 'PROPERTY OWNER:', value: this.getF('propertyOwner', 'Biswajit Mishra, S/O-Kailash Chandra Mishra'), labelWidth: 140, valueWidth: halfW - 140, labelBold: true, bold: true },
+      { label: 'PROPERTY OWNER:', value: this.getF('propertyOwner', ''), labelWidth: 140, valueWidth: halfW - 140, labelBold: true, bold: true },
       { label: 'PURPOSE OF VALUATION:', value: this.getF('purposeOfValuation', 'FAIR MARKET VALUE OF COLLATERAL SECURITY'), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'ADDRESS OF PROPERTY:', value: this.getF('addressAtSite', 'Khata No-521/4110, Plot No-1124/4159, (AC.0.092Decs, Homestead), Mouza-Balukhanda, Tahasil-Puri, PS-Puri Sadar, Dist-Puri, Odisha, Pin-752004'), labelWidth: 140, valueWidth: CONTENT_W - 140, labelBold: true },
+      { label: 'ADDRESS OF PROPERTY:', value: this.getF('addressAtSite', ''), labelWidth: 140, valueWidth: CONTENT_W - 140, labelBold: true },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'PRESENT MARKET VALUE:', value: `Rs. ${formatIndianCurrency(this.getF('marketValue', '10582600'))}/-`, labelWidth: 160, valueWidth: halfW - 160, labelBold: true, bold: true },
-      { label: 'DISTRESS SALE VALUE:', value: `Rs. ${formatIndianCurrency(this.getF('distressValue', '8466080'))}/-`, labelWidth: 150, valueWidth: halfW - 150, labelBold: true, bold: true },
+      { label: 'PRESENT MARKET VALUE:', value: this.getF('marketValue', '') ? `Rs. ${formatIndianCurrency(this.getF('marketValue', ''))}/-` : '', labelWidth: 160, valueWidth: halfW - 160, labelBold: true, bold: true },
+      { label: 'DISTRESS SALE VALUE:', value: this.getF('distressValue', '') ? `Rs. ${formatIndianCurrency(this.getF('distressValue', ''))}/-` : '', labelWidth: 150, valueWidth: halfW - 150, labelBold: true, bold: true },
     ]);
 
     this.advanceCursor(4);
@@ -80,25 +80,25 @@ export class PDFSMFGIndiaFullertonRenderer extends PDFBankRenderer {
 
     // Meta Header Grid
     this.drawKeyValueRow([
-      { label: 'Ref:', value: this.getF('refNo', this.projectCode || '9793169'), labelWidth: 60, valueWidth: halfW - 60, labelBold: true },
+      { label: 'Ref:', value: this.getF('refNo', this.projectCode || ''), labelWidth: 60, valueWidth: halfW - 60, labelBold: true },
       { label: 'Valuer Name:', value: this.getF('valuerName', 'M/s. S MOHANTY ASSOCIATES'), labelWidth: 90, valueWidth: halfW - 90, labelBold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'Deal No:', value: this.getF('dealNo', 'VAL/FEB/2026/03'), labelWidth: 60, valueWidth: halfW - 60, labelBold: true },
-      { label: 'Branch Name:', value: this.getF('branchName', 'SMFG Odisha'), labelWidth: 90, valueWidth: halfW - 90, labelBold: true },
+      { label: 'Deal No:', value: this.getF('dealNo', ''), labelWidth: 60, valueWidth: halfW - 60, labelBold: true },
+      { label: 'Branch Name:', value: this.getF('branchName', ''), labelWidth: 90, valueWidth: halfW - 90, labelBold: true },
     ]);
     this.drawKeyValueRow([
       { label: 'Type of Case:', value: this.getF('typeOfCase', 'Mass LAP'), labelWidth: 80, valueWidth: halfW - 80, labelBold: true },
-      { label: 'Date of Visit:', value: this.getF('dateOfVisit', '07/02/2026'), labelWidth: 80, valueWidth: halfW - 80, labelBold: true },
+      { label: 'Date of Visit:', value: this.getF('dateOfVisit', ''), labelWidth: 80, valueWidth: halfW - 80, labelBold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'Date of Initiate:', value: this.getF('dateOfInitiate', '05/02/2025'), labelWidth: 90, valueWidth: halfW - 90, labelBold: true },
-      { label: 'Date of Report:', value: this.getF('dateOfReport', '09/02/2026'), labelWidth: 90, valueWidth: halfW - 90, labelBold: true },
+      { label: 'Date of Initiate:', value: this.getF('dateOfInitiate', ''), labelWidth: 90, valueWidth: halfW - 90, labelBold: true },
+      { label: 'Date of Report:', value: this.getF('dateOfReport', ''), labelWidth: 90, valueWidth: halfW - 90, labelBold: true },
     ]);
     this.drawKeyValueRow([
       {
         label: 'Contacted Person at site (ID proof details):',
-        value: this.getF('contactPerson', 'Biswajit Mishra, Mob:- 9437254704 / 9438252283'),
+        value: this.getF('contactPerson', ''),
         labelWidth: 260,
         valueWidth: CONTENT_W - 260,
         labelBold: true,
@@ -111,7 +111,7 @@ export class PDFSMFGIndiaFullertonRenderer extends PDFBankRenderer {
     // 1. APPLICATION & APPLICANT DETAILS
     // ══════════════════════════════════════════
     this.drawSMFGHeader('1. APPLICATION & APPLICANT DETAILS');
-    this.drawSMFGRow('1.', "Name/s of the applicant/s", this.getF('applicantName', 'ARPITA TOUR AND TRAVELS'), true);
+    this.drawSMFGRow('1.', "Name/s of the applicant/s", this.getF('applicantName', ''), true);
 
     this.drawKeyValueRow([
       { label: '2.', value: '', labelWidth: 24, valueWidth: 0, labelBold: true },
@@ -119,9 +119,9 @@ export class PDFSMFGIndiaFullertonRenderer extends PDFBankRenderer {
       { label: 'Current Usage', value: this.getF('currentUsage', 'Residential'), labelWidth: 90, valueWidth: halfW - 90, bold: true },
     ]);
 
-    this.drawSMFGRow('3.', 'Address as per firing', this.getF('addressAsPerFiring', 'Khata No-521/4110, Plot No-1124/4159, (AC.0.092Decs, Homestead), Mouza-Balukhanda, Tahasil-Puri, PS-Puri Sadar, Dist-Puri, Odisha, Pin-752004'));
-    this.drawSMFGRow('', 'Address at site', this.getF('addressAtSite', 'Khata No-521/4110, Plot No-1124/4159, (AC.0.092Decs, Homestead), Mouza-Balukhanda, Tahasil-Puri, PS-Puri Sadar, Dist-Puri, Odisha, Pin-752004'));
-    this.drawSMFGRow('', 'Address as per document', this.getF('addressAsPerDocument', 'Khata No-521/4110, Plot No-1124/4159, (AC.0.092Decs, Homestead), Mouza-Balukhanda, Tahasil-Puri, PS-Puri Sadar, Dist-Puri, Odisha, Pin-752004'));
+    this.drawSMFGRow('3.', 'Address as per firing', this.getF('addressAsPerFiring', ''));
+    this.drawSMFGRow('', 'Address at site', this.getF('addressAtSite', ''));
+    this.drawSMFGRow('', 'Address as per document', this.getF('addressAsPerDocument', ''));
     this.drawSMFGRow('4.', 'Has valuator done valuation of this property before this?', this.getF('previousValuation', 'No'));
 
     // ══════════════════════════════════════════
@@ -147,9 +147,9 @@ export class PDFSMFGIndiaFullertonRenderer extends PDFBankRenderer {
       { label: 'SOUTH', value: '', labelWidth: colBndW, valueWidth: 0, labelBold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'As per Documents', value: this.getF('boundaryEastDoc', 'Maheswar Baral'), labelWidth: 120, valueWidth: colBndW },
-      { label: this.getF('boundaryWestDoc', 'Keshab Pradhan'), value: this.getF('boundaryNorthDoc', '20-ft wide Road'), labelWidth: colBndW, valueWidth: colBndW },
-      { label: this.getF('boundarySouthDoc', 'Hata Pradhan'), value: '', labelWidth: colBndW, valueWidth: 0 },
+      { label: 'As per Documents', value: this.getF('boundaryEastDoc', ''), labelWidth: 120, valueWidth: colBndW },
+      { label: this.getF('boundaryWestDoc', ''), value: this.getF('boundaryNorthDoc', '20-ft wide Road'), labelWidth: colBndW, valueWidth: colBndW },
+      { label: this.getF('boundarySouthDoc', ''), value: '', labelWidth: colBndW, valueWidth: 0 },
     ]);
     this.drawKeyValueRow([
       { label: 'As per Sketch map', value: this.getF('boundaryEastSketch', 'NA'), labelWidth: 120, valueWidth: colBndW },
@@ -165,20 +165,20 @@ export class PDFSMFGIndiaFullertonRenderer extends PDFBankRenderer {
 
     this.drawSMFGRow('12.', 'Occupant Details: Vacant/Occupied/Tenant', this.getF('occupancyStatus', 'Occupied'));
     this.drawSMFGRow('', 'Name of Occupant & Relation with applicant', `${this.getF('occupantName', 'Self occupied')} (${this.getF('occupantRelation', 'Customer')})`);
-    this.drawSMFGRow('13.', 'Property Demarcation & Identified Through', `Demarcated: ${this.getF('propertyDemarcation', 'Yes')} | Identified via: ${this.getF('identifiedThrough', 'Customer (Biswajit Mishra)')}`);
+    this.drawSMFGRow('13.', 'Property Demarcation & Identified Through', `Demarcated: ${this.getF('propertyDemarcation', 'Yes')} | Identified via: ${this.getF('identifiedThrough', 'Customer')}`);
 
     // ══════════════════════════════════════════
     // 4. BUILDING & LOCALITY SPECIFICATIONS
     // ══════════════════════════════════════════
     this.drawSMFGHeader('4. BUILDING & LOCALITY SPECIFICATIONS');
-    this.drawSMFGRow('13.', 'Structure Type, Floors & Plot Area', `Structure: ${this.getF('structureType', 'RCC')} | Floors: ${this.getF('noOfFloors', 'GF')} | Plot Area: ${this.getF('plotArea', '4007sqft')}`, true);
-    this.drawSMFGRow('14.', 'Unit Details: Rooms, BUA, Carpet Area', `Rooms: ${this.getF('unitRooms', 'GF:- 3-Room, 1-Toilets, 1-Hall, 1-Kitchen')} | Carpet: ${this.getF('carpetArea', '1212sqft')}`);
+    this.drawSMFGRow('13.', 'Structure Type, Floors & Plot Area', `Structure: ${this.getF('structureType', 'RCC')} | Floors: ${this.getF('noOfFloors', '')} | Plot Area: ${this.getF('plotArea', '') ? this.getF('plotArea', '') + ' sqft' : ''}`, true);
+    this.drawSMFGRow('14.', 'Unit Details: Rooms, BUA, Carpet Area', `Rooms: ${this.getF('unitRooms', '')} | Carpet: ${this.getF('carpetArea', '') ? this.getF('carpetArea', '') + ' sqft' : ''}`);
     this.drawSMFGRow('15.', 'Quality of Construction (Interiors & Exteriors)', this.getF('constructionQuality', 'Good'));
-    this.drawSMFGRow('16.', 'Age of Property, Location Class & Proximity', `Age: ${this.getF('propertyAge', '7-Years')} | Locality: ${this.getF('localityClass', 'Middle class')} | Proximity: ${this.getF('proximityAmenities', 'Within 1-2Kms')}`);
-    this.drawSMFGRow('17.', 'Close Vicinity / Landmark', this.getF('landmark', 'Near Bharat Petroleum Petrol Pump (CNG), Pujapanda Filling Station, Balukhanda'));
-    this.drawSMFGRow('18.', 'Within Municipal Limits / GP', this.getF('municipalLimits', 'No (Baliguali GP limit)'));
-    this.drawSMFGRow('19.', 'Site Access & Basic Amenities', `Road: ${this.getF('siteAccessRoad', '20-Feet Wide Road')} | Basic Amenities: ${this.getF('basicAmenitiesAvailable', 'Yes')}`);
-    this.drawSMFGRow('20.', 'Marketability & Meter No', `Marketability: ${this.getF('marketability', 'Good')} | Meter No: ${this.getF('electricityMeterNo', 'Not seen')}`);
+    this.drawSMFGRow('16.', 'Age of Property, Location Class & Proximity', `Age: ${this.getF('propertyAge', '')} | Locality: ${this.getF('localityClass', 'Middle class')} | Proximity: ${this.getF('proximityAmenities', '')}`);
+    this.drawSMFGRow('17.', 'Close Vicinity / Landmark', this.getF('landmark', ''));
+    this.drawSMFGRow('18.', 'Within Municipal Limits / GP', this.getF('municipalLimits', ''));
+    this.drawSMFGRow('19.', 'Site Access & Basic Amenities', `Road: ${this.getF('siteAccessRoad', '')} | Basic Amenities: ${this.getF('basicAmenitiesAvailable', 'Yes')}`);
+    this.drawSMFGRow('20.', 'Marketability & Meter No', `Marketability: ${this.getF('marketability', 'Good')} | Meter No: ${this.getF('electricityMeterNo', '')}`);
 
     // ══════════════════════════════════════════
     // 5. FLOOR WISE AREA TABLE
@@ -192,10 +192,10 @@ export class PDFSMFGIndiaFullertonRenderer extends PDFBankRenderer {
     ]);
     this.drawKeyValueRow([
       { label: 'Actual BUA', value: this.getF('actualBuaBase', 'NA'), labelWidth: colFloorW, valueWidth: colFloorW },
-      { label: this.getF('actualBuaStilt', 'NA'), value: this.getF('actualBuaGround', '1427sqft'), labelWidth: colFloorW, valueWidth: colFloorW, bold: true },
+      { label: this.getF('actualBuaStilt', 'NA'), value: this.getF('actualBuaGround', ''), labelWidth: colFloorW, valueWidth: colFloorW, bold: true },
       { label: this.getF('actualBuaFirst', 'NA'), value: this.getF('actualBuaSecond', 'NA'), labelWidth: colFloorW, valueWidth: colFloorW },
     ]);
-    this.drawSMFGRow('', 'Total Actual Measured BUA (GF)', this.getF('totalActualBua', '1427sqft'), true);
+    this.drawSMFGRow('', 'Total Actual Measured BUA (GF)', this.getF('totalActualBua', ''), true);
 
     // ══════════════════════════════════════════
     // 6. VALUATION & RATES
@@ -207,24 +207,24 @@ export class PDFSMFGIndiaFullertonRenderer extends PDFBankRenderer {
       { label: 'Rate (in Rs.)', value: 'Amount (in Rs.)', labelWidth: colValW, valueWidth: colValW, labelBold: true, bold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'Land (As per Sale deed)', value: `${this.getF('landArea', '4007')} sqft`, labelWidth: colValW, valueWidth: colValW, bold: true },
-      { label: `Rs. ${this.getF('landRate', '2000')}/-`, value: `Rs. ${formatIndianCurrency(this.getF('landValue', '8014000'))}/-`, labelWidth: colValW, valueWidth: colValW, bold: true },
+      { label: 'Land (As per Sale deed)', value: this.getF('landArea', '') ? `${this.getF('landArea', '')} sqft` : '', labelWidth: colValW, valueWidth: colValW, bold: true },
+      { label: this.getF('landRate', '') ? `Rs. ${this.getF('landRate', '')}/-` : '', value: this.getF('landValue', '') ? `Rs. ${formatIndianCurrency(this.getF('landValue', ''))}/-` : '', labelWidth: colValW, valueWidth: colValW, bold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'Construction BUA (RCC GF)', value: `${this.getF('constArea', '1427')} sqft`, labelWidth: colValW, valueWidth: colValW, bold: true },
-      { label: `Rs. ${this.getF('constRate', '1800')}/-`, value: `Rs. ${formatIndianCurrency(this.getF('buildingValue', '2568600'))}/-`, labelWidth: colValW, valueWidth: colValW, bold: true },
+      { label: 'Construction BUA (RCC GF)', value: this.getF('constArea', '') ? `${this.getF('constArea', '')} sqft` : '', labelWidth: colValW, valueWidth: colValW, bold: true },
+      { label: this.getF('constRate', '') ? `Rs. ${this.getF('constRate', '')}/-` : '', value: this.getF('buildingValue', '') ? `Rs. ${formatIndianCurrency(this.getF('buildingValue', ''))}/-` : '', labelWidth: colValW, valueWidth: colValW, bold: true },
     ]);
-    this.drawSMFGRow('', 'Total Building Value (100% stage)', `Rs. ${formatIndianCurrency(this.getF('buildingValue', '2568600'))}/-`, true);
+    this.drawSMFGRow('', 'Total Building Value (100% stage)', this.getF('buildingValue', '') ? `Rs. ${formatIndianCurrency(this.getF('buildingValue', ''))}/-` : '', true);
 
     this.advanceCursor(2);
     this.drawKeyValueRow([
-      { label: 'Market Value of Property (Land + Building):', value: `Rs. ${formatIndianCurrency(this.getF('marketValue', '10582600'))}/-`, labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
+      { label: 'Market Value of Property (Land + Building):', value: this.getF('marketValue', '') ? `Rs. ${formatIndianCurrency(this.getF('marketValue', ''))}/-` : '', labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'Forced Sale / Distress Value (80%):', value: `Rs. ${formatIndianCurrency(this.getF('distressValue', '8466080'))}/-`, labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
+      { label: 'Forced Sale / Distress Value (80%):', value: this.getF('distressValue', '') ? `Rs. ${formatIndianCurrency(this.getF('distressValue', ''))}/-` : '', labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true, bold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'Govt. Circle Rate (in Rs.):', value: `Rs. ${this.getF('circleRate', '1377')}/-`, labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true },
+      { label: 'Govt. Circle Rate (in Rs.):', value: this.getF('circleRate', '') ? `Rs. ${this.getF('circleRate', '')}/-` : '', labelWidth: 280, valueWidth: CONTENT_W - 280, labelBold: true },
     ]);
 
     // Engineering & Structural Specifications
@@ -236,7 +236,7 @@ export class PDFSMFGIndiaFullertonRenderer extends PDFBankRenderer {
     // Remarks & Declaration
     this.advanceCursor(4);
     this.drawSMFGHeader('REMARKS:');
-    const remarks = this.getF('remarks', 'Subject property is a single storied residential building having land extent of 4007sqft, having measured BUA 1427sqft. Approved plan is not provided & age of the building about 7-years. Property is coming under Baliguali GP limit & surrounding areas are residential in nature. This building is occupied by the customer for residential purpose. Valuation has been done for land & measured BUA of single storied residential building. As approved is not provided, it is upto the sole discretion of SMFG India to considered the BUA value or not.');
+    const remarks = this.getF('remarks', '');
     this.drawKeyValueRow([
       { label: remarks, value: '', labelWidth: CONTENT_W, valueWidth: 0 },
     ]);

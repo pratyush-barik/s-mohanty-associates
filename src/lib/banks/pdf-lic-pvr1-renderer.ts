@@ -220,11 +220,11 @@ export class PDFLICPVR1Renderer extends PDFBankRenderer {
     // Header Metadata block
     const metaH = 14;
     const metaRows = [
-      { label: '* File No.', val: `: ${d.fileNo || '2201003673'}` },
+      { label: '* File No.', val: `: ${d.fileNo || ''}` },
       { label: '* Name of the Valuer', val: `: ${d.nameOfValuer || 'Er. Satyajit Mohanty'}` },
-      { label: '* Code No.', val: `: ${d.codeNo || 'BH-AOV0078'}` },
-      { label: '*Appointing Authority:', val: `: ${d.appointingAuthority || 'LIC HFL(Br-II)'}` },
-      { label: '*Date of Valuation', val: `: ${d.dateOfValuation || '06/11/2020'}` },
+      { label: '* Code No.', val: `: ${d.codeNo || ''}` },
+      { label: '*Appointing Authority:', val: `: ${d.appointingAuthority || ''}` },
+      { label: '*Date of Valuation', val: `: ${d.dateOfValuation || ''}` },
       { label: '*RERA No.(For Flats)', val: `: ${d.reraNo || 'NA'}` },
     ];
 
@@ -244,19 +244,19 @@ export class PDFLICPVR1Renderer extends PDFBankRenderer {
     const wVal = CONTENT_W - wNum - wTitle;
 
     const rowsA = [
-      { n: '1.', t: '* File No.', v: d.fileNo || '2201003673' },
-      { n: '2.', t: '* Name of the Applicant', v: d.applicantName || 'Mrs. Bijaylaxmi Sahoo,D/o:-Mr. Gangadhar Sahoo' },
-      { n: '3.', t: 'Name of the owner', v: d.ownerName || 'Mrs. Bijaylaxmi Sahoo,D/o:-Mr. Gangadhar Sahoo' },
-      { n: '4.', t: 'Documents produced for perusal', v: d.documentsProduced || 'Copy of Sale Deed,ROR,Approved Plan & Estimate' },
-      { n: '5.', t: '* Location of the property\nPlot No./ S. No./C.T.S.No. /R.S.No.\nVillage/Block No./Taluk/Ward.\nDistrict/Corporation/Municipality', v: `Plot no-${d.locationPlotNo || '632,Khata no-529/993'}\nMouza- ${d.locationVillage || 'Mattia Pada-II,PS-Pipili(45),Tahasil-Pipili(199)'}\n${d.locationDistrict || 'Dist-Puri,Odisha, Pin-752104'}` },
+      { n: '1.', t: '* File No.', v: d.fileNo || '' },
+      { n: '2.', t: '* Name of the Applicant', v: d.applicantName || '' },
+      { n: '3.', t: 'Name of the owner', v: d.ownerName || '' },
+      { n: '4.', t: 'Documents produced for perusal', v: d.documentsProduced || '' },
+      { n: '5.', t: '* Location of the property\nPlot No./ S. No./C.T.S.No. /R.S.No.\nVillage/Block No./Taluk/Ward.\nDistrict/Corporation/Municipality', v: [d.locationPlotNo ? `Plot no-${d.locationPlotNo}` : '', d.locationVillage ? `Mouza- ${d.locationVillage}` : '', d.locationDistrict || ''].filter(Boolean).join('\n') },
       { n: '6.', t: 'Whether address of the site tallies with\naddress at point number "5"', v: d.addressTallies || 'Yes' },
-      { n: '7.', t: 'Location Sketch Verified', v: d.locationSketchVerified || 'Yes/No' },
-      { n: '8.', t: 'Development of surrounding area with\nSpecial reference to population', v: d.surroundingDevelopmentClass || 'Lower class/ Middle/ Upper Middle/Posh' },
+      { n: '7.', t: 'Location Sketch Verified', v: d.locationSketchVerified || '' },
+      { n: '8.', t: 'Development of surrounding area with\nSpecial reference to population', v: d.surroundingDevelopmentClass || '' },
       { n: '9..', t: 'Whether basic amenities like water,\nelectricity, sewerage, roads, telephone\nare available', v: d.basicAmenitiesAvailable || 'Yes' },
       { n: '10.', t: 'Any negatives to the locality/property\n(Crematoriums, slums, riot prone ,\ngases, chemical hazards, nagbanaetc)', v: d.negativesToLocality || 'No' },
-      { n: '11.', t: 'Any favourable consideration for\nadditional cost/value', v: d.favourableConsiderations || 'All civic amenities like school,hospital,market\narea arewithin 1-2Kms.' },
-      { n: '12.', t: 'Details of the Nearby Landmark', v: d.nearbyLandmark || 'Opposite to Sai Temple,Gudiapokhari' },
-      { n: '13.', t: 'Any other features like board of other\nfinancier indicating mortgage, notice of\nCourt/any authority which may effect\nthe security.', v: d.otherFeaturesNotice || 'Not Observed' },
+      { n: '11.', t: 'Any favourable consideration for\nadditional cost/value', v: d.favourableConsiderations || '' },
+      { n: '12.', t: 'Details of the Nearby Landmark', v: d.nearbyLandmark || '' },
+      { n: '13.', t: 'Any other features like board of other\nfinancier indicating mortgage, notice of\nCourt/any authority which may effect\nthe security.', v: d.otherFeaturesNotice || '' },
     ];
 
     for (const r of rowsA) {
@@ -280,28 +280,28 @@ export class PDFLICPVR1Renderer extends PDFBankRenderer {
     const d = this.reportFields;
 
     this.draw3CellHeader(wDir, 'Directions', wBound, 'Boundaries', wDim, 'Dimensions');
-    this.draw3CellRow(wDir, 'North/Front', wBound, d.boundaryNorth || 'Proposed Road/20-Feet Wide Road', wDim, d.boundaryNorthDim || 'NA');
-    this.draw3CellRow(wDir, 'South/Rear', wBound, d.boundarySouth || 'Revenue Plot No-628/Vacant Plot', wDim, d.boundarySouthDim || 'NA');
-    this.draw3CellRow(wDir, 'East/Left (side 1)', wBound, d.boundaryEast || 'Rest Part of Revenue Plot No-632/Vacant Plot', wDim, d.boundaryEastDim || 'NA');
-    this.draw3CellRow(wDir, 'West/Right (Side 2)', wBound, d.boundaryWest || 'Proposed Road/20-Feet Wide Road', wDim, d.boundaryWestDim || 'NA');
+    this.draw3CellRow(wDir, 'North/Front', wBound, d.boundaryNorth || '', wDim, d.boundaryNorthDim || 'NA');
+    this.draw3CellRow(wDir, 'South/Rear', wBound, d.boundarySouth || '', wDim, d.boundarySouthDim || 'NA');
+    this.draw3CellRow(wDir, 'East/Left (side 1)', wBound, d.boundaryEast || '', wDim, d.boundaryEastDim || 'NA');
+    this.draw3CellRow(wDir, 'West/Right (Side 2)', wBound, d.boundaryWest || '', wDim, d.boundaryWestDim || 'NA');
 
     // Extent of land row
     const rowH = 18;
     this.drawCell(MARGIN_L, this.cursorY, wDir, rowH, 'Total extent of land', { bold: true, fontSize: FONT_SIZE_CAPTION, fillColor: LBL_BG });
-    this.drawCell(MARGIN_L + wDir, this.cursorY, wBound, rowH, d.totalExtentLandDecimal || 'Ac.0.021 decimal', { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wDir + wBound, this.cursorY, wDim, rowH, d.totalExtentLandSqft || '915sqft', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDir, this.cursorY, wBound, rowH, d.totalExtentLandDecimal || '', { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDir + wBound, this.cursorY, wDim, rowH, d.totalExtentLandSqft || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
 
     // 2. Do these boundaries & dimensions
-    this.drawSimple2ColRow('2. Do these boundaries & dimensions\nTally with the approved drawing? If not furnish details -Yes', d.boundariesTallyWithApprovedDrawing || 'Yes');
+    this.drawSimple2ColRow('2. Do these boundaries & dimensions\nTally with the approved drawing? If not furnish details', d.boundariesTallyWithApprovedDrawing || 'Yes');
 
     // 3. Nature of land use
-    this.drawSubHeaderBox('3. Nature of land use\nResidential/Commercial/Industrial/Agricultural -Residential');
-    this.drawSimple2ColRow('a. Existing', d.landUseExistingBua || 'G.F.-850sqft(Under Construction)');
-    this.drawSimple2ColRow('b. Proposed', d.landUseProposedBua || 'G.F.-850sqft,F.F.-850sqft(Approved)');
+    this.drawSubHeaderBox('3. Nature of land use\nResidential/Commercial/Industrial/Agricultural');
+    this.drawSimple2ColRow('a. Existing', d.landUseExistingBua || '');
+    this.drawSimple2ColRow('b. Proposed', d.landUseProposedBua || '');
 
     // 4. Whether N.A. Permission Required
-    this.drawSimple2ColRow('4. Whether N.A. Permission Required\n(If required, whether obtained):Yes(Obtained)', d.naPermissionRequiredAndObtained || 'Yes(Obtained)');
+    this.drawSimple2ColRow('4. Whether N.A. Permission Required\n(If required, whether obtained)', d.naPermissionRequiredAndObtained || '');
     this.cursorY += 10;
 
     // C. BUILDINGS Title
@@ -313,20 +313,20 @@ export class PDFLICPVR1Renderer extends PDFBankRenderer {
     const wBldgLbl = 220;
     const wBldgVal = CONTENT_W - wRom - wBldgLbl;
 
-    this.draw3ColTableRow(wRom, wBldgLbl, wBldgVal, 'i)', 'Layout planning approval No./ Planning permit No./\nBuilding permission No.', d.buildingPlanApprovalNoDate || 'Yes, letter no-645/20,dated-28/09/2020');
+    this.draw3ColTableRow(wRom, wBldgLbl, wBldgVal, 'i)', 'Layout planning approval No./ Planning permit No./\nBuilding permission No.', d.buildingPlanApprovalNoDate || '');
     this.draw3ColTableRow(wRom, wBldgLbl, wBldgVal, 'ii)', 'Period of validity', d.buildingPlanValidity || 'NA');
     this.draw3ColTableRow(wRom, wBldgLbl, wBldgVal, 'iii)', 'If validity is expired, whether it is renewed', d.buildingPlanRenewal || 'NA');
-    this.draw3ColTableRow(wRom, wBldgLbl, wBldgVal, 'iv)', 'Approval was given by (authority)', d.buildingPlanApprovalAuthority || 'Sarapanch, Orakal Grama Panchayat');
+    this.draw3ColTableRow(wRom, wBldgLbl, wBldgVal, 'iv)', 'Approval was given by (authority)', d.buildingPlanApprovalAuthority || '');
 
     // 2. Plinth/Built Up Area
     this.drawSubHeaderBox('2. Plinth/Built Up Area:');
-    this.drawSimple2ColRow('i) As per approved drawing\nG.F.:\nF.F.:\nS.F.:\nTotal:', `${d.plinthApprovedGf || '850sqft'}\n${d.plinthApprovedFf || '850sqft'}\n${d.plinthApprovedSf || 'NA'}\n${d.plinthApprovedTotal || '1700sqft'}`);
-    this.drawSimple2ColRow('ii) Actual\nG.F.:\nF.F.:\nS.F.:\nTotal:', `${d.plinthActualGf || '850sqft(Under Construction)'}\n${d.plinthActualFf || 'NA'}\n${d.plinthActualSf || 'NA'}\n${d.plinthActualTotal || '850sqft'}`);
+    this.drawSimple2ColRow('i) As per approved drawing\nG.F.:\nF.F.:\nS.F.:\nTotal:', `${d.plinthApprovedGf || ''}\n${d.plinthApprovedFf || ''}\n${d.plinthApprovedSf || ''}\n${d.plinthApprovedTotal || ''}`.trim());
+    this.drawSimple2ColRow('ii) Actual\nG.F.:\nF.F.:\nS.F.:\nTotal:', `${d.plinthActualGf || ''}\n${d.plinthActualFf || ''}\n${d.plinthActualSf || ''}\n${d.plinthActualTotal || ''}`.trim());
 
     // 3. Estimate
     this.drawSubHeaderBox('3. Estimate');
-    this.draw3ColTableRow(wRom, wBldgLbl, wBldgVal, 'i)', "Cost as per Estimate provided by the Applicant (Rs.)", d.estimateCostApplicant || 'Rs.20,00,000/- (For GF only)');
-    this.draw3ColTableRow(wRom, wBldgLbl, wBldgVal, 'ii)', "Cost per Sqft as per Applicant's estimate (Rs. per sqft.)", d.estimateCostPerSqft || 'Rs.2352.94/sqft');
+    this.draw3ColTableRow(wRom, wBldgLbl, wBldgVal, 'i)', "Cost as per Estimate provided by the Applicant (Rs.)", d.estimateCostApplicant || '');
+    this.draw3ColTableRow(wRom, wBldgLbl, wBldgVal, 'ii)', "Cost per Sqft as per Applicant's estimate (Rs. per sqft.)", d.estimateCostPerSqft || '');
     this.draw3ColTableRow(wRom, wBldgLbl, wBldgVal, 'iii)', 'Is estimate reasonable, if not give remarks', d.isEstimateReasonable || 'Yes');
 
     // 4. Marketability
@@ -349,12 +349,12 @@ export class PDFLICPVR1Renderer extends PDFBankRenderer {
     const wAct = CONTENT_W - wDesc - wAppr;
 
     this.draw3CellHeader(wDesc, 'Description', wAppr, 'As per approved plan', wAct, 'As per actual');
-    this.draw3CellRow(wDesc, 'i) Plinth/ Built Up Area', wAppr, d.inspectionBuaApproved || '850sqft / Floor', wAct, d.inspectionBuaActual || '850sqft / Floor');
-    this.draw3CellRow(wDesc, 'ii) F.S.I.', wAppr, d.inspectionFsiApproved || '1.85', wAct, d.inspectionFsiActual || '0.92');
-    this.draw3CellRow(wDesc, 'iii) No. Of dwelling units', wAppr, d.inspectionDwellingUnitsApproved || '1/ Floor', wAct, d.inspectionDwellingUnitsActual || '1/Floor');
+    this.draw3CellRow(wDesc, 'i) Plinth/ Built Up Area', wAppr, d.inspectionBuaApproved || '', wAct, d.inspectionBuaActual || '');
+    this.draw3CellRow(wDesc, 'ii) F.S.I.', wAppr, d.inspectionFsiApproved || '', wAct, d.inspectionFsiActual || '');
+    this.draw3CellRow(wDesc, 'iii) No. Of dwelling units', wAppr, d.inspectionDwellingUnitsApproved || '', wAct, d.inspectionDwellingUnitsActual || '');
 
     // 2. Construction as per plan
-    this.drawSimple2ColRow('2. Whether the construction is as per approved plan? (Yes/No) :Yes', d.isConstructionAsPerApprovedPlan || 'Yes');
+    this.drawSimple2ColRow('2. Whether the construction is as per approved plan? (Yes/No)', d.isConstructionAsPerApprovedPlan || 'Yes');
 
     // 3. Deviations
     this.drawSubHeaderBox('3. Whether there are any Deviations? (Please mention in detail)');
@@ -371,8 +371,8 @@ export class PDFLICPVR1Renderer extends PDFBankRenderer {
     const wVal4 = CONTENT_W - wLbl4 - wPct4;
     const h4 = 24;
     this.drawCell(MARGIN_L, this.cursorY, wLbl4, h4, "4. Total works completed as per applicant's estimate", { fontSize: FONT_SIZE_CAPTION, fillColor: LBL_BG });
-    this.drawCell(MARGIN_L + wLbl4, this.cursorY, wPct4, h4, `Percentage: ${d.totalWorksCompletedPct || '90%'}`, { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLbl4 + wPct4, this.cursorY, wVal4, h4, `Value:${d.totalWorksCompletedValue || 'Rs.18,00,000/-(For GF only)'}`, { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLbl4, this.cursorY, wPct4, h4, `Percentage: ${d.totalWorksCompletedPct || ''}`, { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLbl4 + wPct4, this.cursorY, wVal4, h4, `Value: ${d.totalWorksCompletedValue || ''}`, { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += h4;
 
     // 5. NBC and NDMA
@@ -407,10 +407,10 @@ export class PDFLICPVR1Renderer extends PDFBankRenderer {
     this.cursorY += hdrH;
 
     const valRows = [
-      { n: '1.', t: `Value of land :${d.totalExtentLandDecimal || 'Ac.0.021 decimal'}`, app: d.valLandApplication || 'NA', guide: d.valLandGuideline || 'Rs.3,15,080/-', mkt: d.valLandMarket || 'Rs.5,49,000/-' },
-      { n: '2.', t: `Stage value of the building as per applicant's estimate(Present stage of construction is ${d.totalWorksCompletedPct || '90%'})`, app: d.valBldgStageApplication || 'Rs.18,00,000/-', guide: d.valBldgStageGuideline || 'Rs.10,05,210/-', mkt: d.valBldgStageMarket || 'Rs.15,30,000/-' },
-      { n: '3.', t: 'Total value of existing building (1 + 2)', app: d.valTotalExistingApplication || '', guide: d.valTotalExistingGuideline || 'Rs.13,20,290/-', mkt: d.valTotalExistingMarket || 'Rs.20,79,000/-' },
-      { n: '4.', t: 'Value of building on completion', app: d.valBldgCompletionApplication || '', guide: d.valBldgCompletionGuideline || 'Rs.14,31,980/-', mkt: d.valBldgCompletionMarket || 'Rs.22,49,000/-' },
+      { n: '1.', t: `Value of land : ${d.totalExtentLandDecimal || ''}`, app: d.valLandApplication || '', guide: d.valLandGuideline || '', mkt: d.valLandMarket || '' },
+      { n: '2.', t: `Stage value of the building as per applicant's estimate(Present stage of construction is ${d.totalWorksCompletedPct || ''})`, app: d.valBldgStageApplication || '', guide: d.valBldgStageGuideline || '', mkt: d.valBldgStageMarket || '' },
+      { n: '3.', t: 'Total value of existing building (1 + 2)', app: d.valTotalExistingApplication || '', guide: d.valTotalExistingGuideline || '', mkt: d.valTotalExistingMarket || '' },
+      { n: '4.', t: 'Value of building on completion', app: d.valBldgCompletionApplication || '', guide: d.valBldgCompletionGuideline || '', mkt: d.valBldgCompletionMarket || '' },
     ];
 
     for (const r of valRows) {
@@ -433,7 +433,7 @@ export class PDFLICPVR1Renderer extends PDFBankRenderer {
 
     // Narrative Bullet Points
     const bullets = [
-      { t: 'Background information of the asset being valued:-', b: d.backgroundInformation || 'Subject property is a proposed single storied residential building, located in a developed Mattia Pada-II mouza. Property is accessible with 20-ft earthen road.' },
+      { t: 'Background information of the asset being valued:-', b: d.backgroundInformation || '' },
       { t: 'Sources of information used for valuation of property:-', b: d.sourcesOfInformation || 'Recent transactions, Property Brokers, local market feedback.' },
       { t: 'Procedures adopted in carrying out the valuation:-', b: d.proceduresAdopted || 'Land value arrived by comparing similar land parcels in that locality while building value arrived by cost incurred to construct a similar house as on date.' },
       { t: 'Valuation methodology:-', b: d.valuationMethodology || 'Land & Building method of valuation adopted' },
@@ -453,12 +453,12 @@ export class PDFLICPVR1Renderer extends PDFBankRenderer {
     const wProg = CONTENT_W - wSno - wStage;
 
     this.draw3CellHeader(wSno, 'S.No.', wStage, 'Stage of Construction', wProg, '% Progress');
-    this.draw3CellRow(wSno, d.recommendationStageNo || '01', wStage, d.recommendationStageOfConstruction || 'GF inside & outside plastering work completed.Flooring work is under progress.', wProg, d.recommendationProgressPct || 'Present stage of construction is 90%');
+    this.draw3CellRow(wSno, d.recommendationStageNo || '', wStage, d.recommendationStageOfConstruction || '', wProg, d.recommendationProgressPct || '');
     this.cursorY += 14;
 
     // G. CERTIFICATE Title
     this.drawLeftSectionTitle('G.CERTIFICATE');
-    const certText = `I declare that I am not associated with the builder or with any of his associate companies or with the borrower directly or indirectly in the past or in the present and this report has been prepared by me with highest professional integrity.\n\nI further declare that I have personally inspected the site and building on ${d.certificateDate || '04/11/2020'}\n\nI further declare that all the above particulars and information given in this report are true to the best of my knowledge and belief.`;
+    const certText = `I declare that I am not associated with the builder or with any of his associate companies or with the borrower directly or indirectly in the past or in the present and this report has been prepared by me with highest professional integrity.\n\nI further declare that I have personally inspected the site and building on ${d.certificateDate || ''}\n\nI further declare that all the above particulars and information given in this report are true to the best of my knowledge and belief.`;
     const cLines = this.wrapText(certText, CONTENT_W, FONT_SIZE_CAPTION);
     for (const l of cLines) {
       this.drawTextAt(l, MARGIN_L, this.cursorY, { fontSize: FONT_SIZE_CAPTION });
@@ -503,20 +503,20 @@ export class PDFLICPVR1Renderer extends PDFBankRenderer {
 
     // Land row
     this.drawCell(MARGIN_L, this.cursorY, wDesc, rowH, 'Land', { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wDesc, this.cursorY, wArea, rowH, d.annexureLandArea || '915sqft', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wDesc + wArea, this.cursorY, wRateMkt, rowH, d.annexureLandMarketRate || 'Rs.600/-', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt, this.cursorY, wValMkt, rowH, d.annexureLandMarketValue || 'Rs.5,49,000/-', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt + wValMkt, this.cursorY, wRateG, rowH, d.annexureLandGuidelineRate || 'Rs.344.35/-', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt + wValMkt + wRateG, this.cursorY, wValG, rowH, d.annexureLandGuidelineValue || 'Rs.3,15,080/-', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDesc, this.cursorY, wArea, rowH, d.annexureLandArea || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDesc + wArea, this.cursorY, wRateMkt, rowH, d.annexureLandMarketRate || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt, this.cursorY, wValMkt, rowH, d.annexureLandMarketValue || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt + wValMkt, this.cursorY, wRateG, rowH, d.annexureLandGuidelineRate || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt + wValMkt + wRateG, this.cursorY, wValG, rowH, d.annexureLandGuidelineValue || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
 
     // Building GF row
     this.drawCell(MARGIN_L, this.cursorY, wDesc, rowH, 'Building\nGF', { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wDesc, this.cursorY, wArea, rowH, d.annexureBldgArea || '850sqft', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wDesc + wArea, this.cursorY, wRateMkt, rowH, d.annexureBldgMarketRate || 'Rs.2000/-', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt, this.cursorY, wValMkt, rowH, d.annexureBldgMarketValue || 'Rs.17,00,000/-', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt + wValMkt, this.cursorY, wRateG, rowH, d.annexureBldgGuidelineRate || 'Rs.1314.00', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt + wValMkt + wRateG, this.cursorY, wValG, rowH, d.annexureBldgGuidelineValue || 'Rs.11,16,900/-', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDesc, this.cursorY, wArea, rowH, d.annexureBldgArea || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDesc + wArea, this.cursorY, wRateMkt, rowH, d.annexureBldgMarketRate || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt, this.cursorY, wValMkt, rowH, d.annexureBldgMarketValue || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt + wValMkt, this.cursorY, wRateG, rowH, d.annexureBldgGuidelineRate || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDesc + wArea + wRateMkt + wValMkt + wRateG, this.cursorY, wValG, rowH, d.annexureBldgGuidelineValue || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
 
     // Amenities row

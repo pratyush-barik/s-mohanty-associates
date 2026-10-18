@@ -86,9 +86,9 @@ export class PDFSuryodayRenderer extends PDFBankRenderer {
     this.advanceCursor(4);
 
     // Meta Row: Application No | Date of Inspection | Date of Report
-    const appNo = this.getF('applicationNo', this.getF('refNo', this.projectCode || 'APP-2024-0529'));
-    const inspDate = this.getF('dateOfInspection', this.getF('inspectionDate', '29.05.2024'));
-    const repDate = this.getF('dateOfReport', this.getF('reportDate', '29.05.2024'));
+    const appNo = this.getF('applicationNo', this.getF('refNo', this.projectCode || ''));
+    const inspDate = this.getF('dateOfInspection', this.getF('inspectionDate', ''));
+    const repDate = this.getF('dateOfReport', this.getF('reportDate', ''));
 
     this.drawKeyValueRow([
       { label: 'Application. No. :', value: String(appNo), labelWidth: 100, valueWidth: 140, labelBold: true },
@@ -100,16 +100,16 @@ export class PDFSuryodayRenderer extends PDFBankRenderer {
     // A) GENERAL DETAILS
     // ═══════════════════════════════════════════════
     this.drawSuryodaySectionHeader('A', 'General details');
-    this.drawSuryodayRow('1', 'Name of the customer', this.getF('customerName', 'Samir Kumar Mohanty, Mob- 9437077899 / 9338011499'));
-    this.drawSuryodayRow('2', 'Name of current owner', this.getF('currentOwner', 'Samir Kumar Mohanty, S/O- Hadibandhu Mohanty'));
-    this.drawSuryodayRow('3', 'Name of Proposed owner', this.getF('proposedOwner', 'Samir Kumar Mohanty, S/O- Hadibandhu Mohanty'));
+    this.drawSuryodayRow('1', 'Name of the customer', this.getF('customerName', ''));
+    this.drawSuryodayRow('2', 'Name of current owner', this.getF('currentOwner', ''));
+    this.drawSuryodayRow('3', 'Name of Proposed owner', this.getF('proposedOwner', ''));
     this.drawSuryodayRow('4', 'Property address (as per docs)', this.getF('propertyAddressDocs', ''));
     this.drawSuryodayRow('5', 'Property address (on inspection) with Pin code', this.getF('propertyAddressInspection', ''));
-    this.drawSuryodayRow('6', 'Landmark', this.getF('landmark', 'Near Kusuma Devi Owmens College, Kalyani Nagar'));
-    this.drawSuryodayRow('7', 'Latitude & Longitude', this.getF('latLong', 'LAT:-20.449170, LONG- 85.905970'));
-    this.drawSuryodayRow('8', 'Property identified through Along with Contact no & Relationship with the customer.', this.getF('propertyIdentifiedThrough', 'Mr. Samir Kumar Mohanty, Mob- 9437077899 / 9338011499'));
-    this.drawSuryodayRow('9', 'Property currently occupied by (owner/self/tenant/vacant)', this.getF('occupiedBy', 'Tenants'));
-    this.drawSuryodayRow('10', 'If occupied, then since when', this.getF('occupiedSince', '2012'));
+    this.drawSuryodayRow('6', 'Landmark', this.getF('landmark', ''));
+    this.drawSuryodayRow('7', 'Latitude & Longitude', this.getF('latLong', ''));
+    this.drawSuryodayRow('8', 'Property identified through Along with Contact no & Relationship with the customer.', this.getF('propertyIdentifiedThrough', ''));
+    this.drawSuryodayRow('9', 'Property currently occupied by (owner/self/tenant/vacant)', this.getF('occupiedBy', ''));
+    this.drawSuryodayRow('10', 'If occupied, then since when', this.getF('occupiedSince', ''));
 
     // ═══════════════════════════════════════════════
     // B) SURROUNDING LOCALITY DETAILS
@@ -374,10 +374,7 @@ export class PDFSuryodayRenderer extends PDFBankRenderer {
     ]);
 
     this.drawSuryodaySectionHeader('L', 'Remarks (if any)');
-    const remarks = this.getF(
-      'remarks',
-      'Subject property is a residential premises having land extent of 3484Sqft, contains two buildng units. One G+2 RCC building having total measured BUA 3933sqft. Another asbestos roofing house having measured BUA 2000sqft. Age of the property is about 12-Years. Approved plan is not provided. Property is accessible with 10-feet wide Road. All civic amenities are present within 1-2 kms from the property. Entire building is used by multi tenants for residential purpose. Valuation has been done for land & measured BUA of G+2 RCC building, as actual BUA is coming within permissible FAR (FAR-1.5 as per CDA norms). Asbestos roofing BUA value is not considered, as it is temporary in nature.'
-    );
+    const remarks = this.getF('remarks', '');
     this.drawKeyValueRow([
       { label: remarks, value: '', labelWidth: CONTENT_W, valueWidth: 0 },
     ]);
@@ -394,11 +391,11 @@ export class PDFSuryodayRenderer extends PDFBankRenderer {
     // ═══════════════════════════════════════════════
     this.drawSuryodaySectionHeader('N', 'Declaration');
 
-    const engineerName = this.getF('inspectingEngineer', 'Deepak Bhoi');
-    const inspDateDec = this.getF('inspectionDate', '29.05.2024');
+    const engineerName = this.getF('inspectingEngineer', '');
+    const inspDateDec = this.getF('inspectionDate', '');
 
     const declarations = [
-      `1  Property was Inspected by our Engineer Mr. ${engineerName} who has personally inspected the property on dated-${inspDateDec}`,
+      `1  Property was Inspected by our Engineer ${engineerName ? `Mr. ${engineerName} ` : ''}who has personally inspected the property on dated-${inspDateDec}`,
       '2  I have no direct or indirect interest in the property valued.',
       '3  Information furnished in the report is true and correct to the best of my knowledge and belief.',
       '4  Documents to be verified at your end to ascertain the right title & areas.',
@@ -418,7 +415,7 @@ export class PDFSuryodayRenderer extends PDFBankRenderer {
     this.checkPageBreak(50);
     this.advanceCursor(4);
     const rPlace = this.getF('reportPlace', 'Bhubaneswar');
-    const rDateDec = this.getF('reportDate', '29.05.2024');
+    const rDateDec = this.getF('reportDate', '');
 
     this.drawKeyValueRow([
       { label: `Place : ${rPlace}\nDate : ${rDateDec}`, value: `Name of Valuer & Stamp\n\n\nS. MOHANTY ASSOCIATES\nEmpanelled Valuer & Chartered Engineer`, labelWidth: 200, valueWidth: CONTENT_W - 200, labelBold: true, valueBold: true },
@@ -481,7 +478,7 @@ export class PDFSuryodayRenderer extends PDFBankRenderer {
       this.advanceCursor(4);
 
       const photoList = this.getF('photoListNames', 'Approch road, Selfie of Engineer, Building, Name Board, Hall, Kitchen, Line Plan as per site.');
-      const custPhoto = this.getF('customerName', 'Samir Kumar Mohanty, Mob- 9437077899 / 9338011499');
+      const custPhoto = this.getF('customerName', '');
       const addrPhoto = this.getF('propertyAddressDocs', '');
 
       this.drawKeyValueRow([

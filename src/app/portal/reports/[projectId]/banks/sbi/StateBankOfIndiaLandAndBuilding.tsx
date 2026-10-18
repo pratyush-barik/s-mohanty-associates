@@ -7,18 +7,18 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-BankReportTitleCard,
-Section,
+  BankReportHeader,
+  Section,
   Field,
   inputCls,
   selectCls,
   BaseDocumentsSection,
   BaseMapsSection,
   BasePhotographsSection,
-  ActiveConfigBanner,
   ReportActionBar,
   FloatingNavigator,
   NavItem,
+  formatReportDate,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { Lock } from 'lucide-react';
@@ -159,76 +159,76 @@ export default function StateBankOfIndiaLandAndBuilding({
 
       // Top Header / COVER PAGE & BANK DETAILS
       reportOnValuationOf: saved.reportOnValuationOf !== undefined ? saved.reportOnValuationOf : 'LAND & BUILDING',
-      branchAddressDetails: saved.branchAddressDetails !== undefined ? saved.branchAddressDetails : (saved.branchAddress || 'STATE BANK OF INDIA, BALUGAON BRANCH, DIST: KHURDA, ODISHA'),
+      branchAddressDetails: saved.branchAddressDetails !== undefined ? saved.branchAddressDetails : (saved.branchAddress || ''),
       asOnDate: saved.asOnDate !== undefined ? saved.asOnDate : '',
       toAuthority: saved.toAuthority !== undefined ? saved.toAuthority : 'THE CHIEF MANAGER / BRANCH HEAD,',
       bankName: saved.bankName !== undefined ? saved.bankName : (pf.bankName || 'STATE BANK OF INDIA,'),
-      branchAddress: saved.branchAddress !== undefined ? saved.branchAddress : 'BALUGAON BRANCH, DIST: KHURDA, ODISHA',
-      refNo: saved.refNo !== undefined ? saved.refNo : (projectCode || projectId || 'SMA/IDBI/07-2026/09'),
+      branchAddress: saved.branchAddress !== undefined ? saved.branchAddress : '',
+      refNo: saved.refNo !== undefined ? saved.refNo : (projectCode ? `SMA/${projectCode}` : ''),
       coverDate: saved.coverDate !== undefined ? saved.coverDate : (saved.reportDate || pf.reportDate || ''),
-      reportDate: saved.reportDate !== undefined ? saved.reportDate : (pf.reportDate || '24.07.2026'),
-      valuationPropertyDesc: saved.valuationPropertyDesc !== undefined ? saved.valuationPropertyDesc : (saved.propertyAddress || pf.propertyAddress || 'Khata No: 311/2959, Plot No: 765/2546, Sub Plot No: 1151 & 1152, Total Area: Ac.0.055 Dec i.e. 2400.00 Sft, Kissam: Gharabari in Mz: Kantilo, Ps: Airfield No-53, Ts: Jatani No-196, Dist: Khurda, Odisha. Pin-751002'),
-      nameOfTheOwner: saved.nameOfTheOwner !== undefined ? saved.nameOfTheOwner : (saved.borrowerName || pf.contactName || 'Mr. Dipak Kumar Barik'),
-      borrowerName: saved.borrowerName !== undefined ? saved.borrowerName : (pf.contactName || 'Mr. Dipak Kumar Barik'),
+      reportDate: saved.reportDate !== undefined ? saved.reportDate : (pf.reportDate || (earliestVisit ? formatReportDate(earliestVisit.date) : '')),
+      valuationPropertyDesc: saved.valuationPropertyDesc !== undefined ? saved.valuationPropertyDesc : (saved.propertyAddress || pf.propertyAddress || ''),
+      nameOfTheOwner: saved.nameOfTheOwner !== undefined ? saved.nameOfTheOwner : (saved.borrowerName || pf.contactName || pf.applicantName || ''),
+      borrowerName: saved.borrowerName !== undefined ? saved.borrowerName : (pf.contactName || pf.applicantName || ''),
       presentMarketValue: saved.presentMarketValue !== undefined ? saved.presentMarketValue : '',
       realizableValue: saved.realizableValue !== undefined ? saved.realizableValue : '',
       forcedSaleValue: saved.forcedSaleValue !== undefined ? saved.forcedSaleValue : '',
-      govtValue: saved.govtValue !== undefined ? saved.govtValue : '2891850',
+      govtValue: saved.govtValue !== undefined ? saved.govtValue : '',
       purposeOfValuation: saved.purposeOfValuation !== undefined ? saved.purposeOfValuation : 'TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY',
 
       // 1 Customer Details
-      customerBorrowalUnit: saved.customerBorrowalUnit !== undefined ? saved.customerBorrowalUnit : (saved.nameOfTheOwner || saved.borrowerName || pf.contactName || 'Mr. Dipak Kumar Barik'),
-      customerOwnerName: saved.customerOwnerName !== undefined ? saved.customerOwnerName : (saved.nameOfTheOwner || saved.borrowerName || pf.contactName || 'Mr. Dipak Kumar Barik'),
-      applicationNo: saved.applicationNo !== undefined ? saved.applicationNo : 'Not Available',
-      ownerNameAndAddress: saved.ownerNameAndAddress !== undefined ? saved.ownerNameAndAddress : (pf.contactName ? `${pf.contactName}, S/o: ${pf.fatherName || 'Ashok Kumar Barik'}, At: ${pf.propertyAddress || 'Khandagiri, Bhubaneswar, Dist: Khurda, Odisha'}` : 'Mr. Dipak Kumar Barik, S/o: Ashok Kumar Barik, At: Khandagiri, Bhubaneswar, Dist: Khurda, Odisha.'),
+      customerBorrowalUnit: saved.customerBorrowalUnit !== undefined ? saved.customerBorrowalUnit : (saved.nameOfTheOwner || saved.borrowerName || pf.contactName || pf.applicantName || ''),
+      customerOwnerName: saved.customerOwnerName !== undefined ? saved.customerOwnerName : (saved.nameOfTheOwner || saved.borrowerName || pf.contactName || pf.applicantName || ''),
+      applicationNo: saved.applicationNo !== undefined ? saved.applicationNo : '',
+      ownerNameAndAddress: saved.ownerNameAndAddress !== undefined ? saved.ownerNameAndAddress : (pf.contactName ? `${pf.contactName}${pf.fatherName ? `, S/o: ${pf.fatherName}` : ''}${pf.propertyAddress ? `, At: ${pf.propertyAddress}` : ''}` : (pf.applicantName || '')),
       caseType: saved.caseType !== undefined ? saved.caseType : 'Fresh Valuation',
-      identifiedByAndMobNo: saved.identifiedByAndMobNo !== undefined ? saved.identifiedByAndMobNo : "Mr. Dalai (Owner's Representative), Mob-9178156885",
+      identifiedByAndMobNo: saved.identifiedByAndMobNo !== undefined ? saved.identifiedByAndMobNo : '',
 
       // 2. Property Details
-      propertyAddress: saved.propertyAddress !== undefined ? saved.propertyAddress : (pf.propertyAddress || 'Khata No: 311/2959, Plot No: 765/2546, Sub Plot No: 1151 & 1152, Total Area: Ac.0.055 Dec i.e. 2400.00 Sft, Kissam: Gharabari in Mz: Kantilo, Ps: Airfield No-53, Ts: Jatani No-196, Dist: Khurda, Odisha. Pin-751002'),
-      nearbyLandmark: saved.nearbyLandmark !== undefined ? saved.nearbyLandmark : 'The subject property is situated back side of Subhasri Villa Apartment, Kantilo',
+      propertyAddress: saved.propertyAddress !== undefined ? saved.propertyAddress : (pf.propertyAddress || ''),
+      nearbyLandmark: saved.nearbyLandmark !== undefined ? saved.nearbyLandmark : '',
       coordinatesText: saved.coordinatesText !== undefined ? saved.coordinatesText : '',
       latitude: saved.latitude !== undefined ? saved.latitude : (pf.latitude || ''),
       longitude: saved.longitude !== undefined ? saved.longitude : (pf.longitude || ''),
 
       // 3. Document Details
       layoutPlanAvailable: saved.layoutPlanAvailable !== undefined ? saved.layoutPlanAvailable : 'Yes/ No',
-      layoutPlanAuthority: saved.layoutPlanAuthority !== undefined ? saved.layoutPlanAuthority : 'Bhubaneswar Development Authority',
-      layoutPlanApprovalNo: saved.layoutPlanApprovalNo !== undefined ? saved.layoutPlanApprovalNo : 'Vide Letter No: BP/BDA/009678 on dated 07.05.2024 for construction of a G+2 storied (Block-1 & 2) Residential Building',
+      layoutPlanAuthority: saved.layoutPlanAuthority !== undefined ? saved.layoutPlanAuthority : '',
+      layoutPlanApprovalNo: saved.layoutPlanApprovalNo !== undefined ? saved.layoutPlanApprovalNo : '',
       buildingPlanAvailable: saved.buildingPlanAvailable !== undefined ? saved.buildingPlanAvailable : 'Yes/ No',
-      buildingPlanAuthority: saved.buildingPlanAuthority !== undefined ? saved.buildingPlanAuthority : 'Bhubaneswar Development Authority',
-      buildingPlanApprovalNo: saved.buildingPlanApprovalNo !== undefined ? saved.buildingPlanApprovalNo : 'BP/BDA/009678',
+      buildingPlanAuthority: saved.buildingPlanAuthority !== undefined ? saved.buildingPlanAuthority : '',
+      buildingPlanApprovalNo: saved.buildingPlanApprovalNo !== undefined ? saved.buildingPlanApprovalNo : '',
       constructionPermissionAvailable: saved.constructionPermissionAvailable !== undefined ? saved.constructionPermissionAvailable : 'Yes/ No',
-      constructionPermissionAuthority: saved.constructionPermissionAuthority !== undefined ? saved.constructionPermissionAuthority : 'Bhubaneswar Development Authority',
-      constructionPermissionApprovalNo: saved.constructionPermissionApprovalNo !== undefined ? saved.constructionPermissionApprovalNo : 'BP/BDA/009678',
+      constructionPermissionAuthority: saved.constructionPermissionAuthority !== undefined ? saved.constructionPermissionAuthority : '',
+      constructionPermissionApprovalNo: saved.constructionPermissionApprovalNo !== undefined ? saved.constructionPermissionApprovalNo : '',
       legalDocumentsAvailable: saved.legalDocumentsAvailable !== undefined ? saved.legalDocumentsAvailable : 'Yes/ No',
       legalDocumentsAuthority: saved.legalDocumentsAuthority !== undefined ? saved.legalDocumentsAuthority : '',
       legalDocumentsApprovalNo: saved.legalDocumentsApprovalNo !== undefined ? saved.legalDocumentsApprovalNo : '',
-      listOfDocuments: saved.listOfDocuments !== undefined ? saved.listOfDocuments : 'Xerox copy of Agreement for Sale, Sketch Map, Patta, Approval Letter',
+      listOfDocuments: saved.listOfDocuments !== undefined ? saved.listOfDocuments : '',
 
       // 4. Physical Details
-      boundaryEastDoc: saved.boundaryEastDoc !== undefined ? saved.boundaryEastDoc : 'Sub Plot No-1153',
-      boundaryEastVerif: saved.boundaryEastVerif !== undefined ? saved.boundaryEastVerif : 'Sub Plot No-1153',
-      boundaryWestDoc: saved.boundaryWestDoc !== undefined ? saved.boundaryWestDoc : 'Road',
-      boundaryWestVerif: saved.boundaryWestVerif !== undefined ? saved.boundaryWestVerif : 'Road',
-      boundaryNorthDoc: saved.boundaryNorthDoc !== undefined ? saved.boundaryNorthDoc : 'Revenue Plot No-767',
-      boundaryNorthVerif: saved.boundaryNorthVerif !== undefined ? saved.boundaryNorthVerif : 'Revenue Plot No-767',
-      boundarySouthDoc: saved.boundarySouthDoc !== undefined ? saved.boundarySouthDoc : 'Road',
-      boundarySouthVerif: saved.boundarySouthVerif !== undefined ? saved.boundarySouthVerif : 'Road',
+      boundaryEastDoc: saved.boundaryEastDoc !== undefined ? saved.boundaryEastDoc : (pf.boundaryEast || ''),
+      boundaryEastVerif: saved.boundaryEastVerif !== undefined ? saved.boundaryEastVerif : (pf.boundaryEast || ''),
+      boundaryWestDoc: saved.boundaryWestDoc !== undefined ? saved.boundaryWestDoc : (pf.boundaryWest || ''),
+      boundaryWestVerif: saved.boundaryWestVerif !== undefined ? saved.boundaryWestVerif : (pf.boundaryWest || ''),
+      boundaryNorthDoc: saved.boundaryNorthDoc !== undefined ? saved.boundaryNorthDoc : (pf.boundaryNorth || ''),
+      boundaryNorthVerif: saved.boundaryNorthVerif !== undefined ? saved.boundaryNorthVerif : (pf.boundaryNorth || ''),
+      boundarySouthDoc: saved.boundarySouthDoc !== undefined ? saved.boundarySouthDoc : (pf.boundarySouth || ''),
+      boundarySouthVerif: saved.boundarySouthVerif !== undefined ? saved.boundarySouthVerif : (pf.boundarySouth || ''),
 
       matchingBoundaries: saved.matchingBoundaries !== undefined ? saved.matchingBoundaries : 'Yes/ No',
       plotDemarcated: saved.plotDemarcated !== undefined ? saved.plotDemarcated : 'Yes/ No',
       approvedLandUse: saved.approvedLandUse !== undefined ? saved.approvedLandUse : 'Residential',
       typeOfProperty: saved.typeOfProperty !== undefined ? saved.typeOfProperty : 'Land & Building',
-      numberOfRoomsLiving: saved.numberOfRoomsLiving !== undefined ? saved.numberOfRoomsLiving : '2 Nos',
-      numberOfRoomsBed: saved.numberOfRoomsBed !== undefined ? saved.numberOfRoomsBed : '5 Nos',
-      numberOfRoomsToilets: saved.numberOfRoomsToilets !== undefined ? saved.numberOfRoomsToilets : '3 Nos',
-      numberOfRoomsKitchens: saved.numberOfRoomsKitchens !== undefined ? saved.numberOfRoomsKitchens : '1 Nos',
-      totalNumberOfFloors: saved.totalNumberOfFloors !== undefined ? saved.totalNumberOfFloors : 'G+1 Storied',
-      areaPropertyLocated: saved.areaPropertyLocated !== undefined ? saved.areaPropertyLocated : 'Kalyani Vihar Scheme',
-      yearOfOccupancy: saved.yearOfOccupancy !== undefined ? saved.yearOfOccupancy : '2024',
-      approxAgeProperty: saved.approxAgeProperty !== undefined ? saved.approxAgeProperty : 'New',
-      residualLifeProperty: saved.residualLifeProperty !== undefined ? saved.residualLifeProperty : '65 Yrs',
+      numberOfRoomsLiving: saved.numberOfRoomsLiving !== undefined ? saved.numberOfRoomsLiving : '',
+      numberOfRoomsBed: saved.numberOfRoomsBed !== undefined ? saved.numberOfRoomsBed : '',
+      numberOfRoomsToilets: saved.numberOfRoomsToilets !== undefined ? saved.numberOfRoomsToilets : '',
+      numberOfRoomsKitchens: saved.numberOfRoomsKitchens !== undefined ? saved.numberOfRoomsKitchens : '',
+      totalNumberOfFloors: saved.totalNumberOfFloors !== undefined ? saved.totalNumberOfFloors : '',
+      areaPropertyLocated: saved.areaPropertyLocated !== undefined ? saved.areaPropertyLocated : '',
+      yearOfOccupancy: saved.yearOfOccupancy !== undefined ? saved.yearOfOccupancy : '',
+      approxAgeProperty: saved.approxAgeProperty !== undefined ? saved.approxAgeProperty : '',
+      residualLifeProperty: saved.residualLifeProperty !== undefined ? saved.residualLifeProperty : '',
       typeOfStructure: saved.typeOfStructure !== undefined ? saved.typeOfStructure : 'RCC Frame',
 
       // 5. Tenure / Occupancy
@@ -237,42 +237,42 @@ export default function StateBankOfIndiaLandAndBuilding({
       relationshipTenantOwner: saved.relationshipTenantOwner !== undefined ? saved.relationshipTenantOwner : 'NA',
 
       // 6. Stage of construction
-      stageOfConstruction: saved.stageOfConstruction !== undefined ? saved.stageOfConstruction : 'Ground Floor Completed (85%), First Floor Completed (80%)',
+      stageOfConstruction: saved.stageOfConstruction !== undefined ? saved.stageOfConstruction : '',
       underConstructionExtent: saved.underConstructionExtent !== undefined ? saved.underConstructionExtent : 'Not Applicable',
 
       // 7. Violations
-      natureExtentViolations: saved.natureExtentViolations !== undefined ? saved.natureExtentViolations : 'Horizontal Deviation-93%',
+      natureExtentViolations: saved.natureExtentViolations !== undefined ? saved.natureExtentViolations : '',
 
       // 8. Area details
-      siteAreaText: saved.siteAreaText !== undefined ? saved.siteAreaText : 'Ac.0.055 Dec i.e. 2400.00 Sft',
-      carpetAreaText: saved.carpetAreaText !== undefined ? saved.carpetAreaText : '2440.00 Sft (Approx.)',
-      saleableAreaText: saved.saleableAreaText !== undefined ? saved.saleableAreaText : '2400.00 Sft (Land) & 2880.00 Sft (Building)',
-      plinthAreaApprovalText: saved.plinthAreaApprovalText !== undefined ? saved.plinthAreaApprovalText : 'Block-1: Ground: 746.00 Sft, First: 746.00 Sft, Second: 746.00 Sft\nBlock-2: Ground: 746.00 Sft, First: 746.00 Sft, Second: 746.00 Sft',
-      plinthAreaActualText: saved.plinthAreaActualText !== undefined ? saved.plinthAreaActualText : 'Block-1: Ground: 1440.00 Sft, First: 1440.00 Sft\nTotal: 2880.00 Sft',
+      siteAreaText: saved.siteAreaText !== undefined ? saved.siteAreaText : '',
+      carpetAreaText: saved.carpetAreaText !== undefined ? saved.carpetAreaText : '',
+      saleableAreaText: saved.saleableAreaText !== undefined ? saved.saleableAreaText : '',
+      plinthAreaApprovalText: saved.plinthAreaApprovalText !== undefined ? saved.plinthAreaApprovalText : '',
+      plinthAreaActualText: saved.plinthAreaActualText !== undefined ? saved.plinthAreaActualText : '',
 
       // 9. Valuation
-      landRateAdoptedText: saved.landRateAdoptedText !== undefined ? saved.landRateAdoptedText : `THE LAND RATE ADOPTED IN THIS VALUATION:\n• GOVT. BENCHMARK VALUE: RS.1,69,65,000/- PER ACRE I.E. RS.389/- PER SFT\n• TOTAL LAND AREA: AC.0.055 DEC I.E. 2400.00 SFT\n• GUIDELINE VALUE OF LAND= 2400.00 SFT X RS.389/- PER SFT =RS.9,33,600/-\n• THE PREVAILING MARKET RATE OF THE LAND IS RS.2400/- TO RS.2600/- PER SFT.\n• THE ADOPTED MARKET RATE OF THE LAND IS RS.2500/- PER SFT FOR VALUATION PURPOSE.\n• TOTAL MARKET VALUE: 2400.00 SFT X RS.2500/- PER SFT = RS.60,00,000/-`,
+      landRateAdoptedText: saved.landRateAdoptedText !== undefined ? saved.landRateAdoptedText : '',
       tirQualificationsMitigation: saved.tirQualificationsMitigation !== undefined ? saved.tirQualificationsMitigation : (saved.tirQualifications || 'NIL / Clear TIR obtained without any adverse observations'),
       sarfaesiCompliant: saved.sarfaesiCompliant !== undefined ? saved.sarfaesiCompliant : 'Yes',
       socialInfrastructure: saved.socialInfrastructure !== undefined ? saved.socialInfrastructure : 'No',
       entireLandMortgaged: saved.entireLandMortgaged !== undefined ? saved.entireLandMortgaged : 'Yes',
-      lastTwoTransactionsDetails: saved.lastTwoTransactionsDetails !== undefined ? saved.lastTwoTransactionsDetails : 'As per local enquiry, recent transactions in the locality range between Rs. 2,400/- to Rs. 2,600/- per Sq.ft.',
-      variationJustification20Pct: saved.variationJustification20Pct !== undefined ? saved.variationJustification20Pct : 'No significant variation observed; adopted rate is aligned with prevailing market trends.',
-      otherRelevantAspects: saved.otherRelevantAspects !== undefined ? saved.otherRelevantAspects : 'The property has good road connectivity and civic amenities available within 1-2 kms.',
+      lastTwoTransactionsDetails: saved.lastTwoTransactionsDetails !== undefined ? saved.lastTwoTransactionsDetails : '',
+      variationJustification20Pct: saved.variationJustification20Pct !== undefined ? saved.variationJustification20Pct : '',
+      otherRelevantAspects: saved.otherRelevantAspects !== undefined ? saved.otherRelevantAspects : '',
 
       // 10. Remarks
-      generalRemarksText: saved.generalRemarksText !== undefined ? saved.generalRemarksText : `REMARKS:\nSUBJECT PROPERTY IS AN UNDER CONSTRUCTED G+1 STORIED BUILDING, LAND EXTENT OF AC.0.055 DEC I.E. 2400.00 SFT. PROPERTY LOCATED IN A GOOD DEVELOPED RESIDENTIAL AREA OF KALYANI VIHAR, KANTILO, BHUBANESWAR. THIS PROPERTY IS COMING UNDER BHUBANESWAR DEVELOPMENT AUTHORITY AREA LIMIT. ALL CIVIC AMENITIES ARE PRESENT 2-3 KM FROM THE PROPERTY. VALUATION HAS BEEN DONE FOR LAND & APPROVED BUA OF THE G+1 STORIED BUILDING (BLOCK-1).`,
+      generalRemarksText: saved.generalRemarksText !== undefined ? saved.generalRemarksText : '',
 
       // 10 & 11 Declaration & Valuer Details
-      inspectionDate: saved.inspectionDate !== undefined ? saved.inspectionDate : (saved.dateOfInspection || '2026-07-24'),
+      inspectionDate: saved.inspectionDate !== undefined ? saved.inspectionDate : (saved.dateOfInspection || (earliestVisit ? formatReportDate(earliestVisit.date) : '')),
       valuerDeclarations: saved.valuerDeclarations || {},
-      declarationText: saved.declarationText !== undefined ? saved.declarationText : `1) The property was inspected by the undersigned on 24.07.2026\n2) The undersigned does not have any direct/indirect interest in the above property.\n3) The information furnished herein is true and correct to the best of our knowledge.`,
+      declarationText: saved.declarationText !== undefined ? saved.declarationText : '',
 
       // 12. Valuer Details
       valuerNameAndAddress: saved.valuerNameAndAddress !== undefined ? saved.valuerNameAndAddress : 'Er. Satyajit Mohanty, (S MOHANTY ASSOCIATES)\nPlot No: 858 (P) & 859 (P), Near Astha Binodini Apartment, Siba Nagar, Rajarani, Tankapani Road, Bhubaneswar-751018',
       valuerWealthTaxReg: saved.valuerWealthTaxReg !== undefined ? saved.valuerWealthTaxReg : '107/2016-17 of Category-I',
       signaturePlace: saved.signaturePlace !== undefined ? saved.signaturePlace : 'Bhubaneswar',
-      signatureDate: saved.signatureDate !== undefined ? saved.signatureDate : (pf.reportDate || '24.07.2026'),
+      signatureDate: saved.signatureDate !== undefined ? saved.signatureDate : (pf.reportDate || (earliestVisit ? formatReportDate(earliestVisit.date) : '')),
 
       // 13 & 14 Enclosures
       listDocumentsEnclosed: saved.listDocumentsEnclosed || 'Valuation Report, Benchmark Valuation, GPS Map, Photographs',
@@ -282,44 +282,41 @@ export default function StateBankOfIndiaLandAndBuilding({
       marketabilityNarrative: saved.marketabilityNarrative || 'Valuation of the assets under consideration is carried out on the basis of our perception about the macro & micro economic factors presently governing the real estate industry, location of property, existing market conditions, degree of development of infrastructure in the area, Demand-supply conditions, internal amenities, common amenities etc.\n\nLand & building method of valuation has been adopted for finding the fair market value of the property.',
 
       // Valuation Computation
-      plinthAreaVal: saved.plinthAreaVal !== undefined ? saved.plinthAreaVal : '746',
-      roofHeightVal: saved.roofHeightVal !== undefined ? saved.roofHeightVal : "10'-6\"",
-      ageVal: saved.ageVal !== undefined ? saved.ageVal : 'New',
-      replacementRateVal: saved.replacementRateVal !== undefined ? saved.replacementRateVal : '2000',
-      depreciationVal: saved.depreciationVal !== undefined ? saved.depreciationVal : '0',
+      plinthAreaVal: saved.plinthAreaVal !== undefined ? saved.plinthAreaVal : '',
+      roofHeightVal: saved.roofHeightVal !== undefined ? saved.roofHeightVal : '',
+      ageVal: saved.ageVal !== undefined ? saved.ageVal : '',
+      replacementRateVal: saved.replacementRateVal !== undefined ? saved.replacementRateVal : '',
+      depreciationVal: saved.depreciationVal !== undefined ? saved.depreciationVal : '',
 
       // DETAILS OF VALUATION Grid
-      valuationGridItems: saved.valuationGridItems || [
-        { plotNo: 'RCC GROUND FLOOR (BLOCK-1)', area: '746.00', rate: '2000.00', totalValue: '1492000' },
-        { plotNo: 'RCC FIRST FLOOR (BLOCK-1)', area: '746.00', rate: '1500.00', totalValue: '1119000' },
-      ],
+      valuationGridItems: saved.valuationGridItems || [],
 
       // Value of Property Abstract (4x4 Table with Ext Services)
-      abstractGovtLand: saved.abstractGovtLand !== undefined ? saved.abstractGovtLand : '933600',
-      abstractGovtBldg: saved.abstractGovtBldg !== undefined ? saved.abstractGovtBldg : '1958250',
-      abstractGovtExtra: saved.abstractGovtExtra !== undefined ? saved.abstractGovtExtra : '0',
-      abstractGovtTotal: saved.abstractGovtTotal !== undefined ? saved.abstractGovtTotal : '2891850',
-      abstractGovtOrSay: saved.abstractGovtOrSay !== undefined ? saved.abstractGovtOrSay : '2892000',
+      abstractGovtLand: saved.abstractGovtLand !== undefined ? saved.abstractGovtLand : '',
+      abstractGovtBldg: saved.abstractGovtBldg !== undefined ? saved.abstractGovtBldg : '',
+      abstractGovtExtra: saved.abstractGovtExtra !== undefined ? saved.abstractGovtExtra : '',
+      abstractGovtTotal: saved.abstractGovtTotal !== undefined ? saved.abstractGovtTotal : '',
+      abstractGovtOrSay: saved.abstractGovtOrSay !== undefined ? saved.abstractGovtOrSay : '',
 
-      abstractMarketLand: saved.abstractMarketLand !== undefined ? saved.abstractMarketLand : '6000000',
-      abstractMarketBldg: saved.abstractMarketBldg !== undefined ? saved.abstractMarketBldg : '2611000',
-      abstractMarketExtra: saved.abstractMarketExtra !== undefined ? saved.abstractMarketExtra : '0',
-      abstractMarketTotal: saved.abstractMarketTotal !== undefined ? saved.abstractMarketTotal : '8611000',
-      abstractMarketOrSay: saved.abstractMarketOrSay !== undefined ? saved.abstractMarketOrSay : '8611000',
+      abstractMarketLand: saved.abstractMarketLand !== undefined ? saved.abstractMarketLand : '',
+      abstractMarketBldg: saved.abstractMarketBldg !== undefined ? saved.abstractMarketBldg : '',
+      abstractMarketExtra: saved.abstractMarketExtra !== undefined ? saved.abstractMarketExtra : '',
+      abstractMarketTotal: saved.abstractMarketTotal !== undefined ? saved.abstractMarketTotal : '',
+      abstractMarketOrSay: saved.abstractMarketOrSay !== undefined ? saved.abstractMarketOrSay : '',
 
       abstractRealizablePct: saved.abstractRealizablePct !== undefined ? saved.abstractRealizablePct : '95',
-      abstractRealizableLand: saved.abstractRealizableLand !== undefined ? saved.abstractRealizableLand : '5700000',
-      abstractRealizableBldg: saved.abstractRealizableBldg !== undefined ? saved.abstractRealizableBldg : '2480450',
-      abstractRealizableExtra: saved.abstractRealizableExtra !== undefined ? saved.abstractRealizableExtra : '0',
-      abstractRealizableTotal: saved.abstractRealizableTotal !== undefined ? saved.abstractRealizableTotal : '8180450',
-      abstractRealizableOrSay: saved.abstractRealizableOrSay !== undefined ? saved.abstractRealizableOrSay : '8180000',
+      abstractRealizableLand: saved.abstractRealizableLand !== undefined ? saved.abstractRealizableLand : '',
+      abstractRealizableBldg: saved.abstractRealizableBldg !== undefined ? saved.abstractRealizableBldg : '',
+      abstractRealizableExtra: saved.abstractRealizableExtra !== undefined ? saved.abstractRealizableExtra : '',
+      abstractRealizableTotal: saved.abstractRealizableTotal !== undefined ? saved.abstractRealizableTotal : '',
+      abstractRealizableOrSay: saved.abstractRealizableOrSay !== undefined ? saved.abstractRealizableOrSay : '',
 
       abstractDistressPct: saved.abstractDistressPct !== undefined ? saved.abstractDistressPct : '85',
-      abstractDistressLand: saved.abstractDistressLand !== undefined ? saved.abstractDistressLand : '5100000',
-      abstractDistressBldg: saved.abstractDistressBldg !== undefined ? saved.abstractDistressBldg : '2219350',
-      abstractDistressExtra: saved.abstractDistressExtra !== undefined ? saved.abstractDistressExtra : '0',
-      abstractDistressTotal: saved.abstractDistressTotal !== undefined ? saved.abstractDistressTotal : '7319350',
-      abstractDistressOrSay: saved.abstractDistressOrSay !== undefined ? saved.abstractDistressOrSay : '7319000',
+      abstractDistressLand: saved.abstractDistressLand !== undefined ? saved.abstractDistressLand : '',
+      abstractDistressBldg: saved.abstractDistressBldg !== undefined ? saved.abstractDistressBldg : '',
+      abstractDistressExtra: saved.abstractDistressExtra !== undefined ? saved.abstractDistressExtra : '',
+      abstractDistressTotal: saved.abstractDistressTotal !== undefined ? saved.abstractDistressTotal : '',
+      abstractDistressOrSay: saved.abstractDistressOrSay !== undefined ? saved.abstractDistressOrSay : '',
 
       // ENCLOSURES & APPRAISAL STATEMENT
       encLayoutSketch: saved.encLayoutSketch !== undefined ? saved.encLayoutSketch : 'Enclosed',
@@ -551,7 +548,7 @@ export default function StateBankOfIndiaLandAndBuilding({
   const totalMarketVal = useMemo(() => {
     const landMarket = parseNum(fields.abstractMarketLand);
     const bldgMarket = parseNum(fields.abstractMarketBldg);
-    return (landMarket + bldgMarket) > 0 ? (landMarket + bldgMarket) : 8611000;
+    return landMarket + bldgMarket;
   }, [fields.abstractMarketLand, fields.abstractMarketBldg]);
 
   const presentMarketValueStr = useMemo(() => {
@@ -580,7 +577,7 @@ export default function StateBankOfIndiaLandAndBuilding({
   }, []);
 
   const DECLARATIONS_LIST = [
-    { id: '1', text: `The property was inspected by the undersigned on ${fields.inspectionDate || fields.signatureDate || '24.07.2026'}.` },
+    { id: '1', text: `The property was inspected by the undersigned${(fields.inspectionDate || fields.signatureDate) ? ` on ${fields.inspectionDate || fields.signatureDate}` : ''}.` },
     { id: '2', text: 'The undersigned does not have any direct or indirect interest in the above property.' },
     { id: '3', text: 'The information furnished herein is true and correct to the best of our knowledge.' },
     { id: '4', text: 'I am a citizen of India and registered valuer with Insolvency & Bankruptcy Board of India (IBBI).' },
@@ -685,8 +682,8 @@ export default function StateBankOfIndiaLandAndBuilding({
   const DECLARATION_STATEMENTS_A_TO_Z: { id: string; text: string }[] = useMemo(() => [
     { id: 'a', text: 'I am citizen of India.' },
     { id: 'b', text: 'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.' },
-    { id: 'c', text: `The information furnished in my valuation report dated ${fields.coverDate || fields.reportDate || '24.07.2026'} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.` },
-    { id: 'd', text: `I have personally inspected the property on ${fields.inspectionDate || fields.signatureDate || '24.07.2026'} & I have valued the property which is identified by documents & help of customer. The work is not sub-contracted to any other valuer & carried out by myself.` },
+    { id: 'c', text: `The information furnished in my valuation report${(fields.coverDate || fields.reportDate) ? ` dated ${fields.coverDate || fields.reportDate}` : ''} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.` },
+    { id: 'd', text: `I have personally inspected the property${(fields.inspectionDate || fields.signatureDate) ? ` on ${fields.inspectionDate || fields.signatureDate}` : ''} & I have valued the property which is identified by documents & help of customer. The work is not sub-contracted to any other valuer & carried out by myself.` },
     { id: 'e', text: 'Valuation report is submitted in the format as prescribed by the bank.' },
     { id: 'f', text: 'I have not been depanelled by any other bank and in case any such depanelment by other banks during my empanelment with you, I will inform you within three days of such depanelment.' },
     { id: 'g', text: 'I have not been removed from service earlier.' },
@@ -786,18 +783,18 @@ export default function StateBankOfIndiaLandAndBuilding({
   }, [fields.branchAddressDetails, fields.branchAddress, fields.bankName]);
 
   const autoJustificationSub = useMemo(() => {
-    const ownerNameStr = fields.ownerName || fields.borrowerName || fields.saleDeedExecutedName || 'MR. AMIYA KUMAR TRIPATHY';
-    return `Sub: - Justification of valuation Report of ${ownerNameStr}.`;
+    const ownerNameStr = fields.ownerName || fields.borrowerName || fields.saleDeedExecutedName || '';
+    return ownerNameStr ? `Sub: - Justification of valuation Report of ${ownerNameStr}.` : 'Sub: - Justification of valuation Report.';
   }, [fields.ownerName, fields.borrowerName, fields.saleDeedExecutedName]);
 
   const autoPropertyDescBlock = useMemo(() => {
-    const kNo = fields.khataNo || '333/149';
-    const pNo = fields.plotNo || '732/2855';
-    const area = fields.extentOfLand || fields.siteArea || 'Ac. 0.055 Dec (2400.00 Sft)';
-    const m = fields.mouza || 'Kantilo';
-    const ps = fields.policeStation || 'Jatani No-45';
-    const tah = fields.tahasil || 'Jatani';
-    const dist = fields.district || 'Khurda';
+    const kNo = fields.khataNo || '';
+    const pNo = fields.plotNo || '';
+    const area = fields.extentOfLand || fields.siteArea || '';
+    const m = fields.mouza || '';
+    const ps = fields.policeStation || '';
+    const tah = fields.tahasil || '';
+    const dist = fields.district || '';
     return `The subject property bearing Khata No: ${kNo}, Plot No: ${pNo}, Area: ${area}, Mouza: ${m}, Ps: ${ps}, Tahasil: ${tah}, Dist: ${dist}, Odisha.`;
   }, [
     fields.khataNo,
@@ -834,33 +831,23 @@ export default function StateBankOfIndiaLandAndBuilding({
 
   return (
     <div className="space-y-6 pb-24 w-full">
-      {/* ── Active Configuration Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
-        category={fields.institutionCategory || 'Bank & FIS'}
-        bankName={fields.bankName || fields.organisationTemplate || 'STATE BANK OF INDIA (SBI)'}
-        subclass={fields.organisationSubTemplate || undefined}
-        serviceType={fields.serviceType}
-        subjectType={fields.subjectType}
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-
-
-              {/* Standardized Title Card */}
-        <BankReportTitleCard
-          bankName="State Bank of India (SBI)"
-          subclass="Land & Building (Below 5CR)"
-          title="Valuation Report Builder"
-          description="Detailed SBI Format for Valuation of Land & Building Assets with Schedules."
-          earliestVisit={earliestVisit}
-          projectCode={projectCode}
-        />
+          {/* Universal Bank Report Header */}
+          <BankReportHeader
+            bankName="State Bank of India (SBI)"
+            subclass="Land & Building (Below 5CR)"
+            formatName="SBI Valuation Format (Land & Building)"
+            clientType="organisation"
+            category={fields.institutionCategory || 'Bank & FIS'}
+            serviceType={fields.serviceType || 'Mortgage & Loan Security Valuation'}
+            subjectType={fields.subjectType || 'Land & Building'}
+            onResetWizard={onResetWizard}
+            earliestVisit={earliestVisit}
+            projectCode={projectCode}
+          />
 
 {/* ── Section 1: COVER PAGE & BANK DETAILS ── */}
       <Section id="sbi-lb-cover-and-customer" title="Cover Page & Bank Details" number={1} defaultOpen={true}>

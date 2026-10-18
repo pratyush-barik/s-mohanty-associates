@@ -129,7 +129,7 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     this.drawIndusRow(
       'E',
       'Valuation done by (Name of field engineer) & date of visit',
-      this.getF('indusFieldEngineerName', 'Mr. Mantu Das'),
+      this.getF('indusFieldEngineerName', ''),
       this.getF('indusDateOfVisit', ''),
       110
     );
@@ -272,7 +272,7 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     this.drawIndusRow('G', 'Nature of Locality', this.getF('indusNatureOfLocality', 'Developed/ Developing / Under Developed'));
     this.drawIndusRow('H', 'Class of Locality', this.getF('indusClassOfLocality', 'Posh / Upper Middle Class / Middle Class / Lower Middle Class'));
     this.drawIndusRow('I', 'Property Location', this.getF('indusPropertyLocationLimit', 'B.D.A. Limit/ Nagar Nigam/ Municipal Limit / Gram Panchayat'));
-    this.drawIndusRow('J', 'Distance from Indusind office (Km)', this.getF('indusDistanceFromOffice', '1-2 Kms'));
+    this.drawIndusRow('J', 'Distance from Indusind office (Km)', this.getF('indusDistanceFromOffice', ''));
     this.drawIndusRow('K', 'Electricity service connection', this.getF('indusElectricityConnection', 'Residential / Commercial'));
     this.drawIndusRow('L', 'Type of Property', this.getF('indusTypeOfProperty', 'Residential / Commercial / Industrial / Land'));
 
@@ -672,7 +672,7 @@ export class PDFIndusIndHLLAPRenderer extends PDFBankRenderer {
     this.drawKeyValueRow([
       { label: 'Signature & Seal of Valuer(S MOHANTY ASSOCIATES)', value: '', labelWidth: sigLabelW, valueWidth: 0, labelBold: true },
       { label: 'Date:', value: '', labelWidth: dateLabelW, valueWidth: 0 },
-      { label: this.getF('indusDateOfReport', this.getF('valuationDate', '12-11-2024')), value: '', labelWidth: dateValW, valueWidth: 0 },
+      { label: this.getF('indusDateOfReport', this.getF('valuationDate', '')), value: '', labelWidth: dateValW, valueWidth: 0 },
     ]);
     this.drawKeyValueRow([
       { label: '', value: '', labelWidth: sigLabelW, valueWidth: 0 },

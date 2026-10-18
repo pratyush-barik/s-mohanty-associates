@@ -7,18 +7,18 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-BankReportTitleCard,
-Section,
+  BankReportHeader,
+  Section,
   Field,
   inputCls,
   selectCls,
   BaseDocumentsSection,
   BaseMapsSection,
   BasePhotographsSection,
-  ActiveConfigBanner,
   ReportActionBar,
   FloatingNavigator,
   NavItem,
+  formatReportDate,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { Lock, Plus, Trash2 } from 'lucide-react';
@@ -166,9 +166,9 @@ export default function StateBankOfIndiaFlatAndApartment({
       districtState: saved.districtState !== undefined ? saved.districtState : 'DIST: PURI, ODISHA',
 
       // Metadata
-      refNo: saved.refNo || saved.reportRefNo || projectCode || 'SMA/08/2026/01',
-      reportDate: saved.reportDate || pf.reportDate || '06.08.2026',
-      borrowerName: saved.borrowerName || pf.customerName || 'Mr. Srijit Mishra',
+      refNo: saved.refNo || saved.reportRefNo || (projectCode ? `SMA/${projectCode}` : ''),
+      reportDate: saved.reportDate || pf.reportDate || (earliestVisit ? formatReportDate(earliestVisit.date) : ''),
+      borrowerName: saved.borrowerName || pf.customerName || pf.applicantName || '',
 
       // ── SECTION I. GENERAL DEFAULTS ──
       // 1. Purpose for which the valuation is made
@@ -176,10 +176,10 @@ export default function StateBankOfIndiaFlatAndApartment({
       purposeOfValuation: saved.purposeOfValuation !== undefined ? saved.purposeOfValuation : (saved.sbiFlatPurposeOfValuation || pf.purposeOfValuation || 'To assess the present Market Value of the Property for Loan purpose'),
 
       // 2. a) Date of inspection & 2. b) Date on which the valuation is made
-      sbiFlatInspectionDate: saved.sbiFlatInspectionDate !== undefined ? saved.sbiFlatInspectionDate : (saved.inspectionDate || pf.inspectionDate || '03.08.2026'),
-      inspectionDate: saved.inspectionDate || saved.sbiFlatInspectionDate || pf.inspectionDate || '03.08.2026',
-      sbiFlatValuationDate: saved.sbiFlatValuationDate !== undefined ? saved.sbiFlatValuationDate : (saved.valuationDate || saved.reportDate || pf.reportDate || '06.08.2026'),
-      valuationDate: saved.valuationDate || saved.sbiFlatValuationDate || pf.reportDate || '06.08.2026',
+      sbiFlatInspectionDate: saved.sbiFlatInspectionDate !== undefined ? saved.sbiFlatInspectionDate : (saved.inspectionDate || pf.inspectionDate || (earliestVisit ? formatReportDate(earliestVisit.date) : '')),
+      inspectionDate: saved.inspectionDate || saved.sbiFlatInspectionDate || pf.inspectionDate || (earliestVisit ? formatReportDate(earliestVisit.date) : ''),
+      sbiFlatValuationDate: saved.sbiFlatValuationDate !== undefined ? saved.sbiFlatValuationDate : (saved.valuationDate || saved.reportDate || pf.reportDate || (earliestVisit ? formatReportDate(earliestVisit.date) : '')),
+      valuationDate: saved.valuationDate || saved.sbiFlatValuationDate || pf.reportDate || (earliestVisit ? formatReportDate(earliestVisit.date) : ''),
 
       // 3. List of documents produced for perusal [i), ii), iii)]
       sbiFlatDocumentsProduced: Array.isArray(saved.sbiFlatDocumentsProduced) && saved.sbiFlatDocumentsProduced.length > 0
@@ -190,12 +190,12 @@ export default function StateBankOfIndiaFlatAndApartment({
         : (Array.isArray(saved.sbiFlatDocumentsProduced) && saved.sbiFlatDocumentsProduced.length > 0 ? saved.sbiFlatDocumentsProduced : ['Sale Deed', 'Approved Building Plan', 'Record of Rights (Patta)']),
 
       // 4. Name of the Owner and his / their address (es) with Phone no.
-      sbiFlatOwnerNameAndAddress: saved.sbiFlatOwnerNameAndAddress !== undefined ? saved.sbiFlatOwnerNameAndAddress : (saved.ownerNameAndAddress || (pf.propertyOwner ? `${pf.propertyOwner}, At: ${pf.propertyAddress || ''}, Ph: ${pf.customerPhone || ''}` : 'Mr. Srijit Mishra, S/o: Mr. Gopinath Mishra, Ph: 9861012345')),
-      ownerNameAndAddress: saved.ownerNameAndAddress !== undefined ? saved.ownerNameAndAddress : (saved.sbiFlatOwnerNameAndAddress || (pf.propertyOwner ? `${pf.propertyOwner}, At: ${pf.propertyAddress || ''}, Ph: ${pf.customerPhone || ''}` : 'Mr. Srijit Mishra, S/o: Mr. Gopinath Mishra, Ph: 9861012345')),
+      sbiFlatOwnerNameAndAddress: saved.sbiFlatOwnerNameAndAddress !== undefined ? saved.sbiFlatOwnerNameAndAddress : (saved.ownerNameAndAddress || (pf.propertyOwner ? `${pf.propertyOwner}, At: ${pf.propertyAddress || ''}${pf.customerPhone ? `, Ph: ${pf.customerPhone}` : ''}` : '')),
+      ownerNameAndAddress: saved.ownerNameAndAddress !== undefined ? saved.ownerNameAndAddress : (saved.sbiFlatOwnerNameAndAddress || (pf.propertyOwner ? `${pf.propertyOwner}, At: ${pf.propertyAddress || ''}${pf.customerPhone ? `, Ph: ${pf.customerPhone}` : ''}` : '')),
 
       // 5. Brief description of the property
-      sbiFlatPropertyDescription: saved.sbiFlatPropertyDescription !== undefined ? saved.sbiFlatPropertyDescription : (saved.propertyDescription || pf.propertyAddress || 'Residential Flat on First Floor, Block-A with car parking space.'),
-      propertyDescription: saved.propertyDescription !== undefined ? saved.propertyDescription : (saved.sbiFlatPropertyDescription || pf.propertyAddress || 'Residential Flat on First Floor, Block-A with car parking space.'),
+      sbiFlatPropertyDescription: saved.sbiFlatPropertyDescription !== undefined ? saved.sbiFlatPropertyDescription : (saved.propertyDescription || pf.propertyAddress || ''),
+      propertyDescription: saved.propertyDescription !== undefined ? saved.propertyDescription : (saved.sbiFlatPropertyDescription || pf.propertyAddress || ''),
 
       // 6. Location of property (Plot No., Door No., T.S. No., Ward, District)
       sbiFlatPlotNo: saved.sbiFlatPlotNo !== undefined ? saved.sbiFlatPlotNo : (saved.plotNo || pf.plotNo || ''),
@@ -206,8 +206,8 @@ export default function StateBankOfIndiaFlatAndApartment({
       tsNoVillage: saved.tsNoVillage !== undefined ? saved.tsNoVillage : (saved.sbiFlatTsNo || pf.mouza || ''),
       sbiFlatWard: saved.sbiFlatWard !== undefined ? saved.sbiFlatWard : (saved.wardTaluka || ''),
       wardTaluka: saved.wardTaluka !== undefined ? saved.wardTaluka : (saved.sbiFlatWard || ''),
-      sbiFlatDistrict: saved.sbiFlatDistrict !== undefined ? saved.sbiFlatDistrict : (saved.mandalDistrict || pf.district || 'Khurda, Odisha'),
-      mandalDistrict: saved.mandalDistrict !== undefined ? saved.mandalDistrict : (saved.sbiFlatDistrict || pf.district || 'Khurda, Odisha'),
+      sbiFlatDistrict: saved.sbiFlatDistrict !== undefined ? saved.sbiFlatDistrict : (saved.mandalDistrict || pf.district || ''),
+      mandalDistrict: saved.mandalDistrict !== undefined ? saved.mandalDistrict : (saved.sbiFlatDistrict || pf.district || ''),
 
       // 7. Postal address of the property
       sbiFlatPostalAddress: saved.sbiFlatPostalAddress !== undefined ? saved.sbiFlatPostalAddress : (saved.postalAddress || pf.propertyAddress || ''),
@@ -227,8 +227,8 @@ export default function StateBankOfIndiaFlatAndApartment({
       classificationUrbanRural: saved.classificationUrbanRural !== undefined ? saved.classificationUrbanRural : 'Urban Area',
 
       // 10 Coming under Corporation limit/ Village Panchayat / Municipality
-      sbiFlatLocalBodyLimit: saved.sbiFlatLocalBodyLimit !== undefined ? saved.sbiFlatLocalBodyLimit : (saved.localBodyLimit || 'Bhubaneswar Municipal Corporation area limit'),
-      localBodyLimit: saved.localBodyLimit !== undefined ? saved.localBodyLimit : (saved.sbiFlatLocalBodyLimit || 'Bhubaneswar Municipal Corporation area limit'),
+      sbiFlatLocalBodyLimit: saved.sbiFlatLocalBodyLimit !== undefined ? saved.sbiFlatLocalBodyLimit : (saved.localBodyLimit || ''),
+      localBodyLimit: saved.localBodyLimit !== undefined ? saved.localBodyLimit : (saved.sbiFlatLocalBodyLimit || ''),
 
       // 11 Whether covered under any State / Central Govt. enactments
       sbiFlatGovtEnactmentsCovered: saved.sbiFlatGovtEnactmentsCovered !== undefined ? saved.sbiFlatGovtEnactmentsCovered : (saved.govtEnactmentsCovered === 'Yes' || saved.govtEnactmentsCovered === true),
@@ -236,99 +236,99 @@ export default function StateBankOfIndiaFlatAndApartment({
       govtEnactmentsCovered: saved.govtEnactmentsCovered !== undefined ? saved.govtEnactmentsCovered : 'No',
 
       // 12 In case it is an agricultural land, any conversion to house site plots is contemplated
-      sbiFlatAgriculturalConversion: saved.sbiFlatAgriculturalConversion !== undefined ? saved.sbiFlatAgriculturalConversion : (saved.agriculturalConversion || 'The Plot is already converted to Homestead'),
-      agriculturalConversion: saved.agriculturalConversion !== undefined ? saved.agriculturalConversion : (saved.sbiFlatAgriculturalConversion || 'The Plot is already converted to Homestead'),
+      sbiFlatAgriculturalConversion: saved.sbiFlatAgriculturalConversion !== undefined ? saved.sbiFlatAgriculturalConversion : (saved.agriculturalConversion || ''),
+      agriculturalConversion: saved.agriculturalConversion !== undefined ? saved.agriculturalConversion : (saved.sbiFlatAgriculturalConversion || ''),
 
       // 13. Boundaries of the property (East, West, North, South)
-      sbiFlatBoundaryEastDoc: saved.sbiFlatBoundaryEastDoc !== undefined ? saved.sbiFlatBoundaryEastDoc : (saved.boundaryEastDocument || pf.boundaryEast || 'Flat No: A-042'),
-      sbiFlatBoundaryEastVerif: saved.sbiFlatBoundaryEastVerif !== undefined ? saved.sbiFlatBoundaryEastVerif : (saved.boundaryEastVerification || 'Flat No: A-042'),
-      boundaryEastDocument: saved.boundaryEastDocument !== undefined ? saved.boundaryEastDocument : (pf.boundaryEast || 'Flat No: A-042'),
-      boundaryEastVerification: saved.boundaryEastVerification !== undefined ? saved.boundaryEastVerification : 'Flat No: A-042',
+      sbiFlatBoundaryEastDoc: saved.sbiFlatBoundaryEastDoc !== undefined ? saved.sbiFlatBoundaryEastDoc : (saved.boundaryEastDocument || pf.boundaryEast || ''),
+      sbiFlatBoundaryEastVerif: saved.sbiFlatBoundaryEastVerif !== undefined ? saved.sbiFlatBoundaryEastVerif : (saved.boundaryEastVerification || pf.boundaryEast || ''),
+      boundaryEastDocument: saved.boundaryEastDocument !== undefined ? saved.boundaryEastDocument : (pf.boundaryEast || ''),
+      boundaryEastVerification: saved.boundaryEastVerification !== undefined ? saved.boundaryEastVerification : (pf.boundaryEast || ''),
 
-      sbiFlatBoundaryWestDoc: saved.sbiFlatBoundaryWestDoc !== undefined ? saved.sbiFlatBoundaryWestDoc : (saved.boundaryWestDocument || pf.boundaryWest || 'Open Space'),
-      sbiFlatBoundaryWestVerif: saved.sbiFlatBoundaryWestVerif !== undefined ? saved.sbiFlatBoundaryWestVerif : (saved.boundaryWestVerification || 'Open Space'),
-      boundaryWestDocument: saved.boundaryWestDocument !== undefined ? saved.boundaryWestDocument : (pf.boundaryWest || 'Open Space'),
-      boundaryWestVerification: saved.boundaryWestVerification !== undefined ? saved.boundaryWestVerification : 'Open Space',
+      sbiFlatBoundaryWestDoc: saved.sbiFlatBoundaryWestDoc !== undefined ? saved.sbiFlatBoundaryWestDoc : (saved.boundaryWestDocument || pf.boundaryWest || ''),
+      sbiFlatBoundaryWestVerif: saved.sbiFlatBoundaryWestVerif !== undefined ? saved.sbiFlatBoundaryWestVerif : (saved.boundaryWestVerification || pf.boundaryWest || ''),
+      boundaryWestDocument: saved.boundaryWestDocument !== undefined ? saved.boundaryWestDocument : (pf.boundaryWest || ''),
+      boundaryWestVerification: saved.boundaryWestVerification !== undefined ? saved.boundaryWestVerification : (pf.boundaryWest || ''),
 
-      sbiFlatBoundaryNorthDoc: saved.sbiFlatBoundaryNorthDoc !== undefined ? saved.sbiFlatBoundaryNorthDoc : (saved.boundaryNorthDocument || pf.boundaryNorth || 'Green Park'),
-      sbiFlatBoundaryNorthVerif: saved.sbiFlatBoundaryNorthVerif !== undefined ? saved.sbiFlatBoundaryNorthVerif : (saved.boundaryNorthVerification || 'Green Park'),
-      boundaryNorthDocument: saved.boundaryNorthDocument !== undefined ? saved.boundaryNorthDocument : (pf.boundaryNorth || 'Green Park'),
-      boundaryNorthVerification: saved.boundaryNorthVerification !== undefined ? saved.boundaryNorthVerification : 'Green Park',
+      sbiFlatBoundaryNorthDoc: saved.sbiFlatBoundaryNorthDoc !== undefined ? saved.sbiFlatBoundaryNorthDoc : (saved.boundaryNorthDocument || pf.boundaryNorth || ''),
+      sbiFlatBoundaryNorthVerif: saved.sbiFlatBoundaryNorthVerif !== undefined ? saved.sbiFlatBoundaryNorthVerif : (saved.boundaryNorthVerification || pf.boundaryNorth || ''),
+      boundaryNorthDocument: saved.boundaryNorthDocument !== undefined ? saved.boundaryNorthDocument : (pf.boundaryNorth || ''),
+      boundaryNorthVerification: saved.boundaryNorthVerification !== undefined ? saved.boundaryNorthVerification : (pf.boundaryNorth || ''),
 
-      sbiFlatBoundarySouthDoc: saved.sbiFlatBoundarySouthDoc !== undefined ? saved.sbiFlatBoundarySouthDoc : (saved.boundarySouthDocument || pf.boundarySouth || 'Corridor / Road'),
-      sbiFlatBoundarySouthVerif: saved.sbiFlatBoundarySouthVerif !== undefined ? saved.sbiFlatBoundarySouthVerif : (saved.boundarySouthVerification || 'Corridor / Road'),
-      boundarySouthDocument: saved.boundarySouthDocument !== undefined ? saved.boundarySouthDocument : (pf.boundarySouth || 'Road'),
-      boundarySouthVerification: saved.boundarySouthVerification !== undefined ? saved.boundarySouthVerification : 'Road',
+      sbiFlatBoundarySouthDoc: saved.sbiFlatBoundarySouthDoc !== undefined ? saved.sbiFlatBoundarySouthDoc : (saved.boundarySouthDocument || pf.boundarySouth || ''),
+      sbiFlatBoundarySouthVerif: saved.sbiFlatBoundarySouthVerif !== undefined ? saved.sbiFlatBoundarySouthVerif : (saved.boundarySouthVerification || pf.boundarySouth || ''),
+      boundarySouthDocument: saved.boundarySouthDocument !== undefined ? saved.boundarySouthDocument : (pf.boundarySouth || ''),
+      boundarySouthVerification: saved.boundarySouthVerification !== undefined ? saved.boundarySouthVerification : (pf.boundarySouth || ''),
 
       // 14.1 Dimensions of the site (East, West, North, South)
-      sbiFlatDimEastDeed: saved.sbiFlatDimEastDeed !== undefined ? saved.sbiFlatDimEastDeed : (saved.dimensionEastDeed || 'Not Applicable (Flat)'),
+      sbiFlatDimEastDeed: saved.sbiFlatDimEastDeed !== undefined ? saved.sbiFlatDimEastDeed : (saved.dimensionEastDeed || ''),
       sbiFlatDimEastActual: saved.sbiFlatDimEastActual !== undefined ? saved.sbiFlatDimEastActual : (saved.dimensionEastActual || ''),
-      dimensionEastDeed: saved.dimensionEastDeed !== undefined ? saved.dimensionEastDeed : 'Not Applicable (Flat)',
+      dimensionEastDeed: saved.dimensionEastDeed !== undefined ? saved.dimensionEastDeed : '',
       dimensionEastActual: saved.dimensionEastActual !== undefined ? saved.dimensionEastActual : '',
 
-      sbiFlatDimWestDeed: saved.sbiFlatDimWestDeed !== undefined ? saved.sbiFlatDimWestDeed : (saved.dimensionWestDeed || 'Not Applicable (Flat)'),
+      sbiFlatDimWestDeed: saved.sbiFlatDimWestDeed !== undefined ? saved.sbiFlatDimWestDeed : (saved.dimensionWestDeed || ''),
       sbiFlatDimWestActual: saved.sbiFlatDimWestActual !== undefined ? saved.sbiFlatDimWestActual : (saved.dimensionWestActual || ''),
-      dimensionWestDeed: saved.dimensionWestDeed !== undefined ? saved.dimensionWestDeed : 'Not Applicable (Flat)',
+      dimensionWestDeed: saved.dimensionWestDeed !== undefined ? saved.dimensionWestDeed : '',
       dimensionWestActual: saved.dimensionWestActual !== undefined ? saved.dimensionWestActual : '',
 
-      sbiFlatDimNorthDeed: saved.sbiFlatDimNorthDeed !== undefined ? saved.sbiFlatDimNorthDeed : (saved.dimensionNorthDeed || 'Not Applicable (Flat)'),
+      sbiFlatDimNorthDeed: saved.sbiFlatDimNorthDeed !== undefined ? saved.sbiFlatDimNorthDeed : (saved.dimensionNorthDeed || ''),
       sbiFlatDimNorthActual: saved.sbiFlatDimNorthActual !== undefined ? saved.sbiFlatDimNorthActual : (saved.dimensionNorthActual || ''),
-      dimensionNorthDeed: saved.dimensionNorthDeed !== undefined ? saved.dimensionNorthDeed : 'Not Applicable (Flat)',
+      dimensionNorthDeed: saved.dimensionNorthDeed !== undefined ? saved.dimensionNorthDeed : '',
       dimensionNorthActual: saved.dimensionNorthActual !== undefined ? saved.dimensionNorthActual : '',
 
-      sbiFlatDimSouthDeed: saved.sbiFlatDimSouthDeed !== undefined ? saved.sbiFlatDimSouthDeed : (saved.dimensionSouthDeed || 'Not Applicable (Flat)'),
+      sbiFlatDimSouthDeed: saved.sbiFlatDimSouthDeed !== undefined ? saved.sbiFlatDimSouthDeed : (saved.dimensionSouthDeed || ''),
       sbiFlatDimSouthActual: saved.sbiFlatDimSouthActual !== undefined ? saved.sbiFlatDimSouthActual : (saved.dimensionSouthActual || ''),
-      dimensionSouthDeed: saved.dimensionSouthDeed !== undefined ? saved.dimensionSouthDeed : 'Not Applicable (Flat)',
+      dimensionSouthDeed: saved.dimensionSouthDeed !== undefined ? saved.dimensionSouthDeed : '',
       dimensionSouthActual: saved.dimensionSouthActual !== undefined ? saved.dimensionSouthActual : '',
 
       // 14.2 Latitude, Longitude and Coordinates of the site
-      sbiFlatLatitude: saved.sbiFlatLatitude !== undefined ? saved.sbiFlatLatitude : (saved.latitude || pf.latitude || '20.2961° N'),
-      latitude: saved.latitude !== undefined ? saved.latitude : (pf.latitude || '20.2961° N'),
-      sbiFlatLongitude: saved.sbiFlatLongitude !== undefined ? saved.sbiFlatLongitude : (saved.longitude || pf.longitude || '85.8245° E'),
-      longitude: saved.longitude !== undefined ? saved.longitude : (pf.longitude || '85.8245° E'),
-      sbiFlatCoordinates: saved.sbiFlatCoordinates !== undefined ? saved.sbiFlatCoordinates : (saved.coordinatesText || '20.2961, 85.8245'),
-      coordinatesText: saved.coordinatesText !== undefined ? saved.coordinatesText : '20.2961, 85.8245',
+      sbiFlatLatitude: saved.sbiFlatLatitude !== undefined ? saved.sbiFlatLatitude : (saved.latitude || pf.latitude || ''),
+      latitude: saved.latitude !== undefined ? saved.latitude : (pf.latitude || ''),
+      sbiFlatLongitude: saved.sbiFlatLongitude !== undefined ? saved.sbiFlatLongitude : (saved.longitude || pf.longitude || ''),
+      longitude: saved.longitude !== undefined ? saved.longitude : (pf.longitude || ''),
+      sbiFlatCoordinates: saved.sbiFlatCoordinates !== undefined ? saved.sbiFlatCoordinates : (saved.coordinatesText || ''),
+      coordinatesText: saved.coordinatesText !== undefined ? saved.coordinatesText : '',
 
       // 15 Extent of the site of the Project
-      sbiFlatExtentOfSiteProject: saved.sbiFlatExtentOfSiteProject !== undefined ? saved.sbiFlatExtentOfSiteProject : (saved.extentOfProjectSite || 'Ac. 1.250 Dec (54450 Sq.ft)'),
-      extentOfProjectSite: saved.extentOfProjectSite !== undefined ? saved.extentOfProjectSite : 'Ac. 1.250 Dec (54450 Sq.ft)',
+      sbiFlatExtentOfSiteProject: saved.sbiFlatExtentOfSiteProject !== undefined ? saved.sbiFlatExtentOfSiteProject : (saved.extentOfProjectSite || ''),
+      extentOfProjectSite: saved.extentOfProjectSite !== undefined ? saved.extentOfProjectSite : '',
 
       // 16 Extent of the site considered for valuation
-      sbiFlatExtentOfSiteValuation: saved.sbiFlatExtentOfSiteValuation !== undefined ? saved.sbiFlatExtentOfSiteValuation : (saved.extentConsideredValuation || 'Super Built-up Area: 1250 Sq.ft (UDS: 350 Sq.ft)'),
-      extentConsideredValuation: saved.extentConsideredValuation !== undefined ? saved.extentConsideredValuation : 'Super Built-up Area: 1250 Sq.ft (UDS: 350 Sq.ft)',
+      sbiFlatExtentOfSiteValuation: saved.sbiFlatExtentOfSiteValuation !== undefined ? saved.sbiFlatExtentOfSiteValuation : (saved.extentConsideredValuation || ''),
+      extentConsideredValuation: saved.extentConsideredValuation !== undefined ? saved.extentConsideredValuation : '',
 
       // 17 Whether occupied by the owner / tenant?
       sbiFlatOccupancyStatus: saved.sbiFlatOccupancyStatus !== undefined ? saved.sbiFlatOccupancyStatus : (saved.occupancyStatusOwnerTenant || 'Self Occupied by Owner'),
       occupancyStatusOwnerTenant: saved.occupancyStatusOwnerTenant !== undefined ? saved.occupancyStatusOwnerTenant : 'Self Occupied by Owner',
 
       // 18 Date of issue and validity of layout of approved map / plan
-      sbiFlatApprovedPlanDateValidity: saved.sbiFlatApprovedPlanDateValidity !== undefined ? saved.sbiFlatApprovedPlanDateValidity : (saved.approvedPlanValidity || 'Validity: 3 Yrs from the approval'),
-      approvedPlanValidity: saved.approvedPlanValidity !== undefined ? saved.approvedPlanValidity : 'Validity: 3 Yrs from the approval',
+      sbiFlatApprovedPlanDateValidity: saved.sbiFlatApprovedPlanDateValidity !== undefined ? saved.sbiFlatApprovedPlanDateValidity : (saved.approvedPlanValidity || ''),
+      approvedPlanValidity: saved.approvedPlanValidity !== undefined ? saved.approvedPlanValidity : '',
 
       // 19 Approved map / plan issuing authority
-      sbiFlatApprovedPlanAuthority: saved.sbiFlatApprovedPlanAuthority !== undefined ? saved.sbiFlatApprovedPlanAuthority : (saved.approvedPlanAuthority || 'Plan has been approved by BDA'),
-      approvedPlanAuthority: saved.approvedPlanAuthority !== undefined ? saved.approvedPlanAuthority : 'Plan has been approved by BDA',
+      sbiFlatApprovedPlanAuthority: saved.sbiFlatApprovedPlanAuthority !== undefined ? saved.sbiFlatApprovedPlanAuthority : (saved.approvedPlanAuthority || ''),
+      approvedPlanAuthority: saved.approvedPlanAuthority !== undefined ? saved.approvedPlanAuthority : '',
 
       // 20 Whether genuineness or authenticity of approved map / plan is verified
       sbiFlatPlanAuthenticityVerified: saved.sbiFlatPlanAuthenticityVerified !== undefined ? saved.sbiFlatPlanAuthenticityVerified : true,
       approvedPlanAuthenticity: saved.approvedPlanAuthenticity !== undefined ? saved.approvedPlanAuthenticity : 'Yes, Verified from the authenticated authority',
 
       // 21 Any other comments by our empanelled valuers on authentic of approved plan
-      sbiFlatValuerCommentsOnPlan: saved.sbiFlatValuerCommentsOnPlan !== undefined ? saved.sbiFlatValuerCommentsOnPlan : (saved.valuerCommentsOnPlan || 'The building construction is in conformity with the approved plan and statutory setback norms.'),
-      valuerCommentsOnPlan: saved.valuerCommentsOnPlan !== undefined ? saved.valuerCommentsOnPlan : 'The building construction is in conformity with the approved plan and statutory setback norms.',
+      sbiFlatValuerCommentsOnPlan: saved.sbiFlatValuerCommentsOnPlan !== undefined ? saved.sbiFlatValuerCommentsOnPlan : (saved.valuerCommentsOnPlan || ''),
+      valuerCommentsOnPlan: saved.valuerCommentsOnPlan !== undefined ? saved.valuerCommentsOnPlan : '',
 
       // ── FLAT SPECIFIC DEFAULTS & SECTION II. APARTMENT BUILDING ──
       natureOfApartment: saved.natureOfApartment !== undefined ? saved.natureOfApartment : 'Residential Apartment',
-      aptLocationTsNo: saved.aptLocationTsNo !== undefined ? saved.aptLocationTsNo : 'NA',
-      aptLocationBlockNo: saved.aptLocationBlockNo !== undefined ? saved.aptLocationBlockNo : 'Tower-A',
-      aptLocationWardNo: saved.aptLocationWardNo !== undefined ? saved.aptLocationWardNo : 'Not Applicable',
-      aptLocationVillageCorp: saved.aptLocationVillageCorp !== undefined ? saved.aptLocationVillageCorp : 'Within Municipal Corporation area limit',
-      aptLocationDoorRoadPin: saved.aptLocationDoorRoadPin !== undefined ? saved.aptLocationDoorRoadPin : 'NA',
+      aptLocationTsNo: saved.aptLocationTsNo !== undefined ? saved.aptLocationTsNo : '',
+      aptLocationBlockNo: saved.aptLocationBlockNo !== undefined ? saved.aptLocationBlockNo : '',
+      aptLocationWardNo: saved.aptLocationWardNo !== undefined ? saved.aptLocationWardNo : '',
+      aptLocationVillageCorp: saved.aptLocationVillageCorp !== undefined ? saved.aptLocationVillageCorp : '',
+      aptLocationDoorRoadPin: saved.aptLocationDoorRoadPin !== undefined ? saved.aptLocationDoorRoadPin : '',
       localityDescription: saved.localityDescription !== undefined ? saved.localityDescription : 'Residential',
-      yearOfConstruction: saved.yearOfConstruction !== undefined ? saved.yearOfConstruction : '2010',
-      numberOfFloors: saved.numberOfFloors !== undefined ? saved.numberOfFloors : '16',
+      yearOfConstruction: saved.yearOfConstruction !== undefined ? saved.yearOfConstruction : '',
+      numberOfFloors: saved.numberOfFloors !== undefined ? saved.numberOfFloors : '',
       typeOfStructure: saved.typeOfStructure !== undefined ? saved.typeOfStructure : 'RCC Frame Structure',
-      dwellingUnitsCount: saved.dwellingUnitsCount !== undefined ? saved.dwellingUnitsCount : '64',
+      dwellingUnitsCount: saved.dwellingUnitsCount !== undefined ? saved.dwellingUnitsCount : '',
       qualityOfConstruction: saved.qualityOfConstruction !== undefined ? saved.qualityOfConstruction : 'Good',
       appearanceOfBuilding: saved.appearanceOfBuilding !== undefined ? saved.appearanceOfBuilding : 'Good',
       maintenanceOfBuilding: saved.maintenanceOfBuilding !== undefined ? saved.maintenanceOfBuilding : 'Good',
@@ -347,16 +347,16 @@ export default function StateBankOfIndiaFlatAndApartment({
 
       sbiFlatNatureOfApartment: saved.sbiFlatNatureOfApartment !== undefined ? saved.sbiFlatNatureOfApartment : (saved.natureOfApartment || 'Residential Apartment'),
       sbiFlatLocalityDescription: saved.sbiFlatLocalityDescription !== undefined ? saved.sbiFlatLocalityDescription : (saved.localityDescription || 'Residential'),
-      sbiFlatYearOfConstruction: saved.sbiFlatYearOfConstruction !== undefined ? saved.sbiFlatYearOfConstruction : (saved.yearOfConstruction || '2010'),
-      sbiFlatNumberOfFloors: saved.sbiFlatNumberOfFloors !== undefined ? saved.sbiFlatNumberOfFloors : (saved.numberOfFloors || '16'),
+      sbiFlatYearOfConstruction: saved.sbiFlatYearOfConstruction !== undefined ? saved.sbiFlatYearOfConstruction : (saved.yearOfConstruction || ''),
+      sbiFlatNumberOfFloors: saved.sbiFlatNumberOfFloors !== undefined ? saved.sbiFlatNumberOfFloors : (saved.numberOfFloors || ''),
       sbiFlatTypeOfStructure: saved.sbiFlatTypeOfStructure !== undefined ? saved.sbiFlatTypeOfStructure : (saved.typeOfStructure || 'RCC Frame Structure'),
-      sbiFlatDwellingUnitsCount: saved.sbiFlatDwellingUnitsCount !== undefined ? saved.sbiFlatDwellingUnitsCount : (saved.dwellingUnitsCount || '64'),
+      sbiFlatDwellingUnitsCount: saved.sbiFlatDwellingUnitsCount !== undefined ? saved.sbiFlatDwellingUnitsCount : (saved.dwellingUnitsCount || ''),
       sbiFlatQualityOfConstruction: saved.sbiFlatQualityOfConstruction !== undefined ? saved.sbiFlatQualityOfConstruction : (saved.qualityOfConstruction || 'Good'),
       sbiFlatAppearanceOfBuilding: saved.sbiFlatAppearanceOfBuilding !== undefined ? saved.sbiFlatAppearanceOfBuilding : (saved.appearanceOfBuilding || 'Good'),
       sbiFlatMaintenanceOfBuilding: saved.sbiFlatMaintenanceOfBuilding !== undefined ? saved.sbiFlatMaintenanceOfBuilding : (saved.maintenanceOfBuilding || 'Good'),
 
-      flatFloorNumber: saved.flatFloorNumber !== undefined ? saved.flatFloorNumber : '4th Floor',
-      flatDoorNumber: saved.flatDoorNumber !== undefined ? saved.flatDoorNumber : 'Flat No: A-041, Tower-A',
+      flatFloorNumber: saved.flatFloorNumber !== undefined ? saved.flatFloorNumber : '',
+      flatDoorNumber: saved.flatDoorNumber !== undefined ? saved.flatDoorNumber : '',
       specRoof: saved.specRoof !== undefined ? saved.specRoof : 'RCC Roof',
       specFlooring: saved.specFlooring !== undefined ? saved.specFlooring : 'VT Flooring',
       specDoors: saved.specDoors !== undefined ? saved.specDoors : 'Hard Ply wood doors',
@@ -556,7 +556,7 @@ export default function StateBankOfIndiaFlatAndApartment({
       valuerFatherName: saved.valuerFatherName !== undefined ? saved.valuerFatherName : 'Mr. Nityananda Mohanty',
       valuerPan: saved.valuerPan !== undefined ? saved.valuerPan : 'AONPM6997B',
       signaturePlace: saved.signaturePlace !== undefined ? saved.signaturePlace : 'Bhubaneswar',
-      signatureDate: saved.signatureDate !== undefined ? saved.signatureDate : (pf.reportDate || '06.08.2026'),
+      signatureDate: saved.signatureDate !== undefined ? saved.signatureDate : (pf.reportDate || (earliestVisit ? formatReportDate(earliestVisit.date) : '')),
 
       // Enclosures
       documentImages: saved.documentImages || [],
@@ -870,8 +870,8 @@ export default function StateBankOfIndiaFlatAndApartment({
   const DECLARATION_STATEMENTS: { id: string; text: string }[] = [
     { id: 'a', text: 'I am citizen of India.' },
     { id: 'b', text: 'I will not undertake valuation of any assets in which I have a direct or indirect interest or become so interested at any time during a period of three years prior to my appointments as valuer or three years after the valuation of assets was conducted by me.' },
-    { id: 'c', text: `The information furnished in my valuation report dated ${fields.reportDate || '06.08.2026'} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.` },
-    { id: 'd', text: `I have personally inspected the property ${fields.inspectionDate || '03.08.2026'} & I have valued the property which is identified by customer. The work is not sub-contracted to any other valuer & carried out by myself.` },
+    { id: 'c', text: `The information furnished in my valuation report${fields.reportDate ? ` dated ${fields.reportDate}` : ''} is true & correct to the best of my knowledge & belief & I have made an impartial & true valuation of the property.` },
+    { id: 'd', text: `I have personally inspected the property${fields.inspectionDate ? ` on ${fields.inspectionDate}` : ''} & I have valued the property which is identified by customer. The work is not sub-contracted to any other valuer & carried out by myself.` },
     { id: 'e', text: 'Valuation report is submitted in the format as prescribed by the bank.' },
     { id: 'f', text: 'I have not been depanelled by any other bank and in case any such depanelment by other banks during my empanelment with you, I will inform you within three days of such depanelment.' },
     { id: 'g', text: 'I have not been removed from service earlier.' },
@@ -913,8 +913,7 @@ export default function StateBankOfIndiaFlatAndApartment({
     handleChange('sbiValuerDeclarations', { ...valuerDeclarationsMap, [id]: checked });
   };
 
-  // ── Section 9: VALUATION PARTICULARS, CODE OF CONDUCT & JUSTIFICATION ──
-  const autoDatesParticulars = `Date of Appointment: ${fields.sbiFlatInspectionDate || fields.inspectionDate || '03.08.2026'}\nValuation Date: ${fields.sbiFlatInspectionDate || fields.inspectionDate || '03.08.2026'}\nDate of Report: ${fields.reportDate || fields.valuationDate || '06.08.2026'}`;
+  const autoDatesParticulars = `Date of Appointment: ${fields.sbiFlatInspectionDate || fields.inspectionDate || ''}\nValuation Date: ${fields.sbiFlatInspectionDate || fields.inspectionDate || ''}\nDate of Report: ${fields.reportDate || fields.valuationDate || ''}`;
 
   const CODE_OF_CONDUCT_POINTS = [
     { num: 1, text: 'A Valuer shall, in the conduct of his/its business, follow high standards of integrity and fairness in all his/its dealings with his/its clients and other Valuers.' },
@@ -967,39 +966,29 @@ export default function StateBankOfIndiaFlatAndApartment({
   };
 
   const fallbackBankAddressBlock = `TO,\nTHE ASST. GENERAL MANAGER,\n${fields.bankName || 'STATE BANK OF INDIA,'}\n${fields.rboOffice || fields.branchAddress || 'RBO, PURI, DIST: PURI, ODISHA'}`;
-  const ownerNameStr = fields.saleDeedExecutedName || fields.borrowerName || fields.sbiFlatSaleDeedExecutedName || 'Mr. Srijit Mishra';
-  const autoJustificationSub = `Sub: - Justification of valuation Report of ${ownerNameStr}.`;
-  const autoPropertyDescBlock = `The subject property bearing Khata No:${fields.khataNo || fields.sbiFlatKhataNo || '432/1656, 432/1661'}, Flat No: ${fields.flatDoorNumber || fields.sbiFlatDoorNumber || 'A-041, 4th Floor, Tower-A, 2BHK'} in name & style Apartment "${fields.apartmentBuildingName || fields.sbiFlatApartmentName || 'THE COSMOPOLIS'}" having Super Built up Area: ${fields.superBuiltUpArea || fields.sbiFlatSuperBuiltUpArea || '1375.00'} Sft in Mouza: ${fields.mouza || fields.sbiFlatMouza || 'Dumuduma'}, Ps- ${fields.policeStation || fields.sbiFlatPoliceStation || 'Khandagiri No-4'}, Ts: ${fields.tahasil || fields.sbiFlatTahasil || 'Bhubaneswar'}, Dist-${fields.district || fields.sbiFlatDistrict || 'Khurda'}, Odisha.`;
+  const ownerNameStr = fields.saleDeedExecutedName || fields.borrowerName || fields.sbiFlatSaleDeedExecutedName || '';
+  const autoJustificationSub = ownerNameStr ? `Sub: - Justification of valuation Report of ${ownerNameStr}.` : 'Sub: - Justification of valuation Report.';
+  const autoPropertyDescBlock = `The subject property bearing Khata No:${fields.khataNo || fields.sbiFlatKhataNo || ''}, Flat No: ${fields.flatDoorNumber || fields.sbiFlatDoorNumber || ''} in name & style Apartment "${fields.apartmentBuildingName || fields.sbiFlatApartmentName || ''}" having Super Built up Area: ${fields.superBuiltUpArea || fields.sbiFlatSuperBuiltUpArea || ''} Sft in Mouza: ${fields.mouza || fields.sbiFlatMouza || ''}, Ps- ${fields.policeStation || fields.sbiFlatPoliceStation || ''}, Ts: ${fields.tahasil || fields.sbiFlatTahasil || ''}, Dist-${fields.district || fields.sbiFlatDistrict || ''}, Odisha.`;
 
   return (
     <div className="space-y-6 pb-24 w-full">
-      {/* ── Active Configuration Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
-        category={fields.institutionCategory || 'Bank & FIS'}
-        bankName={fields.bankName || fields.organisationTemplate || 'STATE BANK OF INDIA (SBI)'}
-        subclass={fields.organisationSubTemplate || undefined}
-        serviceType={fields.serviceType}
-        subjectType={fields.subjectType}
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-
-
-              {/* Standardized Title Card */}
-        <BankReportTitleCard
-          bankName="State Bank of India (SBI)"
-          subclass="Flat & Apartment (Above 5CR)"
-          title="Valuation Report Builder"
-          description="Detailed SBI Format for Valuation of Flat & Apartment Assets with Complete Verification."
-          earliestVisit={earliestVisit}
-          projectCode={projectCode}
-        />
+          {/* Universal Bank Report Header */}
+          <BankReportHeader
+            bankName="State Bank of India (SBI)"
+            subclass="Flat & Apartment (Above 5CR)"
+            formatName="SBI Valuation Format (Flat & Apartment)"
+            clientType="organisation"
+            category={fields.institutionCategory || 'Bank & FIS'}
+            serviceType={fields.serviceType || 'Mortgage & Loan Security Valuation'}
+            subjectType={fields.subjectType || 'Flat & Apartment'}
+            onResetWizard={onResetWizard}
+            earliestVisit={earliestVisit}
+            projectCode={projectCode}
+          />
 
 {/* ── Section 1: General Details ── */}
       <Section id="sbi-flat-general" title="General Details" number={1} defaultOpen={true}>
@@ -1124,7 +1113,7 @@ export default function StateBankOfIndiaFlatAndApartment({
             }}
             isReadOnly={isReadOnly}
             tooltip='>>Prefill from section COVER PAGE, "NAME OF THE OWNER"<<'
-            fallbackValue={fields.ownerNameAndAddress || (pf.propertyOwner ? `${pf.propertyOwner}, At: ${pf.propertyAddress || ''}, Ph: ${pf.customerPhone || ''}` : 'Mr. Srijit Mishra, S/o: Mr. Gopinath Mishra, Ph: 9861012345')}
+            fallbackValue={fields.ownerNameAndAddress || (pf.propertyOwner ? `${pf.propertyOwner}, At: ${pf.propertyAddress || ''}${pf.customerPhone ? `, Ph: ${pf.customerPhone}` : ''}` : '')}
           />
 
           {/* 5. Brief description of the property */}
@@ -2256,7 +2245,7 @@ export default function StateBankOfIndiaFlatAndApartment({
                 }}
                 isReadOnly={isReadOnly}
                 tooltip='>>Prefill from section I. GENERAL, "4. Name of the Owner and his / their address (es) with Phone no."<<'
-                fallbackValue={fields.sbiFlatOwnerNameAndAddress || fields.ownerNameAndAddress || (pf.propertyOwner ? `${pf.propertyOwner}, At: ${pf.propertyAddress || ''}, Ph: ${pf.customerPhone || ''}` : 'Mr. Srijit Mishra')}
+                fallbackValue={fields.sbiFlatOwnerNameAndAddress || fields.ownerNameAndAddress || (pf.propertyOwner ? `${pf.propertyOwner}, At: ${pf.propertyAddress || ''}${pf.customerPhone ? `, Ph: ${pf.customerPhone}` : ''}` : '')}
               />
 
               {/* 8 Undivided area, 9 Super Built up Area, 10 Floor Space Index, 11 Carpet Area */}

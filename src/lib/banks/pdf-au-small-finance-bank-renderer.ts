@@ -63,23 +63,23 @@ export class PDFAUSmallFinanceBankRenderer extends PDFBankRenderer {
 
     const halfW = CONTENT_W / 2;
     this.drawKeyValueRow([
-      { label: 'APPLICATION NO.:', value: this.getF('applicationNo', 'AU-VAL-2026-089'), labelWidth: 120, valueWidth: halfW - 120, labelBold: true, bold: true },
-      { label: 'DATE OF TECHNICAL VISIT:', value: this.getF('dateOfTechnicalVisit', '18-07-2026'), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
+      { label: 'APPLICATION NO.:', value: this.getF('applicationNo', this.projectCode || ''), labelWidth: 120, valueWidth: halfW - 120, labelBold: true, bold: true },
+      { label: 'DATE OF TECHNICAL VISIT:', value: this.getF('dateOfTechnicalVisit', ''), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'NAME OF CUSTOMER:', value: this.getF('customerName', 'RAVI RENEWABLES PRIVATE LIMITED'), labelWidth: 140, valueWidth: halfW - 140, labelBold: true, bold: true },
+      { label: 'NAME OF CUSTOMER:', value: this.getF('customerName', ''), labelWidth: 140, valueWidth: halfW - 140, labelBold: true, bold: true },
       { label: 'PRODUCT CATEGORY:', value: this.getF('productCategory', 'SME / Commercial Mortgage'), labelWidth: 140, valueWidth: halfW - 140, labelBold: true },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'PROPERTY ADDRESS:', value: this.getF('propertyAddressActual', 'Plot No-1680, Khata No-107, Mouza-Raghunathpali, Near Verma Eye Hospital, Dist-Sundargarh, Rourkela, Odisha, Pin-769001'), labelWidth: 140, valueWidth: CONTENT_W - 140, labelBold: true },
+      { label: 'PROPERTY ADDRESS:', value: this.getF('propertyAddressActual', ''), labelWidth: 140, valueWidth: CONTENT_W - 140, labelBold: true },
     ]);
 
-    const marketVal = this.getF('marketValue', '43585400');
-    const distressVal = this.getF('distressValue', '34868320');
-    const conservativeVal = this.getF('conservativeValue', '39226860');
-    const insurableVal = this.getF('insurableValue', '7660400');
+    const marketVal = this.getF('marketValue', '0');
+    const distressVal = this.getF('distressValue', '0');
+    const conservativeVal = this.getF('conservativeValue', '0');
+    const insurableVal = this.getF('insurableValue', '0');
 
     this.drawKeyValueRow([
       { label: 'FAIR MARKET VALUE:', value: `Rs. ${formatIndianCurrency(marketVal)}/-`, labelWidth: 140, valueWidth: halfW - 140, labelBold: true, bold: true },
@@ -97,17 +97,17 @@ export class PDFAUSmallFinanceBankRenderer extends PDFBankRenderer {
     // SECTION 1: INFORMATION SHARED DURING ASSIGNMENT
     // ══════════════════════════════════════════
     this.drawAUHeader('1. INFORMATION SHARED DURING ASSIGNMENT OF VALUATION');
-    this.drawAURow('1.1', 'Name of Customer / Co-Applicant', this.getF('customerName', 'RAVI RENEWABLES PRIVATE LIMITED'), true);
-    this.drawAURow('1.2', 'Contact No. of Customer', this.getF('contactNo', '9937023855 / 9310163176'));
-    this.drawAURow('1.3', 'Ownership as per Documents', this.getF('ownershipAsPerDocs', 'Ravi Renewables Private Limited, represented by Director'));
+    this.drawAURow('1.1', 'Name of Customer / Co-Applicant', this.getF('customerName', ''), true);
+    this.drawAURow('1.2', 'Contact No. of Customer', this.getF('contactNo', ''));
+    this.drawAURow('1.3', 'Ownership as per Documents', this.getF('ownershipAsPerDocs', ''));
     this.drawAURow('1.4', 'Purpose of Valuation', this.getF('purposeOfValuation', 'Fair Market Value for SME Mortgage Credit'));
     this.drawAURow('1.5', 'Leasehold / Freehold Status', this.getF('leaseOrFreehold', 'Freehold'), true);
-    this.drawAURow('1.6', 'Occupation Status', this.getF('occupationStatus', 'Occupied by Relative / Commercial Use'));
-    this.drawAURow('1.7', 'Documents Provided for Valuation', this.getF('documentsProvided', 'Copy of Sale deed No -11712600556, DATED-09/04/2026, ROR, Approved Layout Plan, Bhu-Naksha'));
-    this.drawAURow('1.8', 'Property Address (as per actual)', this.getF('propertyAddressActual', 'Plot No-1680, Khata No-107, Mouza-Raghunathpali, Near Verma Eye Hospital, Dist-Sundargarh, Rourkela, Odisha, Pin-769001'));
-    this.drawAURow('1.9', 'Property Address (as per docs)', this.getF('propertyAddressDocs', 'Plot No-1680, Khata No-107, Mouza-Raghunathpali, Tahasil-Panposh, Dist-Sundargarh, Odisha'));
-    this.drawAURow('1.10', 'Pincode & Sub Registrar Office', `PIN: ${this.getF('pincode', '769001')} | SRO: ${this.getF('subRegistrarOffice', 'Panposh / Rourkela')}`);
-    this.drawAURow('1.11', 'Allocated by (RO / BM)', this.getF('allocatedBy', 'AU Small Finance Bank, Rourkela Branch'));
+    this.drawAURow('1.6', 'Occupation Status', this.getF('occupationStatus', 'Occupied'));
+    this.drawAURow('1.7', 'Documents Provided for Valuation', this.getF('documentsProvided', ''));
+    this.drawAURow('1.8', 'Property Address (as per actual)', this.getF('propertyAddressActual', ''));
+    this.drawAURow('1.9', 'Property Address (as per docs)', this.getF('propertyAddressDocs', ''));
+    this.drawAURow('1.10', 'Pincode & Sub Registrar Office', `PIN: ${this.getF('pincode', '')} | SRO: ${this.getF('subRegistrarOffice', '')}`);
+    this.drawAURow('1.11', 'Allocated by (RO / BM)', this.getF('allocatedBy', ''));
 
     this.advanceCursor(4);
 
@@ -115,16 +115,16 @@ export class PDFAUSmallFinanceBankRenderer extends PDFBankRenderer {
     // SECTION 2: LOCALITY DETAILS
     // ══════════════════════════════════════════
     this.drawAUHeader('2. LOCALITY DETAILS');
-    this.drawAURow('2.1', 'Type of Locality', this.getF('localityType', 'Commercial / Semi-Commercial Hub'));
-    this.drawAURow('2.2', 'Locality Classification', this.getF('localityClass', 'Middle Class / Commercial Belt'));
-    this.drawAURow('2.3', 'Total Development in Area / Locality', `${this.getF('developmentPercentage', '80')}% developed`);
-    this.drawAURow('2.4', 'Distance from AU Base Branch', `${this.getF('distanceFromBranch', '0.9')} KM`);
-    this.drawAURow('2.5', 'Nearest Civic Amenities', `Railway: ${this.getF('nearestRailway', 'Rourkela Railway Station (2.5 KM)')} | Bus Stand: ${this.getF('nearestBus', 'Panposh Bus Stand (1.0 KM)')} | Hospital: ${this.getF('nearestHospital', 'Verma Eye Hospital (0.1 KM)')}`);
-    this.drawAURow('2.6', 'Approach Road Width & Surface', `${this.getF('approachRoadWidth', '40')} Feet Wide | Surface: ${this.getF('approachRoadType', 'Bitumen Road')}`);
-    this.drawAURow('2.7', 'Nearby Landmark', this.getF('landmark', 'Near Verma Eye Hospital, Raghunathpali'));
+    this.drawAURow('2.1', 'Type of Locality', this.getF('localityType', ''));
+    this.drawAURow('2.2', 'Locality Classification', this.getF('localityClass', ''));
+    this.drawAURow('2.3', 'Total Development in Area / Locality', this.getF('developmentPercentage') ? `${this.getF('developmentPercentage')}% developed` : '');
+    this.drawAURow('2.4', 'Distance from AU Base Branch', this.getF('distanceFromBranch') ? `${this.getF('distanceFromBranch')} KM` : '');
+    this.drawAURow('2.5', 'Nearest Civic Amenities', `Railway: ${this.getF('nearestRailway', '')} | Bus Stand: ${this.getF('nearestBus', '')} | Hospital: ${this.getF('nearestHospital', '')}`);
+    this.drawAURow('2.6', 'Approach Road Width & Surface', `${this.getF('approachRoadWidth', '')} Feet Wide | Surface: ${this.getF('approachRoadType', 'Bitumen Road')}`);
+    this.drawAURow('2.7', 'Nearby Landmark', this.getF('landmark', ''));
     this.drawAURow('2.8', 'Hazard Zones (Seismic / Flood / Cyclone)', `Seismic: ${this.getF('seismicZone', 'Zone III')} | Flood: ${this.getF('floodZone', 'Safe / Non-flood')} | Cyclone: ${this.getF('cycloneZone', 'Moderate')}`);
-    this.drawAURow('2.9', 'Any Negative to Locality', this.getF('negativesToLocality', 'None observed (No crematorium, slum, chemical hazard or high tension wire nearby)'));
-    this.drawAURow('2.10', 'Basic Amenities Availability', this.getF('basicAmenitiesAvailable', 'Yes, water, electricity, cemented drainage and telecommunication available'));
+    this.drawAURow('2.9', 'Any Negative to Locality', this.getF('negativesToLocality', 'None observed'));
+    this.drawAURow('2.10', 'Basic Amenities Availability', this.getF('basicAmenitiesAvailable', 'Yes'));
 
     this.advanceCursor(4);
 
@@ -132,12 +132,12 @@ export class PDFAUSmallFinanceBankRenderer extends PDFBankRenderer {
     // SECTION 3: PROPERTY DETAILS, BOUNDARIES & DIMENSIONS
     // ══════════════════════════════════════════
     this.drawAUHeader('3. PROPERTY DETAILS, DIMENSIONS & BOUNDARIES');
-    this.drawAURow('3.1', 'Area of Land', `${this.getF('landAreaSqft', '2395')} Sq.ft (${this.getF('landAreaSqm', '222.5')} Sq.m / ${this.getF('landAreaSqyd', '266.11')} Sq.yd)`, true);
-    this.drawAURow('3.2', 'Property Usage & Nature', `${this.getF('propertyUsage', 'Commercial Building')} | Nature: ${this.getF('natureOfConstruction', 'RCC Framed Structure (G+2)')}`);
-    this.drawAURow('3.3', 'Age of Property & Residual Life', `Age: ${this.getF('propertyAge', '10')} Years | Residual Age: ${this.getF('residualAge', '50')} Years`);
-    this.drawAURow('3.4', 'Occupancy Details', `Occupant: ${this.getF('occupantName', 'Relative of Director')} | Status: ${this.getF('occupancyStatusDetailed', 'Commercial / Warehouse cum Office')}`);
-    this.drawAURow('3.5', 'Plot Demarcated at Site', this.getF('plotDemarcated', 'Yes, fully demarcated on all four boundaries'));
-    this.drawAURow('3.6', 'Property Identified Through', this.getF('propertyIdentifiedThrough', 'Boundary verification, ROR, Sale Deed & Local enquiry'));
+    this.drawAURow('3.1', 'Area of Land', `${this.getF('landAreaSqft', '')} Sq.ft (${this.getF('landAreaSqm', '')} Sq.m / ${this.getF('landAreaSqyd', '')} Sq.yd)`, true);
+    this.drawAURow('3.2', 'Property Usage & Nature', `${this.getF('propertyUsage', 'Commercial Building')} | Nature: ${this.getF('natureOfConstruction', 'RCC Framed Structure')}`);
+    this.drawAURow('3.3', 'Age of Property & Residual Life', `Age: ${this.getF('propertyAge', '')} Years | Residual Age: ${this.getF('residualAge', '')} Years`);
+    this.drawAURow('3.4', 'Occupancy Details', `Occupant: ${this.getF('occupantName', '')} | Status: ${this.getF('occupancyStatusDetailed', '')}`);
+    this.drawAURow('3.5', 'Plot Demarcated at Site', this.getF('plotDemarcated', 'Yes'));
+    this.drawAURow('3.6', 'Property Identified Through', this.getF('propertyIdentifiedThrough', ''));
 
     this.advanceCursor(2);
     this.drawAUHeader('Dimension & Boundaries Schedule');
@@ -147,25 +147,25 @@ export class PDFAUSmallFinanceBankRenderer extends PDFBankRenderer {
       { label: 'Boundary (As per Deed)', value: 'Actual at Site', labelWidth: sColW, valueWidth: sColW, labelBold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'North:', value: `${this.getF('dimensionNorthDoc', '50')} ft`, labelWidth: sColW, valueWidth: sColW },
-      { label: this.getF('boundaryNorthDeed', 'Plot No-1681'), value: this.getF('boundaryNorthActual', 'Plot No-1681'), labelWidth: sColW, valueWidth: sColW },
+      { label: 'North:', value: this.getF('dimensionNorthDoc') ? `${this.getF('dimensionNorthDoc')} ft` : '', labelWidth: sColW, valueWidth: sColW },
+      { label: this.getF('boundaryNorthDeed', ''), value: this.getF('boundaryNorthActual', ''), labelWidth: sColW, valueWidth: sColW },
     ]);
     this.drawKeyValueRow([
-      { label: 'South:', value: `${this.getF('dimensionSouthDoc', '50')} ft`, labelWidth: sColW, valueWidth: sColW },
-      { label: this.getF('boundarySouthDeed', '40ft Wide Main Road'), value: this.getF('boundarySouthActual', '40ft Wide Main Road'), labelWidth: sColW, valueWidth: sColW },
+      { label: 'South:', value: this.getF('dimensionSouthDoc') ? `${this.getF('dimensionSouthDoc')} ft` : '', labelWidth: sColW, valueWidth: sColW },
+      { label: this.getF('boundarySouthDeed', ''), value: this.getF('boundarySouthActual', ''), labelWidth: sColW, valueWidth: sColW },
     ]);
     this.drawKeyValueRow([
-      { label: 'East:', value: `${this.getF('dimensionEastDoc', '48')} ft`, labelWidth: sColW, valueWidth: sColW },
-      { label: this.getF('boundaryEastDeed', 'Plot No-1679'), value: this.getF('boundaryEastActual', 'Plot No-1679'), labelWidth: sColW, valueWidth: sColW },
+      { label: 'East:', value: this.getF('dimensionEastDoc') ? `${this.getF('dimensionEastDoc')} ft` : '', labelWidth: sColW, valueWidth: sColW },
+      { label: this.getF('boundaryEastDeed', ''), value: this.getF('boundaryEastActual', ''), labelWidth: sColW, valueWidth: sColW },
     ]);
     this.drawKeyValueRow([
-      { label: 'West:', value: `${this.getF('dimensionWestDoc', '48')} ft`, labelWidth: sColW, valueWidth: sColW },
-      { label: this.getF('boundaryWestDeed', 'Plot No-1682'), value: this.getF('boundaryWestActual', 'Plot No-1682'), labelWidth: sColW, valueWidth: sColW },
+      { label: 'West:', value: this.getF('dimensionWestDoc') ? `${this.getF('dimensionWestDoc')} ft` : '', labelWidth: sColW, valueWidth: sColW },
+      { label: this.getF('boundaryWestDeed', ''), value: this.getF('boundaryWestActual', ''), labelWidth: sColW, valueWidth: sColW },
     ]);
 
     this.advanceCursor(2);
     this.drawAURow('3.7', 'Stage of Construction & Progress', `Stage: ${this.getF('stageOfConstruction', '100% Completed')} | Work Complete: ${this.getF('workCompletePercentage', '100')}%`);
-    this.drawAURow('3.8', 'Built-up Area Breakdown', `GF: ${this.getF('buaGF', '1200')} sqft | FF: ${this.getF('buaFF', '1200')} sqft | SF: ${this.getF('buaSF', '1082')} sqft | Total BUA: ${this.getF('totalBUA', '3482')} sqft`, true);
+    this.drawAURow('3.8', 'Built-up Area Breakdown', `GF: ${this.getF('buaGF', '')} sqft | FF: ${this.getF('buaFF', '')} sqft | SF: ${this.getF('buaSF', '')} sqft | Total BUA: ${this.getF('totalBUA', '')} sqft`, true);
 
     this.advanceCursor(4);
 
@@ -173,12 +173,12 @@ export class PDFAUSmallFinanceBankRenderer extends PDFBankRenderer {
     // SECTION 4: SPECIFICATION & MAINTENANCE
     // ══════════════════════════════════════════
     this.drawAUHeader('4. SPECIFICATION & MAINTENANCE');
-    this.drawAURow('4.1', 'Type of Structure', this.getF('structureType', 'RCC Framed Structure (G+2 Floors)'), true);
-    this.drawAURow('4.2', 'Foundation / Roof / Flooring', `Foundation: ${this.getF('foundationType', 'Column & Footing')} | Roof: ${this.getF('roofType', 'RCC Slab')} | Flooring: ${this.getF('flooringType', 'Vitrified Tiles & Kota Stone')}`);
+    this.drawAURow('4.1', 'Type of Structure', this.getF('structureType', 'RCC Framed Structure'), true);
+    this.drawAURow('4.2', 'Foundation / Roof / Flooring', `Foundation: ${this.getF('foundationType', 'Column & Footing')} | Roof: ${this.getF('roofType', 'RCC Slab')} | Flooring: ${this.getF('flooringType', 'Vitrified Tiles')}`);
     this.drawAURow('4.3', 'Quality of Construction', `Exterior: ${this.getF('qualityExterior', 'Good')} | Interior: ${this.getF('qualityInterior', 'Good')}`);
-    this.drawAURow('4.4', 'Maintenance Levels', this.getF('maintenanceLevel', 'Well Maintained / Good'));
-    this.drawAURow('4.5', 'Setbacks Observed', `Front: ${this.getF('setbackFront', '10 ft')} | Back: ${this.getF('setbackBack', '5 ft')} | Sides: ${this.getF('setbackSides', '3 ft / 3 ft')}`);
-    this.drawAURow('4.6', 'Adherence to Local Authority Byelaws', this.getF('adherenceSanction', 'Constructed generally in adherence to local municipal building byelaws'));
+    this.drawAURow('4.4', 'Maintenance Levels', this.getF('maintenanceLevel', 'Good'));
+    this.drawAURow('4.5', 'Setbacks Observed', `Front: ${this.getF('setbackFront', '')} | Back: ${this.getF('setbackBack', '')} | Sides: ${this.getF('setbackSides', '')}`);
+    this.drawAURow('4.6', 'Adherence to Local Authority Byelaws', this.getF('adherenceSanction', ''));
 
     this.advanceCursor(4);
 
@@ -186,12 +186,12 @@ export class PDFAUSmallFinanceBankRenderer extends PDFBankRenderer {
     // SECTION 5: POLICY CHECKS & NEGATIVE TRIGGERS
     // ══════════════════════════════════════════
     this.drawAUHeader('5. POLICY CHECKS & NEGATIVE TRIGGERS');
-    this.drawAURow('5.1', 'Age > 45 Years Check', this.getF('checkAge45', 'No (Property age is ~10 years)'));
-    this.drawAURow('5.2', 'Development < 30% Area Check', this.getF('checkDevelopment30', 'No (Area development is ~80%)'));
-    this.drawAURow('5.3', 'Legal vs Actual Area Mismatch > 20%', this.getF('checkAreaMismatch20', 'No (Document area matches physical possession at site)'));
-    this.drawAURow('5.4', 'Valuer Selfie with Property Available', this.getF('checkValuerSelfie', 'Yes (Attached in report annexure)'), true);
-    this.drawAURow('5.5', 'Property Approach Road < 5 Ft', this.getF('checkRoadUnder5Ft', 'No (Road width is 40 ft)'));
-    this.drawAURow('5.6', 'Direct Physical Access Available', this.getF('checkDirectAccess', 'Yes, direct approach from 40ft main road'));
+    this.drawAURow('5.1', 'Age > 45 Years Check', this.getF('checkAge45', 'No'));
+    this.drawAURow('5.2', 'Development < 30% Area Check', this.getF('checkDevelopment30', 'No'));
+    this.drawAURow('5.3', 'Legal vs Actual Area Mismatch > 20%', this.getF('checkAreaMismatch20', 'No'));
+    this.drawAURow('5.4', 'Valuer Selfie with Property Available', this.getF('checkValuerSelfie', 'Yes'), true);
+    this.drawAURow('5.5', 'Property Approach Road < 5 Ft', this.getF('checkRoadUnder5Ft', 'No'));
+    this.drawAURow('5.6', 'Direct Physical Access Available', this.getF('checkDirectAccess', 'Yes'));
 
     this.advanceCursor(4);
 
@@ -206,11 +206,11 @@ export class PDFAUSmallFinanceBankRenderer extends PDFBankRenderer {
       { label: 'Adopted Rate (Rs.)', value: 'Total Value (Rs.)', labelWidth: vColW, valueWidth: vColW, labelBold: true, bold: true },
     ]);
 
-    const landArea = parseFloat(this.getF('landAreaSqft', '2395')) || 0;
-    const dlcRate = parseFloat(this.getF('dlcRate', '6887')) || 0;
-    const marketLandRate = parseFloat(this.getF('marketLandRate', '15000')) || 0;
-    const totalBUA = parseFloat(this.getF('totalBUA', '3482')) || 0;
-    const constRate = parseFloat(this.getF('constructionRate', '2200')) || 0;
+    const landArea = parseFloat(this.getF('landAreaSqft', '0')) || 0;
+    const dlcRate = parseFloat(this.getF('dlcRate', '0')) || 0;
+    const marketLandRate = parseFloat(this.getF('marketLandRate', '0')) || 0;
+    const totalBUA = parseFloat(this.getF('totalBUA', '0')) || 0;
+    const constRate = parseFloat(this.getF('constructionRate', '0')) || 0;
 
     const dlcLandVal = landArea * dlcRate;
     const marketLandVal = landArea * marketLandRate;
@@ -247,13 +247,14 @@ export class PDFAUSmallFinanceBankRenderer extends PDFBankRenderer {
     this.advanceCursor(2);
     this.drawAUHeader('Rates Confirmation & Marketability');
     this.drawAURow('6.6', 'Price Confirmed From', this.getF('priceConfirmFrom', 'Local dealers, shop owners and sub-registrar guideline rates'));
-    this.drawAURow('6.7', 'Local Realtor / Dealer Contact', this.getF('dealerContact', 'M/s Sharma Estates, Rourkela'));
-    this.drawAURow('6.8', 'Marketability Rating', this.getF('marketabilityRating', 'Good (Prime location near Verma Eye Hospital)'));
+    this.drawAURow('6.7', 'Local Realtor / Dealer Contact', this.getF('dealerContact', ''));
+    this.drawAURow('6.8', 'Marketability Rating', this.getF('marketabilityRating', 'Good'));
 
     this.advanceCursor(3);
     this.drawAUHeader('Valuer Declaration');
+    const visitDateStr = this.getF('dateOfTechnicalVisit') || 'the inspection date';
     const declarations = [
-      '1. We have physically inspected the property on 18-07-2026.',
+      `1. We have physically inspected the property on ${visitDateStr}.`,
       '2. We have no direct or indirect interest in the property valued or the transaction.',
       '3. Information furnished above is true and correct to the best of our knowledge and belief.',
       '4. The fair market value indicated is an opinion of value prevailing on the inspection date.',
@@ -268,7 +269,7 @@ export class PDFAUSmallFinanceBankRenderer extends PDFBankRenderer {
     this.advanceCursor(4);
     this.drawKeyValueRow([
       { label: 'PLACE:', value: 'Rourkela / Bhubaneswar', labelWidth: 60, valueWidth: halfW - 60, labelBold: true },
-      { label: 'DATE:', value: this.getF('dateOfTechnicalVisit', '18-07-2026'), labelWidth: 60, valueWidth: halfW - 60, labelBold: true },
+      { label: 'DATE:', value: this.getF('dateOfTechnicalVisit', ''), labelWidth: 60, valueWidth: halfW - 60, labelBold: true },
     ]);
     this.drawKeyValueRow([
       { label: 'VALUER:', value: 'S. MOHANTY & ASSOCIATES (Empanelled Valuers & Chartered Engineers)', labelWidth: 60, valueWidth: CONTENT_W - 60, labelBold: true, bold: true },

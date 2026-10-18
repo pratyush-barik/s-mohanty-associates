@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -1182,18 +1183,8 @@ export default function AxisSME({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* Main Container */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-                {/* Standardized Title Card */}
-        <BankReportTitleCard
-          bankName="Axis Bank"
-          subclass="SME Commercial Format"
-          title="Valuation Report Builder"
-          description="Axis Bank Small & Medium Enterprises Commercial Valuation Engine."
-          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
-          projectCode={projectCode}
-        />
-
-{/* Top Header & Bank Banner */}
-        <ActiveConfigBanner
+        {/* Standardized Universal Bank Report Header */}
+        <BankReportHeader
           clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.bankName || fields.organisationTemplate || 'AXIS BANK'}
@@ -1201,67 +1192,60 @@ export default function AxisSME({
           serviceType={fields.serviceType}
           subjectType={fields.subjectType}
           onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="Axis Bank Small & Medium Enterprises Commercial Valuation Engine."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+          reworkNotes={fields.reworkNotes}
+          status={status}
+          message={message}
         />
-
-        {message && (
-          <div
-            className={`p-4 rounded-xl text-sm font-bold shadow-sm ${
-              message.type === 'success'
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                : 'bg-red-50 text-red-700 border border-red-200'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
-
-        {/* Header Block */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">
-            Axis Bank — SME Valuation Report
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Field label="Reference Number:">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.refNo || ''}
-                onChange={e => handleChange('refNo', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="e.g. Axis/SMA-2026-001"
-              />
-            </Field>
-
-            <Field label="Date of Report:">
-              <BaseDateInput
-                value={fields.reportDate || ''}
-                onChange={val => handleChange('reportDate', val)}
-                disabled={isReadOnly}
-              />
-            </Field>
-
-            <div className="space-y-1">
-              <Field label="Date of Visit:">
-                <BaseDateInput
-                  value={fields.dateOfVisit || ''}
-                  onChange={val => handleChange('dateOfVisit', val)}
-                  disabled={isReadOnly}
-                />
-              </Field>
-              <EarliestFieldVisitBadge
-                visitInfo={firstFieldAgentVisit}
-                currentValue={fields.dateOfVisit}
-                onApply={(d) => handleChange('dateOfVisit', d)}
-                className="mt-1"
-              />
-            </div>
-          </div>
-        </div>
 
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 1: HEADER & TECHNICAL INITIATION
         ═══════════════════════════════════════════════════════════════ */}
         <Section id="sec-1" title="Header & Technical Initiation" number={1} defaultOpen>
+          {/* Reference & Report Date Container */}
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-blue-800 mb-4 text-sm tracking-wide uppercase">Report Reference & Inspection Date</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Field label="Reference Number:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.refNo || ''}
+                  onChange={e => handleChange('refNo', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. Axis/SMA-2026-001"
+                />
+              </Field>
+
+              <Field label="Date of Report:">
+                <BaseDateInput
+                  value={fields.reportDate || ''}
+                  onChange={val => handleChange('reportDate', val)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+
+              <div className="space-y-1">
+                <Field label="Date of Visit:">
+                  <BaseDateInput
+                    value={fields.dateOfVisit || ''}
+                    onChange={val => handleChange('dateOfVisit', val)}
+                    disabled={isReadOnly}
+                  />
+                </Field>
+                <EarliestFieldVisitBadge
+                  visitInfo={firstFieldAgentVisit}
+                  currentValue={fields.dateOfVisit}
+                  onApply={(d) => handleChange('dateOfVisit', d)}
+                  className="mt-1"
+                />
+              </div>
+            </div>
+          </div>
+
           {/* Container 1A: Technical Initiation Details */}
           <div className="border border-sky-200 bg-sky-50/50 rounded-xl p-5 mb-5 shadow-xs">
             <h3 className="font-semibold text-sky-800 mb-4 text-sm tracking-wide uppercase">Technical Initiation Details</h3>

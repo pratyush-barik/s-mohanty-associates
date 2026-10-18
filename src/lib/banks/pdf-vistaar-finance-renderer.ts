@@ -449,7 +449,7 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
       this.drawKeyValueRow([
         {
           label: 'Address of the property being appraised',
-          value: this.getF('addressAsPerDoc', 'Khata No-346,Plot No-1202(Area=AC.0.100Decs,Homested),Mouza-Bharati Pur,Tahasil-Pipili,PS-Pipili,Dist-Puri,Odisha,Pin-752104'),
+          value: this.getF('addressAsPerDoc', ''),
           labelWidth: 160,
           valueWidth: CONTENT_W - 160,
         },

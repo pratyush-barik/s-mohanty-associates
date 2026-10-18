@@ -483,7 +483,7 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
     // ─────────────────────────────────────────────────────────────
     this.drawSectionHeader('VIII) Declaration');
     const declarations = [
-      `I have deputed my engineer to inspect the property, who has personally inspected the property on ${this.getF('indusBBGInspectionDate', this.getF('inspectionDate', '27.11.2024'))}`,
+      `I have deputed my engineer to inspect the property, who has personally inspected the property on ${this.getF('indusBBGInspectionDate', this.getF('inspectionDate', ''))}`,
       'I have no direct or indirect interest in the property valued.',
       'Information furnished in the report is true and correct to the best of my knowledge and belief.',
       'This report does not certify of confirm any ownership or title of the property that has been valued. The ownership papers/sale deeds may please be verified at your end to ascertain the right title & area.',

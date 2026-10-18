@@ -1583,7 +1583,7 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
     }
     this.cursorY += 14;
 
-    const sub = d.sbiJustificationSubject || d.justificationLetterSubject || `Sub: - Justification of valuation Report of ${d.borrowerName || 'Mr. Srijit Mishra, S/o: Mr. Gopinath Mishra'}.`;
+    const sub = d.sbiJustificationSubject || d.justificationLetterSubject || (d.borrowerName ? `Sub: - Justification of valuation Report of ${d.borrowerName}.` : 'Sub: - Justification of valuation Report.');
     this.drawTextAt(sub, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 20;
 

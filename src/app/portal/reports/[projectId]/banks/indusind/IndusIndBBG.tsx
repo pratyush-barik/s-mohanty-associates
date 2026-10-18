@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -506,26 +507,24 @@ export default function IndusIndBBG({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* Active Header Banner */}
-      <ActiveConfigBanner
-        bankName={fields.organisationTemplate || 'INDUSIND BANK'}
-        subclass={fields.organisationSubTemplate || undefined}
-        clientType="organisation"
-        category="Bank & FIS"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* Center Main Form */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {message && (
-            <div className={`p-4 rounded-xl text-sm font-semibold border shadow-xs ${
-              message.type === 'success' ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'
-            }`}>
-              {message.text}
-            </div>
-          )}
+          {/* Standardized Universal Bank Report Header */}
+          <BankReportHeader
+            bankName={fields.organisationTemplate || 'INDUSIND BANK'}
+            subclass={fields.organisationSubTemplate || 'BBG Format'}
+            clientType="organisation"
+            category="Bank & FIS"
+            onResetWizard={onResetWizard}
+            title="Valuation Report Builder"
+            description="IndusInd Bank Business Banking Group Commercial Format."
+            earliestVisit={earliestVisit}
+            projectCode={projectCode}
+            reworkNotes={fields.reworkNotes}
+            status={status}
+            message={message}
+          />
 
           {/* Section A: General Details */}
           <Section id="bbg-sec-a" title="General Details" number={1}>

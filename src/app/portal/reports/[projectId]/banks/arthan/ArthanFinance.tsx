@@ -23,6 +23,7 @@ import {
 } from '@/lib/banks/pdf-arthan-finance-renderer';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -931,17 +932,8 @@ export default function ArthanFinance({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-                {/* Standardized Title Card */}
-        <BankReportTitleCard
-          bankName="Arthan Finance"
-          subclass="Standard Format"
-          title="Valuation Report Builder"
-          description="Micro Mortgage & Small Business Valuation Format."
-          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
-          projectCode={projectCode}
-        />
-
-<ActiveConfigBanner
+        {/* Standardized Universal Bank Report Header */}
+        <BankReportHeader
           clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.organisationTemplate || fields.bankName || 'ARTHAN FINANCE'}
@@ -949,21 +941,18 @@ export default function ArthanFinance({
           serviceType={fields.serviceType || prefill?.purpose || undefined}
           subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="Micro Mortgage & Small Business Valuation Format."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+          reworkNotes={fields.reworkNotes}
+          status={status}
+          message={message}
         />
 
-        {message && (
-          <div className={`p-4 rounded-xl text-sm font-semibold ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
-            }`}>
-            {message.text}
-          </div>
-        )}
-
-        {/* Header Block */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">
-            Arthan Finance — Valuation Report
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* ════ SECTION 1: TECHNICAL INITIATION REQUEST FORM DATA ════ */}
+        <Section title="TECHNICAL INITIATION REQUEST FORM DATA" number={1} id="sec-1" defaultOpen={true}>
+          <div className="grid md:grid-cols-2 gap-4">
             <Field label="Proposal No. (Ref No):">
               <input
                 type="text"
@@ -981,12 +970,6 @@ export default function ArthanFinance({
                 disabled={isReadOnly}
               />
             </Field>
-          </div>
-        </div>
-
-        {/* ════ SECTION 1: TECHNICAL INITIATION REQUEST FORM DATA ════ */}
-        <Section title="TECHNICAL INITIATION REQUEST FORM DATA" number={1} id="sec-1" defaultOpen={true}>
-          <div className="grid md:grid-cols-2 gap-4">
             <Field label="Case Type">
               <input className={inputCls} value={fields.caseType || ''} onChange={e => handleChange('caseType', e.target.value)} disabled={isReadOnly} placeholder="e.g. SBL" />
             </Field>

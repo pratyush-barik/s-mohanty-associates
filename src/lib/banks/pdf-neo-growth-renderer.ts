@@ -79,7 +79,7 @@ export class PDFNeoGrowthRenderer extends PDFBankRenderer {
     ]);
     this.drawKeyValueRow([
       { label: 'Case Ref. No', value: this.getF('caseRefNo', this.projectCode || ''), labelWidth: 100, valueWidth: halfW - 100 },
-      { label: 'Date of Report', value: this.getF('reportDate', '10.09.2024'), labelWidth: 100, valueWidth: halfW - 100 },
+      { label: 'Date of Report', value: this.getF('reportDate', ''), labelWidth: 100, valueWidth: halfW - 100 },
     ]);
     this.drawKeyValueRow([
       {

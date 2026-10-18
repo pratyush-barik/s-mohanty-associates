@@ -73,12 +73,12 @@ export class PDFTataHousingFinanceRenderer extends PDFBankRenderer {
     const halfW = CONTENT_W / 2;
 
     this.drawKeyValueRow([
-      { label: 'WebTop Application No.', value: this.getF('webTopNo', '559HZ0000151'), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
-      { label: 'Date of Valuation', value: this.getF('reportDate', '01/06/2020'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'WebTop Application No.', value: this.getF('webTopNo', this.projectCode || ''), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
+      { label: 'Date of Valuation', value: this.getF('reportDate', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'Name of the Customer', value: this.getF('customerName', 'Umesh Chandra Sahoo'), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
+      { label: 'Name of the Customer', value: this.getF('customerName', ''), labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
       { label: 'Name of Co-Owners', value: this.getF('coOwners', 'NA'), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
 
@@ -88,14 +88,14 @@ export class PDFTataHousingFinanceRenderer extends PDFBankRenderer {
 
     const col3W = CONTENT_W / 3;
     this.drawKeyValueRow([
-      { label: 'City', value: this.getF('city', 'Cuttack'), labelWidth: 60, valueWidth: col3W - 60 },
+      { label: 'City', value: this.getF('city', ''), labelWidth: 60, valueWidth: col3W - 60 },
       { label: 'State', value: this.getF('state', 'Odisha'), labelWidth: 60, valueWidth: col3W - 60 },
-      { label: 'Pin Code', value: this.getF('pinCode', '754100'), labelWidth: 70, valueWidth: col3W - 70 },
+      { label: 'Pin Code', value: this.getF('pinCode', ''), labelWidth: 70, valueWidth: col3W - 70 },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'Nearby Landmark', value: this.getF('nearbyLandmark', 'Back side of Tarini Temple, Biribati'), labelWidth: 140, valueWidth: halfW - 140 },
-      { label: 'Distance from City Center', value: this.getF('distanceCityCenter', '10-Kms from Cuttack city center'), labelWidth: 150, valueWidth: halfW - 150 },
+      { label: 'Nearby Landmark', value: this.getF('nearbyLandmark', ''), labelWidth: 140, valueWidth: halfW - 140 },
+      { label: 'Distance from City Center', value: this.getF('distanceCityCenter', ''), labelWidth: 150, valueWidth: halfW - 150 },
     ]);
 
     this.drawKeyValueRow([
@@ -140,10 +140,10 @@ export class PDFTataHousingFinanceRenderer extends PDFBankRenderer {
     ]);
 
     const bounds = [
-      { dir: 'East', doc: this.getF('boundDocEast', 'Mr. Anil Kumar Patra'), act: this.getF('boundActEast', 'Vacant Land') },
-      { dir: 'West', doc: this.getF('boundDocWest', 'Plot No - 585'), act: this.getF('boundActWest', "Other's Building") },
-      { dir: 'North', doc: this.getF('boundDocNorth', 'Govt. Road'), act: this.getF('boundActNorth', '12 feet CC Road') },
-      { dir: 'South', doc: this.getF('boundDocSouth', 'Mr. Anil Kumar Patra'), act: this.getF('boundActSouth', 'Vacant Land') },
+      { dir: 'East', doc: this.getF('boundDocEast', ''), act: this.getF('boundActEast', '') },
+      { dir: 'West', doc: this.getF('boundDocWest', ''), act: this.getF('boundActWest', '') },
+      { dir: 'North', doc: this.getF('boundDocNorth', ''), act: this.getF('boundActNorth', '') },
+      { dir: 'South', doc: this.getF('boundDocSouth', ''), act: this.getF('boundActSouth', '') },
     ];
 
     bounds.forEach(b => {
@@ -160,8 +160,8 @@ export class PDFTataHousingFinanceRenderer extends PDFBankRenderer {
     ]);
 
     this.drawKeyValueRow([
-      { label: 'GPS Latitude', value: this.getF('latitude', '20.426466'), labelWidth: 120, valueWidth: halfW - 120 },
-      { label: 'GPS Longitude', value: this.getF('longitude', '85.975791'), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'GPS Latitude', value: this.getF('latitude', ''), labelWidth: 120, valueWidth: halfW - 120 },
+      { label: 'GPS Longitude', value: this.getF('longitude', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
 
     this.drawKeyValueRow([
@@ -176,11 +176,11 @@ export class PDFTataHousingFinanceRenderer extends PDFBankRenderer {
     this.drawTataSectionHeader('Technical & Floor Areas');
 
     this.drawKeyValueRow([
-      { label: 'Approval Details', value: this.getF('approvalDetailsText', 'Approved by Junior Engineer on 05/11/2019'), labelWidth: 140, valueWidth: CONTENT_W - 140 },
+      { label: 'Approval Details', value: this.getF('approvalDetailsText', ''), labelWidth: 140, valueWidth: CONTENT_W - 140 },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'Approval Plan Date', value: this.getF('approvalPlanDate', '05/11/2019'), labelWidth: 140, valueWidth: halfW - 140 },
+      { label: 'Approval Plan Date', value: this.getF('approvalPlanDate', ''), labelWidth: 140, valueWidth: halfW - 140 },
       { label: 'Approval No.', value: this.getF('approvalNo', 'Not Mentioned'), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
 
@@ -201,11 +201,11 @@ export class PDFTataHousingFinanceRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: 'Type of Structure', value: this.getF('typeOfStructure', 'RCC'), labelWidth: 130, valueWidth: halfW - 130 },
-      { label: 'Number of Floors', value: this.getF('noOfFloors', 'GF only ( Under-Construction )'), labelWidth: 130, valueWidth: halfW - 130 },
+      { label: 'Number of Floors', value: this.getF('noOfFloors', ''), labelWidth: 130, valueWidth: halfW - 130 },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'Plot Area as per Deed/ROR', value: `${this.getF('plotAreaSqft', '1089')} Sqft`, labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
+      { label: 'Plot Area as per Deed/ROR', value: this.getF('plotAreaSqft', '') ? `${this.getF('plotAreaSqft', '')} Sqft` : '', labelWidth: 160, valueWidth: halfW - 160, labelBold: true },
       { label: 'Quality of Construction', value: this.getF('qualityOfConstruction', 'Good'), labelWidth: 140, valueWidth: halfW - 140 },
     ]);
 
@@ -222,9 +222,9 @@ export class PDFTataHousingFinanceRenderer extends PDFBankRenderer {
     ]);
 
     const floors = [
-      { name: 'Ground Floor', app: this.getF('buaGfApp', '850'), act: this.getF('buaGfAct', '756') },
+      { name: 'Ground Floor', app: this.getF('buaGfApp', ''), act: this.getF('buaGfAct', '') },
       { name: 'First Floor', app: this.getF('buaFfApp', 'NA'), act: this.getF('buaFfAct', 'NA') },
-      { name: 'Total BUA', app: this.getF('buaTotalApp', '850'), act: this.getF('buaTotalAct', '756'), isTotal: true },
+      { name: 'Total BUA', app: this.getF('buaTotalApp', ''), act: this.getF('buaTotalAct', ''), isTotal: true },
     ];
 
     floors.forEach(f => {
@@ -254,10 +254,10 @@ export class PDFTataHousingFinanceRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       { label: 'Actual at Site', value: '', labelWidth: smColW, valueWidth: 0, labelBold: true },
-      { label: '', value: this.getF('marginFront', "9'-0\""), labelWidth: 0, valueWidth: smColW },
-      { label: '', value: this.getF('marginLeft', "2'-0\""), labelWidth: 0, valueWidth: smColW },
-      { label: '', value: this.getF('marginRight', "1'-0\""), labelWidth: 0, valueWidth: smColW },
-      { label: '', value: this.getF('marginRear', "5'-0\""), labelWidth: 0, valueWidth: smColW },
+      { label: '', value: this.getF('marginFront', ''), labelWidth: 0, valueWidth: smColW },
+      { label: '', value: this.getF('marginLeft', ''), labelWidth: 0, valueWidth: smColW },
+      { label: '', value: this.getF('marginRight', ''), labelWidth: 0, valueWidth: smColW },
+      { label: '', value: this.getF('marginRear', ''), labelWidth: 0, valueWidth: smColW },
     ]);
 
     this.advanceCursor(6);
@@ -267,24 +267,24 @@ export class PDFTataHousingFinanceRenderer extends PDFBankRenderer {
     // ═══════════════════════════════════════════════
     this.drawTataSectionHeader('Valuation & Financial Computations');
 
-    const landArea = parseSafeFloat(this.getF('landAreaSqft', 1089));
-    const landRate = parseSafeFloat(this.getF('landMarketRate', 450));
+    const landArea = parseSafeFloat(this.getF('landAreaSqft', 0));
+    const landRate = parseSafeFloat(this.getF('landMarketRate', 0));
     const landVal = multiplyExactDecimals(landArea, landRate);
 
-    const constrArea = parseSafeFloat(this.getF('leastBuaConsidered', 756));
-    const constrRate = parseSafeFloat(this.getF('recommendedConstructionRate', 1500));
+    const constrArea = parseSafeFloat(this.getF('leastBuaConsidered', 0));
+    const constrRate = parseSafeFloat(this.getF('recommendedConstructionRate', 0));
     const constrVal = multiplyExactDecimals(constrArea, constrRate);
 
     const completionVal = sumDecimals([landVal, constrVal]);
 
-    const stagePct = parseSafeFloat(this.getF('percentWorkCompleted', '45'));
+    const stagePct = parseSafeFloat(this.getF('percentWorkCompleted', '0'));
     const stageConstVal = calculatePercentageValue(constrVal, stagePct);
     const currentVal = sumDecimals([landVal, stageConstVal]);
 
-    const govtLandRate = parseSafeFloat(this.getF('govtLandRatePerSqft', 113.64));
+    const govtLandRate = parseSafeFloat(this.getF('govtLandRatePerSqft', 0));
     const govtLandVal = multiplyExactDecimals(landArea, govtLandRate);
 
-    const govtConstrRate = parseSafeFloat(this.getF('govtConstructionRate', 1314));
+    const govtConstrRate = parseSafeFloat(this.getF('govtConstructionRate', 0));
     const govtConstrVal = multiplyExactDecimals(constrArea, govtConstrRate);
 
     const govtTotalVal = sumDecimals([govtLandVal, govtConstrVal]);
@@ -369,7 +369,7 @@ export class PDFTataHousingFinanceRenderer extends PDFBankRenderer {
 
     this.drawKeyValueRow([
       {
-        label: `Person Visited Site: ${this.getF('personVisitedSite', 'Mr. Prasant Kumar Swain')}\nDate of Inspection: ${this.getF('dateOfInspection', '30/05/2020')}`,
+        label: `Person Visited Site: ${this.getF('personVisitedSite', 'Er. Satyajit Mohanty')}\nDate of Inspection: ${this.getF('dateOfInspection', '')}`,
         value: `For: ${this.getF('valuationAgency', 'M/s. S Mohanty Associates')}\n\n\n\nEr. Satyajit Mohanty\nApproved Valuer / Chartered Engineer`,
         labelWidth: halfW,
         valueWidth: halfW,

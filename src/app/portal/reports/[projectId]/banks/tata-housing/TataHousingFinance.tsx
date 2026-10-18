@@ -7,7 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -19,9 +19,7 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  EarliestFieldVisitBadge,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -90,18 +88,18 @@ export default function TataHousingFinance({
 
     // SECTION 1: General Details
     if (!d.caseType) d.caseType = 'Valuation Report - Self Construction/HEL/HIL';
-    if (!d.webTopNo) d.webTopNo = '559HZ0000151';
-    if (!d.reportDate) d.reportDate = earliestVisit ? formatReportDate(earliestVisit.date) : '01/06/2020';
-    if (!d.customerName) d.customerName = p.applicantName || 'Umesh Chandra Sahoo';
+    if (!d.webTopNo) d.webTopNo = projectCode || '';
+    if (!d.reportDate) d.reportDate = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
+    if (!d.customerName) d.customerName = p.applicantName || p.contactName || '';
     if (!d.coOwners) d.coOwners = 'NA';
     if (!d.propertyAddress) {
-      d.propertyAddress = p.propertyAddress || 'Khata No-325, Plot No-585/1042, Mouza-Biribati, Tahasil-Cuttack Sadar, Dist-Cuttack, Odisha, Pin-754100.';
+      d.propertyAddress = p.propertyAddress || '';
     }
-    if (!d.city) d.city = 'Cuttack';
+    if (!d.city) d.city = '';
     if (!d.state) d.state = 'Odisha';
-    if (!d.pinCode) d.pinCode = '754100';
-    if (!d.nearbyLandmark) d.nearbyLandmark = p.nearestLandmark || 'Back side of Tarini Temple, Biribati';
-    if (!d.distanceCityCenter) d.distanceCityCenter = '10-Kms from Cuttack city center';
+    if (!d.pinCode) d.pinCode = '';
+    if (!d.nearbyLandmark) d.nearbyLandmark = p.nearestLandmark || '';
+    if (!d.distanceCityCenter) d.distanceCityCenter = '';
     if (!d.classOfLocality) d.classOfLocality = 'Middle';
     if (!d.occupancyDetails) d.occupancyDetails = 'Vacant';
     if (!d.monthlyRentals) d.monthlyRentals = 'Rs.(NA) Under construction';
@@ -113,24 +111,24 @@ export default function TataHousingFinance({
     if (!d.demarcationAtSite) d.demarcationAtSite = 'Not Available';
 
     // SECTION 2: Boundaries & Road
-    if (!d.boundDocEast) d.boundDocEast = 'Mr. Anil Kumar Patra';
-    if (!d.boundActEast) d.boundActEast = 'Vacant Land';
-    if (!d.boundDocWest) d.boundDocWest = 'Plot No - 585';
-    if (!d.boundActWest) d.boundActWest = "Other's Building";
-    if (!d.boundDocNorth) d.boundDocNorth = 'Govt. Road';
-    if (!d.boundActNorth) d.boundActNorth = '12 feet CC Road';
-    if (!d.boundDocSouth) d.boundDocSouth = 'Mr. Anil Kumar Patra';
-    if (!d.boundActSouth) d.boundActSouth = 'Vacant Land';
+    if (!d.boundDocEast) d.boundDocEast = '';
+    if (!d.boundActEast) d.boundActEast = '';
+    if (!d.boundDocWest) d.boundDocWest = '';
+    if (!d.boundActWest) d.boundActWest = '';
+    if (!d.boundDocNorth) d.boundDocNorth = '';
+    if (!d.boundActNorth) d.boundActNorth = '';
+    if (!d.boundDocSouth) d.boundDocSouth = '';
+    if (!d.boundActSouth) d.boundActSouth = '';
 
     if (!d.roadWidth1) d.roadWidth1 = "12'-0\"";
     if (!d.roadWidth2) d.roadWidth2 = 'NA';
-    if (!d.latitude) d.latitude = '20.426466';
-    if (!d.longitude) d.longitude = '85.975791';
+    if (!d.latitude) d.latitude = p.latitude || '';
+    if (!d.longitude) d.longitude = p.longitude || '';
     if (!d.urbanRuralClassification) d.urbanRuralClassification = 'Rural';
 
     // SECTION 3: Technical & Floor Areas
-    if (!d.approvalDetailsText) d.approvalDetailsText = 'Approved by Junior Engineer on 05/11/2019';
-    if (!d.approvalPlanDate) d.approvalPlanDate = '05/11/2019';
+    if (!d.approvalDetailsText) d.approvalDetailsText = '';
+    if (!d.approvalPlanDate) d.approvalPlanDate = '';
     if (!d.approvalNo) d.approvalNo = 'Not Mentioned';
     if (!d.commencementCertDate) d.commencementCertDate = 'NA';
     if (!d.commencementCertNo) d.commencementCertNo = 'NA';
@@ -139,40 +137,40 @@ export default function TataHousingFinance({
     if (!d.dateStartingConstruction) d.dateStartingConstruction = 'Under-construction';
     if (!d.expectedLifeOfStructure) d.expectedLifeOfStructure = '60-Years';
     if (!d.typeOfStructure) d.typeOfStructure = 'RCC';
-    if (!d.noOfFloors) d.noOfFloors = 'GF only ( Under-Construction )';
-    if (!d.plotAreaSqft) d.plotAreaSqft = '1089';
+    if (!d.noOfFloors) d.noOfFloors = '';
+    if (!d.plotAreaSqft) d.plotAreaSqft = p.plotArea || '';
     if (!d.qualityOfConstruction) d.qualityOfConstruction = 'Good';
 
     // BUA
-    if (!d.buaGfApp) d.buaGfApp = '850';
-    if (!d.buaGfAct) d.buaGfAct = '756';
+    if (!d.buaGfApp) d.buaGfApp = '';
+    if (!d.buaGfAct) d.buaGfAct = '';
     if (!d.buaFfApp) d.buaFfApp = 'NA';
     if (!d.buaFfAct) d.buaFfAct = 'NA';
-    if (!d.buaTotalApp) d.buaTotalApp = '850';
-    if (!d.buaTotalAct) d.buaTotalAct = '756';
+    if (!d.buaTotalApp) d.buaTotalApp = '';
+    if (!d.buaTotalAct) d.buaTotalAct = '';
 
     // Margins
-    if (!d.marginFront) d.marginFront = "9'-0\"";
-    if (!d.marginLeft) d.marginLeft = "2'-0\"";
-    if (!d.marginRight) d.marginRight = "1'-0\"";
-    if (!d.marginRear) d.marginRear = "5'-0\"";
+    if (!d.marginFront) d.marginFront = '';
+    if (!d.marginLeft) d.marginLeft = '';
+    if (!d.marginRight) d.marginRight = '';
+    if (!d.marginRear) d.marginRear = '';
 
     // SECTION 4: Valuation & Calculations
-    if (!d.landAreaSqft) d.landAreaSqft = '1089';
-    if (!d.landMarketRate) d.landMarketRate = '450';
-    if (!d.leastBuaConsidered) d.leastBuaConsidered = '756';
-    if (!d.recommendedConstructionRate) d.recommendedConstructionRate = '1500';
+    if (!d.landAreaSqft) d.landAreaSqft = p.plotArea || '';
+    if (!d.landMarketRate) d.landMarketRate = '';
+    if (!d.leastBuaConsidered) d.leastBuaConsidered = '';
+    if (!d.recommendedConstructionRate) d.recommendedConstructionRate = '';
     if (!d.materialFinishingDetails) {
       d.materialFinishingDetails = 'Marble flooring, Flush door, Aluminum Panel window, Distempering, weather coat, Bore well etc.';
     }
-    if (!d.percentWorkCompleted) d.percentWorkCompleted = '45';
-    if (!d.percentDisbursementRecommended) d.percentDisbursementRecommended = '55';
-    if (!d.govtLandRatePerSqft) d.govtLandRatePerSqft = '113.64';
-    if (!d.govtConstructionRate) d.govtConstructionRate = '1314';
+    if (!d.percentWorkCompleted) d.percentWorkCompleted = '';
+    if (!d.percentDisbursementRecommended) d.percentDisbursementRecommended = '';
+    if (!d.govtLandRatePerSqft) d.govtLandRatePerSqft = '';
+    if (!d.govtConstructionRate) d.govtConstructionRate = '';
 
     // SECTION 5: Remarks & Due Diligence
     if (!d.synthesisRemarks) {
-      d.synthesisRemarks = 'Subject property is a single storied residential building under construction situated at Mouza-Biribati, Dist-Cuttack. Physical inspection was conducted and the property approaches 12 feet wide CC road. As per physical inspection, construction is in progress at 45% stage. Land market rate is assessed at Rs.450/- per sqft and construction rate at Rs.1,500/- per sqft for 756 sqft BUA. The current value of property is assessed at Rs. 10,00,350/-.';
+      d.synthesisRemarks = '';
     }
     if (!d.ddApprovedPlans) d.ddApprovedPlans = 'Available';
     if (!d.ddIdentificationPossible) d.ddIdentificationPossible = 'Available';
@@ -182,8 +180,8 @@ export default function TataHousingFinance({
     if (!d.ddLocalByeLaws) d.ddLocalByeLaws = 'Yes';
     if (!d.ddDemolitionRisk) d.ddDemolitionRisk = 'Low';
 
-    if (!d.personVisitedSite) d.personVisitedSite = 'Mr. Prasant Kumar Swain';
-    if (!d.dateOfInspection) d.dateOfInspection = '30/05/2020';
+    if (!d.personVisitedSite) d.personVisitedSite = earliestVisit?.engineerName || p.firstFieldAgentName || 'Er. Satyajit Mohanty';
+    if (!d.dateOfInspection) d.dateOfInspection = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
     if (!d.valuationAgency) d.valuationAgency = 'M/s. S Mohanty Associates';
 
     return d;
@@ -457,39 +455,24 @@ export default function TataHousingFinance({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* Truthful Active Configuration Banner */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName="TATA HOUSING FINANCE LTD"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       {/* Main Layout: Left Form & Right Floating Navigator */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* Left Form Column */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* Title Header Card */}
-          <BankReportTitleCard
-            bankName="TATA HOUSING FINANCE LTD"
+          {/* Universal Bank Report Header */}
+          <BankReportHeader
+            bankName="Tata Housing Finance Ltd"
             subclass="Self Construction / HEL / HIL"
-            description="Tata Capital Housing Finance Technical Valuation Report with Plot Boundaries & Floor Areas."
+            formatName="Technical Valuation Report Format"
+            clientType="organisation"
+            category="Housing Finance"
+            serviceType="Valuation Report Builder"
+            subjectType="Self Construction / HEL / HIL Valuation"
+            onResetWizard={onResetWizard}
             earliestVisit={earliestVisit}
             projectCode={fields.webTopNo || projectCode}
+            message={message}
           />
-
-          {message && (
-            <div
-              className={`p-4 rounded-xl text-sm font-medium border ${
-                message.type === 'success'
-                  ? 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300'
-                  : 'bg-rose-950/70 border-rose-500/40 text-rose-300'
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
 
           {/* ═══════════════════════════════════════════════
               SECTION 1: GENERAL DETAILS

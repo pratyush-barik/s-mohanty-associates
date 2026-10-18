@@ -7,6 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -63,91 +64,91 @@ export default function LICPVR2({
 
     return {
       // Header Metadata
-      fileNo: saved.fileNo || pf.loanAccountNo || '9002050007125',
+      fileNo: saved.fileNo || pf.loanAccountNo || '',
       nameOfValuer: saved.nameOfValuer || 'Er. Satyajit Mohanty',
-      codeNo: saved.codeNo || 'BH-AOV0078',
-      appointingAuthority: saved.appointingAuthority || 'LIC HFL(Br-I)',
-      dateOfValuation: saved.dateOfValuation || pf.reportDate || '30/07/2025',
-      reraNo: saved.reraNo || 'NA',
+      codeNo: saved.codeNo || '',
+      appointingAuthority: saved.appointingAuthority || '',
+      dateOfValuation: saved.dateOfValuation || pf.reportDate || '',
+      reraNo: saved.reraNo || '',
 
       // Section A: General
-      applicantName: saved.applicantName || pf.applicantName || pf.customerName || 'Mrs. Suchitra Moharana ,W/o:-Mr. Ranjan Kumar Sahoo',
-      builderDeveloperName: saved.builderDeveloperName || 'M/s. Ajjiban Construction Pvt. Ltd.',
-      documentsProduced: saved.documentsProduced || 'Copy of Agreement for sale & Allotment letter',
-      apartmentName: saved.apartmentName || 'Subhadra Palace',
-      flatNoFloorNo: saved.flatNoFloorNo || 'Flat no-402, 3-BHK, 4th Floor',
-      plotNoKhataNo: saved.plotNoKhataNo || 'Plot No-1236/2887,1236/2897 & 1236/4503,Khata No-1057/702 & 1057/2428',
-      villageTalukWard: saved.villageTalukWard || 'Mouza-Bhubaneswar Sahar Unit-32,Gobindparsad,PS-New Capital(46), TS-Bhubaneswar(244)',
-      districtPin: saved.districtPin || 'Dist-Khurda,Odisha Pin-751007',
+      applicantName: saved.applicantName || pf.applicantName || pf.customerName || '',
+      builderDeveloperName: saved.builderDeveloperName || '',
+      documentsProduced: saved.documentsProduced || '',
+      apartmentName: saved.apartmentName || '',
+      flatNoFloorNo: saved.flatNoFloorNo || '',
+      plotNoKhataNo: saved.plotNoKhataNo || '',
+      villageTalukWard: saved.villageTalukWard || '',
+      districtPin: saved.districtPin || '',
       locationSketchVerified: saved.locationSketchVerified || 'Yes',
-      surroundingDevelopmentClass: saved.surroundingDevelopmentClass || 'Middle Class',
+      surroundingDevelopmentClass: saved.surroundingDevelopmentClass || '',
       basicAmenitiesAvailable: saved.basicAmenitiesAvailable || 'Yes',
       negativesToLocality: saved.negativesToLocality || 'No',
-      favourableConsiderations: saved.favourableConsiderations || 'All civic amenities like school,hospital, market area are within 3-5Kms.',
-      otherFeaturesNotice: saved.otherFeaturesNotice || 'Not Observed',
+      favourableConsiderations: saved.favourableConsiderations || '',
+      otherFeaturesNotice: saved.otherFeaturesNotice || '',
 
       // Section B: Entire Project
-      totalExtentLandSqft: saved.totalExtentLandSqft || '5401sqft',
-      boundaryNorth: saved.boundaryNorth || 'Flat No-401',
-      boundarySouth: saved.boundarySouth || 'Plot No-1234(Part) & 1234/6',
-      boundaryEast: saved.boundaryEast || 'Revenue Plot No-1237/22',
-      boundaryWest: saved.boundaryWest || 'Road',
+      totalExtentLandSqft: saved.totalExtentLandSqft || '',
+      boundaryNorth: saved.boundaryNorth || '',
+      boundarySouth: saved.boundarySouth || '',
+      boundaryEast: saved.boundaryEast || '',
+      boundaryWest: saved.boundaryWest || '',
       landDimensionsTallyPlan: saved.landDimensionsTallyPlan || 'Yes',
-      landDimensionsTallyDeed: saved.landDimensionsTallyDeed || 'Sale agreement',
+      landDimensionsTallyDeed: saved.landDimensionsTallyDeed || '',
       naPermissionObtained: saved.naPermissionObtained || 'Yes',
       environmentClearanceObtained: saved.environmentClearanceObtained || 'No',
 
       // Section C: Drawing Approval
-      planningPermitNoDate: saved.planningPermitNoDate || 'Plan has been approved by BMC, vide Letter No-BP/BMC/003510,Dated-17/06/2023)',
-      validityUpto: saved.validityUpto || 'Dt-16/06/2027',
+      planningPermitNoDate: saved.planningPermitNoDate || '',
+      validityUpto: saved.validityUpto || '',
       validityExpiredRenewed: saved.validityExpiredRenewed || 'NA',
       isPlanForResidential: saved.isPlanForResidential || 'Yes',
-      approvalAuthority: saved.approvalAuthority || 'BMC,Bhubaneswar',
+      approvalAuthority: saved.approvalAuthority || '',
 
       // Section D: Inspection
-      noOfBlocksApproved: saved.noOfBlocksApproved || '1',
-      noOfBlocksActual: saved.noOfBlocksActual || '1',
-      noOfFloorsApproved: saved.noOfFloorsApproved || 'S+4',
-      noOfFloorsActual: saved.noOfFloorsActual || 'S+4',
-      totalBuiltUpAreaApproved: saved.totalBuiltUpAreaApproved || '13410sqft.',
-      totalBuiltUpAreaActual: saved.totalBuiltUpAreaActual || '13410sqft.',
+      noOfBlocksApproved: saved.noOfBlocksApproved || '',
+      noOfBlocksActual: saved.noOfBlocksActual || '',
+      noOfFloorsApproved: saved.noOfFloorsApproved || '',
+      noOfFloorsActual: saved.noOfFloorsActual || '',
+      totalBuiltUpAreaApproved: saved.totalBuiltUpAreaApproved || '',
+      totalBuiltUpAreaActual: saved.totalBuiltUpAreaActual || '',
       totalCarpetAreaApproved: saved.totalCarpetAreaApproved || 'NA',
       totalCarpetAreaActual: saved.totalCarpetAreaActual || 'NA',
-      noOfDwellingUnitsApproved: saved.noOfDwellingUnitsApproved || '8 Units',
-      noOfDwellingUnitsActual: saved.noOfDwellingUnitsActual || '8 Units',
-      plotCoverageApproved: saved.plotCoverageApproved || '60%',
-      plotCoverageActual: saved.plotCoverageActual || '60%',
-      fsiApproved: saved.fsiApproved || '1.992',
-      fsiActual: saved.fsiActual || '1.992',
+      noOfDwellingUnitsApproved: saved.noOfDwellingUnitsApproved || '',
+      noOfDwellingUnitsActual: saved.noOfDwellingUnitsActual || '',
+      plotCoverageApproved: saved.plotCoverageApproved || '',
+      plotCoverageActual: saved.plotCoverageActual || '',
+      fsiApproved: saved.fsiApproved || '',
+      fsiActual: saved.fsiActual || '',
       tdrApproved: saved.tdrApproved || 'NA',
       tdrActual: saved.tdrActual || 'NA',
 
       qualityOfConstruction: saved.qualityOfConstruction || 'Good',
-      costOfLandUnitRate: saved.costOfLandUnitRate || 'Not Provided by the Developer',
-      costOfLandMarketValue: saved.costOfLandMarketValue || 'Not Provided by the Developer',
-      costOfLandGuidelineRate: saved.costOfLandGuidelineRate || 'Not Provided by the Developer',
-      costOfLandGuidelineValue: saved.costOfLandGuidelineValue || 'Not Provided by the Developer',
-      costOfLandTdrPurchaseCost: saved.costOfLandTdrPurchaseCost || 'Rs.0',
-      constructionCostOfProject: saved.constructionCostOfProject || 'Rs.30843000.00',
-      totalCostOfProject: saved.totalCostOfProject || 'Rs.30843000.00',
+      costOfLandUnitRate: saved.costOfLandUnitRate || '',
+      costOfLandMarketValue: saved.costOfLandMarketValue || '',
+      costOfLandGuidelineRate: saved.costOfLandGuidelineRate || '',
+      costOfLandGuidelineValue: saved.costOfLandGuidelineValue || '',
+      costOfLandTdrPurchaseCost: saved.costOfLandTdrPurchaseCost || '',
+      constructionCostOfProject: saved.constructionCostOfProject || '',
+      totalCostOfProject: saved.totalCostOfProject || '',
 
-      unitRateForFlatMarket: saved.unitRateForFlatMarket || 'Rs.7700/sqft.',
-      marketValueOfFlat: saved.marketValueOfFlat || 'Rs.70,00,000/-',
-      guidelineRateForFlat: saved.guidelineRateForFlat || 'Rs.2342/sqft.',
-      guidelineValueOfFlat: saved.guidelineValueOfFlat || 'Rs.53,86,600/-',
+      unitRateForFlatMarket: saved.unitRateForFlatMarket || '',
+      marketValueOfFlat: saved.marketValueOfFlat || '',
+      guidelineRateForFlat: saved.guidelineRateForFlat || '',
+      guidelineValueOfFlat: saved.guidelineValueOfFlat || '',
       sourceForArrivingAtMarketValue: saved.sourceForArrivingAtMarketValue || 'By local market feedback & transaction of similar properties',
-      ratePerSqftForConstruction: saved.ratePerSqftForConstruction || 'Flat@Rs.2300.00/sqft',
+      ratePerSqftForConstruction: saved.ratePerSqftForConstruction || '',
       waterResources: saved.waterResources || 'Yes(Bore Well)',
       sewerageSystem: saved.sewerageSystem || 'Yes',
       electricityConnection: saved.electricityConnection || 'Yes',
-      noOfLifts: saved.noOfLifts || 'Yes(Provision for lift)',
-      dateOfCommencement: saved.dateOfCommencement || '10th August 2024',
-      proposedDateOfCompletion: saved.proposedDateOfCompletion || '6th June 2026',
+      noOfLifts: saved.noOfLifts || '',
+      dateOfCommencement: saved.dateOfCommencement || '',
+      proposedDateOfCompletion: saved.proposedDateOfCompletion || '',
       isConstructionAsPerApprovedPlan: saved.isConstructionAsPerApprovedPlan || 'Yes',
       deviationBetweenDrawingAndActual: saved.deviationBetweenDrawingAndActual || 'NA',
       deviationMinorMajorNature: saved.deviationMinorMajorNature || 'NA',
       deviationRevisedApprovalReqd: saved.deviationRevisedApprovalReqd || 'No',
-      progressEntireProject: saved.progressEntireProject || 'S+4 RCC,Brickworks & Plastering Completed.',
+      progressEntireProject: saved.progressEntireProject || '',
       progressBlockFloorWise: saved.progressBlockFloorWise || '',
       nbcAndNdmaAdhered: saved.nbcAndNdmaAdhered || 'Yes',
       highTensionLinePassing: saved.highTensionLinePassing || 'No',
@@ -158,26 +159,26 @@ export default function LICPVR2({
       isUdsInProportionToBuiltUp: saved.isUdsInProportionToBuiltUp || 'NA',
       correctUdsIfNotProportion: saved.correctUdsIfNotProportion || 'NA',
       specRoof: saved.specRoof || 'R.C.C',
-      specFlooring: saved.specFlooring || 'Not done(Proposed)',
-      superBuiltUpAreaFlat: saved.superBuiltUpAreaFlat || '1651sqft',
-      carpetAreaFlat: saved.carpetAreaFlat || 'Not mentioned',
-      costOfFlatAgreement: saved.costOfFlatAgreement || 'Rs.70,00,000/- (Including Car Parking)',
-      totalCostOfFlatTotal: saved.totalCostOfFlatTotal || 'Rs.70,00,000/-',
-      compositeRatePerSqft: saved.compositeRatePerSqft || 'Rs.4240/-',
+      specFlooring: saved.specFlooring || '',
+      superBuiltUpAreaFlat: saved.superBuiltUpAreaFlat || '',
+      carpetAreaFlat: saved.carpetAreaFlat || '',
+      costOfFlatAgreement: saved.costOfFlatAgreement || '',
+      totalCostOfFlatTotal: saved.totalCostOfFlatTotal || '',
+      compositeRatePerSqft: saved.compositeRatePerSqft || '',
       isRateGenuine: saved.isRateGenuine || 'Yes',
       genuineRateIfNot: saved.genuineRateIfNot || 'NA',
       marketabilityOfProperty: saved.marketabilityOfProperty || 'Good',
 
       // Section F: Valuation
-      valStageWorksPct: saved.valStageWorksPct || '75%',
-      valStageWorksValue: saved.valStageWorksValue || 'Rs.52,50,000/-',
+      valStageWorksPct: saved.valStageWorksPct || '',
+      valStageWorksValue: saved.valStageWorksValue || '',
       valUdsAsPerSaleDeed: saved.valUdsAsPerSaleDeed || 'NA',
-      valTotalStageValueOfFlat: saved.valTotalStageValueOfFlat || 'Rs.52,50,000/-',
+      valTotalStageValueOfFlat: saved.valTotalStageValueOfFlat || '',
       valUsageOfBuilding: saved.valUsageOfBuilding || 'Residential',
 
       // Section G: Recommendation
-      recSno: saved.recSno || '1',
-      recStageOfConstruction: saved.recStageOfConstruction || 'S+4 RCC,Brickworks & Plastering Completed.',
+      recSno: saved.recSno || '',
+      recStageOfConstruction: saved.recStageOfConstruction || '',
       recProgressPct: saved.recProgressPct || '75%',
 
       // Section H: Narratives
@@ -301,28 +302,21 @@ export default function LICPVR2({
   ];
 
   return (
-    <div className="space-y-6 pb-28 w-full">
-      {/* ── Active Config Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        bankName={fields.organisationTemplate || 'LIC HOUSING FINANCE LTD'}
-        subclass="PVR-2(FLAT-UNDERCONSTRUCTION)"
-        clientType="organisation"
-        category="Bank & FIS"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* ── Top Header Card ── */}
-      <BankReportTitleCard
-        bankName="LIC Housing Finance Ltd"
-        subclass="PVR-2 (Flat - Underconstruction)"
-        title="Valuation Report Builder"
-        description="Valuation Report for Under-Construction Flats with Stage Verification."
-        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
-        projectCode={projectCode}
-      />
+          {/* Universal Standardized Bank Report Header */}
+          <BankReportHeader
+            bankName={fields.organisationTemplate || 'LIC HOUSING FINANCE LTD'}
+            subclass="PVR-2 (Flat - Underconstruction)"
+            clientType="organisation"
+            category="Bank & FIS"
+            onResetWizard={onResetWizard}
+            title="Valuation Report Builder"
+            description="Valuation Report for Under-Construction Flats with Stage Verification."
+            earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+            projectCode={projectCode}
+            status={status}
+          />
 
       {/* ── Header Metadata ── */}
       <Section id="sec-meta" title="Header & File Metadata" number={1} defaultOpen={true}>
@@ -572,6 +566,5 @@ export default function LICPVR2({
         </div>
         <FloatingNavigator sections={navSections} />
       </div>
-    </div>
   );
 }

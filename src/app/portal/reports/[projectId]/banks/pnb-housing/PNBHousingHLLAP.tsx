@@ -7,7 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -21,7 +21,6 @@ import {
   formatReportDate,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -449,28 +448,28 @@ export default function PNBHousingHLLAP({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* ── Active Configuration Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName={fields.organisationTemplate || 'PNB HOUSING FINANCE LTD'}
-        subclass={fields.organisationSubTemplate || undefined}
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
+      {/* Universal Standardized Bank Report Header */}
+      <div className="w-full">
+        <BankReportHeader
+          bankName={fields.organisationTemplate || 'PNB HOUSING FINANCE LTD'}
+          subclass={fields.organisationSubTemplate || 'HL-LAP'}
+          clientType="organisation"
+          category="Bank & FIS"
+          onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="RPCL / HL-LAP Institutional Valuation Report Format."
+          earliestVisit={earliestVisit}
+          projectCode={projectCode}
+          status={status}
+          message={message}
+          onDismissMessage={() => setMessage(null)}
+        />
+      </div>
 
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* Title Card */}
-          <BankReportTitleCard
-            bankName="PNB Housing Finance Ltd"
-            subclass="HL-LAP Format"
-            description="RPCL / HL-LAP Institutional Valuation Report Format."
-            earliestVisit={earliestVisit}
-            projectCode={projectCode}
-          />
 
         {/* 1. Header & Branch */}
         <div id="pnb-sec-header">

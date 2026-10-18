@@ -215,11 +215,11 @@ export class PDFLICPVR2Renderer extends PDFBankRenderer {
     // Metadata block
     const metaH = 14;
     const metaRows = [
-      { label: '* File No.', val: `: ${d.fileNo || '9002050007125'}` },
+      { label: '* File No.', val: `: ${d.fileNo || ''}` },
       { label: '* Name of the Valuer', val: `: ${d.nameOfValuer || 'Er. Satyajit Mohanty'}` },
-      { label: '* Code No.', val: `: ${d.codeNo || 'BH-AOV0078'}` },
-      { label: '*Appointing Authority:', val: `: ${d.appointingAuthority || 'LIC HFL(Br-I)'}` },
-      { label: '*Date of Valuation', val: `: ${d.dateOfValuation || '30/07/2025'}` },
+      { label: '* Code No.', val: `: ${d.codeNo || ''}` },
+      { label: '*Appointing Authority:', val: `: ${d.appointingAuthority || ''}` },
+      { label: '*Date of Valuation', val: `: ${d.dateOfValuation || ''}` },
       { label: '*RERA No.(For Flats)', val: `: ${d.reraNo || 'NA'}` },
     ];
 
@@ -238,17 +238,17 @@ export class PDFLICPVR2Renderer extends PDFBankRenderer {
     const wVal = CONTENT_W - wNum - wTitle;
 
     const rowsA = [
-      { n: '1.', t: '*File No.', v: d.fileNo || '9002050007125' },
-      { n: '2.', t: '*Name of the Applicant', v: d.applicantName || 'Mrs. Suchitra Moharana ,W/o:-Mr. Ranjan Kumar Sahoo' },
-      { n: '3.', t: 'Name of the Builder/Developer', v: d.builderDeveloperName || 'M/s. Ajjiban Construction Pvt. Ltd.' },
-      { n: '4.', t: 'Documents produced for perusal', v: d.documentsProduced || 'Copy of Agreement for sale & Allotment letter' },
-      { n: '5.', t: '*Location of the property\nFlat No/ Floor No.\nBlock No./Door No. /Street\nName of the apartment\nPlot No. /S.F. No./T.S.No. /R.S.No.\nVillage/Block No./Taluk/Ward No.\nDistrict/Corporation/Municipality', v: `Flat no-402,3-BHK\n4th Floor\n"${d.apartmentName || 'Subhadra Palace'}"\n${d.plotNoKhataNo || 'Plot No-1236/2887,1236/2897 & 1236/4503,Khata No-1057/702 & 1057/2428'}\n${d.villageTalukWard || 'Mouza-Bhubaneswar Sahar Unit-32,Gobindparsad,PS-New Capital(46), TS-Bhubaneswar(244)'}\n${d.districtPin || 'Dist-Khurda,Odisha Pin-751007'}` },
+      { n: '1.', t: '*File No.', v: d.fileNo || '' },
+      { n: '2.', t: '*Name of the Applicant', v: d.applicantName || '' },
+      { n: '3.', t: 'Name of the Builder/Developer', v: d.builderDeveloperName || '' },
+      { n: '4.', t: 'Documents produced for perusal', v: d.documentsProduced || '' },
+      { n: '5.', t: '*Location of the property\nFlat No/ Floor No.\nBlock No./Door No. /Street\nName of the apartment\nPlot No. /S.F. No./T.S.No. /R.S.No.\nVillage/Block No./Taluk/Ward No.\nDistrict/Corporation/Municipality', v: [d.flatNoFloorNo || '', d.apartmentName ? `"${d.apartmentName}"` : '', d.plotNoKhataNo || '', d.villageTalukWard || '', d.districtPin || ''].filter(Boolean).join('\n') },
       { n: '6.', t: 'Location Sketch Verified (Yes/No)', v: d.locationSketchVerified || 'Yes' },
-      { n: '7.', t: 'Development of surrounding area with\nSpecial reference to population\n(Lower class/ Middle/ Upper Middle/Posh)', v: d.surroundingDevelopmentClass || 'Middle Class' },
+      { n: '7.', t: 'Development of surrounding area with\nSpecial reference to population\n(Lower class/ Middle/ Upper Middle/Posh)', v: d.surroundingDevelopmentClass || '' },
       { n: '8.', t: 'Whether basic amenities like water,\nelectricity, roads, sewerage, telephone\nare available', v: d.basicAmenitiesAvailable || 'Yes' },
       { n: '9.', t: 'Any negatives to the locality/ property\n(Crematoriums, slums, riot prone, gases\nChemical hazards, nagbana etc)', v: d.negativesToLocality || 'No' },
-      { n: '10.', t: 'Any favorable considerations for addl.\nvalue', v: d.favourableConsiderations || 'All civic amenities like school,hospital,\nmarket area are within 3-5Kms.' },
-      { n: '11.', t: 'Any other features like board of other\nfinancier indicating mortgage, notice of\nCourt/any authority which may affect the\nsecurity.', v: d.otherFeaturesNotice || 'Not Observed' },
+      { n: '10.', t: 'Any favorable considerations for addl.\nvalue', v: d.favourableConsiderations || '' },
+      { n: '11.', t: 'Any other features like board of other\nfinancier indicating mortgage, notice of\nCourt/any authority which may affect the\nsecurity.', v: d.otherFeaturesNotice || '' },
     ];
 
     for (const r of rowsA) {
@@ -270,32 +270,32 @@ export class PDFLICPVR2Renderer extends PDFBankRenderer {
     const wVal = CONTENT_W - wItem - wDesc;
 
     // 1. Total extent of land
-    this.draw3ColTableRow(wItem, wDesc, wVal, '1.', 'Total extent of the land as per actual', d.totalExtentLandSqft || '5401sqft');
+    this.draw3ColTableRow(wItem, wDesc, wVal, '1.', 'Total extent of the land as per actual', d.totalExtentLandSqft || '');
 
     // 2. Boundaries
     this.drawSubHeaderBox('2. Boundaries');
     const wDir = 120;
     const wBound = CONTENT_W - wDir;
     this.drawCell(MARGIN_L, this.cursorY, wDir, 18, 'North/Front', { fontSize: FONT_SIZE_CAPTION, fillColor: LBL_BG });
-    this.drawCell(MARGIN_L + wDir, this.cursorY, wBound, 18, d.boundaryNorth || 'Flat No-401', { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDir, this.cursorY, wBound, 18, d.boundaryNorth || '', { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += 18;
 
     this.drawCell(MARGIN_L, this.cursorY, wDir, 18, 'South/Rear', { fontSize: FONT_SIZE_CAPTION, fillColor: LBL_BG });
-    this.drawCell(MARGIN_L + wDir, this.cursorY, wBound, 18, d.boundarySouth || 'Plot No-1234(Part) & 1234/6', { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDir, this.cursorY, wBound, 18, d.boundarySouth || '', { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += 18;
 
     this.drawCell(MARGIN_L, this.cursorY, wDir, 18, 'East/Left (side 1)', { fontSize: FONT_SIZE_CAPTION, fillColor: LBL_BG });
-    this.drawCell(MARGIN_L + wDir, this.cursorY, wBound, 18, d.boundaryEast || 'Revenue Plot No-1237/22', { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDir, this.cursorY, wBound, 18, d.boundaryEast || '', { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += 18;
 
     this.drawCell(MARGIN_L, this.cursorY, wDir, 18, 'West/Right (side 2)', { fontSize: FONT_SIZE_CAPTION, fillColor: LBL_BG });
-    this.drawCell(MARGIN_L + wDir, this.cursorY, wBound, 18, d.boundaryWest || 'Road', { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wDir, this.cursorY, wBound, 18, d.boundaryWest || '', { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += 18;
 
     // 3. Do land dimensions tally
     this.drawSubHeaderBox('3. Do the land dimensions at site tally with');
     this.drawSimple2ColRow('a) Approved plan?', d.landDimensionsTallyPlan || 'Yes');
-    this.drawSimple2ColRow('b) Sale deed/Sale agreement', d.landDimensionsTallyDeed || 'Sale agreement');
+    this.drawSimple2ColRow('b) Sale deed/Sale agreement', d.landDimensionsTallyDeed || '');
 
     // 4 & 5
     this.drawSimple2ColRow('4. Whether N.A. Permission obtained', d.naPermissionObtained || 'Yes');
@@ -304,11 +304,11 @@ export class PDFLICPVR2Renderer extends PDFBankRenderer {
 
     // C. DRAWING APPROVAL
     this.drawLeftSectionTitle('C. DRAWING APPROVAL');
-    this.draw3ColTableRow(wItem, wDesc, wVal, '1.', 'Layout planning approval no./Planning\npermit no./Building permission No.', d.planningPermitNoDate || 'Plan has been approved by BMC, vide\nLetter No-BP/BMC/003510,Dated-17/06/2023)');
-    this.draw3ColTableRow(wItem, wDesc, wVal, '2.', 'Validity is up to', d.validityUpto || 'Dt-16/06/2027');
-    this.draw3ColTableRow(wItem, wDesc, wVal, '3.', 'If validity is expired, whether it is renewed?\nPlinth certificate/C.C./O.C. is obtained', `${d.validityExpiredRenewed || 'NA'}\nNot received till date`);
+    this.draw3ColTableRow(wItem, wDesc, wVal, '1.', 'Layout planning approval no./Planning\npermit no./Building permission No.', d.planningPermitNoDate || '');
+    this.draw3ColTableRow(wItem, wDesc, wVal, '2.', 'Validity is up to', d.validityUpto || '');
+    this.draw3ColTableRow(wItem, wDesc, wVal, '3.', 'If validity is expired, whether it is renewed?\nPlinth certificate/C.C./O.C. is obtained', d.validityExpiredRenewed || 'NA');
     this.draw3ColTableRow(wItem, wDesc, wVal, '4.', 'Is plan for residential purpose?', d.isPlanForResidential || 'Yes');
-    this.draw3ColTableRow(wItem, wDesc, wVal, '5.', 'Approval was given by (Authority)', d.approvalAuthority || 'BMC,Bhubaneswar');
+    this.draw3ColTableRow(wItem, wDesc, wVal, '5.', 'Approval was given by (Authority)', d.approvalAuthority || '');
     this.cursorY += 10;
 
     // D. INSPECTION: 1. Construction details table
@@ -329,13 +329,13 @@ export class PDFLICPVR2Renderer extends PDFBankRenderer {
     this.cursorY += hdrH;
 
     const inspRows = [
-      { sl: 'i)', p: 'No. of Blocks/Building', app: d.noOfBlocksApproved || '1', act: d.noOfBlocksActual || '1' },
-      { sl: 'ii)', p: 'No. of storey/ Floors', app: d.noOfFloorsApproved || 'S+4', act: d.noOfFloorsActual || 'S+4' },
-      { sl: 'iii)', p: 'Total built up area (sq.ft)', app: d.totalBuiltUpAreaApproved || '13410sqft.', act: d.totalBuiltUpAreaActual || '13410sqft.' },
+      { sl: 'i)', p: 'No. of Blocks/Building', app: d.noOfBlocksApproved || '', act: d.noOfBlocksActual || '' },
+      { sl: 'ii)', p: 'No. of storey/ Floors', app: d.noOfFloorsApproved || '', act: d.noOfFloorsActual || '' },
+      { sl: 'iii)', p: 'Total built up area (sq.ft)', app: d.totalBuiltUpAreaApproved || '', act: d.totalBuiltUpAreaActual || '' },
       { sl: 'iv)', p: 'Total Carpet area (approx..)', app: d.totalCarpetAreaApproved || 'NA', act: d.totalCarpetAreaActual || 'NA' },
-      { sl: 'v)', p: 'No. of dwelling units', app: d.noOfDwellingUnitsApproved || '8 Units', act: d.noOfDwellingUnitsActual || '8 Units' },
-      { sl: 'vi)', p: 'Plot coverage', app: d.plotCoverageApproved || '60%', act: d.plotCoverageActual || '60%' },
-      { sl: 'vii)', p: 'Floor space Index (FSI)', app: d.fsiApproved || '1.992', act: d.fsiActual || '1.992' },
+      { sl: 'v)', p: 'No. of dwelling units', app: d.noOfDwellingUnitsApproved || '', act: d.noOfDwellingUnitsActual || '' },
+      { sl: 'vi)', p: 'Plot coverage', app: d.plotCoverageApproved || '', act: d.plotCoverageActual || '' },
+      { sl: 'vii)', p: 'Floor space Index (FSI)', app: d.fsiApproved || '', act: d.fsiActual || '' },
       { sl: 'viii)', p: 'TDR', app: d.tdrApproved || 'NA', act: d.tdrActual || 'NA' },
     ];
 
@@ -359,21 +359,21 @@ export class PDFLICPVR2Renderer extends PDFBankRenderer {
 
     const inspItems = [
       { n: '2.', t: 'Overall Quality of Construction\n(Excellent / Good / Average / Poor)', v: d.qualityOfConstruction || 'Good' },
-      { n: '3.', t: 'Cost of land (Entire Project)\ni) Unit Rate\nii) Market Value\niii) Guideline Rate\niv) Guideline Value', v: `Unit Rate: ${d.costOfLandUnitRate || 'Not Provided by the Developer'}\nMarket Value: ${d.costOfLandMarketValue || 'Not Provided by the Developer'}\nGuideline Rate: ${d.costOfLandGuidelineRate || 'Not Provided by the Developer'}\nGuideline Value: ${d.costOfLandGuidelineValue || 'Not Provided by the Developer'}` },
-      { n: '4.', t: 'Cost of Land+TDR(Purchase cost)', v: d.costOfLandTdrPurchaseCost || 'Rs.0' },
-      { n: '5.', t: 'Construction Cost of the project', v: d.constructionCostOfProject || 'Rs.30843000.00' },
-      { n: '6.', t: 'Total Cost of the Project\n(Land + Const.+ all other Charges)\ni) Unit Rate for flat\nii) Market Value of flat\niii) Guideline Rate of flat\niv) Guideline Value of flat', v: `Unit Rate for flat: ${d.unitRateForFlatMarket || 'Rs.7700/sqft.'}\nMarket Value of flat: ${d.marketValueOfFlat || 'Rs.70,00,000/-'}\nGuideline Rate: ${d.guidelineRateForFlat || 'Rs.2342/sqft.'}\nGuideline Value: ${d.guidelineValueOfFlat || 'Rs.53,86,600/-'}` },
+      { n: '3.', t: 'Cost of land (Entire Project)\ni) Unit Rate\nii) Market Value\niii) Guideline Rate\niv) Guideline Value', v: `Unit Rate: ${d.costOfLandUnitRate || ''}\nMarket Value: ${d.costOfLandMarketValue || ''}\nGuideline Rate: ${d.costOfLandGuidelineRate || ''}\nGuideline Value: ${d.costOfLandGuidelineValue || ''}` },
+      { n: '4.', t: 'Cost of Land+TDR(Purchase cost)', v: d.costOfLandTdrPurchaseCost || '' },
+      { n: '5.', t: 'Construction Cost of the project', v: d.constructionCostOfProject || '' },
+      { n: '6.', t: 'Total Cost of the Project\n(Land + Const.+ all other Charges)\ni) Unit Rate for flat\nii) Market Value of flat\niii) Guideline Rate of flat\niv) Guideline Value of flat', v: `Unit Rate for flat: ${d.unitRateForFlatMarket || ''}\nMarket Value of flat: ${d.marketValueOfFlat || ''}\nGuideline Rate: ${d.guidelineRateForFlat || ''}\nGuideline Value: ${d.guidelineValueOfFlat || ''}` },
       { n: '7.', t: 'State the Source for arriving at Market Value', v: d.sourceForArrivingAtMarketValue || 'By local market feedback & transaction of similar properties' },
-      { n: '8.', t: 'Rate per sqft for construction', v: d.ratePerSqftForConstruction || 'Flat@Rs.2300.00/sqft' },
+      { n: '8.', t: 'Rate per sqft for construction', v: d.ratePerSqftForConstruction || '' },
       { n: '9.', t: 'Water resources:-', v: d.waterResources || 'Yes(Bore Well)' },
       { n: '10.', t: 'Sewerage System', v: d.sewerageSystem || 'Yes' },
       { n: '11.', t: 'Electricity Connection', v: d.electricityConnection || 'Yes' },
-      { n: '12.', t: 'No. of Lifts', v: d.noOfLifts || 'Yes(Provision for lift)' },
-      { n: '13.', t: 'Date of Commencement of project', v: d.dateOfCommencement || '10th August 2024' },
-      { n: '14.', t: 'Proposed date of Completion', v: d.proposedDateOfCompletion || '6th June 2026' },
+      { n: '12.', t: 'No. of Lifts', v: d.noOfLifts || '' },
+      { n: '13.', t: 'Date of Commencement of project', v: d.dateOfCommencement || '' },
+      { n: '14.', t: 'Proposed date of Completion', v: d.proposedDateOfCompletion || '' },
       { n: '15.', t: 'Whether construction is as per approved plan (Yes/No):', v: d.isConstructionAsPerApprovedPlan || 'Yes' },
       { n: '16.', t: 'Deviations\ni) What are the deviations between approved drawing & actual?\nii) Whether deviations are minor/major nature?\niii) Whether revised approval is reqd.', v: `i) ${d.deviationBetweenDrawingAndActual || 'NA'}\nii) ${d.deviationMinorMajorNature || 'NA'}\niii) ${d.deviationRevisedApprovalReqd || 'No'}` },
-      { n: '17.', t: 'Progress of work\ni) Entire project\nBlock wise progress and floor wise progress', v: `${d.progressEntireProject || 'S+4 RCC,Brickworks & Plastering Completed.'}\n${d.progressBlockFloorWise || ''}` },
+      { n: '17.', t: 'Progress of work\ni) Entire project\nBlock wise progress and floor wise progress', v: `${d.progressEntireProject || ''}\n${d.progressBlockFloorWise || ''}`.trim() },
       { n: '18.', t: 'a) Adheres to Safety Specs in National Building Code 2005 & NDMA?\nb) High Tension Wire Lines passing through property?', v: `a) ${d.nbcAndNdmaAdhered || 'Yes'}\nb) ${d.highTensionLinePassing || 'No'}` },
     ];
 
@@ -396,8 +396,8 @@ export class PDFLICPVR2Renderer extends PDFBankRenderer {
 
     const flatRows = [
       { n: '1.', t: 'Sale deed\ni) Undivided share of land as per sale deed\nii) Value of undivided share of land\niii) Applicant UDS in proportion to BUA\niv) If no, what should be correct UDS', v: `i) ${d.udsAsPerSaleDeed || 'NA'}\nii) ${d.valueOfUds || 'NA'}\niii) ${d.isUdsInProportionToBuiltUp || 'NA'}\niv) ${d.correctUdsIfNotProportion || 'NA'}` },
-      { n: '2.', t: 'Construction agreement\ni) Specification of flat: Roof / Flooring\nii) Super Built-up area of the flat\niii) Carpet area of the flat\niv) Cost of flat as per agreement', v: `Roof: ${d.specRoof || 'R.C.C'}\nFlooring: ${d.specFlooring || 'Not done(Proposed)'}\nSuper BUA: ${d.superBuiltUpAreaFlat || '1651sqft'}\nCarpet: ${d.carpetAreaFlat || 'Not mentioned'}\nCost: ${d.costOfFlatAgreement || 'Rs.70,00,000/- (Including Car Parking)'}` },
-      { n: '3.', t: 'Genuineness of rate\ni) Total cost of flat (1(ii) + 2(iv))\nii) Composite rate per Sft.\niii) Is rate genuine?\niv) If no, genuine rate?\nv) Marketability of Property', v: `Total: ${d.totalCostOfFlatTotal || 'Rs.70,00,000/-'}\nComposite rate: ${d.compositeRatePerSqft || 'Rs.4240/-'}\nGenuine: ${d.isRateGenuine || 'Yes'}\n${d.genuineRateIfNot ? `Genuine rate: ${d.genuineRateIfNot}\n` : ''}Marketability: ${d.marketabilityOfProperty || 'Good'}` },
+      { n: '2.', t: 'Construction agreement\ni) Specification of flat: Roof / Flooring\nii) Super Built-up area of the flat\niii) Carpet area of the flat\niv) Cost of flat as per agreement', v: `Roof: ${d.specRoof || 'R.C.C'}\nFlooring: ${d.specFlooring || ''}\nSuper BUA: ${d.superBuiltUpAreaFlat || ''}\nCarpet: ${d.carpetAreaFlat || ''}\nCost: ${d.costOfFlatAgreement || ''}` },
+      { n: '3.', t: 'Genuineness of rate\ni) Total cost of flat (1(ii) + 2(iv))\nii) Composite rate per Sft.\niii) Is rate genuine?\niv) If no, genuine rate?\nv) Marketability of Property', v: `Total: ${d.totalCostOfFlatTotal || ''}\nComposite rate: ${d.compositeRatePerSqft || ''}\nGenuine: ${d.isRateGenuine || 'Yes'}\n${d.genuineRateIfNot ? `Genuine rate: ${d.genuineRateIfNot}\n` : ''}Marketability: ${d.marketabilityOfProperty || 'Good'}` },
     ];
 
     for (const r of flatRows) {
@@ -411,9 +411,9 @@ export class PDFLICPVR2Renderer extends PDFBankRenderer {
     const wL = 220;
     const wV = CONTENT_W - wS - wL;
 
-    this.draw3ColTableRow(wS, wL, wV, '1.', 'Stage of Works Completed', `Percentage: ${d.valStageWorksPct || '75%'}\nValue: ${d.valStageWorksValue || 'Rs.52,50,000/-'}`);
+    this.draw3ColTableRow(wS, wL, wV, '1.', 'Stage of Works Completed', `Percentage: ${d.valStageWorksPct || ''}\nValue: ${d.valStageWorksValue || ''}`);
     this.draw3ColTableRow(wS, wL, wV, '2.', 'Value of undivided share of Land as per sale deed (if applicable)', d.valUdsAsPerSaleDeed || 'NA');
-    this.draw3ColTableRow(wS, wL, wV, '3.', 'Total stage value of flat as on date', d.valTotalStageValueOfFlat || 'Rs.52,50,000/-');
+    this.draw3ColTableRow(wS, wL, wV, '3.', 'Total stage value of flat as on date', d.valTotalStageValueOfFlat || '');
     this.draw3ColTableRow(wS, wL, wV, '4.', 'Usage of the Building (Residential / Commercial- if commercial- ratio)', d.valUsageOfBuilding || 'Residential');
     this.cursorY += 10;
 
@@ -424,7 +424,7 @@ export class PDFLICPVR2Renderer extends PDFBankRenderer {
     const wProg = CONTENT_W - wSno - wStage;
 
     this.draw3CellHeader(wSno, 'S.No.', wStage, 'Stage of Construction', wProg, '% Progress');
-    this.draw3CellRow(wSno, d.recSno || '1', wStage, d.recStageOfConstruction || 'S+4 RCC,Brickworks & Plastering Completed.', wProg, d.recProgressPct || '75%');
+    this.draw3CellRow(wSno, d.recSno || '', wStage, d.recStageOfConstruction || '', wProg, d.recProgressPct || '');
   }
 
   private drawNarrativesAndCertificate(): void {

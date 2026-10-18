@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -1439,18 +1440,8 @@ export default function BandhanHLLAP({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-                {/* Standardized Title Card */}
-        <BankReportTitleCard
-          bankName="Bandhan Bank"
-          subclass="HL-LAP Format"
-          title="Valuation Report Builder"
-          description="Bandhan Bank Home Loan & Loan Against Property Format."
-          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
-          projectCode={projectCode}
-        />
-
-{/* Top Active Configuration Banner */}
-        <ActiveConfigBanner
+        {/* Standardized Universal Bank Report Header */}
+        <BankReportHeader
           clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.bankName || fields.organisationTemplate || 'BANDHAN BANK'}
@@ -1458,64 +1449,37 @@ export default function BandhanHLLAP({
           serviceType={fields.serviceType}
           subjectType={fields.subjectType}
           onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="Bandhan Bank Home Loan & Loan Against Property Format."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+          reworkNotes={fields.reworkNotes}
+          status={status}
+          message={message}
         />
 
-        {/* Rework Banner */}
-        {fields.reworkNotes && status === 'REPORT_DRAFTING' && (
-          <div className="card p-5 border-2 border-red-200 bg-red-50 shadow-md">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-xl">⚠️</span>
-              <h2 className="text-sm font-bold text-red-800 uppercase tracking-wider">Manager Rework Requested</h2>
-            </div>
-            <p className="text-sm text-red-700 bg-white/60 p-4 rounded-lg border border-red-100 whitespace-pre-wrap">
-              {fields.reworkNotes}
-            </p>
-          </div>
-        )}
-
-        {message && (
-          <div
-            className={`p-4 rounded-xl text-sm font-semibold border shadow-xs ${
-              message.type === 'success'
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                : 'bg-rose-50 text-rose-800 border-rose-200'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
-
-        {/* Header Block */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">
-            Bandhan Bank — HL-LAP Valuation Report
-          </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Ref. No:">
-                  <input
-                    type="text"
-                    className={inputCls}
-                    value={fields.refNo || ''}
-                    onChange={(e) => handleChange('refNo', e.target.value)}
-                    placeholder="e.g. BANDHAN/HL/2026/01"
-                    disabled={isReadOnly}
-                  />
-                </Field>
-                <Field label="Report Date:">
-                  <BaseDateInput
-                    value={fields.reportDate || ''}
-                    onChange={(val) => handleChange('reportDate', val)}
-                    disabled={isReadOnly}
-                  />
-                </Field>
-              </div>
-            </div>
-
-            {/* 1. Basic & Loan Details */}
-            <Section number={1} id="sec-basic" title="Basic & Loan Details (Points 1–5)">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <Field label="1. Name of the Bank Branch / Asset Centre / COD:">
+        {/* 1. Basic & Loan Details */}
+        <Section number={1} id="sec-basic" title="Basic & Loan Details (Points 1–5)">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label="Ref. No:">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.refNo || ''}
+                onChange={(e) => handleChange('refNo', e.target.value)}
+                placeholder="e.g. BANDHAN/HL/2026/01"
+                disabled={isReadOnly}
+              />
+            </Field>
+            <Field label="Report Date:">
+              <BaseDateInput
+                value={fields.reportDate || ''}
+                onChange={(val) => handleChange('reportDate', val)}
+                disabled={isReadOnly}
+              />
+            </Field>
+            <div className="sm:col-span-2">
+              <Field label="1. Name of the Bank Branch / Asset Centre / COD:">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                       <div className="sm:col-span-1">
                         <div className="relative">

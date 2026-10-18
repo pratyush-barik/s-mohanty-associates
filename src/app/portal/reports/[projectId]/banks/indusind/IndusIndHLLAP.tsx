@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -79,6 +80,7 @@ export default function IndusIndHLLAP({
   // Master Fields State
   const [fields, setFields] = useState<any>(() => {
     const raw = initialFields || {};
+    const p = (prefill || {}) as any;
     return {
       ...raw,
       bankName: 'INDUSIND BANK',
@@ -90,7 +92,7 @@ export default function IndusIndHLLAP({
       indusPropertyOccupiedBy: raw.indusPropertyOccupiedBy || 'Vacant',
       indusPurposeOfValuation: raw.indusPurposeOfValuation || raw.purpose || 'To assess fair market value for collateral security',
       indusDateOfReport: raw.indusDateOfReport || raw.valuationDate || '',
-      indusFieldEngineerName: raw.indusFieldEngineerName || 'Mr. Mantu Das',
+      indusFieldEngineerName: raw.indusFieldEngineerName || p.firstFieldAgentName || '',
       indusDateOfVisit: raw.indusDateOfVisit || raw.inspectionDate || '',
       indusVettedByName: raw.indusVettedByName || 'Er. Satyajit Mohanty',
 
@@ -570,26 +572,23 @@ export default function IndusIndHLLAP({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* Active Config Header Banner */}
-      <ActiveConfigBanner
-        bankName={fields.organisationTemplate || 'INDUSIND BANK'}
-        subclass={fields.organisationSubTemplate || undefined}
-        clientType="organisation"
-        category="Bank & FIS"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* Center Main Form */}
         <div className="flex-1 min-w-0 space-y-8 w-full">
-                    {/* Standardized Title Card */}
-          <BankReportTitleCard
-            bankName="IndusInd Bank"
-            subclass="HL-LAP Format"
+          {/* Standardized Universal Bank Report Header */}
+          <BankReportHeader
+            bankName={fields.organisationTemplate || 'INDUSIND BANK'}
+            subclass={fields.organisationSubTemplate || 'HL-LAP Format'}
+            clientType="organisation"
+            category="Bank & FIS"
+            onResetWizard={onResetWizard}
+            title="Valuation Report Builder"
             description="Comprehensive Housing Loan & Loan Against Property Valuation Engine."
             earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
             projectCode={projectCode}
+            reworkNotes={fields.reworkNotes}
+            status={status}
+            message={message}
           />
 
 {/* Section 1: General Details */}

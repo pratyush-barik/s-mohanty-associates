@@ -7,6 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -445,24 +446,19 @@ export default function IDBIBankAbove5CR({
 
   return (
     <div className="space-y-6 pb-24">
-      {/* ── Active Configuration Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        bankName="IDBI BANK"
-        subclass={(initialFields as any)?.organisationSubTemplate || undefined}
+      {/* ── Standardized Universal Bank Report Header ── */}
+      <BankReportHeader
+        bankName="IDBI Bank"
+        subclass={isFlat ? 'Above 5CR (Flat / Apartment)' : 'Above 5CR (Land & Building)'}
         clientType="organisation"
         category="Bank & FIS"
         onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
-      {/* ── Top Header Card with Dynamic Mode Toggle ── */}
-      <BankReportTitleCard
-        bankName="IDBI Bank"
-        subclass={isFlat ? 'Above 5CR (Flat / Apartment)' : 'Above 5CR (Land & Building)'}
         title="Valuation Report Builder"
         description="Standard Statutory Bank Format addressing Asst. General Manager with full schedules."
         earliestVisit={earliestVisit}
         projectCode={projectCode}
+        reworkNotes={(initialFields as any)?.reworkNotes}
+        status={status}
       />
 
       {/* ── Section 1: Bank Authority & Customer Information ── */}

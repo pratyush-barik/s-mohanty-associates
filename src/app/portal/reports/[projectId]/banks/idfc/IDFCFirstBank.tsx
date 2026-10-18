@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -491,27 +492,21 @@ export default function IDFCFirstBank({
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100 pb-28">
-      {/* Top Banner */}
-      <ActiveConfigBanner
-        bankName="IDFC FIRST BANK"
-        subclass={initialFields?.organisationSubTemplate || undefined}
-        category="Bank & FIS"
-        clientType="organisation"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8 pt-6">
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* Action Header */}
-        <BankReportTitleCard
-        bankName="IDFC FIRST Bank"
-        subclass="Technical Appraisal Report"
-        title="Valuation Report Builder"
-        description="Standard 22-Section format with floor schedules, stage valuation, boundary matrix & attachments."
-        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
-        projectCode={projectCode}
-      />
+          {/* Standardized Universal Bank Report Header */}
+          <BankReportHeader
+            bankName="IDFC FIRST BANK"
+            subclass={initialFields?.organisationSubTemplate || 'Technical Appraisal Report'}
+            category="Bank & FIS"
+            clientType="organisation"
+            onResetWizard={onResetWizard}
+            title="Valuation Report Builder"
+            description="Standard 22-Section format with floor schedules, stage valuation, boundary matrix & attachments."
+            earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+            projectCode={projectCode}
+            status={status}
+          />
 
         {/* 1. Case & Ref */}
         <div id="sec-header" className={softCardCls}>

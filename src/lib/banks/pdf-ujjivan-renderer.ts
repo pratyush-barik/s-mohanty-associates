@@ -131,11 +131,11 @@ export class PDFUjjivanRenderer extends PDFBankRenderer {
       { label: '11. Distance From City Centre', value: this.getF('distanceCityCentre', ''), labelWidth: 160, valueWidth: CONTENT_W - 160 },
     ]);
     this.drawKeyValueRow([
-      { label: '12. Road Name / Width for Access', value: this.getF('accessRoadName', '10-feet wide Road'), labelWidth: 160, valueWidth: CONTENT_W - 160 },
+      { label: '12. Road Name / Width for Access', value: this.getF('accessRoadName', ''), labelWidth: 160, valueWidth: CONTENT_W - 160 },
     ]);
     this.drawKeyValueRow([
       { label: '13. Type of Property', value: this.getF('typeOfProperty', 'Residential'), labelWidth: 130, valueWidth: halfW - 130 },
-      { label: 'Jurisdiction', value: this.getF('jurisdiction', 'Puri Municipality limit'), labelWidth: 100, valueWidth: halfW - 100 },
+      { label: 'Jurisdiction', value: this.getF('jurisdiction', ''), labelWidth: 100, valueWidth: halfW - 100 },
     ]);
     this.drawKeyValueRow([
       { label: 'Shape of the Plot', value: this.getF('shapeOfPlot', 'Rectangular'), labelWidth: 130, valueWidth: halfW - 130 },
@@ -189,10 +189,10 @@ export class PDFUjjivanRenderer extends PDFBankRenderer {
     ]);
 
     const bounds = [
-      { dir: 'East By', doc: this.getF('boundDocEast', 'Road'), act: this.getF('boundActEast', 'Road'), rem: this.getF('boundRemarksEast', '') },
-      { dir: 'West By', doc: this.getF('boundDocWest', 'Hadigohiri'), act: this.getF('boundActWest', 'Building of Bapi Mohapatra'), rem: this.getF('boundRemarksWest', 'Boundary is matching as per documents') },
-      { dir: 'North By', doc: this.getF('boundDocNorth', 'Benu Singhari'), act: this.getF('boundActNorth', 'Building of Benu Singhari'), rem: this.getF('boundRemarksNorth', '') },
-      { dir: 'South By', doc: this.getF('boundDocSouth', 'Dasarathi Panda'), act: this.getF('boundActSouth', 'Building of Dasarathi Panda'), rem: this.getF('boundRemarksSouth', '') },
+      { dir: 'East By', doc: this.getF('boundDocEast', ''), act: this.getF('boundActEast', ''), rem: this.getF('boundRemarksEast', '') },
+      { dir: 'West By', doc: this.getF('boundDocWest', ''), act: this.getF('boundActWest', ''), rem: this.getF('boundRemarksWest', '') },
+      { dir: 'North By', doc: this.getF('boundDocNorth', ''), act: this.getF('boundActNorth', ''), rem: this.getF('boundRemarksNorth', '') },
+      { dir: 'South By', doc: this.getF('boundDocSouth', ''), act: this.getF('boundActSouth', ''), rem: this.getF('boundRemarksSouth', '') },
     ];
 
     bounds.forEach(b => {
@@ -536,7 +536,7 @@ export class PDFUjjivanRenderer extends PDFBankRenderer {
     this.advanceCursor(10);
     this.checkPageBreak(60);
 
-    const rDate = this.getF('reportDate', this.getF('valuationDate', '07/05/2026'));
+    const rDate = this.getF('reportDate', this.getF('valuationDate', ''));
     const rPlace = this.getF('reportPlace', 'Bhubaneswar');
 
     this.drawKeyValueRow([

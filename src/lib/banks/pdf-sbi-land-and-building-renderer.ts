@@ -373,7 +373,7 @@ export class PDFSBILandAndBuildingRenderer extends PDFBankRenderer {
     this.drawCell(MARGIN_L, this.cursorY, wLbl1, rowH, 'Case Type', { bold: true });
     this.drawCell(MARGIN_L + wLbl1, this.cursorY, wVal1, rowH, d.caseType || 'Fresh Valuation');
     this.drawCell(MARGIN_L + wLbl1 + wVal1, this.cursorY, wLbl2, rowH, 'Identified by & Mob No:', { bold: true, fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLbl1 + wVal1 + wLbl2, this.cursorY, wVal2, rowH, d.identifiedByAndMobNo || "Mr. Dalai (Owner's Representative), Mob-9178156885", { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLbl1 + wVal1 + wLbl2, this.cursorY, wVal2, rowH, d.identifiedByAndMobNo || 'NA', { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
   }
 

@@ -78,6 +78,7 @@ SECTION 3: POSITIVE CONTROLS (PRESCRIBED PATTERNS & ARCHITECTURAL RULES — WHAT
    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
      <div className="flex-1 w-full space-y-6 min-w-0">
        <ActiveConfigBanner bankName={...} templateName={...} onReset={...} />
+       <BankReportTitleCard bankName={...} subclass={...} title="Valuation Report Builder" earliestVisit={...} projectCode={...} />
        {/* 1..N Soft Container Sections */}
        <ReportActionBar
          onSaveDraft={handleSaveDraft}

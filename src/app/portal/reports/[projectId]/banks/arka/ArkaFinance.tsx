@@ -9,6 +9,7 @@ import { PDFArkaFinanceRenderer, ArkaReportFields } from '@/lib/banks/pdf-arka-f
 import { fetchBytes } from '@/lib/pdf-bank-renderer';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -688,17 +689,8 @@ export default function ArkaFinance({
   return (
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       <div className="flex-1 min-w-0 space-y-6 w-full">
-                {/* Standardized Title Card */}
-        <BankReportTitleCard
-          bankName="Arka Finance Ltd"
-          subclass="Standard Format"
-          title="Valuation Report Builder"
-          description="Secured Business Loan & LAP Valuation Format."
-          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
-          projectCode={projectCode}
-        />
-
-<ActiveConfigBanner
+        {/* Standardized Universal Bank Report Header */}
+        <BankReportHeader
           clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.organisationTemplate || fields.bankName || 'ARKA FINANCE LTD'}
@@ -706,42 +698,39 @@ export default function ArkaFinance({
           serviceType={fields.serviceType || prefill?.purpose || undefined}
           subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="Secured Business Loan & LAP Valuation Format."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+          reworkNotes={fields.reworkNotes}
+          status={status}
+          message={message}
         />
 
-        {message && (
-          <div className={`p-4 rounded-xl text-sm font-bold shadow-sm ${message.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
-            {message.text}
-          </div>
-        )}
-
-        {/* Header Block */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6">
-          <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-200">
-            Arka Finance — Valuation Report
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Ref. No:">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.refNo || ''}
-                onChange={e => handleChange('refNo', e.target.value)}
-                placeholder="e.g. Arka/SMA-2026-001"
-                disabled={isReadOnly}
-              />
-            </Field>
-            <Field label="Date of Valuation Report:">
-              <BaseDateInput
-                value={fields.dateOfReport || ''}
-                onChange={val => handleChange('dateOfReport', val)}
-                disabled={isReadOnly}
-              />
-            </Field>
-          </div>
-        </div>
-
-        {/* SECTION 1: COVER PAGE DETAILS (unchanged) */}
+        {/* SECTION 1: COVER PAGE DETAILS */}
         <Section id="arka-cover" title="Cover Page Details" number={1} defaultOpen>
+          <div className="border border-blue-200 bg-blue-50/50 rounded-xl p-4 mb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field label="Ref. No:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.refNo || ''}
+                  onChange={e => handleChange('refNo', e.target.value)}
+                  placeholder="e.g. Arka/SMA-2026-001"
+                  disabled={isReadOnly}
+                />
+              </Field>
+              <Field label="Date of Valuation Report:">
+                <BaseDateInput
+                  value={fields.dateOfReport || ''}
+                  onChange={val => handleChange('dateOfReport', val)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+          </div>
+
           <div className="border border-blue-200 bg-[#f8fafc] rounded-md p-4 mb-4">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-gray-700">PROPERTY OWNER</h3>

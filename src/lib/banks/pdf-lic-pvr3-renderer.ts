@@ -120,9 +120,9 @@ export class PDFLICPVR3Renderer extends PDFBankRenderer {
     // ==========================================
     this.drawSectionHeader('3. BUILDING DETAILS');
     this.drawLICRow('a)', 'Marketability of the Property', this.getF('marketability', 'Good'));
-    this.drawLICRow('b)', 'Age of the building', `${this.getF('ageOfBuilding', '2')} Years`);
-    this.drawLICRow('c)', 'Future residual life expected', `${this.getF('residualLife', '58')} Years`);
-    this.drawLICRow('d)', 'Floor Space Index (FSI)', `Approved: ${this.getF('fsiApproved', '0.60')} | Actual: ${this.getF('fsiActual', '0.90')}`);
+    this.drawLICRow('b)', 'Age of the building', this.getF('ageOfBuilding', '') ? `${this.getF('ageOfBuilding')} Years` : 'NA');
+    this.drawLICRow('c)', 'Future residual life expected', this.getF('residualLife', '') ? `${this.getF('residualLife')} Years` : 'NA');
+    this.drawLICRow('d)', 'Floor Space Index (FSI)', `Approved: ${this.getF('fsiApproved', 'NA')} | Actual: ${this.getF('fsiActual', 'NA')}`);
     this.drawLICRow('e)', 'Specifications (Foundation / Roof / Flooring)', `Found: ${this.getF('specFoundation', 'RCC Framed')} | Roof: ${this.getF('specRoof', 'RCC')} | Floor: ${this.getF('specFlooring', 'Marble/Tiles')}`);
     this.drawLICRow('f)', 'Quality of Construction (Exterior & Interior)', this.getF('qualityConstruction', 'Good'));
     this.drawLICRow('g)', 'Adheres to Safety specs (NBC 2005 & NDMA)?', this.getF('safetySpecsComplied', 'Yes'));
@@ -238,7 +238,7 @@ export class PDFLICPVR3Renderer extends PDFBankRenderer {
     // 9. CERTIFICATE
     // ==========================================
     this.drawSectionHeader('9. CERTIFICATE');
-    const certText = `I declare that I am not associated with the builder or with any of his associate companies or with the borrower directly or indirectly in the past or in the present and this report has been prepared by me with highest professional integrity.\n\nI further declare that I have personally inspected the site and building on ${this.getF('inspectionDate', '13/12/2020')}.\n\nI further declare that all the above particulars and information given in this report are true to the best of my knowledge and belief.`;
+    const certText = `I declare that I am not associated with the builder or with any of his associate companies or with the borrower directly or indirectly in the past or in the present and this report has been prepared by me with highest professional integrity.\n\nI further declare that I have personally inspected the site and building on ${this.getF('inspectionDate', '') || 'NA'}.\n\nI further declare that all the above particulars and information given in this report are true to the best of my knowledge and belief.`;
     this.drawKeyValueRow([
       { label: '', value: certText, labelWidth: 0, valueWidth: CONTENT_W },
     ]);

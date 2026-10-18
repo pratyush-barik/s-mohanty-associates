@@ -7,7 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -21,7 +21,6 @@ import {
   formatReportDate,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -460,45 +459,30 @@ export default function VistaarFinance({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* ── Active Configuration Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName={fields.organisationTemplate || 'VISTAAR FINANCE'}
-        subclass={fields.organisationSubTemplate || undefined}
+      {/* ── Bank Report Header ── */}
+      <BankReportHeader
+        bankName="VISTAAR FINANCIAL SERVICES"
+        subTemplate="Micro / SME Loan Format"
+        description="Technical Valuation Report with Boundaries, Setbacks, BUA & Cost Analysis."
+        projectCode={fields.proposalNo || projectCode}
+        earliestVisit={earliestVisit}
         onResetWizard={onResetWizard}
-        sticky={false}
+        onSyncInspectionDate={
+          earliestVisit
+            ? () => {
+                const dt = formatReportDate(earliestVisit.date);
+                updateField('valuationDate', dt);
+                updateField('inspectionDate', dt);
+                updateField('reportSubmissionDate', dt);
+              }
+            : undefined
+        }
       />
 
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-        <BankReportTitleCard
-          bankName="VISTAAR FINANCIAL SERVICES"
-          subclass="Micro / SME Loan Format"
-          description="Technical Valuation Report with Boundaries, Setbacks, BUA & Cost Analysis."
-          earliestVisit={earliestVisit}
-          projectCode={fields.proposalNo || projectCode}
-        />
-
-        {earliestVisit && (
-          <div className="flex items-center justify-between p-4 bg-blue-50/80 border border-blue-200 rounded-xl text-blue-900 text-sm">
-            <span className="font-medium">Site inspection detected from uploaded images ({formatReportDate(earliestVisit.date)}).</span>
-            <button
-              type="button"
-              onClick={() => {
-                const dt = formatReportDate(earliestVisit.date);
-                updateField('valuationDate', dt);
-                updateField('inspectionDate', dt);
-                updateField('reportSubmissionDate', dt);
-              }}
-              className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-lg shadow-sm transition"
-            >
-              Sync Inspection Dates
-            </button>
-          </div>
-        )}
 
         {/* 1. Header & Technical Initiation */}
         <div id="vistaar-sec-meta">

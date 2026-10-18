@@ -106,14 +106,14 @@ export class PDFLICPVR4Renderer extends PDFBankRenderer {
     this.drawLICRow('8)', 'Shape of plot', this.getF('shapeOfPlot', 'Regular'));
     this.drawLICRow('9)', 'Plot/Land demarcated, with proper boundaries', this.getF('plotDemarcated', 'Yes'));
     this.drawLICRow('10)', 'Any other features like board of other financier', this.getF('otherFinancierNotice', 'No'));
-    this.drawLICRow('11)', 'Approximate width of plot on road facing side', this.getF('widthOnRoadFacing', '20-ft wide / 30-Ft wide'));
-    this.drawLICRow('12)', 'Is it a corner plot', this.getF('isCornerPlot', 'Yes (It approaches both 20-Ft. & 30-Ft wide road)'));
+    this.drawLICRow('11)', 'Approximate width of plot on road facing side', this.getF('widthOnRoadFacing', 'NA'));
+    this.drawLICRow('12)', 'Is it a corner plot', this.getF('isCornerPlot', 'No'));
     this.drawLICRow('13)', 'Any negatives to locality/property', this.getF('negativesToLocality', 'No'));
     this.drawLICRow('14)', 'Any favourable considerations for addl cost/value', this.getF('favourableConsiderations', 'All civic amenities like school, hospital, market area are within 1-2Kms.'));
     this.drawLICRow('15)', 'Marketability of the Property', this.getF('marketability', 'Good'));
     this.drawLICRow('16)', 'Whether the plot has clear access', this.getF('clearAccess', 'Yes'));
     this.drawLICRow('17)', 'Whether any High Tension Wire Lines passing through?', this.getF('highTensionLines', 'No'));
-    this.drawLICRow('18)', 'Area of plot in sqft', `${this.getF('plotAreaSqft', '1200')} sqft`, true);
+    this.drawLICRow('18)', 'Area of plot in sqft', this.getF('plotAreaSqft', '') ? `${this.getF('plotAreaSqft')} sqft` : 'NA', true);
 
     this.advanceCursor(4);
 
@@ -147,7 +147,7 @@ export class PDFLICPVR4Renderer extends PDFBankRenderer {
 
     this.drawLICRow('20)', 'Acceptable Mortgage Value', this.getF('acceptableMortgageValue', 'NA'));
     this.drawLICRow('21)', 'State the source for arriving at Market Value', this.getF('marketValueSource', 'By analysis of rates of material, labour etc & from local market data of similar properties.'));
-    this.drawLICRow('22)', 'Other remarks', this.getF('otherRemarks', 'This is a Plot + Construction case. Construction is started.'));
+    this.drawLICRow('22)', 'Other remarks', this.getF('otherRemarks', ''));
 
     this.advanceCursor(4);
 
@@ -172,7 +172,7 @@ export class PDFLICPVR4Renderer extends PDFBankRenderer {
     // G. CERTIFICATE
     // ==========================================
     this.drawSectionHeader('G. CERTIFICATE');
-    const certText = `I declare that I am not associated with the builder or with any of his associate companies or with the borrower directly or indirectly in the past or in the present and this report has been prepared by me with highest professional integrity.\n\nI further declare that I have personally inspected the site and building on ${this.getF('inspectionDate', '11/02/2021')}.\n\nI further declare that all the above particulars and information given in this report are true to the best of my knowledge and belief.`;
+    const certText = `I declare that I am not associated with the builder or with any of his associate companies or with the borrower directly or indirectly in the past or in the present and this report has been prepared by me with highest professional integrity.\n\nI further declare that I have personally inspected the site and building on ${this.getF('inspectionDate', '') || 'NA'}.\n\nI further declare that all the above particulars and information given in this report are true to the best of my knowledge and belief.`;
     this.drawKeyValueRow([
       { label: '', value: certText, labelWidth: 0, valueWidth: CONTENT_W },
     ]);

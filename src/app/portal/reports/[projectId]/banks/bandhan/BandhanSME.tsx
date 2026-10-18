@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   ActiveConfigBanner,
   FloatingNavigator,
@@ -2146,18 +2147,8 @@ export default function BandhanSME({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900 font-sans">
       {/* Main Content Area */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-                {/* Standardized Title Card */}
-        <BankReportTitleCard
-          bankName="Bandhan Bank"
-          subclass="SME Commercial Format"
-          title="Valuation Report Builder"
-          description="Bandhan Bank SME Banking & Commercial Valuation Format."
-          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
-          projectCode={projectCode}
-        />
-
-{/* Top Active Configuration Banner */}
-        <ActiveConfigBanner
+        {/* Standardized Universal Bank Report Header */}
+        <BankReportHeader
           clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.bankName || fields.organisationTemplate || 'BANDHAN BANK'}
@@ -2165,32 +2156,14 @@ export default function BandhanSME({
           serviceType={fields.serviceType}
           subjectType={fields.subjectType}
           onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="Bandhan Bank SME Banking & Commercial Valuation Format."
+          earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+          projectCode={projectCode}
+          reworkNotes={fields.reworkNotes}
+          status={status}
+          message={message}
         />
-
-        {/* Rework Banner */}
-        {fields.reworkNotes && status === 'REPORT_DRAFTING' && (
-          <div className="card p-5 border-2 border-red-200 bg-red-50 shadow-md">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-xl">⚠️</span>
-              <h2 className="text-sm font-bold text-red-800 uppercase tracking-wider">Manager Rework Requested</h2>
-            </div>
-            <p className="text-sm text-red-700 bg-white/60 p-4 rounded-lg border border-red-100 whitespace-pre-wrap">
-              {fields.reworkNotes}
-            </p>
-          </div>
-        )}
-
-        {message && (
-          <div
-            className={`p-4 rounded-xl text-sm font-semibold border shadow-xs ${
-              message.type === 'success'
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                : 'bg-rose-50 text-rose-800 border-rose-200'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
 
 
 

@@ -19,11 +19,9 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
-  ActiveConfigBanner,
+  BankReportHeader,
   FloatingNavigator,
   ReportActionBar,
-  EarliestFieldVisitBadge,
   Field,
   Section,
   inputCls,
@@ -32,6 +30,7 @@ import {
   BaseMapsSection,
   BasePhotographsSection,
   BasePhotoBucketModal,
+  formatReportDate,
 } from '../BaseBankReportComponents';
 
 import {
@@ -109,57 +108,58 @@ export default function SuryodaySmallFinanceBank({
 
   const [form, setForm] = useState<any>(() => {
     const f = rawInitialFields || {};
+    const p = (prefill || {}) as any;
     return {
-      applicationNo: f.applicationNo || projectCode || 'APP-2024-0529',
-      dateOfInspection: f.dateOfInspection || (prefill as any)?.fieldVisitDate || '29.05.2024',
-      dateOfReport: f.dateOfReport || '29.05.2024',
+      applicationNo: f.applicationNo || projectCode || '',
+      dateOfInspection: f.dateOfInspection || p.fieldVisitDate || formatReportDate(new Date()),
+      dateOfReport: f.dateOfReport || formatReportDate(new Date()),
 
       // Section A: General details
-      customerName: f.customerName || prefill?.contactName || 'Samir Kumar Mohanty, Mob- 9437077899 / 9338011499',
-      currentOwner: f.currentOwner || 'Samir Kumar Mohanty, S/O- Hadibandhu Mohanty',
-      proposedOwner: f.proposedOwner || 'Samir Kumar Mohanty, S/O- Hadibandhu Mohanty',
-      propertyAddressDocs: f.propertyAddressDocs || prefill?.propertyAddress || 'Khata No-77, Plot No-230(AC.0.080Decs,Homestead),Mouza-Cuttack Sahara Unit no-31 Gonadola,Tahasil-Cuttack,PS-Madhupatna,Dist-Cuttack,Odisha,Pin-753013',
-      propertyAddressInspection: f.propertyAddressInspection || prefill?.propertyAddress || 'Khata No-77, Plot No-230(AC.0.080Decs,Homestead),Mouza-Cuttack Sahara Unit no-31 Gonadola,Tahasil-Cuttack,PS-Madhupatna,Dist-Cuttack,Odisha,Pin-753013',
-      landmark: f.landmark || 'Near Kusuma Devi Owmens College, Kalyani Nagar',
-      latLong: f.latLong || 'LAT:-20.449170, LONG- 85.905970',
-      propertyIdentifiedThrough: f.propertyIdentifiedThrough || 'Mr. Samir Kumar Mohanty, Mob- 9437077899 / 9338011499',
-      occupiedBy: f.occupiedBy || 'Tenants',
-      occupiedSince: f.occupiedSince || '2012',
+      customerName: f.customerName || (p.contactName ? `${p.contactName}${p.contactPhone ? `, Mob- ${p.contactPhone}` : ''}` : ''),
+      currentOwner: f.currentOwner || p.applicantName || p.ownerName || '',
+      proposedOwner: f.proposedOwner || p.applicantName || p.ownerName || '',
+      propertyAddressDocs: f.propertyAddressDocs || p.propertyAddress || '',
+      propertyAddressInspection: f.propertyAddressInspection || p.propertyAddress || '',
+      landmark: f.landmark || p.nearestLandmark || '',
+      latLong: f.latLong || (p.latitude && p.longitude ? `LAT:-${p.latitude}, LONG- ${p.longitude}` : ''),
+      propertyIdentifiedThrough: f.propertyIdentifiedThrough || (p.contactName ? `Mr. ${p.contactName}${p.contactPhone ? `, Mob- ${p.contactPhone}` : ''}` : ''),
+      occupiedBy: f.occupiedBy || '',
+      occupiedSince: f.occupiedSince || '',
 
       // Section B: Surrounding locality details
-      withinLimitationOf: f.withinLimitationOf || 'Within CDA limit',
+      withinLimitationOf: f.withinLimitationOf || '',
       habitationVicinity: f.habitationVicinity || 'Residential',
       classificationLocality: f.classificationLocality || 'Middle class',
-      approachRoadCondition: f.approachRoadCondition || '10-Feet wide Road',
-      amenitiesAvailability: f.amenitiesAvailability || 'Within 1-2 Kms',
+      approachRoadCondition: f.approachRoadCondition || '',
+      amenitiesAvailability: f.amenitiesAvailability || '',
 
       // Section C: Property details
-      propertyDescription: f.propertyDescription || 'Subject property is a G+2 residential building',
+      propertyDescription: f.propertyDescription || '',
       propertyType: f.propertyType || prefill?.propertyType || 'Residential',
       propertyUsage: f.propertyUsage || 'Residential',
 
       // Boundaries
-      boundaryEastSite: f.boundaryEastSite || 'Others building(Plot no-667)',
-      boundaryEastDeed: f.boundaryEastDeed || 'Plot no-667',
-      boundaryWestSite: f.boundaryWestSite || '10-Feet wide Road',
-      boundaryWestDeed: f.boundaryWestDeed || 'Passage Road',
-      boundaryNorthSite: f.boundaryNorthSite || 'Others building',
-      boundaryNorthDeed: f.boundaryNorthDeed || 'Vijilance Colony',
-      boundarySouthSite: f.boundarySouthSite || 'Others building(Manmath Mohanty & Plot no-233)',
-      boundarySouthDeed: f.boundarySouthDeed || 'Manmath Mohanty & Plot no-233',
+      boundaryEastSite: f.boundaryEastSite || p.boundaryEast || '',
+      boundaryEastDeed: f.boundaryEastDeed || p.boundaryEast || '',
+      boundaryWestSite: f.boundaryWestSite || p.boundaryWest || '',
+      boundaryWestDeed: f.boundaryWestDeed || p.boundaryWest || '',
+      boundaryNorthSite: f.boundaryNorthSite || p.boundaryNorth || '',
+      boundaryNorthDeed: f.boundaryNorthDeed || p.boundaryNorth || '',
+      boundarySouthSite: f.boundarySouthSite || p.boundarySouth || '',
+      boundarySouthDeed: f.boundarySouthDeed || p.boundarySouth || '',
       boundaryRemark: f.boundaryRemark || 'Boundary matches as per sale deed',
       plotDemarcated: f.plotDemarcated || 'No',
 
       // Section D: Structural details
       typeOfStructure: f.typeOfStructure || 'RCC framed structure',
-      noOfFloorsSiteAndPlan: f.noOfFloorsSiteAndPlan || 'Plan not provide',
+      noOfFloorsSiteAndPlan: f.noOfFloorsSiteAndPlan || '',
       noOfWings: f.noOfWings || 'NA',
       noOfFlatsPerFloor: f.noOfFlatsPerFloor || 'NA',
       noOfLifts: f.noOfLifts || 'NA',
       constructionProgress: f.constructionProgress || '100%',
       constructionRecommend: f.constructionRecommend || '100%',
-      ageOfProperty: f.ageOfProperty || '12-Years',
-      residualAge: f.residualAge || '48-Years',
+      ageOfProperty: f.ageOfProperty || '',
+      residualAge: f.residualAge || '',
 
       // Section E: Document details
       documentsProduced: f.documentsProduced || 'Sale deed, Mutation, Electricity Bill, Legal Opinion',
@@ -167,39 +167,37 @@ export default function SuryodaySmallFinanceBank({
       approvedPlanStatus: f.approvedPlanStatus || 'No',
 
       // Section F: Valuation & Market Rates
-      marketRateLand: f.marketRateLand || '4000',
-      guidelineRateLand: f.guidelineRateLand || '3500',
+      marketRateLand: f.marketRateLand || '',
+      guidelineRateLand: f.guidelineRateLand || '',
       natureOfLand: f.natureOfLand || 'Homestead',
 
       // Section G: Area Details (Land & Building)
-      deedArea: f.deedArea || '3484',
-      actualArea: f.actualArea || '3484',
-      consideredArea: f.consideredArea || '3484',
+      deedArea: f.deedArea || p.plotArea || '',
+      actualArea: f.actualArea || p.plotArea || '',
+      consideredArea: f.consideredArea || p.plotArea || '',
       landMeasurementRemark: f.landMeasurementRemark || 'As per deed, converted into sqft',
 
       carpetAreaPlan: f.carpetAreaPlan || 'NA',
-      carpetAreaSite: f.carpetAreaSite || '3146',
+      carpetAreaSite: f.carpetAreaSite || '',
       builtUpAreaPlan: f.builtUpAreaPlan || 'NA',
-      builtUpAreaSite: f.builtUpAreaSite || '3933',
+      builtUpAreaSite: f.builtUpAreaSite || '',
       superBuiltUpAreaPlan: f.superBuiltUpAreaPlan || 'NA',
       superBuiltUpAreaSite: f.superBuiltUpAreaSite || 'NA',
       areaDeviation: f.areaDeviation || 'NA',
 
       // Section H: Valuation Details (Land & Building Method)
-      landArea: f.landArea !== undefined ? String(f.landArea) : '3484',
-      landRate: f.landRate !== undefined ? String(f.landRate) : '4000',
+      landArea: f.landArea !== undefined ? String(f.landArea) : (p.plotArea || ''),
+      landRate: f.landRate !== undefined ? String(f.landRate) : '',
       landRemark: f.landRemark || 'Adopted market rate',
 
       buildingRows: f.buildingRows || [
-        { id: '1', floor: 'G+2', area: '3933', rate: '1500', stage: '100' },
-        { id: '2', floor: 'SF', area: '0', rate: '0', stage: '100' },
-        { id: '3', floor: 'TF', area: '0', rate: '0', stage: '100' },
+        { id: '1', floor: 'GF', area: '', rate: '', stage: '100' },
       ],
 
       constructionEstimateCustomer: f.constructionEstimateCustomer || 'NA',
 
       // Section I: Flat / Shop Area Details
-      flatAreaApprovedPlan: f.flatAreaApprovedPlan || '3343',
+      flatAreaApprovedPlan: f.flatAreaApprovedPlan || '',
       flatAreaSiteMeasurement: f.flatAreaSiteMeasurement || 'NA',
       flatAreaDocument: f.flatAreaDocument || 'NA',
       flatSuperBuiltUpArea: f.flatSuperBuiltUpArea || 'NA',
@@ -218,16 +216,16 @@ export default function SuryodaySmallFinanceBank({
 
       // Section K & L: Observation & Remarks
       observations: f.observations || 'Subject property is well situated in a developed residential neighborhood with good connectivity.',
-      remarks: f.remarks || 'Subject property is a residential premises having land extent of 3484Sqft, contains two buildng units. One G+2 RCC building having total measured BUA 3933sqft. Another asbestos roofing house having measured BUA 2000sqft. Age of the property is about 12-Years. Approved plan is not provided. Property is accessible with 10-feet wide Road. All civic amenities are present within 1-2 kms from the property. Entire building is used by multi tenants for residential purpose. Valuation has been done for land & measured BUA of G+2 RCC building, as actual BUA is coming within permissible FAR (FAR-1.5 as per CDA norms). Asbestos roofing BUA value is not considered, as it is temporary in nature.',
+      remarks: f.remarks || '',
 
       // Section M: Marketability
       marketabilityForSale: f.marketabilityForSale || 'Average marketability with selling period in range of 1 to 6 months',
       marketabilityForLease: f.marketabilityForLease || 'NA-',
 
       // Section N: Declaration
-      inspectingEngineer: f.inspectingEngineer || 'Deepak Bhoi',
-      inspectionDate: f.inspectionDate || '29.05.2024',
-      reportDate: f.reportDate || '29.05.2024',
+      inspectingEngineer: f.inspectingEngineer || p.firstFieldAgentName || '',
+      inspectionDate: f.inspectionDate || f.dateOfInspection || formatReportDate(new Date()),
+      reportDate: f.reportDate || f.dateOfReport || formatReportDate(new Date()),
       reportPlace: f.reportPlace || 'Bhubaneswar',
 
       // Schedule I
@@ -514,41 +512,24 @@ export default function SuryodaySmallFinanceBank({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* ── Active Configuration Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName="SURYODAY SMALL FINANCE BANK"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* Title Card */}
-          <BankReportTitleCard
+          {/* Universal Bank Report Header */}
+          <BankReportHeader
             bankName="Suryoday Small Finance Bank Limited"
             subclass="Standard Format"
-            description="Dual valuation engines (Land & Building + Sales Comparison Approach) with Schedule I construction matrix."
+            formatName="Affordable Housing / MSME Finance Valuation Format"
+            clientType="organisation"
+            category="Affordable Housing & MSME"
+            serviceType="Valuation Report Builder"
+            subjectType="Affordable Housing / MSME Finance"
+            onResetWizard={onResetWizard}
             earliestVisit={earliestVisit}
             projectCode={projectCode}
+            message={message}
           />
-
-          {/* Banner Alert Message */}
-          {message && (
-            <div
-              className={`p-4 rounded-xl text-sm font-medium flex items-center justify-between ${
-                message.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'
-              }`}
-            >
-              <span>{message.text}</span>
-              <button onClick={() => setMessage(null)} className="text-xs font-bold underline ml-4">
-                Dismiss
-              </button>
-            </div>
-          )}
 
           {/* 1. General Details */}
           <div id="sec-general">

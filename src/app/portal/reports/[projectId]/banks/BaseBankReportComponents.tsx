@@ -668,6 +668,139 @@ export function ActiveConfigBanner({
   );
 }
 
+// ─── Universal Bank Report Header (Layer 1 + 2 + 3 + 4) ─────────────
+export interface BankReportHeaderProps {
+  // Configuration Banner
+  clientType?: 'individual' | 'organisation' | string;
+  category?: string;
+  bankName: string;
+  subclass?: string;
+  subTemplate?: string;
+  formatName?: string;
+  serviceType?: string;
+  subjectType?: string;
+  onResetWizard?: () => void;
+  stickyBanner?: boolean;
+
+  // Standard Title Card
+  title?: string;
+  description?: string;
+  earliestVisit?: FieldVisitInfo | null;
+  projectCode?: string;
+  onSyncInspectionDate?: () => void;
+
+  // Alerts & Toast States
+  reworkNotes?: string | null;
+  status?: string;
+  message?: { type: string; text: string } | null;
+  onDismissMessage?: () => void;
+
+  // Optional styling overrides
+  className?: string;
+}
+
+export function BankReportHeader({
+  clientType = 'organisation',
+  category = 'Bank & FIS',
+  bankName,
+  subclass,
+  subTemplate,
+  formatName,
+  serviceType,
+  subjectType,
+  onResetWizard,
+  stickyBanner = false,
+  title = 'Valuation Report Builder',
+  description,
+  earliestVisit,
+  projectCode,
+  onSyncInspectionDate,
+  reworkNotes,
+  status,
+  message,
+  onDismissMessage,
+  className = '',
+}: BankReportHeaderProps) {
+  const activeSubclass = (subclass || subTemplate || formatName || '').trim();
+
+  return (
+    <div className={`space-y-4 ${className}`.trim()}>
+      {/* Layer 1: Active Configuration Top Banner */}
+      <ActiveConfigBanner
+        clientType={clientType as 'organisation' | 'individual'}
+        category={category}
+        bankName={bankName}
+        subclass={activeSubclass || undefined}
+        serviceType={serviceType}
+        subjectType={subjectType}
+        onResetWizard={onResetWizard}
+        sticky={stickyBanner}
+      />
+
+      {/* Layer 2: Standardized Bank Report Title Card */}
+      <BankReportTitleCard
+        bankName={bankName}
+        subclass={activeSubclass || 'Standard Format'}
+        title={title}
+        description={description}
+        earliestVisit={earliestVisit}
+        projectCode={projectCode}
+      />
+
+      {/* Layer 2.5: Inspection Date Detection / Sync Banner */}
+      {earliestVisit && onSyncInspectionDate && (
+        <div className="flex items-center justify-between p-3.5 bg-blue-50/80 border border-blue-200 rounded-xl text-blue-900 text-sm">
+          <span className="font-medium">
+            Site inspection detected from uploaded images ({formatReportDate(earliestVisit.date || earliestVisit.dateStr)}).
+          </span>
+          <button
+            type="button"
+            onClick={onSyncInspectionDate}
+            className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-lg shadow-sm transition"
+          >
+            Sync Inspection Date
+          </button>
+        </div>
+      )}
+
+      {/* Layer 3: Manager Rework Requested Banner */}
+      {reworkNotes && status === 'REPORT_DRAFTING' && (
+        <div className="card p-5 border-2 border-red-200 bg-red-50 shadow-md">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-xl">⚠️</span>
+            <h2 className="text-sm font-bold text-red-800 uppercase tracking-wider">Manager Rework Requested</h2>
+          </div>
+          <p className="text-sm text-red-700 bg-white/60 p-4 rounded-lg border border-red-100 whitespace-pre-wrap">
+            {reworkNotes}
+          </p>
+        </div>
+      )}
+
+      {/* Layer 4: Toast / Save Feedback Message */}
+      {message && (
+        <div
+          className={`p-4 rounded-xl text-sm font-semibold border shadow-xs flex items-center justify-between ${
+            message.type === 'success'
+              ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+              : 'bg-rose-50 text-rose-800 border-rose-200'
+          }`}
+        >
+          <span>{message.text}</span>
+          {onDismissMessage && (
+            <button
+              type="button"
+              onClick={onDismissMessage}
+              className="text-xs font-bold underline ml-4 hover:opacity-80 cursor-pointer"
+            >
+              Dismiss
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Standard Report Action Bar (Sticky Bottom) ──────────────────────
 export function ReportActionBar({
   isReadOnly,

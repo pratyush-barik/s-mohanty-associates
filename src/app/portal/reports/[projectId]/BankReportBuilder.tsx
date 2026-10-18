@@ -18,6 +18,7 @@ import {
   BaseMapsSection,
   BaseAnnexureSection,
   AnnexureRefSelector,
+  BankReportHeader,
   ActiveConfigBanner,
   BankReportTitleCard,
   BasePhotoBucketModal,
@@ -2220,39 +2221,22 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
     <div className={`flex ${aiAssistEnabled ? 'gap-4' : 'gap-6'} items-start w-full`} ref={reportRef}>
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-4">
-        {/* Template Info Banner */}
-        <ActiveConfigBanner
-          clientType={(fields.clientType as 'organisation' | 'individual') || 'organisation'}
+        {/* Standardized Universal Bank Report Header */}
+        <BankReportHeader
+          clientType={fields.clientType}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.organisationTemplate || fields.bankName || config?.bankId || config?.displayName || ''}
-          subclass={fields.organisationSubTemplate || undefined}
+          subclass={fields.organisationSubTemplate || config?.subTemplateId || undefined}
           serviceType={fields.serviceType}
           subjectType={fields.subjectType}
           onResetWizard={onResetWizard}
-        />
-
-        {/* Standardized Title Card */}
-        <BankReportTitleCard
-          bankName={fields.organisationTemplate || fields.bankName || config?.displayName || config?.bankId || 'Valuation Report'}
-          subclass={fields.organisationSubTemplate || config?.subTemplateId || 'Standard Format'}
           title="Valuation Report Builder"
           description={config?.displayName ? `${config.displayName} Standard Valuation Format` : 'Standard institutional bank valuation template.'}
           earliestVisit={firstFieldAgentVisit}
           projectCode={projectCode}
+          reworkNotes={fields.reworkNotes}
+          status={status}
         />
-
-        {/* Rework Banner */}
-        {fields.reworkNotes && status === 'REPORT_DRAFTING' && (
-          <div className="card p-5 border-2 border-red-200 bg-red-50 shadow-md">
-            <div className="flex items-center gap-3 mb-2">
-              <span className="text-xl">⚠️</span>
-              <h2 className="text-sm font-bold text-red-800 uppercase tracking-wider">Manager Rework Requested</h2>
-            </div>
-            <p className="text-sm text-red-700 bg-white/60 p-4 rounded-lg border border-red-100 whitespace-pre-wrap">
-              {fields.reworkNotes}
-            </p>
-          </div>
-        )}
 
         {/* ── Extra Bank-Specific Sections (Start) ── */}
         {config?.extraSectionsStart?.map(sec => (

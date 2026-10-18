@@ -7,7 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -21,7 +21,6 @@ import {
   formatReportDate,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -454,28 +453,28 @@ export default function MahindraFinance({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* ── Active Configuration Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName={fields.organisationTemplate || 'MAHINDRA RURAL HOUSING FINANCE LTD'}
-        subclass={fields.organisationSubTemplate || undefined}
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
+      {/* Universal Standardized Bank Report Header */}
+      <div className="w-full">
+        <BankReportHeader
+          bankName={fields.organisationTemplate || 'MAHINDRA RURAL HOUSING FINANCE LTD'}
+          subclass={fields.organisationSubTemplate || 'Standard Format'}
+          clientType="organisation"
+          category="Bank & FIS"
+          onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="Comprehensive Valuation Report Format with Schedule I Construction Details."
+          earliestVisit={earliestVisit}
+          projectCode={projectCode}
+          status={status}
+          message={message}
+          onDismissMessage={() => setMessage(null)}
+        />
+      </div>
 
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* Title Card */}
-          <BankReportTitleCard
-            bankName="Mahindra & Mahindra Financial Services Limited"
-            subclass="Standard Format"
-            description="Comprehensive Valuation Report Format with Schedule I Construction Details."
-            earliestVisit={earliestVisit}
-            projectCode={projectCode}
-          />
 
         {/* 1. Header & Branch */}
         <div id="mh-sec-header">

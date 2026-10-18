@@ -7,7 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -21,7 +21,6 @@ import {
   formatReportDate,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -451,28 +450,28 @@ export default function NeoGrowth({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* ── Active Configuration Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName={fields.organisationTemplate || 'NEOGROWTH CREDIT PVT LTD'}
-        subclass={fields.organisationSubTemplate || undefined}
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
+      {/* Universal Standardized Bank Report Header */}
+      <div className="w-full">
+        <BankReportHeader
+          bankName={fields.organisationTemplate || 'NEOGROWTH CREDIT PVT LTD'}
+          subclass={fields.organisationSubTemplate || 'Standard Format'}
+          clientType="organisation"
+          category="Bank & FIS"
+          onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="Business Loan & Collateral Asset Valuation Format."
+          earliestVisit={earliestVisit}
+          projectCode={projectCode}
+          status={status}
+          message={message}
+          onDismissMessage={() => setMessage(null)}
+        />
+      </div>
 
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* Title Card */}
-          <BankReportTitleCard
-            bankName="NeoGrowth Credit Pvt Ltd"
-            subclass="Standard Format"
-            description="Business Loan & Collateral Asset Valuation Format."
-            earliestVisit={earliestVisit}
-            projectCode={projectCode}
-          />
 
         {/* 1. Header & Branch */}
         <div id="neo-sec-header">

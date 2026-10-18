@@ -6,7 +6,7 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -20,7 +20,6 @@ import {
   formatReportDate,
   getEarliestFieldVisit,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -85,29 +84,29 @@ export default function SMFGIndiaFullerton({
     const p = (prefill || {}) as any;
 
     // Cover & Meta Header
-    if (!d.propertyOwner) d.propertyOwner = p.contactName ? `${p.contactName}` : 'Biswajit Mishra, S/O-Kailash Chandra Mishra';
+    if (!d.propertyOwner) d.propertyOwner = p.contactName ? `${p.contactName}` : '';
     if (!d.purposeOfValuation) d.purposeOfValuation = 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY';
-    if (!d.refNo) d.refNo = projectCode || '9793169';
-    if (!d.dealNo) d.dealNo = 'VAL/FEB/2026/03';
+    if (!d.refNo) d.refNo = projectCode || '';
+    if (!d.dealNo) d.dealNo = '';
     if (!d.vertical) d.vertical = 'NA';
-    if (!d.branchName) d.branchName = 'SMFG Odisha';
+    if (!d.branchName) d.branchName = '';
     if (!d.typeOfCase) d.typeOfCase = 'Mass LAP';
     if (!d.valuerName) d.valuerName = 'M/s. S MOHANTY ASSOCIATES';
-    if (!d.dateOfInitiate) d.dateOfInitiate = '05/02/2025';
-    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '07/02/2026';
+    if (!d.dateOfInitiate) d.dateOfInitiate = formatReportDate(new Date());
+    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
     if (!d.dateOfReport) d.dateOfReport = formatReportDate(new Date());
     if (!d.contactPerson) {
       d.contactPerson = p.contactName
         ? `${p.contactName}${p.contactPhone ? `, Mob:- ${p.contactPhone}` : ''}`
-        : 'Biswajit Mishra, Mob:- 9437254704 / 9438252283';
+        : '';
     }
 
     // 1. Application Details
-    if (!d.applicantName) d.applicantName = p.applicantName || 'ARPITA TOUR AND TRAVELS';
+    if (!d.applicantName) d.applicantName = p.applicantName || '';
     if (!d.propertyType) d.propertyType = 'Single storied Residential building';
     if (!d.currentUsage) d.currentUsage = 'Residential';
     if (!d.addressAtSite) {
-      d.addressAtSite = p.propertyAddress || 'Khata No-521/4110, Plot No-1124/4159, (AC.0.092Decs, Homestead), Mouza-Balukhanda, Tahasil-Puri, PS-Puri Sadar, Dist-Puri, Odisha, Pin-752004';
+      d.addressAtSite = p.propertyAddress || '';
     }
     if (!d.addressAsPerFiring) d.addressAsPerFiring = d.addressAtSite;
     if (!d.addressAsPerDocument) d.addressAsPerDocument = d.addressAtSite;
@@ -122,72 +121,72 @@ export default function SMFGIndiaFullerton({
     if (!d.demolitionList) d.demolitionList = 'Not observed';
 
     // 3. Boundaries & Occupancy Details
-    if (!d.boundaryEastDoc) d.boundaryEastDoc = 'Maheswar Baral';
-    if (!d.boundaryWestDoc) d.boundaryWestDoc = 'Keshab Pradhan';
-    if (!d.boundaryNorthDoc) d.boundaryNorthDoc = '20-ft wide Road';
-    if (!d.boundarySouthDoc) d.boundarySouthDoc = 'Hata Pradhan';
+    if (!d.boundaryEastDoc) d.boundaryEastDoc = p.boundaryEast || '';
+    if (!d.boundaryWestDoc) d.boundaryWestDoc = p.boundaryWest || '';
+    if (!d.boundaryNorthDoc) d.boundaryNorthDoc = p.boundaryNorth || '';
+    if (!d.boundarySouthDoc) d.boundarySouthDoc = p.boundarySouth || '';
 
     if (!d.boundaryEastSketch) d.boundaryEastSketch = 'NA';
     if (!d.boundaryWestSketch) d.boundaryWestSketch = 'NA';
     if (!d.boundaryNorthSketch) d.boundaryNorthSketch = 'NA';
     if (!d.boundarySouthSketch) d.boundarySouthSketch = 'NA';
 
-    if (!d.boundaryEastSite) d.boundaryEastSite = 'Vacant Land';
-    if (!d.boundaryWestSite) d.boundaryWestSite = 'Vacant Land';
-    if (!d.boundaryNorthSite) d.boundaryNorthSite = '20-ft wide Road';
-    if (!d.boundarySouthSite) d.boundarySouthSite = "Other's Under Cons. Building";
+    if (!d.boundaryEastSite) d.boundaryEastSite = p.boundaryEast || '';
+    if (!d.boundaryWestSite) d.boundaryWestSite = p.boundaryWest || '';
+    if (!d.boundaryNorthSite) d.boundaryNorthSite = p.boundaryNorth || '';
+    if (!d.boundarySouthSite) d.boundarySouthSite = p.boundarySouth || '';
 
-    if (!d.boundariesMatching) d.boundariesMatching = 'Yes (Boundary is matching as per documents)';
+    if (!d.boundariesMatching) d.boundariesMatching = 'Yes';
 
-    if (!d.occupancyStatus) d.occupancyStatus = 'Occupied';
-    if (!d.occupantName) d.occupantName = 'Self occupied';
-    if (!d.occupantRelation) d.occupantRelation = 'Customer';
-    if (!d.propertyDemarcation) d.propertyDemarcation = 'Yes';
-    if (!d.identifiedThrough) d.identifiedThrough = 'Customer (Biswajit Mishra, Mob:- 9437254704 / 9438252283)';
+    if (!d.occupancyStatus) d.occupancyStatus = '';
+    if (!d.occupantName) d.occupantName = '';
+    if (!d.occupantRelation) d.occupantRelation = '';
+    if (!d.propertyDemarcation) d.propertyDemarcation = '';
+    if (!d.identifiedThrough) d.identifiedThrough = d.contactPerson || 'Customer';
 
     // 4. Building & Unit Details
     if (!d.structureType) d.structureType = 'RCC';
-    if (!d.plotArea) d.plotArea = '4007';
-    if (!d.noOfFloors) d.noOfFloors = 'GF';
-    if (!d.floorValued) d.floorValued = 'GF';
+    if (!d.plotArea) d.plotArea = p.plotArea || '';
+    if (!d.noOfFloors) d.noOfFloors = '';
+    if (!d.floorValued) d.floorValued = '';
     if (!d.unitsPerFloor) d.unitsPerFloor = 'NA';
     if (!d.liftsCount) d.liftsCount = 'Nil';
 
-    if (!d.unitRooms) d.unitRooms = 'GF:- 3-Room, 1-Toilets, 1-Hall, 1-Kitchen';
+    if (!d.unitRooms) d.unitRooms = '';
     if (!d.sbuaPermissible) d.sbuaPermissible = 'NA';
-    if (!d.carpetArea) d.carpetArea = '1212sqft (GF Actual)';
+    if (!d.carpetArea) d.carpetArea = '';
     if (!d.viewRemarks) d.viewRemarks = 'NA';
 
     if (!d.constructionQuality) d.constructionQuality = 'Good';
-    if (!d.propertyAge) d.propertyAge = '7-Years';
+    if (!d.propertyAge) d.propertyAge = '';
     if (!d.localityType) d.localityType = 'Residential';
     if (!d.localityClass) d.localityClass = 'Middle class';
     if (!d.siteDevStatus) d.siteDevStatus = 'Developing';
-    if (!d.proximityAmenities) d.proximityAmenities = 'All civic amenities are within present 1-2Kms';
-    if (!d.landmark) d.landmark = 'Near Bharat Petroleum Petrol Pump (CNG), Pujapanda Filling Station, Balukhanda';
-    if (!d.municipalLimits) d.municipalLimits = 'No (Baliguali GP limit)';
-    if (!d.siteAccessRoad) d.siteAccessRoad = '20- Feet Wide Road';
+    if (!d.proximityAmenities) d.proximityAmenities = '';
+    if (!d.landmark) d.landmark = p.nearestLandmark || '';
+    if (!d.municipalLimits) d.municipalLimits = '';
+    if (!d.siteAccessRoad) d.siteAccessRoad = '';
     if (!d.basicAmenitiesAvailable) d.basicAmenitiesAvailable = 'Yes';
     if (!d.marketability) d.marketability = 'Good';
-    if (!d.electricityMeterNo) d.electricityMeterNo = 'Not seen';
+    if (!d.electricityMeterNo) d.electricityMeterNo = '';
 
     // Floor Wise Area
-    if (!d.actualBuaGround) d.actualBuaGround = '1427';
-    if (!d.totalActualBua) d.totalActualBua = '1427sqft';
+    if (!d.actualBuaGround) d.actualBuaGround = '';
+    if (!d.totalActualBua) d.totalActualBua = '';
 
     // 5. Valuation
-    if (!d.landArea) d.landArea = '4007';
-    if (!d.landRate) d.landRate = '2000';
-    if (!d.landValue) d.landValue = '8014000';
+    if (!d.landArea) d.landArea = '';
+    if (!d.landRate) d.landRate = '';
+    if (!d.landValue) d.landValue = '';
 
-    if (!d.constArea) d.constArea = '1427';
-    if (!d.constRate) d.constRate = '1800';
-    if (!d.buildingValue) d.buildingValue = '2568600';
+    if (!d.constArea) d.constArea = '';
+    if (!d.constRate) d.constRate = '';
+    if (!d.buildingValue) d.buildingValue = '';
 
-    if (!d.stageOfConstruction) d.stageOfConstruction = '100%';
-    if (!d.marketValue) d.marketValue = '10582600';
-    if (!d.distressValue) d.distressValue = '8466080';
-    if (!d.circleRate) d.circleRate = '1377';
+    if (!d.stageOfConstruction) d.stageOfConstruction = '';
+    if (!d.marketValue) d.marketValue = '';
+    if (!d.distressValue) d.distressValue = '';
+    if (!d.circleRate) d.circleRate = '';
 
     // Structural specs
     if (!d.seismicZone) d.seismicZone = 'III';
@@ -198,12 +197,12 @@ export default function SMFGIndiaFullerton({
 
     // Remarks & Declaration
     if (!d.remarks) {
-      d.remarks = 'Subject property is a single storied residential building having land extent of 4007sqft, having measured BUA 1427sqft. Approved plan is not provided & age of the building about 7-years. Property is coming under Baliguali GP limit & surrounding areas are residential in nature. This building is occupied by the customer for residential purpose. Valuation has been done for land & measured BUA of single storied residential building. As approved is not provided, it is upto the sole discretion of SMFG India to considered the BUA value or not.';
+      d.remarks = '';
     }
 
     // Coordinates
-    if (!d.latitude) d.latitude = '19.829417';
-    if (!d.longitude) d.longitude = '85.866694';
+    if (!d.latitude) d.latitude = p.latitude || '';
+    if (!d.longitude) d.longitude = p.longitude || '';
 
     // Attachments
     if (!d.documentImages) d.documentImages = [];
@@ -437,36 +436,20 @@ export default function SMFGIndiaFullerton({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        {/* Standardized Title Card */}
-        <BankReportTitleCard
+        {/* Universal Bank Report Header */}
+        <BankReportHeader
           bankName="SMFG India Credit (Fullerton India)"
           subclass="Mass LAP / Standard Format"
-          title="Valuation Report Builder"
-          description="Retail & MSME Mortgages, Loan Against Property (LAP) Valuation Format."
+          formatName="Retail & MSME Mortgages, Loan Against Property (LAP) Valuation Format"
+          clientType="organisation"
+          category="Retail & MSME Mortgages"
+          serviceType="Valuation Report Builder"
+          subjectType="Housing Loan / Loan Against Property (LAP)"
+          onResetWizard={onResetWizard}
           earliestVisit={earliestVisit}
           projectCode={projectCode}
+          message={message}
         />
-
-        {/* Wizard Selection Banner */}
-        <ActiveConfigBanner
-          clientType="organisation"
-          bankName="SMFG INDIA-FULLERTON"
-          subclass="Mass LAP / Standard Format"
-          onResetWizard={onResetWizard}
-          sticky={false}
-        />
-
-        {message && (
-          <div
-            className={`p-4 rounded-xl border text-sm font-medium ${
-              message.type === 'success'
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                : 'bg-rose-50 border-rose-200 text-rose-800'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
 
         {/* ═══════════════════════════════════════════════════════════════
             TOP COVER / SUMMARY HIGHLIGHT CARD

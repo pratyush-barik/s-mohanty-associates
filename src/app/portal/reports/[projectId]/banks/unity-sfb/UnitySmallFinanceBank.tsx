@@ -7,7 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -21,7 +21,6 @@ import {
   formatReportDate,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -473,44 +472,28 @@ export default function UnitySmallFinanceBank({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* ── Active Configuration Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName={fields.organisationTemplate || 'UNITY SMALL FINANCE BANK'}
-        subclass={fields.organisationSubTemplate || undefined}
+      {/* ── Bank Report Header ── */}
+      <BankReportHeader
+        bankName="Unity Small Finance Bank"
+        subTemplate="Standard Format"
+        description="Comprehensive Housing Loan, Business Finance & LAP Valuation Report."
+        projectCode={projectCode}
+        earliestVisit={earliestVisit}
         onResetWizard={onResetWizard}
-        sticky={false}
+        onSyncInspectionDate={
+          earliestVisit
+            ? () => {
+                const dt = formatReportDate(earliestVisit.date);
+                updateField('dateOfVisit', dt);
+              }
+            : undefined
+        }
       />
 
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* Title Card */}
-          <BankReportTitleCard
-            bankName="Unity Small Finance Bank"
-            subclass="Standard Format"
-            description="Comprehensive Housing Loan, Business Finance & LAP Valuation Report."
-            earliestVisit={earliestVisit}
-            projectCode={projectCode}
-          />
-
-        {earliestVisit && (
-          <div className="flex items-center justify-between p-4 bg-blue-50/80 border border-blue-200 rounded-xl text-blue-900 text-sm">
-            <span className="font-medium">Site inspection detected from uploaded images ({formatReportDate(earliestVisit.date)}).</span>
-            <button
-              type="button"
-              onClick={() => {
-                const dt = formatReportDate(earliestVisit.date);
-                updateField('dateOfVisit', dt);
-              }}
-              className="text-xs bg-blue-600 hover:bg-blue-700 text-white font-medium px-3 py-1.5 rounded-lg shadow-sm transition"
-            >
-              Sync Date of Visit
-            </button>
-          </div>
-        )}
 
         {/* 1. Header & Branch */}
         <div id="unity-sec-header">

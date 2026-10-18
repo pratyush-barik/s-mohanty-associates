@@ -7,6 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -63,119 +64,119 @@ export default function LICPVR1({
 
     return {
       // Header Metadata
-      fileNo: saved.fileNo || pf.loanAccountNo || '2201003673',
+      fileNo: saved.fileNo || pf.loanAccountNo || '',
       nameOfValuer: saved.nameOfValuer || 'Er. Satyajit Mohanty',
-      codeNo: saved.codeNo || 'BH-AOV0078',
-      appointingAuthority: saved.appointingAuthority || 'LIC HFL(Br-II)',
-      dateOfValuation: saved.dateOfValuation || pf.reportDate || '06/11/2020',
-      reraNo: saved.reraNo || 'NA',
+      codeNo: saved.codeNo || '',
+      appointingAuthority: saved.appointingAuthority || '',
+      dateOfValuation: saved.dateOfValuation || pf.reportDate || '',
+      reraNo: saved.reraNo || '',
 
       // Section A: General
-      applicantName: saved.applicantName || pf.applicantName || pf.customerName || 'Mrs. Bijaylaxmi Sahoo,D/o:-Mr. Gangadhar Sahoo',
-      ownerName: saved.ownerName || pf.ownerName || 'Mrs. Bijaylaxmi Sahoo,D/o:-Mr. Gangadhar Sahoo',
-      documentsProduced: saved.documentsProduced || 'Copy of Sale Deed,ROR,Approved Plan & Estimate',
-      locationPlotNo: saved.locationPlotNo || '632,Khata no-529/993',
-      locationVillage: saved.locationVillage || 'Mattia Pada-II,PS-Pipili(45),Tahasil-Pipili(199)',
-      locationDistrict: saved.locationDistrict || 'Dist-Puri,Odisha, Pin-752104',
+      applicantName: saved.applicantName || pf.applicantName || pf.customerName || '',
+      ownerName: saved.ownerName || pf.ownerName || '',
+      documentsProduced: saved.documentsProduced || '',
+      locationPlotNo: saved.locationPlotNo || '',
+      locationVillage: saved.locationVillage || '',
+      locationDistrict: saved.locationDistrict || '',
       addressTallies: saved.addressTallies || 'Yes',
-      locationSketchVerified: saved.locationSketchVerified || 'Yes/No',
-      surroundingDevelopmentClass: saved.surroundingDevelopmentClass || 'Middle',
+      locationSketchVerified: saved.locationSketchVerified || '',
+      surroundingDevelopmentClass: saved.surroundingDevelopmentClass || '',
       basicAmenitiesAvailable: saved.basicAmenitiesAvailable || 'Yes',
       negativesToLocality: saved.negativesToLocality || 'No',
-      favourableConsiderations: saved.favourableConsiderations || 'All civic amenities like school,hospital,market area arewithin 1-2Kms.',
-      nearbyLandmark: saved.nearbyLandmark || 'Opposite to Sai Temple,Gudiapokhari',
-      otherFeaturesNotice: saved.otherFeaturesNotice || 'Not Observed',
+      favourableConsiderations: saved.favourableConsiderations || '',
+      nearbyLandmark: saved.nearbyLandmark || '',
+      otherFeaturesNotice: saved.otherFeaturesNotice || '',
 
       // Section B: Land
-      boundaryNorth: saved.boundaryNorth || 'Proposed Road/20-Feet Wide Road',
-      boundaryNorthDim: saved.boundaryNorthDim || 'NA',
-      boundarySouth: saved.boundarySouth || 'Revenue Plot No-628/Vacant Plot',
-      boundarySouthDim: saved.boundarySouthDim || 'NA',
-      boundaryEast: saved.boundaryEast || 'Rest Part of Revenue Plot No-632/Vacant Plot',
-      boundaryEastDim: saved.boundaryEastDim || 'NA',
-      boundaryWest: saved.boundaryWest || 'Proposed Road/20-Feet Wide Road',
-      boundaryWestDim: saved.boundaryWestDim || 'NA',
-      totalExtentLandDecimal: saved.totalExtentLandDecimal || 'Ac.0.021 decimal',
-      totalExtentLandSqft: saved.totalExtentLandSqft || '915sqft',
+      boundaryNorth: saved.boundaryNorth || '',
+      boundaryNorthDim: saved.boundaryNorthDim || '',
+      boundarySouth: saved.boundarySouth || '',
+      boundarySouthDim: saved.boundarySouthDim || '',
+      boundaryEast: saved.boundaryEast || '',
+      boundaryEastDim: saved.boundaryEastDim || '',
+      boundaryWest: saved.boundaryWest || '',
+      boundaryWestDim: saved.boundaryWestDim || '',
+      totalExtentLandDecimal: saved.totalExtentLandDecimal || '',
+      totalExtentLandSqft: saved.totalExtentLandSqft || '',
       boundariesTallyWithApprovedDrawing: saved.boundariesTallyWithApprovedDrawing || 'Yes',
       natureOfLandUse: saved.natureOfLandUse || 'Residential',
-      landUseExistingBua: saved.landUseExistingBua || 'G.F.-850sqft(Under Construction)',
-      landUseProposedBua: saved.landUseProposedBua || 'G.F.-850sqft,F.F.-850sqft(Approved)',
-      naPermissionRequiredAndObtained: saved.naPermissionRequiredAndObtained || 'Yes(Obtained)',
+      landUseExistingBua: saved.landUseExistingBua || '',
+      landUseProposedBua: saved.landUseProposedBua || '',
+      naPermissionRequiredAndObtained: saved.naPermissionRequiredAndObtained || '',
 
       // Section C: Buildings
-      buildingPlanApprovalNoDate: saved.buildingPlanApprovalNoDate || 'Yes, letter no-645/20,dated-28/09/2020',
-      buildingPlanValidity: saved.buildingPlanValidity || 'NA',
-      buildingPlanRenewal: saved.buildingPlanRenewal || 'NA',
-      buildingPlanApprovalAuthority: saved.buildingPlanApprovalAuthority || 'Sarapanch, Orakal Grama Panchayat',
+      buildingPlanApprovalNoDate: saved.buildingPlanApprovalNoDate || '',
+      buildingPlanValidity: saved.buildingPlanValidity || '',
+      buildingPlanRenewal: saved.buildingPlanRenewal || '',
+      buildingPlanApprovalAuthority: saved.buildingPlanApprovalAuthority || '',
 
       // Plinth Approved
-      plinthApprovedGf: saved.plinthApprovedGf || '850sqft',
-      plinthApprovedFf: saved.plinthApprovedFf || '850sqft',
-      plinthApprovedSf: saved.plinthApprovedSf || 'NA',
-      plinthApprovedTotal: saved.plinthApprovedTotal || '1700sqft',
+      plinthApprovedGf: saved.plinthApprovedGf || '',
+      plinthApprovedFf: saved.plinthApprovedFf || '',
+      plinthApprovedSf: saved.plinthApprovedSf || '',
+      plinthApprovedTotal: saved.plinthApprovedTotal || '',
 
       // Plinth Actual
-      plinthActualGf: saved.plinthActualGf || '850sqft(Under Construction)',
-      plinthActualFf: saved.plinthActualFf || 'NA',
-      plinthActualSf: saved.plinthActualSf || 'NA',
-      plinthActualTotal: saved.plinthActualTotal || '850sqft',
+      plinthActualGf: saved.plinthActualGf || '',
+      plinthActualFf: saved.plinthActualFf || '',
+      plinthActualSf: saved.plinthActualSf || '',
+      plinthActualTotal: saved.plinthActualTotal || '',
 
-      estimateCostApplicant: saved.estimateCostApplicant || 'Rs.20,00,000/- (For GF only)',
-      estimateCostPerSqft: saved.estimateCostPerSqft || 'Rs.2352.94/sqft',
+      estimateCostApplicant: saved.estimateCostApplicant || '',
+      estimateCostPerSqft: saved.estimateCostPerSqft || '',
       isEstimateReasonable: saved.isEstimateReasonable || 'Yes',
       marketabilityOfProperty: saved.marketabilityOfProperty || 'Good',
 
       // Section D: Inspection
-      inspectionBuaApproved: saved.inspectionBuaApproved || '850sqft / Floor',
-      inspectionBuaActual: saved.inspectionBuaActual || '850sqft / Floor',
-      inspectionFsiApproved: saved.inspectionFsiApproved || '1.85',
-      inspectionFsiActual: saved.inspectionFsiActual || '0.92',
-      inspectionDwellingUnitsApproved: saved.inspectionDwellingUnitsApproved || '1/ Floor',
-      inspectionDwellingUnitsActual: saved.inspectionDwellingUnitsActual || '1/Floor',
+      inspectionBuaApproved: saved.inspectionBuaApproved || '',
+      inspectionBuaActual: saved.inspectionBuaActual || '',
+      inspectionFsiApproved: saved.inspectionFsiApproved || '',
+      inspectionFsiActual: saved.inspectionFsiActual || '',
+      inspectionDwellingUnitsApproved: saved.inspectionDwellingUnitsApproved || '',
+      inspectionDwellingUnitsActual: saved.inspectionDwellingUnitsActual || '',
       isConstructionAsPerApprovedPlan: saved.isConstructionAsPerApprovedPlan || 'Yes',
-      deviationBetweenDrawingAndActual: saved.deviationBetweenDrawingAndActual || 'NA',
-      deviationMinorMajorNature: saved.deviationMinorMajorNature || 'NA',
-      deviationRevisedApprovalNecessary: saved.deviationRevisedApprovalNecessary || 'NA',
-      totalWorksCompletedPct: saved.totalWorksCompletedPct || '90%',
-      totalWorksCompletedValue: saved.totalWorksCompletedValue || 'Rs.18,00,000/-(For GF only)',
+      deviationBetweenDrawingAndActual: saved.deviationBetweenDrawingAndActual || '',
+      deviationMinorMajorNature: saved.deviationMinorMajorNature || '',
+      deviationRevisedApprovalNecessary: saved.deviationRevisedApprovalNecessary || '',
+      totalWorksCompletedPct: saved.totalWorksCompletedPct || '',
+      totalWorksCompletedValue: saved.totalWorksCompletedValue || '',
       nbcAndNdmaComplied: saved.nbcAndNdmaComplied || 'Yes',
       highTensionLinePassing: saved.highTensionLinePassing || 'No',
 
       // Section E: Total Value
-      valLandApplication: saved.valLandApplication || 'NA',
-      valLandGuideline: saved.valLandGuideline || 'Rs.3,15,080/-',
-      valLandMarket: saved.valLandMarket || 'Rs.5,49,000/-',
+      valLandApplication: saved.valLandApplication || '',
+      valLandGuideline: saved.valLandGuideline || '',
+      valLandMarket: saved.valLandMarket || '',
 
-      valBldgStageApplication: saved.valBldgStageApplication || 'Rs.18,00,000/-',
-      valBldgStageGuideline: saved.valBldgStageGuideline || 'Rs.10,05,210/-',
-      valBldgStageMarket: saved.valBldgStageMarket || 'Rs.15,30,000/-',
+      valBldgStageApplication: saved.valBldgStageApplication || '',
+      valBldgStageGuideline: saved.valBldgStageGuideline || '',
+      valBldgStageMarket: saved.valBldgStageMarket || '',
 
       valTotalExistingApplication: saved.valTotalExistingApplication || '',
-      valTotalExistingGuideline: saved.valTotalExistingGuideline || 'Rs.13,20,290/-',
-      valTotalExistingMarket: saved.valTotalExistingMarket || 'Rs.20,79,000/-',
+      valTotalExistingGuideline: saved.valTotalExistingGuideline || '',
+      valTotalExistingMarket: saved.valTotalExistingMarket || '',
 
       valBldgCompletionApplication: saved.valBldgCompletionApplication || '',
-      valBldgCompletionGuideline: saved.valBldgCompletionGuideline || 'Rs.14,31,980/-',
-      valBldgCompletionMarket: saved.valBldgCompletionMarket || 'Rs.22,49,000/-',
+      valBldgCompletionGuideline: saved.valBldgCompletionGuideline || '',
+      valBldgCompletionMarket: saved.valBldgCompletionMarket || '',
 
       sourceForArrivingAtMarketValue: saved.sourceForArrivingAtMarketValue || 'By analysis of rates of material, labour etc & from local market data of similar properties',
       usageOfBuilding: saved.usageOfBuilding || 'Residential',
 
       // Narratives
-      backgroundInformation: saved.backgroundInformation || 'Subject property is a proposed single storied residential building, located in a developed Mattia Pada-II mouza. Property is accessible with 20-ft earthen road.',
+      backgroundInformation: saved.backgroundInformation || '',
       sourcesOfInformation: saved.sourcesOfInformation || 'Recent transactions, Property Brokers, local market feedback.',
       proceduresAdopted: saved.proceduresAdopted || 'Land value arrived by comparing similar land parcels in that locality while building value arrived by cost incurred to construct a similar house as on date.',
       valuationMethodology: saved.valuationMethodology || 'Land & Building method of valuation adopted',
       majorFactorsInfluenced: saved.majorFactorsInfluenced || 'Location & accessibility to civic amenities etc.',
 
       // Section F: Recommendation
-      recommendationStageNo: saved.recommendationStageNo || '01',
-      recommendationStageOfConstruction: saved.recommendationStageOfConstruction || 'GF inside & outside plastering work completed.Flooring work is under progress.',
-      recommendationProgressPct: saved.recommendationProgressPct || 'Present stage of construction is 90%',
+      recommendationStageNo: saved.recommendationStageNo || '',
+      recommendationStageOfConstruction: saved.recommendationStageOfConstruction || '',
+      recommendationProgressPct: saved.recommendationProgressPct || '',
 
       // Section G: Certificate
-      certificateDate: saved.certificateDate || pf.inspectionDate || '04/11/2020',
+      certificateDate: saved.certificateDate || pf.inspectionDate || '',
       certificatePlace: saved.certificatePlace || 'Bhubaneswar',
       valuerSignatureName: saved.valuerSignatureName || 'Er. Satyajit Mohanty',
 
@@ -319,27 +320,21 @@ export default function LICPVR1({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* ── Active Config Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        bankName={fields.organisationTemplate || 'LIC HOUSING FINANCE LTD'}
-        subclass="PVR-1(SELF CONSTRUCTION-L & B)"
-        clientType="organisation"
-        category="Bank & FIS"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* ── Top Header Card ── */}
-      <BankReportTitleCard
-        bankName="LIC Housing Finance Ltd"
-        subclass="PVR-1 (Self Construction - Land & Building)"
-        title="Valuation Report Builder"
-        description="Valuation Report by Panel Valuer for Home Loan (House Construction)"
-        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
-        projectCode={projectCode}
-      />
+          {/* Universal Standardized Bank Report Header */}
+          <BankReportHeader
+            bankName={fields.organisationTemplate || 'LIC HOUSING FINANCE LTD'}
+            subclass="PVR-1 (Self Construction - Land & Building)"
+            clientType="organisation"
+            category="Bank & FIS"
+            onResetWizard={onResetWizard}
+            title="Valuation Report Builder"
+            description="Valuation Report by Panel Valuer for Home Loan (House Construction)"
+            earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+            projectCode={projectCode}
+            status={status}
+          />
 
       {/* ── Section Header Metadata ── */}
       <Section id="sec-meta" title="Header & File Metadata" number={1} defaultOpen={true}>

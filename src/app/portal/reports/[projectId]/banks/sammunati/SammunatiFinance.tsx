@@ -6,7 +6,7 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -20,7 +20,6 @@ import {
   formatReportDate,
   getEarliestFieldVisit,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -81,93 +80,94 @@ export default function SammunatiFinance({
 
   const defaultValues: Record<string, any> = useMemo(() => {
     const today = formatReportDate(new Date());
-    const visitDate = earliestVisit || today;
+    const visitDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
+    const p = (prefill || {}) as any;
 
     return {
       // Header / Meta
-      refNo: `SAM/${new Date().getMonth() + 1 < 10 ? '0' + (new Date().getMonth() + 1) : new Date().getMonth() + 1}-${String(new Date().getFullYear()).slice(-2)}/01`,
+      refNo: projectCode ? `SAM/${projectCode}` : '',
       valuationDate: visitDate,
-      customerName: prefill.ownerName || 'Deepak Kumar Nayak',
-      requestReceivedFrom: 'Samunnati Financial Intermediation & Services Pvt Ltd, through Mr. Satyajit Mohanty',
-      docHolderName: prefill.ownerName || 'Hengula Farmers & Producer Company Limited (Director-Deepak Kumar Nayak)',
-      propertyAddressRequest: prefill.propertyAddress || 'Khata no-799/1101, Plot no-692/2391, Mouza-Brahmagiri, Tahasil/PS-Brahmagiri, Dist-Puri, Odisha, Pin-752011',
-      propertyAddressInspection: prefill.propertyAddress || 'Khata no-799/1101, Plot no-692/2391, Mouza-Brahmagiri, Tahasil/PS-Brahmagiri, Dist-Puri, Odisha, Pin-752011',
-      propertyAddressDocs: prefill.propertyAddress || 'Khata no-799/1101, Plot no-692/2391 (AC.0.200 Decs, Homestead), Mouza-Brahmagiri, Tahasil/PS-Brahmagiri, Dist-Puri, Odisha, Pin-752011',
-      landmark: 'Near Brahmagiri Bus Stop',
+      customerName: p.applicantName || prefill.ownerName || '',
+      requestReceivedFrom: 'Sammunati Financial Intermediation & Services Pvt Ltd',
+      docHolderName: prefill.ownerName || '',
+      propertyAddressRequest: prefill.propertyAddress || '',
+      propertyAddressInspection: prefill.propertyAddress || '',
+      propertyAddressDocs: prefill.propertyAddress || '',
+      landmark: '',
       inspectionDate: visitDate,
-      contactPersonMet: prefill.contactName || prefill.ownerName || 'Deepak Kumar Nayak / Representative',
+      contactPersonMet: prefill.contactName || prefill.ownerName || '',
 
       // Locality & Boundaries
-      wardNo: 'Brahmagiri GP',
-      vicinity: 'Residential / Commercial / Industrial',
-      classificationOfLocality: 'Middle class',
-      proximityRailway: 'Puri Railway Station (20 KM)',
-      proximityBus: 'Brahmagiri Bus Stop (0.5 KM)',
-      proximityHospital: 'Brahmagiri CHC (1.0 KM)',
-      approachRoadCondition: '20 feet wide paved road',
-      plotDemarcated: 'Yes, clearly demarcated with boundary pillars',
-      propertyIdentifiedThrough: 'Sale deed, ROR, site demarcation & neighbor inquiry',
-      boundaryEastDeed: 'Purnachandra Sahoo & Others',
-      boundaryEastActual: 'Purnachandra Sahoo & Others',
-      boundaryWestDeed: '20ft Wide Road',
-      boundaryWestActual: '20ft Wide Road',
-      boundaryNorthDeed: 'Pankaj Kumar Nayak',
-      boundaryNorthActual: 'Pankaj Kumar Nayak',
-      boundarySouthDeed: 'Rankanath Nayak',
-      boundarySouthActual: 'Rankanath Nayak',
+      wardNo: '',
+      vicinity: '',
+      classificationOfLocality: '',
+      proximityRailway: '',
+      proximityBus: '',
+      proximityHospital: '',
+      approachRoadCondition: '',
+      plotDemarcated: '',
+      propertyIdentifiedThrough: '',
+      boundaryEastDeed: '',
+      boundaryEastActual: '',
+      boundaryWestDeed: '',
+      boundaryWestActual: '',
+      boundaryNorthDeed: '',
+      boundaryNorthActual: '',
+      boundarySouthDeed: '',
+      boundarySouthActual: '',
 
       // Property Details
-      propertyDescription: 'Vacant plot demarcated at site for agro-commercial development',
-      propertyType: 'Commercial / Agro-Industrial / Residential',
-      propertyUsage: 'Vacant Plot',
-      accommodationDetails: 'NA (Vacant Land)',
-      additionalAmenities: 'Paved access road, electrical line available nearby, clear title',
-      actualArea: '8712',
-      carpetArea: 'NA',
-      builtUpArea: 'NA',
-      permittedArea: 'As per local building bye-laws',
-      areaAsPerDeed: '8712',
-      adherenceSanction: 'Yes / NA (Vacant Land)',
-      deviationDetails: 'Nil / NA',
-      demolitionRisk: 'Low',
-      occupiedBy: 'Vacant Land (Under possession of customer)',
-      occupiedSince: 'NA',
+      propertyDescription: '',
+      propertyType: '',
+      propertyUsage: '',
+      accommodationDetails: '',
+      additionalAmenities: '',
+      actualArea: '',
+      carpetArea: '',
+      builtUpArea: '',
+      permittedArea: '',
+      areaAsPerDeed: '',
+      adherenceSanction: '',
+      deviationDetails: '',
+      demolitionRisk: '',
+      occupiedBy: '',
+      occupiedSince: '',
 
       // Legal & Tenure
-      landTenure: 'Freehold (Sthitiban / Homestead)',
-      approvalDetails: 'Brahmagiri Gram Panchayat jurisdiction, ROR mutated in record',
-      societyName: 'Hengula Farmers & Producer Company Limited',
-      societyRegNo: 'U01110OR2020PTC033456',
-      sharesDetails: 'NA',
-      monthlyOutgoes: 'Nil',
+      landTenure: '',
+      approvalDetails: '',
+      societyName: '',
+      societyRegNo: '',
+      sharesDetails: '',
+      monthlyOutgoes: '',
 
       // Structural
-      structureType: 'NA (Vacant Land)',
-      floorsWings: 'NA',
-      flatsPerFloor: 'NA',
-      buildingAge: 'NA',
-      futureLife: 'NA',
-      constructionQuality: 'NA (Vacant Plot)',
-      unitDetails: 'NA',
+      structureType: '',
+      floorsWings: '',
+      flatsPerFloor: '',
+      buildingAge: '',
+      futureLife: '',
+      constructionQuality: '',
+      unitDetails: '',
 
       // Valuation & Costing
-      areaConsidered: '8712',
-      prevailingMarketRate: 'Rs. 1,000/- to Rs. 1,200/- per Sq. ft',
-      inquiriesSource: 'Local realtors, property owners and Sub-Registrar guideline value',
-      landAreaVal: '8712',
-      landRateVal: '1200',
-      bldAreaVal: '0',
-      bldRateVal: '0',
-      totalPropertyValue: '10454400',
-      forcedSaleValue: '8363520',
-      insuranceValue: '8886240',
-      marketabilitySale: 'Good / High demand for agro-commercial & residential',
-      marketabilityLease: 'Good / Commercial demand in Brahmagiri',
-      priceVolatility: 'Low to Medium',
+      areaConsidered: '',
+      prevailingMarketRate: '',
+      inquiriesSource: '',
+      landAreaVal: '',
+      landRateVal: '',
+      bldAreaVal: '',
+      bldRateVal: '',
+      totalPropertyValue: '',
+      forcedSaleValue: '',
+      insuranceValue: '',
+      marketabilitySale: '',
+      marketabilityLease: '',
+      priceVolatility: '',
 
       // Coordinates
-      latitude: '19.801234',
-      longitude: '85.789123',
+      latitude: '',
+      longitude: '',
 
       // Attachments
       documentImages: [],
@@ -178,7 +178,7 @@ export default function SammunatiFinance({
       propertyImages: [],
       propertyImageNames: [],
     };
-  }, [earliestVisit, prefill]);
+  }, [earliestVisit, prefill, projectCode]);
 
   const [fields, setFields] = useState<Record<string, any>>(() => {
     return { ...defaultValues, ...(rawInitialFields || {}) };
@@ -410,36 +410,20 @@ export default function SammunatiFinance({
   return (
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        {/* Title Card */}
-        <BankReportTitleCard
+        {/* Universal Bank Report Header */}
+        <BankReportHeader
           bankName="Sammunati Financial Intermediation & Services Pvt Ltd"
           subclass="Agri-Commerce & Land Format"
-          title="Valuation Report Builder"
-          description="Comprehensive agricultural / commercial / land valuation report for Sammunati Financial Intermediation & Services Pvt Ltd."
+          formatName="Agri-Commerce & Land Format"
+          clientType="organisation"
+          category="Agri-Commerce"
+          serviceType="Valuation Report Builder"
+          subjectType="Agri-Commerce & Land"
+          onResetWizard={onResetWizard}
           earliestVisit={earliestVisit}
           projectCode={projectCode}
+          message={message}
         />
-
-        {/* Wizard Selection Banner */}
-        <ActiveConfigBanner
-          clientType="organisation"
-          bankName="SAMMUNATI FINANCE"
-          subclass="Agri-Commerce & Land Format"
-          onResetWizard={onResetWizard}
-          sticky={false}
-        />
-
-        {message && (
-          <div
-            className={`p-4 rounded-xl border text-sm font-medium ${
-              message.type === 'success'
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                : 'bg-rose-50 border-rose-200 text-rose-800'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
 
         {/* ══════════════════════════════════════════
             SECTION 1: GENERAL DETAILS

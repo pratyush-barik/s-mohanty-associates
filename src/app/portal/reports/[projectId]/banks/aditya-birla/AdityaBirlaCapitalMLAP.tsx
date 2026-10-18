@@ -9,6 +9,7 @@ import { formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFAdityaBirlaMLAPRenderer, MLAPReportFields } from '@/lib/banks/pdf-aditya-birla-mlap-renderer';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -981,8 +982,8 @@ export default function AdityaBirlaCapitalMLAP({
       {/* ── Main Form Column (Only exact sections created) ── */}
       <div className="flex-1 min-w-0 space-y-4">
 
-        {/* Standard Active Configuration Top Banner */}
-        <ActiveConfigBanner
+        {/* Standardized Universal Bank Report Header */}
+        <BankReportHeader
           clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.organisationTemplate || fields.bankName || 'ADITYA BIRLA CAPITAL LTD'}
@@ -990,6 +991,13 @@ export default function AdityaBirlaCapitalMLAP({
           serviceType={fields.serviceType || prefill?.purpose || undefined}
           subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="Aditya Birla Capital Mortgage Loan Against Property Format."
+          earliestVisit={firstFieldAgentVisit}
+          projectCode={projectCode}
+          reworkNotes={fields.reworkNotes}
+          status={status}
+          message={message}
         />
 
         {/* ═══ SECTION 1: BASIC DETAILS ═══ */}

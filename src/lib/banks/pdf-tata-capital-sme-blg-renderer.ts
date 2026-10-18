@@ -91,10 +91,10 @@ export class PDFTataCapitalSMEBLGRenderer extends PDFBankRenderer {
       { n: '12', l: 'Location, street, ward no', v: this.getF('locationStreetWard', '') },
       { n: '13', l: 'S. No., plot no. and C.T.S. No.', v: this.getF('sNoPlotNoCtsNo', '') },
       { n: '14', l: 'Classification of locality', v: this.getF('classificationOfLocality', 'Middle Class') },
-      { n: '15', l: 'Proximity to civic amenities', v: this.getF('proximityCivicAmenities', '1-2Kms') },
+      { n: '15', l: 'Proximity to civic amenities', v: this.getF('proximityCivicAmenities', '') },
       { n: '16', l: 'Nearest railway station and distance', v: this.getF('nearestRailwayStation', '') },
       { n: '17', l: 'Modes of transport', v: this.getF('modesOfTransport', 'By Road') },
-      { n: '18', l: 'Name of the road for access', v: this.getF('roadAccessName', 'Road') },
+      { n: '18', l: 'Name of the road for access', v: this.getF('roadAccessName', '') },
       { n: '19', l: 'Area of the land and other details', v: this.getF('landAreaOtherDetails', '') },
       { n: '20', l: 'Land tenure', v: this.getF('landTenure', 'Freehold') },
       { n: '21', l: 'Approvals for drawings from municipal authorities', v: this.getF('approvalDrawings', '') },
@@ -390,7 +390,7 @@ export class PDFTataCapitalSMEBLGRenderer extends PDFBankRenderer {
     this.checkPageBreak(70);
 
     const halfW = CONTENT_W / 2;
-    const repDate = this.getF('reportDate', this.getF('inspectionDate', '03-11-2025'));
+    const repDate = this.getF('reportDate', this.getF('inspectionDate', ''));
     const repPlace = this.getF('reportPlace', 'Bhubaneswar');
 
     this.drawKeyValueRow([

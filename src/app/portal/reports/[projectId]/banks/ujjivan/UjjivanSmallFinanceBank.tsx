@@ -7,7 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -19,9 +19,7 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  EarliestFieldVisitBadge,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -92,30 +90,30 @@ export default function UjjivanSmallFinanceBank({
     const p = (prefill || {}) as any;
 
     // SECTION 1: General Details
-    if (!d.applicantName) d.applicantName = p.applicantName || 'DEBASISH DAS MOHAPATRA';
+    if (!d.applicantName) d.applicantName = p.applicantName || '';
     if (!d.purposeOfValuation) d.purposeOfValuation = 'To Ascertain fair market value of the property as on date';
     if (!d.nameOfValuer) d.nameOfValuer = 'M/s. S. Mohanty Associates';
-    if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '27/05/2026';
-    if (!d.clientId) d.clientId = '119550000000300';
+    if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
+    if (!d.clientId) d.clientId = projectCode || '';
     if (!d.caseType) d.caseType = 'HEL';
-    if (!d.contactPersonAndNumber) d.contactPersonAndNumber = p.contactName ? `${p.contactName}, Mob-${p.contactPhone || ''}` : 'DEBASISH DAS MOHAPATRA, Mob-7008922090';
-    if (!d.inspectionDate) d.inspectionDate = earliestVisit ? formatReportDate(earliestVisit.date) : '26-05-2026';
-    if (!d.ownerNameAsPerDoc) d.ownerNameAsPerDoc = p.ownerName || 'BISWANATH DAS MOHAPATRA, S/O-GOPAL DAS MOHAPATRA';
+    if (!d.contactPersonAndNumber) d.contactPersonAndNumber = p.contactName ? `${p.contactName}${p.contactPhone ? `, Mob-${p.contactPhone}` : ''}` : '';
+    if (!d.inspectionDate) d.inspectionDate = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
+    if (!d.ownerNameAsPerDoc) d.ownerNameAsPerDoc = p.ownerName || p.applicantName || '';
     if (!d.providedDocuments) d.providedDocuments = 'Copy of Sale deed, ROR';
-    if (!d.siteNoDoorNo) d.siteNoDoorNo = 'Plot No-581';
+    if (!d.siteNoDoorNo) d.siteNoDoorNo = '';
     if (!d.propertyAddressDoc) {
-      d.propertyAddressDoc = p.propertyAddress || 'Khata No-32, Plot No-581, Mouza-Baliguali, Tahasil-Puri, Dist-Puri, Odisha.';
+      d.propertyAddressDoc = p.propertyAddress || '';
     }
     if (!d.propertyAddressActual) {
-      d.propertyAddressActual = p.propertyAddress || 'Plot No-581, Near Maa Janhikhai Temple, Baliguali, Puri, Odisha.';
+      d.propertyAddressActual = p.propertyAddress || '';
     }
     if (!d.isDemarcated) d.isDemarcated = 'Yes';
-    if (!d.place) d.place = 'Puri';
-    if (!d.nearestLandmark) d.nearestLandmark = p.nearestLandmark || 'Near Maa Janhikhai Temple';
-    if (!d.distanceCityCentre) d.distanceCityCentre = '2-Kms from Puri Branch';
-    if (!d.accessRoadName) d.accessRoadName = '10-feet wide Road';
+    if (!d.place) d.place = p.city || 'Bhubaneswar';
+    if (!d.nearestLandmark) d.nearestLandmark = p.nearestLandmark || '';
+    if (!d.distanceCityCentre) d.distanceCityCentre = '';
+    if (!d.accessRoadName) d.accessRoadName = '';
     if (!d.typeOfProperty) d.typeOfProperty = 'Residential';
-    if (!d.jurisdiction) d.jurisdiction = 'Puri Municipality limit';
+    if (!d.jurisdiction) d.jurisdiction = '';
     if (!d.shapeOfPlot) d.shapeOfPlot = 'Rectangular';
     if (!d.zonalClassification) d.zonalClassification = 'Residential';
 
@@ -134,14 +132,14 @@ export default function UjjivanSmallFinanceBank({
     if (!d.boundDocEast) d.boundDocEast = 'Road';
     if (!d.boundActEast) d.boundActEast = 'Road';
     if (!d.boundRemarksEast) d.boundRemarksEast = '';
-    if (!d.boundDocWest) d.boundDocWest = 'Hadigohiri';
-    if (!d.boundActWest) d.boundActWest = 'Building of Bapi Mohapatra';
-    if (!d.boundRemarksWest) d.boundRemarksWest = 'Boundary is matching as per documents';
-    if (!d.boundDocNorth) d.boundDocNorth = 'Benu Singhari';
-    if (!d.boundActNorth) d.boundActNorth = 'Building of Benu Singhari';
+    if (!d.boundDocWest) d.boundDocWest = '';
+    if (!d.boundActWest) d.boundActWest = '';
+    if (!d.boundRemarksWest) d.boundRemarksWest = '';
+    if (!d.boundDocNorth) d.boundDocNorth = '';
+    if (!d.boundActNorth) d.boundActNorth = '';
     if (!d.boundRemarksNorth) d.boundRemarksNorth = '';
-    if (!d.boundDocSouth) d.boundDocSouth = 'Dasarathi Panda';
-    if (!d.boundActSouth) d.boundActSouth = 'Building of Dasarathi Panda';
+    if (!d.boundDocSouth) d.boundDocSouth = '';
+    if (!d.boundActSouth) d.boundActSouth = '';
     if (!d.boundRemarksSouth) d.boundRemarksSouth = '';
 
     if (!d.boundAminEast) d.boundAminEast = 'NA';
@@ -219,8 +217,8 @@ export default function UjjivanSmallFinanceBank({
     if (!d.valInteriors) d.valInteriors = '0';
 
     // SECTION 7: Work Status & Recommendation
-    if (!d.geoTagLatitude) d.geoTagLatitude = '19.804528';
-    if (!d.geoTagLongitude) d.geoTagLongitude = '85.822250';
+    if (!d.geoTagLatitude) d.geoTagLatitude = p.latitude || '';
+    if (!d.geoTagLongitude) d.geoTagLongitude = p.longitude || '';
     if (!d.workStatusDescription) d.workStatusDescription = 'G+3=plastering work completed.';
     if (!d.progressCivil) d.progressCivil = '80';
     if (!d.recommendedCivil) d.recommendedCivil = '85';
@@ -229,9 +227,9 @@ export default function UjjivanSmallFinanceBank({
 
     // SECTION 8: Remarks & Declaration
     if (!d.synthesisRemarks) {
-      d.synthesisRemarks = 'Subject property is a G+3 storied residential building situated at Mouza-Baliguali, Tahasil-Puri, Dist-Puri, Odisha. Physical inspection was conducted and the property is clearly demarcated on site with 10 feet wide road access. Plastering work has been completed up to third floor (G+3). Land rate is adopted at Rs.8,000/- per Sft based on market inquiries in the vicinity. Stage completion is assessed at 80% and recommended at 85%. Valuation as on date is Rs. 1,22,30,400/- and Forced Sale Value (80%) is Rs. 97,84,320/-.';
+      d.synthesisRemarks = '';
     }
-    if (!d.reportDate) d.reportDate = d.valuationDate || '27/05/2026';
+    if (!d.reportDate) d.reportDate = d.valuationDate || formatReportDate(new Date());
     if (!d.reportPlace) d.reportPlace = 'Bhubaneswar';
 
     return d;
@@ -518,39 +516,24 @@ export default function UjjivanSmallFinanceBank({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* Truthful Active Configuration Banner */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName="UJJIVAN SMALL FINANCE BANK"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       {/* Main Layout: Left Form & Right Floating Navigator */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* Left Form Column */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* Title Header Card */}
-          <BankReportTitleCard
-            bankName="UJJIVAN SMALL FINANCE BANK"
+          {/* Universal Bank Report Header */}
+          <BankReportHeader
+            bankName="Ujjivan Small Finance Bank"
             subclass="Immovable Property Valuation Format"
-            description="Ujjivan Small Finance Bank Technical Valuation Report with Schedule & Dimensions Matrix."
+            formatName="Technical Report on Immovable Property"
+            clientType="organisation"
+            category="Small Finance Banking"
+            serviceType="Valuation Report Builder"
+            subjectType="Immovable Property Valuation"
+            onResetWizard={onResetWizard}
             earliestVisit={earliestVisit}
             projectCode={fields.clientId || projectCode}
+            message={message}
           />
-
-          {message && (
-            <div
-              className={`p-4 rounded-xl text-sm font-medium border ${
-                message.type === 'success'
-                  ? 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300'
-                  : 'bg-rose-950/70 border-rose-500/40 text-rose-300'
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
 
           {/* ═══════════════════════════════════════════════
               SECTION 1: GENERAL DETAILS

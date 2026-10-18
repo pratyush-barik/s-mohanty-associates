@@ -7,7 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -19,9 +19,7 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  EarliestFieldVisitBadge,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import {
   formatIndianCurrency,
@@ -96,29 +94,29 @@ export default function TataCapitalSMEBLG({
     if (!d.valuerCode) d.valuerCode = 'SMA/11-25/01';
     if (!d.suburbName) d.suburbName = 'NA';
     if (!d.clusterId) d.clusterId = 'Not Provided';
-    if (!d.customerName) d.customerName = p.applicantName || p.contactName || 'Kapilash Bizcorps LLP';
+    if (!d.customerName) d.customerName = p.applicantName || p.contactName || '';
     if (!d.projectName) d.projectName = 'NA';
-    if (!d.ownerName) d.ownerName = p.contactName || p.applicantName || 'Rina Poddar';
+    if (!d.ownerName) d.ownerName = p.ownerName || p.applicantName || p.contactName || '';
     if (!d.flatFloorNo) d.flatFloorNo = 'NA';
     if (!d.buildingName) d.buildingName = 'NA';
     if (!d.propertyDescription) {
-      d.propertyDescription = p.propertyAddress || 'Khata No-325/2544, 325/2916 & 325/3004, Plot No-702/2830, 703/3003/5671 & 703/3004, Mouza-Saptasajya, PS-Dhenkanal Sadar, Tahasil-Dhenkanal, Dist-Dhenkanal, Odisha, Pin-759013.';
+      d.propertyDescription = p.propertyAddress || '';
     }
-    if (!d.locationStreetWard) d.locationStreetWard = p.nearestLandmark || 'Saptasajya';
-    if (!d.sNoPlotNoCtsNo) d.sNoPlotNoCtsNo = 'Plot No-702/2830, 703/3003/5671 & 703/3004';
+    if (!d.locationStreetWard) d.locationStreetWard = p.nearestLandmark || '';
+    if (!d.sNoPlotNoCtsNo) d.sNoPlotNoCtsNo = '';
     if (!d.classificationOfLocality) d.classificationOfLocality = 'Middle Class';
-    if (!d.proximityCivicAmenities) d.proximityCivicAmenities = '1-2Kms';
-    if (!d.nearestRailwayStation) d.nearestRailwayStation = '5.8-Kms from Dhenkanal Railway station';
+    if (!d.proximityCivicAmenities) d.proximityCivicAmenities = '';
+    if (!d.nearestRailwayStation) d.nearestRailwayStation = '';
     if (!d.modesOfTransport) d.modesOfTransport = 'By Road';
-    if (!d.roadAccessName) d.roadAccessName = 'Road';
-    if (!d.landAreaOtherDetails) d.landAreaOtherDetails = '0.610 Decs (26572 sqft)';
+    if (!d.roadAccessName) d.roadAccessName = '';
+    if (!d.landAreaOtherDetails) d.landAreaOtherDetails = '';
     if (!d.landTenure) d.landTenure = 'Freehold';
     if (!d.approvalDrawings) {
-      d.approvalDrawings = 'Plan has been approved by Dhenkanal municipality vide letter no-BP/DKN/022118, DKL, dated-19/09/2025 for single storied residential building.';
+      d.approvalDrawings = '';
     }
     if (!d.cooperativeSocietyDetails) d.cooperativeSocietyDetails = 'NA';
-    if (!d.identifiedBy) d.identifiedBy = 'Mr. Manoj Das';
-    if (!d.visitedBy) d.visitedBy = earliestVisit?.engineerName || p.firstFieldAgentName || 'Mr. Manoj Das';
+    if (!d.identifiedBy) d.identifiedBy = p.contactName ? `Mr. ${p.contactName}` : '';
+    if (!d.visitedBy) d.visitedBy = earliestVisit?.engineerName || p.firstFieldAgentName || 'Er. S. Mohanty';
 
     // PART B: Structure & Boundaries
     if (!d.yearOfConstruction) d.yearOfConstruction = 'New Constructed';
@@ -126,15 +124,15 @@ export default function TataCapitalSMEBLG({
     if (!d.presentCondition) d.presentCondition = 'Good / NA';
     if (!d.typeOfConstruction) d.typeOfConstruction = 'RCC Roofing';
 
-    if (!d.boundarySketchNorth) d.boundarySketchNorth = 'Plot No-703(P)';
-    if (!d.boundarySketchEast) d.boundarySketchEast = 'Plot No-702(P)';
-    if (!d.boundarySketchSouth) d.boundarySketchSouth = 'Plot No-704';
-    if (!d.boundarySketchWest) d.boundarySketchWest = 'Road';
+    if (!d.boundarySketchNorth) d.boundarySketchNorth = '';
+    if (!d.boundarySketchEast) d.boundarySketchEast = '';
+    if (!d.boundarySketchSouth) d.boundarySketchSouth = '';
+    if (!d.boundarySketchWest) d.boundarySketchWest = '';
 
-    if (!d.boundarySiteNorth) d.boundarySiteNorth = d.boundarySketchNorth || 'Plot No-703(P)';
-    if (!d.boundarySiteEast) d.boundarySiteEast = d.boundarySketchEast || 'Plot No-702(P)';
-    if (!d.boundarySiteSouth) d.boundarySiteSouth = d.boundarySketchSouth || 'Plot No-704';
-    if (!d.boundarySiteWest) d.boundarySiteWest = d.boundarySketchWest || 'Road';
+    if (!d.boundarySiteNorth) d.boundarySiteNorth = d.boundarySketchNorth || '';
+    if (!d.boundarySiteEast) d.boundarySiteEast = d.boundarySketchEast || '';
+    if (!d.boundarySiteSouth) d.boundarySiteSouth = d.boundarySketchSouth || '';
+    if (!d.boundarySiteWest) d.boundarySiteWest = d.boundarySketchWest || '';
 
     // PART C: Property Specifications
     if (!d.estimatedDateCompletion) d.estimatedDateCompletion = 'NA';
@@ -171,31 +169,31 @@ export default function TataCapitalSMEBLG({
 
     // PART D: Assumptions & Basis
     if (!d.drawingsAndApprovals) {
-      d.drawingsAndApprovals = 'Plan has been approved by Dhenkanal municipality vide letter no-BP/DKN/022118, DKL, dated-19/09/2025 for single storied residential building.';
+      d.drawingsAndApprovals = '';
     }
     if (!d.areaConsideredValuation) {
-      d.areaConsideredValuation = '0.610 Decs or 26572 sqft of Land & 4032 sqft of BUA has been considered for valuation.';
+      d.areaConsideredValuation = '';
     }
     if (!d.ageFutureLife) d.ageFutureLife = 'Age of building is 0-Years & Future life is 60-Years.';
     if (!d.presentConditionBasis) d.presentConditionBasis = 'Good';
     if (!d.commentsOnSpecificationBasis) d.commentsOnSpecificationBasis = 'RCC Roofing';
     if (!d.marketRatesVicinity) {
-      d.marketRatesVicinity = 'Local inquiries revealed that the market rate of land in this vicinity is ranging from Rs.2800/- to Rs.3200/- per sqft depending on the location, size and frontage.';
+      d.marketRatesVicinity = '';
     }
 
     // PART E: Land & Building Valuation Engine
-    if (!d.landAreaSqft) d.landAreaSqft = 26572;
-    if (!d.govtApprovedLandRate) d.govtApprovedLandRate = 298;
-    if (!d.govtApprovedLandRateText) d.govtApprovedLandRateText = 'Rs.298/- per sqfft of land';
-    if (!d.recommendedLandRate) d.recommendedLandRate = 3000;
+    if (!d.landAreaSqft) d.landAreaSqft = 0;
+    if (!d.govtApprovedLandRate) d.govtApprovedLandRate = 0;
+    if (!d.govtApprovedLandRateText) d.govtApprovedLandRateText = '';
+    if (!d.recommendedLandRate) d.recommendedLandRate = 0;
     if (!d.basisRecommendation) {
-      d.basisRecommendation = 'The site is located in Saptasajya, having good access road and civic amenities nearby. Considering the location, accessibility and prevailing market trends, the rate of Rs.3000/- per sqft is recommended.';
+      d.basisRecommendation = '';
     }
-    if (!d.approvedBuaSqft) d.approvedBuaSqft = 4032;
-    if (!d.constructionCostPerSqft) d.constructionCostPerSqft = 2500;
-    if (!d.actualBuaSqft) d.actualBuaSqft = 4743;
-    if (!d.deviationDetails) d.deviationDetails = '711 sqft (Constructed beyond approved plan)';
-    if (!d.constructionValueConsideredText) d.constructionValueConsideredText = 'Approved BUA only (Rs. 10,080,000/-)';
+    if (!d.approvedBuaSqft) d.approvedBuaSqft = 0;
+    if (!d.constructionCostPerSqft) d.constructionCostPerSqft = 0;
+    if (!d.actualBuaSqft) d.actualBuaSqft = 0;
+    if (!d.deviationDetails) d.deviationDetails = 'Nil';
+    if (!d.constructionValueConsideredText) d.constructionValueConsideredText = '';
 
     // Optional Flat Valuation defaults
     if (!d.flatFmvPerSqft) d.flatFmvPerSqft = 'NA';
@@ -210,9 +208,9 @@ export default function TataCapitalSMEBLG({
 
     // Remarks & Declaration
     if (!d.synthesisRemarks) {
-      d.synthesisRemarks = 'Subject property is a freehold land with newly constructed RCC building situated at Mouza-Saptasajya, Dist-Dhenkanal. The property has proper access from the road and basic civic amenities are available. Valuation is assessed based on the approved plan, physical inspection and prevailing local market rates. Land value is assessed at Rs.3000/- per sqft and approved building BUA of 4032 sqft at Rs.2500/- per sqft.';
+      d.synthesisRemarks = '';
     }
-    if (!d.reportDate) d.reportDate = d.inspectionDate || '03-11-2025';
+    if (!d.reportDate) d.reportDate = d.inspectionDate || formatReportDate(new Date());
     if (!d.reportPlace) d.reportPlace = 'Bhubaneswar';
 
     return d;
@@ -456,27 +454,23 @@ export default function TataCapitalSMEBLG({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* ── Active Configuration Banner (Zero hallucination standard, exact chain) ── */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName="TATA CAPITAL LTD"
-        subclass="SME-BLG"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       {/* ── Main Layout: Form (Left) & Floating Navigator (Right) ── */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* ── Left Form Column ── */}
         <div className="flex-1 w-full space-y-8 min-w-0">
-          {/* Title Header Card */}
-          <BankReportTitleCard
-            bankName="TATA CAPITAL LTD"
+          {/* Universal Bank Report Header */}
+          <BankReportHeader
+            bankName="Tata Capital Ltd"
             subclass="SME-BLG"
-            description="Tata Capital SME & Business Loan Against Property Format with Schedule Valuation & Approvals."
+            formatName="SME & Business Loan Against Property Format"
+            clientType="organisation"
+            category="SME & Business Loans"
+            serviceType="Valuation Report Builder"
+            subjectType="SME / Business Loan Group Valuation"
+            onResetWizard={onResetWizard}
             earliestVisit={earliestVisit}
             projectCode={projectCode}
+            message={message}
           />
 
           {/* ═══════════════════════════════════════════════

@@ -88,18 +88,18 @@ export class PDFLICPVR5Renderer extends PDFBankRenderer {
     ]);
     this.drawKeyValueRow([
       { label: '', value: 'i) Plinth area', labelWidth: 0, valueWidth: cColW[0] },
-      { label: '', value: this.getF('plinthApproved', '858sqft'), labelWidth: 0, valueWidth: cColW[1] },
-      { label: '', value: this.getF('plinthActual', '858sqft'), labelWidth: 0, valueWidth: cColW[2] },
+      { label: '', value: this.getF('plinthApproved', 'NA'), labelWidth: 0, valueWidth: cColW[1] },
+      { label: '', value: this.getF('plinthActual', 'NA'), labelWidth: 0, valueWidth: cColW[2] },
     ]);
     this.drawKeyValueRow([
       { label: '', value: 'ii) F.S.I.', labelWidth: 0, valueWidth: cColW[0] },
-      { label: '', value: this.getF('fsiApproved', '1.17'), labelWidth: 0, valueWidth: cColW[1] },
-      { label: '', value: this.getF('fsiActual', '1.17'), labelWidth: 0, valueWidth: cColW[2] },
+      { label: '', value: this.getF('fsiApproved', 'NA'), labelWidth: 0, valueWidth: cColW[1] },
+      { label: '', value: this.getF('fsiActual', 'NA'), labelWidth: 0, valueWidth: cColW[2] },
     ]);
     this.drawKeyValueRow([
       { label: '', value: 'iii) No. Of dwelling units', labelWidth: 0, valueWidth: cColW[0] },
-      { label: '', value: this.getF('unitsApproved', '2'), labelWidth: 0, valueWidth: cColW[1] },
-      { label: '', value: this.getF('unitsActual', '2'), labelWidth: 0, valueWidth: cColW[2] },
+      { label: '', value: this.getF('unitsApproved', '1'), labelWidth: 0, valueWidth: cColW[1] },
+      { label: '', value: this.getF('unitsActual', '1'), labelWidth: 0, valueWidth: cColW[2] },
     ]);
 
     this.drawLICRow('2', 'Whether construction is as per approved plan?', this.getF('constructionAsPerPlan', 'Yes'));
@@ -126,11 +126,11 @@ export class PDFLICPVR5Renderer extends PDFBankRenderer {
       { label: 'Market Value (Rs.)', value: '', labelWidth: tvColW[4], valueWidth: 0, labelBold: true, highlight: true },
     ]);
 
-    const landVal = parseFloat(this.getF('landMarketValue', '1437000')) || 0;
+    const landVal = parseFloat(this.getF('landMarketValue', '0')) || 0;
     const stagePct = this.getF('stageOfConstructionPct', '100');
-    const stageConstVal = parseFloat(this.getF('stageConstMarketValue', '3203400')) || 0;
+    const stageConstVal = parseFloat(this.getF('stageConstMarketValue', '0')) || 0;
     const totalPresentVal = landVal + stageConstVal;
-    const bldg100Val = parseFloat(this.getF('bldg100CompletionValue', '4809000')) || 0;
+    const bldg100Val = parseFloat(this.getF('bldg100CompletionValue', '0')) || 0;
 
     this.drawKeyValueRow([
       { label: '', value: '1', labelWidth: 0, valueWidth: tvColW[0], valueBold: true },
@@ -171,7 +171,7 @@ export class PDFLICPVR5Renderer extends PDFBankRenderer {
     // ==========================================
     this.drawSectionHeader('D. CERTIFICATE');
     const certBullet1 = `• I declare that I am not associated with the builder or with any of his associate companies or with the borrower directly or indirectly in the past or in the present and this report has been prepared by me with highest professional integrity.`;
-    const certBullet2 = `• I further declare that I have personally inspected the site and building on ${this.getF('inspectionDate', '19/12/2020')}.`;
+    const certBullet2 = `• I further declare that I have personally inspected the site and building on ${this.getF('inspectionDate', '') || 'NA'}.`;
     const certBullet3 = `• I further declare that all the above particulars and information given in this report are true to the best of my knowledge and belief.`;
 
     this.drawKeyValueRow([{ label: '', value: certBullet1, labelWidth: 0, valueWidth: CONTENT_W }]);

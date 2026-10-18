@@ -7,7 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -21,7 +21,6 @@ import {
   formatReportDate,
   EarliestFieldVisitBadge,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -324,24 +323,26 @@ export default function LICPVR5({
 
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100 pb-28">
-      {/* Top Banner */}
-      <ActiveConfigBanner
-        bankName="LIC HOUSING FINANCE LTD"
-        formatName="PVR-5 (Subsequent Valuation Report)"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
+      {/* Universal Standardized Bank Report Header */}
+      <div className="w-full px-4 sm:px-6 lg:px-8 pt-6">
+        <BankReportHeader
+          bankName="LIC HOUSING FINANCE LTD"
+          subclass="PVR-5 (Subsequent Valuation Report)"
+          clientType="organisation"
+          category="Bank & FIS"
+          onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="Subsequent Progress & Stage Disbursement Inspection Valuation Report."
+          earliestVisit={earliestVisit}
+          projectCode={projectCode}
+          status={status}
+          message={message}
+          onDismissMessage={() => setMessage(null)}
+        />
+      </div>
 
-      <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8 pt-6">
+      <div className="flex flex-col xl:flex-row gap-6 items-start w-full px-4 sm:px-6 lg:px-8 pt-4">
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          <BankReportTitleCard
-        bankName="LIC Housing Finance Ltd"
-        subclass="PVR-5 (Subsequent Valuation Report)"
-        title="Valuation Report Builder"
-        description="Subsequent Progress & Stage Disbursement Inspection Valuation Report."
-        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
-        projectCode={projectCode}
-      />
 
         {/* 1. Header & Case */}
         <div id="pvr5-header" className={softCardCls}>

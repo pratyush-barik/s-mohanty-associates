@@ -6,7 +6,7 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -20,7 +20,6 @@ import {
   formatReportDate,
   getEarliestFieldVisit,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -88,20 +87,20 @@ export default function ShriramFinance({
     if (!d.branchName) d.branchName = 'Bhubaneswar';
     if (!d.typeOfCase) d.typeOfCase = 'NPA';
     if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty';
-    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '08/03/2022';
+    if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
     if (!d.caseRefNo) d.caseRefNo = projectCode || 'NA';
     if (!d.dateOfReport) d.dateOfReport = formatReportDate(new Date());
     if (!d.contactPersonInspection) {
       d.contactPersonInspection = p.contactName
         ? `${p.contactName}${p.contactPhone ? `, Mob:- ${p.contactPhone}` : ''}`
-        : 'Mr. Rudranarayan, Mob:- 8908015464';
+        : '';
     }
 
     // 1. Basic Details
-    if (!d.applicantName) d.applicantName = p.applicantName || 'Litish Kumar Nayak';
+    if (!d.applicantName) d.applicantName = p.applicantName || '';
     if (!d.propertyType) d.propertyType = 'Residential Flat';
     if (!d.currentUsage) d.currentUsage = 'Vacant';
-    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || 'Khata No-343,549,343, Plot no-1863 & 1876, "ANANTA SAI ENCLAVE", Flat No-404, 4th Floor, 2BHK(SBUA=1159sqft), Mouza-Kalarahanga, Tehsil-Bhubaneswar, PS-Mancheswar, Dist-Khurda, Odisha, Pin-751024';
+    if (!d.addressAtSite) d.addressAtSite = p.propertyAddress || '';
     if (!d.addressAsPerDocument) d.addressAsPerDocument = d.addressAtSite;
     if (!d.previousValuation) d.previousValuation = 'No';
 
@@ -109,31 +108,31 @@ export default function ShriramFinance({
     if (!d.localityType) d.localityType = 'Residential';
     if (!d.localityClass) d.localityClass = 'Middle Class';
     if (!d.siteDevStatus) d.siteDevStatus = 'Developed';
-    if (!d.proximityCivicAmenities) d.proximityCivicAmenities = 'Within 1-2 Kms';
-    if (!d.railwayStationDistance) d.railwayStationDistance = '1Km (Patia Railway station)';
-    if (!d.busStopDistance) d.busStopDistance = '2Kms(KIIT Square Bus Stop)';
-    if (!d.vicinityLandmark) d.vicinityLandmark = 'Near Gayatri Enclave, Kalarahanga';
-    if (!d.distanceFromCityCenter) d.distanceFromCityCenter = '15Kms from Bhubaneswar City center';
-    if (!d.approachRoad) d.approachRoad = '20-Feet wide Road';
+    if (!d.proximityCivicAmenities) d.proximityCivicAmenities = '';
+    if (!d.railwayStationDistance) d.railwayStationDistance = '';
+    if (!d.busStopDistance) d.busStopDistance = '';
+    if (!d.vicinityLandmark) d.vicinityLandmark = p.nearestLandmark || '';
+    if (!d.distanceFromCityCenter) d.distanceFromCityCenter = '';
+    if (!d.approachRoad) d.approachRoad = '';
 
     // 3. Property Details
-    if (!d.occupancyStatus) d.occupancyStatus = 'Vacant';
-    if (!d.occupantName) d.occupantName = 'NA(Vacant)';
-    if (!d.occupantRelation) d.occupantRelation = 'Owner';
-    if (!d.propertyDemarcation) d.propertyDemarcation = 'Yes';
+    if (!d.occupancyStatus) d.occupancyStatus = '';
+    if (!d.occupantName) d.occupantName = '';
+    if (!d.occupantRelation) d.occupantRelation = '';
+    if (!d.propertyDemarcation) d.propertyDemarcation = '';
     if (!d.propertyIdentifiedThrough) d.propertyIdentifiedThrough = d.contactPersonInspection;
 
     if (!d.structureType) d.structureType = 'RCC framed structure';
     if (!d.plotAreaUds) d.plotAreaUds = 'NA';
-    if (!d.noOfBlocks) d.noOfBlocks = '1';
-    if (!d.noOfUnits) d.noOfUnits = 'Inside visit not done';
-    if (!d.noOfFloors) d.noOfFloors = '5(S+4)';
-    if (!d.noOfLifts) d.noOfLifts = '1';
+    if (!d.noOfBlocks) d.noOfBlocks = '';
+    if (!d.noOfUnits) d.noOfUnits = '';
+    if (!d.noOfFloors) d.noOfFloors = '';
+    if (!d.noOfLifts) d.noOfLifts = '';
 
-    if (!d.floorNo) d.floorNo = '4th Floor';
-    if (!d.noOfRooms) d.noOfRooms = '2BHK';
-    if (!d.builtUpAreaSbua) d.builtUpAreaSbua = '1159 sqft';
-    if (!d.carpetArea) d.carpetArea = '790sqft';
+    if (!d.floorNo) d.floorNo = '';
+    if (!d.noOfRooms) d.noOfRooms = '';
+    if (!d.builtUpAreaSbua) d.builtUpAreaSbua = '';
+    if (!d.carpetArea) d.carpetArea = '';
     if (!d.viewRemarks) d.viewRemarks = 'NA';
 
     if (!d.constructionQualityExterior) d.constructionQualityExterior = 'Good';
@@ -142,7 +141,7 @@ export default function ShriramFinance({
     if (!d.residualLife) d.residualLife = '60-Years';
 
     // 4. Sanction Plan & Documents Details
-    if (!d.sanctionPlanNo) d.sanctionPlanNo = 'Plan has been approved by BDA vide letter no-16240/BP dated-22/12/2009 for S+4 residential apartment(Mentioned in Agreement for sale)';
+    if (!d.sanctionPlanNo) d.sanctionPlanNo = '';
     if (!d.ownershipType) d.ownershipType = 'Freehold';
     if (!d.documentsVerified) d.documentsVerified = 'Copy of Agreement for sale & Allotment letter';
     if (!d.withinMunicipalLimits) d.withinMunicipalLimits = 'No(Within BDA limit)';
@@ -178,14 +177,14 @@ export default function ShriramFinance({
     if (!d.landRate) d.landRate = 'NA';
     if (!d.landAmount) d.landAmount = 'NA';
 
-    if (!d.area100) d.area100 = '1159';
-    if (!d.rate100) d.rate100 = '3800';
-    if (!d.amount100) d.amount100 = '4404200';
+    if (!d.area100) d.area100 = '';
+    if (!d.rate100) d.rate100 = '';
+    if (!d.amount100) d.amount100 = '';
 
-    if (!d.completionStagePercent) d.completionStagePercent = '70';
-    if (!d.areaAsOnDate) d.areaAsOnDate = '1159';
-    if (!d.rateAsOnDate) d.rateAsOnDate = '2660';
-    if (!d.amountAsOnDate) d.amountAsOnDate = '3082940';
+    if (!d.completionStagePercent) d.completionStagePercent = '';
+    if (!d.areaAsOnDate) d.areaAsOnDate = '';
+    if (!d.rateAsOnDate) d.rateAsOnDate = '';
+    if (!d.amountAsOnDate) d.amountAsOnDate = '';
 
     if (!d.amenityCarParking) d.amenityCarParking = 'Including';
     if (!d.amenityPLC) d.amenityPLC = 'NA';
@@ -195,34 +194,34 @@ export default function ShriramFinance({
     if (!d.amenityMisc) d.amenityMisc = 'NA';
     if (!d.totalAmenitiesCharges) d.totalAmenitiesCharges = 'Including';
 
-    if (!d.marketValue100) d.marketValue100 = '4404200';
-    if (!d.marketValueAsOnDate) d.marketValueAsOnDate = '3082940';
-    if (!d.realizableValue) d.realizableValue = '2620499';
-    if (!d.distressValue) d.distressValue = '2466352';
-    if (!d.rentalValue) d.rentalValue = 'Rs. 10,000/- Per month';
+    if (!d.marketValue100) d.marketValue100 = '';
+    if (!d.marketValueAsOnDate) d.marketValueAsOnDate = '';
+    if (!d.realizableValue) d.realizableValue = '';
+    if (!d.distressValue) d.distressValue = '';
+    if (!d.rentalValue) d.rentalValue = '';
 
     // 6. Boundaries & Declaration
-    if (!d.boundaryEastDoc) d.boundaryEastDoc = 'Not Mentioned';
-    if (!d.boundaryWestDoc) d.boundaryWestDoc = 'Not Mentioned';
-    if (!d.boundaryNorthDoc) d.boundaryNorthDoc = 'Not Mentioned';
-    if (!d.boundarySouthDoc) d.boundarySouthDoc = 'Not Mentioned';
+    if (!d.boundaryEastDoc) d.boundaryEastDoc = '';
+    if (!d.boundaryWestDoc) d.boundaryWestDoc = '';
+    if (!d.boundaryNorthDoc) d.boundaryNorthDoc = '';
+    if (!d.boundarySouthDoc) d.boundarySouthDoc = '';
 
-    if (!d.boundaryEastSite) d.boundaryEastSite = 'Others building';
-    if (!d.boundaryWestSite) d.boundaryWestSite = 'Road';
-    if (!d.boundaryNorthSite) d.boundaryNorthSite = 'Vacant land';
-    if (!d.boundarySouthSite) d.boundarySouthSite = 'Road';
+    if (!d.boundaryEastSite) d.boundaryEastSite = p.boundaryEast || '';
+    if (!d.boundaryWestSite) d.boundaryWestSite = p.boundaryWest || '';
+    if (!d.boundaryNorthSite) d.boundaryNorthSite = p.boundaryNorth || '';
+    if (!d.boundarySouthSite) d.boundarySouthSite = p.boundarySouth || '';
 
-    if (!d.boundariesMatching) d.boundariesMatching = 'NA(Not mentioned in agreement for sale)';
+    if (!d.boundariesMatching) d.boundariesMatching = 'Yes';
 
     if (!d.remarks) {
-      d.remarks = 'Subject property is a residential flat located on 4th floor, of a S+4 residential apartment named as "ANANTA SAI ENCLAVE". Plan has been approved by BDA vide letter no-16240/BP dated-22/12/2009 for S+4 residential apartment(Mentioned in Agreement for sale). Property located in a developed area of Bhubaneswar & all the civic amenities are present within 1-2 Kms. It is about 15Kms from Bhubaneswar city center. Flat inside visit not done. Only outside visit completed. At present, total flat wall putty work completed & overall present stage of construction is about 70%. Boundary details are not mentioned in documents. Valuation has been done for SBUA as reflected in agreement for sale.';
+      d.remarks = '';
     }
 
     if (!d.visitingEngineer) d.visitingEngineer = 'Er. Satyajit Mohanty';
 
     // Coordinates
-    if (!d.latitude) d.latitude = '20.353400';
-    if (!d.longitude) d.longitude = '85.841866';
+    if (!d.latitude) d.latitude = p.latitude || '';
+    if (!d.longitude) d.longitude = p.longitude || '';
 
     // Attachments
     if (!d.documentImages) d.documentImages = [];
@@ -460,133 +459,110 @@ export default function ShriramFinance({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        {/* Standardized Title Card */}
-        <BankReportTitleCard
+        {/* Wizard Selection Banner */}
+        {/* Universal Bank Report Header */}
+        <BankReportHeader
           bankName="Shriram Finance Ltd"
           subclass="Standard Format"
-          title="Valuation Report Builder"
-          description="Retail & Commercial Assets, Housing Loans & NPA Valuation Format."
+          formatName="Retail & Commercial Assets, Housing Loans & NPA Valuation Format"
+          clientType="organisation"
+          category="Retail & Commercial Assets"
+          serviceType="Valuation Report Builder"
+          subjectType="Standard Valuation / NPA / Retail & Commercial Housing"
+          onResetWizard={onResetWizard}
           earliestVisit={earliestVisit}
           projectCode={projectCode}
+          message={message}
         />
-
-        {/* Wizard Selection Banner */}
-        <ActiveConfigBanner
-          clientType="organisation"
-          bankName="SHRIRAM FINANCE"
-          subclass="Standard Format"
-          onResetWizard={onResetWizard}
-          sticky={false}
-        />
-
-        {message && (
-          <div
-            className={`p-4 rounded-xl border text-sm font-medium ${
-              message.type === 'success'
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                : 'bg-rose-50 border-rose-200 text-rose-800'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════════════════════════════════
-            HEADER META INFORMATION
-        ═══════════════════════════════════════════════════════════════ */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <span>🏛️</span> Valuation Report Meta Header
-            </h3>
-            <span className="text-xs bg-amber-100 text-amber-800 font-bold px-2.5 py-0.5 rounded-full">
-              SHRIRAM FINANCE FORMAT
-            </span>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-4">
-            <Field label="Branch Name">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.branchName || ''}
-                onChange={e => handleChange('branchName', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
-
-            <Field label="Type of Case">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.typeOfCase || ''}
-                onChange={e => handleChange('typeOfCase', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="e.g. NPA / Housing / Retail"
-              />
-            </Field>
-
-            <Field label="Valuer Name">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.valuerName || ''}
-                onChange={e => handleChange('valuerName', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
-
-            <Field label="Date of Visit">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.dateOfVisit || ''}
-                onChange={e => handleChange('dateOfVisit', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="DD/MM/YYYY"
-              />
-            </Field>
-
-            <Field label="Case Ref. No">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.caseRefNo || ''}
-                onChange={e => handleChange('caseRefNo', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
-
-            <Field label="Date of Report">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.dateOfReport || ''}
-                onChange={e => handleChange('dateOfReport', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="DD/MM/YYYY"
-              />
-            </Field>
-
-            <div className="md:col-span-2">
-              <Field label="Contacted Person for property inspection (Name/ Mobile)">
-                <input
-                  type="text"
-                  className={inputCls}
-                  value={fields.contactPersonInspection || ''}
-                  onChange={e => handleChange('contactPersonInspection', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="e.g. Mr. Rudranarayan, Mob:- 8908015464"
-                />
-              </Field>
-            </div>
-          </div>
-        </div>
 
         {/* ═══════════════════════════════════════════════════════════════
             SECTION 1: BASIC DETAILS
         ═══════════════════════════════════════════════════════════════ */}
         <Section title="Basic Details" number={1} id="sec-basic">
+          {/* Header Meta Information Container */}
+          <div className="border border-amber-200 bg-amber-50/50 rounded-xl p-5 mb-5 shadow-xs">
+            <h3 className="font-semibold text-amber-900 mb-4 text-sm tracking-wide uppercase">
+              🏛️ Valuation Report Meta Details
+            </h3>
+            <div className="grid md:grid-cols-4 gap-4">
+              <Field label="Branch Name">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.branchName || ''}
+                  onChange={e => handleChange('branchName', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+
+              <Field label="Type of Case">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.typeOfCase || ''}
+                  onChange={e => handleChange('typeOfCase', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. NPA / Housing / Retail"
+                />
+              </Field>
+
+              <Field label="Valuer Name">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.valuerName || ''}
+                  onChange={e => handleChange('valuerName', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+
+              <Field label="Date of Visit">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.dateOfVisit || ''}
+                  onChange={e => handleChange('dateOfVisit', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="DD/MM/YYYY"
+                />
+              </Field>
+
+              <Field label="Case Ref. No">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.caseRefNo || ''}
+                  onChange={e => handleChange('caseRefNo', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+
+              <Field label="Date of Report">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.dateOfReport || ''}
+                  onChange={e => handleChange('dateOfReport', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="DD/MM/YYYY"
+                />
+              </Field>
+
+              <div className="md:col-span-2">
+                <Field label="Contacted Person for property inspection (Name/ Mobile)">
+                  <input
+                    type="text"
+                    className={inputCls}
+                    value={fields.contactPersonInspection || ''}
+                    onChange={e => handleChange('contactPersonInspection', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="e.g. Mr. Rudranarayan, Mob:- 8908015464"
+                  />
+                </Field>
+              </div>
+            </div>
+          </div>
+
           <div className="grid md:grid-cols-2 gap-4">
             <div className="md:col-span-2">
               <Field label="1. Applicant/s Name/s">

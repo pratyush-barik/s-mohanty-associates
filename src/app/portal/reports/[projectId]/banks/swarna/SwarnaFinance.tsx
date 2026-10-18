@@ -7,7 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -19,9 +19,7 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
-  EarliestFieldVisitBadge,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -90,33 +88,33 @@ export default function SwarnaFinance({
     const p = (prefill || {}) as any;
 
     // SECTION 1: General Details (A, B, C)
-    if (!d.refNo) d.refNo = 'SPHM/2023-24/01';
-    if (!d.refDate) d.refDate = earliestVisit ? formatReportDate(earliestVisit.date) : '19/04/2023';
+    if (!d.refNo) d.refNo = projectCode || '';
+    if (!d.refDate) d.refDate = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
     if (!d.subjectText) {
-      d.subjectText = 'Valuation report for House no.- NA, Ward no.-NA ,village- Bija Bahali,Teh.-Puintala, Dist- Bolangir';
+      d.subjectText = '';
     }
     if (!d.purposeOfValuation) {
-      d.purposeOfValuation = 'To determine Fair Market Value & Distress Value of the above mentioned property as on date for SwarnaPragati Housing Microfinance Pvt Ltd, Branch Bolangir';
+      d.purposeOfValuation = 'To determine Fair Market Value & Distress Value of the property for SwarnaPragati Housing Microfinance Pvt Ltd';
     }
-    if (!d.branchName) d.branchName = 'Bolangir';
-    if (!d.customerName) d.customerName = p.applicantName || 'Kamalendu Banachhor';
-    if (!d.customerPhone) d.customerPhone = p.contactPhone || '7381324988';
+    if (!d.branchName) d.branchName = '';
+    if (!d.customerName) d.customerName = p.applicantName || '';
+    if (!d.customerPhone) d.customerPhone = p.contactPhone || '';
     if (!d.propertyAddressFile) {
-      d.propertyAddressFile = p.propertyAddress || 'Khata no-39/39, Plot no-63/447(AC.0.030Decs, Homestead), Mouza-Bija Bahali, Tahasil-Puintala, PS-Bolangir, Dist-Bolangir, Odisha, Pin-767002';
+      d.propertyAddressFile = p.propertyAddress || '';
     }
-    if (!d.landmark) d.landmark = p.nearestLandmark || 'Near Bijabahali Primary School';
-    if (!d.documentHolderName) d.documentHolderName = p.ownerName || 'Kamalendu Banachhor, S/O-Kabiraj Banachhor';
+    if (!d.landmark) d.landmark = p.nearestLandmark || '';
+    if (!d.documentHolderName) d.documentHolderName = p.ownerName || p.applicantName || '';
     if (!d.legalAddress) {
-      d.legalAddress = p.propertyAddress || 'Khata no-39/39, Plot no-63/447(AC.0.030Decs, Homestead), Mouza-Bija Bahali, Tahasil-Puintala, PS-Bolangir, Dist-Bolangir, Odisha, Pin-767002';
+      d.legalAddress = p.propertyAddress || '';
     }
-    if (!d.dateOfInspection) d.dateOfInspection = earliestVisit ? formatReportDate(earliestVisit.date) : '18/04/2023';
+    if (!d.dateOfInspection) d.dateOfInspection = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
 
     // SECTION 2: Surrounding Locality Details (D)
     if (!d.wardNoMunicipalNo) d.wardNoMunicipalNo = 'NA';
     if (!d.vicinity) d.vicinity = 'Mix / Residential/Commercial';
     if (!d.localityType) d.localityType = 'Middle Class/ Upper class';
     if (!d.proximityAmenitiesText) {
-      d.proximityAmenitiesText = '1.  6Kms From Bolangir Railway Station\n2.  7Kms From Bolangir Bus Stop\n3.  7Kms From Bolangir Govt. Hospital Stop';
+      d.proximityAmenitiesText = '';
     }
 
     // SECTION 3: Usage & Occupant Details (E)
@@ -169,22 +167,22 @@ export default function SwarnaFinance({
     if (!d.buildingRatePerSqft) d.buildingRatePerSqft = '0';
 
     // Boundaries
-    if (!d.boundDeedEast) d.boundDeedEast = 'Saina Chhatria';
-    if (!d.boundDeedWest) d.boundDeedWest = 'Self';
-    if (!d.boundDeedNorth) d.boundDeedNorth = 'Sanadev Banachhor';
-    if (!d.boundDeedSouth) d.boundDeedSouth = 'Bansi Banachhor';
+    if (!d.boundDeedEast) d.boundDeedEast = '';
+    if (!d.boundDeedWest) d.boundDeedWest = '';
+    if (!d.boundDeedNorth) d.boundDeedNorth = '';
+    if (!d.boundDeedSouth) d.boundDeedSouth = '';
 
-    if (!d.boundActEast) d.boundActEast = 'Building of Sanadev Banachhor';
-    if (!d.boundActWest) d.boundActWest = 'Building of Rajbihari Banachhor';
-    if (!d.boundActNorth) d.boundActNorth = 'Vacant land';
-    if (!d.boundActSouth) d.boundActSouth = 'Road';
-    if (!d.boundaryMismatchStatus) d.boundaryMismatchStatus = 'Boundary mis matches';
+    if (!d.boundActEast) d.boundActEast = '';
+    if (!d.boundActWest) d.boundActWest = '';
+    if (!d.boundActNorth) d.boundActNorth = '';
+    if (!d.boundActSouth) d.boundActSouth = '';
+    if (!d.boundaryMismatchStatus) d.boundaryMismatchStatus = 'Boundary matches';
 
     // SECTION 8: Remarks & Declaration (K & Declarations)
     if (!d.synthesisRemarks) {
-      d.synthesisRemarks = 'Subject property is a single storied residential building having land extent of 1307sqft., having measured BUA is 900sqft. Approved plan is not provided. Age of property is about 1-years. Property located in developing area of Puintala & approaches 15 feet wide Road. The building is occupied by the customer for residential purpose.\nNote- Property shown by the customer/GPS location is mis matching with the revenue mouza map/Bhu-Naksa. Property is located somewhere else. Hence this case is not recommended.';
+      d.synthesisRemarks = '';
     }
-    if (!d.reportDate) d.reportDate = d.refDate || '19/04/2023';
+    if (!d.reportDate) d.reportDate = d.refDate || formatReportDate(new Date());
     if (!d.reportPlace) d.reportPlace = 'Bolangir';
 
     return d;
@@ -435,39 +433,24 @@ export default function SwarnaFinance({
 
   return (
     <div className="space-y-6 pb-28 w-full">
-      {/* Truthful Active Configuration Banner */}
-      <ActiveConfigBanner
-        clientType="organisation"
-        category="Bank & FIS"
-        bankName="SWARNA FINANCE"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       {/* Main Layout: Left Form & Right Floating Navigator */}
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         {/* Left Form Column */}
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* Title Card */}
-          <BankReportTitleCard
+          {/* Universal Bank Report Header */}
+          <BankReportHeader
             bankName="SwarnaPragati Housing Microfinance"
             subclass="Standard Format"
-            description="Technical Valuation Report Format with Schedule I Construction Details."
+            formatName="Technical Valuation Report Format"
+            clientType="organisation"
+            category="Housing Microfinance"
+            serviceType="Valuation Report Builder"
+            subjectType="Technical Valuation with Schedule I Construction Details"
+            onResetWizard={onResetWizard}
             earliestVisit={earliestVisit}
             projectCode={projectCode}
+            message={message}
           />
-
-          {message && (
-            <div
-              className={`p-4 rounded-xl text-sm font-medium border ${
-                message.type === 'success'
-                  ? 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300'
-                  : 'bg-rose-950/70 border-rose-500/40 text-rose-300'
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
 
           {/* ═══════════════════════════════════════════════
               SECTION 1: GENERAL DETAILS (A, B, C)

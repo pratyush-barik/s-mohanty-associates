@@ -11,6 +11,7 @@ import { PDFAdityaBirlaSTSLRenderer, STSLReportFields } from '@/lib/banks/pdf-ad
 import { CONTENT_W } from '@/lib/pdf-bank-renderer';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -1385,8 +1386,8 @@ export default function AdityaBirlaCapitalSTSL({
     <div className="flex gap-6 items-start w-full">
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-4">
-        {/* Active Configuration Banner */}
-        <ActiveConfigBanner
+        {/* Standardized Universal Bank Report Header */}
+        <BankReportHeader
           clientType={fields.clientType || 'organisation'}
           category={fields.institutionCategory || 'Bank & FIS'}
           bankName={fields.organisationTemplate || fields.bankName || 'ADITYA BIRLA CAPITAL LTD'}
@@ -1394,6 +1395,13 @@ export default function AdityaBirlaCapitalSTSL({
           serviceType={fields.serviceType || prefill?.purpose || undefined}
           subjectType={fields.subjectType || prefill?.propertyType || undefined}
           onResetWizard={onResetWizard}
+          title="Valuation Report Builder"
+          description="Aditya Birla Capital Short Term Secured Lending Format."
+          earliestVisit={firstFieldAgentVisit}
+          projectCode={projectCode}
+          reworkNotes={fields.reworkNotes}
+          status={status}
+          message={message}
         />
 
         {/* ═══ SECTION 1: BASIC DETAILS ═══ */}

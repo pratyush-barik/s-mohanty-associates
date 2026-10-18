@@ -64,21 +64,21 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
 
     const halfW = CONTENT_W / 2;
     this.drawKeyValueRow([
-      { label: 'REF. NO.:', value: this.getF('refNo', 'SAM/07-26/01'), labelWidth: 80, valueWidth: halfW - 80, labelBold: true, bold: true },
-      { label: 'DATE OF VALUATION:', value: this.getF('valuationDate', '13-07-2026'), labelWidth: 140, valueWidth: halfW - 140, labelBold: true },
+      { label: 'REF. NO.:', value: this.getF('refNo', this.projectCode ? `SAM/${this.projectCode}` : 'NA'), labelWidth: 80, valueWidth: halfW - 80, labelBold: true, bold: true },
+      { label: 'DATE OF VALUATION:', value: this.getF('valuationDate', 'NA'), labelWidth: 140, valueWidth: halfW - 140, labelBold: true },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'NAME OF CUSTOMER:', value: this.getF('customerName', 'Deepak Kumar Nayak'), labelWidth: 140, valueWidth: halfW - 140, labelBold: true, bold: true },
-      { label: 'DOCUMENT HOLDER:', value: this.getF('docHolderName', 'Hengula Farmers & Producer Company Limited (Director-Deepak Kumar Nayak)'), labelWidth: 140, valueWidth: halfW - 140, labelBold: true },
+      { label: 'NAME OF CUSTOMER:', value: this.getF('customerName', 'NA'), labelWidth: 140, valueWidth: halfW - 140, labelBold: true, bold: true },
+      { label: 'DOCUMENT HOLDER:', value: this.getF('docHolderName', 'NA'), labelWidth: 140, valueWidth: halfW - 140, labelBold: true },
     ]);
 
     this.drawKeyValueRow([
-      { label: 'PROPERTY ADDRESS:', value: this.getF('propertyAddressDocs', 'Khata no-799/1101, Plot no-692/2391, Mouza-Brahmagiri, Tahasil/PS-Brahmagiri, Dist-Puri, Odisha, Pin-752011'), labelWidth: 140, valueWidth: CONTENT_W - 140, labelBold: true },
+      { label: 'PROPERTY ADDRESS:', value: this.getF('propertyAddressDocs', 'NA'), labelWidth: 140, valueWidth: CONTENT_W - 140, labelBold: true },
     ]);
 
-    const totalVal = this.getF('totalPropertyValue', '10454400');
-    const distressVal = this.getF('forcedSaleValue', '8363520');
+    const totalVal = this.getF('totalPropertyValue', '0');
+    const distressVal = this.getF('forcedSaleValue', '0');
     this.drawKeyValueRow([
       { label: 'TOTAL MARKET VALUE:', value: `Rs. ${formatIndianCurrency(totalVal)}/-`, labelWidth: 150, valueWidth: halfW - 150, labelBold: true, bold: true },
       { label: 'DISTRESS SALE VALUE:', value: `Rs. ${formatIndianCurrency(distressVal)}/-`, labelWidth: 150, valueWidth: halfW - 150, labelBold: true, bold: true },
@@ -90,15 +90,15 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
     // SECTION 1: GENERAL DETAILS
     // ══════════════════════════════════════════
     this.drawSammunatiHeader('1. GENERAL DETAILS');
-    this.drawSammunatiRow('1.1', 'Name of the customer', this.getF('customerName', 'Deepak Kumar Nayak'), true);
-    this.drawSammunatiRow('1.2', 'Request received from', this.getF('requestReceivedFrom', 'Samunnati Financial Intermediation & Services Pvt Ltd, through Mr. Satyajit Mohanty'));
-    this.drawSammunatiRow('1.3', 'Name of document holder (as per sale deed)', this.getF('docHolderName', 'Hengula Farmers & Producer Company Limited (Director-Deepak Kumar Nayak)'), true);
-    this.drawSammunatiRow('1.4', 'Property address (as per request)', this.getF('propertyAddressRequest', 'Khata no-799/1101, Plot no-692/2391, Mouza-Brahmagiri, Tahasil/PS-Brahmagiri, Dist-Puri, Odisha, Pin-752011'));
-    this.drawSammunatiRow('1.5', 'Property address (on inspection)', this.getF('propertyAddressInspection', 'Khata no-799/1101, Plot no-692/2391, Mouza-Brahmagiri, Tahasil/PS-Brahmagiri, Dist-Puri, Odisha, Pin-752011'));
-    this.drawSammunatiRow('1.6', 'Property address (as per docs)', this.getF('propertyAddressDocs', 'Khata no-799/1101, Plot no-692/2391 (AC.0.200 Decs, Homestead), Mouza-Brahmagiri, Tahasil/PS-Brahmagiri, Dist-Puri, Odisha, Pin-752011'));
-    this.drawSammunatiRow('1.7', 'Landmark', this.getF('landmark', 'Near Brahmagiri Bus Stop'));
-    this.drawSammunatiRow('1.8', 'Date of inspection', this.getF('inspectionDate', '13-07-2026'));
-    this.drawSammunatiRow('1.9', 'Contact person / Representative met', this.getF('contactPersonMet', 'Deepak Kumar Nayak / Representative'));
+    this.drawSammunatiRow('1.1', 'Name of the customer', this.getF('customerName', 'NA'), true);
+    this.drawSammunatiRow('1.2', 'Request received from', this.getF('requestReceivedFrom', 'Sammunati Financial Intermediation & Services Pvt Ltd'));
+    this.drawSammunatiRow('1.3', 'Name of document holder (as per sale deed)', this.getF('docHolderName', 'NA'), true);
+    this.drawSammunatiRow('1.4', 'Property address (as per request)', this.getF('propertyAddressRequest', 'NA'));
+    this.drawSammunatiRow('1.5', 'Property address (on inspection)', this.getF('propertyAddressInspection', 'NA'));
+    this.drawSammunatiRow('1.6', 'Property address (as per docs)', this.getF('propertyAddressDocs', 'NA'));
+    this.drawSammunatiRow('1.7', 'Landmark', this.getF('landmark', 'NA'));
+    this.drawSammunatiRow('1.8', 'Date of inspection', this.getF('inspectionDate', 'NA'));
+    this.drawSammunatiRow('1.9', 'Contact person / Representative met', this.getF('contactPersonMet', 'NA'));
 
     this.advanceCursor(4);
 
@@ -106,13 +106,13 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
     // SECTION 2: SURROUNDING LOCALITY & BOUNDARIES
     // ══════════════════════════════════════════
     this.drawSammunatiHeader('2. SURROUNDING LOCALITY & BOUNDARIES');
-    this.drawSammunatiRow('2.1', 'Ward no. / Municipal / GP area', this.getF('wardNo', 'Brahmagiri GP'));
-    this.drawSammunatiRow('2.2', 'Vicinity / Area type', this.getF('vicinity', 'Residential / Commercial / Industrial'));
-    this.drawSammunatiRow('2.3', 'Classification of locality', this.getF('classificationOfLocality', 'Middle class'));
-    this.drawSammunatiRow('2.4', 'Proximity to civic amenities', `Railway Station: ${this.getF('proximityRailway', 'Puri Railway Station (20 KM)')} | Bus Stop: ${this.getF('proximityBus', 'Brahmagiri Bus Stop (0.5 KM)')} | Hospital: ${this.getF('proximityHospital', 'Brahmagiri CHC (1.0 KM)')}`);
-    this.drawSammunatiRow('2.5', 'Condition & width of approach road', this.getF('approachRoadCondition', '20 feet wide paved road'));
-    this.drawSammunatiRow('2.6', 'Plot demarcated at site', this.getF('plotDemarcated', 'Yes, clearly demarcated with boundary pillars'));
-    this.drawSammunatiRow('2.7', 'Property identified through', this.getF('propertyIdentifiedThrough', 'Sale deed, ROR, site demarcation & neighbor inquiry'));
+    this.drawSammunatiRow('2.1', 'Ward no. / Municipal / GP area', this.getF('wardNo', 'NA'));
+    this.drawSammunatiRow('2.2', 'Vicinity / Area type', this.getF('vicinity', 'NA'));
+    this.drawSammunatiRow('2.3', 'Classification of locality', this.getF('classificationOfLocality', 'NA'));
+    this.drawSammunatiRow('2.4', 'Proximity to civic amenities', `Railway Station: ${this.getF('proximityRailway', 'NA')} | Bus Stop: ${this.getF('proximityBus', 'NA')} | Hospital: ${this.getF('proximityHospital', 'NA')}`);
+    this.drawSammunatiRow('2.5', 'Condition & width of approach road', this.getF('approachRoadCondition', 'NA'));
+    this.drawSammunatiRow('2.6', 'Plot demarcated at site', this.getF('plotDemarcated', 'NA'));
+    this.drawSammunatiRow('2.7', 'Property identified through', this.getF('propertyIdentifiedThrough', 'NA'));
 
     this.advanceCursor(2);
     this.drawSammunatiHeader('Boundaries Schedule');
@@ -124,23 +124,23 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
     ]);
     this.drawKeyValueRow([
       { label: 'East by:', value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: this.getF('boundaryEastDeed', 'Purnachandra Sahoo & Others'), value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: this.getF('boundaryEastActual', 'Purnachandra Sahoo & Others'), value: '', labelWidth: bColW, valueWidth: 0 },
+      { label: this.getF('boundaryEastDeed', 'NA'), value: '', labelWidth: bColW, valueWidth: 0 },
+      { label: this.getF('boundaryEastActual', 'NA'), value: '', labelWidth: bColW, valueWidth: 0 },
     ]);
     this.drawKeyValueRow([
       { label: 'West by:', value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: this.getF('boundaryWestDeed', '20ft Wide Road'), value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: this.getF('boundaryWestActual', '20ft Wide Road'), value: '', labelWidth: bColW, valueWidth: 0 },
+      { label: this.getF('boundaryWestDeed', 'NA'), value: '', labelWidth: bColW, valueWidth: 0 },
+      { label: this.getF('boundaryWestActual', 'NA'), value: '', labelWidth: bColW, valueWidth: 0 },
     ]);
     this.drawKeyValueRow([
       { label: 'North by:', value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: this.getF('boundaryNorthDeed', 'Pankaj Kumar Nayak'), value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: this.getF('boundaryNorthActual', 'Pankaj Kumar Nayak'), value: '', labelWidth: bColW, valueWidth: 0 },
+      { label: this.getF('boundaryNorthDeed', 'NA'), value: '', labelWidth: bColW, valueWidth: 0 },
+      { label: this.getF('boundaryNorthActual', 'NA'), value: '', labelWidth: bColW, valueWidth: 0 },
     ]);
     this.drawKeyValueRow([
       { label: 'South by:', value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: this.getF('boundarySouthDeed', 'Rankanath Nayak'), value: '', labelWidth: bColW, valueWidth: 0 },
-      { label: this.getF('boundarySouthActual', 'Rankanath Nayak'), value: '', labelWidth: bColW, valueWidth: 0 },
+      { label: this.getF('boundarySouthDeed', 'NA'), value: '', labelWidth: bColW, valueWidth: 0 },
+      { label: this.getF('boundarySouthActual', 'NA'), value: '', labelWidth: bColW, valueWidth: 0 },
     ]);
 
     this.advanceCursor(4);
@@ -149,20 +149,20 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
     // SECTION 3: PROPERTY DETAILS & USAGE
     // ══════════════════════════════════════════
     this.drawSammunatiHeader('3. PROPERTY DETAILS & USAGE');
-    this.drawSammunatiRow('3.1', 'Description of property', this.getF('propertyDescription', 'Vacant plot demarcated at site for agro-commercial development'));
-    this.drawSammunatiRow('3.2', 'Type of property', this.getF('propertyType', 'Residential / Commercial / Agro-Industrial'));
-    this.drawSammunatiRow('3.3', 'Type of usage of entire property', this.getF('propertyUsage', 'Vacant Plot'));
-    this.drawSammunatiRow('3.4', 'Accommodation details', this.getF('accommodationDetails', 'NA (Vacant Land)'));
-    this.drawSammunatiRow('3.5', 'Additional amenities', this.getF('additionalAmenities', 'Paved access road, electrical line available nearby, clear title'));
-    this.drawSammunatiRow('3.6', 'Area of property (Actual at site)', `${this.getF('actualArea', '8712')} Sq. ft (AC. 0.200 Decs)`, true);
+    this.drawSammunatiRow('3.1', 'Description of property', this.getF('propertyDescription', 'NA'));
+    this.drawSammunatiRow('3.2', 'Type of property', this.getF('propertyType', 'NA'));
+    this.drawSammunatiRow('3.3', 'Type of usage of entire property', this.getF('propertyUsage', 'NA'));
+    this.drawSammunatiRow('3.4', 'Accommodation details', this.getF('accommodationDetails', 'NA'));
+    this.drawSammunatiRow('3.5', 'Additional amenities', this.getF('additionalAmenities', 'NA'));
+    this.drawSammunatiRow('3.6', 'Area of property (Actual at site)', `${this.getF('actualArea', 'NA')} Sq. ft`, true);
     this.drawSammunatiRow('3.7', 'Carpet area (approx)', `${this.getF('carpetArea', 'NA')} Sq. ft`);
     this.drawSammunatiRow('3.8', 'Built up / Saleable area', `${this.getF('builtUpArea', 'NA')} Sq. ft`);
-    this.drawSammunatiRow('3.9', 'Permitted area as per byelaws', this.getF('permittedArea', 'As per local building bye-laws'));
-    this.drawSammunatiRow('3.10', 'Area as per sale agreement / deed', `${this.getF('areaAsPerDeed', '8712')} Sq. ft`);
-    this.drawSammunatiRow('3.11', 'Adherence to sanction plan', this.getF('adherenceSanction', 'Yes / NA (Vacant Land)'));
-    this.drawSammunatiRow('3.12', 'Deviation from sanction plan / byelaws', this.getF('deviationDetails', 'Nil / NA'));
-    this.drawSammunatiRow('3.13', 'Risk of demolition (Valuer’s view)', this.getF('demolitionRisk', 'Low'));
-    this.drawSammunatiRow('3.14', 'Property occupied by', this.getF('occupiedBy', 'Vacant Land (Under possession of customer)'));
+    this.drawSammunatiRow('3.9', 'Permitted area as per byelaws', this.getF('permittedArea', 'NA'));
+    this.drawSammunatiRow('3.10', 'Area as per sale agreement / deed', `${this.getF('areaAsPerDeed', 'NA')} Sq. ft`);
+    this.drawSammunatiRow('3.11', 'Adherence to sanction plan', this.getF('adherenceSanction', 'NA'));
+    this.drawSammunatiRow('3.12', 'Deviation from sanction plan / byelaws', this.getF('deviationDetails', 'NA'));
+    this.drawSammunatiRow('3.13', 'Risk of demolition (Valuer’s view)', this.getF('demolitionRisk', 'NA'));
+    this.drawSammunatiRow('3.14', 'Property occupied by', this.getF('occupiedBy', 'NA'));
     this.drawSammunatiRow('3.15', 'If self-occupied, then since when', this.getF('occupiedSince', 'NA'));
 
     this.advanceCursor(4);
@@ -171,12 +171,12 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
     // SECTION 4: TENURE, LEGAL & SOCIETY DETAILS
     // ══════════════════════════════════════════
     this.drawSammunatiHeader('4. TENURE, LEGAL & SOCIETY DETAILS');
-    this.drawSammunatiRow('4.1', 'Land tenure (Freehold / Leasehold)', this.getF('landTenure', 'Freehold (Sthitiban / Homestead)'), true);
-    this.drawSammunatiRow('4.2', 'Approvals from Municipal / GP / OC / ULC', this.getF('approvalDetails', 'Brahmagiri Gram Panchayat jurisdiction, ROR mutated in record'));
-    this.drawSammunatiRow('4.3', 'Name of Co-op Society / Company / FPO', this.getF('societyName', 'Hengula Farmers & Producer Company Limited'));
-    this.drawSammunatiRow('4.4', 'Registration No. / CIN of entity', this.getF('societyRegNo', 'U01110OR2020PTC033456'));
+    this.drawSammunatiRow('4.1', 'Land tenure (Freehold / Leasehold)', this.getF('landTenure', 'NA'), true);
+    this.drawSammunatiRow('4.2', 'Approvals from Municipal / GP / OC / ULC', this.getF('approvalDetails', 'NA'));
+    this.drawSammunatiRow('4.3', 'Name of Co-op Society / Company / FPO', this.getF('societyName', 'NA'));
+    this.drawSammunatiRow('4.4', 'Registration No. / CIN of entity', this.getF('societyRegNo', 'NA'));
     this.drawSammunatiRow('4.5', 'No. of shares held & certificate details', this.getF('sharesDetails', 'NA'));
-    this.drawSammunatiRow('4.6', 'Maintenance / Outgoes per month', this.getF('monthlyOutgoes', 'Nil'));
+    this.drawSammunatiRow('4.6', 'Maintenance / Outgoes per month', this.getF('monthlyOutgoes', 'NA'));
 
     this.advanceCursor(4);
 
@@ -184,12 +184,12 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
     // SECTION 5: STRUCTURAL & SPECIFICATIONS
     // ══════════════════════════════════════════
     this.drawSammunatiHeader('5. STRUCTURAL & CONSTRUCTION DETAILS');
-    this.drawSammunatiRow('5.1', 'Type of structure', this.getF('structureType', 'NA (Vacant Land)'));
+    this.drawSammunatiRow('5.1', 'Type of structure', this.getF('structureType', 'NA'));
     this.drawSammunatiRow('5.2', 'Number of floors / wings', this.getF('floorsWings', 'NA'));
     this.drawSammunatiRow('5.3', 'Flats / units on each floor', this.getF('flatsPerFloor', 'NA'));
     this.drawSammunatiRow('5.4', 'Age of the property / building', this.getF('buildingAge', 'NA'));
     this.drawSammunatiRow('5.5', 'Estimated future economic life', this.getF('futureLife', 'NA'));
-    this.drawSammunatiRow('5.6', 'Quality of construction (Exterior / Interior)', this.getF('constructionQuality', 'NA (Vacant Plot)'));
+    this.drawSammunatiRow('5.6', 'Quality of construction (Exterior / Interior)', this.getF('constructionQuality', 'NA'));
     this.drawSammunatiRow('5.7', 'Unit composition & fittings', this.getF('unitDetails', 'NA'));
 
     this.advanceCursor(4);
@@ -198,9 +198,9 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
     // SECTION 6: VALUATION, COSTING & DECLARATIONS
     // ══════════════════════════════════════════
     this.drawSammunatiHeader('6. VALUATION, COSTING & DECLARATIONS');
-    this.drawSammunatiRow('6.1', 'Area considered for valuation', `${this.getF('areaConsidered', '8712')} Sq. ft`, true);
-    this.drawSammunatiRow('6.2', 'Market prevailing rate in locality', this.getF('prevailingMarketRate', 'Rs. 1,000/- to Rs. 1,200/- per Sq. ft'));
-    this.drawSammunatiRow('6.3', 'Inquiries made from', this.getF('inquiriesSource', 'Local realtors, property owners and Sub-Registrar guideline value'));
+    this.drawSammunatiRow('6.1', 'Area considered for valuation', `${this.getF('areaConsidered', '0')} Sq. ft`, true);
+    this.drawSammunatiRow('6.2', 'Market prevailing rate in locality', this.getF('prevailingMarketRate', 'NA'));
+    this.drawSammunatiRow('6.3', 'Inquiries made from', this.getF('inquiriesSource', 'NA'));
 
     this.advanceCursor(2);
     this.drawSammunatiHeader('Valuation Computation Breakdown');
@@ -211,8 +211,8 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
       { label: 'Adopted Rate', value: 'Total Value (Rs.)', labelWidth: vColW, valueWidth: vColW, labelBold: true, bold: true },
     ]);
 
-    const landArea = parseFloat(this.getF('landAreaVal', '8712')) || 0;
-    const landRate = parseFloat(this.getF('landRateVal', '1200')) || 0;
+    const landArea = parseFloat(this.getF('landAreaVal', '0')) || 0;
+    const landRate = parseFloat(this.getF('landRateVal', '0')) || 0;
     const landVal = landArea * landRate;
 
     const bldArea = parseFloat(this.getF('bldAreaVal', '0')) || 0;
@@ -244,17 +244,18 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
 
     this.advanceCursor(3);
     this.drawSammunatiHeader('Marketability Assessment');
-    this.drawSammunatiRow('6.8', 'Marketability for sale', this.getF('marketabilitySale', 'Good / High demand for agro-commercial & residential'));
-    this.drawSammunatiRow('6.9', 'Marketability for lease / rental', this.getF('marketabilityLease', 'Good / Commercial demand in Brahmagiri'));
-    this.drawSammunatiRow('6.10', 'Volatility of property prices', this.getF('priceVolatility', 'Low to Medium'));
+    this.drawSammunatiRow('6.8', 'Marketability for sale', this.getF('marketabilitySale', 'NA'));
+    this.drawSammunatiRow('6.9', 'Marketability for lease / rental', this.getF('marketabilityLease', 'NA'));
+    this.drawSammunatiRow('6.10', 'Volatility of property prices', this.getF('priceVolatility', 'NA'));
 
     this.advanceCursor(3);
     this.drawSammunatiHeader('Disclosure Statement & Valuer Declaration');
+    const inspectionDateStr = this.getF('inspectionDate', '');
     const declarations = [
       '1. Statements of facts presented in this report are true and correct to the best of our knowledge.',
       '2. We (valuer) have no direct or indirect interest in the property or transaction.',
       '3. Valuation is independent and compensation is not contingent upon reporting a predetermined value.',
-      '4. Site inspection was carried out personally by qualified site engineer on 13-07-2026.',
+      `4. Site inspection was carried out personally by qualified site engineer${inspectionDateStr ? ` on ${inspectionDateStr}` : ''}.`,
       '5. Title and legal ownership papers must be verified by the lending institution’s legal advocate.',
       '6. Validity of this report is 45 days from the date of issue.',
     ];
@@ -267,7 +268,7 @@ export class PDFSammunatiFinanceRenderer extends PDFBankRenderer {
     this.advanceCursor(4);
     this.drawKeyValueRow([
       { label: 'PLACE:', value: 'Bhubaneswar, Odisha', labelWidth: 60, valueWidth: halfW - 60, labelBold: true },
-      { label: 'DATE:', value: this.getF('inspectionDate', '13-07-2026'), labelWidth: 60, valueWidth: halfW - 60, labelBold: true },
+      { label: 'DATE:', value: this.getF('inspectionDate', 'NA'), labelWidth: 60, valueWidth: halfW - 60, labelBold: true },
     ]);
     this.drawKeyValueRow([
       { label: 'VALUER:', value: 'S. MOHANTY & ASSOCIATES (Approved Valuers & Chartered Engineers)', labelWidth: 60, valueWidth: CONTENT_W - 60, labelBold: true, bold: true },

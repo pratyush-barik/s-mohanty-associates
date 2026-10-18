@@ -6,7 +6,7 @@ import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
-  BankReportTitleCard,
+  BankReportHeader,
   Section,
   Field,
   inputCls,
@@ -20,7 +20,6 @@ import {
   formatReportDate,
   getEarliestFieldVisit,
   BasePhotoBucketModal,
-  ActiveConfigBanner,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
@@ -85,115 +84,113 @@ export default function PurpleFinance({
     const p = (prefill || {}) as any;
 
     // Header & Meta Details
-    if (!d.refNo) d.refNo = projectCode ? `PRPL-${projectCode}` : 'PRPL-07-26/05';
-    if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '13/07/2026';
+    if (!d.refNo) d.refNo = projectCode ? `PRPL-${projectCode}` : '';
+    if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
 
     // 1. Customer Details
-    if (!d.customerName) d.customerName = p.applicantName || 'Pabitra Baliarsingh';
+    if (!d.customerName) d.customerName = p.applicantName || '';
     if (!d.customerContact) {
       d.customerContact = p.contactName
         ? `${p.contactName}${p.contactPhone ? `, Mob-${p.contactPhone}` : ''}`
-        : 'Pabitra Baliarsingh, Mob-97761 77011';
+        : (p.contactPhone ? `Mob-${p.contactPhone}` : '');
     }
-    if (!d.appId) d.appId = '559334';
-    if (!d.documentsProvided) d.documentsProvided = 'Copy of Partition deed ROR, sketch map';
+    if (!d.appId) d.appId = '';
+    if (!d.documentsProvided) d.documentsProvided = '';
 
     // 2. Property Identification & Locality Details
     if (!d.propertyDetails) {
-      d.propertyDetails = p.propertyAddress || 'Khata No- 172/549, Plot No- 100/945, (AC.0.030Decs), Plot No- 101/946, (AC.0.065Decs), Total land area- (AC.0.095Decs, Homestead), Mouza - Gadarodhanga, Tahasil/PS- Bramhagiri, Dist - Puri, Odisha, Pin- 752011';
+      d.propertyDetails = p.propertyAddress || '';
     }
-    if (!d.plotNo) d.plotNo = '100/945 & 101/946';
-    if (!d.khataNo) d.khataNo = '172/549';
-    if (!d.locality) d.locality = 'Gadarodhanga';
-    if (!d.roadWidth) d.roadWidth = '15-Feet wide Road';
-    if (!d.city) d.city = 'Puri';
-    if (!d.district) d.district = 'Puri';
-    if (!d.pincode) d.pincode = '752011';
-    if (!d.nearbyLandmark) d.nearbyLandmark = 'Near Maa Harachandi Temple, Gadarodhanga';
-    if (!d.distanceFromCityCenter) d.distanceFromCityCenter = '25-Kms from Puri City Center';
-    if (!d.localTransport) d.localTransport = 'Taxi, Auto';
-    if (!d.landLevelCondition) d.landLevelCondition = 'Regular level land';
-    if (!d.classOfLocality) d.classOfLocality = 'Middle Class';
-    if (!d.qualityInfrastructure) d.qualityInfrastructure = 'Poor';
+    if (!d.plotNo) d.plotNo = '';
+    if (!d.khataNo) d.khataNo = '';
+    if (!d.locality) d.locality = '';
+    if (!d.roadWidth) d.roadWidth = '';
+    if (!d.city) d.city = '';
+    if (!d.district) d.district = '';
+    if (!d.pincode) d.pincode = '';
+    if (!d.nearbyLandmark) d.nearbyLandmark = '';
+    if (!d.distanceFromCityCenter) d.distanceFromCityCenter = '';
+    if (!d.localTransport) d.localTransport = '';
+    if (!d.landLevelCondition) d.landLevelCondition = '';
+    if (!d.classOfLocality) d.classOfLocality = '';
+    if (!d.qualityInfrastructure) d.qualityInfrastructure = '';
 
     // Boundaries
-    if (!d.boundaryEastDeed) d.boundaryEastDeed = '-Road';
-    if (!d.boundaryWestDeed) d.boundaryWestDeed = '-Trinath swain';
-    if (!d.boundaryNorthDeed) d.boundaryNorthDeed = '-Trinath swain';
-    if (!d.boundarySouthDeed) d.boundarySouthDeed = '-Road';
+    if (!d.boundaryEastDeed) d.boundaryEastDeed = '';
+    if (!d.boundaryWestDeed) d.boundaryWestDeed = '';
+    if (!d.boundaryNorthDeed) d.boundaryNorthDeed = '';
+    if (!d.boundarySouthDeed) d.boundarySouthDeed = '';
 
-    if (!d.boundaryEastActual) d.boundaryEastActual = '-Road';
-    if (!d.boundaryWestActual) d.boundaryWestActual = '-Building of Trinath swain';
-    if (!d.boundaryNorthActual) d.boundaryNorthActual = '-Vacant plot';
-    if (!d.boundarySouthActual) d.boundarySouthActual = '-Road';
+    if (!d.boundaryEastActual) d.boundaryEastActual = '';
+    if (!d.boundaryWestActual) d.boundaryWestActual = '';
+    if (!d.boundaryNorthActual) d.boundaryNorthActual = '';
+    if (!d.boundarySouthActual) d.boundarySouthActual = '';
 
-    if (!d.boundariesMatch) d.boundariesMatch = 'Boundary matching as per documents';
-    if (!d.statusOfLand) d.statusOfLand = 'FreeHold';
-    if (!d.typeOfProperty) d.typeOfProperty = 'Rowhouse';
-    if (!d.approvedUsage) d.approvedUsage = 'NA';
-    if (!d.actualUsage) d.actualUsage = 'Residential';
-    if (!d.typeOfStructure) d.typeOfStructure = 'RCC';
-    if (!d.noOfFloors) d.noOfFloors = '1(GF) as per Actual';
-    if (!d.occupancyDetails) d.occupancyDetails = 'Self-Occupied';
-    if (!d.utilitiesConnection) d.utilitiesConnection = 'Yes';
-    if (!d.proximityAmenities) d.proximityAmenities = 'Within 1-2kms range';
-    if (!d.developmentSurrounding) d.developmentSurrounding = 'Residential developmental found in surrounding Areas.';
+    if (!d.boundariesMatch) d.boundariesMatch = '';
+    if (!d.statusOfLand) d.statusOfLand = '';
+    if (!d.typeOfProperty) d.typeOfProperty = '';
+    if (!d.approvedUsage) d.approvedUsage = '';
+    if (!d.actualUsage) d.actualUsage = '';
+    if (!d.typeOfStructure) d.typeOfStructure = '';
+    if (!d.noOfFloors) d.noOfFloors = '';
+    if (!d.occupancyDetails) d.occupancyDetails = '';
+    if (!d.utilitiesConnection) d.utilitiesConnection = '';
+    if (!d.proximityAmenities) d.proximityAmenities = '';
+    if (!d.developmentSurrounding) d.developmentSurrounding = '';
 
     // Coordinates
-    if (!d.latitude) d.latitude = '19.785472';
-    if (!d.longitude) d.longitude = '85.611083';
+    if (!d.latitude) d.latitude = '';
+    if (!d.longitude) d.longitude = '';
 
     // 3. Approval Details
-    if (!d.layoutApprovalNo) d.layoutApprovalNo = 'NA';
-    if (!d.layoutDateApproval) d.layoutDateApproval = 'NA';
-    if (!d.layoutExpiryDate) d.layoutExpiryDate = 'NA';
-    if (!d.buildingPlanNo) d.buildingPlanNo = 'Plan not provided';
-    if (!d.buildingDateApproval) d.buildingDateApproval = 'NA';
-    if (!d.buildingExpiryDate) d.buildingExpiryDate = 'NA';
-    if (!d.commencementDate) d.commencementDate = 'Not known';
-    if (!d.expectedCompletion) d.expectedCompletion = '100% Completed building';
+    if (!d.layoutApprovalNo) d.layoutApprovalNo = '';
+    if (!d.layoutDateApproval) d.layoutDateApproval = '';
+    if (!d.layoutExpiryDate) d.layoutExpiryDate = '';
+    if (!d.buildingPlanNo) d.buildingPlanNo = '';
+    if (!d.buildingDateApproval) d.buildingDateApproval = '';
+    if (!d.buildingExpiryDate) d.buildingExpiryDate = '';
+    if (!d.commencementDate) d.commencementDate = '';
+    if (!d.expectedCompletion) d.expectedCompletion = '';
 
     // 4. Construction Details
-    if (!d.plotArea) d.plotArea = '4138';
-    if (!d.demarcationAtSite) d.demarcationAtSite = 'No';
-    if (!d.approvedBua) d.approvedBua = 'Plan not provided';
-    if (!d.measuredBuaTotal) d.measuredBuaTotal = 'Total Measured BUA-1177Sqft(GF)';
-    if (!d.measuredBuaGf) d.measuredBuaGf = 'RCC-476sqft, ACC-561sqft, Under construction-140sqft.';
-    if (!d.constructionAsPerPlan) d.constructionAsPerPlan = 'NA';
-    if (!d.extraConstructionDetails) d.extraConstructionDetails = 'NA';
+    if (!d.plotArea) d.plotArea = '';
+    if (!d.demarcationAtSite) d.demarcationAtSite = '';
+    if (!d.approvedBua) d.approvedBua = '';
+    if (!d.measuredBuaTotal) d.measuredBuaTotal = '';
+    if (!d.measuredBuaGf) d.measuredBuaGf = '';
+    if (!d.constructionAsPerPlan) d.constructionAsPerPlan = '';
+    if (!d.extraConstructionDetails) d.extraConstructionDetails = '';
 
-    if (!d.marginFront) d.marginFront = 'NA';
-    if (!d.marginRight) d.marginRight = 'NA';
-    if (!d.marginLeft) d.marginLeft = 'NA';
-    if (!d.marginBack) d.marginBack = 'NA';
+    if (!d.marginFront) d.marginFront = '';
+    if (!d.marginRight) d.marginRight = '';
+    if (!d.marginLeft) d.marginLeft = '';
+    if (!d.marginBack) d.marginBack = '';
 
-    if (!d.qualityOfConstruction) d.qualityOfConstruction = 'average';
-    if (!d.maintenanceOfProperty) d.maintenanceOfProperty = 'average';
-    if (!d.currentLife) d.currentLife = '2-Years';
-    if (!d.projectedLife) d.projectedLife = '58-Years';
+    if (!d.qualityOfConstruction) d.qualityOfConstruction = '';
+    if (!d.maintenanceOfProperty) d.maintenanceOfProperty = '';
+    if (!d.currentLife) d.currentLife = '';
+    if (!d.projectedLife) d.projectedLife = '';
 
     // 5. Valuation & Rates
-    if (!d.plotRate) d.plotRate = '350';
-    if (!d.plotValue) d.plotValue = '1448300';
-    if (!d.constAreaRcc) d.constAreaRcc = '476';
-    if (!d.constRateRcc) d.constRateRcc = '1400';
-    if (!d.constructionValue) d.constructionValue = '666400';
-    if (!d.stageOfConstruction) d.stageOfConstruction = '100%';
-    if (!d.percentWorkCompleted) d.percentWorkCompleted = '100%';
-    if (!d.percentDisbursement) d.percentDisbursement = '100%';
-    if (!d.currentTotalValue) d.currentTotalValue = '2114700';
-    if (!d.dateOfVisit) d.dateOfVisit = d.valuationDate;
-    if (!d.govtReckonerRate) d.govtReckonerRate = 'Rs.33/-';
-    if (!d.distressValue) d.distressValue = '1691760';
-    if (!d.rentalValue) d.rentalValue = 'Not observed';
+    if (!d.plotRate) d.plotRate = '';
+    if (!d.plotValue) d.plotValue = '';
+    if (!d.constAreaRcc) d.constAreaRcc = '';
+    if (!d.constRateRcc) d.constRateRcc = '';
+    if (!d.constructionValue) d.constructionValue = '';
+    if (!d.stageOfConstruction) d.stageOfConstruction = '';
+    if (!d.percentWorkCompleted) d.percentWorkCompleted = '';
+    if (!d.percentDisbursement) d.percentDisbursement = '';
+    if (!d.currentTotalValue) d.currentTotalValue = '';
+    if (!d.dateOfVisit) d.dateOfVisit = d.valuationDate || '';
+    if (!d.govtReckonerRate) d.govtReckonerRate = '';
+    if (!d.distressValue) d.distressValue = '';
+    if (!d.rentalValue) d.rentalValue = '';
 
     // 6. Remarks & Undertaking
-    if (!d.photosAttached) d.photosAttached = 'Attached';
-    if (!d.locationSketchAttached) d.locationSketchAttached = 'Attached';
-    if (!d.remarks) {
-      d.remarks = 'Subject property is a residential premises having land extent of 4138sqft; having measured BUA 1177Sqft(RCC-476sqft, ACC-561sqft, Under construction-140sqft). Age of the property is about 2-years. Approved plan not provided. It is coming Gadarodhanga GP limit. All civic amenities are within present 2-3Kms & about 25-Kms from Puri city center. This building is occupied by the customer for residential purpose. Valuation has been done for land & measured BUA of single storied RCC building. As approved plan is not provided, it is up to sole discretion of purple finance to consider the BUA value or not.';
-    }
-    if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty Approved Panel Valuer';
+    if (!d.photosAttached) d.photosAttached = '';
+    if (!d.locationSketchAttached) d.locationSketchAttached = '';
+    if (!d.remarks) d.remarks = '';
+    if (!d.valuerName) d.valuerName = '';
 
     // Attachments
     if (!d.documentImages) d.documentImages = [];
@@ -427,51 +424,26 @@ export default function PurpleFinance({
     <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
       {/* ── Main Form Column ── */}
       <div className="flex-1 min-w-0 space-y-6 w-full">
-        {/* Standardized Title Card */}
-        <BankReportTitleCard
+        {/* Universal Bank Report Header */}
+        <BankReportHeader
           bankName="Purple Finance Ltd"
           subclass="Bungalow / Individual House / Resale"
-          title="Valuation Report Builder"
-          description="Retail & Mortgage Assets Valuation Format."
+          formatName="Retail & Mortgage Assets Valuation Format"
+          clientType="organisation"
+          category="Retail Mortgage"
+          serviceType="Valuation Report Builder"
+          subjectType="Bungalow / Individual House / Resale"
+          onResetWizard={onResetWizard}
           earliestVisit={earliestVisit}
           projectCode={projectCode}
+          message={message}
         />
-
-        {/* Wizard Selection Banner */}
-        <ActiveConfigBanner
-          clientType="organisation"
-          bankName="PURPLE FINANCE"
-          subclass="Bungalow / Individual House / Resale"
-          onResetWizard={onResetWizard}
-          sticky={false}
-        />
-
-        {message && (
-          <div
-            className={`p-4 rounded-xl border text-sm font-medium ${
-              message.type === 'success'
-                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
-                : 'bg-rose-50 border-rose-200 text-rose-800'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
 
         {/* ═══════════════════════════════════════════════════════════════
-            TOP META CARD
+            SECTION 1: CUSTOMER & APPLICATION DETAILS
         ═══════════════════════════════════════════════════════════════ */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <span>📋</span> Valuation Report Reference Header
-            </h3>
-            <span className="text-xs bg-purple-100 text-purple-800 font-bold px-2.5 py-0.5 rounded-full">
-              PURPLE FINANCE FORMAT
-            </span>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
+        <Section title="Customer & Application Details" number={1} id="sec-customer">
+          <div className="grid md:grid-cols-2 gap-4 pb-4 border-b border-slate-100 mb-4">
             <Field label="Ref No:">
               <input
                 type="text"
@@ -493,12 +465,7 @@ export default function PurpleFinance({
               />
             </Field>
           </div>
-        </div>
 
-        {/* ═══════════════════════════════════════════════════════════════
-            SECTION 1: CUSTOMER & APPLICATION DETAILS
-        ═══════════════════════════════════════════════════════════════ */}
-        <Section title="Customer & Application Details" number={1} id="sec-customer">
           <div className="grid md:grid-cols-2 gap-4">
             <Field label="1. Name of the Customer">
               <input

@@ -7,6 +7,7 @@ import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
 import {
   getEarliestFieldVisit,
+  BankReportHeader,
   BankReportTitleCard,
   Section,
   Field,
@@ -64,21 +65,21 @@ export default function LICNPA({
     const pf = (prefill || {}) as any;
 
     return {
-      loanAccountNo: saved.loanAccountNo || pf.loanAccountNo || '211600001929/1930',
-      borrowerName: saved.borrowerName || pf.applicantName || pf.customerName || 'Mrs. Meghamala Pati ,W/o:-Mr. Narayan Chandra Panda',
-      propertyAddress: saved.propertyAddress || pf.propertyAddress || 'Plot No-861/1069,Khata No-270/25,Mouza-Nayagarh, P.S.-Korei,Dist-Jajpur,Pincode-755015',
+      loanAccountNo: saved.loanAccountNo || pf.loanAccountNo || '',
+      borrowerName: saved.borrowerName || pf.applicantName || pf.customerName || '',
+      propertyAddress: saved.propertyAddress || pf.propertyAddress || '',
 
       // Approved BUA
-      approvedBuaGf: saved.approvedBuaGf !== undefined ? saved.approvedBuaGf : '1736sqft',
-      approvedBuaFf: saved.approvedBuaFf !== undefined ? saved.approvedBuaFf : '1736sqft',
-      approvedBuaSf: saved.approvedBuaSf !== undefined ? saved.approvedBuaSf : '1736sqft',
-      approvedBuaTotal: saved.approvedBuaTotal !== undefined ? saved.approvedBuaTotal : '5208sqft',
+      approvedBuaGf: saved.approvedBuaGf !== undefined ? saved.approvedBuaGf : '',
+      approvedBuaFf: saved.approvedBuaFf !== undefined ? saved.approvedBuaFf : '',
+      approvedBuaSf: saved.approvedBuaSf !== undefined ? saved.approvedBuaSf : '',
+      approvedBuaTotal: saved.approvedBuaTotal !== undefined ? saved.approvedBuaTotal : '',
 
       // Measured BUA
-      measuredBuaGf: saved.measuredBuaGf !== undefined ? saved.measuredBuaGf : '1500sqft',
-      measuredBuaFf: saved.measuredBuaFf !== undefined ? saved.measuredBuaFf : '1736sqft',
-      measuredBuaSf: saved.measuredBuaSf !== undefined ? saved.measuredBuaSf : '1736sqft',
-      measuredBuaTotal: saved.measuredBuaTotal !== undefined ? saved.measuredBuaTotal : '5208sqft',
+      measuredBuaGf: saved.measuredBuaGf !== undefined ? saved.measuredBuaGf : '',
+      measuredBuaFf: saved.measuredBuaFf !== undefined ? saved.measuredBuaFf : '',
+      measuredBuaSf: saved.measuredBuaSf !== undefined ? saved.measuredBuaSf : '',
+      measuredBuaTotal: saved.measuredBuaTotal !== undefined ? saved.measuredBuaTotal : '',
 
       // Questions
       isPropertyComplete: saved.isPropertyComplete || 'Yes',
@@ -86,24 +87,24 @@ export default function LICNPA({
       isWellMaintainedAndStructurallySound: saved.isWellMaintainedAndStructurallySound || 'Yes',
 
       // Valuation Grid
-      landArea: saved.landArea || '4356sqft',
-      landUnitRate: saved.landUnitRate || 'Rs.1100/-',
-      landTotalValue: saved.landTotalValue || 'Rs.47,91,600/-',
+      landArea: saved.landArea || '',
+      landUnitRate: saved.landUnitRate || '',
+      landTotalValue: saved.landTotalValue || '',
 
-      buildingArea: saved.buildingArea || '5208sqft',
-      buildingUnitRate: saved.buildingUnitRate || 'Rs.2500/-',
-      buildingTotalValue: saved.buildingTotalValue || 'Rs.1,30,20,000/-',
+      buildingArea: saved.buildingArea || '',
+      buildingUnitRate: saved.buildingUnitRate || '',
+      buildingTotalValue: saved.buildingTotalValue || '',
 
-      totalMarketValue: saved.totalMarketValue || 'Rs.1,78,11,600/-',
+      totalMarketValue: saved.totalMarketValue || '',
       realizableValuePct: saved.realizableValuePct || '90',
-      realizableValue: saved.realizableValue || 'Rs.1,60,30,440/-',
+      realizableValue: saved.realizableValue || '',
       distressValuePct: saved.distressValuePct || '80',
-      distressValue: saved.distressValue || 'Rs.1,42,49,280/-',
+      distressValue: saved.distressValue || '',
       marketability: saved.marketability || 'Good',
-      otherImportantInfo: saved.otherImportantInfo || 'NA',
+      otherImportantInfo: saved.otherImportantInfo || '',
 
-      visitDate: saved.visitDate || pf.inspectionDate || '26/05/2025',
-      reportDate: saved.reportDate || pf.reportDate || '26/05/2025',
+      visitDate: saved.visitDate || pf.inspectionDate || '',
+      reportDate: saved.reportDate || pf.reportDate || '',
       valuerName: saved.valuerName || 'Er. Satyajit Mohanty',
       valuerSignaturePlace: saved.valuerSignaturePlace || 'Bhubaneswar',
 
@@ -247,26 +248,21 @@ export default function LICNPA({
   return (
     <div className="space-y-6 pb-28 w-full">
       {/* ── Active Config Banner with Change Parameters ── */}
-      <ActiveConfigBanner
-        bankName={fields.organisationTemplate || 'LIC HOUSING FINANCE LTD'}
-        subclass="NPA-DEFAULT CASES"
-        clientType="organisation"
-        category="Bank & FIS"
-        onResetWizard={onResetWizard}
-        sticky={false}
-      />
-
       <div className="flex flex-col xl:flex-row gap-6 items-start w-full">
         <div className="flex-1 min-w-0 space-y-6 w-full">
-          {/* ── Top Header Card ── */}
-      <BankReportTitleCard
-        bankName="LIC Housing Finance Ltd"
-        subclass="NPA Default Cases"
-        title="Valuation Report Builder"
-        description="Detailed Statutory Valuation Report for NPA Default Accounts."
-        earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
-        projectCode={projectCode}
-      />
+          {/* Universal Standardized Bank Report Header */}
+          <BankReportHeader
+            bankName={fields.organisationTemplate || 'LIC HOUSING FINANCE LTD'}
+            subclass="NPA-DEFAULT CASES"
+            clientType="organisation"
+            category="Bank & FIS"
+            onResetWizard={onResetWizard}
+            title="Valuation Report Builder"
+            description="Detailed Statutory Valuation Report for NPA Default Accounts."
+            earliestVisit={getEarliestFieldVisit(bucketImages, prefill)}
+            projectCode={projectCode}
+            status={status}
+          />
 
       {/* ── Section 1: Account & Borrower Details ── */}
       <Section id="sec-1" title="Account & Borrower Details" number={1} defaultOpen={true}>

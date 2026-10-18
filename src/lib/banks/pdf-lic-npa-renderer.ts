@@ -143,7 +143,7 @@ export class PDFLICNPARenderer extends PDFBankRenderer {
     this.cursorY += 24;
 
     // Certification statement
-    const visitDate = d.visitDate || d.reportDate || '26/05/2025';
+    const visitDate = d.visitDate || d.reportDate || '';
     const certText = `I hereby certify that I have visited the above site on dated ${visitDate} personally and have verified details given above.`;
     const cLines = this.wrapText(certText, CONTENT_W, FONT_SIZE);
     for (const l of cLines) {
@@ -175,22 +175,22 @@ export class PDFLICNPARenderer extends PDFBankRenderer {
 
     const approvedLines = [
       'Approved BUA',
-      d.approvedBuaGf ? `GF =${d.approvedBuaGf}` : 'GF =1736sqft',
-      d.approvedBuaFf ? `FF =${d.approvedBuaFf}` : 'FF =1736sqft',
-      d.approvedBuaSf ? `SF =${d.approvedBuaSf}` : 'SF =1736sqft',
-      `Total-${d.approvedBuaTotal || '5208sqft'}`,
-    ];
+      d.approvedBuaGf ? `GF =${d.approvedBuaGf}` : '',
+      d.approvedBuaFf ? `FF =${d.approvedBuaFf}` : '',
+      d.approvedBuaSf ? `SF =${d.approvedBuaSf}` : '',
+      d.approvedBuaTotal ? `Total-${d.approvedBuaTotal}` : '',
+    ].filter(Boolean);
 
     const measuredLines = [
       'Measured BUA',
-      d.measuredBuaGf ? `GF =${d.measuredBuaGf}` : 'GF =1500sqft',
-      d.measuredBuaFf ? `FF =${d.measuredBuaFf}` : 'FF =1736sqft',
-      d.measuredBuaSf ? `SF =${d.measuredBuaSf}` : 'SF =1736sqft',
-      `Total-${d.measuredBuaTotal || '5208sqft'}`,
-    ];
+      d.measuredBuaGf ? `GF =${d.measuredBuaGf}` : '',
+      d.measuredBuaFf ? `FF =${d.measuredBuaFf}` : '',
+      d.measuredBuaSf ? `SF =${d.measuredBuaSf}` : '',
+      d.measuredBuaTotal ? `Total-${d.measuredBuaTotal}` : '',
+    ].filter(Boolean);
 
-    const allValLines = [...approvedLines, '', ...measuredLines];
-    const rowH = Math.max(90, allValLines.length * 13 + 10);
+    const allValLines = [...approvedLines, '', ...measuredLines].filter((l, idx, arr) => !(l === '' && arr[idx - 1] === ''));
+    const rowH = Math.max(50, allValLines.length * 13 + 10);
 
     this.checkPageBreak(rowH);
     this.drawCell(MARGIN_L, this.cursorY, wLabel, rowH, 'Carpet/Built-up area of the flat/house', {
@@ -223,34 +223,34 @@ export class PDFLICNPARenderer extends PDFBankRenderer {
     // Land row
     const rowH = 18;
     this.drawCell(MARGIN_L, this.cursorY, wLabel, rowH, 'Land:', { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLabel, this.cursorY, wValArea, rowH, d.landArea || '4356sqft', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLabel + wValArea, this.cursorY, wValRate, rowH, d.landUnitRate || 'Rs.1100/-', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLabel + wValArea + wValRate, this.cursorY, wValTotal, rowH, d.landTotalValue || 'Rs.47,91,600/-', { align: 'right', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLabel, this.cursorY, wValArea, rowH, d.landArea || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLabel + wValArea, this.cursorY, wValRate, rowH, d.landUnitRate || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLabel + wValArea + wValRate, this.cursorY, wValTotal, rowH, d.landTotalValue || '', { align: 'right', fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
 
     // Building row
     this.drawCell(MARGIN_L, this.cursorY, wLabel, rowH, 'Building (Approved) G+1', { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLabel, this.cursorY, wValArea, rowH, d.buildingArea || '5208sqft', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLabel + wValArea, this.cursorY, wValRate, rowH, d.buildingUnitRate || 'Rs.2500/-', { align: 'center', fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLabel + wValArea + wValRate, this.cursorY, wValTotal, rowH, d.buildingTotalValue || 'Rs.1,30,20,000/-', { align: 'right', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLabel, this.cursorY, wValArea, rowH, d.buildingArea || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLabel + wValArea, this.cursorY, wValRate, rowH, d.buildingUnitRate || '', { align: 'center', fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLabel + wValArea + wValRate, this.cursorY, wValTotal, rowH, d.buildingTotalValue || '', { align: 'right', fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
 
     // Total value (Market value)
     const wSpan = wLabel + wValArea + wValRate;
     this.drawCell(MARGIN_L, this.cursorY, wLabel, rowH, 'Total value (Market value)', { bold: true, fontSize: FONT_SIZE_CAPTION, fillColor: LBL_BG });
-    this.drawCell(MARGIN_L + wLabel, this.cursorY, CONTENT_W - wLabel, rowH, d.totalMarketValue || 'Rs.1,78,11,600/-', { bold: true, fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLabel, this.cursorY, CONTENT_W - wLabel, rowH, d.totalMarketValue || '', { bold: true, fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
 
     // Realizable value
     const rPct = d.realizableValuePct || '90';
     this.drawCell(MARGIN_L, this.cursorY, wLabel, rowH, `Realizable value of the property (${rPct}%)`, { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLabel, this.cursorY, CONTENT_W - wLabel, rowH, d.realizableValue || 'Rs.1,60,30,440/-', { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLabel, this.cursorY, CONTENT_W - wLabel, rowH, d.realizableValue || '', { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
 
     // Distress value
     const dPct = d.distressValuePct || '80';
     this.drawCell(MARGIN_L, this.cursorY, wLabel, rowH, `Distress value of the property (${dPct}%)`, { fontSize: FONT_SIZE_CAPTION });
-    this.drawCell(MARGIN_L + wLabel, this.cursorY, CONTENT_W - wLabel, rowH, d.distressValue || 'Rs.1,42,49,280/-', { fontSize: FONT_SIZE_CAPTION });
+    this.drawCell(MARGIN_L + wLabel, this.cursorY, CONTENT_W - wLabel, rowH, d.distressValue || '', { fontSize: FONT_SIZE_CAPTION });
     this.cursorY += rowH;
   }
 
