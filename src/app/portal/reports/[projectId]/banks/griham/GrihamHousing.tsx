@@ -1210,6 +1210,377 @@ function TownPlanningSection({
   );
 }
 
+// ─── Section 6: Document Details and Legal Aspects ──────────────────────────
+
+const AVAILABLE_DOCS_LIST = [
+  'Sale Deed',
+  'ROR (Record of Rights / Patta)',
+  'Sketch map',
+  'Tax Receipt',
+  'Approved Building Plan',
+  'Mutation / Conversion Order',
+  'Electricity Bill',
+];
+
+function LegalAspectsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const effectiveTrfAddress = fields.grihamAddressAsPerTrf ?? (fields.propertyAddress ?? '');
+  const effectiveDocAddress = fields.grihamAddressAsPerDocumentEditOn
+    ? (fields.grihamAddressAsPerDocument ?? '')
+    : (fields.grihamAddressAsPerDocument || effectiveTrfAddress);
+
+  const selectedDocs: string[] = Array.isArray(fields.grihamDocsProvided)
+    ? fields.grihamDocsProvided
+    : typeof fields.grihamDocsProvided === 'string' && fields.grihamDocsProvided
+    ? fields.grihamDocsProvided.split(',').map((s: string) => s.trim()).filter(Boolean)
+    : ['Sale Deed', 'ROR (Record of Rights / Patta)', 'Tax Receipt'];
+
+  const toggleDoc = (doc: string) => {
+    const next = [...selectedDocs];
+    const idx = next.indexOf(doc);
+    if (idx > -1) {
+      next.splice(idx, 1);
+    } else {
+      next.push(doc);
+    }
+    handleChange('grihamDocsProvided', next);
+  };
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Document Details and Legal Aspects (Light Cyan #e0f7fa) */}
+      <div
+        className="rounded-xl p-5 space-y-6 border border-cyan-200 shadow-sm"
+        style={{ backgroundColor: '#e0f7fa' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200/80 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY
+          </h3>
+          <span className="text-xs text-cyan-900 font-medium bg-cyan-100 px-2.5 py-1 rounded-md border border-cyan-200">
+            Legal & Municipal Approvals
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* 1. Name of Current Owner / Seller */}
+          <Field label={<span className="font-semibold text-gray-700">NAME OF CURRENT OWNER / SELLER</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.grihamCurrentOwnerSeller ?? (fields.propertyOwner ?? '')}
+              onChange={(e) => handleChange('grihamCurrentOwnerSeller', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Name of title holder / seller"
+            />
+          </Field>
+
+          {/* 2. Address of property being appraised : As per Document */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">ADDRESS AS PER DOCUMENT</span>
+                <EditSwitch
+                  checked={!!fields.grihamAddressAsPerDocumentEditOn}
+                  onChange={(checked) => {
+                    handleChange('grihamAddressAsPerDocumentEditOn', checked);
+                    if (!checked) handleChange('grihamAddressAsPerDocument', effectiveTrfAddress);
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <textarea
+                rows={2}
+                className={`${inputCls} resize-y font-medium ${
+                  !fields.grihamAddressAsPerDocumentEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                }`}
+                value={effectiveDocAddress}
+                onChange={(e) => handleChange('grihamAddressAsPerDocument', e.target.value)}
+                disabled={isReadOnly || !fields.grihamAddressAsPerDocumentEditOn}
+                placeholder="Property address as per legal documents"
+              />
+              {!fields.grihamAddressAsPerDocumentEditOn && (
+                <div className="absolute right-3 top-2.5 text-xs text-cyan-900 font-semibold pointer-events-none flex items-center gap-1 bg-cyan-100/90 px-2 py-0.5 rounded border border-cyan-200">
+                  <Lock className="w-3 h-3" /> Mirrors TRF
+                </div>
+              )}
+            </div>
+          </Field>
+        </div>
+
+        {/* 3. Documents Provided by GHFL */}
+        <div className="space-y-2.5">
+          <span className="font-semibold text-xs sm:text-sm text-gray-700 uppercase tracking-wide">
+            DOCUMENTS PROVIDED BY GHFL
+          </span>
+          <div className="p-3.5 bg-white/90 rounded-lg border border-cyan-200 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {AVAILABLE_DOCS_LIST.map((doc) => {
+                const checked = selectedDocs.includes(doc);
+                return (
+                  <label
+                    key={doc}
+                    className={`flex items-center gap-2 p-2 rounded-md border text-xs cursor-pointer select-none transition-all ${
+                      checked
+                        ? 'bg-cyan-50 border-cyan-400 text-cyan-950 font-semibold shadow-2xs'
+                        : 'border-gray-200 hover:bg-gray-50 text-gray-700'
+                    } ${isReadOnly ? 'pointer-events-none opacity-80' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleDoc(doc)}
+                      disabled={isReadOnly}
+                      className="h-4 w-4 rounded border-gray-300 text-cyan-600 focus:ring-cyan-500"
+                    />
+                    <span>{doc}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* 4. Status of Land Holding */}
+          <Field label={<span className="font-semibold text-gray-700">STATUS OF LAND HOLDING</span>}>
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              {['Freehold', 'Leasehold'].map((opt) => (
+                <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 select-none">
+                  <input
+                    type="radio"
+                    name="grihamLandHoldingStatus"
+                    value={opt}
+                    checked={(fields.grihamLandHoldingStatus || 'Freehold') === opt}
+                    onChange={(e) => handleChange('grihamLandHoldingStatus', e.target.value)}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300"
+                  />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+          </Field>
+
+          {/* 5. Developed By */}
+          <Field label={<span className="font-semibold text-gray-700">DEVELOPED BY</span>}>
+            <CustomSelect
+              value={fields.grihamDevelopedBy || 'Self'}
+              customValue={fields.grihamDevelopedByCustom || ''}
+              onChange={(val) => handleChange('grihamDevelopedBy', val)}
+              onCustomChange={(val) => handleChange('grihamDevelopedByCustom', val)}
+              options={[
+                { value: 'Self', label: 'Self' },
+                { value: 'Colonizer', label: 'Colonizer' },
+                { value: 'Builder', label: 'Builder' },
+                { value: 'Authority', label: 'Authority (BDA/CDA/Housing Board)' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select developer..."
+            />
+          </Field>
+
+          {/* 6. Plot Demarcation */}
+          <Field label={<span className="font-semibold text-gray-700">PLOT DEMARCATION</span>}>
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              {['Yes', 'No'].map((opt) => (
+                <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 select-none">
+                  <input
+                    type="radio"
+                    name="grihamPlotDemarcation"
+                    value={opt}
+                    checked={(fields.grihamPlotDemarcation || 'Yes') === opt}
+                    onChange={(e) => handleChange('grihamPlotDemarcation', e.target.value)}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300"
+                  />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* 7. Construction as per approved/sanctioned plans */}
+          <Field label={<span className="font-semibold text-gray-700">CONSTRUCTION AS PER APPROVED PLANS</span>}>
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              {['Yes', 'No'].map((opt) => (
+                <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 select-none">
+                  <input
+                    type="radio"
+                    name="grihamConstructionAsPerSanction"
+                    value={opt}
+                    checked={(fields.grihamConstructionAsPerSanction || 'Yes') === opt}
+                    onChange={(e) => handleChange('grihamConstructionAsPerSanction', e.target.value)}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300"
+                  />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+          </Field>
+
+          {/* 8. Details of approved plan with approval no and date */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">APPROVED PLAN DETAILS (NO. & DATE)</span>
+                <NaCheckbox
+                  checked={!!fields.grihamApprovedPlanDetailsNa}
+                  onChange={(checked) => {
+                    handleChange('grihamApprovedPlanDetailsNa', checked);
+                    handleChange('grihamApprovedPlanDetails', checked ? 'NA' : '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${fields.grihamApprovedPlanDetailsNa ? 'bg-gray-100 text-gray-500 italic' : ''}`}
+              value={fields.grihamApprovedPlanDetailsNa ? 'NA' : (fields.grihamApprovedPlanDetails || '')}
+              onChange={(e) => handleChange('grihamApprovedPlanDetails', e.target.value)}
+              disabled={isReadOnly || !!fields.grihamApprovedPlanDetailsNa}
+              placeholder="e.g. Plan No. 123/2023 Dt. 12/04/2023"
+            />
+          </Field>
+
+          {/* 9. Construction permission Number and date */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">CONSTRUCTION PERMISSION (NO. & DATE)</span>
+                <NaCheckbox
+                  checked={!!fields.grihamConstructionPermissionDetailsNa}
+                  onChange={(checked) => {
+                    handleChange('grihamConstructionPermissionDetailsNa', checked);
+                    handleChange('grihamConstructionPermissionDetails', checked ? 'NA' : '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${fields.grihamConstructionPermissionDetailsNa ? 'bg-gray-100 text-gray-500 italic' : ''}`}
+              value={fields.grihamConstructionPermissionDetailsNa ? 'NA' : (fields.grihamConstructionPermissionDetails || '')}
+              onChange={(e) => handleChange('grihamConstructionPermissionDetails', e.target.value)}
+              disabled={isReadOnly || !!fields.grihamConstructionPermissionDetailsNa}
+              placeholder="e.g. Permission No. CP-456 Dt. 15/06/2023"
+            />
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* 10. Violations Observed if Any */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">VIOLATIONS OBSERVED IF ANY</span>
+                <NaCheckbox
+                  checked={!!fields.grihamViolationsObservedNa}
+                  onChange={(checked) => {
+                    handleChange('grihamViolationsObservedNa', checked);
+                    handleChange('grihamViolationsObserved', checked ? 'NA' : '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <textarea
+              rows={2}
+              className={`${inputCls} resize-y ${fields.grihamViolationsObservedNa ? 'bg-gray-100 text-gray-500 italic' : ''}`}
+              value={fields.grihamViolationsObservedNa ? 'NA' : (fields.grihamViolationsObserved || '')}
+              onChange={(e) => handleChange('grihamViolationsObserved', e.target.value)}
+              disabled={isReadOnly || !!fields.grihamViolationsObservedNa}
+              placeholder="State any deviations / violations observed..."
+            />
+          </Field>
+
+          {/* 11. If plans not available then is the structure confirming to local byelaws */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">CONFIRMING TO LOCAL BYELAWS?</span>
+                <NaCheckbox
+                  checked={!!fields.grihamStructureConfirmingByelawsNa}
+                  onChange={(checked) => {
+                    handleChange('grihamStructureConfirmingByelawsNa', checked);
+                    if (checked) {
+                      handleChange('grihamStructureConfirmingByelaws', 'NA');
+                    } else {
+                      handleChange('grihamStructureConfirmingByelaws', 'Yes');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.grihamStructureConfirmingByelawsNa ? (
+              <div className="py-2.5 px-3 bg-gray-100 rounded-lg text-xs italic text-gray-500 font-medium border border-gray-200">
+                Marked as Not Applicable (NA)
+              </div>
+            ) : (
+              <div className="flex flex-wrap items-center gap-4 pt-2">
+                {['Yes', 'No'].map((opt) => (
+                  <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 select-none">
+                    <input
+                      type="radio"
+                      name="grihamStructureConfirmingByelaws"
+                      value={opt}
+                      checked={(fields.grihamStructureConfirmingByelaws || 'Yes') === opt}
+                      onChange={(e) => handleChange('grihamStructureConfirmingByelaws', e.target.value)}
+                      disabled={isReadOnly || !!fields.grihamStructureConfirmingByelawsNa}
+                      className="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300"
+                    />
+                    <span>{opt}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </Field>
+
+          {/* 12. Property Identifiable */}
+          <Field label={<span className="font-semibold text-gray-700">PROPERTY IDENTIFIABLE</span>}>
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              {['Yes', 'No'].map((opt) => (
+                <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 select-none">
+                  <input
+                    type="radio"
+                    name="grihamPropertyIdentifiable"
+                    value={opt}
+                    checked={(fields.grihamPropertyIdentifiable || 'Yes') === opt}
+                    onChange={(e) => handleChange('grihamPropertyIdentifiable', e.target.value)}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300"
+                  />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -1241,6 +1612,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     { id: 'griham-section-3', title: 'BASIS OF VALUATION' },
     { id: 'griham-section-4', title: 'BRIEF DESCRIPTION OF THE PROPERTY' },
     { id: 'griham-section-5', title: 'TOWN PLANNING PARAMETERS' },
+    { id: 'griham-section-6', title: 'DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -1320,6 +1692,25 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     grihamStoriesSanctionedNa: false,
     grihamStoriesActual: '',
     grihamStoriesActualEditOn: false,
+    // Section 6
+    grihamCurrentOwnerSeller: '',
+    grihamAddressAsPerDocument: '',
+    grihamAddressAsPerDocumentEditOn: false,
+    grihamDocsProvided: ['Sale Deed', 'ROR (Record of Rights / Patta)', 'Tax Receipt'],
+    grihamLandHoldingStatus: 'Freehold',
+    grihamDevelopedBy: 'Self',
+    grihamDevelopedByCustom: '',
+    grihamPlotDemarcation: 'Yes',
+    grihamConstructionAsPerSanction: 'Yes',
+    grihamApprovedPlanDetails: '',
+    grihamApprovedPlanDetailsNa: false,
+    grihamConstructionPermissionDetails: '',
+    grihamConstructionPermissionDetailsNa: false,
+    grihamViolationsObserved: '',
+    grihamViolationsObservedNa: true,
+    grihamStructureConfirmingByelaws: 'Yes',
+    grihamStructureConfirmingByelawsNa: false,
+    grihamPropertyIdentifiable: 'Yes',
   },
   extraSectionsStart: [
     {
@@ -1376,6 +1767,19 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <TownPlanningSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'griham-section-6',
+      title: 'DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY',
+      number: 6,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <LegalAspectsSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
