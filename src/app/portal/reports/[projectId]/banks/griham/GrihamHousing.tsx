@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock, Scale, ShieldCheck, FileText } from 'lucide-react';
+import { Lock, Scale, ShieldCheck, FileText, Plus, Trash2 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
 
@@ -1961,6 +1961,373 @@ function MarketabilitySection({
   );
 }
 
+// ─── Section 11: Architectural Aspects of the Property ──────────────────────
+
+interface BuiltUpAreaRow {
+  id: string;
+  floor: string;
+  floorCustom?: string;
+  accommodation: string;
+  carpetArea: string;
+  actualBua: string;
+  permissibleBua: string;
+  adoptedBua: string;
+  adoptedBuaEditOn?: boolean;
+}
+
+const FLOOR_OPTIONS = [
+  { value: 'Ground Floor', label: 'Ground Floor' },
+  { value: 'First Floor', label: 'First Floor' },
+  { value: 'Second Floor', label: 'Second Floor' },
+  { value: 'Third Floor', label: 'Third Floor' },
+  { value: 'Fourth Floor', label: 'Fourth Floor' },
+  { value: 'Basement', label: 'Basement' },
+  { value: 'Stilt Floor', label: 'Stilt Floor' },
+  { value: 'Mezzanine Floor', label: 'Mezzanine Floor' },
+  { value: 'Terrace', label: 'Terrace' },
+];
+
+function ArchitecturalAspectsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const rows: BuiltUpAreaRow[] =
+    Array.isArray(fields.grihamBuiltUpAreaRows) && fields.grihamBuiltUpAreaRows.length > 0
+      ? fields.grihamBuiltUpAreaRows
+      : [
+          {
+            id: '1',
+            floor: 'Ground Floor',
+            floorCustom: '',
+            accommodation: '2 BHK (Hall, 2 Bedrooms, Kitchen, Toilet)',
+            carpetArea: '',
+            actualBua: '',
+            permissibleBua: '',
+            adoptedBua: '',
+            adoptedBuaEditOn: false,
+          },
+        ];
+
+  const updateRow = (id: string, updates: Partial<BuiltUpAreaRow>) => {
+    const next = rows.map((r) => (r.id === id ? { ...r, ...updates } : r));
+    handleChange('grihamBuiltUpAreaRows', next);
+  };
+
+  const addRow = () => {
+    const newRow: BuiltUpAreaRow = {
+      id: String(Date.now()),
+      floor: 'First Floor',
+      floorCustom: '',
+      accommodation: '',
+      carpetArea: '',
+      actualBua: '',
+      permissibleBua: '',
+      adoptedBua: '',
+      adoptedBuaEditOn: false,
+    };
+    handleChange('grihamBuiltUpAreaRows', [...rows, newRow]);
+  };
+
+  const removeRow = (id: string) => {
+    if (rows.length <= 1) return;
+    handleChange('grihamBuiltUpAreaRows', rows.filter((r) => r.id !== id));
+  };
+
+  // Compute Totals
+  const totals = useMemo(() => {
+    let carpet = 0;
+    let actual = 0;
+    let perm = 0;
+    let adopted = 0;
+
+    rows.forEach((r) => {
+      const c = parseFloat(r.carpetArea) || 0;
+      const a = parseFloat(r.actualBua) || 0;
+      const p = parseFloat(r.permissibleBua) || 0;
+      carpet += c;
+      actual += a;
+      perm += p;
+
+      let autoA = 0;
+      if (a > 0 && p > 0) autoA = Math.min(a, p);
+      else if (a > 0) autoA = a;
+      else if (p > 0) autoA = p;
+
+      const rowAdopted = r.adoptedBuaEditOn ? (parseFloat(r.adoptedBua) || 0) : autoA;
+      adopted += rowAdopted;
+    });
+
+    return { carpet, actual, perm, adopted };
+  }, [rows]);
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Architectural Aspects (Light Amber #fff8e1) */}
+      <div
+        className="rounded-xl p-5 space-y-6 border border-amber-200 shadow-sm"
+        style={{ backgroundColor: '#fff8e1' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/80 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            ARCHITECTURAL ASPECTS OF THE PROPERTY
+          </h3>
+          <span className="text-xs text-amber-950 font-medium bg-amber-100 px-2.5 py-1 rounded-md border border-amber-200">
+            Floor-Wise Areas & Sanitary Facilities
+          </span>
+        </div>
+
+        {/* 1. Built Up Area Details Table */}
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <span className="font-bold text-gray-800 text-xs sm:text-sm uppercase tracking-wide">
+              Built Up Area Details Table (in Sq.ft)
+            </span>
+            {!isReadOnly && (
+              <button
+                type="button"
+                onClick={addRow}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white shadow-2xs transition-colors self-start sm:self-auto cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add Floor Row
+              </button>
+            )}
+          </div>
+
+          <div className="overflow-x-auto rounded-lg border border-amber-200 bg-white">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-amber-100/70 border-b border-amber-200 text-amber-950 font-bold">
+                  <th className="p-3 w-40">Floor</th>
+                  <th className="p-3 w-56">Accommodation</th>
+                  <th className="p-3 w-32">Actual Carpet Area</th>
+                  <th className="p-3 w-32">Actual BUA</th>
+                  <th className="p-3 w-32">Permissible BUA</th>
+                  <th className="p-3 w-52">
+                    <div className="flex flex-col">
+                      <span>Adopted BUA / SBUA</span>
+                      <span className="text-[10px] font-normal text-amber-800">
+                        Auto: MIN(Actual, Permissible)
+                      </span>
+                    </div>
+                  </th>
+                  {!isReadOnly && <th className="p-3 w-16 text-center">Action</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-amber-100">
+                {rows.map((row, idx) => {
+                  const actualVal = parseFloat(row.actualBua) || 0;
+                  const permVal = parseFloat(row.permissibleBua) || 0;
+                  let autoVal = 0;
+                  if (actualVal > 0 && permVal > 0) autoVal = Math.min(actualVal, permVal);
+                  else if (actualVal > 0) autoVal = actualVal;
+                  else if (permVal > 0) autoVal = permVal;
+
+                  const effectiveAdopted = row.adoptedBuaEditOn
+                    ? (row.adoptedBua ?? '')
+                    : (autoVal > 0 ? String(autoVal) : (row.adoptedBua || ''));
+
+                  return (
+                    <tr key={row.id || idx} className="hover:bg-amber-50/30">
+                      {/* Floor */}
+                      <td className="p-2">
+                        <CustomSelect
+                          value={row.floor || 'Ground Floor'}
+                          customValue={row.floorCustom || ''}
+                          onChange={(val) => updateRow(row.id, { floor: val })}
+                          onCustomChange={(val) => updateRow(row.id, { floorCustom: val })}
+                          options={FLOOR_OPTIONS}
+                          disabled={isReadOnly}
+                          placeholder="Select floor..."
+                        />
+                      </td>
+
+                      {/* Accommodation */}
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={row.accommodation || ''}
+                          onChange={(e) => updateRow(row.id, { accommodation: e.target.value })}
+                          disabled={isReadOnly}
+                          placeholder="e.g. 2 BHK, Hall, Kitchen..."
+                        />
+                      </td>
+
+                      {/* Actual Carpet Area */}
+                      <td className="p-2">
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          className={inputCls}
+                          value={row.carpetArea || ''}
+                          onChange={(e) => updateRow(row.id, { carpetArea: e.target.value })}
+                          disabled={isReadOnly}
+                          placeholder="Sq.ft"
+                        />
+                      </td>
+
+                      {/* Actual BUA */}
+                      <td className="p-2">
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          className={inputCls}
+                          value={row.actualBua || ''}
+                          onChange={(e) => {
+                            const newActual = e.target.value;
+                            updateRow(row.id, {
+                              actualBua: newActual,
+                              ...(!row.adoptedBuaEditOn
+                                ? {
+                                    adoptedBua:
+                                      parseFloat(newActual) > 0 && parseFloat(row.permissibleBua) > 0
+                                        ? String(Math.min(parseFloat(newActual), parseFloat(row.permissibleBua)))
+                                        : newActual || row.permissibleBua || '',
+                                  }
+                                : {}),
+                            });
+                          }}
+                          disabled={isReadOnly}
+                          placeholder="Sq.ft"
+                        />
+                      </td>
+
+                      {/* Permissible BUA */}
+                      <td className="p-2">
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          className={inputCls}
+                          value={row.permissibleBua || ''}
+                          onChange={(e) => {
+                            const newPerm = e.target.value;
+                            updateRow(row.id, {
+                              permissibleBua: newPerm,
+                              ...(!row.adoptedBuaEditOn
+                                ? {
+                                    adoptedBua:
+                                      parseFloat(row.actualBua) > 0 && parseFloat(newPerm) > 0
+                                        ? String(Math.min(parseFloat(row.actualBua), parseFloat(newPerm)))
+                                        : row.actualBua || newPerm || '',
+                                  }
+                                : {}),
+                            });
+                          }}
+                          disabled={isReadOnly}
+                          placeholder="Sq.ft"
+                        />
+                      </td>
+
+                      {/* Adopted BUA / SBUA with EditSwitch */}
+                      <td className="p-2">
+                        <div className="space-y-1">
+                          <div className="flex items-center justify-between gap-1">
+                            <span className="text-[10px] font-bold text-gray-500 uppercase">
+                              Override
+                            </span>
+                            <EditSwitch
+                              checked={!!row.adoptedBuaEditOn}
+                              onChange={(checked) => {
+                                updateRow(row.id, {
+                                  adoptedBuaEditOn: checked,
+                                  adoptedBua: checked ? effectiveAdopted : (autoVal > 0 ? String(autoVal) : ''),
+                                });
+                              }}
+                              disabled={isReadOnly}
+                            />
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              step="any"
+                              min="0"
+                              className={`${inputCls} font-medium ${
+                                !row.adoptedBuaEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                              }`}
+                              value={effectiveAdopted}
+                              onChange={(e) => updateRow(row.id, { adoptedBua: e.target.value })}
+                              disabled={isReadOnly || !row.adoptedBuaEditOn}
+                              placeholder="Adopted Sq.ft"
+                            />
+                            {!row.adoptedBuaEditOn && (
+                              <div className="absolute right-2 top-2 text-[10px] text-amber-900 font-semibold pointer-events-none flex items-center gap-0.5">
+                                <Lock className="w-2.5 h-2.5" /> MIN
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+
+                      {/* Delete action */}
+                      {!isReadOnly && (
+                        <td className="p-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => removeRow(row.id)}
+                            disabled={rows.length <= 1}
+                            className={`p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors ${
+                              rows.length <= 1 ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+                            }`}
+                            title="Remove floor row"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot>
+                <tr className="bg-amber-100/80 border-t-2 border-amber-300 font-bold text-amber-950">
+                  <td colSpan={2} className="p-3 uppercase">
+                    Total Area:
+                  </td>
+                  <td className="p-3">{totals.carpet > 0 ? totals.carpet.toFixed(2) : '—'}</td>
+                  <td className="p-3">{totals.actual > 0 ? totals.actual.toFixed(2) : '—'}</td>
+                  <td className="p-3">{totals.perm > 0 ? totals.perm.toFixed(2) : '—'}</td>
+                  <td className="p-3">{totals.adopted > 0 ? totals.adopted.toFixed(2) : '—'}</td>
+                  {!isReadOnly && <td></td>}
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        {/* 2. Whether toilet built in house / outside... */}
+        <div className="max-w-md pt-1">
+          <Field label={<span className="font-semibold text-gray-700">WHETHER TOILET BUILT IN HOUSE / OUTSIDE</span>}>
+            <CustomSelect
+              value={fields.grihamToiletLocation || 'Inside house'}
+              customValue={fields.grihamToiletLocationCustom || ''}
+              onChange={(val) => handleChange('grihamToiletLocation', val)}
+              onCustomChange={(val) => handleChange('grihamToiletLocationCustom', val)}
+              options={[
+                { value: 'Inside house', label: 'Inside house (Attached)' },
+                { value: 'Outside house', label: 'Outside house' },
+                { value: 'Both inside & outside', label: 'Both inside & outside' },
+                { value: 'Common toilet on floor', label: 'Common toilet on floor' },
+                { value: 'Attached & Common Toilets', label: 'Attached & Common Toilets' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select toilet arrangement..."
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -1997,6 +2364,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     { id: 'griham-section-8', title: 'SOCIO-CULTURAL ASPECTS OF THE PROPERTY' },
     { id: 'griham-section-9', title: 'ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY' },
     { id: 'griham-section-10', title: 'MARKETABILITY OF THE PROPERTY' },
+    { id: 'griham-section-11', title: 'ARCHITECTURAL ASPECTS OF THE PROPERTY' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -2113,6 +2481,22 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     grihamNeighbourFeedbackNa: false,
     grihamMarketability: 'Standard',
     grihamMarketabilityCustom: '',
+    // Section 11
+    grihamBuiltUpAreaRows: [
+      {
+        id: '1',
+        floor: 'Ground Floor',
+        floorCustom: '',
+        accommodation: '2 BHK (Hall, 2 Bedrooms, Kitchen, Toilet)',
+        carpetArea: '',
+        actualBua: '',
+        permissibleBua: '',
+        adoptedBua: '',
+        adoptedBuaEditOn: false,
+      },
+    ],
+    grihamToiletLocation: 'Inside house',
+    grihamToiletLocationCustom: '',
   },
   extraSectionsStart: [
     {
@@ -2234,6 +2618,19 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <MarketabilitySection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'griham-section-11',
+      title: 'ARCHITECTURAL ASPECTS OF THE PROPERTY',
+      number: 11,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ArchitecturalAspectsSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
