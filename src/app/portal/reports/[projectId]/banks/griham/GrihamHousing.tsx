@@ -1724,6 +1724,72 @@ function InfrastructureAspectsSection({
   );
 }
 
+// ─── Section 8: Socio-Cultural Aspects of the Property ──────────────────────
+
+function SocioCulturalSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Socio-Cultural Aspects (Light Pink #fce4ec) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-pink-200 shadow-sm"
+        style={{ backgroundColor: '#fce4ec' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-pink-200/80 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            SOCIO-CULTURAL ASPECTS OF THE PROPERTY
+          </h3>
+          <span className="text-xs text-pink-950 font-medium bg-pink-100 px-2.5 py-1 rounded-md border border-pink-200">
+            Neighborhood & Community Profile
+          </span>
+        </div>
+
+        <Field
+          label={
+            <div className="flex justify-between items-center w-full">
+              <span className="font-semibold text-gray-700">SOCIO-CULTURAL OBSERVATIONS</span>
+              <NaCheckbox
+                checked={!!fields.grihamSocioCulturalObservationsNa}
+                onChange={(checked) => {
+                  handleChange('grihamSocioCulturalObservationsNa', checked);
+                  handleChange('grihamSocioCulturalObservations', checked ? 'NA' : '');
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          }
+        >
+          <textarea
+            rows={4}
+            className={`${inputCls} resize-y ${
+              fields.grihamSocioCulturalObservationsNa ? 'bg-gray-100 text-gray-500 italic' : 'bg-white'
+            }`}
+            value={
+              fields.grihamSocioCulturalObservationsNa
+                ? 'NA'
+                : (fields.grihamSocioCulturalObservations || '')
+            }
+            onChange={(e) => handleChange('grihamSocioCulturalObservations', e.target.value)}
+            disabled={isReadOnly || !!fields.grihamSocioCulturalObservationsNa}
+            placeholder={
+              fields.grihamSocioCulturalObservationsNa
+                ? 'NA'
+                : 'Describe neighborhood profile, community demographics, socio-economic habits, surroundings, and general living conditions...'
+            }
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -1757,6 +1823,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     { id: 'griham-section-5', title: 'TOWN PLANNING PARAMETERS' },
     { id: 'griham-section-6', title: 'DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY' },
     { id: 'griham-section-7', title: 'FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY' },
+    { id: 'griham-section-8', title: 'SOCIO-CULTURAL ASPECTS OF THE PROPERTY' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -1860,6 +1927,9 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     grihamNearestBusStop: '',
     grihamDistanceRailwayBusKm: '',
     grihamAmenitiesAvailable: ['Lift'],
+    // Section 8
+    grihamSocioCulturalObservations: '',
+    grihamSocioCulturalObservationsNa: false,
   },
   extraSectionsStart: [
     {
@@ -1942,6 +2012,19 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <InfrastructureAspectsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'griham-section-8',
+      title: 'SOCIO-CULTURAL ASPECTS OF THE PROPERTY',
+      number: 8,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <SocioCulturalSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
