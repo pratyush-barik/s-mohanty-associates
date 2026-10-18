@@ -17,6 +17,7 @@ import {
   Layers,
   Clock,
   Calculator,
+  CheckCircle2,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -4008,6 +4009,181 @@ function NetMortgagableValuationSection({
   );
 }
 
+// ─── Section 7: DECLARATION ─────────────────────────────────────────────────
+
+function DeclarationSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const isDateEdit = Boolean(fields.isfcDateEditOn);
+  const defaultDate = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const effectiveDate = fields.isfcDate || fields.date || defaultDate;
+
+  const isSignatoryEdit = Boolean(fields.isfcAuthorizedSignatoryEditOn);
+  const defaultSignatory =
+    fields.isfcValuerName || fields.valuerName || fields.appraiserName || 'Er. S. Mohanty';
+  const effectiveSignatory = fields.isfcAuthorizedSignatory || defaultSignatory;
+
+  const isDeclarationVerified =
+    fields.isfcDeclarationVerified !== undefined
+      ? Boolean(fields.isfcDeclarationVerified)
+      : true;
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container 1: Declaration & Verification (Mint Green '#f1f8e9') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-lime-300 shadow-sm"
+        style={{ backgroundColor: '#f1f8e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-lime-300/80 pb-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Declaration & Verification
+            </h3>
+          </div>
+          <span className="text-xs text-emerald-800 font-medium bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300">
+            Section 7: Container 1
+          </span>
+        </div>
+
+        <div className="space-y-5">
+          {/* DECLARATION : Checkbox "I verify physical inspection and agree to declaration terms." */}
+          <Field
+            label={
+              <span className="font-bold text-emerald-950 text-xs md:text-sm uppercase tracking-wide">
+                DECLARATION :
+              </span>
+            }
+          >
+            <div className="bg-white/90 p-4 rounded-xl border border-lime-300 flex items-start gap-3 shadow-xs">
+              <input
+                type="checkbox"
+                id="isfcDeclarationVerified"
+                checked={isDeclarationVerified}
+                onChange={(e) => {
+                  handleChange('isfcDeclarationVerified', e.target.checked);
+                  handleChange('isfcDeclarationTerms', e.target.checked);
+                }}
+                disabled={isReadOnly}
+                className="mt-0.5 h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+              />
+              <label
+                htmlFor="isfcDeclarationVerified"
+                className="text-xs md:text-sm text-gray-800 font-medium cursor-pointer leading-relaxed select-none"
+              >
+                I verify physical inspection and agree to declaration terms.
+              </label>
+            </div>
+          </Field>
+
+          {/* Place:, Date:, Authorized Signatory */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Place: Input Box (Fixed) */}
+            <Field
+              label={
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Place:
+                </span>
+              }
+            >
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.isfcPlace ?? fields.place ?? 'Bhubaneswar'}
+                onChange={(e) => {
+                  handleChange('isfcPlace', e.target.value);
+                  handleChange('place', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="e.g. Bhubaneswar"
+              />
+            </Field>
+
+            {/* Date: Date Picker + Edit Switch (System prefill, no lock) */}
+            <Field
+              label={
+                <div className="flex items-center justify-between gap-2 w-full">
+                  <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                    Date:
+                  </span>
+                  <EditSwitch
+                    checked={isDateEdit}
+                    onChange={(val) => {
+                      handleChange('isfcDateEditOn', val);
+                      if (val && !fields.isfcDate) {
+                        handleChange('isfcDate', effectiveDate);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="date"
+                className={`${inputCls} ${
+                  !isDateEdit
+                    ? 'bg-gray-100 cursor-not-allowed text-gray-700 font-semibold'
+                    : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                }`}
+                value={effectiveDate}
+                onChange={(e) => {
+                  handleChange('isfcDate', e.target.value);
+                  handleChange('date', e.target.value);
+                }}
+                disabled={isReadOnly || !isDateEdit}
+              />
+            </Field>
+
+            {/* Authorized Signatory: Prefill Input Box + Edit Switch (System prefill, no lock) */}
+            <Field
+              label={
+                <div className="flex items-center justify-between gap-2 w-full">
+                  <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                    Authorized Signatory
+                  </span>
+                  <EditSwitch
+                    checked={isSignatoryEdit}
+                    onChange={(val) => {
+                      handleChange('isfcAuthorizedSignatoryEditOn', val);
+                      if (val && !fields.isfcAuthorizedSignatory) {
+                        handleChange('isfcAuthorizedSignatory', effectiveSignatory);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="text"
+                className={`${inputCls} ${
+                  !isSignatoryEdit
+                    ? 'bg-gray-100 cursor-not-allowed text-gray-700 font-semibold'
+                    : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                }`}
+                value={effectiveSignatory}
+                onChange={(e) => {
+                  handleChange('isfcAuthorizedSignatory', e.target.value);
+                }}
+                disabled={isReadOnly || !isSignatoryEdit}
+                placeholder="e.g. Er. S. Mohanty"
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── ISFC BankConfig ─────────────────────────────────────────────────────────
 
 export const ISFC_CONFIG: BankConfig = {
@@ -4021,6 +4197,7 @@ export const ISFC_CONFIG: BankConfig = {
     'section-4', // Replaced by Section 4: COMPLETION STATUS
     'section-5', // Replaced by Section 5: VALUATION
     'section-6', // Replaced by Section 6: NET MORTGAGABLE VALUATION
+    'section-7', // Replaced by Section 7: DECLARATION
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -4030,7 +4207,7 @@ export const ISFC_CONFIG: BankConfig = {
     { id: 'isfc-section-4', title: 'COMPLETION STATUS' },
     { id: 'isfc-section-5', title: 'VALUATION' },
     { id: 'isfc-section-6', title: 'NET MORTGAGABLE VALUATION' },
-    { id: 'section-7', title: 'Critical Checks & Summary' },
+    { id: 'isfc-section-7', title: 'DECLARATION' },
     { id: 'section-9', title: 'Valuation Abstract' },
     { id: 'section-10', title: 'Remarks' },
     { id: 'section-12', title: 'Certificate' },
@@ -4119,6 +4296,19 @@ export const ISFC_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'isfc-section-7',
+      title: 'DECLARATION',
+      number: 7,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <DeclarationSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY',
@@ -4153,6 +4343,12 @@ export const ISFC_CONFIG: BankConfig = {
     isfcAdverseRemarks: 'No adverse remarks.',
     isfcAdverseRemarksNA: true,
     isfcNetMortgagableValuationEditOn: false,
+    isfcDeclarationTerms: true,
+    isfcDeclarationVerified: true,
+    isfcPlace: 'Bhubaneswar',
+    isfcDateEditOn: false,
+    isfcAuthorizedSignatory: 'Er. S. Mohanty',
+    isfcAuthorizedSignatoryEditOn: false,
   },
 };
 
