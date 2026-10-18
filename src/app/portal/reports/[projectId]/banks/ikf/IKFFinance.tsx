@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass, Home, Plus, Trash2, ShieldAlert, Leaf } from 'lucide-react';
+import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass, Home, Plus, Trash2, ShieldAlert, Leaf, Calculator, Navigation } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
 
@@ -3013,6 +3013,922 @@ export function EsgMonitoringSection({
   );
 }
 
+// ─── Section 6: CONCLUSION AND VALUATION OF THE PROPERTY: Component ──────────
+
+export interface ValuationDetailRow {
+  id: string;
+  item: string;
+  area: string;
+  rate: string;
+  completion: string;
+  amount: string;
+  amountEditOn?: boolean;
+}
+
+export const DEFAULT_VALUATION_DETAIL_ROWS: ValuationDetailRow[] = [
+  { id: '1', item: 'Land Area Valuation', area: '1500', rate: '2500', completion: '100', amount: '3750000', amountEditOn: false },
+  { id: '2', item: 'Ground Floor Construction', area: '1200', rate: '1800', completion: '100', amount: '2160000', amountEditOn: false },
+  { id: '3', item: 'First Floor Construction', area: '1200', rate: '1800', completion: '80', amount: '1728000', amountEditOn: false },
+];
+
+export function ConclusionAndValuationSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  // ── Valuation Details Rows ──
+  const valuationRows: ValuationDetailRow[] =
+    Array.isArray(fields.ikfValuationDetailRows) && fields.ikfValuationDetailRows.length > 0
+      ? fields.ikfValuationDetailRows
+      : DEFAULT_VALUATION_DETAIL_ROWS;
+
+  const updateValuationRow = (idx: number, patch: Partial<ValuationDetailRow>) => {
+    const updated = valuationRows.map((r, i) => (i === idx ? { ...r, ...patch } : r));
+    handleChange('ikfValuationDetailRows', updated);
+  };
+
+  const addValuationRow = () => {
+    const newRow: ValuationDetailRow = {
+      id: Date.now().toString(),
+      item: 'Additional Floor / Structure',
+      area: '',
+      rate: '',
+      completion: '100',
+      amount: '',
+      amountEditOn: false,
+    };
+    handleChange('ikfValuationDetailRows', [...valuationRows, newRow]);
+  };
+
+  const removeValuationRow = (idx: number) => {
+    if (valuationRows.length <= 1) return;
+    const updated = valuationRows.filter((_, i) => i !== idx);
+    handleChange('ikfValuationDetailRows', updated);
+  };
+
+  // Helper to compute row amount
+  const getRowAutoAmount = (r: ValuationDetailRow): number => {
+    const area = parseFloat(r.area) || 0;
+    const rate = parseFloat(r.rate) || 0;
+    const compVal = r.completion !== undefined && r.completion !== '' ? parseFloat(r.completion) : 100;
+    const compRatio = compVal > 1 ? compVal / 100 : (compVal >= 0 ? compVal : 1);
+    return Math.round(area * rate * compRatio);
+  };
+
+  const getRowEffectiveAmount = (r: ValuationDetailRow): number => {
+    if (r.amountEditOn) {
+      return parseFloat(r.amount) || 0;
+    }
+    return getRowAutoAmount(r);
+  };
+
+  // Sum of Amount column in Valuation Details Calculation
+  const sumValuationAmount = useMemo(() => {
+    return valuationRows.reduce((acc, r) => acc + getRowEffectiveAmount(r), 0);
+  }, [valuationRows]);
+
+  // Fair Market Value of property (Auto-calculate from the sum of Amount column, Edit button: OFF)
+  const defaultFairMarketValue = sumValuationAmount > 0 ? String(sumValuationAmount) : (fields.ikfFairMarketValue || '7638000');
+  const effectiveFairMarketValue = fields.ikfFairMarketValueEditOn
+    ? (fields.ikfFairMarketValue ?? '')
+    : (sumValuationAmount > 0 ? String(sumValuationAmount) : (fields.ikfFairMarketValue || defaultFairMarketValue));
+
+  // Depreciation of the Building
+  const depNumber = fields.ikfDepreciationOfBuildingNA ? 0 : (parseFloat(fields.ikfDepreciationOfBuilding) || 0);
+
+  // Total Market Value of the Property (After Depreciation) (Fair Market Value - Depreciation, Edit button: OFF)
+  const fmvNumber = parseFloat(effectiveFairMarketValue) || 0;
+  const autoTotalMarketValue = Math.max(0, fmvNumber - depNumber);
+  const defaultTotalMarketValue = autoTotalMarketValue > 0 ? String(autoTotalMarketValue) : (fields.ikfTotalMarketValueAfterDepreciation || String(fmvNumber));
+  const effectiveTotalMarketValue = fields.ikfTotalMarketValueAfterDepreciationEditOn
+    ? (fields.ikfTotalMarketValueAfterDepreciation ?? '')
+    : (autoTotalMarketValue > 0 ? String(autoTotalMarketValue) : defaultTotalMarketValue);
+
+  // Value of the property as on date (Prefilled matching Total Market Value, Edit button: OFF)
+  const effectiveValueOfPropertyAsOnDate = fields.ikfValueOfPropertyAsOnDateEditOn
+    ? (fields.ikfValueOfPropertyAsOnDate ?? '')
+    : (fields.ikfValueOfPropertyAsOnDate || effectiveTotalMarketValue);
+
+  // Geo tag details (Longitude & Latitude) (Prefill from device location if available, Edit button: OFF)
+  const defaultGeo = (fields.latitude && fields.longitude)
+    ? `${fields.latitude}, ${fields.longitude}`
+    : (fields.ikfGeoTagDetails || '20.2961° N, 85.8245° E');
+  const effectiveGeoTagDetails = fields.ikfGeoTagDetailsEditOn
+    ? (fields.ikfGeoTagDetails ?? '')
+    : (fields.ikfGeoTagDetails || defaultGeo);
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Block 1: Table: Built Up Areas (Light Cyan '#e0f7fa') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-4 border border-cyan-200 shadow-sm"
+        style={{ backgroundColor: '#e0f7fa' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Ruler className="w-5 h-5 text-cyan-900" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Table: Built Up Areas
+            </h3>
+          </div>
+          <span className="text-xs text-cyan-900 font-medium bg-cyan-100 px-2.5 py-1 rounded-md border border-cyan-300">
+            Area Statement & Measurements
+          </span>
+        </div>
+
+        <div className="overflow-x-auto rounded-lg border border-cyan-300 bg-white">
+          <table className="w-full text-xs text-left">
+            <thead className="bg-cyan-100/70 text-gray-800 font-bold uppercase border-b border-cyan-300">
+              <tr>
+                <th className="py-2.5 px-4">Area Parameter</th>
+                <th className="py-2.5 px-4">Area (in Sq. Ft.)</th>
+                <th className="py-2.5 px-4 w-32 text-center">NA Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 font-medium">
+              {/* Super Built up Area */}
+              <tr className="hover:bg-cyan-50/50">
+                <td className="py-3 px-4 font-semibold text-gray-800">
+                  Super Built up Area
+                </td>
+                <td className="py-2.5 px-4">
+                  <input
+                    type="number"
+                    step="any"
+                    className={`${inputCls} ${
+                      fields.ikfSuperBuiltUpAreaNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+                    }`}
+                    placeholder="e.g. 1500"
+                    value={fields.ikfSuperBuiltUpAreaNA ? 'NA' : (fields.ikfSuperBuiltUpArea ?? '')}
+                    onChange={(e) => handleChange('ikfSuperBuiltUpArea', e.target.value)}
+                    disabled={isReadOnly || !!fields.ikfSuperBuiltUpAreaNA}
+                  />
+                </td>
+                <td className="py-2.5 px-4 text-center">
+                  <div className="flex justify-center">
+                    <NaCheckbox
+                      checked={!!fields.ikfSuperBuiltUpAreaNA}
+                      onChange={(checked) => {
+                        handleChange('ikfSuperBuiltUpAreaNA', checked);
+                        if (checked) handleChange('ikfSuperBuiltUpArea', 'NA');
+                        else if (fields.ikfSuperBuiltUpArea === 'NA') handleChange('ikfSuperBuiltUpArea', '');
+                      }}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                </td>
+              </tr>
+
+              {/* Built up Area */}
+              <tr className="hover:bg-cyan-50/50">
+                <td className="py-3 px-4 font-semibold text-gray-800">
+                  Built up Area
+                </td>
+                <td className="py-2.5 px-4">
+                  <input
+                    type="number"
+                    step="any"
+                    className={`${inputCls} ${
+                      fields.ikfBuiltUpAreaNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+                    }`}
+                    placeholder="e.g. 1250"
+                    value={fields.ikfBuiltUpAreaNA ? 'NA' : (fields.ikfBuiltUpArea ?? '')}
+                    onChange={(e) => handleChange('ikfBuiltUpArea', e.target.value)}
+                    disabled={isReadOnly || !!fields.ikfBuiltUpAreaNA}
+                  />
+                </td>
+                <td className="py-2.5 px-4 text-center">
+                  <div className="flex justify-center">
+                    <NaCheckbox
+                      checked={!!fields.ikfBuiltUpAreaNA}
+                      onChange={(checked) => {
+                        handleChange('ikfBuiltUpAreaNA', checked);
+                        if (checked) handleChange('ikfBuiltUpArea', 'NA');
+                        else if (fields.ikfBuiltUpArea === 'NA') handleChange('ikfBuiltUpArea', '');
+                      }}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                </td>
+              </tr>
+
+              {/* Carpet Area */}
+              <tr className="hover:bg-cyan-50/50">
+                <td className="py-3 px-4 font-semibold text-gray-800">
+                  Carpet Area
+                </td>
+                <td className="py-2.5 px-4">
+                  <input
+                    type="number"
+                    step="any"
+                    className={`${inputCls} ${
+                      fields.ikfCarpetAreaNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+                    }`}
+                    placeholder="e.g. 1000"
+                    value={fields.ikfCarpetAreaNA ? 'NA' : (fields.ikfCarpetArea ?? '')}
+                    onChange={(e) => handleChange('ikfCarpetArea', e.target.value)}
+                    disabled={isReadOnly || !!fields.ikfCarpetAreaNA}
+                  />
+                </td>
+                <td className="py-2.5 px-4 text-center">
+                  <div className="flex justify-center">
+                    <NaCheckbox
+                      checked={!!fields.ikfCarpetAreaNA}
+                      onChange={(checked) => {
+                        handleChange('ikfCarpetAreaNA', checked);
+                        if (checked) handleChange('ikfCarpetArea', 'NA');
+                        else if (fields.ikfCarpetArea === 'NA') handleChange('ikfCarpetArea', '');
+                      }}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ─── Block 2: Container: Fair Market Value (Light Cyan '#e0f7fa') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-4 border border-cyan-200 shadow-sm"
+        style={{ backgroundColor: '#e0f7fa' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Calculator className="w-5 h-5 text-cyan-900" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Fair Market Value
+            </h3>
+          </div>
+          <span className="text-xs text-cyan-900 font-medium bg-cyan-100 px-2.5 py-1 rounded-md border border-cyan-300">
+            Valuation Details Sum
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Fair Market Value of property: Input Box (Number) (Auto-calculate from the sum of Amount column in Valuation Details, Edit button: OFF) [Lock UI Hover: >>Auto calculating from [Sum of Amount column in Valuation Details Calculation]<<] */}
+          <div className="col-span-1 md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">Fair Market Value of property (Rs.)</span>
+                  <EditSwitch
+                    checked={!!fields.ikfFairMarketValueEditOn}
+                    onChange={(checked) => {
+                      handleChange('ikfFairMarketValueEditOn', checked);
+                      if (!checked) {
+                        handleChange('ikfFairMarketValue', String(sumValuationAmount));
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <LockedFieldWrapper
+                isLocked={!fields.ikfFairMarketValueEditOn}
+                tooltipMessage=">>Auto calculating from [Sum of Amount column in Valuation Details Calculation]<<"
+              >
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="any"
+                    className={`${inputCls} text-base font-bold ${
+                      fields.ikfFairMarketValueEditOn
+                        ? 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 focus:ring-emerald-500'
+                        : 'bg-gray-100/80 text-cyan-950 cursor-not-allowed'
+                    }`}
+                    placeholder="e.g. 7638000"
+                    value={effectiveFairMarketValue}
+                    onChange={(e) => handleChange('ikfFairMarketValue', e.target.value)}
+                    disabled={isReadOnly || !fields.ikfFairMarketValueEditOn}
+                  />
+                  {!fields.ikfFairMarketValueEditOn && (
+                    <div className="absolute right-3 top-2.5 text-xs text-amber-700 font-semibold pointer-events-none flex items-center gap-1 bg-amber-50/90 px-2 py-0.5 rounded border border-amber-200">
+                      <Lock className="w-3.5 h-3.5 text-amber-600" /> Auto-calculated from Valuation Details
+                    </div>
+                  )}
+                </div>
+              </LockedFieldWrapper>
+            </Field>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Block 3: Table: Valuation Details Calculation (Light Cyan '#e0f7fa') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-4 border border-cyan-200 shadow-sm"
+        style={{ backgroundColor: '#e0f7fa' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Calculator className="w-5 h-5 text-cyan-900" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Table: Valuation Details Calculation
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={addValuationRow}
+            disabled={isReadOnly}
+            className="inline-flex items-center gap-1.5 px-3 py-1 bg-cyan-800 text-white rounded-md text-xs font-semibold hover:bg-cyan-900 transition-colors shadow-sm disabled:opacity-50"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add Valuation Item
+          </button>
+        </div>
+
+        <div className="overflow-x-auto rounded-lg border border-cyan-300 bg-white">
+          <table className="w-full text-xs text-left">
+            <thead className="bg-cyan-100/70 text-gray-800 font-bold uppercase border-b border-cyan-300">
+              <tr>
+                <th className="py-2.5 px-3">Item / Description</th>
+                <th className="py-2.5 px-3 w-32">Area (Sq. Ft.)</th>
+                <th className="py-2.5 px-3 w-32">Rate (Rs./Sq. Ft.)</th>
+                <th className="py-2.5 px-3 w-28">Completion %</th>
+                <th className="py-2.5 px-3 w-56">Amount (Rs.)</th>
+                {!isReadOnly && <th className="py-2.5 px-2 w-12 text-center">Action</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 font-medium">
+              {valuationRows.map((row, idx) => {
+                const autoRowAmount = getRowAutoAmount(row);
+                return (
+                  <tr key={row.id || idx} className="hover:bg-cyan-50/50">
+                    {/* Item */}
+                    <td className="py-2.5 px-3">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        placeholder="e.g. Ground Floor Construction"
+                        value={row.item || ''}
+                        onChange={(e) => updateValuationRow(idx, { item: e.target.value })}
+                        disabled={isReadOnly}
+                      />
+                    </td>
+
+                    {/* Area */}
+                    <td className="py-2.5 px-3">
+                      <input
+                        type="number"
+                        step="any"
+                        className={inputCls}
+                        placeholder="Area"
+                        value={row.area ?? ''}
+                        onChange={(e) => {
+                          const newArea = e.target.value;
+                          const updatedRow = { ...row, area: newArea };
+                          if (!row.amountEditOn) {
+                            updatedRow.amount = getRowAutoAmount(updatedRow).toString();
+                          }
+                          updateValuationRow(idx, updatedRow);
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </td>
+
+                    {/* Rate */}
+                    <td className="py-2.5 px-3">
+                      <input
+                        type="number"
+                        step="any"
+                        className={inputCls}
+                        placeholder="Rate"
+                        value={row.rate ?? ''}
+                        onChange={(e) => {
+                          const newRate = e.target.value;
+                          const updatedRow = { ...row, rate: newRate };
+                          if (!row.amountEditOn) {
+                            updatedRow.amount = getRowAutoAmount(updatedRow).toString();
+                          }
+                          updateValuationRow(idx, updatedRow);
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </td>
+
+                    {/* Completion % */}
+                    <td className="py-2.5 px-3">
+                      <input
+                        type="number"
+                        step="any"
+                        className={inputCls}
+                        placeholder="100"
+                        value={row.completion ?? '100'}
+                        onChange={(e) => {
+                          const newComp = e.target.value;
+                          const updatedRow = { ...row, completion: newComp };
+                          if (!row.amountEditOn) {
+                            updatedRow.amount = getRowAutoAmount(updatedRow).toString();
+                          }
+                          updateValuationRow(idx, updatedRow);
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </td>
+
+                    {/* Amount column: Auto-calculate (Area * Rate * Completion %), Edit button: OFF [Lock UI Hover: >>Auto calculating from [Area * Rate * Completion %]<<] */}
+                    <td className="py-2.5 px-3">
+                      <div className="space-y-1">
+                        <div className="flex justify-end">
+                          <EditSwitch
+                            checked={!!row.amountEditOn}
+                            onChange={(checked) => {
+                              updateValuationRow(idx, {
+                                amountEditOn: checked,
+                                amount: checked ? (row.amount || autoRowAmount.toString()) : autoRowAmount.toString(),
+                              });
+                            }}
+                            disabled={isReadOnly}
+                          />
+                        </div>
+                        <LockedFieldWrapper
+                          isLocked={!row.amountEditOn}
+                          tooltipMessage=">>Auto calculating from [Area * Rate * Completion %]<<"
+                        >
+                          <div className="relative">
+                            <input
+                              type="number"
+                              step="any"
+                              className={`${inputCls} font-semibold ${
+                                row.amountEditOn
+                                  ? 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 focus:ring-emerald-500'
+                                  : 'bg-gray-100/80 text-gray-800 cursor-not-allowed'
+                              }`}
+                              placeholder="0"
+                              value={row.amountEditOn ? (row.amount ?? '') : autoRowAmount}
+                              onChange={(e) => updateValuationRow(idx, { amount: e.target.value })}
+                              disabled={isReadOnly || !row.amountEditOn}
+                            />
+                            {!row.amountEditOn && (
+                              <div className="absolute right-2 top-2 text-[10px] text-amber-700 font-semibold pointer-events-none flex items-center gap-1 bg-amber-50/90 px-1.5 py-0.5 rounded border border-amber-200">
+                                <Lock className="w-3 h-3 text-amber-600" /> Auto
+                              </div>
+                            )}
+                          </div>
+                        </LockedFieldWrapper>
+                      </div>
+                    </td>
+
+                    {/* Action */}
+                    {!isReadOnly && (
+                      <td className="py-2.5 px-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeValuationRow(idx)}
+                          className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                          title="Remove row"
+                          disabled={valuationRows.length <= 1}
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot className="bg-cyan-50 font-bold border-t-2 border-cyan-300 text-gray-900">
+              <tr>
+                <td colSpan={4} className="py-2.5 px-3 text-right uppercase tracking-wider text-xs text-cyan-950">
+                  Total Valuation Details Amount:
+                </td>
+                <td className="py-2.5 px-3 font-bold text-cyan-950 text-sm">
+                  ₹ {sumValuationAmount.toLocaleString('en-IN')}
+                </td>
+                {!isReadOnly && <td></td>}
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      {/* ─── Block 4: Container: Final Valuation Outcomes (Light Cyan '#e0f7fa') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-cyan-200 shadow-sm"
+        style={{ backgroundColor: '#e0f7fa' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Building className="w-5 h-5 text-cyan-900" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Final Valuation Outcomes
+            </h3>
+          </div>
+          <span className="text-xs text-cyan-900 font-medium bg-cyan-100 px-2.5 py-1 rounded-md border border-cyan-300">
+            Valuation Summary & Parameters
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Depreciation of the Building: Input Box (Number) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Depreciation of the Building (Rs.)</span>
+                <NaCheckbox
+                  checked={!!fields.ikfDepreciationOfBuildingNA}
+                  onChange={(checked) => {
+                    handleChange('ikfDepreciationOfBuildingNA', checked);
+                    if (checked) handleChange('ikfDepreciationOfBuilding', 'NA');
+                    else if (fields.ikfDepreciationOfBuilding === 'NA') handleChange('ikfDepreciationOfBuilding', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={`${inputCls} ${
+                fields.ikfDepreciationOfBuildingNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. 0"
+              value={fields.ikfDepreciationOfBuildingNA ? 'NA' : (fields.ikfDepreciationOfBuilding ?? '')}
+              onChange={(e) => handleChange('ikfDepreciationOfBuilding', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfDepreciationOfBuildingNA}
+            />
+          </Field>
+
+          {/* Total Market Value of the Property (After Depreciation): Auto-calculate (Fair Market Value - Depreciation), Edit button: OFF [Lock UI Hover: >>Auto calculating from [Fair Market Value of property - Depreciation of the Building]<<] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Total Market Value (After Depreciation)</span>
+                <EditSwitch
+                  checked={!!fields.ikfTotalMarketValueAfterDepreciationEditOn}
+                  onChange={(checked) => {
+                    handleChange('ikfTotalMarketValueAfterDepreciationEditOn', checked);
+                    if (!checked) {
+                      handleChange('ikfTotalMarketValueAfterDepreciation', defaultTotalMarketValue);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!fields.ikfTotalMarketValueAfterDepreciationEditOn}
+              tooltipMessage=">>Auto calculating from [Fair Market Value of property - Depreciation of the Building]<<"
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  step="any"
+                  className={`${inputCls} font-bold ${
+                    fields.ikfTotalMarketValueAfterDepreciationEditOn
+                      ? 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 focus:ring-emerald-500'
+                      : 'bg-gray-100/80 text-cyan-950 cursor-not-allowed'
+                  }`}
+                  placeholder="e.g. 7638000"
+                  value={effectiveTotalMarketValue}
+                  onChange={(e) => handleChange('ikfTotalMarketValueAfterDepreciation', e.target.value)}
+                  disabled={isReadOnly || !fields.ikfTotalMarketValueAfterDepreciationEditOn}
+                />
+                {!fields.ikfTotalMarketValueAfterDepreciationEditOn && (
+                  <div className="absolute right-3 top-2.5 text-xs text-amber-700 font-semibold pointer-events-none flex items-center gap-1 bg-amber-50/90 px-2 py-0.5 rounded border border-amber-200">
+                    <Lock className="w-3.5 h-3.5 text-amber-600" /> Auto-calculated
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+
+          {/* Overall Stage of Construction of the Building (% of Construction): Input Box (Number) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Overall Stage of Construction (% of Const.)</span>
+                <NaCheckbox
+                  checked={!!fields.ikfOverallStageOfConstructionNA}
+                  onChange={(checked) => {
+                    handleChange('ikfOverallStageOfConstructionNA', checked);
+                    if (checked) handleChange('ikfOverallStageOfConstruction', 'NA');
+                    else if (fields.ikfOverallStageOfConstruction === 'NA') handleChange('ikfOverallStageOfConstruction', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={`${inputCls} ${
+                fields.ikfOverallStageOfConstructionNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. 100"
+              value={fields.ikfOverallStageOfConstructionNA ? 'NA' : (fields.ikfOverallStageOfConstruction ?? '')}
+              onChange={(e) => handleChange('ikfOverallStageOfConstruction', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfOverallStageOfConstructionNA}
+            />
+          </Field>
+
+          {/* Estimated Date of Completion of Construction: Date Picker [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Estimated Date of Completion</span>
+                <NaCheckbox
+                  checked={!!fields.ikfEstimatedDateOfCompletionNA}
+                  onChange={(checked) => {
+                    handleChange('ikfEstimatedDateOfCompletionNA', checked);
+                    if (checked) handleChange('ikfEstimatedDateOfCompletion', 'NA');
+                    else if (fields.ikfEstimatedDateOfCompletion === 'NA') handleChange('ikfEstimatedDateOfCompletion', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type={fields.ikfEstimatedDateOfCompletionNA ? 'text' : 'date'}
+              className={`${inputCls} ${
+                fields.ikfEstimatedDateOfCompletionNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              value={fields.ikfEstimatedDateOfCompletionNA ? 'NA' : (fields.ikfEstimatedDateOfCompletion || '')}
+              onChange={(e) => handleChange('ikfEstimatedDateOfCompletion', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfEstimatedDateOfCompletionNA}
+            />
+          </Field>
+
+          {/* Construction estimate given by the customer: Input Box (Number) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Customer Construction Estimate (Rs.)</span>
+                <NaCheckbox
+                  checked={!!fields.ikfCustomerConstructionEstimateNA}
+                  onChange={(checked) => {
+                    handleChange('ikfCustomerConstructionEstimateNA', checked);
+                    if (checked) handleChange('ikfCustomerConstructionEstimate', 'NA');
+                    else if (fields.ikfCustomerConstructionEstimate === 'NA') handleChange('ikfCustomerConstructionEstimate', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={`${inputCls} ${
+                fields.ikfCustomerConstructionEstimateNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. 4500000"
+              value={fields.ikfCustomerConstructionEstimateNA ? 'NA' : (fields.ikfCustomerConstructionEstimate ?? '')}
+              onChange={(e) => handleChange('ikfCustomerConstructionEstimate', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfCustomerConstructionEstimateNA}
+            />
+          </Field>
+
+          {/* Value of the property as on date: Auto-calculate (Prefilled matching Total Market Value), Edit button: OFF [Lock UI Hover: >>Prefill from section 6, "Total Market Value of the Property (After Depreciation)"<<] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Value of Property as on Date (Rs.)</span>
+                <EditSwitch
+                  checked={!!fields.ikfValueOfPropertyAsOnDateEditOn}
+                  onChange={(checked) => {
+                    handleChange('ikfValueOfPropertyAsOnDateEditOn', checked);
+                    if (!checked) {
+                      handleChange('ikfValueOfPropertyAsOnDate', effectiveTotalMarketValue);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!fields.ikfValueOfPropertyAsOnDateEditOn}
+              tooltipMessage=">>Prefill from section 6, &quot;Total Market Value of the Property (After Depreciation)&quot;<<"
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  step="any"
+                  className={`${inputCls} font-bold ${
+                    fields.ikfValueOfPropertyAsOnDateEditOn
+                      ? 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 focus:ring-emerald-500'
+                      : 'bg-gray-100/80 text-cyan-950 cursor-not-allowed'
+                  }`}
+                  placeholder="e.g. 7638000"
+                  value={effectiveValueOfPropertyAsOnDate}
+                  onChange={(e) => handleChange('ikfValueOfPropertyAsOnDate', e.target.value)}
+                  disabled={isReadOnly || !fields.ikfValueOfPropertyAsOnDateEditOn}
+                />
+                {!fields.ikfValueOfPropertyAsOnDateEditOn && (
+                  <div className="absolute right-3 top-2.5 text-xs text-amber-700 font-semibold pointer-events-none flex items-center gap-1 bg-amber-50/90 px-2 py-0.5 rounded border border-amber-200">
+                    <Lock className="w-3.5 h-3.5 text-amber-600" /> Prefilled from Total Market Value
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+
+          {/* Insurance Values: Input Box (Number) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Insurance Values (Rs.)</span>
+                <NaCheckbox
+                  checked={!!fields.ikfInsuranceValuesNA}
+                  onChange={(checked) => {
+                    handleChange('ikfInsuranceValuesNA', checked);
+                    if (checked) handleChange('ikfInsuranceValues', 'NA');
+                    else if (fields.ikfInsuranceValues === 'NA') handleChange('ikfInsuranceValues', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={`${inputCls} ${
+                fields.ikfInsuranceValuesNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. 5000000"
+              value={fields.ikfInsuranceValuesNA ? 'NA' : (fields.ikfInsuranceValues ?? '')}
+              onChange={(e) => handleChange('ikfInsuranceValues', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfInsuranceValuesNA}
+            />
+          </Field>
+
+          {/* Re construction value: Input Box (Number) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Re construction value (Rs.)</span>
+                <NaCheckbox
+                  checked={!!fields.ikfReconstructionValueNA}
+                  onChange={(checked) => {
+                    handleChange('ikfReconstructionValueNA', checked);
+                    if (checked) handleChange('ikfReconstructionValue', 'NA');
+                    else if (fields.ikfReconstructionValue === 'NA') handleChange('ikfReconstructionValue', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={`${inputCls} ${
+                fields.ikfReconstructionValueNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. 4800000"
+              value={fields.ikfReconstructionValueNA ? 'NA' : (fields.ikfReconstructionValue ?? '')}
+              onChange={(e) => handleChange('ikfReconstructionValue', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfReconstructionValueNA}
+            />
+          </Field>
+
+          {/* Realizable Value of the Property: Input Box (Number) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Realizable Value of Property (Rs.)</span>
+                <NaCheckbox
+                  checked={!!fields.ikfRealizableValueOfPropertyNA}
+                  onChange={(checked) => {
+                    handleChange('ikfRealizableValueOfPropertyNA', checked);
+                    if (checked) handleChange('ikfRealizableValueOfProperty', 'NA');
+                    else if (fields.ikfRealizableValueOfProperty === 'NA') handleChange('ikfRealizableValueOfProperty', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={`${inputCls} ${
+                fields.ikfRealizableValueOfPropertyNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. 6500000"
+              value={fields.ikfRealizableValueOfPropertyNA ? 'NA' : (fields.ikfRealizableValueOfProperty ?? '')}
+              onChange={(e) => handleChange('ikfRealizableValueOfProperty', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfRealizableValueOfPropertyNA}
+            />
+          </Field>
+
+          {/* Distress/Forced Sale Value: Input Box (Number) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Distress/Forced Sale Value (Rs.)</span>
+                <NaCheckbox
+                  checked={!!fields.ikfDistressForcedSaleValueNA}
+                  onChange={(checked) => {
+                    handleChange('ikfDistressForcedSaleValueNA', checked);
+                    if (checked) handleChange('ikfDistressForcedSaleValue', 'NA');
+                    else if (fields.ikfDistressForcedSaleValue === 'NA') handleChange('ikfDistressForcedSaleValue', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={`${inputCls} ${
+                fields.ikfDistressForcedSaleValueNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. 5700000"
+              value={fields.ikfDistressForcedSaleValueNA ? 'NA' : (fields.ikfDistressForcedSaleValue ?? '')}
+              onChange={(e) => handleChange('ikfDistressForcedSaleValue', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfDistressForcedSaleValueNA}
+            />
+          </Field>
+
+          {/* Geo tag details (Longitude & Latitude): Input Box (Text) (Prefill from device location if available, Edit button: OFF) [Lock UI Hover: >>Auto calculating from [Device GPS Coordinates]<<] */}
+          <div className="col-span-1 md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-gray-700">Geo tag details (Longitude & Latitude)</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (typeof navigator !== 'undefined' && navigator.geolocation) {
+                          navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                              const lat = position.coords.latitude.toFixed(6);
+                              const lng = position.coords.longitude.toFixed(6);
+                              const coords = `${lat}° N, ${lng}° E`;
+                              handleChange('ikfGeoTagDetails', coords);
+                            },
+                            (err) => {
+                              console.warn('Geolocation fetch error:', err);
+                            }
+                          );
+                        }
+                      }}
+                      disabled={isReadOnly}
+                      className="text-xs text-cyan-800 hover:text-cyan-950 font-semibold underline flex items-center gap-1"
+                      title="Fetch device GPS coordinates"
+                    >
+                      <Navigation className="w-3 h-3" /> Fetch Current GPS
+                    </button>
+                  </div>
+                  <EditSwitch
+                    checked={!!fields.ikfGeoTagDetailsEditOn}
+                    onChange={(checked) => {
+                      handleChange('ikfGeoTagDetailsEditOn', checked);
+                      if (!checked) {
+                        handleChange('ikfGeoTagDetails', defaultGeo);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <LockedFieldWrapper
+                isLocked={!fields.ikfGeoTagDetailsEditOn}
+                tooltipMessage=">>Auto calculating from [Device GPS Coordinates]<<"
+              >
+                <div className="relative">
+                  <input
+                    type="text"
+                    className={`${inputCls} ${
+                      fields.ikfGeoTagDetailsEditOn
+                        ? 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 focus:ring-emerald-500'
+                        : 'bg-gray-100/80 text-gray-800 cursor-not-allowed'
+                    }`}
+                    placeholder="e.g. 20.2961° N, 85.8245° E"
+                    value={effectiveGeoTagDetails}
+                    onChange={(e) => handleChange('ikfGeoTagDetails', e.target.value)}
+                    disabled={isReadOnly || !fields.ikfGeoTagDetailsEditOn}
+                  />
+                  {!fields.ikfGeoTagDetailsEditOn && (
+                    <div className="absolute right-3 top-2.5 text-xs text-amber-700 font-semibold pointer-events-none flex items-center gap-1 bg-amber-50/90 px-2 py-0.5 rounded border border-amber-200">
+                      <Lock className="w-3.5 h-3.5 text-amber-600" /> Device Location
+                    </div>
+                  )}
+                </div>
+              </LockedFieldWrapper>
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── IKF Finance BankConfig ──────────────────────────────────────────────────
 
 export const IKF_FINANCE_CONFIG: BankConfig = {
@@ -3025,6 +3941,7 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     'section-3', // Replaced by Section 3: III) DETAILS FOR THE PROPERTY UNDER REFERENCE
     'section-4', // Replaced by Section 4: National Disaster Management Authority (NDMA) Parameters
     'section-5', // Replaced by Section 5: ESG Monitoring Parameters
+    'section-6', // Replaced by Section 6: CONCLUSION AND VALUATION OF THE PROPERTY:
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -3033,7 +3950,7 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     { id: 'ikf-section-3', title: 'III) DETAILS FOR THE PROPERTY UNDER REFERENCE' },
     { id: 'ikf-section-4', title: 'National Disaster Management Authority (NDMA) Parameters' },
     { id: 'ikf-section-5', title: 'ESG Monitoring Parameters' },
-    { id: 'section-6', title: 'Plan Approvals' },
+    { id: 'ikf-section-6', title: 'CONCLUSION AND VALUATION OF THE PROPERTY:' },
     { id: 'section-7', title: 'Area Valuation' },
     { id: 'section-8', title: 'Land Valuation' },
     { id: 'section-9', title: 'Valuation Abstract' },
@@ -3111,6 +4028,19 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'ikf-section-6',
+      title: 'CONCLUSION AND VALUATION OF THE PROPERTY:',
+      number: 6,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ConclusionAndValuationSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Mortgage / MSME Loan',
@@ -3133,12 +4063,26 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     ikfVulnerableNaturalDisastersList: ['NA'],
     ikfPhysicalCondition: 'No visual cracks',
     ikfEasementRights: 'NA',
+    ikfSuperBuiltUpArea: '1500',
+    ikfBuiltUpArea: '1250',
+    ikfCarpetArea: '1000',
+    ikfFairMarketValue: '7638000',
+    ikfDepreciationOfBuilding: '0',
+    ikfOverallStageOfConstruction: '100',
+    ikfEstimatedDateOfCompletion: '',
+    ikfCustomerConstructionEstimate: '',
+    ikfInsuranceValues: '5000000',
+    ikfReconstructionValue: '4800000',
+    ikfRealizableValueOfProperty: '6500000',
+    ikfDistressForcedSaleValue: '5700000',
+    ikfGeoTagDetails: '20.2961° N, 85.8245° E',
   },
 };
 
 export default function IKFFinance(props: BankReportBuilderProps) {
   return <BankReportBuilder config={IKF_FINANCE_CONFIG} {...props} />;
 }
+
 
 
 
