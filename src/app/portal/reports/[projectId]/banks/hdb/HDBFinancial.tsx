@@ -1584,6 +1584,185 @@ export function DocumentDetailsSection({
   );
 }
 
+// ─── Section 4: Boundaries ──────────────────────────────────────────────────
+
+export function BoundariesSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const autoMatchingCount = useMemo(() => {
+    const boundaries = [
+      fields.hdbBoundaryEast,
+      fields.hdbBoundaryWest,
+      fields.hdbBoundaryNorth,
+      fields.hdbBoundarySouth,
+    ];
+    const filledCount = boundaries.filter(
+      (b) => b && b.trim() && b.trim().toUpperCase() !== 'NA'
+    ).length;
+    return filledCount > 0 ? String(filledCount) : '4';
+  }, [
+    fields.hdbBoundaryEast,
+    fields.hdbBoundaryWest,
+    fields.hdbBoundaryNorth,
+    fields.hdbBoundarySouth,
+  ]);
+
+  const effectiveMatchingCount = fields.hdbBoundariesMatchingEditOn
+    ? (fields.hdbBoundariesMatchingCount ?? '4')
+    : (fields.hdbBoundariesMatchingCount || autoMatchingCount);
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: 8 Direction (Color: Light Mint #F5FFFA) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-emerald-200/80 shadow-sm"
+        style={{ backgroundColor: '#F5FFFA' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-300/60 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-xs font-bold text-emerald-900 shadow-xs">
+              4
+            </span>
+            <h3 className="font-bold text-gray-900 text-sm md:text-base uppercase tracking-wide">
+              8 Direction
+            </h3>
+          </div>
+          <span className="text-xs text-emerald-950 font-semibold bg-white/70 px-2.5 py-1 rounded-md border border-emerald-300/60 shadow-xs">
+            8 Direction Container
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* 8.a East */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                8.a EAST
+              </span>
+            }
+          >
+            <AutoResizeTextarea
+              value={fields.hdbBoundaryEast || ''}
+              onChange={(e) => handleChange('hdbBoundaryEast', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Enter East boundary..."
+              rows={2}
+              className="bg-white"
+            />
+          </Field>
+
+          {/* 8.b West */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                8.b WEST
+              </span>
+            }
+          >
+            <AutoResizeTextarea
+              value={fields.hdbBoundaryWest || ''}
+              onChange={(e) => handleChange('hdbBoundaryWest', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Enter West boundary..."
+              rows={2}
+              className="bg-white"
+            />
+          </Field>
+
+          {/* 8.c North */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                8.c NORTH
+              </span>
+            }
+          >
+            <AutoResizeTextarea
+              value={fields.hdbBoundaryNorth || ''}
+              onChange={(e) => handleChange('hdbBoundaryNorth', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Enter North boundary..."
+              rows={2}
+              className="bg-white"
+            />
+          </Field>
+
+          {/* 8.d South */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                8.d SOUTH
+              </span>
+            }
+          >
+            <AutoResizeTextarea
+              value={fields.hdbBoundarySouth || ''}
+              onChange={(e) => handleChange('hdbBoundarySouth', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Enter South boundary..."
+              rows={2}
+              className="bg-white"
+            />
+          </Field>
+
+          {/* 8.e Number of Boundaries Matching: */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900">
+                    8.e NUMBER OF BOUNDARIES MATCHING:
+                  </span>
+                  <EditSwitch
+                    checked={!!fields.hdbBoundariesMatchingEditOn}
+                    onChange={(checked) => {
+                      handleChange('hdbBoundariesMatchingEditOn', checked);
+                      if (!checked) {
+                        handleChange('hdbBoundariesMatchingCount', autoMatchingCount);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="relative">
+                <select
+                  className={`${inputCls} font-medium pr-32 ${
+                    !fields.hdbBoundariesMatchingEditOn
+                      ? 'bg-gray-100/90 text-gray-800 cursor-not-allowed'
+                      : 'bg-white'
+                  }`}
+                  value={effectiveMatchingCount}
+                  onChange={(e) => handleChange('hdbBoundariesMatchingCount', e.target.value)}
+                  disabled={isReadOnly || !fields.hdbBoundariesMatchingEditOn}
+                >
+                  <option value="4">4 - All Boundaries Matching</option>
+                  <option value="3">3 - Three Boundaries Matching</option>
+                  <option value="2">2 - Two Boundaries Matching</option>
+                  <option value="1">1 - One Boundary Matching</option>
+                  <option value="0">0 - None Matching</option>
+                </select>
+                {!fields.hdbBoundariesMatchingEditOn && (
+                  <div className="absolute right-8 top-2.5 text-xs text-emerald-800 font-semibold pointer-events-none flex items-center gap-1 bg-white/80 px-2 py-0.5 rounded border border-emerald-300">
+                    <Lock className="w-3 h-3 text-emerald-700" /> Auto-calculated
+                  </div>
+                )}
+              </div>
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── HDB Financial Services BankConfig ──────────────────────────────────────
 
 export const HDB_FINANCIAL_CONFIG: BankConfig = {
@@ -1614,6 +1793,7 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
     { id: 'hdb-section-header', title: 'HEADER DETAILS' },
     { id: 'hdb-section-general-details', title: 'GENERAL DETAILS' },
     { id: 'hdb-section-document-details', title: 'DOCUMENT DETAILS' },
+    { id: 'hdb-section-boundaries', title: 'BOUNDARIES' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-11', title: 'Property Photographs' },
   ],
@@ -1719,6 +1899,14 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
     hdbDocTaxReceiptNA: false,
     hdbDocTaxReceiptFile: '',
     hdbDocTaxReceiptFileName: '',
+
+    // Section 4: Boundaries (8 Direction)
+    hdbBoundaryEast: '',
+    hdbBoundaryWest: '',
+    hdbBoundaryNorth: '',
+    hdbBoundarySouth: '',
+    hdbBoundariesMatchingCount: '4',
+    hdbBoundariesMatchingEditOn: false,
   },
   extraSectionsStart: [
     {
@@ -1754,6 +1942,19 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <DocumentDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'hdb-section-boundaries',
+      title: 'BOUNDARIES',
+      number: 4,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <BoundariesSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
