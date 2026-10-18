@@ -5,6 +5,7 @@ import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuild
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
 import { Lock, FileText, CheckCircle2, Plus } from 'lucide-react';
+import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
 
@@ -3316,6 +3317,522 @@ export function TechnicalDetailsSection({
   );
 }
 
+// ─── Section 6: 10 SUMMARY ──────────────────────────────────────────────────
+
+export function SummarySection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (field: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  // ── Auto-calculations for Container 1: Final Calculation & Status ──────────
+  const sec5LandArea = parseFloat(fields.hdbLandAreaConsidered || fields.hdbLandPlotArea || '0') || 0;
+  const sec5LandRate = parseFloat(fields.hdbRateAdoptedLand || fields.hdbMarketRateLand || fields.hdbGovtGuidelineRateLand || '0') || 0;
+  const autoSec5FmvLand = sec5LandArea > 0 && sec5LandRate > 0 ? String(Math.round(sec5LandArea * sec5LandRate)) : '';
+  const autoSummaryLandValue = fields.hdbFairMarketValueLand || autoSec5FmvLand;
+
+  const effectiveSummaryLandValue = fields.hdbSummaryLandValueEditOn
+    ? (fields.hdbSummaryLandValue ?? '')
+    : (fields.hdbSummaryLandValue || autoSummaryLandValue);
+
+  const sec5BldgArea = parseFloat(fields.hdbFinalBuildingAreaConsidered || fields.hdbBuiltUpAreaMeasured || fields.hdbCarpetAreaTotal || fields.hdbCarpetAreaG1 || '0') || 0;
+  const sec5BldgRate = parseFloat(fields.hdbRateAdoptedBuilding || fields.hdbMarketRateBuilding || fields.hdbGovtGuidelineRateBuilding || '0') || 0;
+  const sec5DepPct = fields.hdbDepreciationPctNA ? 0 : (parseFloat(fields.hdbDepreciationPct || '0') || 0);
+  const autoSec5FmvBldg = sec5BldgArea > 0 && sec5BldgRate > 0 ? String(Math.round(sec5BldgArea * sec5BldgRate * (1 - sec5DepPct / 100))) : '';
+  const sec5BldgValue = fields.hdbFairMarketValueBuilding || autoSec5FmvBldg;
+
+  const landNum = parseFloat(effectiveSummaryLandValue || '0') || 0;
+  const bldgNum = parseFloat(sec5BldgValue || '0') || 0;
+  const autoFinalRecommendedValue = (landNum + bldgNum > 0) ? String(Math.round(landNum + bldgNum)) : '';
+
+  const effectiveFinalRecommendedValue = fields.hdbSummaryFinalRecommendedValueEditOn
+    ? (fields.hdbSummaryFinalRecommendedValue ?? '')
+    : (fields.hdbSummaryFinalRecommendedValue || autoFinalRecommendedValue);
+
+  const finalValueNumeric = parseFloat(effectiveFinalRecommendedValue || '0') || 0;
+
+  return (
+    <div className="animate-fade-in space-y-8">
+      {/* ────────────────────────────────────────────────────────────────────────
+          Container 1: Final Calculation & Status (Color: Light Steel Blue #B0C4DE)
+      ──────────────────────────────────────────────────────────────────────── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-slate-300 shadow-sm"
+        style={{ backgroundColor: '#B0C4DE' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-400/50 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-xs font-bold text-slate-800 shadow-xs">
+              6.1
+            </span>
+            <h3 className="font-bold text-gray-900 text-sm md:text-base uppercase tracking-wide">
+              Final Calculation & Status
+            </h3>
+          </div>
+          <span className="text-xs text-slate-900 font-semibold bg-white/70 px-2.5 py-1 rounded-md border border-slate-300/60 shadow-xs">
+            Final Calculation & Status Container
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* 10.a Land Value */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  10.a LAND VALUE (RS.)
+                </span>
+                <EditSwitch
+                  checked={!!fields.hdbSummaryLandValueEditOn}
+                  onChange={(checked) => {
+                    handleChange('hdbSummaryLandValueEditOn', checked);
+                    if (!checked) {
+                      handleChange('hdbSummaryLandValue', autoSummaryLandValue);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className={`${inputCls} font-bold text-gray-900 pr-32 ${
+                  !fields.hdbSummaryLandValueEditOn
+                    ? 'bg-gray-100/90 cursor-not-allowed'
+                    : 'bg-white'
+                }`}
+                value={effectiveSummaryLandValue}
+                onChange={(e) => handleChange('hdbSummaryLandValue', e.target.value)}
+                disabled={isReadOnly || !fields.hdbSummaryLandValueEditOn}
+                placeholder="Auto-calculates (Linked from Section 5)..."
+              />
+              {!fields.hdbSummaryLandValueEditOn && (
+                <div className="absolute right-3 top-2.5 text-xs text-blue-900 font-semibold pointer-events-none flex items-center gap-1 bg-white/85 px-2 py-0.5 rounded border border-blue-300 shadow-xs">
+                  <Lock className="w-3 h-3 text-blue-700" /> Linked Sec 5
+                </div>
+              )}
+            </div>
+            {effectiveSummaryLandValue && !isNaN(Number(effectiveSummaryLandValue)) && Number(effectiveSummaryLandValue) > 0 && (
+              <div className="mt-1.5 text-xs font-medium text-slate-700 flex items-center justify-between">
+                <span>Formatted: ₹ {formatIndianCurrency(effectiveSummaryLandValue)}</span>
+              </div>
+            )}
+          </Field>
+
+          {/* 12 Final Status */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                12 FINAL STATUS
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbFinalStatus || 'Positive'}
+              customValue={fields.hdbFinalStatusCustom || ''}
+              onChange={(val) => handleChange('hdbFinalStatus', val)}
+              onCustomChange={(val) => handleChange('hdbFinalStatusCustom', val)}
+              options={[
+                { value: 'Positive', label: 'Positive' },
+                { value: 'Negative', label: 'Negative' },
+                { value: 'Pending', label: 'Pending' },
+                { value: 'Conditional Positive', label: 'Conditional Positive' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select final status..."
+            />
+          </Field>
+
+          {/* 11 Thus the Final Recommended value For the G+1 storied residential building is */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900 text-xs sm:text-sm">
+                    11 THUS THE FINAL RECOMMENDED VALUE FOR THE G+1 STORIED RESIDENTIAL BUILDING IS (RS.)
+                  </span>
+                  <EditSwitch
+                    checked={!!fields.hdbSummaryFinalRecommendedValueEditOn}
+                    onChange={(checked) => {
+                      handleChange('hdbSummaryFinalRecommendedValueEditOn', checked);
+                      if (!checked) {
+                        handleChange('hdbSummaryFinalRecommendedValue', autoFinalRecommendedValue);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="relative">
+                <input
+                  type="text"
+                  className={`${inputCls} font-bold text-gray-900 text-base pr-32 ${
+                    !fields.hdbSummaryFinalRecommendedValueEditOn
+                      ? 'bg-gray-100/90 cursor-not-allowed'
+                      : 'bg-white'
+                  }`}
+                  value={effectiveFinalRecommendedValue}
+                  onChange={(e) => handleChange('hdbSummaryFinalRecommendedValue', e.target.value)}
+                  disabled={isReadOnly || !fields.hdbSummaryFinalRecommendedValueEditOn}
+                  placeholder="Auto-calculates (Total of Land + Construction)..."
+                />
+                {!fields.hdbSummaryFinalRecommendedValueEditOn && (
+                  <div className="absolute right-3 top-2.5 text-xs text-blue-900 font-semibold pointer-events-none flex items-center gap-1 bg-white/85 px-2 py-0.5 rounded border border-blue-300 shadow-xs">
+                    <Lock className="w-3 h-3 text-blue-700" /> Land + Bldg
+                  </div>
+                )}
+              </div>
+              {finalValueNumeric > 0 && (
+                <div className="mt-2 text-xs font-semibold text-slate-800 bg-white/85 p-3 rounded-lg border border-slate-300 space-y-1">
+                  <div className="flex items-center justify-between text-slate-600">
+                    <span>Final Recommended Value:</span>
+                    <span className="font-bold text-slate-900 text-sm">₹ {formatIndianCurrency(finalValueNumeric)}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 font-normal">In Words: </span>
+                    <span className="italic uppercase text-slate-900">{rupeesInWords(finalValueNumeric)}</span>
+                  </div>
+                </div>
+              )}
+            </Field>
+          </div>
+        </div>
+      </div>
+
+      {/* ────────────────────────────────────────────────────────────────────────
+          Container 2: 13 Mandatory Requirements (Color: Light Salmon #FFA07A)
+      ──────────────────────────────────────────────────────────────────────── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-orange-300 shadow-sm"
+        style={{ backgroundColor: '#FFA07A' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange-400/50 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-xs font-bold text-orange-900 shadow-xs">
+              6.2
+            </span>
+            <h3 className="font-bold text-gray-900 text-sm md:text-base uppercase tracking-wide">
+              13 Mandatory Requirements
+            </h3>
+          </div>
+          <span className="text-xs text-orange-950 font-semibold bg-white/70 px-2.5 py-1 rounded-md border border-orange-300/60 shadow-xs">
+            13 Mandatory Requirements Container
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* a. Setback Deviation */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900">
+                    A. SETBACK DEVIATION
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.hdbSetbackDeviationNA}
+                    onChange={(checked) => {
+                      handleChange('hdbSetbackDeviationNA', checked);
+                      if (checked) handleChange('hdbSetbackDeviationDetails', 'NA');
+                      else if (fields.hdbSetbackDeviationDetails === 'NA') handleChange('hdbSetbackDeviationDetails', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between bg-white/80 px-3 py-2 rounded-lg border border-orange-200">
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={fields.hdbSetbackDeviation === 'Deviated'}
+                      onChange={(e) => {
+                        handleChange('hdbSetbackDeviation', e.target.checked ? 'Deviated' : 'Compliant');
+                      }}
+                      disabled={isReadOnly || !!fields.hdbSetbackDeviationNA}
+                      className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                    />
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                      Setback Deviated (Uncheck for Compliant)
+                    </span>
+                  </label>
+                  <span
+                    className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                      fields.hdbSetbackDeviation === 'Deviated'
+                        ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                        : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    }`}
+                  >
+                    {fields.hdbSetbackDeviation === 'Deviated' ? 'Deviated' : 'Compliant'}
+                  </span>
+                </div>
+                <AutoResizeTextarea
+                  value={fields.hdbSetbackDeviationNA ? 'NA' : (fields.hdbSetbackDeviationDetails || '')}
+                  onChange={(e) => handleChange('hdbSetbackDeviationDetails', e.target.value)}
+                  disabled={isReadOnly || !!fields.hdbSetbackDeviationNA}
+                  placeholder={
+                    fields.hdbSetbackDeviation === 'Deviated'
+                      ? 'Specify setback deviation details (e.g. Front/Rear/Side deviations in ft)...'
+                      : 'Setbacks are compliant as per sanctioned plan / permissible building bye-laws...'
+                  }
+                  rows={2}
+                  className={fields.hdbSetbackDeviationNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+                />
+              </div>
+            </Field>
+          </div>
+
+          {/* b. FSI Violation */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900">
+                    B. FSI VIOLATION
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.hdbFsiViolationNA}
+                    onChange={(checked) => {
+                      handleChange('hdbFsiViolationNA', checked);
+                      if (checked) handleChange('hdbFsiViolationDetails', 'NA');
+                      else if (fields.hdbFsiViolationDetails === 'NA') handleChange('hdbFsiViolationDetails', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between bg-white/80 px-3 py-2 rounded-lg border border-orange-200">
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!fields.hdbFsiViolationChecked}
+                      onChange={(e) => handleChange('hdbFsiViolationChecked', e.target.checked)}
+                      disabled={isReadOnly || !!fields.hdbFsiViolationNA}
+                      className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                    />
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                      FSI Violation Observed
+                    </span>
+                  </label>
+                  <span
+                    className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                      fields.hdbFsiViolationChecked
+                        ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                        : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    }`}
+                  >
+                    {fields.hdbFsiViolationChecked ? 'Violation Observed' : 'Within Permissible FSI'}
+                  </span>
+                </div>
+                <AutoResizeTextarea
+                  value={fields.hdbFsiViolationNA ? 'NA' : (fields.hdbFsiViolationDetails || '')}
+                  onChange={(e) => handleChange('hdbFsiViolationDetails', e.target.value)}
+                  disabled={isReadOnly || !!fields.hdbFsiViolationNA}
+                  placeholder={
+                    fields.hdbFsiViolationChecked
+                      ? 'Specify FSI violation percentage or excess built-up area...'
+                      : 'FSI consumed is within the permissible limit as per local authority regulations...'
+                  }
+                  rows={2}
+                  className={fields.hdbFsiViolationNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+                />
+              </div>
+            </Field>
+          </div>
+
+          {/* c. Locality Details */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900">
+                    C. LOCALITY DETAILS
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.hdbLocalityDetailsNA}
+                    onChange={(checked) => {
+                      handleChange('hdbLocalityDetailsNA', checked);
+                      if (checked) handleChange('hdbLocalityDetails', 'NA');
+                      else if (fields.hdbLocalityDetails === 'NA') handleChange('hdbLocalityDetails', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <AutoResizeTextarea
+                value={fields.hdbLocalityDetailsNA ? 'NA' : (fields.hdbLocalityDetails || '')}
+                onChange={(e) => handleChange('hdbLocalityDetails', e.target.value)}
+                disabled={isReadOnly || !!fields.hdbLocalityDetailsNA}
+                placeholder="Describe locality profile, infrastructure, accessibility, surrounding residential developments, and civic amenities..."
+                rows={3}
+                className={fields.hdbLocalityDetailsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+              />
+            </Field>
+          </div>
+
+          {/* d. Demolition Risk */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  D. DEMOLITION RISK
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbDemolitionRiskNA}
+                  onChange={(checked) => {
+                    handleChange('hdbDemolitionRiskNA', checked);
+                    if (checked) handleChange('hdbDemolitionRisk', 'NA');
+                    else if (fields.hdbDemolitionRisk === 'NA') handleChange('hdbDemolitionRisk', 'Low / Negligible');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbDemolitionRiskNA ? 'NA' : (fields.hdbDemolitionRisk || 'Low / Negligible')}
+              customValue={fields.hdbDemolitionRiskCustom || ''}
+              onChange={(val) => handleChange('hdbDemolitionRisk', val)}
+              onCustomChange={(val) => handleChange('hdbDemolitionRiskCustom', val)}
+              options={[
+                { value: 'Low / Negligible', label: 'Low / Negligible' },
+                { value: 'Moderate', label: 'Moderate' },
+                { value: 'High', label: 'High' },
+                { value: 'None', label: 'None' },
+              ]}
+              disabled={isReadOnly || !!fields.hdbDemolitionRiskNA}
+              placeholder="Select demolition risk..."
+            />
+          </Field>
+
+          {/* e. Property Enlisted For Any Negative Authority Action */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900 text-xs sm:text-sm">
+                    E. PROPERTY ENLISTED FOR ANY NEGATIVE AUTHORITY ACTION
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.hdbNegativeAuthorityActionNA}
+                    onChange={(checked) => {
+                      handleChange('hdbNegativeAuthorityActionNA', checked);
+                      if (checked) handleChange('hdbNegativeAuthorityActionDetails', 'NA');
+                      else if (fields.hdbNegativeAuthorityActionDetails === 'NA') handleChange('hdbNegativeAuthorityActionDetails', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between bg-white/80 px-3 py-2 rounded-lg border border-orange-200">
+                  <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={!!fields.hdbNegativeAuthorityActionChecked}
+                      onChange={(e) => handleChange('hdbNegativeAuthorityActionChecked', e.target.checked)}
+                      disabled={isReadOnly || !!fields.hdbNegativeAuthorityActionNA}
+                      className="h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500"
+                    />
+                    <span className="text-xs font-bold uppercase tracking-wider text-gray-700">
+                      Enlisted for Negative Authority Action
+                    </span>
+                  </label>
+                  <span
+                    className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
+                      fields.hdbNegativeAuthorityActionChecked
+                        ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                        : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                    }`}
+                  >
+                    {fields.hdbNegativeAuthorityActionChecked ? 'Yes (Enlisted)' : 'No (Clear)'}
+                  </span>
+                </div>
+                <AutoResizeTextarea
+                  value={fields.hdbNegativeAuthorityActionNA ? 'NA' : (fields.hdbNegativeAuthorityActionDetails || '')}
+                  onChange={(e) => handleChange('hdbNegativeAuthorityActionDetails', e.target.value)}
+                  disabled={isReadOnly || !!fields.hdbNegativeAuthorityActionNA}
+                  placeholder={
+                    fields.hdbNegativeAuthorityActionChecked
+                      ? 'Specify notice details, sealing order, litigation, or negative list details...'
+                      : 'The subject property is not enlisted in any negative list or demolition/acquisition notice by any authority...'
+                  }
+                  rows={2}
+                  className={fields.hdbNegativeAuthorityActionNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+                />
+              </div>
+            </Field>
+          </div>
+        </div>
+      </div>
+
+      {/* ────────────────────────────────────────────────────────────────────────
+          Container 3: 14 Remarks (Color: Light Gray #D3D3D3)
+      ──────────────────────────────────────────────────────────────────────── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-gray-400 shadow-sm"
+        style={{ backgroundColor: '#D3D3D3' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-400/60 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-xs font-bold text-gray-800 shadow-xs">
+              6.3
+            </span>
+            <h3 className="font-bold text-gray-900 text-sm md:text-base uppercase tracking-wide">
+              14 Remarks
+            </h3>
+          </div>
+          <span className="text-xs text-gray-800 font-semibold bg-white/70 px-2.5 py-1 rounded-md border border-gray-300 shadow-xs">
+            14 Remarks Container
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5">
+          {/* 14 Remarks if any */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  14 REMARKS IF ANY
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbRemarksIfAnyNA}
+                  onChange={(checked) => {
+                    handleChange('hdbRemarksIfAnyNA', checked);
+                    if (checked) handleChange('hdbRemarksIfAny', 'NA');
+                    else if (fields.hdbRemarksIfAny === 'NA') handleChange('hdbRemarksIfAny', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <AutoResizeTextarea
+              value={fields.hdbRemarksIfAnyNA ? 'NA' : (fields.hdbRemarksIfAny || '')}
+              onChange={(e) => handleChange('hdbRemarksIfAny', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbRemarksIfAnyNA}
+              placeholder="Enter final remarks, observations, conditions, marketability notes, or special instructions if any..."
+              rows={4}
+              className={fields.hdbRemarksIfAnyNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── HDB Financial Services BankConfig ──────────────────────────────────────
 
 export const HDB_FINANCIAL_CONFIG: BankConfig = {
@@ -3348,6 +3865,7 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
     { id: 'hdb-section-document-details', title: 'DOCUMENT DETAILS' },
     { id: 'hdb-section-boundaries', title: 'BOUNDARIES' },
     { id: 'hdb-section-technical-details', title: 'TECHNICAL DETAILS' },
+    { id: 'hdb-section-summary', title: '10 SUMMARY' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-11', title: 'Property Photographs' },
   ],
@@ -3556,6 +4074,35 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
     hdbInsurableValue: '',
     hdbInsurableValueEditOn: false,
     hdbInsurableValueNA: false,
+
+    // Section 6: 10 SUMMARY
+    // Container 1: Final Calculation & Status
+    hdbSummaryLandValue: '',
+    hdbSummaryLandValueEditOn: false,
+    hdbSummaryFinalRecommendedValue: '',
+    hdbSummaryFinalRecommendedValueEditOn: false,
+    hdbFinalStatus: 'Positive',
+    hdbFinalStatusCustom: '',
+
+    // Container 2: 13 Mandatory Requirements
+    hdbSetbackDeviation: 'Compliant',
+    hdbSetbackDeviationDetails: '',
+    hdbSetbackDeviationNA: false,
+    hdbFsiViolationChecked: false,
+    hdbFsiViolationDetails: '',
+    hdbFsiViolationNA: false,
+    hdbLocalityDetails: '',
+    hdbLocalityDetailsNA: false,
+    hdbDemolitionRisk: 'Low / Negligible',
+    hdbDemolitionRiskCustom: '',
+    hdbDemolitionRiskNA: false,
+    hdbNegativeAuthorityActionChecked: false,
+    hdbNegativeAuthorityActionDetails: '',
+    hdbNegativeAuthorityActionNA: false,
+
+    // Container 3: 14 Remarks
+    hdbRemarksIfAny: '',
+    hdbRemarksIfAnyNA: false,
   },
   extraSectionsStart: [
     {
@@ -3617,6 +4164,19 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <TechnicalDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'hdb-section-summary',
+      title: '10 SUMMARY',
+      number: 6,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <SummarySection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
