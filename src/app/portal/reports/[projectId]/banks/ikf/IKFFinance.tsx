@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass, Home, Plus, Trash2, ShieldAlert, Leaf, Calculator, Navigation } from 'lucide-react';
+import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass, Home, Plus, Trash2, ShieldAlert, Leaf, Calculator, Navigation, Zap } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
 
@@ -3929,6 +3929,227 @@ export function ConclusionAndValuationSection({
   );
 }
 
+// ─── Section 7: Other Critical Check - Points Component ──────────────────────
+
+export function OtherCriticalChecksSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Container: Critical Checks & Utilities (Light Orange '#fff3e0') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-orange-200 shadow-sm"
+        style={{ backgroundColor: '#fff3e0' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-orange-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Critical Checks & Utilities
+            </h3>
+          </div>
+          <span className="text-xs text-orange-800 font-medium bg-orange-100 px-2.5 py-1 rounded-md border border-orange-300">
+            Verification & Utility Infrastructure
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* How the property was identified: Input Box (Variable Size) */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <Field label={<span className="font-semibold text-gray-700">How the property was identified</span>}>
+              <AutoResizeTextarea
+                rows={2}
+                placeholder="e.g. Identified during physical site inspection through customer/representative, verification with boundary landmarks, municipal road, and relevant deed details."
+                value={fields.ikfHowPropertyIdentified || ''}
+                onChange={(e) => handleChange('ikfHowPropertyIdentified', e.target.value)}
+                disabled={isReadOnly}
+              />
+            </Field>
+          </div>
+
+          {/* Water Connection Status: Dropdown (Active / In-Active / Not Available / Custom) [Custom Option: ON] */}
+          <Field label={<span className="font-semibold text-gray-700">Water Connection Status</span>}>
+            <CustomSelect
+              value={fields.ikfWaterConnectionStatus || 'Active'}
+              customValue={fields.ikfWaterConnectionStatusCustom || ''}
+              onChange={(val) => handleChange('ikfWaterConnectionStatus', val)}
+              onCustomChange={(val) => handleChange('ikfWaterConnectionStatusCustom', val)}
+              options={[
+                { value: 'Active', label: 'Active' },
+                { value: 'In-Active', label: 'In-Active' },
+                { value: 'Not Available', label: 'Not Available' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select water status..."
+            />
+          </Field>
+
+          {/* Electricity Connection Status: Dropdown (Active / In-Active / Not Available / Custom) [Custom Option: ON] */}
+          <Field label={<span className="font-semibold text-gray-700">Electricity Connection Status</span>}>
+            <CustomSelect
+              value={fields.ikfElectricityConnectionStatus || 'Active'}
+              customValue={fields.ikfElectricityConnectionStatusCustom || ''}
+              onChange={(val) => handleChange('ikfElectricityConnectionStatus', val)}
+              onCustomChange={(val) => handleChange('ikfElectricityConnectionStatusCustom', val)}
+              options={[
+                { value: 'Active', label: 'Active' },
+                { value: 'In-Active', label: 'In-Active' },
+                { value: 'Not Available', label: 'Not Available' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select electricity status..."
+            />
+          </Field>
+
+          {/* Electricity Connection No & Owner Name: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Electricity Connection No & Owner Name</span>
+                <NaCheckbox
+                  checked={!!fields.ikfElectricityConnectionNoAndOwnerNA}
+                  onChange={(checked) => {
+                    handleChange('ikfElectricityConnectionNoAndOwnerNA', checked);
+                    if (checked) handleChange('ikfElectricityConnectionNoAndOwner', 'NA');
+                    else if (fields.ikfElectricityConnectionNoAndOwner === 'NA') handleChange('ikfElectricityConnectionNoAndOwner', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfElectricityConnectionNoAndOwnerNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Consumer No: 4120019284, Owner: Sri Santosh Kumar Sahoo"
+              value={fields.ikfElectricityConnectionNoAndOwnerNA ? 'NA' : (fields.ikfElectricityConnectionNoAndOwner || '')}
+              onChange={(e) => handleChange('ikfElectricityConnectionNoAndOwner', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfElectricityConnectionNoAndOwnerNA}
+            />
+          </Field>
+
+          {/* Latest Electricity Bill to be collected & enclosed in report: Radio (Yes / No / NA) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700">
+                Latest Electricity Bill to be collected & enclosed in report
+              </span>
+            }
+          >
+            <YesNoRadio
+              name="ikfLatestElectricityBillCollected"
+              value={fields.ikfLatestElectricityBillCollected || 'Yes'}
+              onChange={(val) => handleChange('ikfLatestElectricityBillCollected', val)}
+              options={['Yes', 'No', 'NA']}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* Electricity Bill Online verification to be done & update screen shot in report: Radio (Yes / No / NA) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700">
+                Electricity Bill Online verification to be done & update screen shot in report
+              </span>
+            }
+          >
+            <YesNoRadio
+              name="ikfElectricityBillOnlineVerified"
+              value={fields.ikfElectricityBillOnlineVerified || 'Yes'}
+              onChange={(val) => handleChange('ikfElectricityBillOnlineVerified', val)}
+              options={['Yes', 'No', 'NA']}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* Name of the Apartment / Building: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Name of the Apartment / Building</span>
+                <NaCheckbox
+                  checked={!!fields.ikfNameOfApartmentOrBuildingNA}
+                  onChange={(checked) => {
+                    handleChange('ikfNameOfApartmentOrBuildingNA', checked);
+                    if (checked) handleChange('ikfNameOfApartmentOrBuilding', 'NA');
+                    else if (fields.ikfNameOfApartmentOrBuilding === 'NA') handleChange('ikfNameOfApartmentOrBuilding', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfNameOfApartmentOrBuildingNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Maa Tarini Nilaya / Sai Residency"
+              value={fields.ikfNameOfApartmentOrBuildingNA ? 'NA' : (fields.ikfNameOfApartmentOrBuilding || '')}
+              onChange={(e) => handleChange('ikfNameOfApartmentOrBuilding', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfNameOfApartmentOrBuildingNA}
+            />
+          </Field>
+
+          {/* Occupancy status of Entire Building / Flat: Dropdown (Self / Tenant / Vacant / Custom) [Custom Option: ON] */}
+          <Field label={<span className="font-semibold text-gray-700">Occupancy status of Entire Building / Flat</span>}>
+            <CustomSelect
+              value={fields.ikfOccupancyStatus || 'Self'}
+              customValue={fields.ikfOccupancyStatusCustom || ''}
+              onChange={(val) => handleChange('ikfOccupancyStatus', val)}
+              onCustomChange={(val) => handleChange('ikfOccupancyStatusCustom', val)}
+              options={[
+                { value: 'Self', label: 'Self' },
+                { value: 'Tenant', label: 'Tenant' },
+                { value: 'Vacant', label: 'Vacant' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select occupancy status..."
+            />
+          </Field>
+
+          {/* Period of Un-occupancy Entire Building / Flat: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Period of Un-occupancy Entire Building / Flat</span>
+                <NaCheckbox
+                  checked={fields.ikfPeriodOfUnoccupancyNA ?? true}
+                  onChange={(checked) => {
+                    handleChange('ikfPeriodOfUnoccupancyNA', checked);
+                    if (checked) handleChange('ikfPeriodOfUnoccupancy', 'NA');
+                    else if (fields.ikfPeriodOfUnoccupancy === 'NA') handleChange('ikfPeriodOfUnoccupancy', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                (fields.ikfPeriodOfUnoccupancyNA ?? true) ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. NA / Vacant since 2 months"
+              value={(fields.ikfPeriodOfUnoccupancyNA ?? true) ? 'NA' : (fields.ikfPeriodOfUnoccupancy || '')}
+              onChange={(e) => handleChange('ikfPeriodOfUnoccupancy', e.target.value)}
+              disabled={isReadOnly || (fields.ikfPeriodOfUnoccupancyNA ?? true)}
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── IKF Finance BankConfig ──────────────────────────────────────────────────
 
 export const IKF_FINANCE_CONFIG: BankConfig = {
@@ -3942,6 +4163,7 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     'section-4', // Replaced by Section 4: National Disaster Management Authority (NDMA) Parameters
     'section-5', // Replaced by Section 5: ESG Monitoring Parameters
     'section-6', // Replaced by Section 6: CONCLUSION AND VALUATION OF THE PROPERTY:
+    'section-7', // Replaced by Section 7: Other Critical Check - Points
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -3951,7 +4173,7 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     { id: 'ikf-section-4', title: 'National Disaster Management Authority (NDMA) Parameters' },
     { id: 'ikf-section-5', title: 'ESG Monitoring Parameters' },
     { id: 'ikf-section-6', title: 'CONCLUSION AND VALUATION OF THE PROPERTY:' },
-    { id: 'section-7', title: 'Area Valuation' },
+    { id: 'ikf-section-7', title: 'Other Critical Check - Points' },
     { id: 'section-8', title: 'Land Valuation' },
     { id: 'section-9', title: 'Valuation Abstract' },
     { id: 'section-10', title: 'Remarks' },
@@ -4041,6 +4263,19 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'ikf-section-7',
+      title: 'Other Critical Check - Points',
+      number: 7,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <OtherCriticalChecksSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Mortgage / MSME Loan',
@@ -4076,14 +4311,20 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     ikfRealizableValueOfProperty: '6500000',
     ikfDistressForcedSaleValue: '5700000',
     ikfGeoTagDetails: '20.2961° N, 85.8245° E',
+    ikfHowPropertyIdentified: 'Identified during site visit with the help of the customer, boundary verification with title deed, and site survey.',
+    ikfWaterConnectionStatus: 'Active',
+    ikfElectricityConnectionStatus: 'Active',
+    ikfElectricityConnectionNoAndOwner: '',
+    ikfLatestElectricityBillCollected: 'Yes',
+    ikfElectricityBillOnlineVerified: 'Yes',
+    ikfNameOfApartmentOrBuilding: '',
+    ikfOccupancyStatus: 'Self',
+    ikfPeriodOfUnoccupancy: 'NA',
+    ikfPeriodOfUnoccupancyNA: true,
   },
 };
 
 export default function IKFFinance(props: BankReportBuilderProps) {
   return <BankReportBuilder config={IKF_FINANCE_CONFIG} {...props} />;
 }
-
-
-
-
 
