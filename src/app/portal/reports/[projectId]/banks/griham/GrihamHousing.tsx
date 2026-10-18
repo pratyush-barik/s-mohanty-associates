@@ -4,7 +4,8 @@ import React, { useMemo } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock, Scale, ShieldCheck, FileText, Plus, Trash2 } from 'lucide-react';
+import { Lock, Scale, ShieldCheck, FileText, Plus, Trash2, IndianRupee } from 'lucide-react';
+import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
 
@@ -3005,6 +3006,643 @@ export function EngineeringAspectsSection({
   );
 }
 
+// ─── Section 13: Valuation Approaches & Methodology Adopted ─────────────────
+
+export function ValuationApproachesSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  // 1. Adoptable Built-up Area auto-calculated from Section 11 Adopted BUA
+  const autoAdoptableBua = useMemo(() => {
+    const bRows = fields.grihamBuiltUpAreaRows;
+    if (!Array.isArray(bRows) || bRows.length === 0) return 0;
+    let total = 0;
+    bRows.forEach((r: any) => {
+      const a = parseFloat(r.actualBua) || 0;
+      const p = parseFloat(r.permissibleBua) || 0;
+      let minVal = 0;
+      if (a > 0 && p > 0) minVal = Math.min(a, p);
+      else if (a > 0) minVal = a;
+      else if (p > 0) minVal = p;
+
+      const rowAdopted = r.adoptedBuaEditOn
+        ? (parseFloat(r.adoptedBua) || 0)
+        : (parseFloat(r.adoptedBua) || minVal);
+      total += rowAdopted;
+    });
+    return Math.round(total * 100) / 100;
+  }, [fields.grihamBuiltUpAreaRows]);
+
+  const effectiveAdoptableBua = fields.grihamValuationAdoptableBuaEditOn
+    ? (fields.grihamValuationAdoptableBua ?? '')
+    : (autoAdoptableBua > 0 ? String(autoAdoptableBua) : (fields.grihamValuationAdoptableBua || ''));
+
+  // Land Area (in Sqft)
+  const landSqftNum = parseFloat(fields.grihamValuationLandAreaSqft) || 0;
+
+  // 2. Total Land Value auto-calculated: Land Area (In Sqft) * Recommended Rate of Land
+  const landRateNum = parseFloat(fields.grihamValuationRecommendedLandRate) || 0;
+  const autoTotalLandValue = landSqftNum > 0 && landRateNum > 0
+    ? Math.round(landSqftNum * landRateNum)
+    : 0;
+
+  const effectiveTotalLandValue = fields.grihamValuationTotalLandValueEditOn
+    ? (fields.grihamValuationTotalLandValue ?? '')
+    : (autoTotalLandValue > 0 ? String(autoTotalLandValue) : (fields.grihamValuationTotalLandValue || ''));
+
+  // 3. Total Construction Value for 100% complete building: Adoptable Built-up Area * Construction Cost
+  const adoptableBuaNum = parseFloat(effectiveAdoptableBua) || 0;
+  const constCostNum = parseFloat(fields.grihamValuationConstructionCostPerSqft) || 0;
+  const autoConst100 = adoptableBuaNum > 0 && constCostNum > 0
+    ? Math.round(adoptableBuaNum * constCostNum)
+    : 0;
+
+  const effectiveConst100 = fields.grihamValuationTotalConstructionValue100EditOn
+    ? (fields.grihamValuationTotalConstructionValue100 ?? '')
+    : (autoConst100 > 0 ? String(autoConst100) : (fields.grihamValuationTotalConstructionValue100 || ''));
+
+  // 4. Total Construction Value for present stage: Total Const 100% * Total Present Completion % (from Sec 12)
+  const completionPct = useMemo(() => {
+    if (fields.grihamTotalPresentCompletionPct && !isNaN(parseFloat(fields.grihamTotalPresentCompletionPct))) {
+      return parseFloat(fields.grihamTotalPresentCompletionPct);
+    }
+    if (Array.isArray(fields.grihamSlabConstructionRows) && fields.grihamSlabConstructionRows.length > 0) {
+      const sum = fields.grihamSlabConstructionRows.reduce(
+        (acc: number, r: any) => acc + (parseFloat(r.presentCompletionPct) || 0),
+        0
+      );
+      return Math.round(sum * 100) / 100;
+    }
+    return 100;
+  }, [fields.grihamTotalPresentCompletionPct, fields.grihamSlabConstructionRows]);
+
+  const const100Num = parseFloat(effectiveConst100) || 0;
+  const autoConstPresent = const100Num > 0
+    ? Math.round((const100Num * completionPct) / 100)
+    : 0;
+
+  const effectiveConstPresent = fields.grihamValuationTotalConstructionValuePresentEditOn
+    ? (fields.grihamValuationTotalConstructionValuePresent ?? '')
+    : (autoConstPresent > 0 ? String(autoConstPresent) : (fields.grihamValuationTotalConstructionValuePresent || ''));
+
+  // 5. Market Value of Land & Building for present completed property: Total Land Value + Total Construction Value for present stage
+  const landValNum = parseFloat(effectiveTotalLandValue) || 0;
+  const constPresentNum = parseFloat(effectiveConstPresent) || 0;
+  const autoMvPresent = (landValNum > 0 || constPresentNum > 0)
+    ? Math.round(landValNum + constPresentNum)
+    : 0;
+
+  const effectiveMvPresent = fields.grihamValuationMarketValuePresentEditOn
+    ? (fields.grihamValuationMarketValuePresent ?? '')
+    : (autoMvPresent > 0 ? String(autoMvPresent) : (fields.grihamValuationMarketValuePresent || ''));
+
+  // 6. Distress Value of present completed property @ 75% of MV: Market Value * 0.75
+  const mvNum = parseFloat(effectiveMvPresent) || 0;
+  const autoDistress = mvNum > 0 ? Math.round(mvNum * 0.75) : 0;
+
+  const effectiveDistress = fields.grihamValuationDistressValueEditOn
+    ? (fields.grihamValuationDistressValue ?? '')
+    : (autoDistress > 0 ? String(autoDistress) : (fields.grihamValuationDistressValue || ''));
+
+  // 7. Total Land Value as per Government Rate: Land Area (In Sqft) * Govt Guideline for Land
+  const govtLandRateNum = parseFloat(fields.grihamValuationGovtLandRatePerSqft) || 0;
+  const autoGovtLandValue = landSqftNum > 0 && govtLandRateNum > 0
+    ? Math.round(landSqftNum * govtLandRateNum)
+    : 0;
+
+  const effectiveGovtLandValue = fields.grihamValuationTotalLandValueGovtEditOn
+    ? (fields.grihamValuationTotalLandValueGovt ?? '')
+    : (autoGovtLandValue > 0 ? String(autoGovtLandValue) : (fields.grihamValuationTotalLandValueGovt || ''));
+
+  // 8. Total Flat / Apartment Value as per Government Rate: Adoptable Built-up Area * Govt Guideline for Flats
+  const govtFlatRateNum = parseFloat(fields.grihamValuationGovtFlatRatePerSqft) || 0;
+  const autoGovtFlatValue = adoptableBuaNum > 0 && govtFlatRateNum > 0
+    ? Math.round(adoptableBuaNum * govtFlatRateNum)
+    : 0;
+
+  const effectiveGovtFlatValue = fields.grihamValuationTotalFlatValueGovtEditOn
+    ? (fields.grihamValuationTotalFlatValueGovt ?? '')
+    : (autoGovtFlatValue > 0 ? String(autoGovtFlatValue) : (fields.grihamValuationTotalFlatValueGovt || ''));
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Valuation Approaches & Methodology (Mint Green #f1f8e9) */}
+      <div
+        className="rounded-xl p-5 space-y-6 border border-emerald-300/80 shadow-sm"
+        style={{ backgroundColor: '#f1f8e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200/80 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            VALUATION APPROACHES & METHODOLOGY ADOPTED
+          </h3>
+          <span className="text-xs text-emerald-950 font-medium bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-200">
+            Market Valuation, Construction Costing & Govt Guideline Rates
+          </span>
+        </div>
+
+        {/* Card 1: Property Dimensions & Locality Rates */}
+        <div className="bg-white/90 rounded-xl p-5 border border-emerald-200/90 shadow-2xs space-y-4">
+          <div className="flex items-center gap-2 border-b border-emerald-100 pb-2">
+            <span className="font-bold text-gray-800 text-xs sm:text-sm uppercase tracking-wide">
+              Property Dimensions & Locality Rates
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {/* Land Area (As per Legal Docs) */}
+            <Field label={<span className="font-semibold text-gray-700">LAND AREA (AS PER LEGAL DOCS)</span>}>
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.grihamValuationLandAreaDocs ?? (fields.landAreaDocs || fields.legalArea || '')}
+                onChange={(e) => handleChange('grihamValuationLandAreaDocs', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. Ac. 0.050 dec / 2178 sqft"
+              />
+            </Field>
+
+            {/* Land Area (In Sqft) */}
+            <Field label={<span className="font-semibold text-gray-700">LAND AREA (IN SQFT)</span>}>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                className={inputCls}
+                value={fields.grihamValuationLandAreaSqft ?? (fields.landAreaSqft || '')}
+                onChange={(e) => handleChange('grihamValuationLandAreaSqft', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Sqft (e.g. 2178)"
+              />
+            </Field>
+
+            {/* Adoptable Built-up Area (in Sqft) */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">ADOPTABLE BUILT-UP AREA (SQFT)</span>
+                  <EditSwitch
+                    checked={!!fields.grihamValuationAdoptableBuaEditOn}
+                    onChange={(checked) => {
+                      handleChange('grihamValuationAdoptableBuaEditOn', checked);
+                      if (checked) {
+                        handleChange('grihamValuationAdoptableBua', effectiveAdoptableBua);
+                      } else if (autoAdoptableBua > 0) {
+                        handleChange('grihamValuationAdoptableBua', String(autoAdoptableBua));
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  className={`${inputCls} font-medium ${
+                    !fields.grihamValuationAdoptableBuaEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                  }`}
+                  value={effectiveAdoptableBua}
+                  onChange={(e) => handleChange('grihamValuationAdoptableBua', e.target.value)}
+                  disabled={isReadOnly || !fields.grihamValuationAdoptableBuaEditOn}
+                  placeholder="Adopted BUA (Sqft)"
+                />
+                {!fields.grihamValuationAdoptableBuaEditOn && (
+                  <div className="absolute right-2 top-2 text-[10px] text-emerald-900 font-semibold pointer-events-none flex items-center gap-1">
+                    <Lock className="w-2.5 h-2.5" /> Auto: Sec 11 Adopted BUA
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            {/* Current Market Rate in the locality (Range) */}
+            <Field label={<span className="font-semibold text-gray-700">CURRENT MARKET RATE IN LOCALITY (RANGE)</span>}>
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.grihamValuationMarketRateRange || ''}
+                onChange={(e) => handleChange('grihamValuationMarketRateRange', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. 380-450 or 2500-3000 / sqft"
+              />
+            </Field>
+
+            {/* Recommended Rate of Land (Rs per sqft) */}
+            <Field label={<span className="font-semibold text-gray-700">RECOMMENDED RATE OF LAND (RS/SQFT)</span>}>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                className={inputCls}
+                value={fields.grihamValuationRecommendedLandRate || ''}
+                onChange={(e) => handleChange('grihamValuationRecommendedLandRate', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Rate in Rs. per sqft"
+              />
+            </Field>
+
+            {/* Construction Cost (Rs per sft) */}
+            <Field label={<span className="font-semibold text-gray-700">CONSTRUCTION COST (RS/SQFT)</span>}>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                className={inputCls}
+                value={fields.grihamValuationConstructionCostPerSqft || ''}
+                onChange={(e) => handleChange('grihamValuationConstructionCostPerSqft', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Cost in Rs. per sqft"
+              />
+            </Field>
+          </div>
+        </div>
+
+        {/* Card 2: Valuation & Costing Breakdown (Market Approach) */}
+        <div className="bg-white/90 rounded-xl p-5 border border-emerald-200/90 shadow-2xs space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-100 pb-2">
+            <span className="font-bold text-gray-800 text-xs sm:text-sm uppercase tracking-wide">
+              Valuation & Costing Breakdown (Market & Cost Approach)
+            </span>
+            <span className="text-[11px] text-gray-500">
+              Stage Completion: <strong className="text-emerald-700">{completionPct}%</strong> (from Sec 12)
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {/* Total Land Value (in Rs) */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">TOTAL LAND VALUE (RS)</span>
+                  <EditSwitch
+                    checked={!!fields.grihamValuationTotalLandValueEditOn}
+                    onChange={(checked) => {
+                      handleChange('grihamValuationTotalLandValueEditOn', checked);
+                      if (checked) {
+                        handleChange('grihamValuationTotalLandValue', effectiveTotalLandValue);
+                      } else if (autoTotalLandValue > 0) {
+                        handleChange('grihamValuationTotalLandValue', String(autoTotalLandValue));
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  className={`${inputCls} font-medium ${
+                    !fields.grihamValuationTotalLandValueEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                  }`}
+                  value={effectiveTotalLandValue}
+                  onChange={(e) => handleChange('grihamValuationTotalLandValue', e.target.value)}
+                  disabled={isReadOnly || !fields.grihamValuationTotalLandValueEditOn}
+                  placeholder="Total Land Value"
+                />
+                {!fields.grihamValuationTotalLandValueEditOn && (
+                  <div className="absolute right-2 top-2 text-[10px] text-emerald-900 font-semibold pointer-events-none flex items-center gap-1">
+                    <Lock className="w-2.5 h-2.5" /> Auto: Area × Rate
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            {/* Total Construction Value for 100% complete building (in Rs) */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">TOTAL CONST VALUE (100% COMPLETE) (RS)</span>
+                  <EditSwitch
+                    checked={!!fields.grihamValuationTotalConstructionValue100EditOn}
+                    onChange={(checked) => {
+                      handleChange('grihamValuationTotalConstructionValue100EditOn', checked);
+                      if (checked) {
+                        handleChange('grihamValuationTotalConstructionValue100', effectiveConst100);
+                      } else if (autoConst100 > 0) {
+                        handleChange('grihamValuationTotalConstructionValue100', String(autoConst100));
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  className={`${inputCls} font-medium ${
+                    !fields.grihamValuationTotalConstructionValue100EditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                  }`}
+                  value={effectiveConst100}
+                  onChange={(e) => handleChange('grihamValuationTotalConstructionValue100', e.target.value)}
+                  disabled={isReadOnly || !fields.grihamValuationTotalConstructionValue100EditOn}
+                  placeholder="100% Const Value"
+                />
+                {!fields.grihamValuationTotalConstructionValue100EditOn && (
+                  <div className="absolute right-2 top-2 text-[10px] text-emerald-900 font-semibold pointer-events-none flex items-center gap-1">
+                    <Lock className="w-2.5 h-2.5" /> Auto: BUA × Cost
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            {/* Total Construction Value for present construction stage (in Rs) */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">CONST VALUE (PRESENT STAGE) (RS)</span>
+                  <EditSwitch
+                    checked={!!fields.grihamValuationTotalConstructionValuePresentEditOn}
+                    onChange={(checked) => {
+                      handleChange('grihamValuationTotalConstructionValuePresentEditOn', checked);
+                      if (checked) {
+                        handleChange('grihamValuationTotalConstructionValuePresent', effectiveConstPresent);
+                      } else if (autoConstPresent > 0) {
+                        handleChange('grihamValuationTotalConstructionValuePresent', String(autoConstPresent));
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  className={`${inputCls} font-medium ${
+                    !fields.grihamValuationTotalConstructionValuePresentEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                  }`}
+                  value={effectiveConstPresent}
+                  onChange={(e) => handleChange('grihamValuationTotalConstructionValuePresent', e.target.value)}
+                  disabled={isReadOnly || !fields.grihamValuationTotalConstructionValuePresentEditOn}
+                  placeholder="Present Stage Value"
+                />
+                {!fields.grihamValuationTotalConstructionValuePresentEditOn && (
+                  <div className="absolute right-2 top-2 text-[10px] text-emerald-900 font-semibold pointer-events-none flex items-center gap-1">
+                    <Lock className="w-2.5 h-2.5" /> Auto: 100% × {completionPct}%
+                  </div>
+                )}
+              </div>
+            </Field>
+          </div>
+
+          {/* Highlight Cards: Market Value & Distress Value */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-3 border-t border-emerald-100">
+            {/* Market Value of Land & Building for present completed property (in Rs) */}
+            <div className="rounded-xl border border-emerald-300 bg-gradient-to-br from-emerald-50/90 to-teal-50/70 p-4 space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-emerald-900 uppercase tracking-wide">
+                  MARKET VALUE (PRESENT COMPLETED PROPERTY)
+                </span>
+                <EditSwitch
+                  checked={!!fields.grihamValuationMarketValuePresentEditOn}
+                  onChange={(checked) => {
+                    handleChange('grihamValuationMarketValuePresentEditOn', checked);
+                    if (checked) {
+                      handleChange('grihamValuationMarketValuePresent', effectiveMvPresent);
+                    } else if (autoMvPresent > 0) {
+                      handleChange('grihamValuationMarketValuePresent', String(autoMvPresent));
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+
+              <div className="relative">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  className={`${inputCls} text-lg font-bold ${
+                    !fields.grihamValuationMarketValuePresentEditOn
+                      ? 'bg-white/90 text-emerald-950 border-emerald-300'
+                      : 'bg-white text-gray-900'
+                  }`}
+                  value={effectiveMvPresent}
+                  onChange={(e) => handleChange('grihamValuationMarketValuePresent', e.target.value)}
+                  disabled={isReadOnly || !fields.grihamValuationMarketValuePresentEditOn}
+                  placeholder="Market Value (Rs)"
+                />
+                {!fields.grihamValuationMarketValuePresentEditOn && (
+                  <div className="absolute right-2 top-2.5 text-[10px] text-emerald-900 font-semibold pointer-events-none flex items-center gap-1">
+                    <Lock className="w-2.5 h-2.5" /> Auto: Land + Stage Const
+                  </div>
+                )}
+              </div>
+
+              {mvNum > 0 && (
+                <div className="text-xs text-emerald-900 bg-white/70 rounded-lg p-2.5 border border-emerald-200/80 space-y-1">
+                  <div className="flex items-center justify-between font-bold">
+                    <span>Formatted:</span>
+                    <span className="text-emerald-950 font-mono">Rs. {formatIndianCurrency(mvNum)}/-</span>
+                  </div>
+                  <div className="text-[11px] text-gray-600 italic">
+                    Rupees {rupeesInWords(mvNum)} Only
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Distress Value of present completed property @ 75% of MV */}
+            <div className="rounded-xl border border-amber-300 bg-gradient-to-br from-amber-50/80 to-yellow-50/60 p-4 space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-amber-900 uppercase tracking-wide">
+                  DISTRESS VALUE (@ 75% OF MV)
+                </span>
+                <EditSwitch
+                  checked={!!fields.grihamValuationDistressValueEditOn}
+                  onChange={(checked) => {
+                    handleChange('grihamValuationDistressValueEditOn', checked);
+                    if (checked) {
+                      handleChange('grihamValuationDistressValue', effectiveDistress);
+                    } else if (autoDistress > 0) {
+                      handleChange('grihamValuationDistressValue', String(autoDistress));
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+
+              <div className="relative">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  className={`${inputCls} text-lg font-bold ${
+                    !fields.grihamValuationDistressValueEditOn
+                      ? 'bg-white/90 text-amber-950 border-amber-300'
+                      : 'bg-white text-gray-900'
+                  }`}
+                  value={effectiveDistress}
+                  onChange={(e) => handleChange('grihamValuationDistressValue', e.target.value)}
+                  disabled={isReadOnly || !fields.grihamValuationDistressValueEditOn}
+                  placeholder="Distress Value (Rs)"
+                />
+                {!fields.grihamValuationDistressValueEditOn && (
+                  <div className="absolute right-2 top-2.5 text-[10px] text-amber-900 font-semibold pointer-events-none flex items-center gap-1">
+                    <Lock className="w-2.5 h-2.5" /> Auto: MV × 75%
+                  </div>
+                )}
+              </div>
+
+              {autoDistress > 0 && (
+                <div className="text-xs text-amber-900 bg-white/70 rounded-lg p-2.5 border border-amber-200/80 space-y-1">
+                  <div className="flex items-center justify-between font-bold">
+                    <span>Formatted:</span>
+                    <span className="text-amber-950 font-mono">
+                      Rs. {formatIndianCurrency(parseFloat(effectiveDistress) || autoDistress)}/-
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-gray-600 italic">
+                    Rupees {rupeesInWords(parseFloat(effectiveDistress) || autoDistress)} Only
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: Government Guideline Rates & Statutory Valuation */}
+        <div className="bg-white/90 rounded-xl p-5 border border-emerald-200/90 shadow-2xs space-y-4">
+          <div className="flex items-center gap-2 border-b border-emerald-100 pb-2">
+            <span className="font-bold text-gray-800 text-xs sm:text-sm uppercase tracking-wide">
+              Government Guideline Rates & Benchmark Valuation
+            </span>
+            <span className="text-[10px] text-emerald-900 font-semibold bg-emerald-100 px-2 py-0.5 rounded">
+              Statutory Benchmark
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Government Guideline for Land (Rs per sqft) */}
+            <Field label={<span className="font-semibold text-gray-700">GOVERNMENT GUIDELINE FOR LAND (RS/SQFT)</span>}>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                className={inputCls}
+                value={fields.grihamValuationGovtLandRatePerSqft || ''}
+                onChange={(e) => handleChange('grihamValuationGovtLandRatePerSqft', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Govt. land rate per sqft"
+              />
+            </Field>
+
+            {/* Total Land Value as per Government Rate (Rs) */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">TOTAL LAND VALUE AS PER GOVT RATE (RS)</span>
+                  <EditSwitch
+                    checked={!!fields.grihamValuationTotalLandValueGovtEditOn}
+                    onChange={(checked) => {
+                      handleChange('grihamValuationTotalLandValueGovtEditOn', checked);
+                      if (checked) {
+                        handleChange('grihamValuationTotalLandValueGovt', effectiveGovtLandValue);
+                      } else if (autoGovtLandValue > 0) {
+                        handleChange('grihamValuationTotalLandValueGovt', String(autoGovtLandValue));
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  className={`${inputCls} font-medium ${
+                    !fields.grihamValuationTotalLandValueGovtEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                  }`}
+                  value={effectiveGovtLandValue}
+                  onChange={(e) => handleChange('grihamValuationTotalLandValueGovt', e.target.value)}
+                  disabled={isReadOnly || !fields.grihamValuationTotalLandValueGovtEditOn}
+                  placeholder="Total Govt Land Value"
+                />
+                {!fields.grihamValuationTotalLandValueGovtEditOn && (
+                  <div className="absolute right-2 top-2 text-[10px] text-emerald-900 font-semibold pointer-events-none flex items-center gap-1">
+                    <Lock className="w-2.5 h-2.5" /> Auto: Land Area × Govt Rate
+                  </div>
+                )}
+              </div>
+            </Field>
+
+            {/* Government Guideline for Flats (Rs per sqft) */}
+            <Field label={<span className="font-semibold text-gray-700">GOVERNMENT GUIDELINE FOR FLATS (RS/SQFT)</span>}>
+              <input
+                type="number"
+                step="any"
+                min="0"
+                className={inputCls}
+                value={fields.grihamValuationGovtFlatRatePerSqft || ''}
+                onChange={(e) => handleChange('grihamValuationGovtFlatRatePerSqft', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Govt. flat rate per sqft"
+              />
+            </Field>
+
+            {/* Total Flat / Apartment Value as per Government Rate (Rs) */}
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">TOTAL FLAT VALUE AS PER GOVT RATE (RS)</span>
+                  <EditSwitch
+                    checked={!!fields.grihamValuationTotalFlatValueGovtEditOn}
+                    onChange={(checked) => {
+                      handleChange('grihamValuationTotalFlatValueGovtEditOn', checked);
+                      if (checked) {
+                        handleChange('grihamValuationTotalFlatValueGovt', effectiveGovtFlatValue);
+                      } else if (autoGovtFlatValue > 0) {
+                        handleChange('grihamValuationTotalFlatValueGovt', String(autoGovtFlatValue));
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  step="any"
+                  min="0"
+                  className={`${inputCls} font-medium ${
+                    !fields.grihamValuationTotalFlatValueGovtEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                  }`}
+                  value={effectiveGovtFlatValue}
+                  onChange={(e) => handleChange('grihamValuationTotalFlatValueGovt', e.target.value)}
+                  disabled={isReadOnly || !fields.grihamValuationTotalFlatValueGovtEditOn}
+                  placeholder="Total Govt Flat Value"
+                />
+                {!fields.grihamValuationTotalFlatValueGovtEditOn && (
+                  <div className="absolute right-2 top-2 text-[10px] text-emerald-900 font-semibold pointer-events-none flex items-center gap-1">
+                    <Lock className="w-2.5 h-2.5" /> Auto: Adopted BUA × Govt Flat Rate
+                  </div>
+                )}
+              </div>
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -3044,6 +3682,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     { id: 'griham-section-10', title: 'MARKETABILITY OF THE PROPERTY' },
     { id: 'griham-section-11', title: 'ARCHITECTURAL ASPECTS OF THE PROPERTY' },
     { id: 'griham-section-12', title: 'ENGINEERING ASPECTS OF THE PROPERTY' },
+    { id: 'griham-section-13', title: 'VALUATION APPROACHES & METHODOLOGY ADOPTED' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-11', title: 'Property Photographs' },
   ],
@@ -3211,6 +3850,30 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     grihamSlabConstructionRows: DEFAULT_SLAB_CONSTRUCTION_ROWS,
     grihamTotalPresentCompletionPct: '',
     grihamTotalPresentCompletionEditOn: false,
+    // Section 13
+    grihamValuationLandAreaDocs: '',
+    grihamValuationLandAreaSqft: '',
+    grihamValuationAdoptableBua: '',
+    grihamValuationAdoptableBuaEditOn: false,
+    grihamValuationMarketRateRange: '',
+    grihamValuationRecommendedLandRate: '',
+    grihamValuationConstructionCostPerSqft: '',
+    grihamValuationTotalLandValue: '',
+    grihamValuationTotalLandValueEditOn: false,
+    grihamValuationTotalConstructionValue100: '',
+    grihamValuationTotalConstructionValue100EditOn: false,
+    grihamValuationTotalConstructionValuePresent: '',
+    grihamValuationTotalConstructionValuePresentEditOn: false,
+    grihamValuationMarketValuePresent: '',
+    grihamValuationMarketValuePresentEditOn: false,
+    grihamValuationDistressValue: '',
+    grihamValuationDistressValueEditOn: false,
+    grihamValuationGovtLandRatePerSqft: '',
+    grihamValuationTotalLandValueGovt: '',
+    grihamValuationTotalLandValueGovtEditOn: false,
+    grihamValuationGovtFlatRatePerSqft: '',
+    grihamValuationTotalFlatValueGovt: '',
+    grihamValuationTotalFlatValueGovtEditOn: false,
   },
   extraSectionsStart: [
     {
@@ -3358,6 +4021,19 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <EngineeringAspectsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'griham-section-13',
+      title: 'VALUATION APPROACHES & METHODOLOGY ADOPTED',
+      number: 13,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ValuationApproachesSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
