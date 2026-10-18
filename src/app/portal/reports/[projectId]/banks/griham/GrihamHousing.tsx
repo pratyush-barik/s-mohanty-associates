@@ -299,6 +299,189 @@ function ObjectiveSection({
   );
 }
 
+// ─── Section 2: Scope of Enquiries and Investigation ────────────────────────
+
+const DEFAULT_SIGNATORY = 'S MOHANTY ASSOCIATES';
+
+function ScopeOfEnquiriesSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
+
+  // Date of Report Submission
+  const effectiveSubmissionDate = fields.grihamDateOfReportSubmissionEditOn
+    ? (fields.grihamDateOfReportSubmission ?? '')
+    : (fields.grihamDateOfReportSubmission || todayStr);
+
+  // Authorized Signatory
+  const effectiveSignatory = fields.grihamAuthorizedSignatoryEditOn
+    ? (fields.grihamAuthorizedSignatory ?? '')
+    : (fields.grihamAuthorizedSignatory || DEFAULT_SIGNATORY);
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Scope of Enquiries (Light Blue #e3f2fd) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-blue-200 shadow-sm"
+        style={{ backgroundColor: '#e3f2fd' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-200/80 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            SCOPE OF ENQUIRIES AND INVESTIGATION
+          </h3>
+          <span className="text-xs text-blue-800 font-medium bg-blue-100 px-2.5 py-1 rounded-md border border-blue-200">
+            Inspection & Verification
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* 1. Date of Inspection / Site visit */}
+          <Field label={<span className="font-semibold text-gray-700">DATE OF INSPECTION / SITE VISIT</span>}>
+            <input
+              type="date"
+              className={inputCls}
+              value={fields.grihamDateOfInspection || ''}
+              onChange={(e) => handleChange('grihamDateOfInspection', e.target.value)}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* 2. Name of the Person met at site & Contact No. */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">PERSON MET AT SITE & CONTACT NO.</span>
+                <NaCheckbox
+                  checked={!!fields.grihamPersonMetAtSiteNa}
+                  onChange={(checked) => {
+                    handleChange('grihamPersonMetAtSiteNa', checked);
+                    handleChange('grihamPersonMetAtSite', checked ? 'NA' : '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${fields.grihamPersonMetAtSiteNa ? 'bg-gray-100 text-gray-500 italic' : ''}`}
+              value={fields.grihamPersonMetAtSiteNa ? 'NA' : (fields.grihamPersonMetAtSite || '')}
+              onChange={(e) => handleChange('grihamPersonMetAtSite', e.target.value)}
+              disabled={isReadOnly || !!fields.grihamPersonMetAtSiteNa}
+              placeholder="Name & Contact number"
+            />
+          </Field>
+
+          {/* 3. Identified Through */}
+          <Field label={<span className="font-semibold text-gray-700">IDENTIFIED THROUGH</span>}>
+            <CustomSelect
+              value={fields.grihamIdentifiedThrough || 'Legal docs'}
+              customValue={fields.grihamIdentifiedThroughCustom || ''}
+              onChange={(val) => handleChange('grihamIdentifiedThrough', val)}
+              onCustomChange={(val) => handleChange('grihamIdentifiedThroughCustom', val)}
+              options={[
+                { value: 'Legal docs', label: 'Legal docs' },
+                { value: 'Site Map', label: 'Site Map' },
+                { value: 'Customer', label: 'Customer' },
+                { value: 'Local enquiry', label: 'Local enquiry' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select identification method..."
+            />
+          </Field>
+
+          {/* 4. Date of Report Submission */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">DATE OF REPORT SUBMISSION</span>
+                <EditSwitch
+                  checked={!!fields.grihamDateOfReportSubmissionEditOn}
+                  onChange={(checked) => {
+                    handleChange('grihamDateOfReportSubmissionEditOn', checked);
+                    if (!checked) handleChange('grihamDateOfReportSubmission', todayStr);
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="date"
+                className={`${inputCls} font-medium ${
+                  !fields.grihamDateOfReportSubmissionEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                }`}
+                value={effectiveSubmissionDate}
+                onChange={(e) => handleChange('grihamDateOfReportSubmission', e.target.value)}
+                disabled={isReadOnly || !fields.grihamDateOfReportSubmissionEditOn}
+              />
+              {!fields.grihamDateOfReportSubmissionEditOn && (
+                <div className="absolute right-8 top-2.5 text-xs text-emerald-700 font-semibold pointer-events-none flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Today
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* 5. Authorized Signatory Name & Signature */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">AUTHORIZED SIGNATORY NAME</span>
+                <EditSwitch
+                  checked={!!fields.grihamAuthorizedSignatoryEditOn}
+                  onChange={(checked) => {
+                    handleChange('grihamAuthorizedSignatoryEditOn', checked);
+                    if (!checked) handleChange('grihamAuthorizedSignatory', DEFAULT_SIGNATORY);
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className={`${inputCls} font-medium ${
+                  !fields.grihamAuthorizedSignatoryEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                }`}
+                value={effectiveSignatory}
+                onChange={(e) => handleChange('grihamAuthorizedSignatory', e.target.value)}
+                disabled={isReadOnly || !fields.grihamAuthorizedSignatoryEditOn}
+                placeholder="Authorized Signatory Name"
+              />
+              {!fields.grihamAuthorizedSignatoryEditOn && (
+                <div className="absolute right-3 top-2.5 text-xs text-emerald-700 font-semibold pointer-events-none flex items-center gap-1">
+                  <Lock className="w-3 h-3" /> Prefilled
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* 6. Name of Engineer Visited the property */}
+          <Field label={<span className="font-semibold text-gray-700">NAME OF VISITING ENGINEER</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.grihamEngineerVisited || ''}
+              onChange={(e) => handleChange('grihamEngineerVisited', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Engineer name"
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -326,6 +509,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
   hideDefaultDeclarationAndCertificate: true,
   navSections: [
     { id: 'griham-section-1', title: 'OBJECTIVE' },
+    { id: 'griham-section-2', title: 'SCOPE OF ENQUIRIES AND INVESTIGATION' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -338,6 +522,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
   },
   defaultValues: {
     purpose: 'Housing Loan / Mortgage',
+    // Section 1
     grihamValuationAgency: DEFAULT_VALUATION_AGENCY,
     grihamValuationAgencyEditOn: false,
     grihamDateOfValuation: '',
@@ -348,6 +533,17 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     grihamProposalNo: '',
     grihamCaseType: 'LAP',
     grihamCaseTypeCustom: '',
+    // Section 2
+    grihamDateOfInspection: '',
+    grihamPersonMetAtSite: '',
+    grihamPersonMetAtSiteNa: false,
+    grihamIdentifiedThrough: 'Legal docs',
+    grihamIdentifiedThroughCustom: '',
+    grihamDateOfReportSubmission: '',
+    grihamDateOfReportSubmissionEditOn: false,
+    grihamAuthorizedSignatory: DEFAULT_SIGNATORY,
+    grihamAuthorizedSignatoryEditOn: false,
+    grihamEngineerVisited: '',
   },
   extraSectionsStart: [
     {
@@ -361,6 +557,19 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
           handleChange={handleChange}
           isReadOnly={isReadOnly}
           projectCode={projectCode}
+        />
+      ),
+    },
+    {
+      id: 'griham-section-2',
+      title: 'SCOPE OF ENQUIRIES AND INVESTIGATION',
+      number: 2,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ScopeOfEnquiriesSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
         />
       ),
     },
