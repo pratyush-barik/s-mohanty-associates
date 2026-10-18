@@ -50,3 +50,32 @@
   3. Bank / Organisation Name (e.g. `YES BANK`, `TATA CAPITAL LTD`)
   4. Sub-template ONLY IF explicitly selected in the wizard (e.g. `SME-BLG`, `HL-LAP`, `Land & Building`).
 - NEVER inject `'Standard'`, `'Valuation Report'`, `'Default'`, or any hardcoded fallback as a subclass badge.
+
+### 6. Strict Status Tracking & Anti-Hallucination Invariant (NO Premature Completion)
+- **CRITICAL ANTI-HALLUCINATION RULE**: When a bank builder UI and PDF renderer are created, its status in `BANK_REPORT_PROGRESS.md` MUST ALWAYS be marked:
+  - `Base Structure: ✅ Created Base`
+  - `Status: 🔨 In Progress`
+- It MUST be placed under **Section 2: Base Structure Completed (`✅ Created Base` — Builder In Progress)**.
+- **NEVER mark any bank as `✅ Completed`** unless the user explicitly inspects it and specifically instructs in chat to mark it completed.
+- Only the 15 original baseline templates are allowed to be in Section 1 (`✅ Completed`).
+- Conflating scaffold/base creation with completion is strictly forbidden.
+
+### 7. Layout, Styling & Valuation Memory Standards
+- **Color Palette & Accents**:
+  - Primary accent: Blue/Indigo system (`blue-600`, `blue-700`) for headers, borders, and main CTA actions.
+  - Valuation highlights: Amber/Orange badges (`amber-100`, `amber-800`, `amber-500`) for Title Card tags and status indicators.
+  - Value summary cards: Emerald/Green (`emerald-50`, `emerald-700`, `emerald-600`) for Final Realizable / Market Value callouts.
+- **Auto-Calculations**:
+  - Always wire up dynamic calculations in real-time (`useEffect` or pure memoized derived values):
+    - Land Value = Land Area × Land Rate
+    - Built-up Area (BUA) Construction Value = Total BUA × Construction Rate
+    - Total Market Value = Land Value + Construction Value + Extra Amenities
+    - Distress / Forced Sale Value (QSV) = Total Market Value × (typically 80%)
+    - Conservative Value = Total Market Value × (typically 90%)
+    - Insurable Value = Construction Cost / Depreciated Structure Value
+  - All calculated monetary values must display in Indian numbering format (`1,00,000` / `Lakhs` / `Crores`) with matching words representation.
+- **Attachment Suites**:
+  - `BaseDocumentsSection`: Document gallery with upload, preview, and verification checklist.
+  - `BaseMapsSection`: Route map, layout plan, mouza map, and site sketch with GPS coordinate tags.
+  - `BasePhotographsSection`: Photo grid with category bucket picker (`Front Elevation`, `Interior`, `Surrounding Road`, `Boundary`, etc.) and caption inputs.
+
