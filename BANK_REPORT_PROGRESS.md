@@ -65,7 +65,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **29** | **INDUSIND BANK** | | | |
 | 29.1 | INDUSIND BANK | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
 | 29.2 | INDUSIND BANK | `BBG` | ✅ Created Base | 🔨 In Progress |
-| **30** | **ISFC** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **30** | **ISFC** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **31** | **JANA SMALL FINANCE BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **32** | **KOTAK MAHINDRA BANK** | | | |
 | 32.1 | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` | ✅ Created Base | 🔨 In Progress |
@@ -155,6 +155,7 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **27** | IKF FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/ikf/IKFFinance.tsx` | `src/lib/banks/pdf-ikf-finance-render.ts` | 🔨 In Progress |
 | **29.1** | INDUSIND BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/indusind/IndusIndHLLAP.tsx` | `src/lib/banks/pdf-indusind-hllap-renderer.ts` | 🔨 In Progress |
 | **29.2** | INDUSIND BANK | `BBG` | `src/app/portal/reports/[projectId]/banks/indusind/IndusIndBBG.tsx` | `src/lib/banks/pdf-indusind-bbg-renderer.ts` | 🔨 In Progress |
+| **30** | ISFC | `Standard` | `src/app/portal/reports/[projectId]/banks/isfc/ISFC.tsx` | `src/lib/banks/pdf-isfc-render.ts` | 🔨 In Progress |
 | **32.1** | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` (`kotak-bbg`) | `src/app/portal/reports/[projectId]/banks/kotak/KotakBBG.tsx` | `src/lib/banks/pdf-kotak-bbg-renderer.ts` | 🔨 In Progress |
 | **33** | L&T FINANCIAL SERVICES | `Standard` | `src/app/portal/reports/[projectId]/banks/lt/LTFinancialServices.tsx` | `src/lib/banks/pdf-lt-financial-services-renderer.ts` | 🔨 In Progress |
 | **34.1** | LIC HOUSING FINANCE LTD | `NPA-DEFAULT CASES` | `src/app/portal/reports/[projectId]/banks/lic/LICNPA.tsx` | `src/lib/banks/pdf-lic-npa-renderer.ts` | 🔨 In Progress |
