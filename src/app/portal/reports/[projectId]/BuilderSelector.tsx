@@ -117,6 +117,11 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'GIC HOUSING FINANCE': dynamic(() => import('./banks/gic/GICHousing')),
   'GRIHAM HOUSING FINANCE': dynamic(() => import('./banks/griham/GrihamHousing')),
   'HDB FINANCIAL SERVICES': dynamic(() => import('./banks/hdb/HDBFinancial')),
+  'HDB FINANCIAL SERVICES LTD': dynamic(() => import('./banks/hdb/HDBFinancial')),
+  'HDB FINANCIAL SERVICES LIMITED': dynamic(() => import('./banks/hdb/HDBFinancial')),
+  'HDB FINANCIAL': dynamic(() => import('./banks/hdb/HDBFinancial')),
+  'HDB': dynamic(() => import('./banks/hdb/HDBFinancial')),
+  'HDBFS': dynamic(() => import('./banks/hdb/HDBFinancial')),
   'HDFC BANK::HL-LAP-BLG': dynamic(() => import('./banks/hdfc/HDFCBankHLLAPBLG')),
   'HDFC BANK': dynamic(() => import('./banks/hdfc/HDFCBankHLLAPBLG')),
 

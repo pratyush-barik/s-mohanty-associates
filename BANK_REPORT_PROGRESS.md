@@ -60,7 +60,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | 25.1 | IDBI BANK | `Land & Building` | ✅ Created Base | 🔨 In Progress |
 | 25.2 | IDBI BANK | `Flat & Apartment` | ✅ Created Base | 🔨 In Progress |
 | **26** | **IDFC FIRST BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **27** | **IKF FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **27** | **IKF FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **28** | **INDIAN BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **29** | **INDUSIND BANK** | | | |
 | 29.1 | INDUSIND BANK | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
@@ -146,11 +146,13 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **18** | CLIX CAPITAL LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/clix/ClixCapital.tsx` | `src/lib/banks/pdf-clix-capital-renderer.ts` | 🔨 In Progress |
 | **20** | GIC HOUSING FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/gic/GICHousing.tsx` | `src/lib/banks/pdf-gic-housing-render.ts` | 🔨 In Progress |
 | **21** | GRIHAM HOUSING FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/griham/GrihamHousing.tsx` | `src/lib/banks/pdf-griham-housing-renderer.ts` | 🔨 In Progress |
+| **22** | HDB FINANCIAL SERVICES | `Standard` | `src/app/portal/reports/[projectId]/banks/hdb/HDBFinancial.tsx` | `src/lib/banks/pdf-hdb-financial-render.ts` | 🔨 In Progress |
 | **24.1** | ICICI BANK | `HL-LAP-BBG` (`icici-hllap-bbg`) | `src/app/portal/reports/[projectId]/banks/icici/ICICIBankHLLAPBBG.tsx` | `src/lib/banks/pdf-icici-bank-hllap-bbg-renderer.ts` | 🔨 In Progress |
 | **24.2** | ICICI BANK | `NPA` (`icici-npa`) | `src/app/portal/reports/[projectId]/banks/icici/ICICIBankNPA.tsx` | `src/lib/banks/pdf-icici-bank-npa-renderer.ts` | 🔨 In Progress |
 | **25.1** | IDBI BANK | `Land & Building` / `BELOW 5CR` | `src/app/portal/reports/[projectId]/banks/idbi/IDBIBankBelow5CR.tsx` | `src/lib/banks/pdf-sbi-land-and-building-renderer.ts` | 🔨 In Progress |
 | **25.2** | IDBI BANK | `Flat & Apartment` / `ABOVE 5CR` | `src/app/portal/reports/[projectId]/banks/idbi/IDBIBankAbove5CR.tsx` | `src/lib/banks/pdf-sbi-flat-and-apartment-renderer.ts` | 🔨 In Progress |
 | **26** | IDFC FIRST BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/idfc/IDFCFirstBank.tsx` | `src/lib/banks/pdf-idfc-first-bank-renderer.ts` | 🔨 In Progress |
+| **27** | IKF FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/ikf/IKFFinance.tsx` | `src/lib/banks/pdf-ikf-finance-render.ts` | 🔨 In Progress |
 | **29.1** | INDUSIND BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/indusind/IndusIndHLLAP.tsx` | `src/lib/banks/pdf-indusind-hllap-renderer.ts` | 🔨 In Progress |
 | **29.2** | INDUSIND BANK | `BBG` | `src/app/portal/reports/[projectId]/banks/indusind/IndusIndBBG.tsx` | `src/lib/banks/pdf-indusind-bbg-renderer.ts` | 🔨 In Progress |
 | **32.1** | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` (`kotak-bbg`) | `src/app/portal/reports/[projectId]/banks/kotak/KotakBBG.tsx` | `src/lib/banks/pdf-kotak-bbg-renderer.ts` | 🔨 In Progress |
