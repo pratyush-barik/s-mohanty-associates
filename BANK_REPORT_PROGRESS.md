@@ -10,9 +10,9 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 
 | Status Category | Count | Description |
 | :--- | :---: | :--- |
-| **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
-| **🔨 In Progress** | **48 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment, SBI Land & Building, HDB Financial, and IKF Finance) |
-| **⏳ Not Started** | **14 formats** | Directory reserved / pending base component creation |
+| **✅ Completed** | **16 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
+| **🔨 In Progress** | **49 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, and Poonawalla Finance) |
+| **⏳ Not Started** | **11 formats** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
@@ -83,8 +83,8 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **37** | **NAVDHAN FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **38** | **NEO GROWTH** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **39** | **PNB HOUSING FINANCE LTD** | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
-| **40** | **POONAWALLA FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
-| **41** | **PROTEUM FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **40** | **POONAWALLA FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
+| **41** | **PROTEUM FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
 | **42** | **PUNJAB & SIND BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **43** | **PUNJAB NATIONAL BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **44** | **PURPLE FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
@@ -168,6 +168,7 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **37** | NAVDHAN FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/navdhan/NavdhanFinance.tsx` | `src/lib/banks/pdf-navdhan-finance-renderer.ts` | 🔨 In Progress |
 | **38** | NEO GROWTH | `Standard` | `src/app/portal/reports/[projectId]/banks/neo/NeoGrowth.tsx` | `src/lib/banks/pdf-neo-growth-renderer.ts` | 🔨 In Progress |
 | **39** | PNB HOUSING FINANCE LTD | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/pnb-housing/PNBHousingHLLAP.tsx` | `src/lib/banks/pdf-pnb-housing-renderer.ts` | 🔨 In Progress |
+| **40** | POONAWALLA FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/poonawalla/PoonawallaFinance.tsx` | `src/lib/banks/pdf-poonawalla-finance-renderer.ts` | 🔨 In Progress |
 | **44** | PURPLE FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/purple/PurpleFinance.tsx` | `src/lib/banks/pdf-purple-finance-renderer.ts` | 🔨 In Progress |
 | **45** | SAMMUNATI FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/sammunati/SammunatiFinance.tsx` | `src/lib/banks/pdf-sammunati-finance-renderer.ts` | 🔨 In Progress |
 | **46** | SHRIRAM FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/shriram/ShriramFinance.tsx` | `src/lib/banks/pdf-shriram-finance-renderer.ts` | 🔨 In Progress |
