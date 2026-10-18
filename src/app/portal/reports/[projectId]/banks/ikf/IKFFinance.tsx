@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass } from 'lucide-react';
+import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass, Home, Plus, Trash2 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
 
@@ -1782,6 +1782,752 @@ export function StructureAndSpecificationsSection({
   );
 }
 
+// ─── Section 3: III) DETAILS FOR THE PROPERTY UNDER REFERENCE Component ──────
+
+export function PropertyUnderReferenceSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  // Area considered for the purpose of valuation: (Prefill from "Area as per sale agreement", Edit button: OFF)
+  const defaultArea = fields.ikfAreaAsPerDeed || '';
+  const effectiveAreaConsidered = fields.ikfAreaConsideredForValuationEditOn
+    ? (fields.ikfAreaConsideredForValuation ?? '')
+    : (fields.ikfAreaConsideredForValuation || defaultArea);
+
+  // Table 14: Adherence to Sanction Plan rows
+  const adherenceRows = useMemo(() => {
+    if (Array.isArray(fields.ikfAdherenceFloorRows) && fields.ikfAdherenceFloorRows.length > 0) {
+      return fields.ikfAdherenceFloorRows;
+    }
+    return [
+      { id: '1', floor: 'Ground Floor', permissible: '', permissibleNA: false, actual: '', actualNA: false, remarks: '', remarksNA: false },
+      { id: '2', floor: 'First Floor', permissible: '', permissibleNA: false, actual: '', actualNA: false, remarks: '', remarksNA: false },
+      { id: '3', floor: 'Second Floor', permissible: '', permissibleNA: false, actual: '', actualNA: false, remarks: '', remarksNA: false },
+    ];
+  }, [fields.ikfAdherenceFloorRows]);
+
+  const updateAdherenceRow = (idx: number, fieldName: string, val: any) => {
+    const updated = adherenceRows.map((row: any, i: number) => {
+      if (i === idx) {
+        return { ...row, [fieldName]: val };
+      }
+      return row;
+    });
+    handleChange('ikfAdherenceFloorRows', updated);
+  };
+
+  const addAdherenceRow = () => {
+    const newRow = {
+      id: Date.now().toString(),
+      floor: `Floor ${adherenceRows.length + 1}`,
+      permissible: '',
+      permissibleNA: false,
+      actual: '',
+      actualNA: false,
+      remarks: '',
+      remarksNA: false,
+    };
+    handleChange('ikfAdherenceFloorRows', [...adherenceRows, newRow]);
+  };
+
+  const removeAdherenceRow = (idx: number) => {
+    if (adherenceRows.length <= 1) return;
+    const updated = adherenceRows.filter((_: any, i: number) => i !== idx);
+    handleChange('ikfAdherenceFloorRows', updated);
+  };
+
+  // Table 17: Property Currently Occupied by & Future / Present Rental Value
+  const rentalRows = useMemo(() => {
+    if (Array.isArray(fields.ikfRentalValueRows) && fields.ikfRentalValueRows.length > 0) {
+      return fields.ikfRentalValueRows;
+    }
+    return [
+      { id: '1', byelaws: 'Residential (As per norms)', byelawsNA: false, units: '1', unitsNA: false, typeOfUnit: '2 BHK', typeOfUnitNA: false, rentPm: '10,000', rentPmNA: false, occupiedBy: 'Self-Occupied', occupiedByNA: false },
+      { id: '2', byelaws: 'Residential (As per norms)', byelawsNA: false, units: '1', unitsNA: false, typeOfUnit: '2 BHK', typeOfUnitNA: false, rentPm: '8,000', rentPmNA: false, occupiedBy: 'Tenant', occupiedByNA: false },
+    ];
+  }, [fields.ikfRentalValueRows]);
+
+  const updateRentalRow = (idx: number, fieldName: string, val: any) => {
+    const updated = rentalRows.map((row: any, i: number) => {
+      if (i === idx) {
+        return { ...row, [fieldName]: val };
+      }
+      return row;
+    });
+    handleChange('ikfRentalValueRows', updated);
+  };
+
+  const addRentalRow = () => {
+    const newRow = {
+      id: Date.now().toString(),
+      byelaws: 'Residential',
+      byelawsNA: false,
+      units: '1',
+      unitsNA: false,
+      typeOfUnit: 'Unit',
+      typeOfUnitNA: false,
+      rentPm: '',
+      rentPmNA: false,
+      occupiedBy: 'Self-Occupied',
+      occupiedByNA: false,
+    };
+    handleChange('ikfRentalValueRows', [...rentalRows, newRow]);
+  };
+
+  const removeRentalRow = (idx: number) => {
+    if (rentalRows.length <= 1) return;
+    const updated = rentalRows.filter((_: any, i: number) => i !== idx);
+    handleChange('ikfRentalValueRows', updated);
+  };
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Container: Property Particulars (Light Green '#e8f5e9') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-emerald-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Home className="w-5 h-5 text-emerald-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Property Particulars
+            </h3>
+          </div>
+          <span className="text-xs text-emerald-800 font-medium bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300">
+            Internal Details, Finishes & Valuation Parameters
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* No. of floors and flats on each floor: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">No. of floors and flats on each floor</span>
+                <NaCheckbox
+                  checked={!!fields.ikfFloorsAndFlatsOnEachNA}
+                  onChange={(checked) => {
+                    handleChange('ikfFloorsAndFlatsOnEachNA', checked);
+                    if (checked) handleChange('ikfFloorsAndFlatsOnEach', 'NA');
+                    else if (fields.ikfFloorsAndFlatsOnEach === 'NA') handleChange('ikfFloorsAndFlatsOnEach', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfFloorsAndFlatsOnEachNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. G+1 Floors, 1 Flat per floor"
+              value={fields.ikfFloorsAndFlatsOnEachNA ? 'NA' : (fields.ikfFloorsAndFlatsOnEach || '')}
+              onChange={(e) => handleChange('ikfFloorsAndFlatsOnEach', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfFloorsAndFlatsOnEachNA}
+            />
+          </Field>
+
+          {/* No. of rooms/portions for the building: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">No. of rooms/portions for the building</span>
+                <NaCheckbox
+                  checked={!!fields.ikfRoomsPortionsBuildingNA}
+                  onChange={(checked) => {
+                    handleChange('ikfRoomsPortionsBuildingNA', checked);
+                    if (checked) handleChange('ikfRoomsPortionsBuilding', 'NA');
+                    else if (fields.ikfRoomsPortionsBuilding === 'NA') handleChange('ikfRoomsPortionsBuilding', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfRoomsPortionsBuildingNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Ground Floor: 2 BHK, First Floor: 2 BHK"
+              value={fields.ikfRoomsPortionsBuildingNA ? 'NA' : (fields.ikfRoomsPortionsBuilding || '')}
+              onChange={(e) => handleChange('ikfRoomsPortionsBuilding', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfRoomsPortionsBuildingNA}
+            />
+          </Field>
+
+          {/* Balconies to rooms separate or merged: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Balconies to rooms separate or merged</span>
+                <NaCheckbox
+                  checked={!!fields.ikfBalconiesSeparateOrMergedNA}
+                  onChange={(checked) => {
+                    handleChange('ikfBalconiesSeparateOrMergedNA', checked);
+                    if (checked) handleChange('ikfBalconiesSeparateOrMerged', 'NA');
+                    else if (fields.ikfBalconiesSeparateOrMerged === 'NA') handleChange('ikfBalconiesSeparateOrMerged', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfBalconiesSeparateOrMergedNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Separate balconies provided in front & rear"
+              value={fields.ikfBalconiesSeparateOrMergedNA ? 'NA' : (fields.ikfBalconiesSeparateOrMerged || '')}
+              onChange={(e) => handleChange('ikfBalconiesSeparateOrMerged', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfBalconiesSeparateOrMergedNA}
+            />
+          </Field>
+
+          {/* Walls, plaster and painting: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Walls, plaster and painting</span>
+                <NaCheckbox
+                  checked={!!fields.ikfWallsPlasterPaintingNA}
+                  onChange={(checked) => {
+                    handleChange('ikfWallsPlasterPaintingNA', checked);
+                    if (checked) handleChange('ikfWallsPlasterPainting', 'NA');
+                    else if (fields.ikfWallsPlasterPainting === 'NA') handleChange('ikfWallsPlasterPainting', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfWallsPlasterPaintingNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Brick masonry, cement plaster with emulsion/OBD paint"
+              value={fields.ikfWallsPlasterPaintingNA ? 'NA' : (fields.ikfWallsPlasterPainting || '')}
+              onChange={(e) => handleChange('ikfWallsPlasterPainting', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfWallsPlasterPaintingNA}
+            />
+          </Field>
+
+          {/* Doors and windows: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Doors and windows</span>
+                <NaCheckbox
+                  checked={!!fields.ikfDoorsAndWindowsNA}
+                  onChange={(checked) => {
+                    handleChange('ikfDoorsAndWindowsNA', checked);
+                    if (checked) handleChange('ikfDoorsAndWindows', 'NA');
+                    else if (fields.ikfDoorsAndWindows === 'NA') handleChange('ikfDoorsAndWindows', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfDoorsAndWindowsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Teak wood panel main door, flush doors, aluminium glass windows"
+              value={fields.ikfDoorsAndWindowsNA ? 'NA' : (fields.ikfDoorsAndWindows || '')}
+              onChange={(e) => handleChange('ikfDoorsAndWindows', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfDoorsAndWindowsNA}
+            />
+          </Field>
+
+          {/* Type of flooring in rooms, skirting/cladding: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Type of flooring in rooms, skirting/cladding</span>
+                <NaCheckbox
+                  checked={!!fields.ikfFlooringRoomsSkirtingNA}
+                  onChange={(checked) => {
+                    handleChange('ikfFlooringRoomsSkirtingNA', checked);
+                    if (checked) handleChange('ikfFlooringRoomsSkirting', 'NA');
+                    else if (fields.ikfFlooringRoomsSkirting === 'NA') handleChange('ikfFlooringRoomsSkirting', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfFlooringRoomsSkirtingNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Vitrified tiles flooring with 4&quot; matching skirting"
+              value={fields.ikfFlooringRoomsSkirtingNA ? 'NA' : (fields.ikfFlooringRoomsSkirting || '')}
+              onChange={(e) => handleChange('ikfFlooringRoomsSkirting', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfFlooringRoomsSkirtingNA}
+            />
+          </Field>
+
+          {/* Deviation from sanction Plan/building byelaws (if any): Input Box (Variable Size) [with NA Checkbox] */}
+          <div className="md:col-span-2 lg:col-span-3">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">
+                    Deviation from sanction Plan/building byelaws (if any)
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.ikfDeviationSanctionPlanNA}
+                    onChange={(checked) => {
+                      handleChange('ikfDeviationSanctionPlanNA', checked);
+                      if (checked) handleChange('ikfDeviationSanctionPlan', 'NA');
+                      else if (fields.ikfDeviationSanctionPlan === 'NA') handleChange('ikfDeviationSanctionPlan', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <AutoResizeTextarea
+                rows={2}
+                placeholder="e.g. No major deviation observed. Construction adheres substantially to approved norms / or detail deviations..."
+                className={fields.ikfDeviationSanctionPlanNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+                value={fields.ikfDeviationSanctionPlanNA ? 'NA' : (fields.ikfDeviationSanctionPlan || '')}
+                onChange={(e) => handleChange('ikfDeviationSanctionPlan', e.target.value)}
+                disabled={isReadOnly || !!fields.ikfDeviationSanctionPlanNA}
+              />
+            </Field>
+          </div>
+
+          {/* Risk of Demolition (valuers views): Dropdown (Low / Medium / High / NA) */}
+          <Field label={<span className="font-semibold text-gray-700">Risk of Demolition (valuers views)</span>}>
+            <select
+              className={inputCls}
+              value={fields.ikfRiskOfDemolition || 'Low'}
+              onChange={(e) => handleChange('ikfRiskOfDemolition', e.target.value)}
+              disabled={isReadOnly}
+            >
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+              <option value="NA">NA</option>
+            </select>
+          </Field>
+
+          {/* Area considered for the purpose of valuation: Input Box (Number) (Prefill from "Area as per sale agreement", Edit button: OFF) [Lock UI Hover: >>Prefill from section 1, "Area as per sale agreement / Deeds"<<] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Area considered for the purpose of valuation</span>
+                <EditSwitch
+                  checked={!!fields.ikfAreaConsideredForValuationEditOn}
+                  onChange={(checked) => {
+                    handleChange('ikfAreaConsideredForValuationEditOn', checked);
+                    if (!checked) {
+                      handleChange('ikfAreaConsideredForValuation', defaultArea);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!fields.ikfAreaConsideredForValuationEditOn}
+              tooltipMessage=">>Prefill from section 1, &quot;Area as per sale agreement / Deeds&quot;<<"
+            >
+              <div className="relative">
+                <input
+                  type="text"
+                  className={`${inputCls} ${
+                    fields.ikfAreaConsideredForValuationEditOn
+                      ? 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-medium focus:ring-emerald-500'
+                      : 'bg-gray-100/80 text-gray-700 cursor-not-allowed font-medium'
+                  }`}
+                  placeholder="e.g. 1,500 Sq. Ft."
+                  value={effectiveAreaConsidered}
+                  onChange={(e) => handleChange('ikfAreaConsideredForValuation', e.target.value)}
+                  disabled={isReadOnly || !fields.ikfAreaConsideredForValuationEditOn}
+                />
+                {!fields.ikfAreaConsideredForValuationEditOn && (
+                  <div className="absolute right-3 top-2.5 text-xs text-amber-700 font-semibold pointer-events-none flex items-center gap-1 bg-amber-50/90 px-2 py-0.5 rounded border border-amber-200">
+                    <Lock className="w-3.5 h-3.5 text-amber-600" /> Prefilled from Deeds Area
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+
+          {/* Market rates of properties in the vicinity and surrounding area: Input Box (Text) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700">
+                Market rates of properties in the vicinity and surrounding area
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              placeholder="e.g. Rs. 3,200 - 3,500 per Sq. Ft."
+              value={fields.ikfMarketRateVicinity || ''}
+              onChange={(e) => handleChange('ikfMarketRateVicinity', e.target.value)}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* Govt. Guideline Value for the Property (Land & Building): Input Box (Number/Text) [with NA Checkbox] */}
+          <div className="md:col-span-2 lg:col-span-3">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-700">
+                    Govt. Guideline Value for the Property (Land & Building)
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.ikfGovtGuidelineValueNA}
+                    onChange={(checked) => {
+                      handleChange('ikfGovtGuidelineValueNA', checked);
+                      if (checked) handleChange('ikfGovtGuidelineValue', 'NA');
+                      else if (fields.ikfGovtGuidelineValue === 'NA') handleChange('ikfGovtGuidelineValue', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="text"
+                className={`${inputCls} ${
+                  fields.ikfGovtGuidelineValueNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+                }`}
+                placeholder="e.g. Rs. 2,000 per Sq. Ft. / Benchmark value: Rs. 18,00,000"
+                value={fields.ikfGovtGuidelineValueNA ? 'NA' : (fields.ikfGovtGuidelineValue || '')}
+                onChange={(e) => handleChange('ikfGovtGuidelineValue', e.target.value)}
+                disabled={isReadOnly || !!fields.ikfGovtGuidelineValueNA}
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Table: 14. Adherence to Sanction Plan/building byelaws (Light Green '#e8f5e9') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-4 border border-emerald-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Ruler className="w-5 h-5 text-emerald-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              14. Adherence to Sanction Plan / Building Byelaws
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={addAdherenceRow}
+            disabled={isReadOnly}
+            className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-700 text-white rounded-md text-xs font-semibold hover:bg-emerald-800 transition-colors shadow-sm disabled:opacity-50"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add Floor Row
+          </button>
+        </div>
+
+        <div className="overflow-x-auto rounded-lg border border-gray-300 bg-white">
+          <table className="w-full text-xs text-left">
+            <thead className="bg-emerald-100/70 text-gray-800 font-bold uppercase border-b border-gray-300">
+              <tr>
+                <th className="py-2.5 px-3 w-36">Floor / Level</th>
+                <th className="py-2.5 px-3">Permissible Area (Sq. Ft.)</th>
+                <th className="py-2.5 px-3">Actual Constructed (Sq. Ft.)</th>
+                <th className="py-2.5 px-3">Deviation / Adherence Remarks</th>
+                {!isReadOnly && <th className="py-2.5 px-2 w-12 text-center">Action</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 font-medium">
+              {adherenceRows.map((row: any, idx: number) => {
+                return (
+                  <tr key={row.id || idx} className="hover:bg-gray-50/70">
+                    <td className="py-2.5 px-3">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={row.floor || ''}
+                        onChange={(e) => updateAdherenceRow(idx, 'floor', e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Floor name..."
+                      />
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} ${row.permissibleNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
+                          placeholder="e.g. 750"
+                          value={row.permissibleNA ? 'NA' : (row.permissible || '')}
+                          onChange={(e) => updateAdherenceRow(idx, 'permissible', e.target.value)}
+                          disabled={isReadOnly || !!row.permissibleNA}
+                        />
+                        <NaCheckbox
+                          checked={!!row.permissibleNA}
+                          onChange={(checked) => {
+                            updateAdherenceRow(idx, 'permissibleNA', checked);
+                            if (checked) updateAdherenceRow(idx, 'permissible', 'NA');
+                            else if (row.permissible === 'NA') updateAdherenceRow(idx, 'permissible', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} ${row.actualNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
+                          placeholder="e.g. 750"
+                          value={row.actualNA ? 'NA' : (row.actual || '')}
+                          onChange={(e) => updateAdherenceRow(idx, 'actual', e.target.value)}
+                          disabled={isReadOnly || !!row.actualNA}
+                        />
+                        <NaCheckbox
+                          checked={!!row.actualNA}
+                          onChange={(checked) => {
+                            updateAdherenceRow(idx, 'actualNA', checked);
+                            if (checked) updateAdherenceRow(idx, 'actual', 'NA');
+                            else if (row.actual === 'NA') updateAdherenceRow(idx, 'actual', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} ${row.remarksNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
+                          placeholder="e.g. As per plan / 0% deviation"
+                          value={row.remarksNA ? 'NA' : (row.remarks || '')}
+                          onChange={(e) => updateAdherenceRow(idx, 'remarks', e.target.value)}
+                          disabled={isReadOnly || !!row.remarksNA}
+                        />
+                        <NaCheckbox
+                          checked={!!row.remarksNA}
+                          onChange={(checked) => {
+                            updateAdherenceRow(idx, 'remarksNA', checked);
+                            if (checked) updateAdherenceRow(idx, 'remarks', 'NA');
+                            else if (row.remarks === 'NA') updateAdherenceRow(idx, 'remarks', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+                    {!isReadOnly && (
+                      <td className="py-2.5 px-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeAdherenceRow(idx)}
+                          className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                          title="Remove row"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ─── Table: 17. Property Currently Occupied by & Future / Present Rental Value (Light Green '#e8f5e9') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-4 border border-emerald-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Building className="w-5 h-5 text-emerald-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              17. Property Currently Occupied by & Future / Present Rental Value
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={addRentalRow}
+            disabled={isReadOnly}
+            className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-700 text-white rounded-md text-xs font-semibold hover:bg-emerald-800 transition-colors shadow-sm disabled:opacity-50"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add Occupancy Row
+          </button>
+        </div>
+
+        <div className="overflow-x-auto rounded-lg border border-gray-300 bg-white">
+          <table className="w-full text-xs text-left">
+            <thead className="bg-emerald-100/70 text-gray-800 font-bold uppercase border-b border-gray-300">
+              <tr>
+                <th className="py-2.5 px-3">Byelaws / Floor</th>
+                <th className="py-2.5 px-3 w-28">No. of Units</th>
+                <th className="py-2.5 px-3 w-36">Type of Unit</th>
+                <th className="py-2.5 px-3 w-36">Rent P.M. (Rs.)</th>
+                <th className="py-2.5 px-3">Occupied by</th>
+                {!isReadOnly && <th className="py-2.5 px-2 w-12 text-center">Action</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200 font-medium">
+              {rentalRows.map((row: any, idx: number) => {
+                return (
+                  <tr key={row.id || idx} className="hover:bg-gray-50/70">
+                    {/* Byelaws / Floor */}
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} ${row.byelawsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
+                          placeholder="e.g. Residential (Ground)"
+                          value={row.byelawsNA ? 'NA' : (row.byelaws || '')}
+                          onChange={(e) => updateRentalRow(idx, 'byelaws', e.target.value)}
+                          disabled={isReadOnly || !!row.byelawsNA}
+                        />
+                        <NaCheckbox
+                          checked={!!row.byelawsNA}
+                          onChange={(checked) => {
+                            updateRentalRow(idx, 'byelawsNA', checked);
+                            if (checked) updateRentalRow(idx, 'byelaws', 'NA');
+                            else if (row.byelaws === 'NA') updateRentalRow(idx, 'byelaws', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+
+                    {/* No. of Units */}
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} ${row.unitsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
+                          placeholder="e.g. 1"
+                          value={row.unitsNA ? 'NA' : (row.units || '')}
+                          onChange={(e) => updateRentalRow(idx, 'units', e.target.value)}
+                          disabled={isReadOnly || !!row.unitsNA}
+                        />
+                        <NaCheckbox
+                          checked={!!row.unitsNA}
+                          onChange={(checked) => {
+                            updateRentalRow(idx, 'unitsNA', checked);
+                            if (checked) updateRentalRow(idx, 'units', 'NA');
+                            else if (row.units === 'NA') updateRentalRow(idx, 'units', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+
+                    {/* Type of Unit */}
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} ${row.typeOfUnitNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
+                          placeholder="e.g. 2 BHK Flat"
+                          value={row.typeOfUnitNA ? 'NA' : (row.typeOfUnit || '')}
+                          onChange={(e) => updateRentalRow(idx, 'typeOfUnit', e.target.value)}
+                          disabled={isReadOnly || !!row.typeOfUnitNA}
+                        />
+                        <NaCheckbox
+                          checked={!!row.typeOfUnitNA}
+                          onChange={(checked) => {
+                            updateRentalRow(idx, 'typeOfUnitNA', checked);
+                            if (checked) updateRentalRow(idx, 'typeOfUnit', 'NA');
+                            else if (row.typeOfUnit === 'NA') updateRentalRow(idx, 'typeOfUnit', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+
+                    {/* Rent P.M. */}
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} ${row.rentPmNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
+                          placeholder="e.g. 10,000"
+                          value={row.rentPmNA ? 'NA' : (row.rentPm || '')}
+                          onChange={(e) => updateRentalRow(idx, 'rentPm', e.target.value)}
+                          disabled={isReadOnly || !!row.rentPmNA}
+                        />
+                        <NaCheckbox
+                          checked={!!row.rentPmNA}
+                          onChange={(checked) => {
+                            updateRentalRow(idx, 'rentPmNA', checked);
+                            if (checked) updateRentalRow(idx, 'rentPm', 'NA');
+                            else if (row.rentPm === 'NA') updateRentalRow(idx, 'rentPm', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+
+                    {/* Occupied by */}
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          className={`${inputCls} ${row.occupiedByNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}`}
+                          placeholder="e.g. Self / Tenant"
+                          value={row.occupiedByNA ? 'NA' : (row.occupiedBy || '')}
+                          onChange={(e) => updateRentalRow(idx, 'occupiedBy', e.target.value)}
+                          disabled={isReadOnly || !!row.occupiedByNA}
+                        />
+                        <NaCheckbox
+                          checked={!!row.occupiedByNA}
+                          onChange={(checked) => {
+                            updateRentalRow(idx, 'occupiedByNA', checked);
+                            if (checked) updateRentalRow(idx, 'occupiedBy', 'NA');
+                            else if (row.occupiedBy === 'NA') updateRentalRow(idx, 'occupiedBy', '');
+                          }}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+
+                    {!isReadOnly && (
+                      <td className="py-2.5 px-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeRentalRow(idx)}
+                          className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                          title="Remove row"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── IKF Finance BankConfig ──────────────────────────────────────────────────
 
 export const IKF_FINANCE_CONFIG: BankConfig = {
@@ -1791,12 +2537,13 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
   hiddenSections: [
     'section-1', // Replaced by Section 1: VALUATION REPORT
     'section-2', // Replaced by Section 2: II) DETAILS OF STRUCTURE AND SPECIFICATIONS
+    'section-3', // Replaced by Section 3: III) DETAILS FOR THE PROPERTY UNDER REFERENCE
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
     { id: 'ikf-section-1', title: 'VALUATION REPORT' },
     { id: 'ikf-section-2', title: 'II) DETAILS OF STRUCTURE AND SPECIFICATIONS' },
-    { id: 'section-3', title: 'Property Details' },
+    { id: 'ikf-section-3', title: 'III) DETAILS FOR THE PROPERTY UNDER REFERENCE' },
     { id: 'section-4', title: 'Subject Property' },
     { id: 'section-5', title: 'Street and Details' },
     { id: 'section-6', title: 'Plan Approvals' },
@@ -1838,6 +2585,19 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'ikf-section-3',
+      title: 'III) DETAILS FOR THE PROPERTY UNDER REFERENCE',
+      number: 3,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <PropertyUnderReferenceSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Mortgage / MSME Loan',
@@ -1849,10 +2609,12 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     ikfMarketability: 'Good',
     ikfPresentCondition: 'Good',
     ikfTypeOfConstruction: 'RCC',
+    ikfRiskOfDemolition: 'Low',
   },
 };
 
 export default function IKFFinance(props: BankReportBuilderProps) {
   return <BankReportBuilder config={IKF_FINANCE_CONFIG} {...props} />;
 }
+
 
