@@ -2362,7 +2362,7 @@ export default function AxisHLLAP({
               </span>
             </div>
 
-            <p className="text-xs text-slate-700 italic leading-relaxed bg-white/80 p-3.5 rounded-lg border border-blue-100">
+            <p className="text-xs text-slate-700 italic leading-relaxed text-justify bg-white/80 p-3.5 rounded-lg border border-blue-100">
               &ldquo;I have personally visited the property &amp; identified the same based on the documents provided.<br />
               I/We have no direct or Indirect Interest in the property being valued.<br />
               The information furnished above is true and correct to my/our knowledge.&rdquo;

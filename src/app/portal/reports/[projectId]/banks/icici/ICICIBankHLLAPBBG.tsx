@@ -806,15 +806,15 @@ export const ICICI_BANK_HL_LAP_BBG_CONFIG: BankConfig = {
             <div className="space-y-2">
               <label className="flex items-start gap-2">
                 <input type="checkbox" className="mt-1" checked={fields.iciciBbgDecl1 || false} onChange={e => handleChange('iciciBbgDecl1', e.target.checked)} disabled={isReadOnly} />
-                <span className="text-sm text-gray-700">1. The property was inspected by us</span>
+                <span className="text-sm text-gray-700 leading-relaxed text-justify">1. The property was inspected by us</span>
               </label>
               <label className="flex items-start gap-2">
                 <input type="checkbox" className="mt-1" checked={fields.iciciBbgDecl2 || false} onChange={e => handleChange('iciciBbgDecl2', e.target.checked)} disabled={isReadOnly} />
-                <span className="text-sm text-gray-700">2. We have no direct or Indirect Interest in the property valued</span>
+                <span className="text-sm text-gray-700 leading-relaxed text-justify">2. We have no direct or Indirect Interest in the property valued</span>
               </label>
               <label className="flex items-start gap-2">
                 <input type="checkbox" className="mt-1" checked={fields.iciciBbgDecl3 || false} onChange={e => handleChange('iciciBbgDecl3', e.target.checked)} disabled={isReadOnly} />
-                <span className="text-sm text-gray-700">3. The information furnished above is true and correct to my knowledge.</span>
+                <span className="text-sm text-gray-700 leading-relaxed text-justify">3. The information furnished above is true and correct to my knowledge.</span>
               </label>
             </div>
 

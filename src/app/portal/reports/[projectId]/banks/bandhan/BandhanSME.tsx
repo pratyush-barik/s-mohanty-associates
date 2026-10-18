@@ -6109,7 +6109,7 @@ export default function BandhanSME({
                     className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 bg-white border border-violet-200/80 rounded-lg shadow-xs hover:border-violet-300 transition-colors"
                   >
                     <div className="space-y-0.5 pr-2">
-                      <span className="text-xs text-slate-800 font-semibold leading-snug block">
+                      <span className="text-xs text-slate-800 font-semibold leading-snug block text-justify">
                         {ci.pointNo}. {ci.question}
                       </span>
                       {ci.subText && (

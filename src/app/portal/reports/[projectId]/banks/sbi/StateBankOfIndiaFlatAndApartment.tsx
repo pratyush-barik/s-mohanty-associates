@@ -2920,7 +2920,7 @@ export default function StateBankOfIndiaFlatAndApartment({
                       disabled={isReadOnly}
                       className="w-4 h-4 mt-0.5 rounded border-rose-300 text-rose-600 focus:ring-rose-500 shrink-0"
                     />
-                    <div className="text-xs text-slate-800 leading-snug">
+                    <div className="text-xs text-slate-800 leading-relaxed text-justify">
                       <span className="font-bold text-rose-900 mr-1">{item.id}.</span>
                       {item.text}
                     </div>
@@ -3151,7 +3151,7 @@ export default function StateBankOfIndiaFlatAndApartment({
                       disabled={isReadOnly}
                       className="w-4 h-4 mt-0.5 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500 shrink-0"
                     />
-                    <div className="text-xs text-slate-800 leading-snug">
+                    <div className="text-xs text-slate-800 leading-relaxed text-justify">
                       <span className="font-bold text-indigo-900 mr-1">{item.num}.</span>
                       {item.text}
                     </div>

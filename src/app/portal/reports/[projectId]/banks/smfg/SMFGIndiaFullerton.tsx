@@ -11,6 +11,10 @@ import {
   Field,
   inputCls,
   selectCls,
+  textareaCls,
+  renderedParagraphCls,
+  renderedBoxedContentCls,
+  renderedDeclarationPointCls,
   BaseDocumentsSection,
   BaseMapsSection,
   BasePhotographsSection,
@@ -510,66 +514,34 @@ export default function SMFGIndiaFullerton({
         />
 
         {/* ═══════════════════════════════════════════════════════════════
-            TOP COVER / SUMMARY HIGHLIGHT CARD
-        ═══════════════════════════════════════════════════════════════ */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-              <span>🏛️</span> Valuation of Immovable Property (Cover Details)
-            </h3>
-            <span className="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-0.5 rounded-full">
-              SMFG INDIA CREDIT FORMAT
-            </span>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Property Owner:">
-              <input
-                type="text"
-                className={`${inputCls} font-bold text-slate-900`}
-                value={fields.propertyOwner || ''}
-                onChange={e => handleChange('propertyOwner', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
-
-            <Field label="Purpose of Valuation:">
-              <input
-                type="text"
-                className={inputCls}
-                value={fields.purposeOfValuation || ''}
-                onChange={e => handleChange('purposeOfValuation', e.target.value)}
-                disabled={isReadOnly}
-              />
-            </Field>
-
-            <Field label="Present Market Value:">
-              <input
-                type="text"
-                className={`${inputCls} font-bold bg-emerald-50 text-emerald-800 text-base`}
-                value={fields.marketValue ? `₹ ${formatIndianCurrency(fields.marketValue)}` : ''}
-                readOnly
-                disabled
-              />
-            </Field>
-
-            <Field label="Distress Sale Value:">
-              <input
-                type="text"
-                className={`${inputCls} font-bold bg-rose-50 text-rose-800 text-base`}
-                value={fields.distressValue ? `₹ ${formatIndianCurrency(fields.distressValue)}` : ''}
-                readOnly
-                disabled
-              />
-            </Field>
-          </div>
-        </div>
-
-        {/* ═══════════════════════════════════════════════════════════════
             SECTION 1: APPLICATION & PROPERTY META
         ═══════════════════════════════════════════════════════════════ */}
         <Section title="Application & Property Meta" number={1} id="sec-meta">
           <div className="grid md:grid-cols-4 gap-4">
+            <div className="md:col-span-2">
+              <Field label="Property Owner:">
+                <input
+                  type="text"
+                  className={`${inputCls} font-bold text-slate-900`}
+                  value={fields.propertyOwner || ''}
+                  onChange={e => handleChange('propertyOwner', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+
+            <div className="md:col-span-2">
+              <Field label="Purpose of Valuation:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.purposeOfValuation || ''}
+                  onChange={e => handleChange('purposeOfValuation', e.target.value)}
+                  disabled={isReadOnly}
+                />
+              </Field>
+            </div>
+
             <Field label="Ref No:">
               <input
                 type="text"
@@ -1717,22 +1689,22 @@ export default function SMFGIndiaFullerton({
             <Field label="Remarks:">
               <textarea
                 rows={4}
-                className={inputCls}
+                className={textareaCls}
                 value={fields.remarks || ''}
                 onChange={e => handleChange('remarks', e.target.value)}
                 disabled={isReadOnly}
               />
             </Field>
 
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs text-slate-700">
+            <div className={renderedBoxedContentCls}>
               <h4 className="font-bold text-slate-800 uppercase tracking-wide">
                 Declaration:
               </h4>
-              <p>1. The property is physically inspected by our Engineer/Representative.</p>
-              <p>2. We have no direct/indirect interest in the property valued.</p>
-              <p>3. The information furnished above is true & correct to the best of our knowledge and belief and takes account information and or document submitted or shown to us by the client.</p>
-              <p>4. The ownership papers/sale deeds may please be verified at your end to ascertain the right title & area.</p>
-              <p>5. The fair market value indicated in the report is an opinion of the value prevailing on the date of the said report and is based on market feedback on values of similar properties.</p>
+              <p className={renderedParagraphCls}>1. The property is physically inspected by our Engineer/Representative.</p>
+              <p className={renderedParagraphCls}>2. We have no direct/indirect interest in the property valued.</p>
+              <p className={renderedParagraphCls}>3. The information furnished above is true & correct to the best of our knowledge and belief and takes account information and or document submitted or shown to us by the client.</p>
+              <p className={renderedParagraphCls}>4. The ownership papers/sale deeds may please be verified at your end to ascertain the right title & area.</p>
+              <p className={renderedParagraphCls}>5. The fair market value indicated in the report is an opinion of the value prevailing on the date of the said report and is based on market feedback on values of similar properties.</p>
             </div>
           </div>
         </Section>

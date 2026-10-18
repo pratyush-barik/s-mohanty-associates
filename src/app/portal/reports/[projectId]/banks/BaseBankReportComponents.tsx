@@ -284,9 +284,16 @@ export function StructureDerivationBadge({
   );
 }
 
-// ─── Standard Input & Select Classes ─────────────────────────────────
+// ─── Standard Input, Select & Textarea Classes ───────────────────────
 export const inputCls = "w-full px-3 py-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 disabled:bg-[#f1f3f5] disabled:text-[#6c757d] read-only:bg-[#f1f3f5] read-only:text-[#495057] read-only:cursor-not-allowed transition-all";
 export const selectCls = inputCls;
+export const textareaCls = "w-full p-2.5 rounded-lg border border-[#dee2e6] bg-white text-[#212529] text-sm focus:outline-none focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 disabled:bg-[#f1f3f5] disabled:text-[#6c757d] read-only:bg-[#f1f3f5] read-only:text-[#495057] transition-all";
+
+// ─── Rendered Continuous Entities & Justified Alignment Tokens ────────
+export const renderedParagraphCls = "text-sm text-gray-700 text-justify leading-relaxed";
+export const renderedBoxedContentCls = "bg-white p-4 rounded-xl border border-gray-200 shadow-xs space-y-3 text-justify text-sm text-gray-700 leading-relaxed";
+export const renderedBulletItemCls = "flex items-start gap-3 bg-white rounded-lg p-3 border border-gray-100 text-justify text-sm text-gray-700 leading-relaxed";
+export const renderedDeclarationPointCls = "text-sm text-gray-700 text-justify leading-relaxed flex-1";
 
 // ─── Standard Accordion Section Card ─────────────────────────────────
 export function Section({

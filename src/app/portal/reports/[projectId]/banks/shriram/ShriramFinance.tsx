@@ -1369,7 +1369,7 @@ export default function ShriramFinance({
             </Field>
 
             {/* Declaration */}
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs text-slate-700">
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs text-slate-700 leading-relaxed text-justify">
               <h4 className="font-bold text-slate-800 uppercase tracking-wide">
                 Declaration:-
               </h4>

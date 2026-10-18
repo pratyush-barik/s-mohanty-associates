@@ -1382,7 +1382,7 @@ export default function MahindraFinance({
         {/* 8. Declaration & Sign Off */}
         <div id="mh-sec-declaration">
           <Section title="Declaration & Sign-off" number={8}>
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-2 text-xs text-slate-700 leading-relaxed">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-2 text-xs text-slate-700 leading-relaxed text-justify">
               <p><strong>1.</strong> I hereby declare that; I have no direct and indirect interest in the property valued and the information furnished in the report is true and correct to the best of my knowledge of belief.</p>
               <p><strong>2.</strong> Any additions or alterations after the date of inspection shall not fall under the scope of this report.</p>
               <p><strong>3.</strong> The legal aspects are not in the scope of evaluation of the property.</p>

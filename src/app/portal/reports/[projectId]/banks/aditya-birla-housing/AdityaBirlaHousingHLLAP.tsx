@@ -7,7 +7,7 @@ import { PDFAdityaBirlaHousingRenderer, HLLAPReportFields } from '@/lib/banks/pd
 import { rgb } from 'pdf-lib';
 import { CONTENT_W, MARGIN_L, fetchBytes } from '@/lib/pdf-bank-renderer';
 import { LBL_BG, BG_OPACITY, hexToRgb } from '@/lib/pdf-general-renderer';
-import { BaseDateInput } from '../BaseBankReportComponents';
+import { BaseDateInput, inputCls } from '../BaseBankReportComponents';
 
 
 /** Helper: get field value with fallback */
@@ -734,7 +734,6 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       title: 'Header Details',
       number: 1,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
-        const inputCls = "w-full text-sm p-2 rounded-full border border-slate-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 outline-none transition-all disabled:bg-slate-50 disabled:text-slate-500 bg-white shadow-sm";
         const tdLabelCls = "p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-[#f8fafc] whitespace-nowrap w-[20%]";
         const tdInputCls = "p-2 border border-slate-300 bg-white w-[30%]";
         const tdLabelSmallCls = "p-2 border-r border-slate-300 text-sm font-medium text-slate-800 bg-[#f8fafc] whitespace-nowrap w-[15%]";
@@ -807,7 +806,6 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       title: 'DEVIATIONS / OBSERVATIONS',
       number: 11,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => {
-        const inputCls = "w-full text-sm p-2 rounded-full border border-slate-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 outline-none transition-all disabled:bg-slate-50 disabled:text-slate-500 bg-white shadow-sm";
         const tdLabelCls = "p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-white whitespace-nowrap w-[20%]";
         const tdInputCls = "p-2 border border-slate-300 bg-white w-[30%]";
 

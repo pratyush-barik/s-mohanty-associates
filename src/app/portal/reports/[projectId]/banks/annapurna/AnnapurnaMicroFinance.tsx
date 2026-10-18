@@ -1791,7 +1791,7 @@ export default function AnnapurnaMicroFinance({
           <div className="space-y-4">
             <div className="p-4 border border-[#dee2e6] rounded-xl bg-slate-50 space-y-2 text-xs text-slate-700">
               <div className="font-bold text-slate-900 mb-1">Declaration Clauses (Included in Final PDF):</div>
-              <ul className="list-disc pl-5 space-y-1">
+              <ul className="list-disc pl-5 space-y-1.5 leading-relaxed text-justify">
                 <li>The final valuation has been concluded on the basis of Land & Building valuation approach and rates are cross-verified with the rates prevalent in the nearby localities.</li>
                 <li>We have no direct/indirect interest in the property valued.</li>
                 <li>The information furnished in the report is true and correct to the best of my knowledge.</li>

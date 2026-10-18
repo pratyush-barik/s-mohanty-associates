@@ -2987,8 +2987,8 @@ export const UCO_BANK_CONFIG: BankConfig = {
                       disabled={isReadOnly}
                       className="w-4 h-4 mt-1 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 shrink-0"
                     />
-                    <div className="flex-1">
-                      <span className="text-sm text-gray-700">
+                    <div className="flex-1 text-justify">
+                      <span className="text-sm text-gray-700 leading-relaxed">
                         <strong>{item.key}.</strong> {item.text}
                         {item.hasInput && (
                           <input className={`${inputCls} inline-block w-40 ml-2`} value={fields[item.inputKey!] || ''} onChange={e => handleChange(item.inputKey!, e.target.value)} disabled={isReadOnly} placeholder="PAN Number" />
@@ -3210,7 +3210,7 @@ export const UCO_BANK_CONFIG: BankConfig = {
                     <div className="space-y-2 pl-2">
                       {section.items.map(item => (
                         <div key={item.num} className="mb-2">
-                          <p className="text-sm text-gray-700 leading-relaxed"><strong>{item.num}.</strong> {item.text}</p>
+                          <p className="text-sm text-gray-700 leading-relaxed text-justify"><strong>{item.num}.</strong> {item.text}</p>
                         </div>
                       ))}
                     </div>

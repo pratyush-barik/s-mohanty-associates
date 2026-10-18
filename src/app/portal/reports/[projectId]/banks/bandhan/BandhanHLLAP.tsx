@@ -5203,7 +5203,7 @@ export default function BandhanHLLAP({
                       `O. THIS VALUATION REPORT CONTAINS ${fields.valuerReportPagesCountLocked ? (fields.valuerReportPagesCount || (previewedPageCount !== null ? String(previewedPageCount) : dynamicTotalPages)) : (previewedPageCount !== null ? String(previewedPageCount) : dynamicTotalPages)} PAGES ONLY.`,
                       'P. PHOTOGRAPHS OF THE ASSET VALUED ENCLOSED.',
                     ].map((item, idx) => (
-                      <div key={idx} className="p-2 rounded bg-slate-50 border border-slate-150 leading-relaxed font-sans">
+                      <div key={idx} className="p-2 rounded bg-slate-50 border border-slate-150 leading-relaxed font-sans text-justify">
                         {item}
                       </div>
                     ))}

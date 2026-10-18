@@ -35,6 +35,7 @@ import {
   VAL_BG,
   BG_OPACITY,
   hexToRgb,
+  DrawTextOptions,
 } from './pdf-general-renderer';
 
 export const FONT_SIZE_TABLE_BANK = 12;
@@ -190,6 +191,25 @@ export {
 
 export class PDFBankRenderer extends PDFGeneralRenderer {
   public lastRowHadHiddenBottom: boolean = false;
+
+  /**
+   * Universal continuous text drawer with justified alignment for multi-line paragraphs,
+   * narrative remarks, declarations, methodology statements, and notes.
+   */
+  override drawWrappedTextAt(
+    text: string,
+    x: number,
+    topY: number,
+    maxWidth: number,
+    opts?: DrawTextOptions & { textColor?: string }
+  ): number {
+    const effectiveOpts: DrawTextOptions & { textColor?: string } = {
+      ...opts,
+      align: opts?.align ?? 'justify',
+    };
+    return super.drawWrappedTextAt(text, x, topY, maxWidth, effectiveOpts);
+  }
+
   /**
    * Draw the top Main Title Banner (e.g. "Aditya Birla Capital Ltd (MLAP)")
    */

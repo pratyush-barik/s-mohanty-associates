@@ -1275,7 +1275,7 @@ export default function YesBank({
         {/* 8. Declaration & Sign Off */}
         <div id="yes-sec-declaration">
           <Section title="Declaration & Sign-off" number={8}>
-            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-2 text-xs text-slate-700 leading-relaxed">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg space-y-2 text-xs text-slate-700 leading-relaxed text-justify">
               <p><strong>1.</strong> Our representative physically inspected the property.</p>
               <p><strong>2.</strong> We have no direct/indirect interest in the property valued.</p>
               <p><strong>3.</strong> Report is prepared based on the information furnished to us or documents submitted or shown to us by the client.</p>

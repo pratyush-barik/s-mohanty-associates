@@ -3,7 +3,7 @@ import React from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFBajajHousingRenderer } from '@/lib/banks/pdf-bajaj-housing-renderer';
-import { Field, inputCls, BaseDateInput, formatReportDate } from '../BaseBankReportComponents';
+import { Field, inputCls, selectCls, BaseDateInput, formatReportDate } from '../BaseBankReportComponents';
 
 export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
   bankId: 'BAJAJ HOUSING FINANCE LTD',
@@ -2438,8 +2438,6 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
       number: 9,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full text-sm border-gray-300 rounded-md shadow-sm bg-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500";
-        
         const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
           <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-500 mt-1 hover:text-gray-700">
             <input 
@@ -2702,9 +2700,6 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
       number: 10,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full text-sm border-gray-300 rounded-md shadow-sm bg-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500";
-        const selectCls = "w-full text-sm border-gray-300 rounded-md shadow-sm bg-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500";
-        
         const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
           <label className="flex items-center gap-2 mt-1.5 text-xs text-gray-500 cursor-pointer w-max">
             <input
@@ -2973,8 +2968,6 @@ export const BAJAJ_HOUSING_HLLAP_CONFIG: BankConfig = {
       number: 11,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full text-sm border-gray-300 rounded-md shadow-sm bg-white focus:border-blue-500 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500";
-        
         const NACheckbox = ({ field, label = 'Mark as NA' }: { field: string, label?: string }) => (
           <label className="flex items-center gap-2 mt-1.5 text-xs text-gray-500 cursor-pointer w-max">
             <input

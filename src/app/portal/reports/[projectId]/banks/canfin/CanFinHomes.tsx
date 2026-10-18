@@ -2479,7 +2479,7 @@ export const CANFIN_HOMES_CONFIG: BankConfig = {
                           className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-gray-300 shadow-sm"
                         />
                       </div>
-                      <span className="flex-1 group-hover:text-gray-900 transition-colors">{decl.text}</span>
+                      <span className="flex-1 group-hover:text-gray-900 transition-colors leading-relaxed text-justify">{decl.text}</span>
                     </label>
                   ))}
                   <p className="text-xs text-red-500 italic mt-2">* All declarations must be accepted for final submission.</p>

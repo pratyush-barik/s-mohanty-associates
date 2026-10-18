@@ -1028,7 +1028,7 @@ export default function IndusIndBBG({
               <div className="text-xs font-bold text-amber-800 uppercase tracking-wider">
                 Statutory Bank Declarations
               </div>
-              <p className="text-xs text-amber-900 leading-relaxed">
+              <p className="text-xs text-amber-900 leading-relaxed text-justify">
                 All 7 Disclosure Statements and 14 Standard IndusInd Bank Declarations (including 45-day report validity, non-ownership certification disclaimer, and inspection confirmation) are automatically bound into the generated PDF report.
               </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">

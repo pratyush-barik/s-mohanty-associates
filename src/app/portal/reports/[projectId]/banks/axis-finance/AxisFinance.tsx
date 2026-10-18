@@ -578,7 +578,6 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       number: 4,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white";
         return (
           <div className="animate-fade-in space-y-6">
             <div className="border rounded-xl p-4 mb-4" style={{ backgroundColor: '#FAF5FF', borderColor: '#E9D5FF' }}>
@@ -640,7 +639,6 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       number: 5,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white";
         const renderDropdownWithCustom = (label: string, fieldKey: string, options: string[]) => {
           const isCustomKey = `${fieldKey}_isCustom`;
           const isCustom = fields[isCustomKey] || false;
@@ -726,8 +724,6 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       number: 6,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white disabled:bg-gray-100 disabled:text-gray-500";
-        
         const renderField = (label: string, fieldKey: string) => (
           <div className="space-y-1">
             <div className="flex justify-between items-center mb-1">
@@ -894,8 +890,6 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       number: 7,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white disabled:bg-gray-100 disabled:text-gray-500";
-        
         const safeNum = (val: any) => {
           if (val === 'NA' || !val) return 0;
           const num = parseFloat(val);
@@ -1097,7 +1091,6 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       number: 8,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full border border-gray-300 rounded px-2 py-1 text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white shadow-inner";
         const safeNum = (val: any) => {
           const n = parseFloat(val);
           return isNaN(n) ? 0 : n;
@@ -1220,8 +1213,6 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       number: 9,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white disabled:bg-gray-100 disabled:text-gray-500";
-        
         const safeNum = (val: any) => {
           if (val === 'NA' || !val) return 0;
           const num = parseFloat(val);
@@ -1318,8 +1309,6 @@ export const AXIS_FINANCE_CONFIG: BankConfig = {
       number: 10,
       defaultOpen: true,
       render: (fields, handleChange, isReadOnly) => {
-        const inputCls = "w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white disabled:bg-gray-100 disabled:text-gray-500";
-        
         const renderField = (label: string, fieldKey: string, type = 'text', options: any = null) => (
           <div className="space-y-1">
             <div className="flex justify-between items-center mb-1">

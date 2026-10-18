@@ -1443,7 +1443,7 @@ export default function IndusIndHLLAP({
                 />
               </Field>
 
-              <div className="border p-4 rounded bg-slate-50 space-y-2 text-sm text-slate-700">
+              <div className="border p-4 rounded bg-slate-50 space-y-2 text-sm text-slate-700 leading-relaxed text-justify">
                 <p className="font-semibold">I/We hereby declare that :</p>
                 <p>(1) The property was inspected by me/us</p>
                 <p>(2) I/We have no direct or Indirect Interest in the property valued</p>

@@ -1954,7 +1954,7 @@ The valuation has been carried out for both the land and the measured built-up a
             {/* a. Standard Declaration Legal Clauses */}
             <Field label="a. Standard Declaration Legal Clauses">
               <div className="space-y-4 p-4 border border-indigo-200 rounded-lg bg-white/80 shadow-sm relative group">
-                <div className="p-3 bg-gray-50 border border-gray-300 rounded text-sm text-gray-700 h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed shadow-inner cursor-not-allowed">
+                <div className="p-3 bg-gray-50 border border-gray-300 rounded text-sm text-gray-700 h-32 overflow-y-auto whitespace-pre-wrap leading-relaxed text-justify shadow-inner cursor-not-allowed">
                   {clausesText}
                 </div>
                 <div className="absolute top-2 right-2 cursor-help" title="Auto calculating from [Section 1 Inspection Date]">

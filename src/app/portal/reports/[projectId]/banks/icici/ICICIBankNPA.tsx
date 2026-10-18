@@ -3021,7 +3021,7 @@ export const ICICI_BANK_NPA_CONFIG: BankConfig = {
                     onChange={e => handleChange('icicinpaDeclarationAccepted', e.target.checked)}
                     disabled={isReadOnly}
                   />
-                  <div className="text-xs text-gray-800 leading-relaxed font-medium">
+                  <div className="text-xs text-gray-800 leading-relaxed font-medium text-justify">
                     <span className="font-bold text-amber-900 block mb-0.5">Mandatory Declaration (Unlocks Signature):</span>
                     &ldquo;I/We hereby declare that 1. The property was inspected by us. 2. We have no direct or indirect interest in the property valued. 3. The information furnished above is true and correct to the best of our knowledge and belief.&rdquo;
                   </div>

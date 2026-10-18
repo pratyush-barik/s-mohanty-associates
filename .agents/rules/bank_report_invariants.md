@@ -1,12 +1,5 @@
 # Bank Report UI & Parameter Invariants
 
-### 0. Protected Bank Formats (DO NOT TOUCH)
-- The following 4 bank formats are managed by a separate team and must NEVER be modified:
-  1. `Bank of Baroda`
-  2. `UCO Bank`
-  3. `Bank of Maharashtra`
-  4. `Bank of India`
-
 ### 1. Mandatory & Universal `<BankReportHeader />`
 - Every single bank report builder (all 44 custom bank builders AND delegating builders via `BankReportBuilder.tsx`) MUST adopt the universal `<BankReportHeader />` component from `BaseBankReportComponents.tsx`:
   1. `<BankReportHeader />` replaces legacy separate `ActiveConfigBanner` + `BankReportTitleCard` + inspection date sync banners.
@@ -103,5 +96,18 @@
 - **PDF Renderer Fallbacks**:
   - `this.getF(key, defaultVal)` in bank PDF renderers must default to empty string `''` for all client-specific data, never hardcoded customer names, static dates, or sample financial figures.
 
+### 9. Universal Base Styling & Rendered Justified Alignment Invariant
 
+#### 1. Universal Base Styling (Single Source of Truth)
+- **STRICT PROHIBITION OF LOCAL STYLING DEFINITIONS**: Bank builders must NEVER declare local `const inputCls = ...`, bespoke select classes, or custom section container components inside builder files.
+- **Universal Import**: All inputs, selects, textareas, labels, dates, and section cards must be imported directly from `BaseBankReportComponents.tsx`:
+  - `inputCls`, `selectCls`, `textareaCls`
+  - `<Section>`, `<Field>`, `<BaseDateInput>`
+  - `<BankReportHeader />`, `<FloatingNavigator>`, `<ReportActionBar>`
+- Typography, font size hierarchy (`text-sm` inputs, `text-xs` uppercase labels), borders (`border-[#dee2e6]`), and focus rings (`focus:ring-accent-500/30`) are 100% universal across all bank report builders.
 
+#### 2. Rendered Justified Alignment
+- **Mandatory Justification for Rendered Text**: All continuous entities in rendered valuation outputs MUST have justified text alignment:
+  1. **PDF Renderers**: `PDFBankRenderer.drawWrappedTextAt(...)` defaults `align: 'justify'` on all multi-line text blocks, remarks, declarations, methodology statements, and notes.
+  2. **Rendered UI Blocks**: All rendered declaration items, Model Code of Conduct clauses, valuation certificate statements, and remarks display blocks must use `text-justify leading-relaxed` (e.g., via `renderedDeclarationPointCls`, `renderedParagraphCls`, `renderedBoxedContentCls`).
+- **Interactive Textareas**: Raw `<textarea>` input elements retain standard left-aligned typing to avoid caret jumping during text entry.
