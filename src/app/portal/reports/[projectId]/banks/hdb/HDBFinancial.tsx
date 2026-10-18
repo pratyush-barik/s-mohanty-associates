@@ -1763,6 +1763,1559 @@ export function BoundariesSection({
   );
 }
 
+// ─── Section 5: Technical Details ───────────────────────────────────────────
+
+export function TechnicalDetailsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  // ── Auto-calculations for Land/Plot ───────────────────────────────────────
+  const autoRateAdoptedLand = useMemo(() => {
+    return fields.hdbMarketRateLand || fields.hdbGovtGuidelineRateLand || '';
+  }, [fields.hdbMarketRateLand, fields.hdbGovtGuidelineRateLand]);
+
+  const effectiveRateAdoptedLand = fields.hdbRateAdoptedLandEditOn
+    ? (fields.hdbRateAdoptedLand ?? '')
+    : (fields.hdbRateAdoptedLand || autoRateAdoptedLand);
+
+  const autoFmvLand = useMemo(() => {
+    const area = parseFloat(fields.hdbLandAreaConsidered || fields.hdbLandPlotArea || '0') || 0;
+    const rate = parseFloat(effectiveRateAdoptedLand || '0') || 0;
+    const fmv = area * rate;
+    return fmv > 0 ? String(Math.round(fmv)) : '';
+  }, [fields.hdbLandAreaConsidered, fields.hdbLandPlotArea, effectiveRateAdoptedLand]);
+
+  const effectiveFmvLand = fields.hdbFairMarketValueLandEditOn
+    ? (fields.hdbFairMarketValueLand ?? '')
+    : (fields.hdbFairMarketValueLand || autoFmvLand);
+
+  // ── Auto-calculations for Construction / Apartments ────────────────────────
+  const autoResidualAge = useMemo(() => {
+    if (!fields.hdbCompletionDate) return '50 Years';
+    const compYear = new Date(fields.hdbCompletionDate).getFullYear();
+    if (isNaN(compYear)) return '50 Years';
+    const currYear = new Date().getFullYear();
+    const age = Math.max(0, currYear - compYear);
+    const residual = Math.max(0, 60 - age);
+    return `${residual} Years`;
+  }, [fields.hdbCompletionDate]);
+
+  const effectiveResidualAge = fields.hdbResidualAgeEditOn
+    ? (fields.hdbResidualAge ?? '')
+    : (fields.hdbResidualAge || autoResidualAge);
+
+  const autoFinalBuildingArea = useMemo(() => {
+    return fields.hdbBuiltUpAreaMeasured || fields.hdbCarpetAreaTotal || fields.hdbCarpetAreaG1 || '';
+  }, [fields.hdbBuiltUpAreaMeasured, fields.hdbCarpetAreaTotal, fields.hdbCarpetAreaG1]);
+
+  const effectiveFinalBuildingArea = fields.hdbFinalBuildingAreaConsideredEditOn
+    ? (fields.hdbFinalBuildingAreaConsidered ?? '')
+    : (fields.hdbFinalBuildingAreaConsidered || autoFinalBuildingArea);
+
+  const autoRateAdoptedBuilding = useMemo(() => {
+    return fields.hdbMarketRateBuilding || fields.hdbGovtGuidelineRateBuilding || '';
+  }, [fields.hdbMarketRateBuilding, fields.hdbGovtGuidelineRateBuilding]);
+
+  const effectiveRateAdoptedBuilding = fields.hdbRateAdoptedBuildingEditOn
+    ? (fields.hdbRateAdoptedBuilding ?? '')
+    : (fields.hdbRateAdoptedBuilding || autoRateAdoptedBuilding);
+
+  const autoFmvBuilding = useMemo(() => {
+    const area = parseFloat(effectiveFinalBuildingArea || '0') || 0;
+    const rate = parseFloat(effectiveRateAdoptedBuilding || '0') || 0;
+    const depPct = fields.hdbDepreciationPctNA
+      ? 0
+      : parseFloat(fields.hdbDepreciationPct || '0') || 0;
+    const base = area * rate;
+    const fmv = base * (1 - depPct / 100);
+    return fmv > 0 ? String(Math.round(fmv)) : '';
+  }, [effectiveFinalBuildingArea, effectiveRateAdoptedBuilding, fields.hdbDepreciationPct, fields.hdbDepreciationPctNA]);
+
+  const effectiveFmvBuilding = fields.hdbFairMarketValueBuildingEditOn
+    ? (fields.hdbFairMarketValueBuilding ?? '')
+    : (fields.hdbFairMarketValueBuilding || autoFmvBuilding);
+
+  const autoDistressBuilding = useMemo(() => {
+    const fmv = parseFloat(effectiveFmvBuilding || '0') || 0;
+    return fmv > 0 ? String(Math.round(fmv * 0.85)) : '';
+  }, [effectiveFmvBuilding]);
+
+  const effectiveDistressBuilding = fields.hdbDistressValueBuildingEditOn
+    ? (fields.hdbDistressValueBuilding ?? '')
+    : (fields.hdbDistressValueBuilding || autoDistressBuilding);
+
+  const autoInsurableValue = useMemo(() => {
+    const area = parseFloat(effectiveFinalBuildingArea || '0') || 0;
+    const rate = parseFloat(effectiveRateAdoptedBuilding || '0') || 0;
+    const ins = area * rate * 0.9;
+    return ins > 0 ? String(Math.round(ins)) : '';
+  }, [effectiveFinalBuildingArea, effectiveRateAdoptedBuilding]);
+
+  const effectiveInsurableValue = fields.hdbInsurableValueEditOn
+    ? (fields.hdbInsurableValue ?? '')
+    : (fields.hdbInsurableValue || autoInsurableValue);
+
+  return (
+    <div className="animate-fade-in space-y-8">
+      {/* ────────────────────────────────────────────────────────────────────────
+          Container 1: 9 Basic Technical Info (Color: Light Cyan #E0FFFF)
+      ──────────────────────────────────────────────────────────────────────── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-cyan-300 shadow-sm"
+        style={{ backgroundColor: '#E0FFFF' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-400/50 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-xs font-bold text-cyan-900 shadow-xs">
+              5.1
+            </span>
+            <h3 className="font-bold text-gray-900 text-sm md:text-base uppercase tracking-wide">
+              9 Basic Technical Info
+            </h3>
+          </div>
+          <span className="text-xs text-cyan-950 font-semibold bg-white/70 px-2.5 py-1 rounded-md border border-cyan-300/60 shadow-xs">
+            9 Basic Technical Info Container
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* 9 Property type */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9 PROPERTY TYPE
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbPropertyType || 'Residential Independent House'}
+              customValue={fields.hdbPropertyTypeCustom || ''}
+              onChange={(val) => handleChange('hdbPropertyType', val)}
+              onCustomChange={(val) => handleChange('hdbPropertyTypeCustom', val)}
+              options={[
+                { value: 'Residential Independent House', label: 'Residential Independent House' },
+                { value: 'Residential Flat / Apartment', label: 'Residential Flat / Apartment' },
+                { value: 'Commercial Building / Shop', label: 'Commercial Building / Shop' },
+                { value: 'Plot / Land', label: 'Plot / Land' },
+                { value: 'Industrial Property', label: 'Industrial Property' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select property type..."
+            />
+          </Field>
+
+          {/* Valuation Methodology */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                VALUATION METHODOLOGY
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbValuationMethodology || 'Land & Building Method / Cost Approach'}
+              customValue={fields.hdbValuationMethodologyCustom || ''}
+              onChange={(val) => handleChange('hdbValuationMethodology', val)}
+              onCustomChange={(val) => handleChange('hdbValuationMethodologyCustom', val)}
+              options={[
+                { value: 'Land & Building Method / Cost Approach', label: 'Land & Building Method / Cost Approach' },
+                { value: 'Sales Comparison / Market Approach', label: 'Sales Comparison / Market Approach' },
+                { value: 'Rent Capitalization Method / Income Approach', label: 'Rent Capitalization Method / Income Approach' },
+                { value: 'Residual Method', label: 'Residual Method' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select valuation methodology..."
+            />
+          </Field>
+
+          {/* Present Occupancy */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                PRESENT OCCUPANCY
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbPresentOccupancy || 'Self Occupied'}
+              customValue={fields.hdbPresentOccupancyCustom || ''}
+              onChange={(val) => handleChange('hdbPresentOccupancy', val)}
+              onCustomChange={(val) => handleChange('hdbPresentOccupancyCustom', val)}
+              options={[
+                { value: 'Self Occupied', label: 'Self Occupied' },
+                { value: 'Rented', label: 'Rented' },
+                { value: 'Vacant', label: 'Vacant' },
+                { value: 'Partially Self Occupied & Partially Rented', label: 'Partially Self Occupied & Partially Rented' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select present occupancy..."
+            />
+          </Field>
+
+          {/* If not Occupied by Owner */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  IF NOT OCCUPIED BY OWNER
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbIfNotOccupiedByOwnerNA}
+                  onChange={(checked) => {
+                    handleChange('hdbIfNotOccupiedByOwnerNA', checked);
+                    if (checked) handleChange('hdbIfNotOccupiedByOwner', 'NA');
+                    else if (fields.hdbIfNotOccupiedByOwner === 'NA') handleChange('hdbIfNotOccupiedByOwner', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <AutoResizeTextarea
+              value={fields.hdbIfNotOccupiedByOwnerNA ? 'NA' : (fields.hdbIfNotOccupiedByOwner || '')}
+              onChange={(e) => handleChange('hdbIfNotOccupiedByOwner', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbIfNotOccupiedByOwnerNA}
+              placeholder="State reason or tenancy details if not owner occupied..."
+              rows={2}
+              className={fields.hdbIfNotOccupiedByOwnerNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+            />
+          </Field>
+
+          {/* 1 (Occupant Info 1) */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900">
+                    1 (OCCUPANT INFO 1)
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.hdbOccupantInfo1NA}
+                    onChange={(checked) => {
+                      handleChange('hdbOccupantInfo1NA', checked);
+                      if (checked) handleChange('hdbOccupantInfo1', 'NA');
+                      else if (fields.hdbOccupantInfo1 === 'NA') handleChange('hdbOccupantInfo1', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <AutoResizeTextarea
+                value={fields.hdbOccupantInfo1NA ? 'NA' : (fields.hdbOccupantInfo1 || '')}
+                onChange={(e) => handleChange('hdbOccupantInfo1', e.target.value)}
+                disabled={isReadOnly || !!fields.hdbOccupantInfo1NA}
+                placeholder="Occupant 1 Name, Floor/Flat, Contact details..."
+                rows={2}
+                className={fields.hdbOccupantInfo1NA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+              />
+            </Field>
+          </div>
+
+          {/* 2 (Occupant Info 2) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  2 (OCCUPANT INFO 2)
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbOccupantInfo2NA}
+                  onChange={(checked) => {
+                    handleChange('hdbOccupantInfo2NA', checked);
+                    if (checked) handleChange('hdbOccupantInfo2', 'NA');
+                    else if (fields.hdbOccupantInfo2 === 'NA') handleChange('hdbOccupantInfo2', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <AutoResizeTextarea
+              value={fields.hdbOccupantInfo2NA ? 'NA' : (fields.hdbOccupantInfo2 || '')}
+              onChange={(e) => handleChange('hdbOccupantInfo2', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbOccupantInfo2NA}
+              placeholder="Occupant 2 details (if applicable)..."
+              rows={2}
+              className={fields.hdbOccupantInfo2NA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+            />
+          </Field>
+
+          {/* 3 (Occupant Info 3) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  3 (OCCUPANT INFO 3)
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbOccupantInfo3NA}
+                  onChange={(checked) => {
+                    handleChange('hdbOccupantInfo3NA', checked);
+                    if (checked) handleChange('hdbOccupantInfo3', 'NA');
+                    else if (fields.hdbOccupantInfo3 === 'NA') handleChange('hdbOccupantInfo3', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <AutoResizeTextarea
+              value={fields.hdbOccupantInfo3NA ? 'NA' : (fields.hdbOccupantInfo3 || '')}
+              onChange={(e) => handleChange('hdbOccupantInfo3', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbOccupantInfo3NA}
+              placeholder="Occupant 3 details (if applicable)..."
+              rows={2}
+              className={fields.hdbOccupantInfo3NA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* ────────────────────────────────────────────────────────────────────────
+          Container 2: 9.a LAND/PLOT- ( Applicable in Plot + Construction cases only) (Color: Light Pink #FFB6C1)
+      ──────────────────────────────────────────────────────────────────────── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-pink-300 shadow-sm"
+        style={{ backgroundColor: '#FFB6C1' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-pink-400/50 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-xs font-bold text-pink-900 shadow-xs">
+              5.2
+            </span>
+            <h3 className="font-bold text-gray-900 text-sm md:text-base uppercase tracking-wide">
+              9.a LAND/PLOT - (Applicable in Plot + Construction cases only)
+            </h3>
+          </div>
+          <span className="text-xs text-pink-950 font-semibold bg-white/70 px-2.5 py-1 rounded-md border border-pink-300/60 shadow-xs">
+            9.a LAND/PLOT Container
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* 9.a.1 Area of Land /Plot */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.a.1 AREA OF LAND / PLOT (IN SQFT)
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium bg-white`}
+              value={fields.hdbLandPlotArea || ''}
+              onChange={(e) => handleChange('hdbLandPlotArea', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Enter land area (e.g. 2400)..."
+            />
+          </Field>
+
+          {/* 9.a.2 Plot Usage */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.a.2 PLOT USAGE
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbPlotUsage || 'Residential'}
+              customValue={fields.hdbPlotUsageCustom || ''}
+              onChange={(val) => handleChange('hdbPlotUsage', val)}
+              onCustomChange={(val) => handleChange('hdbPlotUsageCustom', val)}
+              options={[
+                { value: 'Residential', label: 'Residential' },
+                { value: 'Commercial', label: 'Commercial' },
+                { value: 'Mixed (Resi + Comm)', label: 'Mixed (Resi + Comm)' },
+                { value: 'Industrial', label: 'Industrial' },
+                { value: 'Agricultural', label: 'Agricultural' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select plot usage..."
+            />
+          </Field>
+
+          {/* 9.a.3 Property Accessability */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.a.3 PROPERTY ACCESSABILITY
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbPropertyAccessibility || 'Good'}
+              customValue={fields.hdbPropertyAccessibilityCustom || ''}
+              onChange={(val) => handleChange('hdbPropertyAccessibility', val)}
+              onCustomChange={(val) => handleChange('hdbPropertyAccessibilityCustom', val)}
+              options={[
+                { value: 'Good', label: 'Good' },
+                { value: 'Average', label: 'Average' },
+                { value: 'Poor', label: 'Poor' },
+                { value: 'Direct Road Access', label: 'Direct Road Access' },
+                { value: 'Through Common Passage', label: 'Through Common Passage' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select accessibility..."
+            />
+          </Field>
+
+          {/* 9.a.5 Margin Area/ Set Backs (ft) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.a.5 MARGIN AREA / SET BACKS (FT)
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbMarginAreaSetBacksNA}
+                  onChange={(checked) => {
+                    handleChange('hdbMarginAreaSetBacksNA', checked);
+                    if (checked) handleChange('hdbMarginAreaSetBacks', 'NA');
+                    else if (fields.hdbMarginAreaSetBacks === 'NA') handleChange('hdbMarginAreaSetBacks', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium ${
+                fields.hdbMarginAreaSetBacksNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              value={fields.hdbMarginAreaSetBacksNA ? 'NA' : (fields.hdbMarginAreaSetBacks || '')}
+              onChange={(e) => handleChange('hdbMarginAreaSetBacks', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbMarginAreaSetBacksNA}
+              placeholder="e.g. Front: 10 ft, Rear: 5 ft, Sides: 3 ft..."
+            />
+          </Field>
+
+          {/* 9.a.4 Details of Access */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <span className="font-semibold text-gray-900">
+                  9.a.4 DETAILS OF ACCESS
+                </span>
+              }
+            >
+              <AutoResizeTextarea
+                value={fields.hdbDetailsOfAccess || ''}
+                onChange={(e) => handleChange('hdbDetailsOfAccess', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. 30 ft wide CC Road connected to main road..."
+                rows={2}
+                className="bg-white"
+              />
+            </Field>
+          </div>
+
+          {/* 9.a.6 Property Demarcated */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.a.6 PROPERTY DEMARCATED
+              </span>
+            }
+          >
+            <YesNoRadio
+              name="hdbPropertyDemarcated"
+              value={fields.hdbPropertyDemarcated || 'Yes'}
+              onChange={(val) => handleChange('hdbPropertyDemarcated', val)}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* 9.a.7 Ownership */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.a.7 OWNERSHIP
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbOwnershipType || 'Freehold'}
+              customValue={fields.hdbOwnershipTypeCustom || ''}
+              onChange={(val) => handleChange('hdbOwnershipType', val)}
+              onCustomChange={(val) => handleChange('hdbOwnershipTypeCustom', val)}
+              options={[
+                { value: 'Freehold', label: 'Freehold' },
+                { value: 'Leasehold', label: 'Leasehold' },
+                { value: 'Joint Ownership', label: 'Joint Ownership' },
+                { value: 'Power of Attorney', label: 'Power of Attorney' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select ownership type..."
+            />
+          </Field>
+
+          {/* 9.a.8 Land /Plot Area Considered for Valuation(As per Measured) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.a.8 LAND / PLOT AREA CONSIDERED FOR VALUATION (MEASURED)
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium bg-white`}
+              value={fields.hdbLandAreaConsidered || fields.hdbLandPlotArea || ''}
+              onChange={(e) => handleChange('hdbLandAreaConsidered', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Area considered for valuation in sqft..."
+            />
+          </Field>
+
+          {/* Agreement Value (Rs.) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  AGREEMENT VALUE (RS.)
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbAgreementValueNA}
+                  onChange={(checked) => {
+                    handleChange('hdbAgreementValueNA', checked);
+                    if (checked) handleChange('hdbAgreementValue', 'NA');
+                    else if (fields.hdbAgreementValue === 'NA') handleChange('hdbAgreementValue', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium ${
+                fields.hdbAgreementValueNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              value={fields.hdbAgreementValueNA ? 'NA' : (fields.hdbAgreementValue || '')}
+              onChange={(e) => handleChange('hdbAgreementValue', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbAgreementValueNA}
+              placeholder="e.g. 2500000"
+            />
+          </Field>
+
+          {/* 9.a.9 Government Guideline Rate(Rs.) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.a.9 GOVERNMENT GUIDELINE RATE (RS./SQFT)
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium bg-white`}
+              value={fields.hdbGovtGuidelineRateLand || ''}
+              onChange={(e) => handleChange('hdbGovtGuidelineRateLand', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. 1200"
+            />
+          </Field>
+
+          {/* 9.a.10 Prevailing Market Rate Range(Rs.) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.a.10 PREVAILING MARKET RATE RANGE (RS./SQFT)
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium bg-white`}
+              value={fields.hdbMarketRateLand || ''}
+              onChange={(e) => handleChange('hdbMarketRateLand', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. 1500"
+            />
+          </Field>
+
+          {/* 9.a.11 Market Reference for Land rates */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <span className="font-semibold text-gray-900">
+                  9.a.11 MARKET REFERENCE FOR LAND RATES
+                </span>
+              }
+            >
+              <AutoResizeTextarea
+                value={fields.hdbMarketReferenceLand || ''}
+                onChange={(e) => handleChange('hdbMarketReferenceLand', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Market reference, broker inquiry, recent local sale deeds..."
+                rows={2}
+                className="bg-white"
+              />
+            </Field>
+          </div>
+
+          {/* 9.a.12 Rate Adopted for Valuation */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.a.12 RATE ADOPTED FOR VALUATION (RS./SQFT)
+                </span>
+                <EditSwitch
+                  checked={!!fields.hdbRateAdoptedLandEditOn}
+                  onChange={(checked) => {
+                    handleChange('hdbRateAdoptedLandEditOn', checked);
+                    if (!checked) {
+                      handleChange('hdbRateAdoptedLand', autoRateAdoptedLand);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className={`${inputCls} font-medium pr-28 ${
+                  !fields.hdbRateAdoptedLandEditOn
+                    ? 'bg-gray-100/90 text-gray-800 cursor-not-allowed'
+                    : 'bg-white'
+                }`}
+                value={effectiveRateAdoptedLand}
+                onChange={(e) => handleChange('hdbRateAdoptedLand', e.target.value)}
+                disabled={isReadOnly || !fields.hdbRateAdoptedLandEditOn}
+                placeholder="e.g. 1500"
+              />
+              {!fields.hdbRateAdoptedLandEditOn && (
+                <div className="absolute right-3 top-2.5 text-xs text-emerald-800 font-semibold pointer-events-none flex items-center gap-1 bg-white/80 px-2 py-0.5 rounded border border-emerald-300">
+                  <Lock className="w-3 h-3 text-emerald-700" /> Auto
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* 9.a.13 Fair Market Value */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.a.13 FAIR MARKET VALUE OF LAND (RS.)
+                </span>
+                <EditSwitch
+                  checked={!!fields.hdbFairMarketValueLandEditOn}
+                  onChange={(checked) => {
+                    handleChange('hdbFairMarketValueLandEditOn', checked);
+                    if (!checked) {
+                      handleChange('hdbFairMarketValueLand', autoFmvLand);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className={`${inputCls} font-bold text-gray-900 pr-28 ${
+                  !fields.hdbFairMarketValueLandEditOn
+                    ? 'bg-gray-100/90 cursor-not-allowed'
+                    : 'bg-white'
+                }`}
+                value={effectiveFmvLand}
+                onChange={(e) => handleChange('hdbFairMarketValueLand', e.target.value)}
+                disabled={isReadOnly || !fields.hdbFairMarketValueLandEditOn}
+                placeholder="Auto-calculates (Area * Rate)..."
+              />
+              {!fields.hdbFairMarketValueLandEditOn && (
+                <div className="absolute right-3 top-2.5 text-xs text-emerald-800 font-semibold pointer-events-none flex items-center gap-1 bg-white/80 px-2 py-0.5 rounded border border-emerald-300">
+                  <Lock className="w-3 h-3 text-emerald-700" /> Area × Rate
+                </div>
+              )}
+            </div>
+          </Field>
+        </div>
+      </div>
+
+      {/* ────────────────────────────────────────────────────────────────────────
+          Container 3: 9.b CONSTRUCTION / APARTMENTS (Color: Light Goldenrod #FAFAD2)
+      ──────────────────────────────────────────────────────────────────────── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-amber-300 shadow-sm"
+        style={{ backgroundColor: '#FAFAD2' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-400/50 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-xs font-bold text-amber-900 shadow-xs">
+              5.3
+            </span>
+            <h3 className="font-bold text-gray-900 text-sm md:text-base uppercase tracking-wide">
+              9.b CONSTRUCTION / APARTMENTS
+            </h3>
+          </div>
+          <span className="text-xs text-amber-950 font-semibold bg-white/70 px-2.5 py-1 rounded-md border border-amber-300/60 shadow-xs">
+            9.b CONSTRUCTION / APARTMENTS Container
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* 9.b.1 Particulars */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900">
+                    9.b.1 PARTICULARS
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.hdbConstructionParticularsNA}
+                    onChange={(checked) => {
+                      handleChange('hdbConstructionParticularsNA', checked);
+                      if (checked) handleChange('hdbConstructionParticulars', 'NA');
+                      else if (fields.hdbConstructionParticulars === 'NA') handleChange('hdbConstructionParticulars', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <AutoResizeTextarea
+                value={fields.hdbConstructionParticularsNA ? 'NA' : (fields.hdbConstructionParticulars || '')}
+                onChange={(e) => handleChange('hdbConstructionParticulars', e.target.value)}
+                disabled={isReadOnly || !!fields.hdbConstructionParticularsNA}
+                placeholder="e.g. Ground Floor + First Floor RCC Residential Building..."
+                rows={2}
+                className={fields.hdbConstructionParticularsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+              />
+            </Field>
+          </div>
+
+          {/* 9.b.2 Usage */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.b.2 USAGE
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbBuildingUsage || 'Residential'}
+              customValue={fields.hdbBuildingUsageCustom || ''}
+              onChange={(val) => handleChange('hdbBuildingUsage', val)}
+              onCustomChange={(val) => handleChange('hdbBuildingUsageCustom', val)}
+              options={[
+                { value: 'Residential', label: 'Residential' },
+                { value: 'Commercial', label: 'Commercial' },
+                { value: 'Mixed', label: 'Mixed' },
+                { value: 'Industrial', label: 'Industrial' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select usage..."
+            />
+          </Field>
+
+          {/* 9.b.3 Structure */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.b.3 STRUCTURE
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbBuildingStructure || 'RCC Framed Structure'}
+              customValue={fields.hdbBuildingStructureCustom || ''}
+              onChange={(val) => handleChange('hdbBuildingStructure', val)}
+              onCustomChange={(val) => handleChange('hdbBuildingStructureCustom', val)}
+              options={[
+                { value: 'RCC Framed Structure', label: 'RCC Framed Structure' },
+                { value: 'Load Bearing Structure', label: 'Load Bearing Structure' },
+                { value: 'Steel Structure / Truss Roof', label: 'Steel Structure / Truss Roof' },
+                { value: 'Composite Structure', label: 'Composite Structure' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select structure type..."
+            />
+          </Field>
+
+          {/* 9.b.4 No. of Storey */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.b.4 NO. OF STOREY
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium bg-white`}
+              value={fields.hdbNoOfStorey || ''}
+              onChange={(e) => handleChange('hdbNoOfStorey', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. G+1 or 2"
+            />
+          </Field>
+
+          {/* 9.b.5 Property type */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.b.5 PROPERTY TYPE
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbBuildingPropertyType || 'Individual Residential House'}
+              customValue={fields.hdbBuildingPropertyTypeCustom || ''}
+              onChange={(val) => handleChange('hdbBuildingPropertyType', val)}
+              onCustomChange={(val) => handleChange('hdbBuildingPropertyTypeCustom', val)}
+              options={[
+                { value: 'Individual Residential House', label: 'Individual Residential House' },
+                { value: 'Independent Villa', label: 'Independent Villa' },
+                { value: 'Apartment / Flat', label: 'Apartment / Flat' },
+                { value: 'Commercial Complex', label: 'Commercial Complex' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select building property type..."
+            />
+          </Field>
+
+          {/* 9.b.6 Completion/ Occupancy Date */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.6 COMPLETION / OCCUPANCY DATE
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbCompletionDateNA}
+                  onChange={(checked) => {
+                    handleChange('hdbCompletionDateNA', checked);
+                    if (checked) handleChange('hdbCompletionDate', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="date"
+              className={`${inputCls} font-medium ${
+                fields.hdbCompletionDateNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              value={fields.hdbCompletionDateNA ? '' : (fields.hdbCompletionDate || '')}
+              onChange={(e) => handleChange('hdbCompletionDate', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbCompletionDateNA}
+            />
+          </Field>
+
+          {/* 9.b.7 Residual Age */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.7 RESIDUAL AGE
+                </span>
+                <div className="flex items-center gap-3">
+                  <NaCheckbox
+                    checked={!!fields.hdbResidualAgeNA}
+                    onChange={(checked) => {
+                      handleChange('hdbResidualAgeNA', checked);
+                      if (checked) handleChange('hdbResidualAge', 'NA');
+                      else if (fields.hdbResidualAge === 'NA') handleChange('hdbResidualAge', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                  <EditSwitch
+                    checked={!!fields.hdbResidualAgeEditOn}
+                    onChange={(checked) => {
+                      handleChange('hdbResidualAgeEditOn', checked);
+                      if (!checked) {
+                        handleChange('hdbResidualAge', autoResidualAge);
+                      }
+                    }}
+                    disabled={isReadOnly || !!fields.hdbResidualAgeNA}
+                  />
+                </div>
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className={`${inputCls} font-medium pr-28 ${
+                  fields.hdbResidualAgeNA
+                    ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed'
+                    : !fields.hdbResidualAgeEditOn
+                    ? 'bg-gray-100/90 text-gray-800 cursor-not-allowed'
+                    : 'bg-white'
+                }`}
+                value={fields.hdbResidualAgeNA ? 'NA' : effectiveResidualAge}
+                onChange={(e) => handleChange('hdbResidualAge', e.target.value)}
+                disabled={isReadOnly || !!fields.hdbResidualAgeNA || !fields.hdbResidualAgeEditOn}
+                placeholder="e.g. 50 Years"
+              />
+              {!fields.hdbResidualAgeEditOn && !fields.hdbResidualAgeNA && (
+                <div className="absolute right-3 top-2.5 text-xs text-emerald-800 font-semibold pointer-events-none flex items-center gap-1 bg-white/80 px-2 py-0.5 rounded border border-emerald-300">
+                  <Lock className="w-3 h-3 text-emerald-700" /> Auto
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* 9.b.8 Carpet Area(SQFT)(G+1) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.8 CARPET AREA (SQFT) (G+1)
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbCarpetAreaG1NA}
+                  onChange={(checked) => {
+                    handleChange('hdbCarpetAreaG1NA', checked);
+                    if (checked) handleChange('hdbCarpetAreaG1', 'NA');
+                    else if (fields.hdbCarpetAreaG1 === 'NA') handleChange('hdbCarpetAreaG1', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium ${
+                fields.hdbCarpetAreaG1NA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              value={fields.hdbCarpetAreaG1NA ? 'NA' : (fields.hdbCarpetAreaG1 || '')}
+              onChange={(e) => handleChange('hdbCarpetAreaG1', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbCarpetAreaG1NA}
+              placeholder="e.g. 1800"
+            />
+          </Field>
+
+          {/* 9.b.9 Carpet Area( in SQFT Only) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.9 CARPET AREA (IN SQFT ONLY)
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbCarpetAreaTotalNA}
+                  onChange={(checked) => {
+                    handleChange('hdbCarpetAreaTotalNA', checked);
+                    if (checked) handleChange('hdbCarpetAreaTotal', 'NA');
+                    else if (fields.hdbCarpetAreaTotal === 'NA') handleChange('hdbCarpetAreaTotal', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium ${
+                fields.hdbCarpetAreaTotalNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              value={fields.hdbCarpetAreaTotalNA ? 'NA' : (fields.hdbCarpetAreaTotal || '')}
+              onChange={(e) => handleChange('hdbCarpetAreaTotal', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbCarpetAreaTotalNA}
+              placeholder="e.g. 1800"
+            />
+          </Field>
+
+          {/* 9.b.10 1 (Built up Area Measured) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.10 1 (BUILT UP AREA MEASURED)
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbBuiltUpAreaMeasuredNA}
+                  onChange={(checked) => {
+                    handleChange('hdbBuiltUpAreaMeasuredNA', checked);
+                    if (checked) handleChange('hdbBuiltUpAreaMeasured', 'NA');
+                    else if (fields.hdbBuiltUpAreaMeasured === 'NA') handleChange('hdbBuiltUpAreaMeasured', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium ${
+                fields.hdbBuiltUpAreaMeasuredNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              value={fields.hdbBuiltUpAreaMeasuredNA ? 'NA' : (fields.hdbBuiltUpAreaMeasured || '')}
+              onChange={(e) => handleChange('hdbBuiltUpAreaMeasured', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbBuiltUpAreaMeasuredNA}
+              placeholder="e.g. 2100"
+            />
+          </Field>
+
+          {/* 9.b.11 1 (Super Builtup Area/Saleable Area) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.11 1 (SUPER BUILTUP AREA / SALEABLE AREA)
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbSuperBuiltUpAreaNA}
+                  onChange={(checked) => {
+                    handleChange('hdbSuperBuiltUpAreaNA', checked);
+                    if (checked) handleChange('hdbSuperBuiltUpArea', 'NA');
+                    else if (fields.hdbSuperBuiltUpArea === 'NA') handleChange('hdbSuperBuiltUpArea', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium ${
+                fields.hdbSuperBuiltUpAreaNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              value={fields.hdbSuperBuiltUpAreaNA ? 'NA' : (fields.hdbSuperBuiltUpArea || '')}
+              onChange={(e) => handleChange('hdbSuperBuiltUpArea', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbSuperBuiltUpAreaNA}
+              placeholder="e.g. 2400"
+            />
+          </Field>
+
+          {/* 9.b.12 Structural Condition */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.b.12 STRUCTURAL CONDITION
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbStructuralCondition || 'Good'}
+              customValue={fields.hdbStructuralConditionCustom || ''}
+              onChange={(val) => handleChange('hdbStructuralCondition', val)}
+              onCustomChange={(val) => handleChange('hdbStructuralConditionCustom', val)}
+              options={[
+                { value: 'Good', label: 'Good' },
+                { value: 'Very Good', label: 'Very Good' },
+                { value: 'Average', label: 'Average' },
+                { value: 'Poor / Needs Repair', label: 'Poor / Needs Repair' },
+                { value: 'Under Construction', label: 'Under Construction' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select structural condition..."
+            />
+          </Field>
+
+          {/* 9.b.13 Government Guideline Rate(Rs./sqft) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.b.13 GOVERNMENT GUIDELINE RATE (RS./SQFT)
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium bg-white`}
+              value={fields.hdbGovtGuidelineRateBuilding || ''}
+              onChange={(e) => handleChange('hdbGovtGuidelineRateBuilding', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. 1500"
+            />
+          </Field>
+
+          {/* 9.b.14 Final Area in SQFT considered for Valuation as per Measured */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.14 FINAL AREA IN SQFT CONSIDERED FOR VALUATION
+                </span>
+                <EditSwitch
+                  checked={!!fields.hdbFinalBuildingAreaConsideredEditOn}
+                  onChange={(checked) => {
+                    handleChange('hdbFinalBuildingAreaConsideredEditOn', checked);
+                    if (!checked) {
+                      handleChange('hdbFinalBuildingAreaConsidered', autoFinalBuildingArea);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className={`${inputCls} font-medium pr-28 ${
+                  !fields.hdbFinalBuildingAreaConsideredEditOn
+                    ? 'bg-gray-100/90 text-gray-800 cursor-not-allowed'
+                    : 'bg-white'
+                }`}
+                value={effectiveFinalBuildingArea}
+                onChange={(e) => handleChange('hdbFinalBuildingAreaConsidered', e.target.value)}
+                disabled={isReadOnly || !fields.hdbFinalBuildingAreaConsideredEditOn}
+                placeholder="Area considered in sqft..."
+              />
+              {!fields.hdbFinalBuildingAreaConsideredEditOn && (
+                <div className="absolute right-3 top-2.5 text-xs text-emerald-800 font-semibold pointer-events-none flex items-center gap-1 bg-white/80 px-2 py-0.5 rounded border border-emerald-300">
+                  <Lock className="w-3 h-3 text-emerald-700" /> Auto
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* 9.b.15 Prevailing Market Rate Range(Rs./sqft) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-900">
+                9.b.15 PREVAILING MARKET RATE RANGE (RS./SQFT)
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium bg-white`}
+              value={fields.hdbMarketRateBuilding || ''}
+              onChange={(e) => handleChange('hdbMarketRateBuilding', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. 1800"
+            />
+          </Field>
+
+          {/* 9.b.16 Market Reference for Property rates */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <span className="font-semibold text-gray-900">
+                  9.b.16 MARKET REFERENCE FOR PROPERTY RATES
+                </span>
+              }
+            >
+              <AutoResizeTextarea
+                value={fields.hdbMarketReferenceBuilding || ''}
+                onChange={(e) => handleChange('hdbMarketReferenceBuilding', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Market reference for building construction rates..."
+                rows={2}
+                className="bg-white"
+              />
+            </Field>
+          </div>
+
+          {/* 9.b.17 Rate Adopted for Valuation */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.17 RATE ADOPTED FOR VALUATION (RS./SQFT)
+                </span>
+                <EditSwitch
+                  checked={!!fields.hdbRateAdoptedBuildingEditOn}
+                  onChange={(checked) => {
+                    handleChange('hdbRateAdoptedBuildingEditOn', checked);
+                    if (!checked) {
+                      handleChange('hdbRateAdoptedBuilding', autoRateAdoptedBuilding);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className={`${inputCls} font-medium pr-28 ${
+                  !fields.hdbRateAdoptedBuildingEditOn
+                    ? 'bg-gray-100/90 text-gray-800 cursor-not-allowed'
+                    : 'bg-white'
+                }`}
+                value={effectiveRateAdoptedBuilding}
+                onChange={(e) => handleChange('hdbRateAdoptedBuilding', e.target.value)}
+                disabled={isReadOnly || !fields.hdbRateAdoptedBuildingEditOn}
+                placeholder="e.g. 1800"
+              />
+              {!fields.hdbRateAdoptedBuildingEditOn && (
+                <div className="absolute right-3 top-2.5 text-xs text-emerald-800 font-semibold pointer-events-none flex items-center gap-1 bg-white/80 px-2 py-0.5 rounded border border-emerald-300">
+                  <Lock className="w-3 h-3 text-emerald-700" /> Auto
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* 9.b.18 Depreciation (% Only) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.18 DEPRECIATION (% ONLY)
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbDepreciationPctNA}
+                  onChange={(checked) => {
+                    handleChange('hdbDepreciationPctNA', checked);
+                    if (checked) handleChange('hdbDepreciationPct', '0');
+                    else if (fields.hdbDepreciationPct === '0') handleChange('hdbDepreciationPct', '10');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium ${
+                fields.hdbDepreciationPctNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              value={fields.hdbDepreciationPctNA ? '0' : (fields.hdbDepreciationPct ?? '10')}
+              onChange={(e) => handleChange('hdbDepreciationPct', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbDepreciationPctNA}
+              placeholder="e.g. 10"
+            />
+          </Field>
+
+          {/* 9.b.19 Fair Market Value */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.19 FAIR MARKET VALUE OF BUILDING (RS.)
+                </span>
+                <EditSwitch
+                  checked={!!fields.hdbFairMarketValueBuildingEditOn}
+                  onChange={(checked) => {
+                    handleChange('hdbFairMarketValueBuildingEditOn', checked);
+                    if (!checked) {
+                      handleChange('hdbFairMarketValueBuilding', autoFmvBuilding);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className={`${inputCls} font-bold text-gray-900 pr-28 ${
+                  !fields.hdbFairMarketValueBuildingEditOn
+                    ? 'bg-gray-100/90 cursor-not-allowed'
+                    : 'bg-white'
+                }`}
+                value={effectiveFmvBuilding}
+                onChange={(e) => handleChange('hdbFairMarketValueBuilding', e.target.value)}
+                disabled={isReadOnly || !fields.hdbFairMarketValueBuildingEditOn}
+                placeholder="Auto-calculates FMV..."
+              />
+              {!fields.hdbFairMarketValueBuildingEditOn && (
+                <div className="absolute right-3 top-2.5 text-xs text-emerald-800 font-semibold pointer-events-none flex items-center gap-1 bg-white/80 px-2 py-0.5 rounded border border-emerald-300">
+                  <Lock className="w-3 h-3 text-emerald-700" /> Auto
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* 9.b.20 Distress Value */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.20 DISTRESS VALUE (RS.)
+                </span>
+                <div className="flex items-center gap-3">
+                  <NaCheckbox
+                    checked={!!fields.hdbDistressValueBuildingNA}
+                    onChange={(checked) => {
+                      handleChange('hdbDistressValueBuildingNA', checked);
+                      if (checked) handleChange('hdbDistressValueBuilding', 'NA');
+                      else if (fields.hdbDistressValueBuilding === 'NA') handleChange('hdbDistressValueBuilding', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                  <EditSwitch
+                    checked={!!fields.hdbDistressValueBuildingEditOn}
+                    onChange={(checked) => {
+                      handleChange('hdbDistressValueBuildingEditOn', checked);
+                      if (!checked) {
+                        handleChange('hdbDistressValueBuilding', autoDistressBuilding);
+                      }
+                    }}
+                    disabled={isReadOnly || !!fields.hdbDistressValueBuildingNA}
+                  />
+                </div>
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="text"
+                className={`${inputCls} font-semibold pr-28 ${
+                  fields.hdbDistressValueBuildingNA
+                    ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed'
+                    : !fields.hdbDistressValueBuildingEditOn
+                    ? 'bg-gray-100/90 text-gray-800 cursor-not-allowed'
+                    : 'bg-white'
+                }`}
+                value={fields.hdbDistressValueBuildingNA ? 'NA' : effectiveDistressBuilding}
+                onChange={(e) => handleChange('hdbDistressValueBuilding', e.target.value)}
+                disabled={isReadOnly || !!fields.hdbDistressValueBuildingNA || !fields.hdbDistressValueBuildingEditOn}
+                placeholder="e.g. 85% of FMV..."
+              />
+              {!fields.hdbDistressValueBuildingEditOn && !fields.hdbDistressValueBuildingNA && (
+                <div className="absolute right-3 top-2.5 text-xs text-emerald-800 font-semibold pointer-events-none flex items-center gap-1 bg-white/80 px-2 py-0.5 rounded border border-emerald-300">
+                  <Lock className="w-3 h-3 text-emerald-700" /> 85% FMV
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* 9.b.21 Unapproved Construction Value(SQFT) */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.21 UNAPPROVED CONSTRUCTION AREA (SQFT)
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbUnapprovedConstructionAreaNA}
+                  onChange={(checked) => {
+                    handleChange('hdbUnapprovedConstructionAreaNA', checked);
+                    if (checked) handleChange('hdbUnapprovedConstructionArea', 'NA');
+                    else if (fields.hdbUnapprovedConstructionArea === 'NA') handleChange('hdbUnapprovedConstructionArea', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-medium ${
+                fields.hdbUnapprovedConstructionAreaNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              value={fields.hdbUnapprovedConstructionAreaNA ? 'NA' : (fields.hdbUnapprovedConstructionArea || '')}
+              onChange={(e) => handleChange('hdbUnapprovedConstructionArea', e.target.value)}
+              disabled={isReadOnly || !!fields.hdbUnapprovedConstructionAreaNA}
+              placeholder="e.g. Nil or area in sqft..."
+            />
+          </Field>
+
+          {/* 9.b.24 Demolition / Sealing Risk */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-900">
+                  9.b.24 DEMOLITION / SEALING RISK
+                </span>
+                <NaCheckbox
+                  checked={!!fields.hdbDemolitionSealingRiskNA}
+                  onChange={(checked) => {
+                    handleChange('hdbDemolitionSealingRiskNA', checked);
+                    if (checked) handleChange('hdbDemolitionSealingRisk', 'NA');
+                    else if (fields.hdbDemolitionSealingRisk === 'NA') handleChange('hdbDemolitionSealingRisk', 'Low / Negligible');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <CustomSelect
+              value={fields.hdbDemolitionSealingRiskNA ? 'NA' : (fields.hdbDemolitionSealingRisk || 'Low / Negligible')}
+              customValue={fields.hdbDemolitionSealingRiskCustom || ''}
+              onChange={(val) => handleChange('hdbDemolitionSealingRisk', val)}
+              onCustomChange={(val) => handleChange('hdbDemolitionSealingRiskCustom', val)}
+              options={[
+                { value: 'Low / Negligible', label: 'Low / Negligible' },
+                { value: 'Moderate', label: 'Moderate' },
+                { value: 'High', label: 'High' },
+                { value: 'None', label: 'None' },
+              ]}
+              disabled={isReadOnly || !!fields.hdbDemolitionSealingRiskNA}
+              placeholder="Select risk level..."
+            />
+          </Field>
+
+          {/* 9.b.22 Internal and External Amenities */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900">
+                    9.b.22 INTERNAL AND EXTERNAL AMENITIES
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.hdbAmenitiesInternalExternalNA}
+                    onChange={(checked) => {
+                      handleChange('hdbAmenitiesInternalExternalNA', checked);
+                      if (checked) handleChange('hdbAmenitiesInternalExternal', 'NA');
+                      else if (fields.hdbAmenitiesInternalExternal === 'NA') handleChange('hdbAmenitiesInternalExternal', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <AutoResizeTextarea
+                value={fields.hdbAmenitiesInternalExternalNA ? 'NA' : (fields.hdbAmenitiesInternalExternal || '')}
+                onChange={(e) => handleChange('hdbAmenitiesInternalExternal', e.target.value)}
+                disabled={isReadOnly || !!fields.hdbAmenitiesInternalExternalNA}
+                placeholder="e.g. Vitrified tiles, modular kitchen, electrical fittings, water supply, parking space..."
+                rows={2}
+                className={fields.hdbAmenitiesInternalExternalNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+              />
+            </Field>
+          </div>
+
+          {/* 9.b.23 Violation Observed */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900">
+                    9.b.23 VIOLATION OBSERVED
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.hdbViolationObservedNA}
+                    onChange={(checked) => {
+                      handleChange('hdbViolationObservedNA', checked);
+                      if (checked) handleChange('hdbViolationObserved', 'NA');
+                      else if (fields.hdbViolationObserved === 'NA') handleChange('hdbViolationObserved', 'No');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <div className="space-y-3">
+                <YesNoRadio
+                  name="hdbViolationObserved"
+                  value={fields.hdbViolationObserved || 'No'}
+                  onChange={(val) => handleChange('hdbViolationObserved', val)}
+                  disabled={isReadOnly || !!fields.hdbViolationObservedNA}
+                />
+                {(fields.hdbViolationObserved === 'Yes' && !fields.hdbViolationObservedNA) && (
+                  <AutoResizeTextarea
+                    value={fields.hdbViolationDetails || ''}
+                    onChange={(e) => handleChange('hdbViolationDetails', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Specify details of violation observed..."
+                    rows={2}
+                    className="bg-white"
+                  />
+                )}
+              </div>
+            </Field>
+          </div>
+
+          {/* 9.b.25 Remarks on Last 3 years average price of property */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900 text-xs sm:text-sm">
+                    9.b.25 REMARKS ON LAST 3 YEARS AVERAGE PRICE OF PROPERTY
+                  </span>
+                  <NaCheckbox
+                    checked={!!fields.hdbRemarksLast3YearsPriceNA}
+                    onChange={(checked) => {
+                      handleChange('hdbRemarksLast3YearsPriceNA', checked);
+                      if (checked) handleChange('hdbRemarksLast3YearsPrice', 'NA');
+                      else if (fields.hdbRemarksLast3YearsPrice === 'NA') handleChange('hdbRemarksLast3YearsPrice', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <AutoResizeTextarea
+                value={fields.hdbRemarksLast3YearsPriceNA ? 'NA' : (fields.hdbRemarksLast3YearsPrice || '')}
+                onChange={(e) => handleChange('hdbRemarksLast3YearsPrice', e.target.value)}
+                disabled={isReadOnly || !!fields.hdbRemarksLast3YearsPriceNA}
+                placeholder="e.g. Steady appreciation of 8-10% annually observed in this locality over past 3 years..."
+                rows={2}
+                className={fields.hdbRemarksLast3YearsPriceNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'}
+              />
+            </Field>
+          </div>
+
+          {/* 9.b.26 Insurable value of Property */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex justify-between items-center w-full">
+                  <span className="font-semibold text-gray-900">
+                    9.b.26 INSURABLE VALUE OF PROPERTY (RS.)
+                  </span>
+                  <div className="flex items-center gap-3">
+                    <NaCheckbox
+                      checked={!!fields.hdbInsurableValueNA}
+                      onChange={(checked) => {
+                        handleChange('hdbInsurableValueNA', checked);
+                        if (checked) handleChange('hdbInsurableValue', 'NA');
+                        else if (fields.hdbInsurableValue === 'NA') handleChange('hdbInsurableValue', '');
+                      }}
+                      disabled={isReadOnly}
+                    />
+                    <EditSwitch
+                      checked={!!fields.hdbInsurableValueEditOn}
+                      onChange={(checked) => {
+                        handleChange('hdbInsurableValueEditOn', checked);
+                        if (!checked) {
+                          handleChange('hdbInsurableValue', autoInsurableValue);
+                        }
+                      }}
+                      disabled={isReadOnly || !!fields.hdbInsurableValueNA}
+                    />
+                  </div>
+                </div>
+              }
+            >
+              <div className="relative">
+                <input
+                  type="text"
+                  className={`${inputCls} font-semibold pr-28 ${
+                    fields.hdbInsurableValueNA
+                      ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed'
+                      : !fields.hdbInsurableValueEditOn
+                      ? 'bg-gray-100/90 text-gray-800 cursor-not-allowed'
+                      : 'bg-white'
+                  }`}
+                  value={fields.hdbInsurableValueNA ? 'NA' : effectiveInsurableValue}
+                  onChange={(e) => handleChange('hdbInsurableValue', e.target.value)}
+                  disabled={isReadOnly || !!fields.hdbInsurableValueNA || !fields.hdbInsurableValueEditOn}
+                  placeholder="Insurable value (structure reproduction cost)..."
+                />
+                {!fields.hdbInsurableValueEditOn && !fields.hdbInsurableValueNA && (
+                  <div className="absolute right-3 top-2.5 text-xs text-emerald-800 font-semibold pointer-events-none flex items-center gap-1 bg-white/80 px-2 py-0.5 rounded border border-emerald-300">
+                    <Lock className="w-3 h-3 text-emerald-700" /> Structure Cost
+                  </div>
+                )}
+              </div>
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── HDB Financial Services BankConfig ──────────────────────────────────────
 
 export const HDB_FINANCIAL_CONFIG: BankConfig = {
@@ -1794,6 +3347,7 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
     { id: 'hdb-section-general-details', title: 'GENERAL DETAILS' },
     { id: 'hdb-section-document-details', title: 'DOCUMENT DETAILS' },
     { id: 'hdb-section-boundaries', title: 'BOUNDARIES' },
+    { id: 'hdb-section-technical-details', title: 'TECHNICAL DETAILS' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-11', title: 'Property Photographs' },
   ],
@@ -1907,6 +3461,101 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
     hdbBoundarySouth: '',
     hdbBoundariesMatchingCount: '4',
     hdbBoundariesMatchingEditOn: false,
+
+    // Section 5: Technical Details
+    // Container 1: 9 Basic Technical Info
+    hdbPropertyType: 'Residential Independent House',
+    hdbPropertyTypeCustom: '',
+    hdbValuationMethodology: 'Land & Building Method / Cost Approach',
+    hdbValuationMethodologyCustom: '',
+    hdbPresentOccupancy: 'Self Occupied',
+    hdbPresentOccupancyCustom: '',
+    hdbIfNotOccupiedByOwner: '',
+    hdbIfNotOccupiedByOwnerNA: false,
+    hdbOccupantInfo1: '',
+    hdbOccupantInfo1NA: false,
+    hdbOccupantInfo2: '',
+    hdbOccupantInfo2NA: false,
+    hdbOccupantInfo3: '',
+    hdbOccupantInfo3NA: false,
+
+    // Container 2: 9.a LAND/PLOT
+    hdbLandPlotArea: '',
+    hdbPlotUsage: 'Residential',
+    hdbPlotUsageCustom: '',
+    hdbPropertyAccessibility: 'Good',
+    hdbPropertyAccessibilityCustom: '',
+    hdbDetailsOfAccess: '',
+    hdbMarginAreaSetBacks: '',
+    hdbMarginAreaSetBacksNA: false,
+    hdbPropertyDemarcated: 'Yes',
+    hdbOwnershipType: 'Freehold',
+    hdbOwnershipTypeCustom: '',
+    hdbLandAreaConsidered: '',
+    hdbAgreementValue: '',
+    hdbAgreementValueNA: false,
+    hdbGovtGuidelineRateLand: '',
+    hdbMarketRateLand: '',
+    hdbMarketReferenceLand: '',
+    hdbRateAdoptedLand: '',
+    hdbRateAdoptedLandEditOn: false,
+    hdbFairMarketValueLand: '',
+    hdbFairMarketValueLandEditOn: false,
+
+    // Container 3: 9.b CONSTRUCTION / APARTMENTS
+    hdbConstructionParticulars: '',
+    hdbConstructionParticularsNA: false,
+    hdbBuildingUsage: 'Residential',
+    hdbBuildingUsageCustom: '',
+    hdbBuildingStructure: 'RCC Framed Structure',
+    hdbBuildingStructureCustom: '',
+    hdbNoOfStorey: '',
+    hdbBuildingPropertyType: 'Individual Residential House',
+    hdbBuildingPropertyTypeCustom: '',
+    hdbCompletionDate: '',
+    hdbCompletionDateNA: false,
+    hdbResidualAge: '',
+    hdbResidualAgeEditOn: false,
+    hdbResidualAgeNA: false,
+    hdbCarpetAreaG1: '',
+    hdbCarpetAreaG1NA: false,
+    hdbCarpetAreaTotal: '',
+    hdbCarpetAreaTotalNA: false,
+    hdbBuiltUpAreaMeasured: '',
+    hdbBuiltUpAreaMeasuredNA: false,
+    hdbSuperBuiltUpArea: '',
+    hdbSuperBuiltUpAreaNA: false,
+    hdbStructuralCondition: 'Good',
+    hdbStructuralConditionCustom: '',
+    hdbGovtGuidelineRateBuilding: '',
+    hdbFinalBuildingAreaConsidered: '',
+    hdbFinalBuildingAreaConsideredEditOn: false,
+    hdbMarketRateBuilding: '',
+    hdbMarketReferenceBuilding: '',
+    hdbRateAdoptedBuilding: '',
+    hdbRateAdoptedBuildingEditOn: false,
+    hdbDepreciationPct: '10',
+    hdbDepreciationPctNA: false,
+    hdbFairMarketValueBuilding: '',
+    hdbFairMarketValueBuildingEditOn: false,
+    hdbDistressValueBuilding: '',
+    hdbDistressValueBuildingEditOn: false,
+    hdbDistressValueBuildingNA: false,
+    hdbUnapprovedConstructionArea: '',
+    hdbUnapprovedConstructionAreaNA: false,
+    hdbAmenitiesInternalExternal: '',
+    hdbAmenitiesInternalExternalNA: false,
+    hdbViolationObserved: 'No',
+    hdbViolationDetails: '',
+    hdbViolationObservedNA: false,
+    hdbDemolitionSealingRisk: 'Low / Negligible',
+    hdbDemolitionSealingRiskCustom: '',
+    hdbDemolitionSealingRiskNA: false,
+    hdbRemarksLast3YearsPrice: '',
+    hdbRemarksLast3YearsPriceNA: false,
+    hdbInsurableValue: '',
+    hdbInsurableValueEditOn: false,
+    hdbInsurableValueNA: false,
   },
   extraSectionsStart: [
     {
@@ -1961,9 +3610,23 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'hdb-section-technical-details',
+      title: 'TECHNICAL DETAILS',
+      number: 5,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <TechnicalDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
 };
 
 export default function HDBFinancial(props: BankReportBuilderProps) {
   return <BankReportBuilder config={HDB_FINANCIAL_CONFIG} {...props} />;
 }
+
