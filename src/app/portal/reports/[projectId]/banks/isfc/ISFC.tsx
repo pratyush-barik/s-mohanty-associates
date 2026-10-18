@@ -4,6 +4,7 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
+import { numberToWords } from '@/lib/numberToWords';
 import {
   Lock,
   Building,
@@ -15,6 +16,8 @@ import {
   Compass,
   Layers,
   Clock,
+  Calculator,
+  CheckCircle2,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -85,6 +88,7 @@ export function AutoResizeTextarea({
   placeholder = '',
   rows = 2,
   className = '',
+  title,
 }: {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
@@ -92,6 +96,7 @@ export function AutoResizeTextarea({
   placeholder?: string;
   rows?: number;
   className?: string;
+  title?: string;
 }) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -118,6 +123,7 @@ export function AutoResizeTextarea({
       onChange={handleInput}
       disabled={disabled}
       placeholder={placeholder}
+      title={title}
       className={`${inputCls} overflow-hidden resize-none transition-[height] duration-100 ${className}`}
     />
   );
@@ -2976,6 +2982,1208 @@ export function CompletionStatusSection({
   );
 }
 
+// ─── Section 5: VALUATION Component ─────────────────────────────────────────
+
+export function ValuationSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  // Area Prefill from Sec 3
+  // 1. Land Area prefill from Sec 3 Land area
+  const sec3LandAreaRaw = fields.isfcLandArea ?? fields.plotArea ?? fields.landArea ?? '';
+  const sec3LandAreaNum = useMemo(() => {
+    const cleaned = String(sec3LandAreaRaw).replace(/[^0-9.]/g, '');
+    return cleaned || '';
+  }, [sec3LandAreaRaw]);
+
+  const isLandAreaEdit = Boolean(fields.isfcValuationLandAreaEditOn);
+  const effectiveLandArea = isLandAreaEdit
+    ? (fields.isfcValuationLandArea ?? '')
+    : (sec3LandAreaNum || fields.isfcValuationLandArea || '');
+
+  // 2. Building Area prefill from Sec 3 Total constructed area
+  const sec3TotalConstructedRaw = fields.isfcTotalConstructedArea ?? '';
+  const isBuildingAreaEdit = Boolean(fields.isfcValuationBuildingAreaEditOn);
+  const effectiveBuildingArea = isBuildingAreaEdit
+    ? (fields.isfcValuationBuildingArea ?? '')
+    : (sec3TotalConstructedRaw || fields.isfcValuationBuildingArea || '');
+
+  // Rates
+  const landRate = fields.isfcValuationLandRate ?? '';
+  const buildingRate = fields.isfcValuationBuildingRate ?? '';
+
+  // Land Total Amount: Auto-calculating Area * Rate
+  const isLandAmountEdit = Boolean(fields.isfcValuationLandAmountEditOn);
+  const landAreaParsed = parseFloat(String(effectiveLandArea).replace(/[^0-9.]/g, '')) || 0;
+  const landRateParsed = parseFloat(String(landRate).replace(/[^0-9.]/g, '')) || 0;
+  const autoLandAmountNum = landAreaParsed > 0 && landRateParsed > 0 ? Math.round(landAreaParsed * landRateParsed) : 0;
+  const autoLandAmountStr = autoLandAmountNum > 0 ? String(autoLandAmountNum) : '';
+
+  const effectiveLandAmount = isLandAmountEdit
+    ? (fields.isfcValuationLandAmount ?? '')
+    : (autoLandAmountStr || fields.isfcValuationLandAmount || '');
+
+  // Building Total Amount: Auto-calculating Area * Rate
+  const isBuildingAmountEdit = Boolean(fields.isfcValuationBuildingAmountEditOn);
+  const buildingAreaParsed = parseFloat(String(effectiveBuildingArea).replace(/[^0-9.]/g, '')) || 0;
+  const buildingRateParsed = parseFloat(String(buildingRate).replace(/[^0-9.]/g, '')) || 0;
+  const autoBuildingAmountNum = buildingAreaParsed > 0 && buildingRateParsed > 0 ? Math.round(buildingAreaParsed * buildingRateParsed) : 0;
+  const autoBuildingAmountStr = autoBuildingAmountNum > 0 ? String(autoBuildingAmountNum) : '';
+
+  const effectiveBuildingAmount = isBuildingAmountEdit
+    ? (fields.isfcValuationBuildingAmount ?? '')
+    : (autoBuildingAmountStr || fields.isfcValuationBuildingAmount || '');
+
+  // Additional amenities, Car parking, Depreciation of the building
+  const amenitiesVal = fields.isfcAdditionalAmenitiesNA ? 0 : (parseFloat(String(fields.isfcAdditionalAmenitiesVal ?? '').replace(/[^0-9.]/g, '')) || 0);
+  const carParkingVal = fields.isfcCarParkingNA ? 0 : (parseFloat(String(fields.isfcCarParkingVal ?? '').replace(/[^0-9.]/g, '')) || 0);
+  const depreciationVal = fields.isfcDepreciationBuildingNA ? 0 : (parseFloat(String(fields.isfcDepreciationBuildingVal ?? '').replace(/[^0-9.]/g, '')) || 0);
+
+  // Present value after depreciation: (Building Total Amount + Additional amenities + Car parking) - Depreciation
+  const isPresentValEdit = Boolean(fields.isfcPresentValueAfterDepreciationEditOn);
+  const effectiveBuildingAmountNum = parseFloat(String(effectiveBuildingAmount).replace(/[^0-9.]/g, '')) || 0;
+  
+  const autoPresentValAfterDepreciationNum = useMemo(() => {
+    const sum = effectiveBuildingAmountNum + amenitiesVal + carParkingVal;
+    if (sum > 0 || depreciationVal > 0) {
+      return Math.max(0, Math.round(sum - depreciationVal));
+    }
+    return 0;
+  }, [effectiveBuildingAmountNum, amenitiesVal, carParkingVal, depreciationVal]);
+
+  const autoPresentValAfterDepreciationStr = autoPresentValAfterDepreciationNum > 0 ? String(autoPresentValAfterDepreciationNum) : '';
+
+  const effectivePresentValueAfterDepreciation = isPresentValEdit
+    ? (fields.isfcPresentValueAfterDepreciation ?? '')
+    : (autoPresentValAfterDepreciationStr || fields.isfcPresentValueAfterDepreciation || '');
+
+  // Total value: Present value after depreciation value + Land Total amount
+  const isTotalValueEdit = Boolean(fields.isfcTotalValueEditOn);
+  const effectivePresentValNum = parseFloat(String(effectivePresentValueAfterDepreciation).replace(/[^0-9.]/g, '')) || 0;
+  const effectiveLandAmountNum = parseFloat(String(effectiveLandAmount).replace(/[^0-9.]/g, '')) || 0;
+
+  const autoTotalValueNum = useMemo(() => {
+    const total = effectivePresentValNum + effectiveLandAmountNum;
+    return total > 0 ? Math.round(total) : 0;
+  }, [effectivePresentValNum, effectiveLandAmountNum]);
+
+  const autoTotalValueStr = autoTotalValueNum > 0 ? String(autoTotalValueNum) : '';
+
+  const effectiveTotalValue = isTotalValueEdit
+    ? (fields.isfcSection5TotalValue ?? fields.isfcTotalValue ?? '')
+    : (autoTotalValueStr || fields.isfcSection5TotalValue || fields.isfcTotalValue || '');
+
+  // Live propagate Total Value to Section 1 dependencies
+  useEffect(() => {
+    if (!isTotalValueEdit && autoTotalValueNum > 0) {
+      if (fields.isfcSection5TotalValue !== String(autoTotalValueNum)) {
+        handleChange('isfcSection5TotalValue', String(autoTotalValueNum));
+        handleChange('isfcTotalValue', String(autoTotalValueNum));
+        handleChange('totalMarketValue', String(autoTotalValueNum));
+        handleChange('fairMarketValue', String(autoTotalValueNum));
+      }
+    }
+  }, [isTotalValueEdit, autoTotalValueNum, fields.isfcSection5TotalValue, handleChange]);
+
+  // Forced market value: 75% of Total value
+  const isForcedValueEdit = Boolean(fields.isfcForcedMarketValueEditOn);
+  const effectiveTotalValueNum = parseFloat(String(effectiveTotalValue).replace(/[^0-9.]/g, '')) || 0;
+  const autoForcedValueNum = effectiveTotalValueNum > 0 ? Math.round(effectiveTotalValueNum * 0.75) : 0;
+  const autoForcedValueStr = autoForcedValueNum > 0 ? String(autoForcedValueNum) : '';
+
+  const effectiveForcedMarketValue = isForcedValueEdit
+    ? (fields.isfcForcedMarketValue ?? '')
+    : (autoForcedValueStr || fields.isfcForcedMarketValue || '');
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Container 1: Valuation Details (Land & Building Breakdown) (Light Purple '#f3e5f5') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-purple-200 shadow-sm"
+        style={{ backgroundColor: '#f3e5f5' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Calculator className="w-5 h-5 text-purple-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Valuation Details (Land & Building Breakdown)
+            </h3>
+          </div>
+          <span className="text-xs text-purple-700 font-medium bg-purple-100 px-2.5 py-1 rounded-md border border-purple-300">
+            Section 5: Container 1
+          </span>
+        </div>
+
+        {/* Valuation Details Rows Table */}
+        <div className="overflow-x-auto rounded-lg border border-purple-300 bg-white/80">
+          <table className="w-full text-left text-sm text-gray-700">
+            <thead className="bg-purple-100/90 text-xs uppercase font-semibold text-purple-900 border-b border-purple-200">
+              <tr>
+                <th className="px-4 py-3 w-36">Item</th>
+                <th className="px-4 py-3">Area (Sq.Ft.)</th>
+                <th className="px-4 py-3">Rate (₹ / Sq.Ft.)</th>
+                <th className="px-4 py-3">Total amount (₹)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-purple-200/60">
+              {/* Row 1: Land */}
+              <tr className="hover:bg-purple-50/50 transition-colors">
+                <td className="px-4 py-3 font-bold text-purple-950">Land</td>
+                {/* Land Area */}
+                <td className="px-4 py-2">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-end mb-1">
+                      <EditSwitch
+                        checked={isLandAreaEdit}
+                        onChange={(val) => {
+                          handleChange('isfcValuationLandAreaEditOn', val);
+                          if (val && !fields.isfcValuationLandArea) {
+                            handleChange('isfcValuationLandArea', sec3LandAreaNum);
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <LockedFieldWrapper
+                      isLocked={!isLandAreaEdit}
+                      tooltipMessage='>>Prefill from section 3, "Land area" & "Total constructed area"<<'
+                    >
+                      <div className="relative">
+                        <input
+                          type="number"
+                          className={`${inputCls} pr-8 ${
+                            !isLandAreaEdit
+                              ? 'bg-gray-100 cursor-not-allowed text-gray-700'
+                              : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                          }`}
+                          value={effectiveLandArea}
+                          onChange={(e) => handleChange('isfcValuationLandArea', e.target.value)}
+                          disabled={isReadOnly || !isLandAreaEdit}
+                          placeholder="e.g. 5000"
+                          title={!isLandAreaEdit ? '>>Prefill from section 3, "Land area" & "Total constructed area"<<' : undefined}
+                        />
+                        {!isLandAreaEdit && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+                            <Lock className="w-3.5 h-3.5 text-amber-500" />
+                          </div>
+                        )}
+                      </div>
+                    </LockedFieldWrapper>
+                  </div>
+                </td>
+                {/* Land Rate */}
+                <td className="px-4 py-2">
+                  <input
+                    type="number"
+                    className={inputCls}
+                    value={landRate}
+                    onChange={(e) => handleChange('isfcValuationLandRate', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Rate per Sq.Ft."
+                  />
+                </td>
+                {/* Land Total Amount */}
+                <td className="px-4 py-2">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-end mb-1">
+                      <EditSwitch
+                        checked={isLandAmountEdit}
+                        onChange={(val) => {
+                          handleChange('isfcValuationLandAmountEditOn', val);
+                          if (val && !fields.isfcValuationLandAmount) {
+                            handleChange('isfcValuationLandAmount', autoLandAmountStr);
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <LockedFieldWrapper
+                      isLocked={!isLandAmountEdit}
+                      tooltipMessage='>>Auto calculating from ["Area" * "Rate"]<<'
+                    >
+                      <div className="relative">
+                        <input
+                          type="number"
+                          className={`${inputCls} pr-8 ${
+                            !isLandAmountEdit
+                              ? 'bg-gray-100 cursor-not-allowed text-gray-700 font-semibold'
+                              : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                          }`}
+                          value={effectiveLandAmount}
+                          onChange={(e) => handleChange('isfcValuationLandAmount', e.target.value)}
+                          disabled={isReadOnly || !isLandAmountEdit}
+                          placeholder="0"
+                          title={!isLandAmountEdit ? '>>Auto calculating from ["Area" * "Rate"]<<' : undefined}
+                        />
+                        {!isLandAmountEdit && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+                            <Lock className="w-3.5 h-3.5 text-amber-500" />
+                          </div>
+                        )}
+                      </div>
+                    </LockedFieldWrapper>
+                  </div>
+                </td>
+              </tr>
+
+              {/* Row 2: Building */}
+              <tr className="hover:bg-purple-50/50 transition-colors">
+                <td className="px-4 py-3 font-bold text-purple-950">Building</td>
+                {/* Building Area */}
+                <td className="px-4 py-2">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-end mb-1">
+                      <EditSwitch
+                        checked={isBuildingAreaEdit}
+                        onChange={(val) => {
+                          handleChange('isfcValuationBuildingAreaEditOn', val);
+                          if (val && !fields.isfcValuationBuildingArea) {
+                            handleChange('isfcValuationBuildingArea', sec3TotalConstructedRaw);
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <LockedFieldWrapper
+                      isLocked={!isBuildingAreaEdit}
+                      tooltipMessage='>>Prefill from section 3, "Land area" & "Total constructed area"<<'
+                    >
+                      <div className="relative">
+                        <input
+                          type="number"
+                          className={`${inputCls} pr-8 ${
+                            !isBuildingAreaEdit
+                              ? 'bg-gray-100 cursor-not-allowed text-gray-700'
+                              : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                          }`}
+                          value={effectiveBuildingArea}
+                          onChange={(e) => handleChange('isfcValuationBuildingArea', e.target.value)}
+                          disabled={isReadOnly || !isBuildingAreaEdit}
+                          placeholder="e.g. 4500"
+                          title={!isBuildingAreaEdit ? '>>Prefill from section 3, "Land area" & "Total constructed area"<<' : undefined}
+                        />
+                        {!isBuildingAreaEdit && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+                            <Lock className="w-3.5 h-3.5 text-amber-500" />
+                          </div>
+                        )}
+                      </div>
+                    </LockedFieldWrapper>
+                  </div>
+                </td>
+                {/* Building Rate */}
+                <td className="px-4 py-2">
+                  <input
+                    type="number"
+                    className={inputCls}
+                    value={buildingRate}
+                    onChange={(e) => handleChange('isfcValuationBuildingRate', e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder="Rate per Sq.Ft."
+                  />
+                </td>
+                {/* Building Total Amount */}
+                <td className="px-4 py-2">
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-end mb-1">
+                      <EditSwitch
+                        checked={isBuildingAmountEdit}
+                        onChange={(val) => {
+                          handleChange('isfcValuationBuildingAmountEditOn', val);
+                          if (val && !fields.isfcValuationBuildingAmount) {
+                            handleChange('isfcValuationBuildingAmount', autoBuildingAmountStr);
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <LockedFieldWrapper
+                      isLocked={!isBuildingAmountEdit}
+                      tooltipMessage='>>Auto calculating from ["Area" * "Rate"]<<'
+                    >
+                      <div className="relative">
+                        <input
+                          type="number"
+                          className={`${inputCls} pr-8 ${
+                            !isBuildingAmountEdit
+                              ? 'bg-gray-100 cursor-not-allowed text-gray-700 font-semibold'
+                              : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                          }`}
+                          value={effectiveBuildingAmount}
+                          onChange={(e) => handleChange('isfcValuationBuildingAmount', e.target.value)}
+                          disabled={isReadOnly || !isBuildingAmountEdit}
+                          placeholder="0"
+                          title={!isBuildingAmountEdit ? '>>Auto calculating from ["Area" * "Rate"]<<' : undefined}
+                        />
+                        {!isBuildingAmountEdit && (
+                          <div className="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+                            <Lock className="w-3.5 h-3.5 text-amber-500" />
+                          </div>
+                        )}
+                      </div>
+                    </LockedFieldWrapper>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Adjustments: Additional amenities, Car parking, Depreciation */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+          {/* Additional amenities: Input Box (Numeric) + Checkbox "NA" */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Additional amenities (₹)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.isfcAdditionalAmenitiesNA)}
+                  onChange={(checked) => {
+                    handleChange('isfcAdditionalAmenitiesNA', checked);
+                    if (checked) {
+                      handleChange('isfcAdditionalAmenitiesVal', '0');
+                    } else {
+                      handleChange('isfcAdditionalAmenitiesVal', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type={fields.isfcAdditionalAmenitiesNA ? 'text' : 'number'}
+              className={`${inputCls} ${fields.isfcAdditionalAmenitiesNA ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic' : ''}`}
+              value={fields.isfcAdditionalAmenitiesNA ? 'NA' : (fields.isfcAdditionalAmenitiesVal ?? '')}
+              onChange={(e) => handleChange('isfcAdditionalAmenitiesVal', e.target.value)}
+              disabled={isReadOnly || fields.isfcAdditionalAmenitiesNA}
+              placeholder="e.g. 150000"
+            />
+          </Field>
+
+          {/* Car parking: Input Box (Numeric) + Checkbox "NA" */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Car parking (₹)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.isfcCarParkingNA)}
+                  onChange={(checked) => {
+                    handleChange('isfcCarParkingNA', checked);
+                    if (checked) {
+                      handleChange('isfcCarParkingVal', '0');
+                    } else {
+                      handleChange('isfcCarParkingVal', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type={fields.isfcCarParkingNA ? 'text' : 'number'}
+              className={`${inputCls} ${fields.isfcCarParkingNA ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic' : ''}`}
+              value={fields.isfcCarParkingNA ? 'NA' : (fields.isfcCarParkingVal ?? '')}
+              onChange={(e) => handleChange('isfcCarParkingVal', e.target.value)}
+              disabled={isReadOnly || fields.isfcCarParkingNA}
+              placeholder="e.g. 200000"
+            />
+          </Field>
+
+          {/* Depreciation of the building: Input Box (Numeric) + Checkbox "NA" */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Depreciation of the building (₹)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.isfcDepreciationBuildingNA)}
+                  onChange={(checked) => {
+                    handleChange('isfcDepreciationBuildingNA', checked);
+                    if (checked) {
+                      handleChange('isfcDepreciationBuildingVal', '0');
+                    } else {
+                      handleChange('isfcDepreciationBuildingVal', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type={fields.isfcDepreciationBuildingNA ? 'text' : 'number'}
+              className={`${inputCls} ${fields.isfcDepreciationBuildingNA ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic' : ''}`}
+              value={fields.isfcDepreciationBuildingNA ? 'NA' : (fields.isfcDepreciationBuildingVal ?? '')}
+              onChange={(e) => handleChange('isfcDepreciationBuildingVal', e.target.value)}
+              disabled={isReadOnly || fields.isfcDepreciationBuildingNA}
+              placeholder="e.g. 100000"
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* ─── Container 2: Valuation Outcomes & Benchmarks (Light Purple '#f3e5f5') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-purple-200 shadow-sm"
+        style={{ backgroundColor: '#f3e5f5' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Calculator className="w-5 h-5 text-purple-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Valuation Outcomes & Benchmarks
+            </h3>
+          </div>
+          <span className="text-xs text-purple-700 font-medium bg-purple-100 px-2.5 py-1 rounded-md border border-purple-300">
+            Section 5: Container 2
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Present value after depreciation value: Auto-calculating Input + Lock UI + Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Present value after depreciation value (₹)
+                </span>
+                <EditSwitch
+                  checked={isPresentValEdit}
+                  onChange={(val) => {
+                    handleChange('isfcPresentValueAfterDepreciationEditOn', val);
+                    if (val && !fields.isfcPresentValueAfterDepreciation) {
+                      handleChange('isfcPresentValueAfterDepreciation', autoPresentValAfterDepreciationStr);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!isPresentValEdit}
+              tooltipMessage='>>Auto calculating from [("Building Total Amount" + "Additional amenities" + "Car parking") - "Depreciation of the building"]<<'
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  className={`${inputCls} pr-9 ${
+                    !isPresentValEdit
+                      ? 'bg-gray-100 cursor-not-allowed text-gray-700 font-semibold'
+                      : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                  }`}
+                  value={effectivePresentValueAfterDepreciation}
+                  onChange={(e) => handleChange('isfcPresentValueAfterDepreciation', e.target.value)}
+                  disabled={isReadOnly || !isPresentValEdit}
+                  placeholder="0"
+                  title={!isPresentValEdit ? '>>Auto calculating from [("Building Total Amount" + "Additional amenities" + "Car parking") - "Depreciation of the building"]<<' : undefined}
+                />
+                {!isPresentValEdit && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Lock className="w-4 h-4 text-amber-500" />
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+
+          {/* Total value: Auto-calculating Input + Lock UI + Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-bold text-purple-900 text-xs md:text-sm">
+                  Total value (₹)
+                </span>
+                <EditSwitch
+                  checked={isTotalValueEdit}
+                  onChange={(val) => {
+                    handleChange('isfcTotalValueEditOn', val);
+                    if (val && !fields.isfcSection5TotalValue) {
+                      handleChange('isfcSection5TotalValue', autoTotalValueStr);
+                      handleChange('isfcTotalValue', autoTotalValueStr);
+                      handleChange('totalMarketValue', autoTotalValueStr);
+                      handleChange('fairMarketValue', autoTotalValueStr);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!isTotalValueEdit}
+              tooltipMessage='>>Auto calculating from [Section 5 "Present value after depreciation value" + "Land Total amount"]<<'
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  className={`${inputCls} pr-9 ${
+                    !isTotalValueEdit
+                      ? 'bg-purple-50 border-purple-300 text-purple-950 font-bold text-base cursor-not-allowed'
+                      : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-bold text-base'
+                  }`}
+                  value={effectiveTotalValue}
+                  onChange={(e) => {
+                    handleChange('isfcSection5TotalValue', e.target.value);
+                    handleChange('isfcTotalValue', e.target.value);
+                    handleChange('totalMarketValue', e.target.value);
+                    handleChange('fairMarketValue', e.target.value);
+                  }}
+                  disabled={isReadOnly || !isTotalValueEdit}
+                  placeholder="0"
+                  title={!isTotalValueEdit ? '>>Auto calculating from [Section 5 "Present value after depreciation value" + "Land Total amount"]<<' : undefined}
+                />
+                {!isTotalValueEdit && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Lock className="w-4 h-4 text-purple-700" />
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+
+          {/* Value as per Government rates: Input Box (Numeric) + Checkbox "NA" */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Value as per Government rates (₹)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.isfcGovtRateValueNA)}
+                  onChange={(checked) => {
+                    handleChange('isfcGovtRateValueNA', checked);
+                    if (checked) {
+                      handleChange('isfcGovtRateValue', 'NA');
+                    } else {
+                      handleChange('isfcGovtRateValue', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type={fields.isfcGovtRateValueNA ? 'text' : 'number'}
+              className={`${inputCls} ${fields.isfcGovtRateValueNA ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic' : ''}`}
+              value={fields.isfcGovtRateValueNA ? 'NA' : (fields.isfcGovtRateValue ?? '')}
+              onChange={(e) => handleChange('isfcGovtRateValue', e.target.value)}
+              disabled={isReadOnly || fields.isfcGovtRateValueNA}
+              placeholder="e.g. 3500000"
+            />
+          </Field>
+
+          {/* Forced market value: Auto-calculating Input + Lock UI + Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Forced market value (₹)
+                </span>
+                <EditSwitch
+                  checked={isForcedValueEdit}
+                  onChange={(val) => {
+                    handleChange('isfcForcedMarketValueEditOn', val);
+                    if (val && !fields.isfcForcedMarketValue) {
+                      handleChange('isfcForcedMarketValue', autoForcedValueStr);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!isForcedValueEdit}
+              tooltipMessage='>>Auto calculating from [Section 5 "Total value" * 0.75]<<'
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  className={`${inputCls} pr-9 ${
+                    !isForcedValueEdit
+                      ? 'bg-gray-100 cursor-not-allowed text-gray-700 font-semibold'
+                      : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                  }`}
+                  value={effectiveForcedMarketValue}
+                  onChange={(e) => handleChange('isfcForcedMarketValue', e.target.value)}
+                  disabled={isReadOnly || !isForcedValueEdit}
+                  placeholder="0"
+                  title={!isForcedValueEdit ? '>>Auto calculating from [Section 5 "Total value" * 0.75]<<' : undefined}
+                />
+                {!isForcedValueEdit && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Lock className="w-4 h-4 text-amber-500" />
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+        </div>
+      </div>
+
+      {/* ─── Container 3: Risk Assessment & Marketability Remarks (Light Purple '#f3e5f5') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-purple-200 shadow-sm"
+        style={{ backgroundColor: '#f3e5f5' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200 pb-3">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-purple-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Risk Assessment & Marketability Remarks
+            </h3>
+          </div>
+          <span className="text-xs text-purple-700 font-medium bg-purple-100 px-2.5 py-1 rounded-md border border-purple-300">
+            Section 5: Container 3
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Is this property earlier valued by you?: Radio Buttons */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Is this property earlier valued by you?
+              </span>
+            }
+          >
+            <RadioGroup
+              name="isfcEarlierValued"
+              value={fields.isfcEarlierValued || 'No'}
+              onChange={(val) => handleChange('isfcEarlierValued', val)}
+              options={['Yes', 'No']}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* Is the property under any demolition risk: Radio Buttons */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Is the property under any demolition risk
+              </span>
+            }
+          >
+            <RadioGroup
+              name="isfcDemolitionRisk"
+              value={fields.isfcDemolitionRisk || 'No'}
+              onChange={(val) => handleChange('isfcDemolitionRisk', val)}
+              options={['Yes', 'No']}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* Comments on salebility: Dropdown with Custom */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Comments on salebility
+              </span>
+            }
+            span={2}
+          >
+            <CustomSelect
+              value={fields.isfcSalebilityComments || 'Attracts standard marketability'}
+              customValue={fields.isfcSalebilityCommentsCustom || ''}
+              onChange={(val) => handleChange('isfcSalebilityComments', val)}
+              onCustomChange={(val) => handleChange('isfcSalebilityCommentsCustom', val)}
+              options={[
+                { value: 'Attracts standard marketability', label: 'Attracts standard marketability' },
+                { value: 'Low', label: 'Low' },
+                { value: 'High', label: 'High' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Comments on Salebility"
+            />
+          </Field>
+
+          {/* Any other adverse remarks: Textarea (Variable size) + Checkbox "NA" */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Any other adverse remarks
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.isfcAdverseRemarksNA)}
+                  onChange={(checked) => {
+                    handleChange('isfcAdverseRemarksNA', checked);
+                    if (checked) {
+                      handleChange('isfcAdverseRemarks', 'No adverse remarks.');
+                    } else {
+                      handleChange('isfcAdverseRemarks', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+            span={2}
+          >
+            <AutoResizeTextarea
+              rows={2}
+              placeholder="Enter any other adverse remarks..."
+              value={fields.isfcAdverseRemarksNA ? 'No adverse remarks.' : (fields.isfcAdverseRemarks ?? '')}
+              onChange={(e) => handleChange('isfcAdverseRemarks', e.target.value)}
+              disabled={isReadOnly || fields.isfcAdverseRemarksNA}
+              className={fields.isfcAdverseRemarksNA ? 'bg-gray-100 cursor-not-allowed text-gray-600' : ''}
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Section 6: NET MORTGAGABLE VALUATION ───────────────────────────────────
+
+export function generateNetMortgagableValuationText(fields: any): string {
+  const propertyType =
+    (fields.isfcTypeOfProperty === 'Custom'
+      ? fields.isfcTypeOfPropertyCustom
+      : fields.isfcTypeOfProperty) ||
+    fields.propertyType ||
+    'School Building';
+
+  const owner = fields.propertyOwner || fields.ownerName || '';
+  const applicant = fields.applicantName || fields.nameOfApplicant || '';
+
+  const address =
+    fields.propertyAddress ||
+    fields.address ||
+    [fields.city, fields.state].filter(Boolean).join(', ') ||
+    '';
+
+  const landArea = fields.isfcValuationLandArea || fields.isfcLandArea || fields.landArea || '';
+  const builtUpArea =
+    fields.isfcValuationBuildingArea ||
+    fields.isfcTotalConstructedArea ||
+    fields.constructedArea ||
+    '';
+
+  const constructionType =
+    (fields.isfcConstructionType === 'Custom'
+      ? fields.isfcConstructionTypeCustom
+      : fields.isfcConstructionType) ||
+    'RCC framed structure';
+
+  const age = fields.isfcAgeOfProperty ? `${fields.isfcAgeOfProperty} years` : '';
+  const residualAge = fields.isfcResidualAge ? `${fields.isfcResidualAge} years` : '';
+  const stage = fields.isfcStageOfConstruction || '100%';
+
+  const totalValueNum =
+    parseFloat(
+      String(
+        fields.isfcSection5TotalValue ||
+          fields.isfcTotalValue ||
+          fields.totalMarketValue ||
+          fields.presentMarketValue ||
+          '0'
+      ).replace(/,/g, '')
+    ) || 0;
+
+  const forcedValueNum =
+    parseFloat(
+      String(
+        fields.isfcForcedMarketValue ||
+          fields.distressSaleValue ||
+          Math.round(totalValueNum * 0.75)
+      ).replace(/,/g, '')
+    ) || Math.round(totalValueNum * 0.75);
+
+  const totalValueFormatted = totalValueNum > 0 ? `₹${totalValueNum.toLocaleString('en-IN')}/-` : '₹0/-';
+  const forcedValueFormatted = forcedValueNum > 0 ? `₹${forcedValueNum.toLocaleString('en-IN')}/-` : '₹0/-';
+
+  let wordsText = '';
+  if (totalValueNum > 0) {
+    try {
+      wordsText = ` (Rupees ${numberToWords(totalValueNum)})`;
+    } catch {
+      wordsText = '';
+    }
+  }
+
+  const landAmtNum = parseFloat(String(fields.isfcValuationLandAmount || '0').replace(/,/g, '')) || 0;
+  const buildingAmtNum = parseFloat(String(fields.isfcPresentValueAfterDepreciation || '0').replace(/,/g, '')) || 0;
+
+  const parts: string[] = [];
+
+  // Sentence 1: Property Description & Identification
+  let intro = `The subject property is an immovable asset comprising a ${propertyType}`;
+  if (owner) {
+    intro += ` owned by ${owner}`;
+  }
+  if (applicant && applicant !== owner) {
+    intro += ` (Applicant: ${applicant})`;
+  }
+  if (address) {
+    intro += `, located at ${address}`;
+  }
+  intro += '.';
+  parts.push(intro);
+
+  // Sentence 2: Technical & Area Details
+  let techDetails = '';
+  if (landArea && builtUpArea) {
+    techDetails = `The property comprises a total land area of ${landArea} Sq.Ft. and a total constructed area of ${builtUpArea} Sq.Ft., built with a ${constructionType}.`;
+  } else if (landArea) {
+    techDetails = `The property comprises a total land area of ${landArea} Sq.Ft., built with a ${constructionType}.`;
+  } else if (builtUpArea) {
+    techDetails = `The property comprises a total constructed area of ${builtUpArea} Sq.Ft., built with a ${constructionType}.`;
+  } else {
+    techDetails = `The structure is developed as a ${constructionType}.`;
+  }
+  parts.push(techDetails);
+
+  // Sentence 3: Age & Stage of Completion
+  let ageDetails = `The building has an estimated age of ${age || 'N/A'}`;
+  if (residualAge) {
+    ageDetails += ` with an estimated residual life of ${residualAge}`;
+  }
+  ageDetails += ` and is currently at ${stage} completion stage.`;
+  parts.push(ageDetails);
+
+  // Sentence 4: Valuation Breakdown & Net Mortgagable Fair Market Value
+  let valDetails = `Based on technical verification, physical site inspection, and prevailing localized market conditions, the Net Mortgagable Fair Market Value of the property is assessed at ${totalValueFormatted}${wordsText}`;
+  if (landAmtNum > 0 || buildingAmtNum > 0) {
+    valDetails += ` [comprising Land Valuation: ₹${landAmtNum.toLocaleString('en-IN')}/- and Net Present Value of Building after depreciation: ₹${buildingAmtNum.toLocaleString('en-IN')}/-]`;
+  }
+  valDetails += `.`;
+  parts.push(valDetails);
+
+  // Sentence 5: Forced / Distress Sale Value & Recommendation
+  const forcedDetails = `The Forced / Distress Sale Value is estimated at ${forcedValueFormatted} (calculated at 75% of fair market value). The property is deemed acceptable security for mortgage financing as per institutional norms.`;
+  parts.push(forcedDetails);
+
+  return parts.join(' ');
+}
+
+function NetMortgagableValuationSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const isMortgagableValuationEdit = Boolean(fields.isfcNetMortgagableValuationEditOn);
+
+  const autoMortgagableValuation = useMemo(
+    () => generateNetMortgagableValuationText(fields),
+    [
+      fields.isfcTypeOfProperty,
+      fields.isfcTypeOfPropertyCustom,
+      fields.propertyType,
+      fields.propertyOwner,
+      fields.ownerName,
+      fields.applicantName,
+      fields.nameOfApplicant,
+      fields.propertyAddress,
+      fields.address,
+      fields.city,
+      fields.state,
+      fields.isfcValuationLandArea,
+      fields.isfcLandArea,
+      fields.landArea,
+      fields.isfcValuationBuildingArea,
+      fields.isfcTotalConstructedArea,
+      fields.constructedArea,
+      fields.isfcConstructionType,
+      fields.isfcConstructionTypeCustom,
+      fields.isfcAgeOfProperty,
+      fields.isfcResidualAge,
+      fields.isfcStageOfConstruction,
+      fields.isfcSection5TotalValue,
+      fields.isfcTotalValue,
+      fields.totalMarketValue,
+      fields.presentMarketValue,
+      fields.isfcForcedMarketValue,
+      fields.distressSaleValue,
+      fields.isfcValuationLandAmount,
+      fields.isfcPresentValueAfterDepreciation,
+    ]
+  );
+
+  const effectiveMortgagableValuation = isMortgagableValuationEdit
+    ? (fields.isfcNetMortgagableValuation ?? autoMortgagableValuation)
+    : autoMortgagableValuation;
+
+  useEffect(() => {
+    if (
+      !isMortgagableValuationEdit &&
+      autoMortgagableValuation &&
+      fields.isfcNetMortgagableValuation !== autoMortgagableValuation
+    ) {
+      handleChange('isfcNetMortgagableValuation', autoMortgagableValuation);
+    }
+  }, [isMortgagableValuationEdit, autoMortgagableValuation, fields.isfcNetMortgagableValuation, handleChange]);
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container 1: Net Mortgagable Valuation Summary (Light Cyan '#e0f7fa') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-cyan-200 shadow-sm"
+        style={{ backgroundColor: '#e0f7fa' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200 pb-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-cyan-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Net Mortgagable Valuation Summary
+            </h3>
+          </div>
+          <span className="text-xs text-cyan-800 font-medium bg-cyan-100 px-2.5 py-1 rounded-md border border-cyan-300">
+            Section 6: Container 1
+          </span>
+        </div>
+
+        <div>
+          {/* NET MORTGAGABLE VALUATION: Textarea (Variable size) + Lock UI + Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-bold text-cyan-950 text-xs md:text-sm uppercase tracking-wide">
+                  NET MORTGAGABLE VALUATION:
+                </span>
+                <EditSwitch
+                  checked={isMortgagableValuationEdit}
+                  onChange={(val) => {
+                    handleChange('isfcNetMortgagableValuationEditOn', val);
+                    if (val && !fields.isfcNetMortgagableValuation) {
+                      handleChange('isfcNetMortgagableValuation', autoMortgagableValuation);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!isMortgagableValuationEdit}
+              tooltipMessage=">>Auto calculating from [Interpolation of previous section variables: Property Type, Area, Location, Age, Valuation]<<"
+            >
+              <div className="relative">
+                <AutoResizeTextarea
+                  rows={5}
+                  placeholder="Generating net mortgagable valuation paragraph..."
+                  value={effectiveMortgagableValuation}
+                  onChange={(e) => handleChange('isfcNetMortgagableValuation', e.target.value)}
+                  disabled={isReadOnly || !isMortgagableValuationEdit}
+                  className={`pr-9 leading-relaxed ${
+                    !isMortgagableValuationEdit
+                      ? 'bg-gray-100 cursor-not-allowed text-gray-800 font-medium'
+                      : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-medium'
+                  }`}
+                  title={
+                    !isMortgagableValuationEdit
+                      ? '>>Auto calculating from [Interpolation of previous section variables: Property Type, Area, Location, Age, Valuation]<<'
+                      : undefined
+                  }
+                />
+                {!isMortgagableValuationEdit && (
+                  <div className="absolute top-3 right-3 pointer-events-none">
+                    <Lock className="w-4 h-4 text-cyan-700" />
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Section 7: DECLARATION ─────────────────────────────────────────────────
+
+function DeclarationSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const isDateEdit = Boolean(fields.isfcDateEditOn);
+  const defaultDate = useMemo(() => new Date().toISOString().split('T')[0], []);
+  const effectiveDate = fields.isfcDate || fields.date || defaultDate;
+
+  const isSignatoryEdit = Boolean(fields.isfcAuthorizedSignatoryEditOn);
+  const defaultSignatory =
+    fields.isfcValuerName || fields.valuerName || fields.appraiserName || 'Er. S. Mohanty';
+  const effectiveSignatory = fields.isfcAuthorizedSignatory || defaultSignatory;
+
+  const isDeclarationVerified =
+    fields.isfcDeclarationVerified !== undefined
+      ? Boolean(fields.isfcDeclarationVerified)
+      : true;
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container 1: Declaration & Verification (Mint Green '#f1f8e9') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-lime-300 shadow-sm"
+        style={{ backgroundColor: '#f1f8e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-lime-300/80 pb-3">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 text-emerald-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Declaration & Verification
+            </h3>
+          </div>
+          <span className="text-xs text-emerald-800 font-medium bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300">
+            Section 7: Container 1
+          </span>
+        </div>
+
+        <div className="space-y-5">
+          {/* DECLARATION : Checkbox "I verify physical inspection and agree to declaration terms." */}
+          <Field
+            label={
+              <span className="font-bold text-emerald-950 text-xs md:text-sm uppercase tracking-wide">
+                DECLARATION :
+              </span>
+            }
+          >
+            <div className="bg-white/90 p-4 rounded-xl border border-lime-300 flex items-start gap-3 shadow-xs">
+              <input
+                type="checkbox"
+                id="isfcDeclarationVerified"
+                checked={isDeclarationVerified}
+                onChange={(e) => {
+                  handleChange('isfcDeclarationVerified', e.target.checked);
+                  handleChange('isfcDeclarationTerms', e.target.checked);
+                }}
+                disabled={isReadOnly}
+                className="mt-0.5 h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer shrink-0"
+              />
+              <label
+                htmlFor="isfcDeclarationVerified"
+                className="text-xs md:text-sm text-gray-800 font-medium cursor-pointer leading-relaxed select-none"
+              >
+                I verify physical inspection and agree to declaration terms.
+              </label>
+            </div>
+          </Field>
+
+          {/* Place:, Date:, Authorized Signatory */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            {/* Place: Input Box (Fixed) */}
+            <Field
+              label={
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Place:
+                </span>
+              }
+            >
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.isfcPlace ?? fields.place ?? 'Bhubaneswar'}
+                onChange={(e) => {
+                  handleChange('isfcPlace', e.target.value);
+                  handleChange('place', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="e.g. Bhubaneswar"
+              />
+            </Field>
+
+            {/* Date: Date Picker + Edit Switch (System prefill, no lock) */}
+            <Field
+              label={
+                <div className="flex items-center justify-between gap-2 w-full">
+                  <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                    Date:
+                  </span>
+                  <EditSwitch
+                    checked={isDateEdit}
+                    onChange={(val) => {
+                      handleChange('isfcDateEditOn', val);
+                      if (val && !fields.isfcDate) {
+                        handleChange('isfcDate', effectiveDate);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="date"
+                className={`${inputCls} ${
+                  !isDateEdit
+                    ? 'bg-gray-100 cursor-not-allowed text-gray-700 font-semibold'
+                    : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                }`}
+                value={effectiveDate}
+                onChange={(e) => {
+                  handleChange('isfcDate', e.target.value);
+                  handleChange('date', e.target.value);
+                }}
+                disabled={isReadOnly || !isDateEdit}
+              />
+            </Field>
+
+            {/* Authorized Signatory: Prefill Input Box + Edit Switch (System prefill, no lock) */}
+            <Field
+              label={
+                <div className="flex items-center justify-between gap-2 w-full">
+                  <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                    Authorized Signatory
+                  </span>
+                  <EditSwitch
+                    checked={isSignatoryEdit}
+                    onChange={(val) => {
+                      handleChange('isfcAuthorizedSignatoryEditOn', val);
+                      if (val && !fields.isfcAuthorizedSignatory) {
+                        handleChange('isfcAuthorizedSignatory', effectiveSignatory);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <input
+                type="text"
+                className={`${inputCls} ${
+                  !isSignatoryEdit
+                    ? 'bg-gray-100 cursor-not-allowed text-gray-700 font-semibold'
+                    : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                }`}
+                value={effectiveSignatory}
+                onChange={(e) => {
+                  handleChange('isfcAuthorizedSignatory', e.target.value);
+                }}
+                disabled={isReadOnly || !isSignatoryEdit}
+                placeholder="e.g. Er. S. Mohanty"
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── ISFC BankConfig ─────────────────────────────────────────────────────────
 
 export const ISFC_CONFIG: BankConfig = {
@@ -2987,6 +4195,9 @@ export const ISFC_CONFIG: BankConfig = {
     'section-2', // Replaced by Section 2: APPLICATION DETAILS
     'section-3', // Replaced by Section 3: TECHNICAL DETAILS
     'section-4', // Replaced by Section 4: COMPLETION STATUS
+    'section-5', // Replaced by Section 5: VALUATION
+    'section-6', // Replaced by Section 6: NET MORTGAGABLE VALUATION
+    'section-7', // Replaced by Section 7: DECLARATION
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -2994,9 +4205,9 @@ export const ISFC_CONFIG: BankConfig = {
     { id: 'isfc-section-2', title: 'APPLICATION DETAILS' },
     { id: 'isfc-section-3', title: 'TECHNICAL DETAILS' },
     { id: 'isfc-section-4', title: 'COMPLETION STATUS' },
-    { id: 'section-5', title: 'Valuation Calculation' },
-    { id: 'section-6', title: 'NDMA & ESG' },
-    { id: 'section-7', title: 'Critical Checks & Summary' },
+    { id: 'isfc-section-5', title: 'VALUATION' },
+    { id: 'isfc-section-6', title: 'NET MORTGAGABLE VALUATION' },
+    { id: 'isfc-section-7', title: 'DECLARATION' },
     { id: 'section-9', title: 'Valuation Abstract' },
     { id: 'section-10', title: 'Remarks' },
     { id: 'section-12', title: 'Certificate' },
@@ -3059,6 +4270,45 @@ export const ISFC_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'isfc-section-5',
+      title: 'VALUATION',
+      number: 5,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ValuationSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'isfc-section-6',
+      title: 'NET MORTGAGABLE VALUATION',
+      number: 6,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <NetMortgagableValuationSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'isfc-section-7',
+      title: 'DECLARATION',
+      number: 7,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <DeclarationSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY',
@@ -3087,6 +4337,18 @@ export const ISFC_CONFIG: BankConfig = {
     isfcDoorWindow: 'Hard wood door window frames & shutters',
     isfcFittings: 'Good',
     isfcStageOfConstruction: '100%',
+    isfcEarlierValued: 'No',
+    isfcDemolitionRisk: 'No',
+    isfcSalebilityComments: 'Attracts standard marketability',
+    isfcAdverseRemarks: 'No adverse remarks.',
+    isfcAdverseRemarksNA: true,
+    isfcNetMortgagableValuationEditOn: false,
+    isfcDeclarationTerms: true,
+    isfcDeclarationVerified: true,
+    isfcPlace: 'Bhubaneswar',
+    isfcDateEditOn: false,
+    isfcAuthorizedSignatory: 'Er. S. Mohanty',
+    isfcAuthorizedSignatoryEditOn: false,
   },
 };
 

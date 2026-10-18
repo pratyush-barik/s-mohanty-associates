@@ -9,9 +9,8 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 ### 📊 Overall Status Summary
 
 | Status Category | Count | Description |
-| :--- | :---: | :--- |
 | **✅ Completed** | **16 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
-| **🔨 In Progress** | **49 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, and Poonawalla Finance) |
+| **🔨 In Progress** | **50 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, and Poonawalla Finance) |
 | **⏳ Not Started** | **11 formats** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
@@ -193,6 +192,9 @@ Templates with base structure & draft UI files created, currently undergoing fie
 
 ### 📝 Active Implementation Notes
 
+- **ISFC (Indian School Finance Company) (`Standard`)**:
+  - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/isfc/ISFC.tsx` — **🔨 In Progress** (Sections 1 through 7 custom draft UI implemented with dedicated container palettes: Section 1 VALUATION OF IMMOVABLE PROPERTY [`#f5f5f5`], Section 2 APPLICATION DETAILS [`#e3f2fd`], Section 3 TECHNICAL DETAILS [`#e8f5e9`], Section 4 COMPLETION STATUS [`#fffde7`], Section 5 VALUATION [`#f3e5f5`], Section 6 NET MORTGAGABLE VALUATION [`#e0f7fa`], Section 7 DECLARATION [`#f1f8e9`]).
+  - **Dedicated PDF Renderer**: `src/lib/banks/pdf-isfc-render.ts` — **🔨 In Progress** (Pending implementation after section draft UI completion).
 - **IKF Finance (`Standard`)**:
   - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/ikf/IKFFinance.tsx` — **🔨 In Progress** (Sections 1 through 8 custom draft UI implemented with dedicated container palettes: Section 1 VALUATION REPORT, Section 2 DETAILS OF STRUCTURE AND SPECIFICATIONS, Section 3 DETAILS FOR THE PROPERTY UNDER REFERENCE, Section 4 NDMA Parameters, Section 5 ESG Monitoring Parameters, Section 6 CONCLUSION AND VALUATION OF THE PROPERTY, Section 7 Other Critical Check - Points, Section 8 NOTE & Declaration).
   - **Dedicated PDF Renderer**: `src/lib/banks/pdf-ikf-finance-render.ts` — **🔨 In Progress** (Pending implementation after section draft UI completion).
