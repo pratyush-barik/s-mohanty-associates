@@ -563,6 +563,255 @@ function BasisOfValuationSection() {
   );
 }
 
+// ─── Section 4: Brief Description of the Property ───────────────────────────
+
+function BriefDescriptionSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const effectiveTrfAddress = fields.grihamAddressAsPerTrf ?? (fields.propertyAddress ?? '');
+  const effectiveActualAddress = fields.grihamAddressActualSiteEditOn
+    ? (fields.grihamAddressActualSite ?? '')
+    : (fields.grihamAddressActualSite || effectiveTrfAddress);
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Brief Description (Light Yellow #fffde7) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-yellow-200 shadow-sm"
+        style={{ backgroundColor: '#fffde7' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-yellow-200/80 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            BRIEF DESCRIPTION OF THE PROPERTY
+          </h3>
+          <span className="text-xs text-amber-900 font-medium bg-amber-100 px-2.5 py-1 rounded-md border border-amber-200">
+            Property Classification & Occupancy
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* 1. Name of the Customer/ Applicant & Contact Details */}
+          <Field label={<span className="font-semibold text-gray-700">NAME OF CUSTOMER/APPLICANT & CONTACT DETAILS</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.grihamCustomerName ?? (fields.borrowerName ?? '')}
+              onChange={(e) => handleChange('grihamCustomerName', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Applicant Name & Contact details"
+            />
+          </Field>
+
+          {/* 2. Name of the Co-Applicant */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">NAME OF CO-APPLICANT</span>
+                <NaCheckbox
+                  checked={!!fields.grihamCoApplicantNa}
+                  onChange={(checked) => {
+                    handleChange('grihamCoApplicantNa', checked);
+                    handleChange('grihamCoApplicantName', checked ? 'NA' : '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${fields.grihamCoApplicantNa ? 'bg-gray-100 text-gray-500 italic' : ''}`}
+              value={fields.grihamCoApplicantNa ? 'NA' : (fields.grihamCoApplicantName || '')}
+              onChange={(e) => handleChange('grihamCoApplicantName', e.target.value)}
+              disabled={isReadOnly || !!fields.grihamCoApplicantNa}
+              placeholder="Co-Applicant name"
+            />
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* 3. Address of property being appraised : As per TRF */}
+          <Field label={<span className="font-semibold text-gray-700">ADDRESS AS PER TRF</span>}>
+            <textarea
+              rows={3}
+              className={`${inputCls} resize-y`}
+              value={fields.grihamAddressAsPerTrf ?? (fields.propertyAddress ?? '')}
+              onChange={(e) => handleChange('grihamAddressAsPerTrf', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="Address of the property as per Title / TRF"
+            />
+          </Field>
+
+          {/* 4. Address of property being appraised : As per Actual at site */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">ADDRESS AS PER ACTUAL AT SITE</span>
+                <EditSwitch
+                  checked={!!fields.grihamAddressActualSiteEditOn}
+                  onChange={(checked) => {
+                    handleChange('grihamAddressActualSiteEditOn', checked);
+                    if (!checked) handleChange('grihamAddressActualSite', effectiveTrfAddress);
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <textarea
+                rows={3}
+                className={`${inputCls} resize-y font-medium ${
+                  !fields.grihamAddressActualSiteEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                }`}
+                value={effectiveActualAddress}
+                onChange={(e) => handleChange('grihamAddressActualSite', e.target.value)}
+                disabled={isReadOnly || !fields.grihamAddressActualSiteEditOn}
+                placeholder="Address as found actual at site"
+              />
+              {!fields.grihamAddressActualSiteEditOn && (
+                <div className="absolute right-3 top-2.5 text-xs text-amber-900 font-semibold pointer-events-none flex items-center gap-1 bg-amber-100/90 px-2 py-0.5 rounded border border-amber-200">
+                  <Lock className="w-3 h-3" /> Mirrors TRF
+                </div>
+              )}
+            </div>
+          </Field>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* 5. Type of Property */}
+          <Field label={<span className="font-semibold text-gray-700">TYPE OF PROPERTY</span>}>
+            <CustomSelect
+              value={fields.grihamPropertyType || 'Flat'}
+              customValue={fields.grihamPropertyTypeCustom || ''}
+              onChange={(val) => handleChange('grihamPropertyType', val)}
+              onCustomChange={(val) => handleChange('grihamPropertyTypeCustom', val)}
+              options={[
+                { value: 'Flat', label: 'Flat' },
+                { value: 'Row house', label: 'Row house' },
+                { value: 'Shop', label: 'Shop' },
+                { value: 'Office', label: 'Office' },
+                { value: 'Industrial', label: 'Industrial' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select property type..."
+            />
+          </Field>
+
+          {/* 6. Classification of Area */}
+          <Field label={<span className="font-semibold text-gray-700">CLASSIFICATION OF AREA</span>}>
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              {['Urban', 'Semi urban', 'Rural'].map((opt) => (
+                <label key={opt} className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 select-none">
+                  <input
+                    type="radio"
+                    name="grihamAreaClassification"
+                    value={opt}
+                    checked={(fields.grihamAreaClassification || 'Urban') === opt}
+                    onChange={(e) => handleChange('grihamAreaClassification', e.target.value)}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300"
+                  />
+                  <span>{opt}</span>
+                </label>
+              ))}
+            </div>
+          </Field>
+
+          {/* 7. Location/Zoning */}
+          <Field label={<span className="font-semibold text-gray-700">LOCATION / ZONING</span>}>
+            <CustomSelect
+              value={fields.grihamLocationZoning || 'Resi'}
+              customValue={fields.grihamLocationZoningCustom || ''}
+              onChange={(val) => handleChange('grihamLocationZoning', val)}
+              onCustomChange={(val) => handleChange('grihamLocationZoningCustom', val)}
+              options={[
+                { value: 'Resi', label: 'Resi (Residential)' },
+                { value: 'Comm', label: 'Comm (Commercial)' },
+                { value: 'Mixed', label: 'Mixed' },
+                { value: 'Industrial', label: 'Industrial' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select location/zoning..."
+            />
+          </Field>
+
+          {/* 8. Property Usage */}
+          <Field label={<span className="font-semibold text-gray-700">PROPERTY USAGE</span>}>
+            <CustomSelect
+              value={fields.grihamPropertyUsage || 'Resi'}
+              customValue={fields.grihamPropertyUsageCustom || ''}
+              onChange={(val) => handleChange('grihamPropertyUsage', val)}
+              onCustomChange={(val) => handleChange('grihamPropertyUsageCustom', val)}
+              options={[
+                { value: 'Resi', label: 'Resi (Residential)' },
+                { value: 'Comm', label: 'Comm (Commercial)' },
+                { value: 'Mixed', label: 'Mixed' },
+                { value: 'Industrial', label: 'Industrial' },
+                { value: 'Vacant', label: 'Vacant' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select property usage..."
+            />
+          </Field>
+
+          {/* 9. Occupation Status */}
+          <Field label={<span className="font-semibold text-gray-700">OCCUPATION STATUS</span>}>
+            <CustomSelect
+              value={fields.grihamOccupationStatus || 'Self'}
+              customValue={fields.grihamOccupationStatusCustom || ''}
+              onChange={(val) => handleChange('grihamOccupationStatus', val)}
+              onCustomChange={(val) => handleChange('grihamOccupationStatusCustom', val)}
+              options={[
+                { value: 'Self', label: 'Self occupied' },
+                { value: 'Tenanted', label: 'Tenanted' },
+                { value: 'Mixed', label: 'Mixed' },
+                { value: 'Vacant', label: 'Vacant' },
+                { value: 'Seller occupied', label: 'Seller occupied' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select occupation status..."
+            />
+          </Field>
+
+          {/* 10. No. of Tenants */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">NO. OF TENANTS</span>
+                <NaCheckbox
+                  checked={!!fields.grihamNoOfTenantsNa}
+                  onChange={(checked) => {
+                    handleChange('grihamNoOfTenantsNa', checked);
+                    handleChange('grihamNoOfTenants', checked ? 'NA' : '0');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type={fields.grihamNoOfTenantsNa ? 'text' : 'number'}
+              min="0"
+              className={`${inputCls} ${fields.grihamNoOfTenantsNa ? 'bg-gray-100 text-gray-500 italic' : ''}`}
+              value={fields.grihamNoOfTenantsNa ? 'NA' : (fields.grihamNoOfTenants ?? '')}
+              onChange={(e) => handleChange('grihamNoOfTenants', e.target.value)}
+              disabled={isReadOnly || !!fields.grihamNoOfTenantsNa}
+              placeholder={fields.grihamNoOfTenantsNa ? 'NA' : 'e.g. 0'}
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -592,6 +841,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     { id: 'griham-section-1', title: 'OBJECTIVE' },
     { id: 'griham-section-2', title: 'SCOPE OF ENQUIRIES AND INVESTIGATION' },
     { id: 'griham-section-3', title: 'BASIS OF VALUATION' },
+    { id: 'griham-section-4', title: 'BRIEF DESCRIPTION OF THE PROPERTY' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -626,6 +876,24 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     grihamAuthorizedSignatory: DEFAULT_SIGNATORY,
     grihamAuthorizedSignatoryEditOn: false,
     grihamEngineerVisited: '',
+    // Section 4
+    grihamCustomerName: '',
+    grihamCoApplicantName: '',
+    grihamCoApplicantNa: false,
+    grihamAddressAsPerTrf: '',
+    grihamAddressActualSite: '',
+    grihamAddressActualSiteEditOn: false,
+    grihamPropertyType: 'Flat',
+    grihamPropertyTypeCustom: '',
+    grihamAreaClassification: 'Urban',
+    grihamLocationZoning: 'Resi',
+    grihamLocationZoningCustom: '',
+    grihamPropertyUsage: 'Resi',
+    grihamPropertyUsageCustom: '',
+    grihamOccupationStatus: 'Self',
+    grihamOccupationStatusCustom: '',
+    grihamNoOfTenants: '0',
+    grihamNoOfTenantsNa: false,
   },
   extraSectionsStart: [
     {
@@ -661,6 +929,19 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
       number: 3,
       defaultOpen: true,
       render: () => <BasisOfValuationSection />,
+    },
+    {
+      id: 'griham-section-4',
+      title: 'BRIEF DESCRIPTION OF THE PROPERTY',
+      number: 4,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <BriefDescriptionSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
     },
   ],
 };
