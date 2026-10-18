@@ -13,6 +13,7 @@ import {
   Ruler,
   ShieldAlert,
   Compass,
+  Layers,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -2088,6 +2089,732 @@ export function ApplicationDetailsSection({
   );
 }
 
+// ─── Section 3: TECHNICAL DETAILS Component ─────────────────────────────────
+
+export function TechnicalDetailsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  // 2. No.of stories: Prefills based on Sec 2 Constructed upto floors
+  const sec2ConstructedFloors = fields.isfcConstructedFloors ?? fields.actualFloors ?? fields.numberOfFloors ?? '';
+  const isStoriesEdit = Boolean(fields.isfcNoOfStoriesEditOn);
+  const effectiveStories = isStoriesEdit
+    ? (fields.isfcNoOfStories ?? '')
+    : (sec2ConstructedFloors || fields.isfcNoOfStories || '');
+
+  // 8. Occupant: Prefills with Name of the applicant if Occupant status = Self occupied
+  const isSelfOccupied = (fields.isfcOccupantStatus || 'Self occupied').toLowerCase() === 'self occupied';
+  const sec2ApplicantName = fields.isfcApplicantName ?? fields.customerName ?? fields.applicantName ?? '';
+  const isOccupantEdit = Boolean(fields.isfcOccupantEditOn);
+  const effectiveOccupant = isSelfOccupied
+    ? (isOccupantEdit ? (fields.isfcOccupant ?? '') : (sec2ApplicantName || fields.isfcOccupant || ''))
+    : (fields.isfcOccupant ?? '');
+
+  // 15. Total permissible area: Prefills from Sec 2 Sanctioned area
+  const sec2SanctionedArea = fields.isfcSanctionedAreaNA
+    ? ''
+    : (fields.isfcSanctionedArea ?? fields.sanctionedArea ?? '');
+  const isPermissibleAreaEdit = Boolean(fields.isfcTotalPermissibleAreaEditOn);
+  const effectivePermissibleArea = isPermissibleAreaEdit
+    ? (fields.isfcTotalPermissibleArea ?? '')
+    : (sec2SanctionedArea || fields.isfcTotalPermissibleArea || '');
+
+  // 18. Floor-wise area config & calculations
+  const FLOOR_ROWS = [
+    { key: 'basement', label: 'Basement Floor' },
+    { key: 'ground', label: 'Ground Floor' },
+    { key: 'first', label: 'First Floor' },
+    { key: 'second', label: 'Second Floor' },
+    { key: 'third', label: 'Third Floor' },
+    { key: 'fourth', label: 'Fourth Floor' },
+  ];
+
+  // Auto-calculates sum of Floor-wise area Constructed values
+  const totalFloorConstructed = useMemo(() => {
+    let sum = 0;
+    for (const f of FLOOR_ROWS) {
+      const isNA = Boolean(fields[`isfcFloor_${f.key}_na`]);
+      if (!isNA) {
+        const val = parseFloat(String(fields[`isfcFloor_${f.key}_constructed`] ?? '').replace(/[^0-9.]/g, '')) || 0;
+        sum += val;
+      }
+    }
+    return sum;
+  }, [
+    fields.isfcFloor_basement_na, fields.isfcFloor_basement_constructed,
+    fields.isfcFloor_ground_na, fields.isfcFloor_ground_constructed,
+    fields.isfcFloor_first_na, fields.isfcFloor_first_constructed,
+    fields.isfcFloor_second_na, fields.isfcFloor_second_constructed,
+    fields.isfcFloor_third_na, fields.isfcFloor_third_constructed,
+    fields.isfcFloor_fourth_na, fields.isfcFloor_fourth_constructed,
+  ]);
+
+  const autoConstructedStr = totalFloorConstructed > 0 ? String(Math.round(totalFloorConstructed * 100) / 100) : '';
+
+  // 16. Total constructed area: Auto-calculating Input + Lock UI + Edit Switch
+  const isConstructedAreaEdit = Boolean(fields.isfcTotalConstructedAreaEditOn);
+  const effectiveTotalConstructed = isConstructedAreaEdit
+    ? (fields.isfcTotalConstructedArea ?? '')
+    : (autoConstructedStr || fields.isfcTotalConstructedArea || '');
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Container 1: Property Specifications & Occupancy (Light Green '#e8f5e9') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-emerald-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Building className="w-5 h-5 text-emerald-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Property Specifications & Occupancy
+            </h3>
+          </div>
+          <span className="text-xs text-emerald-800 font-medium bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300">
+            Section 3: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Type of property: Dropdown with Custom */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Type of property
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.isfcTypeOfProperty || 'School Building'}
+              customValue={fields.isfcTypeOfPropertyCustom || ''}
+              onChange={(val) => handleChange('isfcTypeOfProperty', val)}
+              onCustomChange={(val) => handleChange('isfcTypeOfPropertyCustom', val)}
+              options={[
+                { value: 'School Building', label: 'School Building' },
+                { value: 'Apartment', label: 'Apartment' },
+                { value: 'Independent House', label: 'Independent House' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Type of Property"
+            />
+          </Field>
+
+          {/* No.of stories: Input Box (Numeric) + Lock UI + Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  No.of stories
+                </span>
+                <EditSwitch
+                  checked={isStoriesEdit}
+                  onChange={(val) => {
+                    handleChange('isfcNoOfStoriesEditOn', val);
+                    if (val && !fields.isfcNoOfStories) {
+                      handleChange('isfcNoOfStories', sec2ConstructedFloors);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!isStoriesEdit}
+              tooltipMessage='>>Prefill from section 2, "Constructed upto floors"<<'
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  className={`${inputCls} pr-9 ${
+                    !isStoriesEdit
+                      ? 'bg-gray-100 cursor-not-allowed text-gray-700'
+                      : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                  }`}
+                  value={effectiveStories}
+                  onChange={(e) => handleChange('isfcNoOfStories', e.target.value)}
+                  disabled={isReadOnly || !isStoriesEdit}
+                  placeholder="e.g. 3"
+                  title={!isStoriesEdit ? '>>Prefill from section 2, "Constructed upto floors"<<' : undefined}
+                />
+                {!isStoriesEdit && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Lock className="w-4 h-4 text-amber-500" />
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+
+          {/* Tenement position: Dropdown with Custom */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Tenement position
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.isfcTenementPosition || 'Self occupied'}
+              customValue={fields.isfcTenementPositionCustom || ''}
+              onChange={(val) => handleChange('isfcTenementPosition', val)}
+              onCustomChange={(val) => handleChange('isfcTenementPositionCustom', val)}
+              options={[
+                { value: 'Self occupied', label: 'Self occupied' },
+                { value: 'Tenanted', label: 'Tenanted' },
+                { value: 'Vacant', label: 'Vacant' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Tenement Position"
+            />
+          </Field>
+
+          {/* Construction type: Dropdown with Custom */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Construction type
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.isfcConstructionType || 'RCC framed structure'}
+              customValue={fields.isfcConstructionTypeCustom || ''}
+              onChange={(val) => handleChange('isfcConstructionType', val)}
+              onCustomChange={(val) => handleChange('isfcConstructionTypeCustom', val)}
+              options={[
+                { value: 'RCC framed structure', label: 'RCC framed structure' },
+                { value: 'Load Bearing', label: 'Load Bearing' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Construction Type"
+            />
+          </Field>
+
+          {/* No. of lifts, if any: Input Box (Numeric) + Checkbox "NA" */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  No. of lifts, if any
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.isfcNoOfLiftsNA)}
+                  onChange={(checked) => {
+                    handleChange('isfcNoOfLiftsNA', checked);
+                    if (checked) {
+                      handleChange('isfcNoOfLifts', 'NA');
+                    } else {
+                      handleChange('isfcNoOfLifts', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type={fields.isfcNoOfLiftsNA ? 'text' : 'number'}
+              className={`${inputCls} ${fields.isfcNoOfLiftsNA ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic' : ''}`}
+              value={fields.isfcNoOfLiftsNA ? 'NA' : (fields.isfcNoOfLifts ?? '')}
+              onChange={(e) => handleChange('isfcNoOfLifts', e.target.value)}
+              disabled={isReadOnly || fields.isfcNoOfLiftsNA}
+              placeholder="e.g. 1"
+            />
+          </Field>
+
+          {/* Occupant status: Dropdown with Custom */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Occupant status
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.isfcOccupantStatus || 'Self occupied'}
+              customValue={fields.isfcOccupantStatusCustom || ''}
+              onChange={(val) => handleChange('isfcOccupantStatus', val)}
+              onCustomChange={(val) => handleChange('isfcOccupantStatusCustom', val)}
+              options={[
+                { value: 'Self occupied', label: 'Self occupied' },
+                { value: 'Tenanted', label: 'Tenanted' },
+                { value: 'Vacant', label: 'Vacant' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Occupant Status"
+            />
+          </Field>
+
+          {/* Occupant: Input Box (Fixed) + Lock UI + Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Occupant
+                </span>
+                {isSelfOccupied && (
+                  <EditSwitch
+                    checked={isOccupantEdit}
+                    onChange={(val) => {
+                      handleChange('isfcOccupantEditOn', val);
+                      if (val && !fields.isfcOccupant) {
+                        handleChange('isfcOccupant', sec2ApplicantName);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                )}
+              </div>
+            }
+            span={2}
+          >
+            <LockedFieldWrapper
+              isLocked={isSelfOccupied && !isOccupantEdit}
+              tooltipMessage='>>Prefill from section 2, "Name of the applicant"<<'
+            >
+              <div className="relative">
+                <input
+                  type="text"
+                  className={`${inputCls} ${isSelfOccupied ? 'pr-9' : ''} ${
+                    isSelfOccupied && !isOccupantEdit
+                      ? 'bg-gray-100 cursor-not-allowed text-gray-700'
+                      : isSelfOccupied && isOccupantEdit
+                      ? 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                      : ''
+                  }`}
+                  value={effectiveOccupant}
+                  onChange={(e) => handleChange('isfcOccupant', e.target.value)}
+                  disabled={isReadOnly || (isSelfOccupied && !isOccupantEdit)}
+                  placeholder="e.g. Name of occupant / tenant"
+                  title={isSelfOccupied && !isOccupantEdit ? '>>Prefill from section 2, "Name of the applicant"<<' : undefined}
+                />
+                {isSelfOccupied && !isOccupantEdit && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Lock className="w-4 h-4 text-amber-500" />
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+
+          {/* Accommodation: Textarea (Variable size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Accommodation
+              </span>
+            }
+            span={2}
+          >
+            <AutoResizeTextarea
+              rows={2}
+              placeholder="e.g. Classrooms, Admin Office, Science Labs, Library, Staff Rooms, Toilets, Playground etc."
+              value={fields.isfcAccommodation ?? (fields.accommodation || '')}
+              onChange={(e) => handleChange('isfcAccommodation', e.target.value)}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* Details of commercial usage, if any: Textarea (Variable size) + Checkbox "NA" */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Details of commercial usage, if any
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.isfcCommercialUsageDetailsNA)}
+                  onChange={(checked) => {
+                    handleChange('isfcCommercialUsageDetailsNA', checked);
+                    if (checked) {
+                      handleChange('isfcCommercialUsageDetails', 'NA');
+                    } else {
+                      handleChange('isfcCommercialUsageDetails', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+            span={2}
+          >
+            <AutoResizeTextarea
+              rows={2}
+              placeholder="Describe commercial operations, shops, tuck shop, cafeteria..."
+              value={fields.isfcCommercialUsageDetailsNA ? 'NA' : (fields.isfcCommercialUsageDetails ?? '')}
+              onChange={(e) => handleChange('isfcCommercialUsageDetails', e.target.value)}
+              disabled={isReadOnly || fields.isfcCommercialUsageDetailsNA}
+              className={fields.isfcCommercialUsageDetailsNA ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic' : ''}
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* ─── Container 2: Structural Finishes & Quality (Light Green '#e8f5e9') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-emerald-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Layers className="w-5 h-5 text-emerald-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Structural Finishes & Quality
+            </h3>
+          </div>
+          <span className="text-xs text-emerald-800 font-medium bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300">
+            Section 3: Container 2
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Exterior: Dropdown with Custom */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">Exterior</span>
+            }
+          >
+            <CustomSelect
+              value={fields.isfcExteriorCondition || 'Good'}
+              customValue={fields.isfcExteriorConditionCustom || ''}
+              onChange={(val) => handleChange('isfcExteriorCondition', val)}
+              onCustomChange={(val) => handleChange('isfcExteriorConditionCustom', val)}
+              options={[
+                { value: 'Good', label: 'Good' },
+                { value: 'Average', label: 'Average' },
+                { value: 'Poor', label: 'Poor' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Exterior Condition"
+            />
+          </Field>
+
+          {/* Wall finish: Dropdown with Custom */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">Wall finish</span>
+            }
+          >
+            <CustomSelect
+              value={fields.isfcWallFinish || 'Cement mortar plastering'}
+              customValue={fields.isfcWallFinishCustom || ''}
+              onChange={(val) => handleChange('isfcWallFinish', val)}
+              onCustomChange={(val) => handleChange('isfcWallFinishCustom', val)}
+              options={[
+                { value: 'Cement mortar plastering', label: 'Cement mortar plastering' },
+                { value: 'Painted', label: 'Painted' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Wall Finish"
+            />
+          </Field>
+
+          {/* Flooring: Dropdown with Custom */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">Flooring</span>
+            }
+          >
+            <CustomSelect
+              value={fields.isfcFlooring || 'Tile flooring'}
+              customValue={fields.isfcFlooringCustom || ''}
+              onChange={(val) => handleChange('isfcFlooring', val)}
+              onCustomChange={(val) => handleChange('isfcFlooringCustom', val)}
+              options={[
+                { value: 'Tile flooring', label: 'Tile flooring' },
+                { value: 'AS flooring', label: 'AS flooring' },
+                { value: 'Marble', label: 'Marble' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Flooring"
+            />
+          </Field>
+
+          {/* Door/Window: Dropdown with Custom */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">Door/Window</span>
+            }
+          >
+            <CustomSelect
+              value={fields.isfcDoorWindow || 'Hard wood door window frames & shutters'}
+              customValue={fields.isfcDoorWindowCustom || ''}
+              onChange={(val) => handleChange('isfcDoorWindow', val)}
+              onCustomChange={(val) => handleChange('isfcDoorWindowCustom', val)}
+              options={[
+                { value: 'Hard wood door window frames & shutters', label: 'Hard wood door window frames & shutters' },
+                { value: 'UPVC', label: 'UPVC' },
+                { value: 'Aluminum', label: 'Aluminum' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Door/Window"
+            />
+          </Field>
+
+          {/* Fittings: Dropdown with Custom */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">Fittings</span>
+            }
+          >
+            <CustomSelect
+              value={fields.isfcFittings || 'Good'}
+              customValue={fields.isfcFittingsCustom || ''}
+              onChange={(val) => handleChange('isfcFittings', val)}
+              onCustomChange={(val) => handleChange('isfcFittingsCustom', val)}
+              options={[
+                { value: 'Good', label: 'Good' },
+                { value: 'Average', label: 'Average' },
+                { value: 'Poor', label: 'Poor' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Fittings"
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* ─── Container 3: Area Details & Floor-Wise Area Table (Light Green '#e8f5e9') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-emerald-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Ruler className="w-5 h-5 text-emerald-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Area Details & Floor-Wise Area Measurements
+            </h3>
+          </div>
+          <span className="text-xs text-emerald-800 font-medium bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300">
+            Section 3: Container 3
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Total permissible area: Input Box (Numeric) + Lock UI + Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Total permissible area (Sq.Ft.)
+                </span>
+                <EditSwitch
+                  checked={isPermissibleAreaEdit}
+                  onChange={(val) => {
+                    handleChange('isfcTotalPermissibleAreaEditOn', val);
+                    if (val && !fields.isfcTotalPermissibleArea) {
+                      handleChange('isfcTotalPermissibleArea', sec2SanctionedArea);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!isPermissibleAreaEdit}
+              tooltipMessage='>>Prefill from section 2, "Sanctioned area"<<'
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  className={`${inputCls} pr-9 ${
+                    !isPermissibleAreaEdit
+                      ? 'bg-gray-100 cursor-not-allowed text-gray-700'
+                      : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                  }`}
+                  value={effectivePermissibleArea}
+                  onChange={(e) => handleChange('isfcTotalPermissibleArea', e.target.value)}
+                  disabled={isReadOnly || !isPermissibleAreaEdit}
+                  placeholder="0"
+                  title={!isPermissibleAreaEdit ? '>>Prefill from section 2, "Sanctioned area"<<' : undefined}
+                />
+                {!isPermissibleAreaEdit && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Lock className="w-4 h-4 text-amber-500" />
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+
+          {/* Total constructed area: Auto-calculating Input + Lock UI + Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Total constructed area (Sq.Ft.)
+                </span>
+                <EditSwitch
+                  checked={isConstructedAreaEdit}
+                  onChange={(val) => {
+                    handleChange('isfcTotalConstructedAreaEditOn', val);
+                    if (val && !fields.isfcTotalConstructedArea) {
+                      handleChange('isfcTotalConstructedArea', autoConstructedStr);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!isConstructedAreaEdit}
+              tooltipMessage='>>Auto calculating from [Sum of Section 3 "Floor-wise area" Constructed values]<<'
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  className={`${inputCls} pr-9 ${
+                    !isConstructedAreaEdit
+                      ? 'bg-gray-100 cursor-not-allowed text-gray-700'
+                      : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                  }`}
+                  value={effectiveTotalConstructed}
+                  onChange={(e) => handleChange('isfcTotalConstructedArea', e.target.value)}
+                  disabled={isReadOnly || !isConstructedAreaEdit}
+                  placeholder="0"
+                  title={!isConstructedAreaEdit ? '>>Auto calculating from [Sum of Section 3 "Floor-wise area" Constructed values]<<' : undefined}
+                />
+                {!isConstructedAreaEdit && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Lock className="w-4 h-4 text-amber-500" />
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+
+          {/* Land area: Textarea (Variable size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Land area
+              </span>
+            }
+            span={2}
+          >
+            <AutoResizeTextarea
+              rows={2}
+              placeholder="e.g. 10,890 Sq.Ft. (0.25 Acres / 25 Decimals) with boundaries and shape details..."
+              value={fields.isfcLandArea ?? (fields.plotArea || fields.landArea || '')}
+              onChange={(e) => handleChange('isfcLandArea', e.target.value)}
+              disabled={isReadOnly}
+            />
+          </Field>
+        </div>
+
+        {/* Floor-wise area Table (Basement to Fourth floor) */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-between">
+            <h4 className="font-bold text-gray-800 text-xs md:text-sm uppercase tracking-wide">
+              Floor-wise area (Basement to Fourth floor)
+            </h4>
+            <span className="text-[11px] text-emerald-800 italic font-medium">
+              Check &quot;NA&quot; for unused or unconstructed floors
+            </span>
+          </div>
+
+          <div className="overflow-x-auto rounded-lg border border-emerald-300 bg-white/80">
+            <table className="w-full text-left text-sm text-gray-700">
+              <thead className="bg-emerald-100/90 text-xs uppercase font-semibold text-emerald-900 border-b border-emerald-200">
+                <tr>
+                  <th className="px-4 py-3 w-48">Floor Level</th>
+                  <th className="px-4 py-3 w-24 text-center">NA</th>
+                  <th className="px-4 py-3">Constructed area (Sq.Ft.)</th>
+                  <th className="px-4 py-3">Permissible area (Sq.Ft.)</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-emerald-200/60">
+                {FLOOR_ROWS.map((floor) => {
+                  const naKey = `isfcFloor_${floor.key}_na`;
+                  const constrKey = `isfcFloor_${floor.key}_constructed`;
+                  const permKey = `isfcFloor_${floor.key}_permissible`;
+                  const isNA = Boolean(fields[naKey]);
+
+                  return (
+                    <tr
+                      key={floor.key}
+                      className={`hover:bg-emerald-50/50 transition-colors ${
+                        isNA ? 'bg-gray-100/60 opacity-75' : ''
+                      }`}
+                    >
+                      <td className="px-4 py-2.5 font-semibold text-gray-800 text-xs md:text-sm">
+                        {floor.label}
+                      </td>
+                      <td className="px-4 py-2.5 text-center">
+                        <NaCheckbox
+                          checked={isNA}
+                          onChange={(checked) => {
+                            handleChange(naKey, checked);
+                            if (checked) {
+                              handleChange(constrKey, 'NA');
+                              handleChange(permKey, 'NA');
+                            } else {
+                              handleChange(constrKey, '');
+                              handleChange(permKey, '');
+                            }
+                          }}
+                          disabled={isReadOnly}
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        <input
+                          type={isNA ? 'text' : 'number'}
+                          className={`${inputCls} ${
+                            isNA ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic' : ''
+                          }`}
+                          value={isNA ? 'NA' : (fields[constrKey] ?? '')}
+                          onChange={(e) => handleChange(constrKey, e.target.value)}
+                          disabled={isReadOnly || isNA}
+                          placeholder={isNA ? 'NA' : '0.00'}
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        <input
+                          type={isNA ? 'text' : 'number'}
+                          className={`${inputCls} ${
+                            isNA ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic' : ''
+                          }`}
+                          value={isNA ? 'NA' : (fields[permKey] ?? '')}
+                          onChange={(e) => handleChange(permKey, e.target.value)}
+                          disabled={isReadOnly || isNA}
+                          placeholder={isNA ? 'NA' : '0.00'}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+              <tfoot className="bg-emerald-50/90 font-bold border-t border-emerald-200 text-emerald-950 text-xs md:text-sm">
+                <tr>
+                  <td className="px-4 py-3" colSpan={2}>
+                    Total Floor Area Calculated:
+                  </td>
+                  <td className="px-4 py-3 text-emerald-800">
+                    {totalFloorConstructed > 0 ? `${totalFloorConstructed.toLocaleString('en-IN')} Sq.Ft.` : '—'}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500 text-xs font-normal">
+                    (Auto-sum of constructed areas above)
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── ISFC BankConfig ─────────────────────────────────────────────────────────
 
 export const ISFC_CONFIG: BankConfig = {
@@ -2097,12 +2824,13 @@ export const ISFC_CONFIG: BankConfig = {
   hiddenSections: [
     'section-1', // Replaced by Section 1: VALUATION OF IMMOVABLE PROPERTY
     'section-2', // Replaced by Section 2: APPLICATION DETAILS
+    'section-3', // Replaced by Section 3: TECHNICAL DETAILS
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
     { id: 'isfc-section-1', title: 'VALUATION OF IMMOVABLE PROPERTY' },
     { id: 'isfc-section-2', title: 'APPLICATION DETAILS' },
-    { id: 'section-3', title: 'Boundaries' },
+    { id: 'isfc-section-3', title: 'TECHNICAL DETAILS' },
     { id: 'section-4', title: 'Building Specifications' },
     { id: 'section-5', title: 'Valuation Calculation' },
     { id: 'section-6', title: 'NDMA & ESG' },
@@ -2143,6 +2871,19 @@ export const ISFC_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'isfc-section-3',
+      title: 'TECHNICAL DETAILS',
+      number: 3,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <TechnicalDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY',
@@ -2161,6 +2902,15 @@ export const ISFC_CONFIG: BankConfig = {
     isfcBoundariesSiteSameAsDoc: false,
     isfcSanctionPlanAvailability: 'Available',
     isfcDeviationRegularized: 'No',
+    isfcTypeOfProperty: 'School Building',
+    isfcTenementPosition: 'Self occupied',
+    isfcConstructionType: 'RCC framed structure',
+    isfcOccupantStatus: 'Self occupied',
+    isfcExteriorCondition: 'Good',
+    isfcWallFinish: 'Cement mortar plastering',
+    isfcFlooring: 'Tile flooring',
+    isfcDoorWindow: 'Hard wood door window frames & shutters',
+    isfcFittings: 'Good',
   },
 };
 
