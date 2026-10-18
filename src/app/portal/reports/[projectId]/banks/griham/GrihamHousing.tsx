@@ -1581,6 +1581,149 @@ function LegalAspectsSection({
   );
 }
 
+// ─── Section 7: Functional and Infrastructure Aspects ───────────────────────
+
+const AMENITIES_OPTIONS = [
+  'Lift',
+  'Swimming pool',
+  'Club House',
+  'Park',
+  'None',
+];
+
+function InfrastructureAspectsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const selectedAmenities: string[] = Array.isArray(fields.grihamAmenitiesAvailable)
+    ? fields.grihamAmenitiesAvailable
+    : typeof fields.grihamAmenitiesAvailable === 'string' && fields.grihamAmenitiesAvailable
+    ? fields.grihamAmenitiesAvailable.split(',').map((s: string) => s.trim()).filter(Boolean)
+    : [];
+
+  const toggleAmenity = (amenity: string) => {
+    if (amenity === 'None') {
+      if (selectedAmenities.includes('None')) {
+        handleChange('grihamAmenitiesAvailable', []);
+      } else {
+        handleChange('grihamAmenitiesAvailable', ['None']);
+      }
+      return;
+    }
+
+    const withoutNone = selectedAmenities.filter((a) => a !== 'None');
+    const idx = withoutNone.indexOf(amenity);
+    if (idx > -1) {
+      withoutNone.splice(idx, 1);
+    } else {
+      withoutNone.push(amenity);
+    }
+    handleChange('grihamAmenitiesAvailable', withoutNone);
+  };
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Functional and Infrastructure Aspects (Light Orange #fff3e0) */}
+      <div
+        className="rounded-xl p-5 space-y-6 border border-orange-200 shadow-sm"
+        style={{ backgroundColor: '#fff3e0' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange-200/80 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY
+          </h3>
+          <span className="text-xs text-orange-950 font-medium bg-orange-100 px-2.5 py-1 rounded-md border border-orange-200">
+            Connectivity & Amenities
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* 1. Nearest Railway Station */}
+          <Field label={<span className="font-semibold text-gray-700">NEAREST RAILWAY STATION</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.grihamNearestRailwayStation ?? (fields.railwayStation ?? '')}
+              onChange={(e) => handleChange('grihamNearestRailwayStation', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. Bhubaneswar Railway Station"
+            />
+          </Field>
+
+          {/* 2. Nearest Bus Stop */}
+          <Field label={<span className="font-semibold text-gray-700">NEAREST BUS STOP</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.grihamNearestBusStop ?? (fields.busStop ?? '')}
+              onChange={(e) => handleChange('grihamNearestBusStop', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. Baramunda Bus Stand"
+            />
+          </Field>
+
+          {/* 3. Distance from Property in KM */}
+          <Field label={<span className="font-semibold text-gray-700">DISTANCE FROM PROPERTY IN KM</span>}>
+            <div className="relative">
+              <input
+                type="number"
+                step="any"
+                min="0"
+                className={`${inputCls} pr-12`}
+                value={fields.grihamDistanceRailwayBusKm ?? ''}
+                onChange={(e) => handleChange('grihamDistanceRailwayBusKm', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. 3.5"
+              />
+              <span className="absolute right-3 top-2.5 text-xs text-orange-900 font-semibold pointer-events-none">
+                KM
+              </span>
+            </div>
+          </Field>
+        </div>
+
+        {/* 4. Amenities available */}
+        <div className="space-y-2.5">
+          <span className="font-semibold text-xs sm:text-sm text-gray-700 uppercase tracking-wide">
+            AMENITIES AVAILABLE
+          </span>
+          <div className="p-3.5 bg-white/90 rounded-lg border border-orange-200">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              {AMENITIES_OPTIONS.map((amenity) => {
+                const checked = selectedAmenities.includes(amenity);
+                return (
+                  <label
+                    key={amenity}
+                    className={`flex items-center gap-2 p-2.5 rounded-md border text-xs cursor-pointer select-none transition-all ${
+                      checked
+                        ? 'bg-orange-50 border-orange-400 text-orange-950 font-semibold shadow-2xs'
+                        : 'border-gray-200 hover:bg-gray-50 text-gray-700'
+                    } ${isReadOnly ? 'pointer-events-none opacity-80' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      onChange={() => toggleAmenity(amenity)}
+                      disabled={isReadOnly}
+                      className="h-4 w-4 rounded border-gray-300 text-orange-600 focus:ring-orange-500"
+                    />
+                    <span>{amenity}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -1613,6 +1756,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     { id: 'griham-section-4', title: 'BRIEF DESCRIPTION OF THE PROPERTY' },
     { id: 'griham-section-5', title: 'TOWN PLANNING PARAMETERS' },
     { id: 'griham-section-6', title: 'DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY' },
+    { id: 'griham-section-7', title: 'FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -1711,6 +1855,11 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     grihamStructureConfirmingByelaws: 'Yes',
     grihamStructureConfirmingByelawsNa: false,
     grihamPropertyIdentifiable: 'Yes',
+    // Section 7
+    grihamNearestRailwayStation: '',
+    grihamNearestBusStop: '',
+    grihamDistanceRailwayBusKm: '',
+    grihamAmenitiesAvailable: ['Lift'],
   },
   extraSectionsStart: [
     {
@@ -1780,6 +1929,19 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <LegalAspectsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'griham-section-7',
+      title: 'FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY',
+      number: 7,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <InfrastructureAspectsSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
