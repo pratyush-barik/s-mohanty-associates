@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock } from 'lucide-react';
+import { Lock, Scale, ShieldCheck, FileText } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
 
@@ -482,6 +482,87 @@ function ScopeOfEnquiriesSection({
   );
 }
 
+// ─── Section 3: Basis of Valuation ──────────────────────────────────────────
+
+const BASIS_OF_VALUATION_TEXT = {
+  regulatory:
+    'This valuation report is prepared in accordance with the professional valuation standards recognized by the Insolvency and Bankruptcy Board of India (IBBI), the Companies (Registered Valuers and Valuation) Rules, 2017, and accepted National & International Valuation Standards (IVS). The purpose dictates the basis of value applied (Fair Market Value, Realizable Value, and Distress / Forced Sale Value).',
+  methodology:
+    'The property has been valued using the Land and Building Method incorporating prevailing market parameters:\n• Market Approach (Comparable Sales & Local Enquiry): Adopted for the land valuation based on registered circle rates, recent market transactions, and independent local inquiries in the micro-market.\n• Cost Approach (Depreciated Replacement Cost - DRC): Adopted for the building/structures based on current construction costs, specification levels (as per PWD/CPWD standard schedules), less depreciation based on structural age and estimated residual life.',
+  reliance:
+    'The valuation relies on physical site verification, visual inspection, verified identification of boundaries as per the legal deeds/plans supplied by the client/institution, and local inquiries. All assessments are carried out without any undisclosed conflict of interest.',
+};
+
+function BasisOfValuationSection() {
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Basis of Valuation (Light Green #e8f5e9) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-emerald-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200/80 pb-3">
+          <div className="flex items-center gap-2">
+            <Scale className="w-4 h-4 text-emerald-800 shrink-0" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              BASIS OF VALUATION
+            </h3>
+          </div>
+          <span className="text-xs text-emerald-800 font-medium bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-200 flex items-center gap-1.5 self-start sm:self-auto">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+            Statutory & Methodology Framework
+          </span>
+        </div>
+
+        {/* Static Read-only Container */}
+        <div className="bg-white/90 backdrop-blur-xs rounded-xl p-5 border border-emerald-200/80 space-y-4 shadow-xs">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+            <span className="text-xs font-bold text-emerald-950 uppercase tracking-wider flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-emerald-600" />
+              Standard Valuation Standards & Methodology
+            </span>
+            <span className="text-[10px] font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded uppercase tracking-wide">
+              Read-Only Boilerplate
+            </span>
+          </div>
+
+          <div className="space-y-3.5 text-xs text-gray-700 leading-relaxed">
+            <div className="p-3 bg-emerald-50/50 rounded-lg border border-emerald-100">
+              <h4 className="font-bold text-emerald-900 mb-1 flex items-center gap-1.5">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                1. Regulatory Framework & Valuation Standards (IBBI)
+              </h4>
+              <p className="text-gray-700">
+                {BASIS_OF_VALUATION_TEXT.regulatory}
+              </p>
+            </div>
+
+            <div className="p-3 bg-emerald-50/50 rounded-lg border border-emerald-100">
+              <h4 className="font-bold text-emerald-900 mb-1 flex items-center gap-1.5">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                2. Valuation Approach & Methodology Basis
+              </h4>
+              <div className="text-gray-700 whitespace-pre-line pl-1">
+                {BASIS_OF_VALUATION_TEXT.methodology}
+              </div>
+            </div>
+
+            <div className="p-3 bg-emerald-50/50 rounded-lg border border-emerald-100">
+              <h4 className="font-bold text-emerald-900 mb-1 flex items-center gap-1.5">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                3. Physical Inspection & Marketability Assessment
+              </h4>
+              <p className="text-gray-700">
+                {BASIS_OF_VALUATION_TEXT.reliance}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -510,6 +591,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
   navSections: [
     { id: 'griham-section-1', title: 'OBJECTIVE' },
     { id: 'griham-section-2', title: 'SCOPE OF ENQUIRIES AND INVESTIGATION' },
+    { id: 'griham-section-3', title: 'BASIS OF VALUATION' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -572,6 +654,13 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
           isReadOnly={isReadOnly}
         />
       ),
+    },
+    {
+      id: 'griham-section-3',
+      title: 'BASIS OF VALUATION',
+      number: 3,
+      defaultOpen: true,
+      render: () => <BasisOfValuationSection />,
     },
   ],
 };
