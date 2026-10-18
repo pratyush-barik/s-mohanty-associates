@@ -11,8 +11,8 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | Status Category | Count | Description |
 | :--- | :---: | :--- |
 | **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
-| **🔨 In Progress** | **47 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment and SBI Land & Building) |
-| **⏳ Not Started** | **15 formats (13 banks)** | Directory reserved / pending base component creation |
+| **🔨 In Progress** | **48 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment, SBI Land & Building, HDB Financial, and IKF Finance) |
+| **⏳ Not Started** | **14 formats** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
@@ -186,3 +186,15 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **59** | VISTAAR FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/vistaar/VistaarFinance.tsx` | `src/lib/banks/pdf-vistaar-finance-renderer.ts` | 🔨 In Progress |
 | **60** | YES BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/yes-bank/YesBank.tsx` | `src/lib/banks/pdf-yes-bank-renderer.ts` | 🔨 In Progress |
 | **61** | KARUR VYSYA BANK LIMITED | `Standard` | `src/app/portal/reports/[projectId]/banks/karur-vysya/KarurVysyaBank.tsx` | `src/lib/banks/pdf-karur-vysya-renderer.ts` | 🔨 In Progress |
+
+---
+
+### 📝 Active Implementation Notes
+
+- **IKF Finance (`Standard`)**:
+  - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/ikf/IKFFinance.tsx` — **🔨 In Progress** (Sections 1 through 8 custom draft UI implemented with dedicated container palettes: Section 1 VALUATION REPORT, Section 2 DETAILS OF STRUCTURE AND SPECIFICATIONS, Section 3 DETAILS FOR THE PROPERTY UNDER REFERENCE, Section 4 NDMA Parameters, Section 5 ESG Monitoring Parameters, Section 6 CONCLUSION AND VALUATION OF THE PROPERTY, Section 7 Other Critical Check - Points, Section 8 NOTE & Declaration).
+  - **Dedicated PDF Renderer**: `src/lib/banks/pdf-ikf-finance-render.ts` — **🔨 In Progress** (Pending implementation after section draft UI completion).
+- **HDB Financial Services (`Standard`)**:
+  - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/hdb/HDBFinancial.tsx` — **🔨 In Progress**.
+  - **Dedicated PDF Renderer**: `src/lib/banks/pdf-hdb-financial-render.ts` — **🔨 In Progress**.
+
