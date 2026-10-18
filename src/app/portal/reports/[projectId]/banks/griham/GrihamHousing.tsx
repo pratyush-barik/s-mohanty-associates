@@ -1790,6 +1790,72 @@ function SocioCulturalSection({
   );
 }
 
+// ─── Section 9: Environmental Factors Affecting the Property ────────────────
+
+function EnvironmentalFactorsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Environmental Factors (Light Teal #e0f2f1) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-teal-200 shadow-sm"
+        style={{ backgroundColor: '#e0f2f1' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-teal-200/80 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY
+          </h3>
+          <span className="text-xs text-teal-950 font-medium bg-teal-100 px-2.5 py-1 rounded-md border border-teal-200">
+            Environmental & Hazard Assessment
+          </span>
+        </div>
+
+        <Field
+          label={
+            <div className="flex justify-between items-center w-full">
+              <span className="font-semibold text-gray-700">ENVIRONMENTAL OBSERVATIONS</span>
+              <NaCheckbox
+                checked={!!fields.grihamEnvironmentalObservationsNa}
+                onChange={(checked) => {
+                  handleChange('grihamEnvironmentalObservationsNa', checked);
+                  handleChange('grihamEnvironmentalObservations', checked ? 'NA' : '');
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          }
+        >
+          <textarea
+            rows={4}
+            className={`${inputCls} resize-y ${
+              fields.grihamEnvironmentalObservationsNa ? 'bg-gray-100 text-gray-500 italic' : 'bg-white'
+            }`}
+            value={
+              fields.grihamEnvironmentalObservationsNa
+                ? 'NA'
+                : (fields.grihamEnvironmentalObservations || '')
+            }
+            onChange={(e) => handleChange('grihamEnvironmentalObservations', e.target.value)}
+            disabled={isReadOnly || !!fields.grihamEnvironmentalObservationsNa}
+            placeholder={
+              fields.grihamEnvironmentalObservationsNa
+                ? 'NA'
+                : 'Describe environmental factors such as flood proneness, water logging, proximity to water bodies / nullahs, high tension electricity lines, seismic zone risk, natural drainage, etc...'
+            }
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -1824,6 +1890,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     { id: 'griham-section-6', title: 'DOCUMENT DETAILS AND LEGAL ASPECTS OF THE PROPERTY' },
     { id: 'griham-section-7', title: 'FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY' },
     { id: 'griham-section-8', title: 'SOCIO-CULTURAL ASPECTS OF THE PROPERTY' },
+    { id: 'griham-section-9', title: 'ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -1930,6 +1997,9 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     // Section 8
     grihamSocioCulturalObservations: '',
     grihamSocioCulturalObservationsNa: false,
+    // Section 9
+    grihamEnvironmentalObservations: '',
+    grihamEnvironmentalObservationsNa: false,
   },
   extraSectionsStart: [
     {
@@ -2025,6 +2095,19 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <SocioCulturalSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'griham-section-9',
+      title: 'ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY',
+      number: 9,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <EnvironmentalFactorsSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
