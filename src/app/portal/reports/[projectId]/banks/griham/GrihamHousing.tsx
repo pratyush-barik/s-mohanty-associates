@@ -2328,6 +2328,683 @@ function ArchitecturalAspectsSection({
   );
 }
 
+// ─── Section 12: Engineering Aspects of the Property ────────────────────────
+
+export interface SlabConstructionRow {
+  id: string;
+  stage: string;
+  allottedPct: string;
+  presentCompletionPct: string;
+}
+
+export const DEFAULT_SLAB_CONSTRUCTION_ROWS: SlabConstructionRow[] = [
+  { id: '1', stage: 'Plinth Level / Foundation', allottedPct: '15', presentCompletionPct: '15' },
+  { id: '2', stage: 'Ground Floor Slab', allottedPct: '20', presentCompletionPct: '20' },
+  { id: '3', stage: 'First Floor Slab', allottedPct: '20', presentCompletionPct: '20' },
+  { id: '4', stage: 'Brickwork & Internal Plaster', allottedPct: '15', presentCompletionPct: '15' },
+  { id: '5', stage: 'Flooring, Plumbing & Electrical', allottedPct: '15', presentCompletionPct: '15' },
+  { id: '6', stage: 'Finishing & Painting', allottedPct: '15', presentCompletionPct: '15' },
+];
+
+export function EngineeringAspectsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const currentYear = new Date().getFullYear();
+
+  // Year of completion calculation
+  const compYear = parseInt(fields.grihamYearOfCompletion, 10);
+  const autoAge = !isNaN(compYear) && compYear >= 1800 && compYear <= currentYear + 10
+    ? Math.max(0, currentYear - compYear)
+    : '';
+
+  const effectiveAge = fields.grihamPresentAgeEditOn
+    ? (fields.grihamPresentAge ?? '')
+    : (autoAge !== '' ? String(autoAge) : (fields.grihamPresentAge || ''));
+
+  // Future physical life calculation: Standard Life Span (60) - Present Age
+  const ageNum = parseFloat(effectiveAge);
+  const autoFutureLife = !isNaN(ageNum) && ageNum >= 0 ? Math.max(0, 60 - ageNum) : '';
+
+  const effectiveFutureLife = fields.grihamFuturePhysicalLifeEditOn
+    ? (fields.grihamFuturePhysicalLife ?? '')
+    : (autoFutureLife !== '' ? String(autoFutureLife) : (fields.grihamFuturePhysicalLife || ''));
+
+  // Slab wise construction table rows
+  const rows: SlabConstructionRow[] = useMemo(() => {
+    if (Array.isArray(fields.grihamSlabConstructionRows) && fields.grihamSlabConstructionRows.length > 0) {
+      return fields.grihamSlabConstructionRows;
+    }
+    return DEFAULT_SLAB_CONSTRUCTION_ROWS;
+  }, [fields.grihamSlabConstructionRows]);
+
+  const updateRows = (newRows: SlabConstructionRow[]) => {
+    handleChange('grihamSlabConstructionRows', newRows);
+  };
+
+  const addRow = () => {
+    const newId = String(Date.now());
+    const newRow: SlabConstructionRow = {
+      id: newId,
+      stage: `Stage / Slab ${rows.length + 1}`,
+      allottedPct: '0',
+      presentCompletionPct: '0',
+    };
+    updateRows([...rows, newRow]);
+  };
+
+  const removeRow = (id: string) => {
+    if (rows.length <= 1) return;
+    updateRows(rows.filter((r) => r.id !== id));
+  };
+
+  const updateRow = (id: string, patch: Partial<SlabConstructionRow>) => {
+    const updated = rows.map((r) => (r.id === id ? { ...r, ...patch } : r));
+    updateRows(updated);
+  };
+
+  // Auto-calculated sum of all Present Completion rows
+  const totals = useMemo(() => {
+    let allotted = 0;
+    let present = 0;
+    rows.forEach((r) => {
+      allotted += parseFloat(r.allottedPct) || 0;
+      present += parseFloat(r.presentCompletionPct) || 0;
+    });
+    return {
+      allotted: Math.round(allotted * 100) / 100,
+      present: Math.round(present * 100) / 100,
+    };
+  }, [rows]);
+
+  const effectiveTotalCompletion = fields.grihamTotalPresentCompletionEditOn
+    ? (fields.grihamTotalPresentCompletionPct ?? '')
+    : (totals.present > 0 ? String(totals.present) : (fields.grihamTotalPresentCompletionPct || ''));
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Engineering Aspects (Light Red #ffebee) */}
+      <div
+        className="rounded-xl p-5 space-y-6 border border-red-200 shadow-sm"
+        style={{ backgroundColor: '#ffebee' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-red-200/80 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            ENGINEERING ASPECTS OF THE PROPERTY
+          </h3>
+          <span className="text-xs text-red-950 font-medium bg-red-100 px-2.5 py-1 rounded-md border border-red-200">
+            Structure, Age, NDMA Parameters & Construction Status
+          </span>
+        </div>
+
+        {/* 1. General Engineering Aspects */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* No. of Floors / Total No. of Flats */}
+          <Field label={<span className="font-semibold text-gray-700">NO. OF FLOORS / TOTAL NO. OF FLATS</span>}>
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.grihamNoOfFloorsFlats || ''}
+              onChange={(e) => handleChange('grihamNoOfFloorsFlats', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. G+3 Floors / 8 Flats"
+            />
+          </Field>
+
+          {/* Year of Completion of Property */}
+          <Field label={<span className="font-semibold text-gray-700">YEAR OF COMPLETION OF PROPERTY</span>}>
+            <input
+              type="number"
+              min="1900"
+              max="2100"
+              className={inputCls}
+              value={fields.grihamYearOfCompletion || ''}
+              onChange={(e) => {
+                const val = e.target.value;
+                handleChange('grihamYearOfCompletion', val);
+                const yr = parseInt(val, 10);
+                if (!fields.grihamPresentAgeEditOn) {
+                  if (!isNaN(yr) && yr >= 1800 && yr <= currentYear + 10) {
+                    const newAge = Math.max(0, currentYear - yr);
+                    handleChange('grihamPresentAge', String(newAge));
+                    if (!fields.grihamFuturePhysicalLifeEditOn) {
+                      handleChange('grihamFuturePhysicalLife', String(Math.max(0, 60 - newAge)));
+                    }
+                  } else {
+                    handleChange('grihamPresentAge', '');
+                    if (!fields.grihamFuturePhysicalLifeEditOn) {
+                      handleChange('grihamFuturePhysicalLife', '');
+                    }
+                  }
+                }
+              }}
+              disabled={isReadOnly}
+              placeholder="Numeric (YYYY)"
+            />
+          </Field>
+
+          {/* Present Age of the Property */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">PRESENT AGE OF PROPERTY (YRS)</span>
+                <EditSwitch
+                  checked={!!fields.grihamPresentAgeEditOn}
+                  onChange={(checked) => {
+                    handleChange('grihamPresentAgeEditOn', checked);
+                    if (checked) {
+                      handleChange('grihamPresentAge', effectiveAge);
+                    } else if (autoAge !== '') {
+                      handleChange('grihamPresentAge', String(autoAge));
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="number"
+                step="any"
+                min="0"
+                className={`${inputCls} font-medium ${
+                  !fields.grihamPresentAgeEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                }`}
+                value={effectiveAge}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  handleChange('grihamPresentAge', val);
+                  if (!fields.grihamFuturePhysicalLifeEditOn) {
+                    const num = parseFloat(val);
+                    if (!isNaN(num) && num >= 0) {
+                      handleChange('grihamFuturePhysicalLife', String(Math.max(0, 60 - num)));
+                    }
+                  }
+                }}
+                disabled={isReadOnly || !fields.grihamPresentAgeEditOn}
+                placeholder="Age in Years"
+              />
+              {!fields.grihamPresentAgeEditOn && (
+                <div className="absolute right-2 top-2 text-[10px] text-red-900 font-semibold pointer-events-none flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5" /> Auto: {currentYear} - Year
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* Future Physical Life of Property */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">FUTURE PHYSICAL LIFE (YRS)</span>
+                <EditSwitch
+                  checked={!!fields.grihamFuturePhysicalLifeEditOn}
+                  onChange={(checked) => {
+                    handleChange('grihamFuturePhysicalLifeEditOn', checked);
+                    if (checked) {
+                      handleChange('grihamFuturePhysicalLife', effectiveFutureLife);
+                    } else if (autoFutureLife !== '') {
+                      handleChange('grihamFuturePhysicalLife', String(autoFutureLife));
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <div className="relative">
+              <input
+                type="number"
+                step="any"
+                min="0"
+                className={`${inputCls} font-medium ${
+                  !fields.grihamFuturePhysicalLifeEditOn ? 'bg-gray-100/80 text-gray-800' : 'bg-white'
+                }`}
+                value={effectiveFutureLife}
+                onChange={(e) => handleChange('grihamFuturePhysicalLife', e.target.value)}
+                disabled={isReadOnly || !fields.grihamFuturePhysicalLifeEditOn}
+                placeholder="Residual Life (Years)"
+              />
+              {!fields.grihamFuturePhysicalLifeEditOn && (
+                <div className="absolute right-2 top-2 text-[10px] text-red-900 font-semibold pointer-events-none flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5" /> Auto: 60 - Age
+                </div>
+              )}
+            </div>
+          </Field>
+
+          {/* Condition of the Property */}
+          <Field label={<span className="font-semibold text-gray-700">CONDITION OF THE PROPERTY</span>}>
+            <CustomSelect
+              value={fields.grihamConditionOfProperty || 'Good'}
+              customValue={fields.grihamConditionOfPropertyCustom || ''}
+              onChange={(val) => handleChange('grihamConditionOfProperty', val)}
+              onCustomChange={(val) => handleChange('grihamConditionOfPropertyCustom', val)}
+              options={[
+                { value: 'Excellent', label: 'Excellent' },
+                { value: 'Good', label: 'Good' },
+                { value: 'Average', label: 'Average' },
+                { value: 'Poor', label: 'Poor' },
+                { value: 'Under Construction', label: 'Under Construction' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select condition..."
+            />
+          </Field>
+
+          {/* Type of Structure */}
+          <Field label={<span className="font-semibold text-gray-700">TYPE OF STRUCTURE</span>}>
+            <CustomSelect
+              value={fields.grihamTypeOfStructure || 'RCC'}
+              customValue={fields.grihamTypeOfStructureCustom || ''}
+              onChange={(val) => handleChange('grihamTypeOfStructure', val)}
+              onCustomChange={(val) => handleChange('grihamTypeOfStructureCustom', val)}
+              options={[
+                { value: 'RCC', label: 'RCC (Reinforced Cement Concrete)' },
+                { value: 'LB', label: 'LB (Load Bearing Structure)' },
+                { value: 'Truss roof', label: 'Truss roof (Steel / Timber)' },
+                { value: 'Steel Framed', label: 'Steel Framed Structure' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select structure type..."
+            />
+          </Field>
+        </div>
+
+        {/* 2. NDMA PARAMETERS */}
+        <div className="bg-white/90 rounded-xl p-5 border border-red-200/90 shadow-2xs space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-red-100 pb-2">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-gray-800 text-xs sm:text-sm uppercase tracking-wide">
+                NDMA PARAMETERS
+              </span>
+              <span className="text-[10px] text-red-900 font-semibold bg-red-100 px-2 py-0.5 rounded">
+                Disaster Management & Structural Guidelines
+              </span>
+            </div>
+            <span className="text-xs text-gray-500 italic">
+              National Disaster Management Authority Parameters
+            </span>
+          </div>
+
+          {/* Dropdowns (+Custom) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Nature of Building */}
+            <Field label={<span className="text-xs font-semibold text-gray-700">NATURE OF BUILDING</span>}>
+              <CustomSelect
+                value={fields.grihamNdmaNatureOfBuilding || 'Residential'}
+                customValue={fields.grihamNdmaNatureOfBuildingCustom || ''}
+                onChange={(val) => handleChange('grihamNdmaNatureOfBuilding', val)}
+                onCustomChange={(val) => handleChange('grihamNdmaNatureOfBuildingCustom', val)}
+                options={[
+                  { value: 'Residential', label: 'Residential' },
+                  { value: 'Commercial', label: 'Commercial' },
+                  { value: 'Industrial', label: 'Industrial' },
+                  { value: 'Institutional', label: 'Institutional' },
+                  { value: 'Mixed Use', label: 'Mixed Use' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select nature..."
+              />
+            </Field>
+
+            {/* Structure Type */}
+            <Field label={<span className="text-xs font-semibold text-gray-700">STRUCTURE TYPE</span>}>
+              <CustomSelect
+                value={fields.grihamNdmaStructureType || 'RCC Framed'}
+                customValue={fields.grihamNdmaStructureTypeCustom || ''}
+                onChange={(val) => handleChange('grihamNdmaStructureType', val)}
+                onCustomChange={(val) => handleChange('grihamNdmaStructureTypeCustom', val)}
+                options={[
+                  { value: 'RCC Framed', label: 'RCC Framed' },
+                  { value: 'Load Bearing', label: 'Load Bearing' },
+                  { value: 'Steel Framed', label: 'Steel Framed' },
+                  { value: 'Composite', label: 'Composite' },
+                  { value: 'Timber / Precast', label: 'Timber / Precast' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select structure..."
+              />
+            </Field>
+
+            {/* Masonry */}
+            <Field label={<span className="text-xs font-semibold text-gray-700">MASONRY</span>}>
+              <CustomSelect
+                value={fields.grihamNdmaMasonry || 'Brick Masonry'}
+                customValue={fields.grihamNdmaMasonryCustom || ''}
+                onChange={(val) => handleChange('grihamNdmaMasonry', val)}
+                onCustomChange={(val) => handleChange('grihamNdmaMasonryCustom', val)}
+                options={[
+                  { value: 'Brick Masonry', label: 'Brick Masonry' },
+                  { value: 'AAC Blocks', label: 'AAC Blocks' },
+                  { value: 'Fly Ash Bricks', label: 'Fly Ash Bricks' },
+                  { value: 'Stone Masonry', label: 'Stone Masonry' },
+                  { value: 'Concrete Blocks', label: 'Concrete Blocks' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select masonry..."
+              />
+            </Field>
+
+            {/* Roof */}
+            <Field label={<span className="text-xs font-semibold text-gray-700">ROOF</span>}>
+              <CustomSelect
+                value={fields.grihamNdmaRoof || 'RCC Slab'}
+                customValue={fields.grihamNdmaRoofCustom || ''}
+                onChange={(val) => handleChange('grihamNdmaRoof', val)}
+                onCustomChange={(val) => handleChange('grihamNdmaRoofCustom', val)}
+                options={[
+                  { value: 'RCC Slab', label: 'RCC Slab' },
+                  { value: 'Truss with CGI Sheet', label: 'Truss with CGI Sheet' },
+                  { value: 'Profile Sheet Roof', label: 'Profile Sheet Roof' },
+                  { value: 'Pitched Tile Roof', label: 'Pitched Tile Roof' },
+                  { value: 'Flat Roof', label: 'Flat Roof' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select roof..."
+              />
+            </Field>
+
+            {/* Mortar */}
+            <Field label={<span className="text-xs font-semibold text-gray-700">MORTAR</span>}>
+              <CustomSelect
+                value={fields.grihamNdmaMortar || 'Cement Mortar 1:6'}
+                customValue={fields.grihamNdmaMortarCustom || ''}
+                onChange={(val) => handleChange('grihamNdmaMortar', val)}
+                onCustomChange={(val) => handleChange('grihamNdmaMortarCustom', val)}
+                options={[
+                  { value: 'Cement Mortar 1:6', label: 'Cement Mortar 1:6' },
+                  { value: 'Cement Mortar 1:4', label: 'Cement Mortar 1:4' },
+                  { value: 'Cement Mortar 1:3', label: 'Cement Mortar 1:3' },
+                  { value: 'Lime Mortar', label: 'Lime Mortar' },
+                  { value: 'Composite Mortar', label: 'Composite Mortar' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select mortar..."
+              />
+            </Field>
+
+            {/* Concrete Grade */}
+            <Field label={<span className="text-xs font-semibold text-gray-700">CONCRETE GRADE</span>}>
+              <CustomSelect
+                value={fields.grihamNdmaConcreteGrade || 'M20'}
+                customValue={fields.grihamNdmaConcreteGradeCustom || ''}
+                onChange={(val) => handleChange('grihamNdmaConcreteGrade', val)}
+                onCustomChange={(val) => handleChange('grihamNdmaConcreteGradeCustom', val)}
+                options={[
+                  { value: 'M20', label: 'M20 (1:1.5:3)' },
+                  { value: 'M25', label: 'M25 (1:1:2)' },
+                  { value: 'M30', label: 'M30' },
+                  { value: 'M15', label: 'M15 (1:2:4)' },
+                  { value: 'M35', label: 'M35' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select grade..."
+              />
+            </Field>
+
+            {/* Footing */}
+            <Field label={<span className="text-xs font-semibold text-gray-700">FOOTING</span>}>
+              <CustomSelect
+                value={fields.grihamNdmaFooting || 'Isolated Footing'}
+                customValue={fields.grihamNdmaFootingCustom || ''}
+                onChange={(val) => handleChange('grihamNdmaFooting', val)}
+                onCustomChange={(val) => handleChange('grihamNdmaFootingCustom', val)}
+                options={[
+                  { value: 'Isolated Footing', label: 'Isolated Footing' },
+                  { value: 'Raft Footing', label: 'Raft / Mat Footing' },
+                  { value: 'Strip Footing', label: 'Strip Footing' },
+                  { value: 'Pile Foundation', label: 'Pile Foundation' },
+                  { value: 'Combined Footing', label: 'Combined Footing' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select footing..."
+              />
+            </Field>
+
+            {/* Seismic Zone */}
+            <Field label={<span className="text-xs font-semibold text-gray-700">SEISMIC ZONE</span>}>
+              <CustomSelect
+                value={fields.grihamNdmaSeismicZone || 'Zone III'}
+                customValue={fields.grihamNdmaSeismicZoneCustom || ''}
+                onChange={(val) => handleChange('grihamNdmaSeismicZone', val)}
+                onCustomChange={(val) => handleChange('grihamNdmaSeismicZoneCustom', val)}
+                options={[
+                  { value: 'Zone II', label: 'Zone II (Low Damage Risk)' },
+                  { value: 'Zone III', label: 'Zone III (Moderate Damage Risk)' },
+                  { value: 'Zone IV', label: 'Zone IV (High Damage Risk)' },
+                  { value: 'Zone V', label: 'Zone V (Very High Damage Risk)' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select seismic zone..."
+              />
+            </Field>
+          </div>
+
+          {/* Plan Aspect Ratio & Radio Buttons */}
+          <div className="pt-2 border-t border-gray-100 space-y-4">
+            <div className="max-w-xs">
+              <Field label={<span className="text-xs font-semibold text-gray-700">PLAN ASPECT RATIO</span>}>
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.grihamNdmaPlanAspectRatio || ''}
+                  onChange={(e) => handleChange('grihamNdmaPlanAspectRatio', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="e.g. 1:1.5 or < 2.0"
+                />
+              </Field>
+            </div>
+
+            {/* Radio Buttons (Yes / No) Grid */}
+            <div>
+              <span className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">
+                Structural & Environmental Safety Checklist (Yes / No)
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {[
+                  { key: 'grihamNdmaProjectedParts', label: 'Projected Parts', defaultVal: 'No' },
+                  { key: 'grihamNdmaExpansionJoint', label: 'Expansion Joint', defaultVal: 'No' },
+                  { key: 'grihamNdmaSoilLiquefiable', label: 'Soil Liquefiable', defaultVal: 'No' },
+                  { key: 'grihamNdmaCrz', label: 'CRZ (Coastal Reg. Zone)', defaultVal: 'No' },
+                  { key: 'grihamNdmaFloodProne', label: 'Flood Prone', defaultVal: 'No' },
+                  { key: 'grihamNdmaFireExit', label: 'Fire Exit', defaultVal: 'Yes' },
+                ].map((item) => {
+                  const currentVal = fields[item.key] ?? item.defaultVal;
+                  return (
+                    <div
+                      key={item.key}
+                      className="flex items-center justify-between p-2.5 rounded-lg border border-gray-200 bg-gray-50/70"
+                    >
+                      <span className="text-xs font-semibold text-gray-800">{item.label}</span>
+                      <div className="flex items-center gap-3">
+                        {['Yes', 'No'].map((opt) => (
+                          <label
+                            key={opt}
+                            className="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-gray-700 select-none"
+                          >
+                            <input
+                              type="radio"
+                              name={item.key}
+                              value={opt}
+                              checked={currentVal === opt}
+                              onChange={(e) => handleChange(item.key, e.target.value)}
+                              disabled={isReadOnly}
+                              className="h-3.5 w-3.5 text-red-600 focus:ring-red-500 border-gray-300"
+                            />
+                            <span>{opt}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Slab wise Construction Status Table */}
+        <div className="space-y-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <span className="font-bold text-gray-800 text-xs sm:text-sm uppercase tracking-wide">
+                SLAB WISE CONSTRUCTION STATUS TABLE
+              </span>
+              <p className="text-[11px] text-gray-500">
+                Detailed breakdown of construction stages, allotted percentages and present completion status
+              </p>
+            </div>
+            {!isReadOnly && (
+              <button
+                type="button"
+                onClick={addRow}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-red-600 hover:bg-red-700 text-white shadow-2xs transition-colors self-start sm:self-auto cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Add Slab / Stage
+              </button>
+            )}
+          </div>
+
+          <div className="overflow-x-auto rounded-lg border border-red-200 bg-white">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-red-100/70 border-b border-red-200 text-red-950 font-bold">
+                  <th className="p-3 w-12 text-center">#</th>
+                  <th className="p-3">Stage / Slab Description</th>
+                  <th className="p-3 w-40 text-right">Allotted %</th>
+                  <th className="p-3 w-44 text-right">Present Completion %</th>
+                  {!isReadOnly && <th className="p-3 w-16 text-center">Action</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-red-100">
+                {rows.map((row, idx) => (
+                  <tr key={row.id || idx} className="hover:bg-red-50/30">
+                    <td className="p-3 text-center font-bold text-gray-500">{idx + 1}</td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={row.stage || ''}
+                        onChange={(e) => updateRow(row.id, { stage: e.target.value })}
+                        disabled={isReadOnly}
+                        placeholder="e.g. Ground Floor Slab"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="number"
+                        step="any"
+                        min="0"
+                        max="100"
+                        className={`${inputCls} text-right`}
+                        value={row.allottedPct || ''}
+                        onChange={(e) => updateRow(row.id, { allottedPct: e.target.value })}
+                        disabled={isReadOnly}
+                        placeholder="0.00 %"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="number"
+                        step="any"
+                        min="0"
+                        max="100"
+                        className={`${inputCls} text-right font-medium`}
+                        value={row.presentCompletionPct || ''}
+                        onChange={(e) => updateRow(row.id, { presentCompletionPct: e.target.value })}
+                        disabled={isReadOnly}
+                        placeholder="0.00 %"
+                      />
+                    </td>
+                    {!isReadOnly && (
+                      <td className="p-2 text-center">
+                        <button
+                          type="button"
+                          onClick={() => removeRow(row.id)}
+                          disabled={rows.length <= 1}
+                          className={`p-1.5 rounded text-red-600 hover:bg-red-50 transition-colors ${
+                            rows.length <= 1 ? 'opacity-30 cursor-not-allowed' : 'cursor-pointer'
+                          }`}
+                          title="Remove stage row"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="bg-red-100/80 border-t-2 border-red-300 font-bold text-red-950">
+                  <td colSpan={2} className="p-3 uppercase">
+                    Total Allotted %: {totals.allotted > 0 ? `${totals.allotted.toFixed(2)}%` : '—'}
+                  </td>
+                  <td className="p-3 text-right">
+                    {totals.allotted > 0 ? `${totals.allotted.toFixed(2)}%` : '0.00%'}
+                  </td>
+                  <td className="p-3">
+                    <div className="flex flex-col items-end gap-1">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-gray-600 uppercase">Override</span>
+                        <EditSwitch
+                          checked={!!fields.grihamTotalPresentCompletionEditOn}
+                          onChange={(checked) => {
+                            handleChange('grihamTotalPresentCompletionEditOn', checked);
+                            if (checked) {
+                              handleChange('grihamTotalPresentCompletionPct', effectiveTotalCompletion);
+                            } else {
+                              handleChange(
+                                'grihamTotalPresentCompletionPct',
+                                totals.present > 0 ? String(totals.present) : ''
+                              );
+                            }
+                          }}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                      <div className="relative w-full max-w-[140px]">
+                        <input
+                          type="number"
+                          step="any"
+                          min="0"
+                          max="100"
+                          className={`${inputCls} text-right font-bold ${
+                            !fields.grihamTotalPresentCompletionEditOn
+                              ? 'bg-gray-100/90 text-red-950'
+                              : 'bg-white text-gray-900'
+                          }`}
+                          value={effectiveTotalCompletion}
+                          onChange={(e) => handleChange('grihamTotalPresentCompletionPct', e.target.value)}
+                          disabled={isReadOnly || !fields.grihamTotalPresentCompletionEditOn}
+                          placeholder="Total %"
+                        />
+                        {!fields.grihamTotalPresentCompletionEditOn && (
+                          <div className="absolute left-2 top-2 text-[10px] text-red-900 font-semibold pointer-events-none flex items-center gap-0.5">
+                            <Lock className="w-2.5 h-2.5" /> Sum
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  {!isReadOnly && <td></td>}
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -2348,6 +3025,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     'section-8',
     'section-9',
     'section-10',
+    'section-12',
     'layout-config',
     'annexures',
   ],
@@ -2365,14 +3043,13 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     { id: 'griham-section-9', title: 'ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY' },
     { id: 'griham-section-10', title: 'MARKETABILITY OF THE PROPERTY' },
     { id: 'griham-section-11', title: 'ARCHITECTURAL ASPECTS OF THE PROPERTY' },
+    { id: 'griham-section-12', title: 'ENGINEERING ASPECTS OF THE PROPERTY' },
     { id: 'section-documents', title: 'Documents' },
-    { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
   ],
   fieldLabels: {
     'documents-title': 'DOCUMENTS',
     'section-documents-title': 'DOCUMENTS',
-    'section-12-title': 'MAPS',
     'section-11-title': 'PROPERTY PHOTOGRAPHS',
   },
   defaultValues: {
@@ -2497,6 +3174,43 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     ],
     grihamToiletLocation: 'Inside house',
     grihamToiletLocationCustom: '',
+    // Section 12
+    grihamNoOfFloorsFlats: '',
+    grihamYearOfCompletion: '',
+    grihamPresentAge: '',
+    grihamPresentAgeEditOn: false,
+    grihamFuturePhysicalLife: '',
+    grihamFuturePhysicalLifeEditOn: false,
+    grihamConditionOfProperty: 'Good',
+    grihamConditionOfPropertyCustom: '',
+    grihamTypeOfStructure: 'RCC',
+    grihamTypeOfStructureCustom: '',
+    grihamNdmaNatureOfBuilding: 'Residential',
+    grihamNdmaNatureOfBuildingCustom: '',
+    grihamNdmaStructureType: 'RCC Framed',
+    grihamNdmaStructureTypeCustom: '',
+    grihamNdmaMasonry: 'Brick Masonry',
+    grihamNdmaMasonryCustom: '',
+    grihamNdmaRoof: 'RCC Slab',
+    grihamNdmaRoofCustom: '',
+    grihamNdmaMortar: 'Cement Mortar 1:6',
+    grihamNdmaMortarCustom: '',
+    grihamNdmaConcreteGrade: 'M20',
+    grihamNdmaConcreteGradeCustom: '',
+    grihamNdmaFooting: 'Isolated Footing',
+    grihamNdmaFootingCustom: '',
+    grihamNdmaSeismicZone: 'Zone III',
+    grihamNdmaSeismicZoneCustom: '',
+    grihamNdmaPlanAspectRatio: '',
+    grihamNdmaProjectedParts: 'No',
+    grihamNdmaExpansionJoint: 'No',
+    grihamNdmaSoilLiquefiable: 'No',
+    grihamNdmaCrz: 'No',
+    grihamNdmaFloodProne: 'No',
+    grihamNdmaFireExit: 'Yes',
+    grihamSlabConstructionRows: DEFAULT_SLAB_CONSTRUCTION_ROWS,
+    grihamTotalPresentCompletionPct: '',
+    grihamTotalPresentCompletionEditOn: false,
   },
   extraSectionsStart: [
     {
@@ -2637,9 +3351,23 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'griham-section-12',
+      title: 'ENGINEERING ASPECTS OF THE PROPERTY',
+      number: 12,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <EngineeringAspectsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
 };
 
 export default function GrihamHousing(props: BankReportBuilderProps) {
   return <BankReportBuilder config={GRIHAM_HOUSING_CONFIG} {...props} />;
 }
+
