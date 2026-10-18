@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock, FileText, CheckCircle2 } from 'lucide-react';
+import { Lock, FileText, CheckCircle2, Plus } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
 
@@ -190,6 +190,141 @@ export function YesNoRadio({
           <span>{opt}</span>
         </label>
       ))}
+    </div>
+  );
+}
+
+export function DocumentUploadField({
+  label,
+  checked,
+  onCheckedChange,
+  hasNa = false,
+  na = false,
+  onNaChange,
+  fileName,
+  onFileChange,
+  onFileRemove,
+  disabled = false,
+}: {
+  label: string;
+  checked: boolean;
+  onCheckedChange: (v: boolean) => void;
+  hasNa?: boolean;
+  na?: boolean;
+  onNaChange?: (v: boolean) => void;
+  fileName?: string;
+  onFileChange: (file: { name: string; url?: string; type?: string }) => void;
+  onFileRemove: () => void;
+  disabled?: boolean;
+}) {
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      onFileChange({
+        name: file.name,
+        url: event.target?.result as string,
+        type: file.type,
+      });
+      if (!checked) onCheckedChange(true);
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const isItemDisabled = disabled || na;
+
+  return (
+    <div
+      className={`p-4 rounded-xl border transition-all duration-150 ${
+        na
+          ? 'bg-gray-100/70 border-gray-300 opacity-60'
+          : checked
+          ? 'bg-white border-purple-300 shadow-2xs'
+          : 'bg-white/90 border-purple-200/80 hover:border-purple-300'
+      }`}
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        {/* Left: Document Name + Available Checkbox */}
+        <div className="flex items-start sm:items-center gap-3">
+          <input
+            type="checkbox"
+            checked={checked && !na}
+            onChange={(e) => onCheckedChange(e.target.checked)}
+            disabled={isItemDisabled}
+            className="mt-0.5 sm:mt-0 h-4 w-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+          />
+          <span
+            className={`text-sm font-semibold ${
+              na
+                ? 'line-through text-gray-400'
+                : checked
+                ? 'text-purple-950 font-bold'
+                : 'text-gray-800'
+            }`}
+          >
+            {label}
+          </span>
+        </div>
+
+        {/* Right: NA Checkbox + Upload Controls */}
+        <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+          {hasNa && onNaChange && (
+            <NaCheckbox
+              checked={!!na}
+              onChange={(newNa) => {
+                onNaChange(newNa);
+                if (newNa && checked) onCheckedChange(false);
+              }}
+              disabled={disabled}
+            />
+          )}
+
+          {/* Hidden File Input */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.png,.jpg,.jpeg,.doc,.docx"
+            onChange={handleUpload}
+            disabled={isItemDisabled}
+            className="hidden"
+          />
+
+          {/* Upload Button or File Badge */}
+          {!na && (
+            fileName ? (
+              <div className="flex items-center gap-2 bg-purple-50 border border-purple-300 px-2.5 py-1 rounded-lg text-xs font-medium text-purple-900 shadow-2xs">
+                <FileText className="w-3.5 h-3.5 text-purple-600 shrink-0" />
+                <span className="truncate max-w-[150px] sm:max-w-[200px]" title={fileName}>
+                  {fileName}
+                </span>
+                {!disabled && (
+                  <button
+                    type="button"
+                    onClick={onFileRemove}
+                    className="ml-1 text-gray-400 hover:text-red-600 transition"
+                    title="Remove file"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isItemDisabled}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-100 hover:bg-purple-200 text-purple-900 text-xs font-semibold rounded-lg border border-purple-300 transition shadow-2xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Plus className="w-3.5 h-3.5" /> Upload File
+              </button>
+            )
+          )}
+        </div>
+      </div>
     </div>
   );
 }
@@ -1218,6 +1353,237 @@ export function GeneralDetailsSection({
   );
 }
 
+// ─── Section 3: Document Details ────────────────────────────────────────────
+
+export function DocumentDetailsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: 7 Particulars (Color: Light Lavender #E6E6FA) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-purple-200/90 shadow-sm"
+        style={{ backgroundColor: '#E6E6FA' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-300/70 pb-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/80 text-xs font-bold text-purple-900 shadow-xs">
+              3
+            </span>
+            <h3 className="font-bold text-gray-900 text-sm md:text-base uppercase tracking-wide">
+              7 Particulars
+            </h3>
+          </div>
+          <span className="text-xs text-purple-950 font-semibold bg-white/70 px-2.5 py-1 rounded-md border border-purple-300/60 shadow-xs">
+            7 Particulars Container
+          </span>
+        </div>
+
+        <div className="space-y-3.5">
+          {/* 7.a Ownership Documents- Sale deed, ROR, and sketch map */}
+          <DocumentUploadField
+            label="7.a Ownership Documents- Sale deed, ROR, and sketch map"
+            checked={!!fields.hdbDocOwnershipChecked}
+            onCheckedChange={(val) => handleChange('hdbDocOwnershipChecked', val)}
+            hasNa={false}
+            fileName={fields.hdbDocOwnershipFileName}
+            onFileChange={(file) => {
+              handleChange('hdbDocOwnershipFileName', file.name);
+              handleChange('hdbDocOwnershipFile', file.url || '');
+            }}
+            onFileRemove={() => {
+              handleChange('hdbDocOwnershipFileName', '');
+              handleChange('hdbDocOwnershipFile', '');
+            }}
+            disabled={isReadOnly}
+          />
+
+          {/* 7.b Non Agriculture Order/Diversion Order */}
+          <DocumentUploadField
+            label="7.b Non Agriculture Order/Diversion Order"
+            checked={!!fields.hdbDocNaOrderChecked}
+            onCheckedChange={(val) => handleChange('hdbDocNaOrderChecked', val)}
+            hasNa={true}
+            na={!!fields.hdbDocNaOrderNA}
+            onNaChange={(val) => {
+              handleChange('hdbDocNaOrderNA', val);
+              if (val) {
+                handleChange('hdbDocNaOrderChecked', false);
+              }
+            }}
+            fileName={fields.hdbDocNaOrderFileName}
+            onFileChange={(file) => {
+              handleChange('hdbDocNaOrderFileName', file.name);
+              handleChange('hdbDocNaOrderFile', file.url || '');
+            }}
+            onFileRemove={() => {
+              handleChange('hdbDocNaOrderFileName', '');
+              handleChange('hdbDocNaOrderFile', '');
+            }}
+            disabled={isReadOnly}
+          />
+
+          {/* 7.c Commencement Certificate/ Construction Permission/ Building Permission */}
+          <DocumentUploadField
+            label="7.c Commencement Certificate/ Construction Permission/ Building Permission"
+            checked={!!fields.hdbDocCommencementCertChecked}
+            onCheckedChange={(val) => handleChange('hdbDocCommencementCertChecked', val)}
+            hasNa={true}
+            na={!!fields.hdbDocCommencementCertNA}
+            onNaChange={(val) => {
+              handleChange('hdbDocCommencementCertNA', val);
+              if (val) {
+                handleChange('hdbDocCommencementCertChecked', false);
+              }
+            }}
+            fileName={fields.hdbDocCommencementCertFileName}
+            onFileChange={(file) => {
+              handleChange('hdbDocCommencementCertFileName', file.name);
+              handleChange('hdbDocCommencementCertFile', file.url || '');
+            }}
+            onFileRemove={() => {
+              handleChange('hdbDocCommencementCertFileName', '');
+              handleChange('hdbDocCommencementCertFile', '');
+            }}
+            disabled={isReadOnly}
+          />
+
+          {/* 7.d SANCTIONED PLANS */}
+          <DocumentUploadField
+            label="7.d SANCTIONED PLANS"
+            checked={!!fields.hdbDocSanctionedPlansChecked}
+            onCheckedChange={(val) => handleChange('hdbDocSanctionedPlansChecked', val)}
+            hasNa={true}
+            na={!!fields.hdbDocSanctionedPlansNA}
+            onNaChange={(val) => {
+              handleChange('hdbDocSanctionedPlansNA', val);
+              if (val) {
+                handleChange('hdbDocSanctionedPlansChecked', false);
+              }
+            }}
+            fileName={fields.hdbDocSanctionedPlansFileName}
+            onFileChange={(file) => {
+              handleChange('hdbDocSanctionedPlansFileName', file.name);
+              handleChange('hdbDocSanctionedPlansFile', file.url || '');
+            }}
+            onFileRemove={() => {
+              handleChange('hdbDocSanctionedPlansFileName', '');
+              handleChange('hdbDocSanctionedPlansFile', '');
+            }}
+            disabled={isReadOnly}
+          />
+
+          {/* 7.e Occupancy Certificate/ Completion Certificate */}
+          <DocumentUploadField
+            label="7.e Occupancy Certificate/ Completion Certificate"
+            checked={!!fields.hdbDocOccupancyCertChecked}
+            onCheckedChange={(val) => handleChange('hdbDocOccupancyCertChecked', val)}
+            hasNa={true}
+            na={!!fields.hdbDocOccupancyCertNA}
+            onNaChange={(val) => {
+              handleChange('hdbDocOccupancyCertNA', val);
+              if (val) {
+                handleChange('hdbDocOccupancyCertChecked', false);
+              }
+            }}
+            fileName={fields.hdbDocOccupancyCertFileName}
+            onFileChange={(file) => {
+              handleChange('hdbDocOccupancyCertFileName', file.name);
+              handleChange('hdbDocOccupancyCertFile', file.url || '');
+            }}
+            onFileRemove={() => {
+              handleChange('hdbDocOccupancyCertFileName', '');
+              handleChange('hdbDocOccupancyCertFile', '');
+            }}
+            disabled={isReadOnly}
+          />
+
+          {/* Regularisation Certificate / Order */}
+          <DocumentUploadField
+            label="Regularisation Certificate / Order"
+            checked={!!fields.hdbDocRegularisationOrderChecked}
+            onCheckedChange={(val) => handleChange('hdbDocRegularisationOrderChecked', val)}
+            hasNa={true}
+            na={!!fields.hdbDocRegularisationOrderNA}
+            onNaChange={(val) => {
+              handleChange('hdbDocRegularisationOrderNA', val);
+              if (val) {
+                handleChange('hdbDocRegularisationOrderChecked', false);
+              }
+            }}
+            fileName={fields.hdbDocRegularisationOrderFileName}
+            onFileChange={(file) => {
+              handleChange('hdbDocRegularisationOrderFileName', file.name);
+              handleChange('hdbDocRegularisationOrderFile', file.url || '');
+            }}
+            onFileRemove={() => {
+              handleChange('hdbDocRegularisationOrderFileName', '');
+              handleChange('hdbDocRegularisationOrderFile', '');
+            }}
+            disabled={isReadOnly}
+          />
+
+          {/* 7.g Share Certificate */}
+          <DocumentUploadField
+            label="7.g Share Certificate"
+            checked={!!fields.hdbDocShareCertChecked}
+            onCheckedChange={(val) => handleChange('hdbDocShareCertChecked', val)}
+            hasNa={true}
+            na={!!fields.hdbDocShareCertNA}
+            onNaChange={(val) => {
+              handleChange('hdbDocShareCertNA', val);
+              if (val) {
+                handleChange('hdbDocShareCertChecked', false);
+              }
+            }}
+            fileName={fields.hdbDocShareCertFileName}
+            onFileChange={(file) => {
+              handleChange('hdbDocShareCertFileName', file.name);
+              handleChange('hdbDocShareCertFile', file.url || '');
+            }}
+            onFileRemove={() => {
+              handleChange('hdbDocShareCertFileName', '');
+              handleChange('hdbDocShareCertFile', '');
+            }}
+            disabled={isReadOnly}
+          />
+
+          {/* 7.h Latest Property Tax Paid Bill */}
+          <DocumentUploadField
+            label="7.h Latest Property Tax Paid Bill"
+            checked={!!fields.hdbDocTaxReceiptChecked}
+            onCheckedChange={(val) => handleChange('hdbDocTaxReceiptChecked', val)}
+            hasNa={true}
+            na={!!fields.hdbDocTaxReceiptNA}
+            onNaChange={(val) => {
+              handleChange('hdbDocTaxReceiptNA', val);
+              if (val) {
+                handleChange('hdbDocTaxReceiptChecked', false);
+              }
+            }}
+            fileName={fields.hdbDocTaxReceiptFileName}
+            onFileChange={(file) => {
+              handleChange('hdbDocTaxReceiptFileName', file.name);
+              handleChange('hdbDocTaxReceiptFile', file.url || '');
+            }}
+            onFileRemove={() => {
+              handleChange('hdbDocTaxReceiptFileName', '');
+              handleChange('hdbDocTaxReceiptFile', '');
+            }}
+            disabled={isReadOnly}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── HDB Financial Services BankConfig ──────────────────────────────────────
 
 export const HDB_FINANCIAL_CONFIG: BankConfig = {
@@ -1247,6 +1613,7 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
   navSections: [
     { id: 'hdb-section-header', title: 'HEADER DETAILS' },
     { id: 'hdb-section-general-details', title: 'GENERAL DETAILS' },
+    { id: 'hdb-section-document-details', title: 'DOCUMENT DETAILS' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-11', title: 'Property Photographs' },
   ],
@@ -1319,6 +1686,39 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
     hdbWithinMunicipalLimits: 'Yes',
     hdbDetailsOfLocalAuthority: '',
     hdbDetailsOfLocalAuthorityNA: false,
+
+    // Section 3: Container 7 Particulars
+    hdbDocOwnershipChecked: true,
+    hdbDocOwnershipFile: '',
+    hdbDocOwnershipFileName: '',
+    hdbDocNaOrderChecked: false,
+    hdbDocNaOrderNA: false,
+    hdbDocNaOrderFile: '',
+    hdbDocNaOrderFileName: '',
+    hdbDocCommencementCertChecked: false,
+    hdbDocCommencementCertNA: false,
+    hdbDocCommencementCertFile: '',
+    hdbDocCommencementCertFileName: '',
+    hdbDocSanctionedPlansChecked: false,
+    hdbDocSanctionedPlansNA: false,
+    hdbDocSanctionedPlansFile: '',
+    hdbDocSanctionedPlansFileName: '',
+    hdbDocOccupancyCertChecked: false,
+    hdbDocOccupancyCertNA: false,
+    hdbDocOccupancyCertFile: '',
+    hdbDocOccupancyCertFileName: '',
+    hdbDocRegularisationOrderChecked: false,
+    hdbDocRegularisationOrderNA: true,
+    hdbDocRegularisationOrderFile: '',
+    hdbDocRegularisationOrderFileName: '',
+    hdbDocShareCertChecked: false,
+    hdbDocShareCertNA: true,
+    hdbDocShareCertFile: '',
+    hdbDocShareCertFileName: '',
+    hdbDocTaxReceiptChecked: true,
+    hdbDocTaxReceiptNA: false,
+    hdbDocTaxReceiptFile: '',
+    hdbDocTaxReceiptFileName: '',
   },
   extraSectionsStart: [
     {
@@ -1341,6 +1741,19 @@ export const HDB_FINANCIAL_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <GeneralDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'hdb-section-document-details',
+      title: 'DOCUMENT DETAILS',
+      number: 3,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <DocumentDetailsSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
