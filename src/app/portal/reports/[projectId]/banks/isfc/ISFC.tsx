@@ -14,6 +14,7 @@ import {
   ShieldAlert,
   Compass,
   Layers,
+  Clock,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -2815,6 +2816,166 @@ export function TechnicalDetailsSection({
   );
 }
 
+// ─── Section 4: COMPLETION STATUS Component ─────────────────────────────────
+
+export function CompletionStatusSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  // 1. Stage of construction: Dropdown (Options: 100%, 80%, Under Construction, "Custom")
+  const stageVal = fields.isfcStageOfConstruction || '100%';
+
+  // 2. Age of the property: Input Box (Numeric)
+  const effectiveAge = fields.isfcAgeOfProperty ?? (fields.ageOfBuilding || fields.propertyAge || '');
+
+  // 3. Residual age: Auto-calculating Input (Numeric) + Lock UI + Edit Switch
+  // Auto-calculates standard building lifespan (60 years) minus Age of the property
+  const isResidualEdit = Boolean(fields.isfcResidualAgeEditOn);
+  const ageNumeric = useMemo(() => {
+    const cleaned = String(effectiveAge).replace(/[^0-9.]/g, '');
+    return cleaned ? parseFloat(cleaned) : null;
+  }, [effectiveAge]);
+
+  const autoResidualStr = useMemo(() => {
+    if (ageNumeric !== null && !isNaN(ageNumeric)) {
+      const residual = Math.max(0, 60 - ageNumeric);
+      return String(residual);
+    }
+    return '';
+  }, [ageNumeric]);
+
+  const effectiveResidualAge = isResidualEdit
+    ? (fields.isfcResidualAge ?? '')
+    : (autoResidualStr || fields.isfcResidualAge || fields.residualAge || fields.residualLife || '');
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Container 1: Completion Status (Light Yellow '#fffde7') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-amber-200 shadow-sm"
+        style={{ backgroundColor: '#fffde7' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Clock className="w-5 h-5 text-amber-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              COMPLETION STATUS
+            </h3>
+          </div>
+          <span className="text-xs text-amber-800 font-medium bg-amber-100 px-2.5 py-1 rounded-md border border-amber-300">
+            Section 4 Details
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {/* Stage of construction: Dropdown with Custom */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Stage of construction
+              </span>
+            }
+          >
+            <CustomSelect
+              value={stageVal}
+              customValue={fields.isfcStageOfConstructionCustom || ''}
+              onChange={(val) => {
+                handleChange('isfcStageOfConstruction', val);
+                handleChange('stageOfConstruction', val);
+              }}
+              onCustomChange={(val) => handleChange('isfcStageOfConstructionCustom', val)}
+              options={[
+                { value: '100%', label: '100%' },
+                { value: '80%', label: '80%' },
+                { value: 'Under Construction', label: 'Under Construction' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Stage"
+            />
+          </Field>
+
+          {/* Age of the property: Input Box (Numeric) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Age of the property (Years)
+              </span>
+            }
+          >
+            <input
+              type="number"
+              className={inputCls}
+              value={effectiveAge}
+              onChange={(e) => {
+                handleChange('isfcAgeOfProperty', e.target.value);
+                handleChange('ageOfBuilding', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. 5"
+              min="0"
+            />
+          </Field>
+
+          {/* Residual age: Auto-calculating Input (Numeric) + Lock UI + Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Residual age (Years)
+                </span>
+                <EditSwitch
+                  checked={isResidualEdit}
+                  onChange={(val) => {
+                    handleChange('isfcResidualAgeEditOn', val);
+                    if (val && !fields.isfcResidualAge) {
+                      handleChange('isfcResidualAge', autoResidualStr);
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!isResidualEdit}
+              tooltipMessage='>>Auto calculating from [Standard Building Lifespan - Section 4 "Age of the property"]<<'
+            >
+              <div className="relative">
+                <input
+                  type="number"
+                  className={`${inputCls} pr-9 ${
+                    !isResidualEdit
+                      ? 'bg-gray-100 cursor-not-allowed text-gray-700'
+                      : 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-semibold'
+                  }`}
+                  value={effectiveResidualAge}
+                  onChange={(e) => {
+                    handleChange('isfcResidualAge', e.target.value);
+                    handleChange('residualAge', e.target.value);
+                  }}
+                  disabled={isReadOnly || !isResidualEdit}
+                  placeholder="e.g. 55"
+                  title={!isResidualEdit ? '>>Auto calculating from [Standard Building Lifespan - Section 4 "Age of the property"]<<' : undefined}
+                />
+                {!isResidualEdit && (
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                    <Lock className="w-4 h-4 text-amber-500" />
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── ISFC BankConfig ─────────────────────────────────────────────────────────
 
 export const ISFC_CONFIG: BankConfig = {
@@ -2825,13 +2986,14 @@ export const ISFC_CONFIG: BankConfig = {
     'section-1', // Replaced by Section 1: VALUATION OF IMMOVABLE PROPERTY
     'section-2', // Replaced by Section 2: APPLICATION DETAILS
     'section-3', // Replaced by Section 3: TECHNICAL DETAILS
+    'section-4', // Replaced by Section 4: COMPLETION STATUS
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
     { id: 'isfc-section-1', title: 'VALUATION OF IMMOVABLE PROPERTY' },
     { id: 'isfc-section-2', title: 'APPLICATION DETAILS' },
     { id: 'isfc-section-3', title: 'TECHNICAL DETAILS' },
-    { id: 'section-4', title: 'Building Specifications' },
+    { id: 'isfc-section-4', title: 'COMPLETION STATUS' },
     { id: 'section-5', title: 'Valuation Calculation' },
     { id: 'section-6', title: 'NDMA & ESG' },
     { id: 'section-7', title: 'Critical Checks & Summary' },
@@ -2884,6 +3046,19 @@ export const ISFC_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'isfc-section-4',
+      title: 'COMPLETION STATUS',
+      number: 4,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <CompletionStatusSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'TO ASSESS THE PRESENT MARKET VALUE OF THE PROPERTY',
@@ -2911,6 +3086,7 @@ export const ISFC_CONFIG: BankConfig = {
     isfcFlooring: 'Tile flooring',
     isfcDoorWindow: 'Hard wood door window frames & shutters',
     isfcFittings: 'Good',
+    isfcStageOfConstruction: '100%',
   },
 };
 
