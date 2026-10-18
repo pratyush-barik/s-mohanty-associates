@@ -143,6 +143,9 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   // Karur Vysya Bank
   'KARUR VYSYA BANK': dynamic(() => import('./banks/karur-vysya/KarurVysyaBank')),
   'KARUR VYSYA BANK LIMITED': dynamic(() => import('./banks/karur-vysya/KarurVysyaBank')),
+  'KARUR VYASYA': dynamic(() => import('./banks/karur-vysya/KarurVysyaBank')),
+  'KARUR VYASYA BANK': dynamic(() => import('./banks/karur-vysya/KarurVysyaBank')),
+  'KARUR VYASYA BANK LIMITED': dynamic(() => import('./banks/karur-vysya/KarurVysyaBank')),
   'KVB': dynamic(() => import('./banks/karur-vysya/KarurVysyaBank')),
 
   // Kotak & L&T
