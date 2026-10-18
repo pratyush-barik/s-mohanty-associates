@@ -1856,6 +1856,111 @@ function EnvironmentalFactorsSection({
   );
 }
 
+// ─── Section 10: Marketability of the Property ──────────────────────────────
+
+function MarketabilitySection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* Container: Marketability of the Property (Light Indigo #e8eaf6) */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-indigo-200 shadow-sm"
+        style={{ backgroundColor: '#e8eaf6' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-200/80 pb-3">
+          <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+            MARKETABILITY OF THE PROPERTY
+          </h3>
+          <span className="text-xs text-indigo-950 font-medium bg-indigo-100 px-2.5 py-1 rounded-md border border-indigo-200">
+            Commercial Demand & Locality Rating
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* 1. Locality Class */}
+          <Field label={<span className="font-semibold text-gray-700">LOCALITY CLASS</span>}>
+            <CustomSelect
+              value={fields.grihamLocalityClass || 'Middle class'}
+              customValue={fields.grihamLocalityClassCustom || ''}
+              onChange={(val) => handleChange('grihamLocalityClass', val)}
+              onCustomChange={(val) => handleChange('grihamLocalityClassCustom', val)}
+              options={[
+                { value: 'Posh', label: 'Posh' },
+                { value: 'Upper class', label: 'Upper class' },
+                { value: 'Middle class', label: 'Middle class' },
+                { value: 'Lower class', label: 'Lower class' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select locality classification..."
+            />
+          </Field>
+
+          {/* 2. Marketability */}
+          <Field label={<span className="font-semibold text-gray-700">MARKETABILITY</span>}>
+            <CustomSelect
+              value={fields.grihamMarketability || 'Standard'}
+              customValue={fields.grihamMarketabilityCustom || ''}
+              onChange={(val) => handleChange('grihamMarketability', val)}
+              onCustomChange={(val) => handleChange('grihamMarketabilityCustom', val)}
+              options={[
+                { value: 'Superior', label: 'Superior' },
+                { value: 'Standard', label: 'Standard' },
+                { value: 'Economy', label: 'Economy' },
+                { value: 'Unclassified', label: 'Unclassified' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select marketability rating..."
+            />
+          </Field>
+        </div>
+
+        {/* 3. Neighbour feedback */}
+        <Field
+          label={
+            <div className="flex justify-between items-center w-full">
+              <span className="font-semibold text-gray-700">NEIGHBOUR FEEDBACK</span>
+              <NaCheckbox
+                checked={!!fields.grihamNeighbourFeedbackNa}
+                onChange={(checked) => {
+                  handleChange('grihamNeighbourFeedbackNa', checked);
+                  handleChange('grihamNeighbourFeedback', checked ? 'NA' : '');
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          }
+        >
+          <textarea
+            rows={3}
+            className={`${inputCls} resize-y ${
+              fields.grihamNeighbourFeedbackNa ? 'bg-gray-100 text-gray-500 italic' : 'bg-white'
+            }`}
+            value={
+              fields.grihamNeighbourFeedbackNa
+                ? 'NA'
+                : (fields.grihamNeighbourFeedback || '')
+            }
+            onChange={(e) => handleChange('grihamNeighbourFeedback', e.target.value)}
+            disabled={isReadOnly || !!fields.grihamNeighbourFeedbackNa}
+            placeholder={
+              fields.grihamNeighbourFeedbackNa
+                ? 'NA'
+                : 'Details of independent inquiries, verification of ownership with neighbours, feedback regarding peaceful possession...'
+            }
+          />
+        </Field>
+      </div>
+    </div>
+  );
+}
+
 // ─── Griham Housing Finance BankConfig ──────────────────────────────────────
 
 export const GRIHAM_HOUSING_CONFIG: BankConfig = {
@@ -1891,6 +1996,7 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     { id: 'griham-section-7', title: 'FUNCTIONAL AND INFRASTRUCTURE ASPECTS OF THE PROPERTY' },
     { id: 'griham-section-8', title: 'SOCIO-CULTURAL ASPECTS OF THE PROPERTY' },
     { id: 'griham-section-9', title: 'ENVIRONMENTAL FACTORS AFFECTING THE PROPERTY' },
+    { id: 'griham-section-10', title: 'MARKETABILITY OF THE PROPERTY' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-12', title: 'Maps' },
     { id: 'section-11', title: 'Property Photographs' },
@@ -2000,6 +2106,13 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
     // Section 9
     grihamEnvironmentalObservations: '',
     grihamEnvironmentalObservationsNa: false,
+    // Section 10
+    grihamLocalityClass: 'Middle class',
+    grihamLocalityClassCustom: '',
+    grihamNeighbourFeedback: '',
+    grihamNeighbourFeedbackNa: false,
+    grihamMarketability: 'Standard',
+    grihamMarketabilityCustom: '',
   },
   extraSectionsStart: [
     {
@@ -2108,6 +2221,19 @@ export const GRIHAM_HOUSING_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <EnvironmentalFactorsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'griham-section-10',
+      title: 'MARKETABILITY OF THE PROPERTY',
+      number: 10,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <MarketabilitySection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
