@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass, Home, Plus, Trash2 } from 'lucide-react';
+import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass, Home, Plus, Trash2, ShieldAlert } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
 
@@ -2528,6 +2528,250 @@ export function PropertyUnderReferenceSection({
   );
 }
 
+// ─── Section 4: National Disaster Management Authority (NDMA) Parameters Component ───
+
+export function NdmaParametersSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  // Structure Type prefill from "Type of construction" field
+  const defaultStructureType = fields.ikfTypeOfConstruction || 'RCC Framed Structure';
+  const effectiveStructureType = fields.ikfStructureTypeEditOn
+    ? (fields.ikfStructureType ?? '')
+    : (fields.ikfStructureType || defaultStructureType);
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Container: NDMA Details (Light Yellow '#fffde7') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-amber-200 shadow-sm"
+        style={{ backgroundColor: '#fffde7' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200 pb-3">
+          <div className="flex items-center gap-2">
+            <ShieldAlert className="w-5 h-5 text-amber-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              NDMA Details
+            </h3>
+          </div>
+          <span className="text-xs text-amber-800 font-medium bg-amber-100 px-2.5 py-1 rounded-md border border-amber-300">
+            Disaster Vulnerability & Structural Safety
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Seismic Zone Details: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Seismic Zone Details</span>
+                <NaCheckbox
+                  checked={!!fields.ikfSeismicZoneDetailsNA}
+                  onChange={(checked) => {
+                    handleChange('ikfSeismicZoneDetailsNA', checked);
+                    if (checked) handleChange('ikfSeismicZoneDetails', 'NA');
+                    else if (fields.ikfSeismicZoneDetails === 'NA') handleChange('ikfSeismicZoneDetails', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfSeismicZoneDetailsNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Zone III (Moderate Damage Risk Zone)"
+              value={fields.ikfSeismicZoneDetailsNA ? 'NA' : (fields.ikfSeismicZoneDetails ?? 'Zone III')}
+              onChange={(e) => handleChange('ikfSeismicZoneDetails', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfSeismicZoneDetailsNA}
+            />
+          </Field>
+
+          {/* Structure Type: Input Box (Text) (Prefill from "Type of construction" field, Edit button: OFF) [with NA Checkbox] [Lock UI Hover: >>Prefill from section 2, "Type of construction"<<] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Structure Type</span>
+                <div className="flex items-center gap-3">
+                  <NaCheckbox
+                    checked={!!fields.ikfStructureTypeNA}
+                    onChange={(checked) => {
+                      handleChange('ikfStructureTypeNA', checked);
+                      if (checked) handleChange('ikfStructureType', 'NA');
+                      else if (fields.ikfStructureType === 'NA') handleChange('ikfStructureType', '');
+                    }}
+                    disabled={isReadOnly}
+                  />
+                  <EditSwitch
+                    checked={!!fields.ikfStructureTypeEditOn}
+                    onChange={(checked) => {
+                      handleChange('ikfStructureTypeEditOn', checked);
+                      if (!checked) {
+                        handleChange('ikfStructureType', defaultStructureType);
+                      }
+                    }}
+                    disabled={isReadOnly || !!fields.ikfStructureTypeNA}
+                  />
+                </div>
+              </div>
+            }
+          >
+            <LockedFieldWrapper
+              isLocked={!fields.ikfStructureTypeEditOn && !fields.ikfStructureTypeNA}
+              tooltipMessage=">>Prefill from section 2, &quot;Type of construction&quot;<<"
+            >
+              <div className="relative">
+                <input
+                  type="text"
+                  className={`${inputCls} ${
+                    fields.ikfStructureTypeNA
+                      ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed'
+                      : fields.ikfStructureTypeEditOn
+                      ? 'bg-[#e8f5e9] border-emerald-500 text-emerald-950 font-medium focus:ring-emerald-500'
+                      : 'bg-gray-100/80 text-gray-700 cursor-not-allowed font-medium'
+                  }`}
+                  placeholder="e.g. RCC Framed Structure"
+                  value={fields.ikfStructureTypeNA ? 'NA' : effectiveStructureType}
+                  onChange={(e) => handleChange('ikfStructureType', e.target.value)}
+                  disabled={isReadOnly || !!fields.ikfStructureTypeNA || !fields.ikfStructureTypeEditOn}
+                />
+                {!fields.ikfStructureTypeEditOn && !fields.ikfStructureTypeNA && (
+                  <div className="absolute right-3 top-2.5 text-xs text-amber-700 font-semibold pointer-events-none flex items-center gap-1 bg-amber-50/90 px-2 py-0.5 rounded border border-amber-200">
+                    <Lock className="w-3.5 h-3.5 text-amber-600" /> Prefilled from Section 2
+                  </div>
+                )}
+              </div>
+            </LockedFieldWrapper>
+          </Field>
+
+          {/* Footing Type: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Footing Type</span>
+                <NaCheckbox
+                  checked={!!fields.ikfFootingTypeNA}
+                  onChange={(checked) => {
+                    handleChange('ikfFootingTypeNA', checked);
+                    if (checked) handleChange('ikfFootingType', 'NA');
+                    else if (fields.ikfFootingType === 'NA') handleChange('ikfFootingType', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfFootingTypeNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Isolated Column Footing / R.C.C. Footing"
+              value={fields.ikfFootingTypeNA ? 'NA' : (fields.ikfFootingType || '')}
+              onChange={(e) => handleChange('ikfFootingType', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfFootingTypeNA}
+            />
+          </Field>
+
+          {/* Roof Type: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Roof Type</span>
+                <NaCheckbox
+                  checked={!!fields.ikfRoofTypeNA}
+                  onChange={(checked) => {
+                    handleChange('ikfRoofTypeNA', checked);
+                    if (checked) handleChange('ikfRoofType', 'NA');
+                    else if (fields.ikfRoofType === 'NA') handleChange('ikfRoofType', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfRoofTypeNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. R.C.C. Slab / Flat Roof"
+              value={fields.ikfRoofTypeNA ? 'NA' : (fields.ikfRoofType || '')}
+              onChange={(e) => handleChange('ikfRoofType', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfRoofTypeNA}
+            />
+          </Field>
+
+          {/* Type of Masonry: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Type of Masonry</span>
+                <NaCheckbox
+                  checked={!!fields.ikfTypeOfMasonryNA}
+                  onChange={(checked) => {
+                    handleChange('ikfTypeOfMasonryNA', checked);
+                    if (checked) handleChange('ikfTypeOfMasonry', 'NA');
+                    else if (fields.ikfTypeOfMasonry === 'NA') handleChange('ikfTypeOfMasonry', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfTypeOfMasonryNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Brick Masonry in Cement Mortar (1:6)"
+              value={fields.ikfTypeOfMasonryNA ? 'NA' : (fields.ikfTypeOfMasonry || '')}
+              onChange={(e) => handleChange('ikfTypeOfMasonry', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfTypeOfMasonryNA}
+            />
+          </Field>
+
+          {/* Soil Type: Input Box (Text) [with NA Checkbox] */}
+          <Field
+            label={
+              <div className="flex justify-between items-center w-full">
+                <span className="font-semibold text-gray-700">Soil Type</span>
+                <NaCheckbox
+                  checked={!!fields.ikfSoilTypeNA}
+                  onChange={(checked) => {
+                    handleChange('ikfSoilTypeNA', checked);
+                    if (checked) handleChange('ikfSoilType', 'NA');
+                    else if (fields.ikfSoilType === 'NA') handleChange('ikfSoilType', '');
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.ikfSoilTypeNA ? 'bg-gray-100/90 text-gray-500 cursor-not-allowed' : 'bg-white'
+              }`}
+              placeholder="e.g. Clayey Silt / Hard Murrum / Normal Soil"
+              value={fields.ikfSoilTypeNA ? 'NA' : (fields.ikfSoilType || '')}
+              onChange={(e) => handleChange('ikfSoilType', e.target.value)}
+              disabled={isReadOnly || !!fields.ikfSoilTypeNA}
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── IKF Finance BankConfig ──────────────────────────────────────────────────
 
 export const IKF_FINANCE_CONFIG: BankConfig = {
@@ -2538,13 +2782,14 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     'section-1', // Replaced by Section 1: VALUATION REPORT
     'section-2', // Replaced by Section 2: II) DETAILS OF STRUCTURE AND SPECIFICATIONS
     'section-3', // Replaced by Section 3: III) DETAILS FOR THE PROPERTY UNDER REFERENCE
+    'section-4', // Replaced by Section 4: National Disaster Management Authority (NDMA) Parameters
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
     { id: 'ikf-section-1', title: 'VALUATION REPORT' },
     { id: 'ikf-section-2', title: 'II) DETAILS OF STRUCTURE AND SPECIFICATIONS' },
     { id: 'ikf-section-3', title: 'III) DETAILS FOR THE PROPERTY UNDER REFERENCE' },
-    { id: 'section-4', title: 'Subject Property' },
+    { id: 'ikf-section-4', title: 'National Disaster Management Authority (NDMA) Parameters' },
     { id: 'section-5', title: 'Street and Details' },
     { id: 'section-6', title: 'Plan Approvals' },
     { id: 'section-7', title: 'Area Valuation' },
@@ -2598,6 +2843,19 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'ikf-section-4',
+      title: 'National Disaster Management Authority (NDMA) Parameters',
+      number: 4,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <NdmaParametersSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Mortgage / MSME Loan',
@@ -2610,11 +2868,17 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     ikfPresentCondition: 'Good',
     ikfTypeOfConstruction: 'RCC',
     ikfRiskOfDemolition: 'Low',
+    ikfSeismicZoneDetails: 'Zone III',
+    ikfFootingType: 'Isolated Column Footing',
+    ikfRoofType: 'R.C.C. Slab',
+    ikfTypeOfMasonry: 'Brick Masonry in Cement Mortar',
+    ikfSoilType: 'Clayey Silt / Normal Soil',
   },
 };
 
 export default function IKFFinance(props: BankReportBuilderProps) {
   return <BankReportBuilder config={IKF_FINANCE_CONFIG} {...props} />;
 }
+
 
 
