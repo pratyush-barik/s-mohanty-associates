@@ -4,7 +4,7 @@ import React, { useMemo, useRef, useEffect } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls } from '../BaseBankReportComponents';
-import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass, Home, Plus, Trash2, ShieldAlert } from 'lucide-react';
+import { Lock, FileText, CheckCircle2, Building, MapPin, Ruler, Compass, Home, Plus, Trash2, ShieldAlert, Leaf } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
 
@@ -2772,6 +2772,247 @@ export function NdmaParametersSection({
   );
 }
 
+// ─── Section 5: ESG Monitoring Parameters Component ──────────────────────────
+
+export const NATURAL_DISASTER_OPTIONS = [
+  'Earthquake',
+  'Floods',
+  'Cyclones',
+  'Landslides',
+  'NA',
+];
+
+export function EsgMonitoringSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (key: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const currentDisaster = fields.ikfVulnerableNaturalDisasters;
+
+  // Selected disaster tags/checkboxes
+  const checkedDisasters: string[] = useMemo(() => {
+    if (Array.isArray(fields.ikfVulnerableNaturalDisastersList)) {
+      return fields.ikfVulnerableNaturalDisastersList;
+    }
+    if (typeof currentDisaster === 'string' && currentDisaster) {
+      if (currentDisaster === 'Custom' || currentDisaster === 'NA') return [currentDisaster];
+      return currentDisaster.split(',').map((s: string) => s.trim()).filter(Boolean);
+    }
+    return ['NA'];
+  }, [fields.ikfVulnerableNaturalDisastersList, currentDisaster]);
+
+  const handleDisasterToggle = (opt: string) => {
+    let next: string[];
+    if (opt === 'NA') {
+      next = ['NA'];
+      handleChange('ikfVulnerableNaturalDisastersCustom', '');
+      handleChange('ikfVulnerableNaturalDisastersSelect', 'NA');
+      handleChange('ikfVulnerableNaturalDisasters', 'NA');
+    } else {
+      const filtered = checkedDisasters.filter((x) => x !== 'NA' && x !== 'Custom');
+      if (filtered.includes(opt)) {
+        next = filtered.filter((x) => x !== opt);
+        if (next.length === 0) next = ['NA'];
+      } else {
+        next = [...filtered, opt];
+      }
+      const valStr = next.join(', ');
+      handleChange('ikfVulnerableNaturalDisasters', valStr);
+      handleChange(
+        'ikfVulnerableNaturalDisastersSelect',
+        next.length === 1 ? next[0] : next.length > 1 ? 'Multiple' : 'NA'
+      );
+    }
+    handleChange('ikfVulnerableNaturalDisastersList', next);
+  };
+
+  const handleDropdownChange = (val: string) => {
+    handleChange('ikfVulnerableNaturalDisastersSelect', val);
+    if (val === 'Custom') {
+      handleChange('ikfVulnerableNaturalDisasters', 'Custom');
+      handleChange('ikfVulnerableNaturalDisastersList', ['Custom']);
+    } else if (val === 'NA') {
+      handleChange('ikfVulnerableNaturalDisasters', 'NA');
+      handleChange('ikfVulnerableNaturalDisastersList', ['NA']);
+      handleChange('ikfVulnerableNaturalDisastersCustom', '');
+    } else {
+      handleChange('ikfVulnerableNaturalDisasters', val);
+      handleChange('ikfVulnerableNaturalDisastersList', [val]);
+    }
+  };
+
+  return (
+    <div className="animate-fade-in space-y-6">
+      {/* ─── Container: ESG Details (Light Purple '#f3e5f5') ─── */}
+      <div
+        className="rounded-xl p-5 space-y-5 border border-purple-200 shadow-sm"
+        style={{ backgroundColor: '#f3e5f5' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Leaf className="w-5 h-5 text-purple-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              ESG Details
+            </h3>
+          </div>
+          <span className="text-xs text-purple-800 font-medium bg-purple-100 px-2.5 py-1 rounded-md border border-purple-300">
+            Environmental, Social & Governance
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {/* Property location in areas vulnerable to natural disasters: Dropdown/Checkbox (Earthquake / Floods / Cyclones / Landslides / NA / Custom) [Custom Option: ON] */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <Field
+              label={
+                <span className="font-semibold text-gray-700">
+                  Property location in areas vulnerable to natural disasters
+                </span>
+              }
+            >
+              <div className="space-y-3 p-4 rounded-lg border border-purple-200 bg-white/95">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-purple-950 block mb-1">
+                      Quick Dropdown Selection
+                    </label>
+                    <CustomSelect
+                      value={
+                        fields.ikfVulnerableNaturalDisastersSelect ||
+                        (checkedDisasters.includes('NA')
+                          ? 'NA'
+                          : checkedDisasters.length === 1
+                          ? checkedDisasters[0]
+                          : 'Custom')
+                      }
+                      customValue={fields.ikfVulnerableNaturalDisastersCustom || ''}
+                      onChange={handleDropdownChange}
+                      onCustomChange={(val) => {
+                        handleChange('ikfVulnerableNaturalDisastersCustom', val);
+                        handleChange('ikfVulnerableNaturalDisasters', val);
+                      }}
+                      options={[
+                        { value: 'NA', label: 'NA (Not Vulnerable)' },
+                        { value: 'Earthquake', label: 'Earthquake' },
+                        { value: 'Floods', label: 'Floods' },
+                        { value: 'Cyclones', label: 'Cyclones' },
+                        { value: 'Landslides', label: 'Landslides' },
+                      ]}
+                      disabled={isReadOnly}
+                      placeholder="Select disaster vulnerability..."
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold uppercase tracking-wider text-purple-950 block mb-1">
+                      Multi-Select Checkbox Options
+                    </label>
+                    <div className="flex flex-wrap items-center gap-2">
+                      {NATURAL_DISASTER_OPTIONS.map((opt) => {
+                        const isChecked = checkedDisasters.includes(opt);
+                        return (
+                          <label
+                            key={opt}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs cursor-pointer select-none transition-colors ${
+                              isChecked
+                                ? 'bg-purple-100 border-purple-400 text-purple-950 font-bold shadow-xs'
+                                : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                            } ${isReadOnly ? 'opacity-60 cursor-not-allowed' : ''}`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => handleDisasterToggle(opt)}
+                              disabled={isReadOnly}
+                              className="h-3.5 w-3.5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                            />
+                            <span>{opt}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Show custom input if Custom option is selected */}
+                {(fields.ikfVulnerableNaturalDisastersSelect === 'Custom' ||
+                  checkedDisasters.includes('Custom')) && (
+                  <div className="pt-2 border-t border-purple-100">
+                    <input
+                      type="text"
+                      className={`${inputCls} bg-purple-50/50 border-purple-300 text-gray-900`}
+                      placeholder="Specify custom natural disaster vulnerability..."
+                      value={fields.ikfVulnerableNaturalDisastersCustom || ''}
+                      onChange={(e) => {
+                        handleChange('ikfVulnerableNaturalDisastersCustom', e.target.value);
+                        handleChange('ikfVulnerableNaturalDisasters', e.target.value);
+                      }}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                )}
+              </div>
+            </Field>
+          </div>
+
+          {/* Physical condition of property: Dropdown (No visual cracks / Fine hairline cracks observed / Significant cracks observed / Dilapidated structure / Custom) [Custom Option: ON] */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700">
+                Physical condition of property
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.ikfPhysicalCondition || 'No visual cracks'}
+              customValue={fields.ikfPhysicalConditionCustom || ''}
+              onChange={(val) => handleChange('ikfPhysicalCondition', val)}
+              onCustomChange={(val) => handleChange('ikfPhysicalConditionCustom', val)}
+              options={[
+                { value: 'No visual cracks', label: 'No visual cracks' },
+                { value: 'Fine hairline cracks observed', label: 'Fine hairline cracks observed' },
+                { value: 'Significant cracks observed', label: 'Significant cracks observed' },
+                { value: 'Dilapidated structure', label: 'Dilapidated structure' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select physical condition..."
+            />
+          </Field>
+
+          {/* Presence of easement rights for access (road) or use of resources (water from wells etc.) in the property: Dropdown (Access Road / Water / NA / Custom) [Custom Option: ON] */}
+          <div className="col-span-1 md:col-span-2">
+            <Field
+              label={
+                <span className="font-semibold text-gray-700">
+                  Presence of easement rights for access (road) or use of resources (water from wells etc.) in the property
+                </span>
+              }
+            >
+              <CustomSelect
+                value={fields.ikfEasementRights || 'NA'}
+                customValue={fields.ikfEasementRightsCustom || ''}
+                onChange={(val) => handleChange('ikfEasementRights', val)}
+                onCustomChange={(val) => handleChange('ikfEasementRightsCustom', val)}
+                options={[
+                  { value: 'Access Road', label: 'Access Road' },
+                  { value: 'Water', label: 'Water' },
+                  { value: 'NA', label: 'NA' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select easement rights..."
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── IKF Finance BankConfig ──────────────────────────────────────────────────
 
 export const IKF_FINANCE_CONFIG: BankConfig = {
@@ -2783,6 +3024,7 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     'section-2', // Replaced by Section 2: II) DETAILS OF STRUCTURE AND SPECIFICATIONS
     'section-3', // Replaced by Section 3: III) DETAILS FOR THE PROPERTY UNDER REFERENCE
     'section-4', // Replaced by Section 4: National Disaster Management Authority (NDMA) Parameters
+    'section-5', // Replaced by Section 5: ESG Monitoring Parameters
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -2790,7 +3032,7 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     { id: 'ikf-section-2', title: 'II) DETAILS OF STRUCTURE AND SPECIFICATIONS' },
     { id: 'ikf-section-3', title: 'III) DETAILS FOR THE PROPERTY UNDER REFERENCE' },
     { id: 'ikf-section-4', title: 'National Disaster Management Authority (NDMA) Parameters' },
-    { id: 'section-5', title: 'Street and Details' },
+    { id: 'ikf-section-5', title: 'ESG Monitoring Parameters' },
     { id: 'section-6', title: 'Plan Approvals' },
     { id: 'section-7', title: 'Area Valuation' },
     { id: 'section-8', title: 'Land Valuation' },
@@ -2856,6 +3098,19 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'ikf-section-5',
+      title: 'ESG Monitoring Parameters',
+      number: 5,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <EsgMonitoringSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Mortgage / MSME Loan',
@@ -2873,12 +3128,18 @@ export const IKF_FINANCE_CONFIG: BankConfig = {
     ikfRoofType: 'R.C.C. Slab',
     ikfTypeOfMasonry: 'Brick Masonry in Cement Mortar',
     ikfSoilType: 'Clayey Silt / Normal Soil',
+    ikfVulnerableNaturalDisasters: 'NA',
+    ikfVulnerableNaturalDisastersSelect: 'NA',
+    ikfVulnerableNaturalDisastersList: ['NA'],
+    ikfPhysicalCondition: 'No visual cracks',
+    ikfEasementRights: 'NA',
   },
 };
 
 export default function IKFFinance(props: BankReportBuilderProps) {
   return <BankReportBuilder config={IKF_FINANCE_CONFIG} {...props} />;
 }
+
 
 
 
