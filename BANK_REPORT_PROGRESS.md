@@ -206,5 +206,8 @@ Templates with base structure & draft UI files created, currently undergoing fie
 - **Jana Small Finance Bank (`Standard`)**:
   - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/jana-sfb/JanaSmallFinanceBank.tsx` — **🔨 In Progress** (Sections 1 through 11 custom draft UI components implemented with customized container palettes, lock UIs, and calculations).
   - **Dedicated PDF Renderer**: `src/lib/banks/pdf-jana-small-finance-bank-renderer.ts` — **🔨 In Progress** (Dedicated renderer in progress).
+- **Poonawalla Finance (`Standard`)**:
+  - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/poonawalla/PoonawallaFinance.tsx` — **🔨 In Progress** (Sections 1 through 13 custom draft UI implemented with dedicated container palettes: Section 1 VALUATION OF IMMOVABLE PROPERTY [`#e3f2fd`], Section 2 VALUE OF THE PROPERTY [`#e8f5e9`], Section 3 PURPOSE OF VALUATION [`#fffde7`], Section 4 PREPARED BY [`#fff3e0`], Section 5 SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS [`#e0f2f1`], Section 6 Boundaries as Per Documents & Site [`#e0f7fa` & `#ffebee`], Section 7 Building details [`#fce4ec` & `#f3e5f5`], Section 8 Floor Wise Area [`#e8eaf6` & `#fff8e1`], Section 9 Description of Constructed Area and Rates [`#ffe0b2` & `#ede7f6`], Section 10 Value of Extra Amenities [`#e6f9f0` & `#f9fbe7`], Section 11 FLOORWISE DETAILS OF USAGE OF PROPERTY [`#e1f5fe`], Section 12 REMARKS [`#fff9c4`], Section 13 Declaration [`#fce4e4`]).
+  - **Dedicated PDF Renderer**: `src/lib/banks/pdf-poonawalla-finance-renderer.ts` — **🔨 In Progress** (In progress status).
 
 
