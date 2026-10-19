@@ -92,6 +92,7 @@ export function AutoResizeTextarea({
   value,
   onChange,
   disabled = false,
+  readOnly = false,
   placeholder = '',
   rows = 2,
   className = '',
@@ -100,6 +101,7 @@ export function AutoResizeTextarea({
   value: string;
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   disabled?: boolean;
+  readOnly?: boolean;
   placeholder?: string;
   rows?: number;
   className?: string;
@@ -129,6 +131,7 @@ export function AutoResizeTextarea({
       value={value || ''}
       onChange={handleInput}
       disabled={disabled}
+      readOnly={readOnly}
       placeholder={placeholder}
       title={title}
       className={`${inputCls} overflow-hidden resize-none transition-[height] duration-100 ${className}`}
@@ -5120,6 +5123,533 @@ function ExceptionsInternalSection({
   );
 }
 
+// ─── Section 11: Remarks, if any :- ─────────────────────────────────────────
+
+function SignatureSealInput({
+  value,
+  onChange,
+  disabled = false,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  disabled?: boolean;
+}) {
+  const [activeTab, setActiveTab] = React.useState<'upload' | 'draw'>('upload');
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const isDrawing = useRef(false);
+
+  useEffect(() => {
+    if (activeTab === 'draw' && canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+      }
+    }
+  }, [activeTab]);
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (disabled) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.setPointerCapture(e.pointerId);
+    isDrawing.current = true;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    ctx.beginPath();
+    ctx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDrawing.current || disabled) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    ctx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+    ctx.stroke();
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!isDrawing.current || disabled) return;
+    isDrawing.current = false;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    try {
+      canvas.releasePointerCapture(e.pointerId);
+    } catch {}
+    onChange(canvas.toDataURL('image/png'));
+  };
+
+  const handleClearCanvas = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    onChange('');
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          onChange(reader.result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  return (
+    <div className="space-y-3 w-full">
+      <div className="flex items-center gap-2 border-b border-sky-200 pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('upload')}
+          className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+            activeTab === 'upload'
+              ? 'bg-sky-600 text-white shadow-2xs'
+              : 'bg-white text-gray-700 hover:bg-sky-50 border border-sky-200'
+          }`}
+        >
+          Upload Image / Seal
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('draw')}
+          className={`px-3 py-1 text-xs font-semibold rounded-md transition-colors ${
+            activeTab === 'draw'
+              ? 'bg-sky-600 text-white shadow-2xs'
+              : 'bg-white text-gray-700 hover:bg-sky-50 border border-sky-200'
+          }`}
+        >
+          E-Signature Pad
+        </button>
+        {value && !disabled && (
+          <button
+            type="button"
+            onClick={handleClearCanvas}
+            className="ml-auto text-xs text-red-600 hover:text-red-700 font-semibold hover:underline"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+
+      {activeTab === 'upload' && (
+        <div className="flex flex-col sm:flex-row items-center gap-4">
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileUpload}
+            disabled={disabled}
+            className="block w-full text-xs text-gray-600 file:mr-3 file:py-2 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-sky-100 file:text-sky-800 hover:file:bg-sky-200 cursor-pointer disabled:opacity-50"
+          />
+        </div>
+      )}
+
+      {activeTab === 'draw' && (
+        <div className="space-y-2">
+          <div className="border border-sky-300 rounded-lg bg-white overflow-hidden touch-none">
+            <canvas
+              ref={canvasRef}
+              width={400}
+              height={140}
+              onPointerDown={handlePointerDown}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              className="w-full h-35 cursor-crosshair bg-white"
+            />
+          </div>
+          <p className="text-[11px] text-gray-500 italic">
+            Draw your signature or place seal marks using mouse, stylus, or touch.
+          </p>
+        </div>
+      )}
+
+      {value && (
+        <div className="p-3 bg-white/95 rounded-lg border border-sky-200 flex items-center gap-4 shadow-2xs">
+          <div className="w-32 h-16 bg-slate-50 border border-gray-200 rounded flex items-center justify-center overflow-hidden shrink-0">
+            <img src={value} alt="Signature Preview" className="max-h-full max-w-full object-contain" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              ✓ Signature & Seal Attached
+            </span>
+            <p className="text-[11px] text-gray-500 mt-1 truncate">
+              Ready for inclusion in official valuation report document.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FinalDeclarationsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const prefillValuerRep = fields.janaVisitDoneBy || fields.engineerName || 'Er. S. Mohanty';
+  const prefillDate = fields.janaDateOfInspection || fields.dateOfInspection || '';
+  const prefillCustomerName = fields.janaCustomerName || fields.applicantName || '';
+  const prefillAppNo = fields.janaApplicationNumber || fields.applicationNo || '';
+  const prefillAddress = fields.janaAddressOfProperty || fields.propertyAddress || fields.address || '';
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Final Declarations (Light Sky Blue '#f0f9ff') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-6 border border-sky-300 shadow-sm"
+        style={{ backgroundColor: '#f0f9ff' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-sky-200 pb-3">
+          <div className="flex items-center gap-2">
+            <FileCheck className="w-5 h-5 text-sky-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Final Declarations
+            </h3>
+          </div>
+          <span className="text-xs text-sky-800 font-medium bg-sky-100 px-2.5 py-1 rounded-md border border-sky-300">
+            Section 11: Container 1
+          </span>
+        </div>
+
+        {/* Remarks */}
+        <Field
+          label={
+            <div className="flex items-center justify-between w-full">
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Remarks
+              </span>
+              <NaCheckbox
+                checked={Boolean(fields.janaFinalRemarksNA)}
+                onChange={(checked) => {
+                  handleChange('janaFinalRemarksNA', checked);
+                  if (checked) {
+                    handleChange('janaFinalRemarks', 'NA');
+                  } else {
+                    handleChange('janaFinalRemarks', '');
+                  }
+                }}
+                disabled={isReadOnly}
+              />
+            </div>
+          }
+        >
+          <AutoResizeTextarea
+            rows={3}
+            className={
+              fields.janaFinalRemarksNA
+                ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                : ''
+            }
+            value={fields.janaFinalRemarks ?? ''}
+            onChange={(e) => handleChange('janaFinalRemarks', e.target.value)}
+            disabled={isReadOnly || Boolean(fields.janaFinalRemarksNA)}
+            placeholder="Enter general remarks, observations, caveats, or conditional notes..."
+          />
+        </Field>
+
+        {/* Declaration */}
+        <div className="p-4 md:p-5 bg-white/95 rounded-xl border border-sky-200 space-y-3 shadow-2xs">
+          <div className="flex items-start gap-3">
+            <input
+              type="checkbox"
+              id="janaDeclarationAgreed"
+              checked={fields.janaDeclarationAgreed !== undefined ? Boolean(fields.janaDeclarationAgreed) : true}
+              onChange={(e) => handleChange('janaDeclarationAgreed', e.target.checked)}
+              disabled={isReadOnly}
+              className="mt-0.5 h-4.5 w-4.5 rounded border-sky-300 text-sky-600 focus:ring-sky-500 shrink-0 cursor-pointer"
+            />
+            <label
+              htmlFor="janaDeclarationAgreed"
+              className="text-xs md:text-sm font-bold text-gray-900 cursor-pointer select-none"
+            >
+              I/We hereby declare that, <span className="text-red-500 text-xs font-semibold ml-1">(Mandatory check to proceed)</span>
+            </label>
+          </div>
+          <ol className="list-decimal list-inside pl-7 text-xs md:text-sm text-gray-700 space-y-1.5 font-medium leading-relaxed">
+            <li>The property was inspected by our representative.</li>
+            <li>I/We have no direct or Indirect Interest in the property valued.</li>
+            <li>The information furnished above is true and correct to my/our knowledge.</li>
+          </ol>
+        </div>
+
+        {/* Signature with Seal */}
+        <Field
+          label={
+            <span className="font-semibold text-gray-700 text-xs md:text-sm">
+              Signature with seal :- [File Upload / E-Signature Pad]
+            </span>
+          }
+        >
+          <SignatureSealInput
+            value={fields.janaSignatureWithSeal || ''}
+            onChange={(val) => handleChange('janaSignatureWithSeal', val)}
+            disabled={isReadOnly}
+          />
+        </Field>
+
+        {/* Metadata & Signoff Attributes Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {/* Valuer Name (S MOHANTY ASSOCIATES) [Input Box: Fixed size] */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Valuer Name (S MOHANTY ASSOCIATES)
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} font-semibold`}
+              value={fields.janaValuerName ?? 'S MOHANTY ASSOCIATES'}
+              onChange={(e) => handleChange('janaValuerName', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. S MOHANTY ASSOCIATES"
+            />
+          </Field>
+
+          {/* Valuer Representative Name [Prefill from 1.8 with Edit Toggle] [Lock UI] */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Valuer Representative Name
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.janaValuerRepNameEdit)}
+                  onChange={(checked) => handleChange('janaValuerRepNameEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.janaValuerRepNameEdit ? (
+              <input
+                type="text"
+                className={`${inputCls} bg-white font-medium border-sky-400`}
+                value={fields.janaValuerRepNameManual ?? prefillValuerRep}
+                onChange={(e) => handleChange('janaValuerRepNameManual', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Enter Representative Name..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage='>>Prefill from section 1, "Visit Done By"<<'
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-sky-50/70 border-sky-200 font-semibold text-sky-950 cursor-not-allowed`}
+                  value={prefillValuerRep}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Date [Prefill from 1.3 with Edit Toggle] [Lock UI] */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Date
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.janaDeclarationDateEdit)}
+                  onChange={(checked) => handleChange('janaDeclarationDateEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.janaDeclarationDateEdit ? (
+              <input
+                type="date"
+                className={`${inputCls} bg-white font-medium border-sky-400`}
+                value={fields.janaDeclarationDateManual ?? prefillDate}
+                onChange={(e) => handleChange('janaDeclarationDateManual', e.target.value)}
+                disabled={isReadOnly}
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage='>>Prefill from section 1, "Date of Inspection"<<'
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-sky-50/70 border-sky-200 font-semibold text-sky-950 cursor-not-allowed`}
+                  value={prefillDate || ''}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Place [Input Box: Fixed size] */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Place
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.janaDeclarationPlace ?? 'Bhubaneswar'}
+              onChange={(e) => handleChange('janaDeclarationPlace', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. Bhubaneswar"
+            />
+          </Field>
+
+          {/* Customer Name [Prefill from 1.2 with Edit Toggle] [Lock UI] */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Customer Name
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.janaDeclarationCustomerNameEdit)}
+                  onChange={(checked) => handleChange('janaDeclarationCustomerNameEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.janaDeclarationCustomerNameEdit ? (
+              <input
+                type="text"
+                className={`${inputCls} bg-white font-medium border-sky-400`}
+                value={fields.janaDeclarationCustomerNameManual ?? prefillCustomerName}
+                onChange={(e) => handleChange('janaDeclarationCustomerNameManual', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Enter Customer Name..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage='>>Prefill from section 1, "Customer Name"<<'
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-sky-50/70 border-sky-200 font-semibold text-sky-950 cursor-not-allowed`}
+                  value={prefillCustomerName || ''}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Application Number [Prefill from 1.1 with Edit Toggle] [Lock UI] */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Application Number
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.janaDeclarationAppNoEdit)}
+                  onChange={(checked) => handleChange('janaDeclarationAppNoEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.janaDeclarationAppNoEdit ? (
+              <input
+                type="text"
+                className={`${inputCls} bg-white font-medium border-sky-400`}
+                value={fields.janaDeclarationAppNoManual ?? prefillAppNo}
+                onChange={(e) => handleChange('janaDeclarationAppNoManual', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Enter Application Number..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage='>>Prefill from section 1, "Application Number"<<'
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-sky-50/70 border-sky-200 font-semibold text-sky-950 cursor-not-allowed`}
+                  value={prefillAppNo || ''}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Address of Property [Prefill from 2.1 with Edit Toggle] [Lock UI] */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <Field
+              label={
+                <div className="flex items-center justify-between gap-2 w-full">
+                  <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                    Address of Property
+                  </span>
+                  <EditSwitch
+                    checked={Boolean(fields.janaDeclarationPropAddressEdit)}
+                    onChange={(checked) => handleChange('janaDeclarationPropAddressEdit', checked)}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              {fields.janaDeclarationPropAddressEdit ? (
+                <AutoResizeTextarea
+                  rows={2}
+                  className="bg-white font-medium border-sky-400"
+                  value={fields.janaDeclarationPropAddressManual ?? prefillAddress}
+                  onChange={(e) => handleChange('janaDeclarationPropAddressManual', e.target.value)}
+                  disabled={isReadOnly}
+                  placeholder="Enter Address of Property..."
+                />
+              ) : (
+                <LockedFieldWrapper
+                  isLocked={true}
+                  tooltipMessage='>>Prefill from section 2, "Address of Property (as per site visit)"<<'
+                >
+                  <AutoResizeTextarea
+                    rows={2}
+                    readOnly
+                    disabled
+                    className="bg-sky-50/70 border-sky-200 font-semibold text-sky-950 cursor-not-allowed"
+                    value={prefillAddress || ''}
+                    onChange={() => {}}
+                  />
+                </LockedFieldWrapper>
+              )}
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Jana Small Finance Bank BankConfig ──────────────────────────────────────
 
 export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
@@ -5154,6 +5684,7 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     { id: 'jana-section-8', title: 'STAGE OF CONSTRUCTION' },
     { id: 'jana-section-9', title: 'Reference Detail' },
     { id: 'jana-section-10', title: 'Exceptions (Internal QA)' },
+    { id: 'jana-section-11', title: 'Final Declarations' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
     { id: 'section-11', title: 'Photographs' },
@@ -5290,6 +5821,19 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'jana-section-11',
+      title: 'Remarks, if any :-',
+      number: 11,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <FinalDeclarationsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Affordable Housing / MSME Loan',
@@ -5351,6 +5895,10 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     janaRefContactNumberNA: false,
     janaRefNameNA: false,
     janaRefRemarksNA: false,
+    janaValuerName: 'S MOHANTY ASSOCIATES',
+    janaDeclarationPlace: 'Bhubaneswar',
+    janaDeclarationAgreed: true,
+    janaFinalRemarksNA: false,
   },
 };
 
