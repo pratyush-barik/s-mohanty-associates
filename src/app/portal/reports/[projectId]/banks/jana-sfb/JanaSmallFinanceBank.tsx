@@ -20,6 +20,11 @@ import {
   Layers,
   Key,
   AlertTriangle,
+  Calculator,
+  TrendingUp,
+  Hammer,
+  Plus,
+  Trash2,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -3251,6 +3256,1232 @@ function ViolationsObservedSection({
   );
 }
 
+// ─── Section 7: VALUATION ───────────────────────────────────────────────────
+
+function ValuationSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const parseNum = (v: any): number => {
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    if (typeof v === 'string') return parseFloat(v.replace(/,/g, '') || '0') || 0;
+    return 0;
+  };
+
+  // ─── 1. Land Value Calculations ───
+  const effectiveLandUnit = fields.janaLandUnitEdit
+    ? fields.janaLandUnitManual || fields.janaPlotAreaUnit || 'Sq. Ft.'
+    : fields.janaPlotAreaUnit || 'Sq. Ft.';
+
+  const prefillLandArea =
+    fields.janaPlotArea !== undefined && fields.janaPlotArea !== ''
+      ? fields.janaPlotArea
+      : fields.plotArea !== undefined && fields.plotArea !== ''
+      ? fields.plotArea
+      : fields.landArea ?? '';
+
+  const effectiveLandArea = fields.janaLandAreaEdit
+    ? parseNum(fields.janaLandAreaManual)
+    : parseNum(prefillLandArea);
+
+  const effectiveLandRate = parseNum(fields.janaLandRate);
+  const autoLandValue = Math.round(effectiveLandArea * effectiveLandRate);
+  const effectiveLandValue = fields.janaLandValueEdit
+    ? parseNum(fields.janaLandValueManual)
+    : autoLandValue;
+
+  // ─── 2. Existing Construction Rows ───
+  const existingRows = [
+    { id: 'as_measured_gf', label: 'As per measured GF' },
+    { id: 'gf_rcc', label: '7.5 GF RCC' },
+    { id: 'ff_acc', label: '7.6 FF ACC' },
+    { id: 'sf_uc', label: '7.7 SF UC' },
+    { id: 'sf', label: '7.8 SF' },
+    { id: 'tf', label: 'TF' },
+  ];
+
+  const existingRowAmounts: number[] = existingRows.map((r) => {
+    const area = parseNum(fields['janaConstArea_' + r.id]);
+    const rate = parseNum(fields['janaConstRate_' + r.id]);
+    const autoAmt = Math.round(area * rate);
+    const isEdit = Boolean(fields['janaConstAmountEdit_' + r.id]);
+    return isEdit ? parseNum(fields['janaConstAmount_' + r.id]) : autoAmt;
+  });
+
+  const autoTotalExisting = existingRowAmounts.reduce((acc, curr) => acc + curr, 0);
+  const effectiveExistingTotal = fields.janaExistingTotalEdit
+    ? parseNum(fields.janaExistingTotalManual)
+    : autoTotalExisting;
+
+  // 7.10' Total Existing Value of Property (A+B)
+  const autoTotalExistingPropertyValue = effectiveLandValue + effectiveExistingTotal;
+  const effectiveTotalExistingPropertyValue = fields.janaTotalExistingPropertyValueEdit
+    ? parseNum(fields.janaTotalExistingPropertyValueManual)
+    : autoTotalExistingPropertyValue;
+
+  // ─── 3. Proposed Construction Rows ───
+  const proposedRows = [
+    { id: 'gf', label: '7.12 GF' },
+    { id: 'ff', label: '7.13 FF' },
+    { id: 'sf', label: '7.14 SF' },
+  ];
+
+  const proposedRowAmounts: number[] = proposedRows.map((p) => {
+    const area = parseNum(fields['janaProposedArea_' + p.id]);
+    const rate = parseNum(fields['janaProposedRate_' + p.id]);
+    const autoAmt = Math.round(area * rate);
+    const isEdit = Boolean(fields['janaProposedAmountEdit_' + p.id]);
+    return isEdit ? parseNum(fields['janaProposedAmount_' + p.id]) : autoAmt;
+  });
+
+  const autoProposedTotal = proposedRowAmounts.reduce((acc, curr) => acc + curr, 0);
+  const effectiveProposedTotal = fields.janaProposedTotalEdit
+    ? parseNum(fields.janaProposedTotalManual)
+    : autoProposedTotal;
+
+  // ─── 4. Description of Proposed Construction / Improvement Rows ───
+  const improvementRowCount = fields.janaImprovementRowsCount || 3;
+  const improvementIndices = Array.from({ length: improvementRowCount }, (_, i) => i);
+
+  const effectiveExtraAmenities = fields.janaValueExtraAmenitiesNA
+    ? 0
+    : parseNum(fields.janaValueExtraAmenities);
+
+  // ─── 5. Final Valuation Calculations ───
+  // 7.21 Total Future Value (A+B+C)
+  const autoFuturePropertyValue =
+    effectiveTotalExistingPropertyValue + effectiveProposedTotal + effectiveExtraAmenities;
+  const effectiveFuturePropertyValue = fields.janaFuturePropertyValueEdit
+    ? parseNum(fields.janaFuturePropertyValueManual)
+    : autoFuturePropertyValue;
+
+  // 7.25 Land value as per Govt Rate
+  const govtRate = parseNum(fields.janaGovtGuidelineRate);
+  const autoGovtLandValue = Math.round(effectiveLandArea * govtRate);
+  const effectiveGovtLandValue = fields.janaGovtLandValueEdit
+    ? parseNum(fields.janaGovtLandValueManual)
+    : autoGovtLandValue;
+
+  // 7.22 Distressed Value (75% of Future Value)
+  const autoDistressedValue = Math.round(effectiveFuturePropertyValue * 0.75);
+  const effectiveDistressedValue = fields.janaDistressedValueEdit
+    ? parseNum(fields.janaDistressedValueManual)
+    : autoDistressedValue;
+
+  const existingAreaTypeOptions = [
+    { value: 'Built Up Area', label: 'Built Up Area' },
+    { value: 'Super Built Up Area', label: 'Super Built Up Area' },
+    { value: 'Carpet Area', label: 'Carpet Area' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* ─── 1. Container: Land Value (Light Indigo '#e8eaf6') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-indigo-200 shadow-sm"
+        style={{ backgroundColor: '#e8eaf6' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Calculator className="w-5 h-5 text-indigo-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Land Value
+            </h3>
+          </div>
+          <span className="text-xs text-indigo-800 font-medium bg-indigo-100 px-2.5 py-1 rounded-md border border-indigo-300">
+            Section 7: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {/* 7.1 Land Value | Land Measurement Unit */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  7.1 Land Measurement Unit
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.janaLandUnitEdit)}
+                  onChange={(checked) => handleChange('janaLandUnitEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.janaLandUnitEdit ? (
+              <select
+                className={`${inputCls} bg-white font-medium border-indigo-300`}
+                value={fields.janaLandUnitManual ?? (fields.janaPlotAreaUnit || 'Sq. Ft.')}
+                onChange={(e) => handleChange('janaLandUnitManual', e.target.value)}
+                disabled={isReadOnly}
+              >
+                <option value="Sq. Ft.">Sq. Ft.</option>
+                <option value="Sq. Mtr.">Sq. Mtr.</option>
+                <option value="Sq. Yds.">Sq. Yds.</option>
+                <option value="Decimal">Decimal</option>
+                <option value="Acre">Acre</option>
+                <option value="Gunta">Gunta</option>
+                <option value="Cent">Cent</option>
+              </select>
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage='>>Prefill from section 4, "Plot Details (Plot Area) Unit"<<'
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-indigo-50/70 border-indigo-200 font-semibold text-indigo-950 cursor-not-allowed`}
+                  value={fields.janaPlotAreaUnit || 'Sq. Ft.'}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* 7.2 Land Rate */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                7.2 Land Rate (per {effectiveLandUnit})
+              </span>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={inputCls}
+              value={fields.janaLandRate ?? ''}
+              onChange={(e) => handleChange('janaLandRate', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. 2500"
+            />
+          </Field>
+
+          {/* 7.3 Permissible FSI */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  7.3 Permissible FSI
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaPermissibleFsiNA)}
+                  onChange={(checked) => {
+                    handleChange('janaPermissibleFsiNA', checked);
+                    if (checked) {
+                      handleChange('janaPermissibleFsi', 'NA');
+                    } else {
+                      handleChange('janaPermissibleFsi', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaPermissibleFsiNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaPermissibleFsiNA
+                  ? 'NA'
+                  : (fields.janaPermissibleFsi ?? '')
+              }
+              onChange={(e) => handleChange('janaPermissibleFsi', e.target.value)}
+              disabled={isReadOnly || fields.janaPermissibleFsiNA}
+              placeholder={fields.janaPermissibleFsiNA ? 'NA' : 'e.g. 1.5 or 2.0'}
+            />
+          </Field>
+
+          {/* 7.23 Land Area */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  7.23 Land Area ({effectiveLandUnit})
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.janaLandAreaEdit)}
+                  onChange={(checked) => handleChange('janaLandAreaEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.janaLandAreaEdit ? (
+              <input
+                type="number"
+                step="any"
+                className={`${inputCls} bg-white border-indigo-400 font-bold`}
+                value={fields.janaLandAreaManual ?? prefillLandArea}
+                onChange={(e) => handleChange('janaLandAreaManual', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Enter land area..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage='>>Prefill from section 4, "Plot Details (Plot Area)"<<'
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-indigo-50/70 border-indigo-200 font-semibold text-indigo-950 cursor-not-allowed`}
+                  value={prefillLandArea ? `${prefillLandArea} ${effectiveLandUnit}` : '0'}
+                  placeholder="Prefilled from 4.5"
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* 7.24 Land Value (A) */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  7.24 Land Value (A) (Rs.)
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.janaLandValueEdit)}
+                  onChange={(checked) => handleChange('janaLandValueEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.janaLandValueEdit ? (
+              <input
+                type="number"
+                step="any"
+                className={`${inputCls} bg-white border-indigo-400 font-bold text-gray-900`}
+                value={fields.janaLandValueManual ?? autoLandValue}
+                onChange={(e) => handleChange('janaLandValueManual', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Enter land value..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage=">>Auto calculating from [7.23 Land Area * 7.2 Land Rate]<<"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-indigo-50/70 border-indigo-200 font-bold text-indigo-950 cursor-not-allowed`}
+                  value={
+                    autoLandValue > 0
+                      ? `₹ ${autoLandValue.toLocaleString('en-IN')}`
+                      : '₹ 0'
+                  }
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* 7.24 FSI Considered for valuation */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  7.24 FSI Considered for Valuation
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaFsiConsideredNA)}
+                  onChange={(checked) => {
+                    handleChange('janaFsiConsideredNA', checked);
+                    if (checked) {
+                      handleChange('janaFsiConsidered', 'NA');
+                    } else {
+                      handleChange('janaFsiConsidered', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaFsiConsideredNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaFsiConsideredNA
+                  ? 'NA'
+                  : (fields.janaFsiConsidered ?? '')
+              }
+              onChange={(e) => handleChange('janaFsiConsidered', e.target.value)}
+              disabled={isReadOnly || fields.janaFsiConsideredNA}
+              placeholder={fields.janaFsiConsideredNA ? 'NA' : 'e.g. 1.25 or 1.5'}
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* ─── 2. Table: Existing Construction Value (Light Teal '#e0f2f1') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-teal-200 shadow-sm"
+        style={{ backgroundColor: '#e0f2f1' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-teal-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Building className="w-5 h-5 text-teal-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Existing Construction Value (B)
+            </h3>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-teal-800 font-medium bg-teal-100 px-2.5 py-1 rounded-md border border-teal-300">
+              Section 7: Table 1
+            </span>
+          </div>
+        </div>
+
+        {/* 7.4 Area Type Dropdown */}
+        <div className="max-w-md">
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                7.4 Existing Construction Value | Type of Area
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.janaExistingAreaType || 'Built Up Area'}
+              customValue={fields.janaExistingAreaTypeCustom || ''}
+              onChange={(val) => handleChange('janaExistingAreaType', val)}
+              onCustomChange={(val) => handleChange('janaExistingAreaTypeCustom', val)}
+              options={existingAreaTypeOptions}
+              disabled={isReadOnly}
+              placeholder="Select area type..."
+            />
+          </Field>
+        </div>
+
+        {/* Responsive Existing Construction Table */}
+        <div className="overflow-x-auto rounded-xl border border-teal-300 bg-white/90 shadow-2xs">
+          <table className="w-full text-xs text-left border-collapse min-w-160">
+            <thead>
+              <tr className="bg-teal-100/80 border-b border-teal-300 text-teal-950 font-bold uppercase tracking-wider text-[11px]">
+                <th className="py-3 px-4 w-1/4 min-w-36">Floor</th>
+                <th className="py-3 px-4 w-1/4 min-w-28 text-center">Area (Sqft)</th>
+                <th className="py-3 px-4 w-1/4 min-w-28 text-center">Rate (per Sqft)</th>
+                <th className="py-3 px-4 w-1/4 min-w-36 text-right">Amount (Rs)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-teal-100">
+              {existingRows.map((r, idx) => {
+                const areaKey = 'janaConstArea_' + r.id;
+                const rateKey = 'janaConstRate_' + r.id;
+                const amtKey = 'janaConstAmount_' + r.id;
+                const editKey = 'janaConstAmountEdit_' + r.id;
+                const isEdit = Boolean(fields[editKey]);
+                const area = parseNum(fields[areaKey]);
+                const rate = parseNum(fields[rateKey]);
+                const autoAmt = Math.round(area * rate);
+
+                return (
+                  <tr key={r.id} className="hover:bg-teal-50/50 transition-colors">
+                    <td className="p-3.5 font-bold text-gray-800 text-xs md:text-sm">
+                      {r.label}
+                    </td>
+                    <td className="p-2.5">
+                      <input
+                        type="number"
+                        step="any"
+                        className={`${inputCls} text-center`}
+                        value={fields[areaKey] ?? ''}
+                        onChange={(e) => handleChange(areaKey, e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="p-2.5">
+                      <input
+                        type="number"
+                        step="any"
+                        className={`${inputCls} text-center`}
+                        value={fields[rateKey] ?? ''}
+                        onChange={(e) => handleChange(rateKey, e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="p-2.5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {isEdit ? (
+                          <input
+                            type="number"
+                            step="any"
+                            className={`${inputCls} text-right font-bold bg-white text-teal-950 border-teal-400`}
+                            value={fields[amtKey] ?? autoAmt}
+                            onChange={(e) => handleChange(amtKey, e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        ) : (
+                          <LockedFieldWrapper
+                            isLocked={true}
+                            tooltipMessage=">>Auto calculating from [Area (Sqft) * Rate (per Sqft)]<<"
+                          >
+                            <input
+                              type="text"
+                              readOnly
+                              disabled
+                              className={`${inputCls} text-right font-bold bg-teal-50/80 border-teal-300 text-teal-950 cursor-not-allowed`}
+                              value={
+                                autoAmt > 0
+                                  ? `₹ ${autoAmt.toLocaleString('en-IN')}`
+                                  : '₹ 0'
+                              }
+                            />
+                          </LockedFieldWrapper>
+                        )}
+                        <EditSwitch
+                          checked={isEdit}
+                          onChange={(checked) => handleChange(editKey, checked)}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {/* 7.9 Total (Rs) Row */}
+              <tr className="bg-teal-100/90 font-bold border-t-2 border-teal-300">
+                <td colSpan={3} className="p-3.5 font-extrabold text-teal-950 text-xs md:text-sm">
+                  7.9 Total (Rs) (B)
+                </td>
+                <td className="p-2.5 text-right">
+                  <div className="flex items-center justify-end gap-1.5">
+                    {fields.janaExistingTotalEdit ? (
+                      <input
+                        type="number"
+                        step="any"
+                        className={`${inputCls} text-right font-extrabold bg-white text-teal-950 border-teal-500`}
+                        value={fields.janaExistingTotalManual ?? autoTotalExisting}
+                        onChange={(e) => handleChange('janaExistingTotalManual', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    ) : (
+                      <LockedFieldWrapper
+                        isLocked={true}
+                        tooltipMessage=">>Auto calculating from [Sum of Amount (Rs) across all floors]<<"
+                      >
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          className={`${inputCls} text-right font-extrabold bg-teal-100 border-teal-400 text-teal-950 cursor-not-allowed`}
+                          value={
+                            autoTotalExisting > 0
+                              ? `₹ ${autoTotalExisting.toLocaleString('en-IN')}`
+                              : '₹ 0'
+                          }
+                        />
+                      </LockedFieldWrapper>
+                    )}
+                    <EditSwitch
+                      checked={Boolean(fields.janaExistingTotalEdit)}
+                      onChange={(checked) => handleChange('janaExistingTotalEdit', checked)}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                </td>
+              </tr>
+
+              {/* 7.10' Total Existing Value of Property (A+B) */}
+              <tr className="bg-teal-200/60 font-bold border-t border-teal-300">
+                <td colSpan={3} className="p-3.5 font-extrabold text-teal-950 text-xs md:text-sm">
+                  7.10 Total Existing Value of Property (A+B) (Rs)
+                </td>
+                <td className="p-2.5 text-right">
+                  <div className="flex items-center justify-end gap-1.5">
+                    {fields.janaTotalExistingPropertyValueEdit ? (
+                      <input
+                        type="number"
+                        step="any"
+                        className={`${inputCls} text-right font-extrabold bg-white text-teal-950 border-teal-600`}
+                        value={
+                          fields.janaTotalExistingPropertyValueManual ??
+                          autoTotalExistingPropertyValue
+                        }
+                        onChange={(e) =>
+                          handleChange('janaTotalExistingPropertyValueManual', e.target.value)
+                        }
+                        disabled={isReadOnly}
+                      />
+                    ) : (
+                      <LockedFieldWrapper
+                        isLocked={true}
+                        tooltipMessage=">>Auto calculating from [7.24 Land Value + 7.9 Total (Rs)]<<"
+                      >
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          className={`${inputCls} text-right font-extrabold bg-teal-200/90 border-teal-400 text-teal-950 cursor-not-allowed`}
+                          value={
+                            autoTotalExistingPropertyValue > 0
+                              ? `₹ ${autoTotalExistingPropertyValue.toLocaleString('en-IN')}`
+                              : '₹ 0'
+                          }
+                        />
+                      </LockedFieldWrapper>
+                    )}
+                    <EditSwitch
+                      checked={Boolean(fields.janaTotalExistingPropertyValueEdit)}
+                      onChange={(checked) =>
+                        handleChange('janaTotalExistingPropertyValueEdit', checked)
+                      }
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ─── 3. Table: To Be Filled For Construction & Improvement Cases (Light Brown '#efebe9') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-stone-300 shadow-sm"
+        style={{ backgroundColor: '#efebe9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-300 pb-3">
+          <div className="flex items-center gap-2">
+            <Hammer className="w-5 h-5 text-stone-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              7.11 Proposed Construction Details (C)
+            </h3>
+          </div>
+          <span className="text-xs text-stone-800 font-medium bg-stone-200 px-2.5 py-1 rounded-md border border-stone-300">
+            Section 7: Table 2
+          </span>
+        </div>
+
+        {/* Responsive Proposed Construction Table */}
+        <div className="overflow-x-auto rounded-xl border border-stone-300 bg-white/90 shadow-2xs">
+          <table className="w-full text-xs text-left border-collapse min-w-160">
+            <thead>
+              <tr className="bg-stone-200/80 border-b border-stone-300 text-stone-950 font-bold uppercase tracking-wider text-[11px]">
+                <th className="py-3 px-4 w-1/4 min-w-36">Floor</th>
+                <th className="py-3 px-4 w-1/4 min-w-28 text-center">Area (Sq.ft.)</th>
+                <th className="py-3 px-4 w-1/4 min-w-28 text-center">Rate (per Sq.ft.)</th>
+                <th className="py-3 px-4 w-1/4 min-w-36 text-right">Amount (Rs.)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-200">
+              {proposedRows.map((p, idx) => {
+                const areaKey = 'janaProposedArea_' + p.id;
+                const rateKey = 'janaProposedRate_' + p.id;
+                const amtKey = 'janaProposedAmount_' + p.id;
+                const editKey = 'janaProposedAmountEdit_' + p.id;
+                const isEdit = Boolean(fields[editKey]);
+                const area = parseNum(fields[areaKey]);
+                const rate = parseNum(fields[rateKey]);
+                const autoAmt = Math.round(area * rate);
+
+                return (
+                  <tr key={p.id} className="hover:bg-stone-50/50 transition-colors">
+                    <td className="p-3.5 font-bold text-gray-800 text-xs md:text-sm">
+                      {p.label}
+                    </td>
+                    <td className="p-2.5">
+                      <input
+                        type="number"
+                        step="any"
+                        className={`${inputCls} text-center`}
+                        value={fields[areaKey] ?? ''}
+                        onChange={(e) => handleChange(areaKey, e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="p-2.5">
+                      <input
+                        type="number"
+                        step="any"
+                        className={`${inputCls} text-center`}
+                        value={fields[rateKey] ?? ''}
+                        onChange={(e) => handleChange(rateKey, e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="p-2.5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {isEdit ? (
+                          <input
+                            type="number"
+                            step="any"
+                            className={`${inputCls} text-right font-bold bg-white text-stone-950 border-stone-400`}
+                            value={fields[amtKey] ?? autoAmt}
+                            onChange={(e) => handleChange(amtKey, e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        ) : (
+                          <LockedFieldWrapper
+                            isLocked={true}
+                            tooltipMessage=">>Auto calculating from [Area (Sq.ft.) * Rate (per Sq.ft.)]<<"
+                          >
+                            <input
+                              type="text"
+                              readOnly
+                              disabled
+                              className={`${inputCls} text-right font-bold bg-stone-100 border-stone-300 text-stone-950 cursor-not-allowed`}
+                              value={
+                                autoAmt > 0
+                                  ? `₹ ${autoAmt.toLocaleString('en-IN')}`
+                                  : '₹ 0'
+                              }
+                            />
+                          </LockedFieldWrapper>
+                        )}
+                        <EditSwitch
+                          checked={isEdit}
+                          onChange={(checked) => handleChange(editKey, checked)}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {/* 7.15 Total */}
+              <tr className="bg-stone-200/90 font-bold border-t-2 border-stone-300">
+                <td colSpan={3} className="p-3.5 font-extrabold text-stone-950 text-xs md:text-sm">
+                  7.15 Total (Rs.) (C)
+                </td>
+                <td className="p-2.5 text-right">
+                  <div className="flex items-center justify-end gap-1.5">
+                    {fields.janaProposedTotalEdit ? (
+                      <input
+                        type="number"
+                        step="any"
+                        className={`${inputCls} text-right font-extrabold bg-white text-stone-950 border-stone-500`}
+                        value={fields.janaProposedTotalManual ?? autoProposedTotal}
+                        onChange={(e) => handleChange('janaProposedTotalManual', e.target.value)}
+                        disabled={isReadOnly}
+                      />
+                    ) : (
+                      <LockedFieldWrapper
+                        isLocked={true}
+                        tooltipMessage=">>Auto calculating from [Sum of Amount (Rs.) across all floors]<<"
+                      >
+                        <input
+                          type="text"
+                          readOnly
+                          disabled
+                          className={`${inputCls} text-right font-extrabold bg-stone-200 border-stone-400 text-stone-950 cursor-not-allowed`}
+                          value={
+                            autoProposedTotal > 0
+                              ? `₹ ${autoProposedTotal.toLocaleString('en-IN')}`
+                              : '₹ 0'
+                          }
+                        />
+                      </LockedFieldWrapper>
+                    )}
+                    <EditSwitch
+                      checked={Boolean(fields.janaProposedTotalEdit)}
+                      onChange={(checked) => handleChange('janaProposedTotalEdit', checked)}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        {/* Cost & Rate as per Customer Estimate */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-stone-300">
+          {/* 7.16 Cost as per Estimate of Customer */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  7.16 Cost as per Estimate of Customer (Rs.)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaCostEstimateCustomerNA)}
+                  onChange={(checked) => {
+                    handleChange('janaCostEstimateCustomerNA', checked);
+                    if (checked) {
+                      handleChange('janaCostEstimateCustomer', 'NA');
+                    } else {
+                      handleChange('janaCostEstimateCustomer', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaCostEstimateCustomerNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaCostEstimateCustomerNA
+                  ? 'NA'
+                  : (fields.janaCostEstimateCustomer ?? '')
+              }
+              onChange={(e) => handleChange('janaCostEstimateCustomer', e.target.value)}
+              disabled={isReadOnly || fields.janaCostEstimateCustomerNA}
+              placeholder={fields.janaCostEstimateCustomerNA ? 'NA' : 'e.g. 1500000'}
+            />
+          </Field>
+
+          {/* 7.17 Rate/ Sq.ft. as per Estimate of customer */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  7.17 Rate/ Sq.ft. as per Estimate of Customer (Rs.)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaRateEstimateCustomerNA)}
+                  onChange={(checked) => {
+                    handleChange('janaRateEstimateCustomerNA', checked);
+                    if (checked) {
+                      handleChange('janaRateEstimateCustomer', 'NA');
+                    } else {
+                      handleChange('janaRateEstimateCustomer', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaRateEstimateCustomerNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaRateEstimateCustomerNA
+                  ? 'NA'
+                  : (fields.janaRateEstimateCustomer ?? '')
+              }
+              onChange={(e) => handleChange('janaRateEstimateCustomer', e.target.value)}
+              disabled={isReadOnly || fields.janaRateEstimateCustomerNA}
+              placeholder={fields.janaRateEstimateCustomerNA ? 'NA' : 'e.g. 1800'}
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* ─── 4. Table: Description of proposed construction/ improvement (Light Lime '#f7fee7') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-lime-300 shadow-sm"
+        style={{ backgroundColor: '#f7fee7' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-lime-300 pb-3">
+          <div className="flex items-center gap-2">
+            <Building className="w-5 h-5 text-lime-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              7.18 Description of Proposed Construction / Improvement
+            </h3>
+          </div>
+          <span className="text-xs text-lime-800 font-medium bg-lime-100 px-2.5 py-1 rounded-md border border-lime-300">
+            Section 7: Table 3
+          </span>
+        </div>
+
+        {/* 7.18 Material at site (Yes/No) */}
+        <div className="max-w-md bg-white/70 p-3 rounded-lg border border-lime-200">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs font-semibold text-gray-700">
+              Material at site (Yes/ No)
+            </span>
+            <NaCheckbox
+              checked={Boolean(fields.janaMaterialAtSiteNA)}
+              onChange={(checked) => {
+                handleChange('janaMaterialAtSiteNA', checked);
+                if (checked) {
+                  handleChange('janaMaterialAtSite', 'NA');
+                } else {
+                  handleChange('janaMaterialAtSite', 'Yes');
+                }
+              }}
+              disabled={isReadOnly}
+            />
+          </div>
+          {fields.janaMaterialAtSiteNA ? (
+            <div className="text-[11px] text-gray-500 italic mt-1">Not Applicable (NA)</div>
+          ) : (
+            <div className="mt-2">
+              <RadioGroup
+                name="janaMaterialAtSite"
+                value={fields.janaMaterialAtSite || 'Yes'}
+                onChange={(val) => handleChange('janaMaterialAtSite', val)}
+                options={['Yes', 'No']}
+                disabled={isReadOnly}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* 7.19 Data Rows Table */}
+        <div className="overflow-x-auto rounded-xl border border-lime-300 bg-white/90 shadow-2xs">
+          <table className="w-full text-xs text-left border-collapse min-w-160">
+            <thead>
+              <tr className="bg-lime-200/70 border-b border-lime-300 text-lime-950 font-bold uppercase tracking-wider text-[11px]">
+                <th className="py-3 px-4 w-2/5 min-w-40">Description</th>
+                <th className="py-3 px-4 w-1/5 min-w-28 text-center">Rs./ sqft</th>
+                <th className="py-3 px-4 w-1/5 min-w-24 text-center">Qty.</th>
+                <th className="py-3 px-4 w-1/5 min-w-36 text-right">Total Value (Rs.)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-lime-100">
+              {improvementIndices.map((i) => {
+                const descKey = 'janaImprovementDesc_' + i;
+                const rateKey = 'janaImprovementRate_' + i;
+                const qtyKey = 'janaImprovementQty_' + i;
+                const valKey = 'janaImprovementVal_' + i;
+                const editKey = 'janaImprovementValEdit_' + i;
+                const isEdit = Boolean(fields[editKey]);
+                const rate = parseNum(fields[rateKey]);
+                const qty = parseNum(fields[qtyKey]);
+                const autoVal = Math.round(rate * qty);
+
+                return (
+                  <tr key={i} className="hover:bg-lime-50/50 transition-colors">
+                    <td className="p-2.5">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields[descKey] ?? ''}
+                        onChange={(e) => handleChange(descKey, e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder={
+                          i === 0
+                            ? 'Civil Construction Work'
+                            : i === 1
+                            ? 'Finishing & Flooring'
+                            : 'Plumbing & Electrical Work'
+                        }
+                      />
+                    </td>
+                    <td className="p-2.5">
+                      <input
+                        type="number"
+                        step="any"
+                        className={`${inputCls} text-center`}
+                        value={fields[rateKey] ?? ''}
+                        onChange={(e) => handleChange(rateKey, e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="p-2.5">
+                      <input
+                        type="number"
+                        step="any"
+                        className={`${inputCls} text-center`}
+                        value={fields[qtyKey] ?? ''}
+                        onChange={(e) => handleChange(qtyKey, e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="p-2.5 text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        {isEdit ? (
+                          <input
+                            type="number"
+                            step="any"
+                            className={`${inputCls} text-right font-bold bg-white text-lime-950 border-lime-400`}
+                            value={fields[valKey] ?? autoVal}
+                            onChange={(e) => handleChange(valKey, e.target.value)}
+                            disabled={isReadOnly}
+                          />
+                        ) : (
+                          <LockedFieldWrapper
+                            isLocked={true}
+                            tooltipMessage=">>Auto calculating from [Rs./ sqft * Qty.]<<"
+                          >
+                            <input
+                              type="text"
+                              readOnly
+                              disabled
+                              className={`${inputCls} text-right font-bold bg-lime-50/80 border-lime-300 text-lime-950 cursor-not-allowed`}
+                              value={
+                                autoVal > 0
+                                  ? `₹ ${autoVal.toLocaleString('en-IN')}`
+                                  : '₹ 0'
+                              }
+                            />
+                          </LockedFieldWrapper>
+                        )}
+                        <EditSwitch
+                          checked={isEdit}
+                          onChange={(checked) => handleChange(editKey, checked)}
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* 7.20' Value of extra Amenities */}
+        <div className="pt-2 border-t border-lime-300 max-w-md">
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  7.20 Value of Extra Amenities (Rs.)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaValueExtraAmenitiesNA)}
+                  onChange={(checked) => {
+                    handleChange('janaValueExtraAmenitiesNA', checked);
+                    if (checked) {
+                      handleChange('janaValueExtraAmenities', 'NA');
+                    } else {
+                      handleChange('janaValueExtraAmenities', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaValueExtraAmenitiesNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaValueExtraAmenitiesNA
+                  ? 'NA'
+                  : (fields.janaValueExtraAmenities ?? '')
+              }
+              onChange={(e) => handleChange('janaValueExtraAmenities', e.target.value)}
+              disabled={isReadOnly || fields.janaValueExtraAmenitiesNA}
+              placeholder={fields.janaValueExtraAmenitiesNA ? 'NA' : 'e.g. 50000'}
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* ─── 5. Container: Final Valuation (Light Amber '#fef3c7') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-amber-300 shadow-sm"
+        style={{ backgroundColor: '#fef3c7' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-300 pb-3">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-amber-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Final Valuation
+            </h3>
+          </div>
+          <span className="text-xs text-amber-900 font-medium bg-amber-200 px-2.5 py-1 rounded-md border border-amber-300">
+            Section 7: Container 2
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+          {/* 7.21 Total Future Value of Property after completion of proposed construction (A+B+C) */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex items-center justify-between w-full">
+                  <span className="font-bold text-gray-900 text-xs md:text-sm">
+                    7.21 Total Future Value of Property (A+B+C) (Rs.)
+                  </span>
+                  <EditSwitch
+                    checked={Boolean(fields.janaFuturePropertyValueEdit)}
+                    onChange={(checked) => handleChange('janaFuturePropertyValueEdit', checked)}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              {fields.janaFuturePropertyValueEdit ? (
+                <input
+                  type="number"
+                  step="any"
+                  className={`${inputCls} bg-white border-amber-500 font-black text-amber-950 text-base md:text-lg`}
+                  value={fields.janaFuturePropertyValueManual ?? autoFuturePropertyValue}
+                  onChange={(e) =>
+                    handleChange('janaFuturePropertyValueManual', e.target.value)
+                  }
+                  disabled={isReadOnly}
+                  placeholder="Enter future property value..."
+                />
+              ) : (
+                <LockedFieldWrapper
+                  isLocked={true}
+                  tooltipMessage=">>Auto calculating from [7.10' Total Existing Value of Property (A+B) (Rs) + 7.15 Total + 7.20' Value of extra Amenities]<<"
+                >
+                  <input
+                    type="text"
+                    readOnly
+                    disabled
+                    className={`${inputCls} bg-amber-100/90 border-amber-400 font-black text-amber-950 text-base md:text-lg cursor-not-allowed`}
+                    value={
+                      autoFuturePropertyValue > 0
+                        ? `₹ ${autoFuturePropertyValue.toLocaleString('en-IN')}`
+                        : '₹ 0'
+                    }
+                  />
+                </LockedFieldWrapper>
+              )}
+            </Field>
+          </div>
+
+          {/* 7.22 Valuation as per Govt. Guideline Rate | Rate (per sqft) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                7.22 Govt. Guideline Rate (per sqft) (Rs.)
+              </span>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={inputCls}
+              value={fields.janaGovtGuidelineRate ?? ''}
+              onChange={(e) => handleChange('janaGovtGuidelineRate', e.target.value)}
+              disabled={isReadOnly}
+              placeholder="e.g. 1200"
+            />
+          </Field>
+
+          {/* 7.25 Land value as per Government Guideline Rate (Rs) */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  7.25 Land Value as per Govt. Guideline Rate (Rs.)
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.janaGovtLandValueEdit)}
+                  onChange={(checked) => handleChange('janaGovtLandValueEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.janaGovtLandValueEdit ? (
+              <input
+                type="number"
+                step="any"
+                className={`${inputCls} bg-white border-amber-400 font-bold text-gray-900`}
+                value={fields.janaGovtLandValueManual ?? autoGovtLandValue}
+                onChange={(e) => handleChange('janaGovtLandValueManual', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Enter Govt Land Value..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage=">>Auto calculating from [7.23 Land Area * 7.22 Valuation as per Govt. Guideline Rate (per sqft)]<<"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-amber-50/90 border-amber-300 font-bold text-amber-950 cursor-not-allowed`}
+                  value={
+                    autoGovtLandValue > 0
+                      ? `₹ ${autoGovtLandValue.toLocaleString('en-IN')}`
+                      : '₹ 0'
+                  }
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* 7.22 Distressed Value of Property (Rs) (75% of market value) */}
+          <div className="md:col-span-2">
+            <Field
+              label={
+                <div className="flex items-center justify-between w-full">
+                  <span className="font-bold text-gray-900 text-xs md:text-sm">
+                    7.22 Distressed Value of Property (75% of Market Value) (Rs.)
+                  </span>
+                  <EditSwitch
+                    checked={Boolean(fields.janaDistressedValueEdit)}
+                    onChange={(checked) =>
+                      handleChange('janaDistressedValueEdit', checked)
+                    }
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              {fields.janaDistressedValueEdit ? (
+                <input
+                  type="number"
+                  step="any"
+                  className={`${inputCls} bg-white border-amber-500 font-bold text-amber-950 text-base`}
+                  value={fields.janaDistressedValueManual ?? autoDistressedValue}
+                  onChange={(e) =>
+                    handleChange('janaDistressedValueManual', e.target.value)
+                  }
+                  disabled={isReadOnly}
+                  placeholder="Enter distressed value..."
+                />
+              ) : (
+                <LockedFieldWrapper
+                  isLocked={true}
+                  tooltipMessage=">>Auto calculating from [7.21 Total Future Value of Property * 0.75]<<"
+                >
+                  <input
+                    type="text"
+                    readOnly
+                    disabled
+                    className={`${inputCls} bg-amber-100/90 border-amber-400 font-bold text-amber-950 text-base cursor-not-allowed`}
+                    value={
+                      autoDistressedValue > 0
+                        ? `₹ ${autoDistressedValue.toLocaleString('en-IN')}`
+                        : '₹ 0'
+                    }
+                  />
+                </LockedFieldWrapper>
+              )}
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Jana Small Finance Bank BankConfig ──────────────────────────────────────
 
 export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
@@ -3264,6 +4495,11 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     'section-4', // Replaced by Section 4: PHYSICAL DETAILS
     'section-5', // Replaced by Section 5: OCCUPANCY DETAILS
     'section-6', // Replaced by Section 6: Violations Observed if any
+    'section-7', // Replaced by Section 7: VALUATION
+    'section-7a',
+    'section-7b',
+    'section-7c',
+    'section-8',
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -3273,6 +4509,7 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     { id: 'jana-section-4', title: 'PHYSICAL DETAILS' },
     { id: 'jana-section-5', title: 'OCCUPANCY DETAILS' },
     { id: 'jana-section-6', title: 'Violations Observed if any' },
+    { id: 'jana-section-7', title: 'VALUATION' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
     { id: 'section-11', title: 'Photographs' },
@@ -3357,6 +4594,19 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'jana-section-7',
+      title: 'VALUATION',
+      number: 7,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ValuationSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Affordable Housing / MSME Loan',
@@ -3402,6 +4652,9 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     janaGraveyardNear: 'No',
     janaHabitationPercent: '80%',
     janaViolationsOtherRemarks: 'Nil',
+    janaExistingAreaType: 'Built Up Area',
+    janaMaterialAtSite: 'Yes',
+    janaImprovementRowsCount: 3,
   },
 };
 
