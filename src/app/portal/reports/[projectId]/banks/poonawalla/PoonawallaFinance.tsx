@@ -4880,6 +4880,192 @@ function ValueExtraAmenitiesSection({
   );
 }
 
+// ─── Section 11: FLOORWISE DETAILS OF USAGE OF PROPERTY: ────────────────────
+
+const FLOOR_USAGE_ROWS = [
+  { key: 'Basement', label: 'Basement' },
+  { key: 'Ground', label: 'Ground' },
+  { key: 'First', label: 'First' },
+  { key: 'Second', label: 'Second' },
+  { key: 'Third', label: 'Third' },
+  { key: 'FourthAbove', label: '4th/above' },
+];
+
+const USAGE_OPTIONS = [
+  { value: 'Commercial', label: 'Commercial' },
+  { value: 'Residential', label: 'Residential' },
+  { value: 'Mixed', label: 'Mixed' },
+  { value: 'Office', label: 'Office' },
+  { value: 'Shop', label: 'Shop' },
+  { value: 'Godown / Warehouse', label: 'Godown / Warehouse' },
+  { value: 'Parking', label: 'Parking' },
+  { value: 'Vacant', label: 'Vacant' },
+];
+
+function FloorwiseUsageDetailsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const defaultUsage = fields.poonawallaCurrentUsage || 'Commercial';
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Floor Usage Table (Use Light Sky Blue '#e1f5fe') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-sky-300 shadow-sm"
+        style={{ backgroundColor: '#e1f5fe' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-sky-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Table className="w-5 h-5 text-sky-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Floor Usage Table
+            </h3>
+          </div>
+          <span className="text-xs text-sky-900 font-medium bg-sky-100 px-2.5 py-1 rounded-md border border-sky-300">
+            Section 11: Container 1
+          </span>
+        </div>
+
+        <div className="overflow-x-auto rounded-lg border border-sky-200 shadow-xs bg-white">
+          <table className="w-full text-sm text-left border-collapse min-w-175">
+            <thead>
+              <tr className="border-b border-sky-200 bg-sky-100/70 text-sky-950 font-bold text-xs uppercase tracking-wider">
+                <th className="p-3 w-36 border-r border-sky-200">
+                  Floor
+                </th>
+                <th className="p-3 w-48 border-r border-sky-200">
+                  Usage
+                </th>
+                <th className="p-3 w-28 border-r border-sky-200">
+                  Units
+                </th>
+                <th className="p-3 w-32 border-r border-sky-200">
+                  If Tenanted (Yes/No)
+                </th>
+                <th className="p-3 w-44 border-r border-sky-200">
+                  Yr of Current Tenancy
+                </th>
+                <th className="p-3">
+                  Rental Assessment
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-sky-100">
+              {FLOOR_USAGE_ROWS.map(({ key, label }) => {
+                const usageVal = fields[`poonawallaFloorUsage_${key}`] ?? defaultUsage;
+                const customUsageVal = fields[`poonawallaFloorUsageCustom_${key}`] ?? '';
+                const unitsVal = fields[`poonawallaFloorUnits_${key}`] ?? '';
+                const tenantedVal = fields[`poonawallaFloorTenanted_${key}`] ?? 'No';
+                const tenancyYrVal = fields[`poonawallaFloorTenancyYr_${key}`] ?? '';
+                const rentalVal = fields[`poonawallaFloorRentalAssessment_${key}`] ?? '';
+
+                return (
+                  <tr key={key} className="hover:bg-sky-50/40 transition-colors">
+                    {/* Floor Label */}
+                    <td className="p-3 font-bold text-gray-800 text-xs md:text-sm bg-sky-50/50 border-r border-sky-200">
+                      <span className="inline-block px-2.5 py-1 rounded bg-sky-100 text-sky-950 font-bold tracking-wide">
+                        {label}
+                      </span>
+                    </td>
+
+                    {/* Dropdown for USAGE */}
+                    <td className="p-2.5 border-r border-sky-200">
+                      <CustomSelect
+                        value={usageVal}
+                        customValue={customUsageVal}
+                        onChange={(val) =>
+                          handleChange(`poonawallaFloorUsage_${key}`, val)
+                        }
+                        onCustomChange={(val) =>
+                          handleChange(`poonawallaFloorUsageCustom_${key}`, val)
+                        }
+                        options={USAGE_OPTIONS}
+                        disabled={isReadOnly}
+                        placeholder="Select Usage..."
+                      />
+                    </td>
+
+                    {/* Input Box for UNITS */}
+                    <td className="p-2.5 border-r border-sky-200">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={unitsVal}
+                        onChange={(e) =>
+                          handleChange(`poonawallaFloorUnits_${key}`, e.target.value)
+                        }
+                        disabled={isReadOnly}
+                        placeholder="e.g. 1"
+                      />
+                    </td>
+
+                    {/* Dropdown for IF TENANTED (Yes/No) */}
+                    <td className="p-2.5 border-r border-sky-200">
+                      <select
+                        className={inputCls}
+                        value={tenantedVal}
+                        onChange={(e) =>
+                          handleChange(`poonawallaFloorTenanted_${key}`, e.target.value)
+                        }
+                        disabled={isReadOnly}
+                      >
+                        <option value="No">No</option>
+                        <option value="Yes">Yes</option>
+                      </select>
+                    </td>
+
+                    {/* Input Box for YR OF CURRENT TENANCY */}
+                    <td className="p-2.5 border-r border-sky-200">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={tenancyYrVal}
+                        onChange={(e) =>
+                          handleChange(`poonawallaFloorTenancyYr_${key}`, e.target.value)
+                        }
+                        disabled={isReadOnly}
+                        placeholder={tenantedVal === 'Yes' ? 'e.g. 2 Years' : 'NA / Years'}
+                      />
+                    </td>
+
+                    {/* Input Box for RENTAL ASSESSMENT */}
+                    <td className="p-2.5">
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs">
+                          ₹
+                        </span>
+                        <input
+                          type="text"
+                          className={`${inputCls} pl-7`}
+                          value={rentalVal}
+                          onChange={(e) =>
+                            handleChange(
+                              `poonawallaFloorRentalAssessment_${key}`,
+                              e.target.value
+                            )
+                          }
+                          disabled={isReadOnly}
+                          placeholder="e.g. 15,000 / month"
+                        />
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -4897,6 +5083,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     'section-8', // Replaced by Section 8: Floor Wise Area (In Sqft.)
     'section-9', // Replaced by Section 9: (A)Description of Constructed Area and Rates
     'section-10', // Replaced by Section 10: (B)Value of Extra Amenities
+    'section-11', // Replaced by Section 11: FLOORWISE DETAILS OF USAGE OF PROPERTY:
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -4910,7 +5097,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     { id: 'poonawalla-section-8', title: 'Floor Wise Area (In Sqft.)' },
     { id: 'poonawalla-section-9', title: 'Description of Constructed Area and Rates' },
     { id: 'poonawalla-section-10', title: 'Value of Extra Amenities' },
-    { id: 'section-11', title: 'Certificate' },
+    { id: 'poonawalla-section-11', title: 'Floorwise Details of Usage of Property' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
     { id: 'photographs', title: 'Photographs' },
@@ -5041,6 +5228,19 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <ValueExtraAmenitiesSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'poonawalla-section-11',
+      title: 'FLOORWISE DETAILS OF USAGE OF PROPERTY:',
+      number: 11,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <FloorwiseUsageDetailsSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
