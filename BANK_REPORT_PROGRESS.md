@@ -8,10 +8,10 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 
 ### 📊 Overall Status Summary
 
-| Status Category | Count | Description |
-| **✅ Completed** | **18 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
-| **🔨 In Progress** | **48 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, and ISFC) |
-| **⏳ Not Started** | **11 formats** | Directory reserved / pending base component creation |
+| :--- | :---: | :--- |
+| **✅ Completed** | **16 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete (Includes Protium Finance) |
+| **🔨 In Progress** | **51 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, and Poonawalla Finance) |
+| **⏳ Not Started** | **10 formats** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
@@ -65,7 +65,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | 29.1 | INDUSIND BANK | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
 | 29.2 | INDUSIND BANK | `BBG` | ✅ Created Base | 🔨 In Progress |
 | **30** | **ISFC** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **31** | **JANA SMALL FINANCE BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **31** | **JANA SMALL FINANCE BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **32** | **KOTAK MAHINDRA BANK** | | | |
 | 32.1 | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` | ✅ Created Base | 🔨 In Progress |
 | 32.2 | KOTAK MAHINDRA BANK | `HL-LAP` | ⏳ Not Created | ⏳ Not Started |
@@ -82,7 +82,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **37** | **NAVDHAN FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **38** | **NEO GROWTH** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **39** | **PNB HOUSING FINANCE LTD** | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
-| **40** | **POONAWALLA FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
+| **40** | **POONAWALLA FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **41** | **PROTEUM FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
 | **42** | **PUNJAB & SIND BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **43** | **PUNJAB NATIONAL BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
@@ -131,7 +131,6 @@ Templates with complete interactive report draft builder UI and full PDF rendere
 | **11.1** | BANDHAN BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanHLLAP.tsx` | `src/lib/banks/pdf-bandhan-hllap-renderer.ts` | ✅ Completed |
 | **11.2** | BANDHAN BANK | `SME` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanSME.tsx` | `src/lib/banks/pdf-bandhan-sme-renderer.ts` | ✅ Completed |
 | **12** | BANK OF BARODA-BOB | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-baroda/BankOfBaroda.tsx` | `src/lib/banks/pdf-bank-of-baroda-renderer.ts` | ✅ Completed |
-| **40** | POONAWALLA FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/poonawalla/PoonawallaFinance.tsx` | `src/lib/banks/pdf-poonawalla-finance-renderer.ts` | ✅ Completed |
 | **41** | PROTIUM FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/protium/ProtiumFinance.tsx` | `src/lib/banks/pdf-protium-finance-renderer.ts` | ✅ Completed |
 
 ### 2. Base Structure Completed (`✅ Created Base` — Builder In Progress)
@@ -157,6 +156,7 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **29.1** | INDUSIND BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/indusind/IndusIndHLLAP.tsx` | `src/lib/banks/pdf-indusind-hllap-renderer.ts` | 🔨 In Progress |
 | **29.2** | INDUSIND BANK | `BBG` | `src/app/portal/reports/[projectId]/banks/indusind/IndusIndBBG.tsx` | `src/lib/banks/pdf-indusind-bbg-renderer.ts` | 🔨 In Progress |
 | **30** | ISFC | `Standard` | `src/app/portal/reports/[projectId]/banks/isfc/ISFC.tsx` | `src/lib/banks/pdf-isfc-render.ts` | 🔨 In Progress |
+| **31** | JANA SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/jana-sfb/JanaSmallFinanceBank.tsx` | `src/lib/banks/pdf-jana-small-finance-bank-renderer.ts` | 🔨 In Progress |
 | **32.1** | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` (`kotak-bbg`) | `src/app/portal/reports/[projectId]/banks/kotak/KotakBBG.tsx` | `src/lib/banks/pdf-kotak-bbg-renderer.ts` | 🔨 In Progress |
 | **33** | L&T FINANCIAL SERVICES | `Standard` | `src/app/portal/reports/[projectId]/banks/lt/LTFinancialServices.tsx` | `src/lib/banks/pdf-lt-financial-services-renderer.ts` | 🔨 In Progress |
 | **34.1** | LIC HOUSING FINANCE LTD | `NPA-DEFAULT CASES` | `src/app/portal/reports/[projectId]/banks/lic/LICNPA.tsx` | `src/lib/banks/pdf-lic-npa-renderer.ts` | 🔨 In Progress |
@@ -169,6 +169,7 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **37** | NAVDHAN FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/navdhan/NavdhanFinance.tsx` | `src/lib/banks/pdf-navdhan-finance-renderer.ts` | 🔨 In Progress |
 | **38** | NEO GROWTH | `Standard` | `src/app/portal/reports/[projectId]/banks/neo/NeoGrowth.tsx` | `src/lib/banks/pdf-neo-growth-renderer.ts` | 🔨 In Progress |
 | **39** | PNB HOUSING FINANCE LTD | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/pnb-housing/PNBHousingHLLAP.tsx` | `src/lib/banks/pdf-pnb-housing-renderer.ts` | 🔨 In Progress |
+| **40** | POONAWALLA FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/poonawalla/PoonawallaFinance.tsx` | `src/lib/banks/pdf-poonawalla-finance-renderer.ts` | 🔨 In Progress |
 | **44** | PURPLE FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/purple/PurpleFinance.tsx` | `src/lib/banks/pdf-purple-finance-renderer.ts` | 🔨 In Progress |
 | **45** | SAMMUNATI FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/sammunati/SammunatiFinance.tsx` | `src/lib/banks/pdf-sammunati-finance-renderer.ts` | 🔨 In Progress |
 | **46** | SHRIRAM FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/shriram/ShriramFinance.tsx` | `src/lib/banks/pdf-shriram-finance-renderer.ts` | 🔨 In Progress |
@@ -202,4 +203,8 @@ Templates with base structure & draft UI files created, currently undergoing fie
 - **HDB Financial Services (`Standard`)**:
   - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/hdb/HDBFinancial.tsx` — **🔨 In Progress**.
   - **Dedicated PDF Renderer**: `src/lib/banks/pdf-hdb-financial-render.ts` — **🔨 In Progress**.
+- **Jana Small Finance Bank (`Standard`)**:
+  - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/jana-sfb/JanaSmallFinanceBank.tsx` — **🔨 In Progress** (Sections 1 through 11 custom draft UI components implemented with customized container palettes, lock UIs, and calculations).
+  - **Dedicated PDF Renderer**: `src/lib/banks/pdf-jana-small-finance-bank-renderer.ts` — **🔨 In Progress** (Dedicated renderer in progress).
+
 

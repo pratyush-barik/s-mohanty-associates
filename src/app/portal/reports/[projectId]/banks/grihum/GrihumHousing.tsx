@@ -2971,7 +2971,7 @@ export function EngineeringAspectsSection({
                           disabled={isReadOnly}
                         />
                       </div>
-                      <div className="relative w-full max-w-[140px]">
+                      <div className="relative w-full max-w-35">
                         <input
                           type="number"
                           step="any"
@@ -3402,7 +3402,7 @@ export function ValuationApproachesSection({
           {/* Highlight Cards: Market Value & Distress Value */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-3 border-t border-emerald-100">
             {/* Market Value of Land & Building for present completed property (in Rs) */}
-            <div className="rounded-xl border border-emerald-300 bg-gradient-to-br from-emerald-50/90 to-teal-50/70 p-4 space-y-3 shadow-2xs">
+            <div className="rounded-xl border border-emerald-300 bg-linear-to-br from-emerald-50/90 to-teal-50/70 p-4 space-y-3 shadow-2xs">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-emerald-900 uppercase tracking-wide">
                   MARKET VALUE (PRESENT COMPLETED PROPERTY)
@@ -3457,7 +3457,7 @@ export function ValuationApproachesSection({
             </div>
 
             {/* Distress Value of present completed property @ 75% of MV */}
-            <div className="rounded-xl border border-amber-300 bg-gradient-to-br from-amber-50/80 to-yellow-50/60 p-4 space-y-3 shadow-2xs">
+            <div className="rounded-xl border border-amber-300 bg-linear-to-br from-amber-50/80 to-yellow-50/60 p-4 space-y-3 shadow-2xs">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-amber-900 uppercase tracking-wide">
                   DISTRESS VALUE (@ 75% OF MV)
