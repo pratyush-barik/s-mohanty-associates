@@ -5124,6 +5124,168 @@ function ValuerRemarksSection({
   );
 }
 
+// ─── Section 13: Declaration: ───────────────────────────────────────────────
+
+const DECLARATION_ITEMS = [
+  {
+    key: 'poonawallaDeclaration1',
+    text: '1. The property is physically inspected by our Engineer/Representative.',
+  },
+  {
+    key: 'poonawallaDeclaration2',
+    text: '2. We have no direct/indirect interest in the property valued.',
+  },
+  {
+    key: 'poonawallaDeclaration3',
+    text: '3. The information furnished above is true & correct to the best of our knowledge and belief.',
+  },
+  {
+    key: 'poonawallaDeclaration4',
+    text: '4. The ownership papers/sale deeds may please be verified at your end.',
+  },
+  {
+    key: 'poonawallaDeclaration5',
+    text: '5. The fair market value indicated in the report is an opinion.',
+  },
+];
+
+const DEFAULT_AUTHORIZED_SIGNATORY =
+  'Er. Satyajit Mohanty (Authorized Signatory) - M/s. S MOHANTY ASSOCIATES';
+
+function DeclarationAndSignatorySection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const signatoryVal =
+    fields.poonawallaAuthorizedSignatory ??
+    fields.authorizedSignatory ??
+    DEFAULT_AUTHORIZED_SIGNATORY;
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Declarations & Signatory (Use Light Coral '#fce4e4') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-rose-300 shadow-sm"
+        style={{ backgroundColor: '#fce4e4' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-rose-200 pb-3">
+          <div className="flex items-center gap-2">
+            <FileCheck className="w-5 h-5 text-rose-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Declarations & Signatory
+            </h3>
+          </div>
+          <span className="text-xs text-rose-900 font-medium bg-rose-100 px-2.5 py-1 rounded-md border border-rose-300">
+            Section 13: Container 1
+          </span>
+        </div>
+
+        {/* Declarations Checklist */}
+        <div className="space-y-3">
+          <span className="text-xs font-bold uppercase tracking-wider text-rose-950">
+            Mandatory Declarations
+          </span>
+          <div className="space-y-2.5">
+            {DECLARATION_ITEMS.map(({ key, text }) => {
+              const isChecked = fields[key] ?? true;
+              return (
+                <label
+                  key={key}
+                  className={`flex items-start justify-between gap-3 p-3.5 rounded-lg border transition-all select-none ${
+                    isChecked
+                      ? 'bg-white border-rose-200 shadow-2xs'
+                      : 'bg-rose-50/50 border-rose-200/60 opacity-80'
+                  } ${isReadOnly ? 'cursor-default' : 'cursor-pointer hover:border-rose-300'}`}
+                >
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(isChecked)}
+                      onChange={(e) => handleChange(key, e.target.checked)}
+                      disabled={isReadOnly}
+                      className="mt-0.5 h-4 w-4 rounded border-gray-300 text-rose-600 focus:ring-rose-500 shrink-0"
+                    />
+                    <span className="text-xs md:text-sm font-medium text-gray-800 leading-snug">
+                      {text}
+                    </span>
+                  </div>
+                  <span
+                    className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded tracking-wider shrink-0 border ${
+                      isChecked
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                        : 'bg-rose-100 text-rose-800 border-rose-300'
+                    }`}
+                  >
+                    {isChecked ? 'Agreed' : 'Mandatory'}
+                  </span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Authorized Signatory Field */}
+        <div className="pt-2 border-t border-rose-200">
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  (Authorized Signatory)
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaAuthorizedSignatoryEdit)}
+                  onChange={(checked) =>
+                    handleChange('poonawallaAuthorizedSignatoryEdit', checked)
+                  }
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaAuthorizedSignatoryEdit ? (
+              <input
+                type="text"
+                className={`${inputCls} bg-white border-rose-400 font-medium text-gray-900`}
+                value={fields.poonawallaAuthorizedSignatory ?? signatoryVal}
+                onChange={(e) => {
+                  handleChange('poonawallaAuthorizedSignatory', e.target.value);
+                  handleChange('authorizedSignatory', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Authorized Signatory..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Prefill from authorized signatory profile"
+              >
+                <div className="relative">
+                  <input
+                    type="text"
+                    readOnly
+                    disabled
+                    className={`${inputCls} bg-rose-50/70 border-rose-200 font-medium text-gray-800 cursor-not-allowed`}
+                    value={signatoryVal}
+                  />
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs font-semibold text-rose-800 bg-rose-100/90 px-2 py-0.5 rounded border border-rose-200 pointer-events-none">
+                    <UserCheck className="w-3.5 h-3.5 text-rose-700" />
+                    <span>Verified Signatory</span>
+                  </div>
+                </div>
+              </LockedFieldWrapper>
+            )}
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -5143,6 +5305,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     'section-10', // Replaced by Section 10: (B)Value of Extra Amenities
     'section-11', // Replaced by Section 11: FLOORWISE DETAILS OF USAGE OF PROPERTY:
     'section-12', // Replaced by Section 12: REMARKS:
+    'section-13', // Replaced by Section 13: Declaration:
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -5158,6 +5321,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     { id: 'poonawalla-section-10', title: 'Value of Extra Amenities' },
     { id: 'poonawalla-section-11', title: 'Floorwise Details of Usage of Property' },
     { id: 'poonawalla-section-12', title: 'Remarks' },
+    { id: 'poonawalla-section-13', title: 'Declaration' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
     { id: 'photographs', title: 'Photographs' },
@@ -5320,8 +5484,27 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'poonawalla-section-13',
+      title: 'Declaration:',
+      number: 13,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <DeclarationAndSignatorySection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
+    poonawallaDeclaration1: true,
+    poonawallaDeclaration2: true,
+    poonawallaDeclaration3: true,
+    poonawallaDeclaration4: true,
+    poonawallaDeclaration5: true,
+    poonawallaAuthorizedSignatory: DEFAULT_AUTHORIZED_SIGNATORY,
     poonawallaPurposeOfValuation: 'To assess the fair market value of the collateral security',
     purpose: 'To assess the fair market value of the collateral security',
     purposeOfValuation: 'To assess the fair market value of the collateral security',
