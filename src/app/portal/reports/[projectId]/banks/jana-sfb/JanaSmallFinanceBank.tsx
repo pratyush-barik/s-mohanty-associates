@@ -11,6 +11,8 @@ import {
   Phone,
   FileText,
   UserCheck,
+  Building,
+  MapPin,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -514,6 +516,216 @@ function CustomerDetailsSection({
   );
 }
 
+// ─── Section 2: PROPERTY DETAILS ─────────────────────────────────────────────
+
+function PropertyDetailsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  return (
+    <div className="space-y-6">
+      {/* ─── Container 1: PROPERTY DETAILS (Light Blue '#e3f2fd') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-blue-200 shadow-sm"
+        style={{ backgroundColor: '#e3f2fd' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-blue-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Building className="w-5 h-5 text-blue-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              PROPERTY DETAILS
+            </h3>
+          </div>
+          <span className="text-xs text-blue-700 font-medium bg-blue-100 px-2.5 py-1 rounded-md border border-blue-300">
+            Section 2: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* 2.1 Address of Property (as per site visit) -> [Input Box: Variable size / Textarea] */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                2.1 Address of Property (as per site visit)
+              </span>
+            }
+            span={2}
+          >
+            <AutoResizeTextarea
+              rows={2}
+              value={fields.janaAddressOfProperty ?? fields.propertyAddress ?? fields.address ?? ''}
+              onChange={(e) => {
+                handleChange('janaAddressOfProperty', e.target.value);
+                handleChange('propertyAddress', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter Address of Property as per site visit..."
+            />
+          </Field>
+
+          {/* 2.2 Pin Code -> [Input Box: Fixed size] */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                2.2 Pin Code
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.janaPinCode ?? fields.pincode ?? fields.pinCode ?? ''}
+              onChange={(e) => {
+                handleChange('janaPinCode', e.target.value);
+                handleChange('pincode', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. 751024"
+            />
+          </Field>
+
+          {/* 2.3 Latitude & Longitude -> [Input Box: Fixed size] [Checkbox: NA] */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  2.3 Latitude & Longitude
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaLatitudeLongitudeNA)}
+                  onChange={(checked) => {
+                    handleChange('janaLatitudeLongitudeNA', checked);
+                    if (checked) {
+                      handleChange('janaLatitudeLongitude', 'NA');
+                    } else {
+                      handleChange('janaLatitudeLongitude', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaLatitudeLongitudeNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaLatitudeLongitudeNA
+                  ? 'NA'
+                  : (fields.janaLatitudeLongitude ??
+                     fields.coordinates ??
+                     (fields.latitude && fields.longitude
+                       ? `${fields.latitude}, ${fields.longitude}`
+                       : ''))
+              }
+              onChange={(e) => {
+                handleChange('janaLatitudeLongitude', e.target.value);
+                handleChange('coordinates', e.target.value);
+              }}
+              disabled={isReadOnly || fields.janaLatitudeLongitudeNA}
+              placeholder={fields.janaLatitudeLongitudeNA ? 'NA' : 'e.g. 20.2961, 85.8245'}
+            />
+          </Field>
+
+          {/* 2.4 Legal Address of the Property (as per site visit) -> [Input Box: Variable size / Textarea] */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                2.4 Legal Address of the Property (as per site visit)
+              </span>
+            }
+            span={2}
+          >
+            <AutoResizeTextarea
+              rows={2}
+              value={fields.janaLegalAddressOfProperty ?? fields.legalAddress ?? fields.propertyAddress ?? ''}
+              onChange={(e) => {
+                handleChange('janaLegalAddressOfProperty', e.target.value);
+                handleChange('legalAddress', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter Legal Address of the Property..."
+            />
+          </Field>
+
+          {/* 2.5 Nearby Landmark -> [Input Box: Fixed size] [Checkbox: NA] */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  2.5 Nearby Landmark
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaNearbyLandmarkNA)}
+                  onChange={(checked) => {
+                    handleChange('janaNearbyLandmarkNA', checked);
+                    if (checked) {
+                      handleChange('janaNearbyLandmark', 'NA');
+                    } else {
+                      handleChange('janaNearbyLandmark', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaNearbyLandmarkNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaNearbyLandmarkNA
+                  ? 'NA'
+                  : (fields.janaNearbyLandmark ?? fields.nearestLandmark ?? fields.landmark ?? '')
+              }
+              onChange={(e) => {
+                handleChange('janaNearbyLandmark', e.target.value);
+                handleChange('nearestLandmark', e.target.value);
+              }}
+              disabled={isReadOnly || fields.janaNearbyLandmarkNA}
+              placeholder={fields.janaNearbyLandmarkNA ? 'NA' : 'Enter Nearby Landmark'}
+            />
+          </Field>
+
+          {/* 2.6 Seismic Zone -> [Dropdown] */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                2.6 Seismic Zone
+              </span>
+            }
+          >
+            <select
+              className={inputCls}
+              value={fields.janaSeismicZone || 'Zone III'}
+              onChange={(e) => handleChange('janaSeismicZone', e.target.value)}
+              disabled={isReadOnly}
+            >
+              <option value="Zone II">Zone II (Low Damage Risk Zone)</option>
+              <option value="Zone III">Zone III (Moderate Damage Risk Zone)</option>
+              <option value="Zone IV">Zone IV (High Damage Risk Zone)</option>
+              <option value="Zone V">Zone V (Very High Damage Risk Zone)</option>
+            </select>
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Jana Small Finance Bank BankConfig ──────────────────────────────────────
 
 export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
@@ -522,11 +734,12 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
   displayName: 'Jana Small Finance Bank',
   hiddenSections: [
     'section-1', // Replaced by Section 1: CUSTOMER DETAILS
+    'section-2', // Replaced by Section 2: PROPERTY DETAILS
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
     { id: 'jana-section-1', title: 'CUSTOMER DETAILS' },
-    { id: 'section-2', title: 'Technical Details' },
+    { id: 'jana-section-2', title: 'PROPERTY DETAILS' },
     { id: 'section-3', title: 'Valuation' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
@@ -547,12 +760,26 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'jana-section-2',
+      title: 'PROPERTY DETAILS',
+      number: 2,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <PropertyDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Affordable Housing / MSME Loan',
     janaCaseType: 'Home Loan',
     janaRelationWithCustomer: 'Self',
     janaVisitDoneBy: 'Er. S. Mohanty',
+    janaSeismicZone: 'Zone III',
   },
 };
 
