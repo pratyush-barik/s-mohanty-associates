@@ -19,6 +19,7 @@ import {
   Home,
   Layers,
   Key,
+  AlertTriangle,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -2798,6 +2799,458 @@ function OccupancyDetailsSection({
   );
 }
 
+// ─── Section 6: Violations Observed if any ────────────────────────────────────
+
+function ViolationsObservedSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Violations Observed if any (Light Grey '#f1f5f9') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-slate-300 shadow-sm"
+        style={{ backgroundColor: '#f1f5f9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-300 pb-3">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-5 h-5 text-slate-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Violations Observed if any
+            </h3>
+          </div>
+          <span className="text-xs text-slate-800 font-medium bg-slate-200 px-2.5 py-1 rounded-md border border-slate-300">
+            Section 6: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {/* 6.1 Is there encroachment of land (Y/N) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                6.1 Is there Encroachment of Land (Y/N)
+              </span>
+            }
+          >
+            <RadioGroup
+              name="janaLandEncroachment"
+              value={fields.janaLandEncroachment || 'No'}
+              onChange={(val) => {
+                handleChange('janaLandEncroachment', val);
+                if (val === 'No') {
+                  handleChange('janaEncroachmentAreaNA', true);
+                  handleChange('janaEncroachmentArea', 'NA');
+                } else {
+                  handleChange('janaEncroachmentAreaNA', false);
+                  handleChange('janaEncroachmentArea', '');
+                }
+              }}
+              options={['Yes', 'No']}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* 6.2 Area of encroachment */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  6.2 Area of Encroachment
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaEncroachmentAreaNA)}
+                  onChange={(checked) => {
+                    handleChange('janaEncroachmentAreaNA', checked);
+                    if (checked) {
+                      handleChange('janaEncroachmentArea', 'NA');
+                    } else {
+                      handleChange('janaEncroachmentArea', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaEncroachmentAreaNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaEncroachmentAreaNA
+                  ? 'NA'
+                  : (fields.janaEncroachmentArea ?? '')
+              }
+              onChange={(e) => handleChange('janaEncroachmentArea', e.target.value)}
+              disabled={isReadOnly || fields.janaEncroachmentAreaNA}
+              placeholder={fields.janaEncroachmentAreaNA ? 'NA' : 'e.g. 50 Sq. Ft.'}
+            />
+          </Field>
+
+          {/* 6.3 Any Deviation in Structure */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  6.3 Any Deviation in Structure
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaStructureDeviationNA)}
+                  onChange={(checked) => {
+                    handleChange('janaStructureDeviationNA', checked);
+                    if (checked) {
+                      handleChange('janaStructureDeviation', 'NA');
+                    } else {
+                      handleChange('janaStructureDeviation', 'No');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.janaStructureDeviationNA ? (
+              <div className="p-2 bg-gray-100 rounded-lg text-gray-500 italic text-xs border border-gray-200">
+                Not Applicable (NA)
+              </div>
+            ) : (
+              <RadioGroup
+                name="janaStructureDeviation"
+                value={fields.janaStructureDeviation || 'No'}
+                onChange={(val) => handleChange('janaStructureDeviation', val)}
+                options={['Yes', 'No']}
+                disabled={isReadOnly}
+              />
+            )}
+          </Field>
+
+          {/* 6.4 Risk of Demolition/ Sealing */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                6.4 Risk of Demolition/ Sealing
+              </span>
+            }
+          >
+            <RadioGroup
+              name="janaDemolitionRisk"
+              value={fields.janaDemolitionRisk || 'No'}
+              onChange={(val) => handleChange('janaDemolitionRisk', val)}
+              options={['Yes', 'No']}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* 6.5 Is there HT line near to the property? */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                6.5 HT Line Near to Property?
+              </span>
+            }
+          >
+            <RadioGroup
+              name="janaHtLineNear"
+              value={fields.janaHtLineNear || 'No'}
+              onChange={(val) => {
+                handleChange('janaHtLineNear', val);
+                if (val === 'No') {
+                  handleChange('janaHtLineDistanceVoltageNA', true);
+                  handleChange('janaHtLineDistanceVoltage', 'NA');
+                } else {
+                  handleChange('janaHtLineDistanceVoltageNA', false);
+                  handleChange('janaHtLineDistanceVoltage', '');
+                }
+              }}
+              options={['Yes', 'No']}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* 6.6 Distance of HT line from the property and Voltage in kiloVolt */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  6.6 Distance of HT Line & Voltage (kV)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaHtLineDistanceVoltageNA)}
+                  onChange={(checked) => {
+                    handleChange('janaHtLineDistanceVoltageNA', checked);
+                    if (checked) {
+                      handleChange('janaHtLineDistanceVoltage', 'NA');
+                    } else {
+                      handleChange('janaHtLineDistanceVoltage', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaHtLineDistanceVoltageNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaHtLineDistanceVoltageNA
+                  ? 'NA'
+                  : (fields.janaHtLineDistanceVoltage ?? '')
+              }
+              onChange={(e) => handleChange('janaHtLineDistanceVoltage', e.target.value)}
+              disabled={isReadOnly || fields.janaHtLineDistanceVoltageNA}
+              placeholder={
+                fields.janaHtLineDistanceVoltageNA ? 'NA' : 'e.g. 50 meters, 11 kV'
+              }
+            />
+          </Field>
+
+          {/* 6.7 Is property in buffer zone/ no construction zone */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                6.7 Buffer Zone / No Construction Zone?
+              </span>
+            }
+          >
+            <RadioGroup
+              name="janaBufferZone"
+              value={fields.janaBufferZone || 'No'}
+              onChange={(val) => {
+                handleChange('janaBufferZone', val);
+                if (val === 'No') {
+                  handleChange('janaBufferZoneDetailsNA', true);
+                  handleChange('janaBufferZoneDetails', 'NA');
+                } else {
+                  handleChange('janaBufferZoneDetailsNA', false);
+                  handleChange('janaBufferZoneDetails', '');
+                }
+              }}
+              options={['Yes', 'No']}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* 6.8 Details of buffer zone/ no construction zone */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  6.8 Details of Buffer Zone
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaBufferZoneDetailsNA)}
+                  onChange={(checked) => {
+                    handleChange('janaBufferZoneDetailsNA', checked);
+                    if (checked) {
+                      handleChange('janaBufferZoneDetails', 'NA');
+                    } else {
+                      handleChange('janaBufferZoneDetails', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <AutoResizeTextarea
+              value={
+                fields.janaBufferZoneDetailsNA
+                  ? 'NA'
+                  : (fields.janaBufferZoneDetails ?? '')
+              }
+              onChange={(e) => handleChange('janaBufferZoneDetails', e.target.value)}
+              disabled={isReadOnly || fields.janaBufferZoneDetailsNA}
+              placeholder={
+                fields.janaBufferZoneDetailsNA
+                  ? 'NA'
+                  : 'Mention restrictions or buffer zone specifications...'
+              }
+              rows={2}
+            />
+          </Field>
+
+          {/* 6.9 Is there any litigation notice on the property from any FI */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                6.9 Litigation Notice from any FI?
+              </span>
+            }
+          >
+            <RadioGroup
+              name="janaLitigationNotice"
+              value={fields.janaLitigationNotice || 'No'}
+              onChange={(val) => {
+                handleChange('janaLitigationNotice', val);
+                if (val === 'No') {
+                  handleChange('janaNoticeByFiDetailsNA', true);
+                  handleChange('janaNoticeByFiDetails', 'NA');
+                } else {
+                  handleChange('janaNoticeByFiDetailsNA', false);
+                  handleChange('janaNoticeByFiDetails', '');
+                }
+              }}
+              options={['Yes', 'No']}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* 6.10' Details of any notice by FI */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  6.10 Details of Any Notice by FI
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaNoticeByFiDetailsNA)}
+                  onChange={(checked) => {
+                    handleChange('janaNoticeByFiDetailsNA', checked);
+                    if (checked) {
+                      handleChange('janaNoticeByFiDetails', 'NA');
+                    } else {
+                      handleChange('janaNoticeByFiDetails', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <AutoResizeTextarea
+              value={
+                fields.janaNoticeByFiDetailsNA
+                  ? 'NA'
+                  : (fields.janaNoticeByFiDetails ?? '')
+              }
+              onChange={(e) => handleChange('janaNoticeByFiDetails', e.target.value)}
+              disabled={isReadOnly || fields.janaNoticeByFiDetailsNA}
+              placeholder={
+                fields.janaNoticeByFiDetailsNA
+                  ? 'NA'
+                  : 'Enter details of any notice / proceedings from FI...'
+              }
+              rows={2}
+            />
+          </Field>
+
+          {/* 6.11 Is property near to graveyard/ crematorium or burning ghats */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                6.11 Near Graveyard / Crematorium?
+              </span>
+            }
+          >
+            <RadioGroup
+              name="janaGraveyardNear"
+              value={fields.janaGraveyardNear || 'No'}
+              onChange={(val) => handleChange('janaGraveyardNear', val)}
+              options={['Yes', 'No']}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* 6.12 Habitation (%) */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  6.12 Habitation (%)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaHabitationPercentNA)}
+                  onChange={(checked) => {
+                    handleChange('janaHabitationPercentNA', checked);
+                    if (checked) {
+                      handleChange('janaHabitationPercent', 'NA');
+                    } else {
+                      handleChange('janaHabitationPercent', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaHabitationPercentNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaHabitationPercentNA
+                  ? 'NA'
+                  : (fields.janaHabitationPercent ?? '')
+              }
+              onChange={(e) => handleChange('janaHabitationPercent', e.target.value)}
+              disabled={isReadOnly || fields.janaHabitationPercentNA}
+              placeholder={fields.janaHabitationPercentNA ? 'NA' : 'e.g. 80%'}
+            />
+          </Field>
+
+          {/* 6.14 Any other remarks */}
+          <div className="md:col-span-2 lg:col-span-3">
+            <Field
+              label={
+                <div className="flex items-center justify-between w-full">
+                  <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                    6.14 Any Other Remarks
+                  </span>
+                  <NaCheckbox
+                    checked={Boolean(fields.janaViolationsOtherRemarksNA)}
+                    onChange={(checked) => {
+                      handleChange('janaViolationsOtherRemarksNA', checked);
+                      if (checked) {
+                        handleChange('janaViolationsOtherRemarks', 'NA');
+                      } else {
+                        handleChange('janaViolationsOtherRemarks', '');
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <AutoResizeTextarea
+                value={
+                  fields.janaViolationsOtherRemarksNA
+                    ? 'NA'
+                    : (fields.janaViolationsOtherRemarks ?? '')
+                }
+                onChange={(e) => handleChange('janaViolationsOtherRemarks', e.target.value)}
+                disabled={isReadOnly || fields.janaViolationsOtherRemarksNA}
+                placeholder={
+                  fields.janaViolationsOtherRemarksNA
+                    ? 'NA'
+                    : 'Mention any other violations, risks, or site observations...'
+                }
+                rows={2}
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Jana Small Finance Bank BankConfig ──────────────────────────────────────
 
 export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
@@ -2810,6 +3263,7 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     'section-3', // Replaced by Section 3: DOCUMENT DETAILS
     'section-4', // Replaced by Section 4: PHYSICAL DETAILS
     'section-5', // Replaced by Section 5: OCCUPANCY DETAILS
+    'section-6', // Replaced by Section 6: Violations Observed if any
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -2818,6 +3272,7 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     { id: 'jana-section-3', title: 'DOCUMENT DETAILS' },
     { id: 'jana-section-4', title: 'PHYSICAL DETAILS' },
     { id: 'jana-section-5', title: 'OCCUPANCY DETAILS' },
+    { id: 'jana-section-6', title: 'Violations Observed if any' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
     { id: 'section-11', title: 'Photographs' },
@@ -2889,6 +3344,19 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'jana-section-6',
+      title: 'Violations Observed if any',
+      number: 6,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ViolationsObservedSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Affordable Housing / MSME Loan',
@@ -2917,6 +3385,23 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     janaOccupantRelationship: 'Self',
     janaOccupiedByNA: false,
     janaOccupiedSinceNA: false,
+    janaLandEncroachment: 'No',
+    janaEncroachmentAreaNA: true,
+    janaEncroachmentArea: 'NA',
+    janaStructureDeviation: 'No',
+    janaDemolitionRisk: 'No',
+    janaHtLineNear: 'No',
+    janaHtLineDistanceVoltageNA: true,
+    janaHtLineDistanceVoltage: 'NA',
+    janaBufferZone: 'No',
+    janaBufferZoneDetailsNA: true,
+    janaBufferZoneDetails: 'NA',
+    janaLitigationNotice: 'No',
+    janaNoticeByFiDetailsNA: true,
+    janaNoticeByFiDetails: 'NA',
+    janaGraveyardNear: 'No',
+    janaHabitationPercent: '80%',
+    janaViolationsOtherRemarks: 'Nil',
   },
 };
 
