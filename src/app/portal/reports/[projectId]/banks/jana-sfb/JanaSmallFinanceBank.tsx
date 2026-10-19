@@ -4482,6 +4482,208 @@ function ValuationSection({
   );
 }
 
+// ─── Section 8: STAGE OF CONSTRUCTION ────────────────────────────────────────
+
+function StageOfConstructionSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const structureOptions = [
+    { value: 'RCC', label: 'RCC' },
+    { value: 'Load Bearing', label: 'Load Bearing' },
+    { value: 'Mix', label: 'Mix' },
+    { value: 'Steel Structure', label: 'Steel Structure' },
+    { value: 'Prefabricated', label: 'Prefabricated' },
+  ];
+
+  const stageOptions = [
+    { value: 'Initial', label: 'Initial' },
+    { value: 'Intermediate', label: 'Intermediate' },
+    { value: 'Final', label: 'Final' },
+    { value: 'Initial (Foundation / Plinth Level)', label: 'Initial (Foundation / Plinth Level)' },
+    { value: 'Intermediate (Lintel / Slab / Brickwork Level)', label: 'Intermediate (Lintel / Slab / Brickwork Level)' },
+    { value: 'Intermediate (Plastering / Flooring)', label: 'Intermediate (Plastering / Flooring)' },
+    { value: 'Final (Finishing / Ready for Possession)', label: 'Final (Finishing / Ready for Possession)' },
+    { value: 'Completed (100%)', label: 'Completed (100%)' },
+    { value: 'Under Construction', label: 'Under Construction' },
+  ];
+
+  const rowCount = Math.max(1, fields.janaStageRowsCount || 2);
+  const rowIndices = Array.from({ length: rowCount }, (_, i) => i);
+
+  const handleAddRow = () => {
+    handleChange('janaStageRowsCount', rowCount + 1);
+  };
+
+  const handleRemoveRow = (indexToRemove: number) => {
+    if (rowCount <= 1) return;
+    for (let i = indexToRemove; i < rowCount - 1; i++) {
+      handleChange('janaStageStructure_' + i, fields['janaStageStructure_' + (i + 1)]);
+      handleChange('janaStageStructureCustom_' + i, fields['janaStageStructureCustom_' + (i + 1)]);
+      handleChange('janaStageDesc_' + i, fields['janaStageDesc_' + (i + 1)]);
+      handleChange('janaStageDescCustom_' + i, fields['janaStageDescCustom_' + (i + 1)]);
+      handleChange('janaStageCompletedPercent_' + i, fields['janaStageCompletedPercent_' + (i + 1)]);
+      handleChange('janaStageRecommendedPercent_' + i, fields['janaStageRecommendedPercent_' + (i + 1)]);
+    }
+    handleChange('janaStageRowsCount', rowCount - 1);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Table: STAGE OF CONSTRUCTION (Light Coral '#fff1f2') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-rose-200 shadow-sm"
+        style={{ backgroundColor: '#fff1f2' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-rose-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Hammer className="w-5 h-5 text-rose-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              STAGE OF CONSTRUCTION
+            </h3>
+          </div>
+          <span className="text-xs text-rose-800 font-medium bg-rose-100 px-2.5 py-1 rounded-md border border-rose-300">
+            Section 8: Table 1
+          </span>
+        </div>
+
+        {/* 8.1 Subtitle Banner */}
+        <div className="p-3 bg-white/80 rounded-lg border border-rose-200 text-xs text-rose-950 font-medium flex items-center justify-between gap-2">
+          <span>
+            <strong>8.1 Description of Stage:</strong> Based on standard cost of construction & description of stage (Initial / Intermediate / Final)
+          </span>
+          {!isReadOnly && (
+            <button
+              type="button"
+              onClick={handleAddRow}
+              className="flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-md bg-rose-600 hover:bg-rose-700 text-white shadow-2xs transition-colors shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Stage Row</span>
+            </button>
+          )}
+        </div>
+
+        {/* 8.2 Data Rows Table */}
+        <div className="overflow-x-auto rounded-xl border border-rose-300 bg-white/90 shadow-2xs">
+          <table className="w-full text-xs text-left border-collapse min-w-175">
+            <thead>
+              <tr className="bg-rose-100/80 border-b border-rose-300 text-rose-950 font-bold uppercase tracking-wider text-[11px]">
+                <th className="py-3 px-4 w-1/3 min-w-44">
+                  Description of Structure (RCC/ Load Bearing /Mix)
+                </th>
+                <th className="py-3 px-4 w-1/3 min-w-48">
+                  Description of Stage
+                </th>
+                <th className="py-3 px-3 w-1/6 min-w-28 text-center">
+                  % Completed
+                </th>
+                <th className="py-3 px-3 w-1/6 min-w-28 text-center">
+                  % Recommended
+                </th>
+                {!isReadOnly && rowCount > 1 && (
+                  <th className="py-3 px-2 w-10 text-center"></th>
+                )}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-rose-100">
+              {rowIndices.map((i) => {
+                const structKey = 'janaStageStructure_' + i;
+                const structCustomKey = 'janaStageStructureCustom_' + i;
+                const descKey = 'janaStageDesc_' + i;
+                const descCustomKey = 'janaStageDescCustom_' + i;
+                const compKey = 'janaStageCompletedPercent_' + i;
+                const recKey = 'janaStageRecommendedPercent_' + i;
+
+                return (
+                  <tr key={i} className="hover:bg-rose-50/50 transition-colors">
+                    <td className="p-3 align-top">
+                      <CustomSelect
+                        value={fields[structKey] || 'RCC'}
+                        customValue={fields[structCustomKey] || ''}
+                        onChange={(val) => handleChange(structKey, val)}
+                        onCustomChange={(val) => handleChange(structCustomKey, val)}
+                        options={structureOptions}
+                        disabled={isReadOnly}
+                        placeholder="Select structure..."
+                      />
+                    </td>
+                    <td className="p-3 align-top">
+                      <CustomSelect
+                        value={
+                          fields[descKey] ||
+                          (i === 0
+                            ? 'Completed (100%)'
+                            : 'Intermediate (Plastering / Flooring)')
+                        }
+                        customValue={fields[descCustomKey] || ''}
+                        onChange={(val) => handleChange(descKey, val)}
+                        onCustomChange={(val) => handleChange(descCustomKey, val)}
+                        options={stageOptions}
+                        disabled={isReadOnly}
+                        placeholder="Select stage..."
+                      />
+                    </td>
+                    <td className="p-3 align-top text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="any"
+                          className={`${inputCls} text-center font-semibold`}
+                          value={fields[compKey] ?? ''}
+                          onChange={(e) => handleChange(compKey, e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="e.g. 100"
+                        />
+                        <span className="text-gray-500 font-bold text-xs">%</span>
+                      </div>
+                    </td>
+                    <td className="p-3 align-top text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        <input
+                          type="number"
+                          min="0"
+                          max="100"
+                          step="any"
+                          className={`${inputCls} text-center font-semibold`}
+                          value={fields[recKey] ?? ''}
+                          onChange={(e) => handleChange(recKey, e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="e.g. 100"
+                        />
+                        <span className="text-gray-500 font-bold text-xs">%</span>
+                      </div>
+                    </td>
+                    {!isReadOnly && rowCount > 1 && (
+                      <td className="p-3 align-top text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveRow(i)}
+                          className="p-1.5 text-gray-400 hover:text-rose-600 rounded-md hover:bg-rose-100 transition-colors"
+                          title="Remove row"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Jana Small Finance Bank BankConfig ──────────────────────────────────────
 
 export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
@@ -4499,7 +4701,10 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     'section-7a',
     'section-7b',
     'section-7c',
-    'section-8',
+    'section-8', // Replaced by Section 8: STAGE OF CONSTRUCTION
+    'section-8a',
+    'section-9',
+    'section-10',
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -4510,6 +4715,7 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     { id: 'jana-section-5', title: 'OCCUPANCY DETAILS' },
     { id: 'jana-section-6', title: 'Violations Observed if any' },
     { id: 'jana-section-7', title: 'VALUATION' },
+    { id: 'jana-section-8', title: 'STAGE OF CONSTRUCTION' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
     { id: 'section-11', title: 'Photographs' },
@@ -4607,6 +4813,19 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'jana-section-8',
+      title: 'STAGE OF CONSTRUCTION',
+      number: 8,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <StageOfConstructionSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Affordable Housing / MSME Loan',
@@ -4655,6 +4874,15 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     janaExistingAreaType: 'Built Up Area',
     janaMaterialAtSite: 'Yes',
     janaImprovementRowsCount: 3,
+    janaStageStructure_0: 'RCC',
+    janaStageDesc_0: 'Completed (100%)',
+    janaStageCompletedPercent_0: '100',
+    janaStageRecommendedPercent_0: '100',
+    janaStageStructure_1: 'RCC',
+    janaStageDesc_1: 'Intermediate (Plastering / Flooring)',
+    janaStageCompletedPercent_1: '75',
+    janaStageRecommendedPercent_1: '70',
+    janaStageRowsCount: 2,
   },
 };
 
