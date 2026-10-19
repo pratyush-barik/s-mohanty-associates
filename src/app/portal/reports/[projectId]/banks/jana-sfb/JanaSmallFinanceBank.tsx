@@ -13,6 +13,7 @@ import {
   UserCheck,
   Building,
   MapPin,
+  FileCheck,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -191,6 +192,50 @@ export function CustomSelect({
           placeholder="Enter custom value..."
         />
       )}
+    </div>
+  );
+}
+
+export function RadioGroup({
+  name,
+  value,
+  onChange,
+  options,
+  disabled = false,
+}: {
+  name: string;
+  value: string;
+  onChange: (val: string) => void;
+  options: { value: string; label: string }[] | string[];
+  disabled?: boolean;
+}) {
+  const normOptions = options.map((opt) =>
+    typeof opt === 'string' ? { value: opt, label: opt } : opt
+  );
+  return (
+    <div className="flex flex-wrap items-center gap-4 pt-1">
+      {normOptions.map((opt) => {
+        const isSelected = (value || normOptions[0].value).toLowerCase() === opt.value.toLowerCase();
+        return (
+          <label
+            key={opt.value}
+            className={`flex items-center gap-2 cursor-pointer text-xs md:text-sm font-medium select-none ${
+              disabled ? 'opacity-60 cursor-not-allowed' : 'text-gray-800 hover:text-gray-950'
+            }`}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={opt.value}
+              checked={isSelected}
+              onChange={(e) => onChange(e.target.value)}
+              disabled={disabled}
+              className="h-4 w-4 text-emerald-600 focus:ring-emerald-500 border-gray-300"
+            />
+            <span>{opt.label}</span>
+          </label>
+        );
+      })}
     </div>
   );
 }
@@ -726,6 +771,497 @@ function PropertyDetailsSection({
   );
 }
 
+// ─── Section 3: DOCUMENT DETAILS ─────────────────────────────────────────────
+
+function DocumentDetailsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const otherLegalOptions = [
+    'Sale Deed',
+    'Title Deed',
+    'Patta / RoR',
+    'Tax Receipt',
+    'Conversion Order',
+    'Khata / Mutation',
+  ];
+
+  const selectedOtherDocs: string[] = Array.isArray(fields.janaOtherLegalDocsSelected)
+    ? fields.janaOtherLegalDocsSelected
+    : typeof fields.janaOtherLegalDocsSelected === 'string' && fields.janaOtherLegalDocsSelected
+    ? fields.janaOtherLegalDocsSelected.split(',').map((s: string) => s.trim())
+    : ['Sale Deed'];
+
+  const handleToggleOtherDoc = (doc: string) => {
+    let updated: string[];
+    if (selectedOtherDocs.includes(doc)) {
+      updated = selectedOtherDocs.filter((d) => d !== doc);
+    } else {
+      updated = [...selectedOtherDocs, doc];
+    }
+    handleChange('janaOtherLegalDocsSelected', updated);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Table: DOCUMENT DETAILS (Light Green '#e8f5e9') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-emerald-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-3">
+          <div className="flex items-center gap-2">
+            <FileCheck className="w-5 h-5 text-emerald-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              DOCUMENT DETAILS
+            </h3>
+          </div>
+          <span className="text-xs text-emerald-800 font-medium bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300">
+            Section 3: Table 1
+          </span>
+        </div>
+
+        {/* Responsive Table Container */}
+        <div className="overflow-x-auto rounded-xl border border-emerald-300 bg-white/90 shadow-2xs">
+          <table className="w-full text-xs text-left border-collapse min-w-175">
+            <thead>
+              <tr className="bg-emerald-100/80 border-b border-emerald-300 text-emerald-950 font-bold uppercase tracking-wider text-[11px]">
+                <th className="py-3 px-4 w-1/3 min-w-46.25">Document Name & Status</th>
+                <th className="py-3 px-4 w-1/3 min-w-46.25">Approving Authority</th>
+                <th className="py-3 px-4 w-1/3 min-w-46.25">Approval No. & Date</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-emerald-100">
+              {/* Row 3.1: Layout Plan Provided */}
+              <tr className="hover:bg-emerald-50/40 transition-colors">
+                <td className="p-4 align-top">
+                  <div className="space-y-2">
+                    <span className="font-bold text-gray-900 text-xs md:text-sm block">
+                      3.1 Layout Plan Provided (Y/N)
+                    </span>
+                    <RadioGroup
+                      name="janaLayoutPlanProvided"
+                      value={fields.janaLayoutPlanProvided || 'No'}
+                      onChange={(val) => handleChange('janaLayoutPlanProvided', val)}
+                      options={['Yes', 'No']}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                </td>
+                <td className="p-4 align-top">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-gray-600">
+                        Approving Authority
+                      </span>
+                      <NaCheckbox
+                        checked={Boolean(fields.janaLayoutPlanApprovingAuthNA)}
+                        onChange={(checked) => {
+                          handleChange('janaLayoutPlanApprovingAuthNA', checked);
+                          if (checked) {
+                            handleChange('janaLayoutPlanApprovingAuth', 'NA');
+                          } else {
+                            handleChange('janaLayoutPlanApprovingAuth', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls} ${
+                        fields.janaLayoutPlanApprovingAuthNA
+                          ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                          : ''
+                      }`}
+                      value={
+                        fields.janaLayoutPlanApprovingAuthNA
+                          ? 'NA'
+                          : (fields.janaLayoutPlanApprovingAuth ?? '')
+                      }
+                      onChange={(e) => handleChange('janaLayoutPlanApprovingAuth', e.target.value)}
+                      disabled={isReadOnly || fields.janaLayoutPlanApprovingAuthNA}
+                      placeholder={fields.janaLayoutPlanApprovingAuthNA ? 'NA' : 'e.g. BDA / Municipal Corp'}
+                    />
+                  </div>
+                </td>
+                <td className="p-4 align-top">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-gray-600">
+                        Approval No. & Date
+                      </span>
+                      <NaCheckbox
+                        checked={Boolean(fields.janaLayoutPlanApprovalNoDateNA)}
+                        onChange={(checked) => {
+                          handleChange('janaLayoutPlanApprovalNoDateNA', checked);
+                          if (checked) {
+                            handleChange('janaLayoutPlanApprovalNoDate', 'NA');
+                          } else {
+                            handleChange('janaLayoutPlanApprovalNoDate', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls} ${
+                        fields.janaLayoutPlanApprovalNoDateNA
+                          ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                          : ''
+                      }`}
+                      value={
+                        fields.janaLayoutPlanApprovalNoDateNA
+                          ? 'NA'
+                          : (fields.janaLayoutPlanApprovalNoDate ?? '')
+                      }
+                      onChange={(e) => handleChange('janaLayoutPlanApprovalNoDate', e.target.value)}
+                      disabled={isReadOnly || fields.janaLayoutPlanApprovalNoDateNA}
+                      placeholder={fields.janaLayoutPlanApprovalNoDateNA ? 'NA' : 'e.g. LP/2022/104 dt 15.03.2022'}
+                    />
+                  </div>
+                </td>
+              </tr>
+
+              {/* Row 3.2: Building Plan Provided */}
+              <tr className="hover:bg-emerald-50/40 transition-colors">
+                <td className="p-4 align-top">
+                  <div className="space-y-2">
+                    <span className="font-bold text-gray-900 text-xs md:text-sm block">
+                      3.2 Building Plan Provided (Y/N)
+                    </span>
+                    <RadioGroup
+                      name="janaBuildingPlanProvided"
+                      value={fields.janaBuildingPlanProvided || 'Yes'}
+                      onChange={(val) => handleChange('janaBuildingPlanProvided', val)}
+                      options={['Yes', 'No']}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                </td>
+                <td className="p-4 align-top">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-gray-600">
+                        Approving Authority
+                      </span>
+                      <NaCheckbox
+                        checked={Boolean(fields.janaBuildingPlanApprovingAuthNA)}
+                        onChange={(checked) => {
+                          handleChange('janaBuildingPlanApprovingAuthNA', checked);
+                          if (checked) {
+                            handleChange('janaBuildingPlanApprovingAuth', 'NA');
+                          } else {
+                            handleChange('janaBuildingPlanApprovingAuth', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls} ${
+                        fields.janaBuildingPlanApprovingAuthNA
+                          ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                          : ''
+                      }`}
+                      value={
+                        fields.janaBuildingPlanApprovingAuthNA
+                          ? 'NA'
+                          : (fields.janaBuildingPlanApprovingAuth ?? fields.approvingAuthority ?? '')
+                      }
+                      onChange={(e) => handleChange('janaBuildingPlanApprovingAuth', e.target.value)}
+                      disabled={isReadOnly || fields.janaBuildingPlanApprovingAuthNA}
+                      placeholder={fields.janaBuildingPlanApprovingAuthNA ? 'NA' : 'e.g. BMC / Gram Panchayat'}
+                    />
+                  </div>
+                </td>
+                <td className="p-4 align-top">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-gray-600">
+                        Approval No. & Date
+                      </span>
+                      <NaCheckbox
+                        checked={Boolean(fields.janaBuildingPlanApprovalNoDateNA)}
+                        onChange={(checked) => {
+                          handleChange('janaBuildingPlanApprovalNoDateNA', checked);
+                          if (checked) {
+                            handleChange('janaBuildingPlanApprovalNoDate', 'NA');
+                          } else {
+                            handleChange('janaBuildingPlanApprovalNoDate', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls} ${
+                        fields.janaBuildingPlanApprovalNoDateNA
+                          ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                          : ''
+                      }`}
+                      value={
+                        fields.janaBuildingPlanApprovalNoDateNA
+                          ? 'NA'
+                          : (fields.janaBuildingPlanApprovalNoDate ?? fields.sanctionPlanNo ?? '')
+                      }
+                      onChange={(e) => handleChange('janaBuildingPlanApprovalNoDate', e.target.value)}
+                      disabled={isReadOnly || fields.janaBuildingPlanApprovalNoDateNA}
+                      placeholder={fields.janaBuildingPlanApprovalNoDateNA ? 'NA' : 'e.g. BP/512/2021 dt 10.08.2021'}
+                    />
+                  </div>
+                </td>
+              </tr>
+
+              {/* Row 3.3: Construction Permission */}
+              <tr className="hover:bg-emerald-50/40 transition-colors">
+                <td className="p-4 align-top">
+                  <div className="space-y-2">
+                    <span className="font-bold text-gray-900 text-xs md:text-sm block">
+                      3.3 Construction Permission (Y/N)
+                    </span>
+                    <RadioGroup
+                      name="janaConstructionPermissionProvided"
+                      value={fields.janaConstructionPermissionProvided || 'Yes'}
+                      onChange={(val) => handleChange('janaConstructionPermissionProvided', val)}
+                      options={['Yes', 'No']}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                </td>
+                <td className="p-4 align-top">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-gray-600">
+                        Approving Authority
+                      </span>
+                      <NaCheckbox
+                        checked={Boolean(fields.janaConstPermApprovingAuthNA)}
+                        onChange={(checked) => {
+                          handleChange('janaConstPermApprovingAuthNA', checked);
+                          if (checked) {
+                            handleChange('janaConstPermApprovingAuth', 'NA');
+                          } else {
+                            handleChange('janaConstPermApprovingAuth', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls} ${
+                        fields.janaConstPermApprovingAuthNA
+                          ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                          : ''
+                      }`}
+                      value={
+                        fields.janaConstPermApprovingAuthNA
+                          ? 'NA'
+                          : (fields.janaConstPermApprovingAuth ?? '')
+                      }
+                      onChange={(e) => handleChange('janaConstPermApprovingAuth', e.target.value)}
+                      disabled={isReadOnly || fields.janaConstPermApprovingAuthNA}
+                      placeholder={fields.janaConstPermApprovingAuthNA ? 'NA' : 'e.g. Competent Authority'}
+                    />
+                  </div>
+                </td>
+                <td className="p-4 align-top">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-gray-600">
+                        Approval No. & Date
+                      </span>
+                      <NaCheckbox
+                        checked={Boolean(fields.janaConstPermApprovalNoDateNA)}
+                        onChange={(checked) => {
+                          handleChange('janaConstPermApprovalNoDateNA', checked);
+                          if (checked) {
+                            handleChange('janaConstPermApprovalNoDate', 'NA');
+                          } else {
+                            handleChange('janaConstPermApprovalNoDate', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls} ${
+                        fields.janaConstPermApprovalNoDateNA
+                          ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                          : ''
+                      }`}
+                      value={
+                        fields.janaConstPermApprovalNoDateNA
+                          ? 'NA'
+                          : (fields.janaConstPermApprovalNoDate ?? '')
+                      }
+                      onChange={(e) => handleChange('janaConstPermApprovalNoDate', e.target.value)}
+                      disabled={isReadOnly || fields.janaConstPermApprovalNoDateNA}
+                      placeholder={fields.janaConstPermApprovalNoDateNA ? 'NA' : 'e.g. CP/88/2021 dt 12.10.2021'}
+                    />
+                  </div>
+                </td>
+              </tr>
+
+              {/* Row 3.4: Other Legal Document Provided */}
+              <tr className="hover:bg-emerald-50/40 transition-colors">
+                <td className="p-4 align-top">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-gray-900 text-xs md:text-sm">
+                        3.4 Other Legal Document Provided
+                      </span>
+                      <NaCheckbox
+                        checked={Boolean(fields.janaOtherLegalDocNA)}
+                        onChange={(checked) => {
+                          handleChange('janaOtherLegalDocNA', checked);
+                          if (checked) {
+                            handleChange('janaOtherLegalDocsCustom', 'NA');
+                          } else {
+                            handleChange('janaOtherLegalDocsCustom', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+
+                    {!fields.janaOtherLegalDocNA ? (
+                      <div className="space-y-2.5">
+                        {/* Checkbox Group */}
+                        <div className="grid grid-cols-2 gap-2 pt-1">
+                          {otherLegalOptions.map((doc) => {
+                            const isChecked = selectedOtherDocs.includes(doc);
+                            return (
+                              <label
+                                key={doc}
+                                className={`flex items-center gap-1.5 p-1.5 rounded-md border text-[11px] font-medium cursor-pointer transition-colors ${
+                                  isChecked
+                                    ? 'bg-emerald-100/80 border-emerald-400 text-emerald-950 font-semibold'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-emerald-50/50'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => handleToggleOtherDoc(doc)}
+                                  disabled={isReadOnly}
+                                  className="h-3.5 w-3.5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                                />
+                                <span className="truncate">{doc}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
+                        {/* Additional / Custom Legal Document Input Box */}
+                        <input
+                          type="text"
+                          className={inputCls}
+                          value={fields.janaOtherLegalDocsCustom ?? ''}
+                          onChange={(e) => handleChange('janaOtherLegalDocsCustom', e.target.value)}
+                          disabled={isReadOnly}
+                          placeholder="Other documents (e.g. Encumbrance Cert, Electricity Bill)..."
+                        />
+                      </div>
+                    ) : (
+                      <div className="p-2.5 bg-gray-100 rounded-lg text-gray-500 italic text-xs border border-gray-200">
+                        No other legal documents provided (NA)
+                      </div>
+                    )}
+                  </div>
+                </td>
+                <td className="p-4 align-top">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-gray-600">
+                        Approving Authority
+                      </span>
+                      <NaCheckbox
+                        checked={Boolean(fields.janaOtherDocApprovingAuthNA)}
+                        onChange={(checked) => {
+                          handleChange('janaOtherDocApprovingAuthNA', checked);
+                          if (checked) {
+                            handleChange('janaOtherDocApprovingAuth', 'NA');
+                          } else {
+                            handleChange('janaOtherDocApprovingAuth', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls} ${
+                        fields.janaOtherDocApprovingAuthNA
+                          ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                          : ''
+                      }`}
+                      value={
+                        fields.janaOtherDocApprovingAuthNA
+                          ? 'NA'
+                          : (fields.janaOtherDocApprovingAuth ?? '')
+                      }
+                      onChange={(e) => handleChange('janaOtherDocApprovingAuth', e.target.value)}
+                      disabled={isReadOnly || fields.janaOtherDocApprovingAuthNA}
+                      placeholder={fields.janaOtherDocApprovingAuthNA ? 'NA' : 'e.g. Sub-Registrar / Tahasildar'}
+                    />
+                  </div>
+                </td>
+                <td className="p-4 align-top">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[11px] font-semibold text-gray-600">
+                        Approval No. & Date
+                      </span>
+                      <NaCheckbox
+                        checked={Boolean(fields.janaOtherDocApprovalNoDateNA)}
+                        onChange={(checked) => {
+                          handleChange('janaOtherDocApprovalNoDateNA', checked);
+                          if (checked) {
+                            handleChange('janaOtherDocApprovalNoDate', 'NA');
+                          } else {
+                            handleChange('janaOtherDocApprovalNoDate', '');
+                          }
+                        }}
+                        disabled={isReadOnly}
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      className={`${inputCls} ${
+                        fields.janaOtherDocApprovalNoDateNA
+                          ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                          : ''
+                      }`}
+                      value={
+                        fields.janaOtherDocApprovalNoDateNA
+                          ? 'NA'
+                          : (fields.janaOtherDocApprovalNoDate ?? '')
+                      }
+                      onChange={(e) => handleChange('janaOtherDocApprovalNoDate', e.target.value)}
+                      disabled={isReadOnly || fields.janaOtherDocApprovalNoDateNA}
+                      placeholder={fields.janaOtherDocApprovalNoDateNA ? 'NA' : 'e.g. Doc No. 1245/2019'}
+                    />
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Jana Small Finance Bank BankConfig ──────────────────────────────────────
 
 export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
@@ -735,12 +1271,13 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
   hiddenSections: [
     'section-1', // Replaced by Section 1: CUSTOMER DETAILS
     'section-2', // Replaced by Section 2: PROPERTY DETAILS
+    'section-3', // Replaced by Section 3: DOCUMENT DETAILS
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
     { id: 'jana-section-1', title: 'CUSTOMER DETAILS' },
     { id: 'jana-section-2', title: 'PROPERTY DETAILS' },
-    { id: 'section-3', title: 'Valuation' },
+    { id: 'jana-section-3', title: 'DOCUMENT DETAILS' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
     { id: 'section-11', title: 'Photographs' },
@@ -773,6 +1310,19 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'jana-section-3',
+      title: 'DOCUMENT DETAILS',
+      number: 3,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <DocumentDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Affordable Housing / MSME Loan',
@@ -780,6 +1330,10 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     janaRelationWithCustomer: 'Self',
     janaVisitDoneBy: 'Er. S. Mohanty',
     janaSeismicZone: 'Zone III',
+    janaLayoutPlanProvided: 'No',
+    janaBuildingPlanProvided: 'Yes',
+    janaConstructionPermissionProvided: 'Yes',
+    janaOtherLegalDocNA: false,
   },
 };
 
