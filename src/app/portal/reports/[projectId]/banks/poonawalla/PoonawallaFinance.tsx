@@ -7,6 +7,7 @@ import { Field, inputCls } from '../BaseBankReportComponents';
 import {
   Building,
   Lock,
+  Calculator,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -199,6 +200,172 @@ function PropertyDetailsSection({
   );
 }
 
+// ─── Section 2: VALUE OF THE PROPERTY ───────────────────────────────────────
+
+function ValueOfThePropertySection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const parseNum = (v: any): number => {
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    if (typeof v === 'string') return parseFloat(v.replace(/,/g, '') || '0') || 0;
+    return 0;
+  };
+
+  const totalBuildingValue =
+    parseNum(fields.poonawallaTotalBuildingValue) ||
+    parseNum(fields.totalBuildingValue) ||
+    parseNum(fields.buildingValue) ||
+    parseNum(fields.valuationAmount) ||
+    0;
+
+  const totalAmenitiesCharges =
+    parseNum(fields.poonawallaAmenitiesCharges) ||
+    parseNum(fields.amenitiesCharges) ||
+    parseNum(fields.totalAmenitiesCharges) ||
+    parseNum(fields.amenitiesValue) ||
+    0;
+
+  const autoMarketValue =
+    totalBuildingValue > 0 || totalAmenitiesCharges > 0
+      ? totalBuildingValue + totalAmenitiesCharges
+      : parseNum(fields.marketValue) || parseNum(fields.presentMarketValue) || parseNum(fields.totalPropertyValue) || 0;
+
+  const effectiveMarketValue = fields.poonawallaMarketValueEdit
+    ? parseNum(fields.poonawallaMarketValueManual)
+    : autoMarketValue;
+
+  const autoDistressValue = Math.round(effectiveMarketValue * 0.8);
+  const effectiveDistressValue = fields.poonawallaDistressValueEdit
+    ? parseNum(fields.poonawallaDistressValueManual)
+    : autoDistressValue;
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Value Breakdown (Use Light Green '#e8f5e9') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-emerald-200 shadow-sm"
+        style={{ backgroundColor: '#e8f5e9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Calculator className="w-5 h-5 text-emerald-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Value Breakdown
+            </h3>
+          </div>
+          <span className="text-xs text-emerald-800 font-medium bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300">
+            Section 2: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* PRESENT MARKET VALUE: Auto-calculated Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  PRESENT MARKET VALUE
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaMarketValueEdit)}
+                  onChange={(checked) => handleChange('poonawallaMarketValueEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaMarketValueEdit ? (
+              <input
+                type="number"
+                step="any"
+                className={`${inputCls} bg-white border-emerald-400 font-bold text-gray-900 text-base md:text-lg`}
+                value={fields.poonawallaMarketValueManual ?? (autoMarketValue > 0 ? autoMarketValue : '')}
+                onChange={(e) => {
+                  handleChange('poonawallaMarketValueManual', e.target.value);
+                  handleChange('marketValue', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Present Market Value..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Auto calculating from Total Building Value + Total Amenities charges"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-emerald-50/80 border-emerald-300 font-bold text-emerald-950 cursor-not-allowed text-base md:text-lg`}
+                  value={
+                    effectiveMarketValue > 0
+                      ? `₹ ${effectiveMarketValue.toLocaleString('en-IN')}`
+                      : '₹ 0'
+                  }
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* DISTRESS SALE VALUE: Auto-calculated Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  DISTRESS SALE VALUE
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaDistressValueEdit)}
+                  onChange={(checked) => handleChange('poonawallaDistressValueEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaDistressValueEdit ? (
+              <input
+                type="number"
+                step="any"
+                className={`${inputCls} bg-white border-emerald-400 font-bold text-gray-900 text-base md:text-lg`}
+                value={fields.poonawallaDistressValueManual ?? (autoDistressValue > 0 ? autoDistressValue : '')}
+                onChange={(e) => {
+                  handleChange('poonawallaDistressValueManual', e.target.value);
+                  handleChange('distressValue', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Distress Sale Value..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Auto calculating from Market Value * 0.80"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-emerald-50/80 border-emerald-300 font-bold text-emerald-950 cursor-not-allowed text-base md:text-lg`}
+                  value={
+                    effectiveDistressValue > 0
+                      ? `₹ ${effectiveDistressValue.toLocaleString('en-IN')}`
+                      : '₹ 0'
+                  }
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -207,11 +374,12 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
   displayName: 'Poonawalla Fincorp Ltd',
   hiddenSections: [
     'section-1', // Replaced by Section 1: VALUATION OF IMMOVABLE PROPERTY
+    'section-2', // Replaced by Section 2: VALUE OF THE PROPERTY
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
     { id: 'poonawalla-section-1', title: 'VALUATION OF IMMOVABLE PROPERTY' },
-    { id: 'section-2', title: 'Locality Details' },
+    { id: 'poonawalla-section-2', title: 'VALUE OF THE PROPERTY' },
     { id: 'section-3', title: 'Property Details' },
     { id: 'section-4', title: 'Subject Property' },
     { id: 'section-5', title: 'Structural Details' },
@@ -234,6 +402,19 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <PropertyDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'poonawalla-section-2',
+      title: 'VALUE OF THE PROPERTY',
+      number: 2,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ValueOfThePropertySection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
