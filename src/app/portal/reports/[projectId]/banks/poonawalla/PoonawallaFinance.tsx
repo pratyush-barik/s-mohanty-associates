@@ -10,6 +10,7 @@ import {
   Calculator,
   Target,
   UserCheck,
+  Users,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -168,6 +169,54 @@ export function EditSwitch({
           }`}
         />
       </button>
+    </div>
+  );
+}
+
+export function RadioGroup({
+  name,
+  value,
+  onChange,
+  options,
+  disabled = false,
+}: {
+  name: string;
+  value: string;
+  onChange: (val: string) => void;
+  options: { value: string; label: string }[] | string[];
+  disabled?: boolean;
+}) {
+  const normOptions = options.map((opt) =>
+    typeof opt === 'string' ? { value: opt, label: opt } : opt
+  );
+  return (
+    <div className="flex flex-wrap items-center gap-6 pt-1">
+      {normOptions.map((opt) => {
+        const isSelected =
+          (value || normOptions[0].value).toLowerCase() ===
+          opt.value.toLowerCase();
+        return (
+          <label
+            key={opt.value}
+            className={`flex items-center gap-2 cursor-pointer text-xs md:text-sm font-medium select-none ${
+              disabled
+                ? 'opacity-60 cursor-not-allowed'
+                : 'text-gray-800 hover:text-gray-950'
+            }`}
+          >
+            <input
+              type="radio"
+              name={name}
+              value={opt.value}
+              checked={isSelected}
+              onChange={(e) => onChange(e.target.value)}
+              disabled={disabled}
+              className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300"
+            />
+            <span>{opt.label}</span>
+          </label>
+        );
+      })}
     </div>
   );
 }
@@ -537,6 +586,17 @@ function PreparedBySection({
     fields.poonawallaValuationReportNo ??
     fields.valuationReportNo ??
     defaultValuationReportSeq;
+
+  const sec1Address =
+    fields.poonawallaPropertyAddress ??
+    fields.propertyAddress ??
+    fields.address ??
+    '';
+
+  const addressAtSiteVal =
+    fields.poonawallaAddressAtSite ?? (sec1Address || '');
+  const addressAsPerDocVal =
+    fields.poonawallaAddressAsPerDoc ?? (sec1Address || '');
 
   return (
     <div className="space-y-6">
@@ -920,6 +980,287 @@ function PreparedBySection({
           />
         </div>
       </div>
+
+      {/* ─── Container: Applicant & Basic Information (Use Light Purple '#f3e5f5') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-purple-200 shadow-sm"
+        style={{ backgroundColor: '#f3e5f5' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Users className="w-5 h-5 text-purple-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Applicant & Basic Information
+            </h3>
+          </div>
+          <span className="text-xs text-purple-800 font-medium bg-purple-100 px-2.5 py-1 rounded-md border border-purple-300">
+            Section 4: Container 2
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Contacted Person at site (ID proof details): Input Box with variable size */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Contacted Person at site (ID proof details)
+              </span>
+            }
+          >
+            <AutoResizeTextarea
+              rows={2}
+              value={fields.poonawallaContactedPersonAtSite ?? fields.contactedPersonAtSite ?? ''}
+              onChange={(e) => {
+                handleChange('poonawallaContactedPersonAtSite', e.target.value);
+                handleChange('contactedPersonAtSite', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter contacted person & ID proof details..."
+            />
+          </Field>
+
+          {/* Name/s of the applicant/s: Input Box (Standard size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Name/s of the applicant/s
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.poonawallaApplicantName ?? fields.applicantName ?? fields.customerName ?? ''}
+              onChange={(e) => {
+                handleChange('poonawallaApplicantName', e.target.value);
+                handleChange('applicantName', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter applicant name/s..."
+            />
+          </Field>
+
+          {/* Type of property: Dropdown (Options: G+2 storied commercial building, Residential, Commercial, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Type of property
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaPropertyType || 'G+2 storied commercial building'}
+              customValue={fields.poonawallaPropertyTypeCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaPropertyType', val);
+                const finalVal =
+                  val === 'Custom' ? fields.poonawallaPropertyTypeCustom || '' : val;
+                handleChange('propertyType', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaPropertyTypeCustom', val);
+                handleChange('propertyType', val);
+              }}
+              options={[
+                {
+                  value: 'G+2 storied commercial building',
+                  label: 'G+2 storied commercial building',
+                },
+                { value: 'Residential', label: 'Residential' },
+                { value: 'Commercial', label: 'Commercial' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Type of property..."
+            />
+          </Field>
+
+          {/* Current Usage: Dropdown (Options: Commercial, Residential, Mixed, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Current Usage
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaCurrentUsage || 'Commercial'}
+              customValue={fields.poonawallaCurrentUsageCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaCurrentUsage', val);
+                const finalVal =
+                  val === 'Custom' ? fields.poonawallaCurrentUsageCustom || '' : val;
+                handleChange('currentUsage', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaCurrentUsageCustom', val);
+                handleChange('currentUsage', val);
+              }}
+              options={[
+                { value: 'Commercial', label: 'Commercial' },
+                { value: 'Residential', label: 'Residential' },
+                { value: 'Mixed', label: 'Mixed' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Current Usage..."
+            />
+          </Field>
+
+          {/* Address as per firing: Input Box with Variable Size (Textarea) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Address as per firing
+              </span>
+            }
+            span={2}
+          >
+            <AutoResizeTextarea
+              rows={2}
+              value={fields.poonawallaAddressAsPerFiring ?? fields.addressAsPerFiring ?? ''}
+              onChange={(e) => {
+                handleChange('poonawallaAddressAsPerFiring', e.target.value);
+                handleChange('addressAsPerFiring', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter Address as per firing..."
+            />
+          </Field>
+
+          {/* Address at site: Prefill Field with Lock UI (Hover Message: Prefill from section 1, "ADDRESS OF THE PROPERTY"), Edit Switch + Input Box with Variable Size (Textarea) */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Address at site
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaAddressAtSiteEdit)}
+                  onChange={(checked) =>
+                    handleChange('poonawallaAddressAtSiteEdit', checked)
+                  }
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+            span={2}
+          >
+            {fields.poonawallaAddressAtSiteEdit ? (
+              <AutoResizeTextarea
+                rows={2}
+                className="bg-white border-purple-400 font-medium text-gray-900"
+                value={fields.poonawallaAddressAtSite ?? addressAtSiteVal}
+                onChange={(e) => {
+                  handleChange('poonawallaAddressAtSite', e.target.value);
+                  handleChange('addressAtSite', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Address at site..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage='Prefill from section 1, "ADDRESS OF THE PROPERTY"'
+              >
+                <AutoResizeTextarea
+                  rows={2}
+                  readOnly
+                  disabled
+                  className="bg-purple-50/70 border-purple-200 font-medium text-gray-800 cursor-not-allowed"
+                  value={addressAtSiteVal}
+                  onChange={() => {}}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Address as per document: Prefill Field with Lock UI (Hover Message: Prefill from section 1, "ADDRESS OF THE PROPERTY"), Edit Switch + Input Box with Variable Size (Textarea) */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Address as per document
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaAddressAsPerDocEdit)}
+                  onChange={(checked) =>
+                    handleChange('poonawallaAddressAsPerDocEdit', checked)
+                  }
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+            span={2}
+          >
+            {fields.poonawallaAddressAsPerDocEdit ? (
+              <AutoResizeTextarea
+                rows={2}
+                className="bg-white border-purple-400 font-medium text-gray-900"
+                value={fields.poonawallaAddressAsPerDoc ?? addressAsPerDocVal}
+                onChange={(e) => {
+                  handleChange('poonawallaAddressAsPerDoc', e.target.value);
+                  handleChange('addressAsPerDocument', e.target.value);
+                  handleChange('addressAsPerDoc', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Address as per document..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage='Prefill from section 1, "ADDRESS OF THE PROPERTY"'
+              >
+                <AutoResizeTextarea
+                  rows={2}
+                  readOnly
+                  disabled
+                  className="bg-purple-50/70 border-purple-200 font-medium text-gray-800 cursor-not-allowed"
+                  value={addressAsPerDocVal}
+                  onChange={() => {}}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Has the valuator done valuation of this property before this? If yes, when, for whom?: Radio Button (Yes/No) + Conditional Input Box (Variable size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Has the valuator done valuation of this property before this? If yes, when, for whom?
+              </span>
+            }
+            span={2}
+          >
+            <div className="space-y-3">
+              <RadioGroup
+                name="poonawallaDoneValuationBefore"
+                value={fields.poonawallaDoneValuationBefore || 'No'}
+                onChange={(val) => {
+                  handleChange('poonawallaDoneValuationBefore', val);
+                  handleChange('previousValuation', val);
+                  handleChange('priorValuation', val);
+                }}
+                options={['Yes', 'No']}
+                disabled={isReadOnly}
+              />
+              {(fields.poonawallaDoneValuationBefore || '').toLowerCase() === 'yes' && (
+                <div className="pt-1">
+                  <AutoResizeTextarea
+                    rows={2}
+                    placeholder="Please specify when and for whom the valuation was conducted..."
+                    value={fields.poonawallaDoneValuationBeforeDetails || ''}
+                    onChange={(e) => {
+                      handleChange('poonawallaDoneValuationBeforeDetails', e.target.value);
+                      handleChange('previousValuationDetails', e.target.value);
+                    }}
+                    disabled={isReadOnly}
+                    className="bg-purple-50/50 border-purple-300"
+                  />
+                </div>
+              )}
+            </div>
+          </Field>
+        </div>
+      </div>
     </div>
   );
 }
@@ -1018,6 +1359,9 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     poonawallaValuerName: DEFAULT_AGENCY_VALUER_NAME,
     poonawallaVerticalBranchName: 'Fullerton',
     poonawallaTypeOfCase: 'Standard',
+    poonawallaPropertyType: 'G+2 storied commercial building',
+    poonawallaCurrentUsage: 'Commercial',
+    poonawallaDoneValuationBefore: 'No',
   },
 };
 
