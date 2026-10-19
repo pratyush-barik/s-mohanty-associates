@@ -8,9 +8,58 @@ import {
   Building,
   Lock,
   Calculator,
+  Target,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
+
+export function CustomSelect({
+  value,
+  customValue,
+  onChange,
+  onCustomChange,
+  options,
+  disabled = false,
+  placeholder = 'Select option...',
+}: {
+  value: string;
+  customValue?: string;
+  onChange: (val: string) => void;
+  onCustomChange?: (val: string) => void;
+  options: { value: string; label: string }[];
+  disabled?: boolean;
+  placeholder?: string;
+}) {
+  const isCustom = value === 'Custom' || value === 'custom';
+  return (
+    <div className="flex flex-col gap-2 w-full">
+      <select
+        className={inputCls}
+        value={value || ''}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+      >
+        <option value="">{placeholder}</option>
+        {options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
+        ))}
+        <option value="Custom">Custom</option>
+      </select>
+      {isCustom && onCustomChange && (
+        <input
+          type="text"
+          className={`${inputCls} bg-amber-50/50 border-amber-300 text-gray-900 placeholder:text-gray-400`}
+          value={customValue || ''}
+          onChange={(e) => onCustomChange(e.target.value)}
+          disabled={disabled}
+          placeholder="Enter custom value..."
+        />
+      )}
+    </div>
+  );
+}
 
 export function AutoResizeTextarea({
   value,
@@ -366,6 +415,92 @@ function ValueOfThePropertySection({
   );
 }
 
+// ─── Section 3: PURPOSE OF VALUATION ────────────────────────────────────────
+
+function PurposeOfValuationSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const isCustomVal =
+    fields.poonawallaPurposeOfValuation === 'Custom' ||
+    (fields.poonawallaPurposeOfValuation &&
+      fields.poonawallaPurposeOfValuation !==
+        'To assess the fair market value of the collateral security');
+
+  const selectedValue =
+    fields.poonawallaPurposeOfValuation ||
+    (fields.purpose &&
+    fields.purpose !== 'To assess the fair market value of the collateral security'
+      ? 'Custom'
+      : 'To assess the fair market value of the collateral security');
+
+  const customVal =
+    fields.poonawallaPurposeOfValuationCustom ??
+    (isCustomVal ? fields.poonawallaPurposeOfValuation ?? fields.purpose ?? '' : '');
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Valuation Objective (Use Light Yellow '#fffde7') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-yellow-200 shadow-sm"
+        style={{ backgroundColor: '#fffde7' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-yellow-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Target className="w-5 h-5 text-amber-600" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Valuation Objective
+            </h3>
+          </div>
+          <span className="text-xs text-amber-800 font-medium bg-amber-100 px-2.5 py-1 rounded-md border border-amber-300">
+            Section 3: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5">
+          {/* PURPOSE OF VALUATION: Dropdown (Options: To assess the fair market value of the collateral security, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                PURPOSE OF VALUATION
+              </span>
+            }
+          >
+            <CustomSelect
+              value={selectedValue}
+              customValue={customVal}
+              onChange={(val) => {
+                handleChange('poonawallaPurposeOfValuation', val);
+                const finalVal = val === 'Custom' ? customVal : val;
+                handleChange('purposeOfValuation', finalVal);
+                handleChange('purpose', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaPurposeOfValuationCustom', val);
+                handleChange('purposeOfValuation', val);
+                handleChange('purpose', val);
+              }}
+              options={[
+                {
+                  value: 'To assess the fair market value of the collateral security',
+                  label: 'To assess the fair market value of the collateral security',
+                },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Purpose of Valuation..."
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -375,12 +510,13 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
   hiddenSections: [
     'section-1', // Replaced by Section 1: VALUATION OF IMMOVABLE PROPERTY
     'section-2', // Replaced by Section 2: VALUE OF THE PROPERTY
+    'section-3', // Replaced by Section 3: PURPOSE OF VALUATION
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
     { id: 'poonawalla-section-1', title: 'VALUATION OF IMMOVABLE PROPERTY' },
     { id: 'poonawalla-section-2', title: 'VALUE OF THE PROPERTY' },
-    { id: 'section-3', title: 'Property Details' },
+    { id: 'poonawalla-section-3', title: 'PURPOSE OF VALUATION' },
     { id: 'section-4', title: 'Subject Property' },
     { id: 'section-5', title: 'Structural Details' },
     { id: 'section-6', title: 'Plan Approvals' },
@@ -421,9 +557,24 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'poonawalla-section-3',
+      title: 'PURPOSE OF VALUATION',
+      number: 3,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <PurposeOfValuationSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
-    purpose: 'Mortgage / Business Finance / LAP',
+    poonawallaPurposeOfValuation: 'To assess the fair market value of the collateral security',
+    purpose: 'To assess the fair market value of the collateral security',
+    purposeOfValuation: 'To assess the fair market value of the collateral security',
   },
 };
 
