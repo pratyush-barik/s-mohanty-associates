@@ -22,6 +22,7 @@ import {
   Layers,
   Coins,
   Shield,
+  FileText,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -5066,6 +5067,63 @@ function FloorwiseUsageDetailsSection({
   );
 }
 
+// ─── Section 12: REMARKS: ───────────────────────────────────────────────────
+
+function ValuerRemarksSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Valuer Remarks (Use Light Gold '#fff9c4') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-amber-300 shadow-sm"
+        style={{ backgroundColor: '#fff9c4' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200 pb-3">
+          <div className="flex items-center gap-2">
+            <FileText className="w-5 h-5 text-amber-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Valuer Remarks
+            </h3>
+          </div>
+          <span className="text-xs text-amber-900 font-medium bg-amber-100 px-2.5 py-1 rounded-md border border-amber-300">
+            Section 12: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5">
+          {/* REMARKS: Input Box with Variable Size (Textarea) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                REMARKS
+              </span>
+            }
+          >
+            <AutoResizeTextarea
+              rows={4}
+              className="bg-white border-amber-300 focus:border-amber-500 font-medium text-gray-900 leading-relaxed"
+              value={fields.poonawallaRemarks ?? fields.remarks ?? ''}
+              onChange={(e) => {
+                handleChange('poonawallaRemarks', e.target.value);
+                handleChange('remarks', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter Remarks..."
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -5084,6 +5142,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     'section-9', // Replaced by Section 9: (A)Description of Constructed Area and Rates
     'section-10', // Replaced by Section 10: (B)Value of Extra Amenities
     'section-11', // Replaced by Section 11: FLOORWISE DETAILS OF USAGE OF PROPERTY:
+    'section-12', // Replaced by Section 12: REMARKS:
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -5098,6 +5157,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     { id: 'poonawalla-section-9', title: 'Description of Constructed Area and Rates' },
     { id: 'poonawalla-section-10', title: 'Value of Extra Amenities' },
     { id: 'poonawalla-section-11', title: 'Floorwise Details of Usage of Property' },
+    { id: 'poonawalla-section-12', title: 'Remarks' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
     { id: 'photographs', title: 'Photographs' },
@@ -5241,6 +5301,19 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <FloorwiseUsageDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'poonawalla-section-12',
+      title: 'REMARKS:',
+      number: 12,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ValuerRemarksSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
