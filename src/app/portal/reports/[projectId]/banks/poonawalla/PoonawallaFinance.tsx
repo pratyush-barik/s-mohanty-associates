@@ -16,6 +16,7 @@ import {
   Home,
   Building2,
   MapPin,
+  Table,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -3089,6 +3090,369 @@ function BuildingDetailsSection({
   );
 }
 
+// ─── Section 8: Floor Wise Area (In Sqft.) ──────────────────────────────────
+
+const FLOOR_AREA_ROWS = [
+  { key: 'Base', label: 'Base.' },
+  { key: 'Stilt', label: 'Stilt' },
+  { key: 'Ground', label: 'Ground' },
+  { key: 'First', label: 'First' },
+  { key: 'Second', label: 'Second' },
+  { key: 'Third', label: 'Third/above' },
+] as const;
+
+function FloorWiseAreaSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const parseNum = (v: any): number => {
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    if (typeof v === 'string') return parseFloat(v.replace(/,/g, '') || '0') || 0;
+    return 0;
+  };
+
+  // Sum of Actual: Base. Actual + Stilt Actual + Ground Actual + First Actual + Second Actual + Third/above Actual
+  const autoTotalActual = FLOOR_AREA_ROWS.reduce((acc, row) => {
+    return acc + parseNum(fields[`poonawallaFloor${row.key}Actual`]);
+  }, 0);
+
+  // Sum of Permissible: Base. Permissible + Stilt Permissible + Ground Permissible + First Permissible + Second Permissible + Third/above Permissible
+  const autoTotalPermissible = FLOOR_AREA_ROWS.reduce((acc, row) => {
+    return acc + parseNum(fields[`poonawallaFloor${row.key}Permissible`]);
+  }, 0);
+
+  const effectiveTotalActual = fields.poonawallaTotalActualAreaEdit
+    ? parseNum(fields.poonawallaTotalActualAreaManual)
+    : autoTotalActual;
+
+  const effectiveTotalPermissible = fields.poonawallaTotalPermissibleAreaEdit
+    ? parseNum(fields.poonawallaTotalPermissibleAreaManual)
+    : autoTotalPermissible;
+
+  // Auto-calculated Extra Coverage (in %)
+  const autoExtraCoveragePercent =
+    effectiveTotalPermissible > 0
+      ? (((effectiveTotalActual - effectiveTotalPermissible) / effectiveTotalPermissible) * 100).toFixed(2)
+      : '0';
+
+  // Saleable (In Sqft) auto calculation fallback
+  const autoSaleable =
+    effectiveTotalActual > 0
+      ? effectiveTotalActual
+      : parseNum(fields.poonawallaSuperBuiltUpArea) || 0;
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Area Breakdown Table (Use Light Indigo '#e8eaf6') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-indigo-200 shadow-sm"
+        style={{ backgroundColor: '#e8eaf6' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Table className="w-5 h-5 text-indigo-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Area Breakdown Table
+            </h3>
+          </div>
+          <span className="text-xs text-indigo-900 font-medium bg-indigo-100 px-2.5 py-1 rounded-md border border-indigo-300">
+            Section 8: Container 1
+          </span>
+        </div>
+
+        <div className="overflow-x-auto rounded-lg border border-indigo-200 shadow-xs bg-white">
+          <table className="w-full text-sm text-left border-collapse">
+            <thead>
+              <tr className="border-b border-indigo-200 bg-indigo-100/70 text-indigo-950 font-bold text-xs uppercase tracking-wider">
+                <th className="p-3 w-40 border-r border-indigo-200">
+                  Floor
+                </th>
+                <th className="p-3 border-r border-indigo-200">
+                  Actual (In Sqft.)
+                </th>
+                <th className="p-3">
+                  Permissible (In Sqft.)
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-indigo-100">
+              {FLOOR_AREA_ROWS.map(({ key, label }) => (
+                <tr key={key} className="hover:bg-indigo-50/40 transition-colors">
+                  <td className="p-3 font-bold text-gray-800 text-xs md:text-sm bg-indigo-50/50 border-r border-indigo-200">
+                    <span className="inline-block px-2.5 py-1 rounded bg-indigo-100 text-indigo-900 font-bold tracking-wide">
+                      {label}
+                    </span>
+                  </td>
+                  <td className="p-2.5 border-r border-indigo-200">
+                    <input
+                      type="number"
+                      step="any"
+                      className={inputCls}
+                      value={fields[`poonawallaFloor${key}Actual`] ?? ''}
+                      onChange={(e) =>
+                        handleChange(`poonawallaFloor${key}Actual`, e.target.value)
+                      }
+                      disabled={isReadOnly}
+                      placeholder={`Enter ${label} Actual area...`}
+                    />
+                  </td>
+                  <td className="p-2.5">
+                    <input
+                      type="number"
+                      step="any"
+                      className={inputCls}
+                      value={fields[`poonawallaFloor${key}Permissible`] ?? ''}
+                      onChange={(e) =>
+                        handleChange(`poonawallaFloor${key}Permissible`, e.target.value)
+                      }
+                      disabled={isReadOnly}
+                      placeholder={`Enter ${label} Permissible area...`}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="bg-indigo-100/60 font-bold text-indigo-950 border-t-2 border-indigo-200">
+                <td className="p-3 text-xs md:text-sm uppercase tracking-wide border-r border-indigo-200">
+                  Total (Sum)
+                </td>
+                <td className="p-3 border-r border-indigo-200 text-sm md:text-base font-extrabold text-indigo-900">
+                  {autoTotalActual > 0 ? `${autoTotalActual.toLocaleString('en-IN')} Sqft.` : '0 Sqft.'}
+                </td>
+                <td className="p-3 text-sm md:text-base font-extrabold text-indigo-900">
+                  {autoTotalPermissible > 0 ? `${autoTotalPermissible.toLocaleString('en-IN')} Sqft.` : '0 Sqft.'}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      {/* ─── Container: Area Specifications (Use Light Amber '#fff8e1') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-amber-300 shadow-sm"
+        style={{ backgroundColor: '#fff8e1' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-300 pb-3">
+          <div className="flex items-center gap-2">
+            <Calculator className="w-5 h-5 text-amber-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Area Specifications
+            </h3>
+          </div>
+          <span className="text-xs text-amber-900 font-medium bg-amber-100 px-2.5 py-1 rounded-md border border-amber-400">
+            Section 8: Container 2
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Total Actual (In Sqft)(G+2): Auto-calculated Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Total Actual (In Sqft)(G+2)
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaTotalActualAreaEdit)}
+                  onChange={(checked) =>
+                    handleChange('poonawallaTotalActualAreaEdit', checked)
+                  }
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaTotalActualAreaEdit ? (
+              <input
+                type="number"
+                step="any"
+                className={`${inputCls} bg-white border-amber-400 font-bold text-gray-900 text-base md:text-lg`}
+                value={
+                  fields.poonawallaTotalActualAreaManual ??
+                  (autoTotalActual > 0 ? autoTotalActual : '')
+                }
+                onChange={(e) => {
+                  handleChange('poonawallaTotalActualAreaManual', e.target.value);
+                  handleChange('totalActualArea', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Total Actual Area..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Auto calculating from Sum(Base. Actual + Stilt Actual + Ground Actual + First Actual + Second Actual + Third/above Actual)"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-amber-50/70 border-amber-300 font-bold text-gray-900 text-base md:text-lg cursor-not-allowed`}
+                  value={
+                    autoTotalActual > 0
+                      ? `${autoTotalActual.toLocaleString('en-IN')} Sqft.`
+                      : '0 Sqft.'
+                  }
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Total Permissible (In Sqft)(G+1): Auto-calculated Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Total Permissible (In Sqft)(G+1)
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaTotalPermissibleAreaEdit)}
+                  onChange={(checked) =>
+                    handleChange('poonawallaTotalPermissibleAreaEdit', checked)
+                  }
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaTotalPermissibleAreaEdit ? (
+              <input
+                type="number"
+                step="any"
+                className={`${inputCls} bg-white border-amber-400 font-bold text-gray-900 text-base md:text-lg`}
+                value={
+                  fields.poonawallaTotalPermissibleAreaManual ??
+                  (autoTotalPermissible > 0 ? autoTotalPermissible : '')
+                }
+                onChange={(e) => {
+                  handleChange('poonawallaTotalPermissibleAreaManual', e.target.value);
+                  handleChange('totalPermissibleArea', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Total Permissible Area..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Auto calculating from Sum(Base. Permissible + Stilt Permissible + Ground Permissible + First Permissible + Second Permissible + Third/above Permissible)"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-amber-50/70 border-amber-300 font-bold text-gray-900 text-base md:text-lg cursor-not-allowed`}
+                  value={
+                    autoTotalPermissible > 0
+                      ? `${autoTotalPermissible.toLocaleString('en-IN')} Sqft.`
+                      : '0 Sqft.'
+                  }
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Extra Coverage (in %): Input Box (Numeric) / Auto-calculated */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Extra Coverage (in %)
+              </span>
+            }
+          >
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                step="any"
+                className={inputCls}
+                value={
+                  fields.poonawallaExtraCoveragePercent ??
+                  (autoExtraCoveragePercent !== '0' ? autoExtraCoveragePercent : '')
+                }
+                onChange={(e) => {
+                  handleChange('poonawallaExtraCoveragePercent', e.target.value);
+                  handleChange('extraCoveragePercent', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder={autoExtraCoveragePercent ? `${autoExtraCoveragePercent}%` : '0%'}
+              />
+              <span className="px-3 py-2 bg-amber-100 text-amber-900 font-bold rounded-lg border border-amber-300 text-xs md:text-sm shrink-0">
+                %
+              </span>
+            </div>
+          </Field>
+
+          {/* Saleable (In Sqft): Input Box (Numeric) / Auto-calculated */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Saleable (In Sqft)
+              </span>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={inputCls}
+              value={
+                fields.poonawallaSaleableArea ??
+                (autoSaleable > 0 ? autoSaleable : '')
+              }
+              onChange={(e) => {
+                handleChange('poonawallaSaleableArea', e.target.value);
+                handleChange('saleableArea', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder={autoSaleable > 0 ? `${autoSaleable} Sqft.` : 'Enter Saleable area in Sqft...'}
+            />
+          </Field>
+
+          {/* Composite Extra Coverage: Checkbox + Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Composite Extra Coverage
+              </span>
+            }
+            span={2}
+          >
+            <div className="flex items-center gap-2.5">
+              <label className="flex items-center gap-1.5 cursor-pointer shrink-0 select-none bg-white px-3 py-2 rounded-lg border border-amber-300 shadow-xs hover:bg-amber-50/50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={Boolean(fields.poonawallaCompositeExtraCoverageCheck)}
+                  onChange={(e) =>
+                    handleChange('poonawallaCompositeExtraCoverageCheck', e.target.checked)
+                  }
+                  disabled={isReadOnly}
+                  className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                />
+                <span className="text-xs font-semibold text-amber-900">Applicable</span>
+              </label>
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.poonawallaCompositeExtraCoverage ?? ''}
+                onChange={(e) =>
+                  handleChange('poonawallaCompositeExtraCoverage', e.target.value)
+                }
+                disabled={isReadOnly}
+                placeholder="Enter composite extra coverage details..."
+              />
+            </div>
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -3103,6 +3467,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     'section-5', // Replaced by Section 5: SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS:
     'section-6', // Replaced by Section 6: Boundaries as Per Documents & Site:
     'section-7', // Replaced by Section 7: Building details
+    'section-8', // Replaced by Section 8: Floor Wise Area (In Sqft.)
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -3113,7 +3478,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     { id: 'poonawalla-section-5', title: 'SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS' },
     { id: 'poonawalla-section-6', title: 'Boundaries as Per Documents & Site' },
     { id: 'poonawalla-section-7', title: 'Building details' },
-    { id: 'section-8', title: 'Land Valuation' },
+    { id: 'poonawalla-section-8', title: 'Floor Wise Area (In Sqft.)' },
     { id: 'section-9', title: 'Valuation Abstract' },
     { id: 'section-10', title: 'Remarks' },
     { id: 'section-11', title: 'Certificate' },
@@ -3208,6 +3573,19 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <BuildingDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'poonawalla-section-8',
+      title: 'Floor Wise Area (In Sqft.)',
+      number: 8,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <FloorWiseAreaSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
