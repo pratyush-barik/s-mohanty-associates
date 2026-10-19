@@ -17,6 +17,9 @@ import {
   Building2,
   MapPin,
   Table,
+  Plus,
+  Trash2,
+  Layers,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -3453,6 +3456,504 @@ function FloorWiseAreaSection({
   );
 }
 
+// ─── Section 9: (A)Description of Constructed Area and Rates ────────────────
+
+const DEFAULT_RATE_ROWS = [
+  { description: 'Ground Floor', area: '', rate: '' },
+  { description: 'First Floor', area: '', rate: '' },
+  { description: 'Second Floor', area: '', rate: '' },
+];
+
+function ConstructedAreaRatesSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const parseNum = (v: any): number => {
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    if (typeof v === 'string') return parseFloat(v.replace(/,/g, '') || '0') || 0;
+    return 0;
+  };
+
+  const rowCount: number =
+    typeof fields.poonawallaRateRowsCount === 'number'
+      ? fields.poonawallaRateRowsCount
+      : 3;
+  const rowIndices = Array.from({ length: rowCount }, (_, i) => i);
+
+  const handleAddRow = () => {
+    handleChange('poonawallaRateRowsCount', rowCount + 1);
+  };
+
+  const handleRemoveRow = (indexToRemove: number) => {
+    if (rowCount <= 1) return;
+    for (let i = indexToRemove; i < rowCount - 1; i++) {
+      handleChange(`poonawallaRateDesc_${i}`, fields[`poonawallaRateDesc_${i + 1}`]);
+      handleChange(`poonawallaRateArea_${i}`, fields[`poonawallaRateArea_${i + 1}`]);
+      handleChange(`poonawallaRatePrice_${i}`, fields[`poonawallaRatePrice_${i + 1}`]);
+      handleChange(`poonawallaRateAmountEdit_${i}`, fields[`poonawallaRateAmountEdit_${i + 1}`]);
+      handleChange(`poonawallaRateAmountManual_${i}`, fields[`poonawallaRateAmountManual_${i + 1}`]);
+    }
+    handleChange('poonawallaRateRowsCount', rowCount - 1);
+  };
+
+  // Compute total constructed area amount (A)
+  let totalConstructedAreaAmount = 0;
+  rowIndices.forEach((i) => {
+    const area = parseNum(fields[`poonawallaRateArea_${i}`]);
+    const rate = parseNum(fields[`poonawallaRatePrice_${i}`]);
+    const autoAmount = area * rate;
+    const effectiveAmount = fields[`poonawallaRateAmountEdit_${i}`]
+      ? parseNum(fields[`poonawallaRateAmountManual_${i}`])
+      : autoAmount;
+    totalConstructedAreaAmount += effectiveAmount;
+  });
+
+  // Land Value (i) calculation
+  const landSqyds = parseNum(fields.poonawallaLandSqyds ?? fields.landSqyds);
+  const landValue =
+    parseNum(fields.poonawallaLandValue) ||
+    (landSqyds * (parseNum(fields.poonawallaLandRateSqyds) || parseNum(fields.landRate) || 0)) ||
+    parseNum(fields.landValue) ||
+    0;
+
+  // Construction Value (ii) calculation
+  const constructionValue =
+    totalConstructedAreaAmount > 0
+      ? totalConstructedAreaAmount
+      : parseNum(fields.poonawallaConstructionValue) ||
+        (parseNum(fields.poonawallaConstructionCompositeRate) * (parseNum(fields.poonawallaPlotArea) || parseNum(fields.totalActualArea) || 0)) ||
+        0;
+
+  // Auto Total Building Value (A+B) = Land Value (i) + Construction Value (ii)
+  const autoTotalBuildingValue = landValue + constructionValue;
+
+  const effectiveTotalBuildingValue = fields.poonawallaTotalBuildingValueEdit
+    ? parseNum(fields.poonawallaTotalBuildingValueManual)
+    : autoTotalBuildingValue;
+
+  // Sync to outer form values for downstream sections (like Section 2)
+  useEffect(() => {
+    if (!fields.poonawallaTotalBuildingValueEdit && autoTotalBuildingValue > 0) {
+      if (fields.poonawallaTotalBuildingValue !== autoTotalBuildingValue) {
+        handleChange('poonawallaTotalBuildingValue', autoTotalBuildingValue);
+        handleChange('totalBuildingValue', autoTotalBuildingValue);
+        handleChange('buildingValue', autoTotalBuildingValue);
+      }
+    }
+  }, [autoTotalBuildingValue, fields.poonawallaTotalBuildingValueEdit]);
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Constructed Area Rates Table (Use Peach '#ffe0b2') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-orange-200 shadow-sm"
+        style={{ backgroundColor: '#ffe0b2' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-orange-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Layers className="w-5 h-5 text-orange-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Constructed Area Rates Table
+            </h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-orange-950 font-medium bg-orange-100 px-2.5 py-1 rounded-md border border-orange-300">
+              Section 9: Container 1
+            </span>
+            {!isReadOnly && (
+              <button
+                type="button"
+                onClick={handleAddRow}
+                className="flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-md bg-orange-600 hover:bg-orange-700 text-white shadow-xs transition-colors shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add Row</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div className="overflow-x-auto rounded-lg border border-orange-200 shadow-xs bg-white">
+          <table className="w-full text-sm text-left border-collapse min-w-160">
+            <thead>
+              <tr className="border-b border-orange-200 bg-orange-100/70 text-orange-950 font-bold text-xs uppercase tracking-wider">
+                <th className="p-3 w-2/5 border-r border-orange-200">
+                  Description
+                </th>
+                <th className="p-3 w-1/5 border-r border-orange-200">
+                  Area
+                </th>
+                <th className="p-3 w-1/5 border-r border-orange-200">
+                  Rate (in Rs.)
+                </th>
+                <th className="p-3 w-1/4 border-r border-orange-200">
+                  Amount (in Rs.)
+                </th>
+                {!isReadOnly && rowCount > 1 && (
+                  <th className="p-3 w-10 text-center"></th>
+                )}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-orange-100">
+              {rowIndices.map((i) => {
+                const descKey = `poonawallaRateDesc_${i}`;
+                const areaKey = `poonawallaRateArea_${i}`;
+                const priceKey = `poonawallaRatePrice_${i}`;
+                const amountEditKey = `poonawallaRateAmountEdit_${i}`;
+                const amountManualKey = `poonawallaRateAmountManual_${i}`;
+
+                const defaultDesc =
+                  i < DEFAULT_RATE_ROWS.length
+                    ? DEFAULT_RATE_ROWS[i].description
+                    : `Floor ${i + 1}`;
+
+                const areaVal = parseNum(fields[areaKey]);
+                const rateVal = parseNum(fields[priceKey]);
+                const rowAutoAmount = areaVal * rateVal;
+                const isRowEdit = Boolean(fields[amountEditKey]);
+
+                return (
+                  <tr key={i} className="hover:bg-orange-50/40 transition-colors">
+                    <td className="p-2.5 border-r border-orange-200">
+                      <input
+                        type="text"
+                        className={inputCls}
+                        value={fields[descKey] ?? defaultDesc}
+                        onChange={(e) => handleChange(descKey, e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="e.g. Ground Floor / First Floor..."
+                      />
+                    </td>
+                    <td className="p-2.5 border-r border-orange-200">
+                      <input
+                        type="number"
+                        step="any"
+                        className={inputCls}
+                        value={fields[areaKey] ?? ''}
+                        onChange={(e) => handleChange(areaKey, e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Area (Sqft)..."
+                      />
+                    </td>
+                    <td className="p-2.5 border-r border-orange-200">
+                      <input
+                        type="number"
+                        step="any"
+                        className={inputCls}
+                        value={fields[priceKey] ?? ''}
+                        onChange={(e) => handleChange(priceKey, e.target.value)}
+                        disabled={isReadOnly}
+                        placeholder="Rate (₹)..."
+                      />
+                    </td>
+                    <td className="p-2.5 border-r border-orange-200">
+                      <div className="flex items-center gap-2">
+                        {isRowEdit ? (
+                          <input
+                            type="number"
+                            step="any"
+                            className={`${inputCls} bg-white border-orange-400 font-bold text-gray-900`}
+                            value={
+                              fields[amountManualKey] ??
+                              (rowAutoAmount > 0 ? rowAutoAmount : '')
+                            }
+                            onChange={(e) =>
+                              handleChange(amountManualKey, e.target.value)
+                            }
+                            disabled={isReadOnly}
+                            placeholder="Amount..."
+                          />
+                        ) : (
+                          <LockedFieldWrapper
+                            isLocked={true}
+                            tooltipMessage="Auto calculating from Area * Rate"
+                          >
+                            <input
+                              type="text"
+                              readOnly
+                              disabled
+                              className={`${inputCls} bg-orange-50/60 border-orange-200 font-bold text-gray-900 cursor-not-allowed`}
+                              value={
+                                rowAutoAmount > 0
+                                  ? `₹${rowAutoAmount.toLocaleString('en-IN')}`
+                                  : '₹0'
+                              }
+                            />
+                          </LockedFieldWrapper>
+                        )}
+                        <EditSwitch
+                          checked={isRowEdit}
+                          onChange={(checked) =>
+                            handleChange(amountEditKey, checked)
+                          }
+                          disabled={isReadOnly}
+                        />
+                      </div>
+                    </td>
+                    {!isReadOnly && rowCount > 1 && (
+                      <td className="p-2.5 text-center">
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveRow(i)}
+                          className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                          title="Remove Row"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="bg-orange-100/60 font-bold text-orange-950 border-t-2 border-orange-200">
+                <td className="p-3 text-xs md:text-sm uppercase tracking-wide border-r border-orange-200" colSpan={3}>
+                  Total Constructed Area Amount (A)
+                </td>
+                <td className="p-3 text-sm md:text-base font-extrabold text-orange-900" colSpan={!isReadOnly && rowCount > 1 ? 2 : 1}>
+                  ₹{totalConstructedAreaAmount.toLocaleString('en-IN')}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      {/* ─── Container: Construction & Building Value (Use Lavender '#ede7f6') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-purple-200 shadow-sm"
+        style={{ backgroundColor: '#ede7f6' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-purple-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Building className="w-5 h-5 text-purple-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Construction & Building Value
+            </h3>
+          </div>
+          <span className="text-xs text-purple-900 font-medium bg-purple-100 px-2.5 py-1 rounded-md border border-purple-300">
+            Section 9: Container 2
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Land (sqyds.) ..(i): Input Box (Numeric) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Land (sqyds.) ..(i)
+              </span>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={inputCls}
+              value={
+                fields.poonawallaLandSqyds ??
+                fields.landSqyds ??
+                fields.landAreaSqyds ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaLandSqyds', e.target.value);
+                handleChange('landSqyds', e.target.value);
+                handleChange('landAreaSqyds', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter Land in sqyds..."
+            />
+          </Field>
+
+          {/* Construction /Composite Rate (sqft): Input Box (Numeric) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Construction /Composite Rate (sqft)
+              </span>
+            }
+          >
+            <input
+              type="number"
+              step="any"
+              className={inputCls}
+              value={
+                fields.poonawallaConstructionCompositeRate ??
+                fields.constructionCompositeRate ??
+                fields.compositeRate ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaConstructionCompositeRate', e.target.value);
+                handleChange('constructionCompositeRate', e.target.value);
+                handleChange('compositeRate', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter Construction / Composite Rate per sqft..."
+            />
+          </Field>
+
+          {/* Stage of construction: Input Box / Dropdown */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Stage of construction
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaStageOfConstruction || 'Completed'}
+              customValue={fields.poonawallaStageOfConstructionCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaStageOfConstruction', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaStageOfConstructionCustom || ''
+                    : val;
+                handleChange('stageOfConstruction', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaStageOfConstructionCustom', val);
+                handleChange('stageOfConstruction', val);
+              }}
+              options={[
+                { value: 'Completed', label: 'Completed' },
+                { value: 'Finishing Stage', label: 'Finishing Stage' },
+                { value: 'Plastering / Flooring', label: 'Plastering / Flooring' },
+                { value: 'Brickwork & Slab', label: 'Brickwork & Slab' },
+                { value: 'Plinth Level', label: 'Plinth Level' },
+                { value: 'Under Construction', label: 'Under Construction' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Stage of construction..."
+            />
+          </Field>
+
+          {/* Stage %: Input Box (Numeric) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Stage %
+              </span>
+            }
+          >
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                step="any"
+                min={0}
+                max={100}
+                className={inputCls}
+                value={fields.poonawallaStagePercent ?? '100'}
+                onChange={(e) => {
+                  handleChange('poonawallaStagePercent', e.target.value);
+                  handleChange('stagePercent', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="100"
+              />
+              <span className="px-3 py-2 bg-purple-100 text-purple-900 font-bold rounded-lg border border-purple-300 text-xs md:text-sm shrink-0">
+                %
+              </span>
+            </div>
+          </Field>
+
+          {/* Recommended %: Input Box (Numeric) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Recommended %
+              </span>
+            }
+          >
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                step="any"
+                min={0}
+                max={100}
+                className={inputCls}
+                value={fields.poonawallaRecommendedPercent ?? '100'}
+                onChange={(e) => {
+                  handleChange('poonawallaRecommendedPercent', e.target.value);
+                  handleChange('recommendedPercent', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="100"
+              />
+              <span className="px-3 py-2 bg-purple-100 text-purple-900 font-bold rounded-lg border border-purple-300 text-xs md:text-sm shrink-0">
+                %
+              </span>
+            </div>
+          </Field>
+
+          {/* Total Building Value (A+B): Auto-calculated Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Total Building Value (A+B)
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaTotalBuildingValueEdit)}
+                  onChange={(checked) =>
+                    handleChange('poonawallaTotalBuildingValueEdit', checked)
+                  }
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+            span={2}
+          >
+            {fields.poonawallaTotalBuildingValueEdit ? (
+              <input
+                type="number"
+                step="any"
+                className={`${inputCls} bg-white border-purple-400 font-bold text-gray-900 text-base md:text-lg`}
+                value={
+                  fields.poonawallaTotalBuildingValueManual ??
+                  (autoTotalBuildingValue > 0 ? autoTotalBuildingValue : '')
+                }
+                onChange={(e) => {
+                  handleChange('poonawallaTotalBuildingValueManual', e.target.value);
+                  handleChange('poonawallaTotalBuildingValue', e.target.value);
+                  handleChange('totalBuildingValue', e.target.value);
+                  handleChange('buildingValue', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Total Building Value..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Auto calculating from Land Value (i) + Construction Value (ii)"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-purple-50/70 border-purple-300 font-bold text-gray-900 text-base md:text-lg cursor-not-allowed`}
+                  value={
+                    effectiveTotalBuildingValue > 0
+                      ? `₹${effectiveTotalBuildingValue.toLocaleString('en-IN')}`
+                      : '₹0'
+                  }
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -3468,6 +3969,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     'section-6', // Replaced by Section 6: Boundaries as Per Documents & Site:
     'section-7', // Replaced by Section 7: Building details
     'section-8', // Replaced by Section 8: Floor Wise Area (In Sqft.)
+    'section-9', // Replaced by Section 9: (A)Description of Constructed Area and Rates
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -3479,7 +3981,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     { id: 'poonawalla-section-6', title: 'Boundaries as Per Documents & Site' },
     { id: 'poonawalla-section-7', title: 'Building details' },
     { id: 'poonawalla-section-8', title: 'Floor Wise Area (In Sqft.)' },
-    { id: 'section-9', title: 'Valuation Abstract' },
+    { id: 'poonawalla-section-9', title: 'Description of Constructed Area and Rates' },
     { id: 'section-10', title: 'Remarks' },
     { id: 'section-11', title: 'Certificate' },
     { id: 'section-documents', title: 'Documents' },
@@ -3592,6 +4094,19 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'poonawalla-section-9',
+      title: '(A)Description of Constructed Area and Rates',
+      number: 9,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ConstructedAreaRatesSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     poonawallaPurposeOfValuation: 'To assess the fair market value of the collateral security',
@@ -3626,6 +4141,9 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     poonawallaPropertyWithinMunicipalLimits: 'Yes',
     poonawallaMarketability: 'Good',
     poonawallaBasicAmenities: ['Water', 'Sewer', 'Electrical', 'Road'],
+    poonawallaStageOfConstruction: 'Completed',
+    poonawallaStagePercent: '100',
+    poonawallaRecommendedPercent: '100',
   },
 };
 
