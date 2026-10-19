@@ -18,6 +18,7 @@ import {
   Map,
   Home,
   Layers,
+  Key,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -2627,6 +2628,176 @@ function PhysicalDetailsSection({
   );
 }
 
+// ─── Section 5: OCCUPANCY DETAILS ─────────────────────────────────────────────
+
+function OccupancyDetailsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const occupancyStatusOptions = [
+    { value: 'Self Occupied', label: 'Self Occupied' },
+    { value: 'Tenanted / Rented', label: 'Tenanted / Rented' },
+    { value: 'Vacant', label: 'Vacant' },
+    { value: 'Partially Self Occupied & Partially Tenanted', label: 'Partially Self Occupied & Partially Tenanted' },
+    { value: 'Under Construction / Unoccupied', label: 'Under Construction / Unoccupied' },
+  ];
+
+  const occupantRelationshipOptions = [
+    { value: 'Self', label: 'Self' },
+    { value: 'Family / Relative', label: 'Family / Relative' },
+    { value: 'Tenant', label: 'Tenant' },
+    { value: 'Employee / Caretaker', label: 'Employee / Caretaker' },
+    { value: 'Vacant / Not Applicable', label: 'Vacant / Not Applicable' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: OCCUPANCY DETAILS (Light Pink '#fce4ec') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-pink-200 shadow-sm"
+        style={{ backgroundColor: '#fce4ec' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-pink-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Key className="w-5 h-5 text-pink-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              OCCUPANCY DETAILS
+            </h3>
+          </div>
+          <span className="text-xs text-pink-800 font-medium bg-pink-100 px-2.5 py-1 rounded-md border border-pink-300">
+            Section 5: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+          {/* 5.1 Status of Occupancy */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                5.1 Status of Occupancy
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.janaOccupancyStatus || 'Self Occupied'}
+              customValue={fields.janaOccupancyStatusCustom || ''}
+              onChange={(val) => handleChange('janaOccupancyStatus', val)}
+              onCustomChange={(val) => handleChange('janaOccupancyStatusCustom', val)}
+              options={occupancyStatusOptions}
+              disabled={isReadOnly}
+              placeholder="Select occupancy status..."
+            />
+          </Field>
+
+          {/* 5.2 Relationship of Occupant with customer */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                5.2 Relationship with Customer
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.janaOccupantRelationship || 'Self'}
+              customValue={fields.janaOccupantRelationshipCustom || ''}
+              onChange={(val) => handleChange('janaOccupantRelationship', val)}
+              onCustomChange={(val) => handleChange('janaOccupantRelationshipCustom', val)}
+              options={occupantRelationshipOptions}
+              disabled={isReadOnly}
+              placeholder="Select relationship..."
+            />
+          </Field>
+
+          {/* 5.3 Occupied by */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  5.3 Occupied By
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaOccupiedByNA)}
+                  onChange={(checked) => {
+                    handleChange('janaOccupiedByNA', checked);
+                    if (checked) {
+                      handleChange('janaOccupiedBy', 'NA');
+                    } else {
+                      handleChange('janaOccupiedBy', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaOccupiedByNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaOccupiedByNA
+                  ? 'NA'
+                  : (fields.janaOccupiedBy ?? fields.occupiedBy ?? '')
+              }
+              onChange={(e) => handleChange('janaOccupiedBy', e.target.value)}
+              disabled={isReadOnly || fields.janaOccupiedByNA}
+              placeholder={fields.janaOccupiedByNA ? 'NA' : 'e.g. Self / Name of Tenant'}
+            />
+          </Field>
+
+          {/* 5.4 Occupied Since */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  5.4 Occupied Since
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaOccupiedSinceNA)}
+                  onChange={(checked) => {
+                    handleChange('janaOccupiedSinceNA', checked);
+                    if (checked) {
+                      handleChange('janaOccupiedSince', 'NA');
+                    } else {
+                      handleChange('janaOccupiedSince', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaOccupiedSinceNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={
+                fields.janaOccupiedSinceNA
+                  ? 'NA'
+                  : (fields.janaOccupiedSince ?? '')
+              }
+              onChange={(e) => handleChange('janaOccupiedSince', e.target.value)}
+              disabled={isReadOnly || fields.janaOccupiedSinceNA}
+              placeholder={fields.janaOccupiedSinceNA ? 'NA' : 'e.g. 2018 or 10 Years'}
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Jana Small Finance Bank BankConfig ──────────────────────────────────────
 
 export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
@@ -2638,6 +2809,7 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     'section-2', // Replaced by Section 2: PROPERTY DETAILS
     'section-3', // Replaced by Section 3: DOCUMENT DETAILS
     'section-4', // Replaced by Section 4: PHYSICAL DETAILS
+    'section-5', // Replaced by Section 5: OCCUPANCY DETAILS
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -2645,6 +2817,7 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     { id: 'jana-section-2', title: 'PROPERTY DETAILS' },
     { id: 'jana-section-3', title: 'DOCUMENT DETAILS' },
     { id: 'jana-section-4', title: 'PHYSICAL DETAILS' },
+    { id: 'jana-section-5', title: 'OCCUPANCY DETAILS' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
     { id: 'section-11', title: 'Photographs' },
@@ -2703,6 +2876,19 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'jana-section-5',
+      title: 'OCCUPANCY DETAILS',
+      number: 5,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <OccupancyDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Affordable Housing / MSME Loan',
@@ -2727,6 +2913,10 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     janaInteriorQuality: 'Average',
     janaExteriorQuality: 'Average',
     janaMaintenanceLevel: 'Good',
+    janaOccupancyStatus: 'Self Occupied',
+    janaOccupantRelationship: 'Self',
+    janaOccupiedByNA: false,
+    janaOccupiedSinceNA: false,
   },
 };
 
