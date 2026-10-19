@@ -3,12 +3,13 @@
 import React, { useRef, useEffect } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
-import { Field, inputCls } from '../BaseBankReportComponents';
+import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
 import {
   Building,
   Lock,
   Calculator,
   Target,
+  UserCheck,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -501,6 +502,428 @@ function PurposeOfValuationSection({
   );
 }
 
+// ─── Default Agency Profile Constants ───────────────────────────────────────
+
+const DEFAULT_AGENCY_PREPARED_BY =
+  'M/s. S MOHANTY ASSOCIATES, Plot No: 858 (P) & 859 (P), Near Astha Binodini Apartment, Siba Nagar, Rajarani, Tankapani Road, Bhubaneswar-751018';
+const DEFAULT_AGENCY_PHONE = '06742381145';
+const DEFAULT_AGENCY_MOBILE = '9937023855 / 9437074855';
+const DEFAULT_AGENCY_VALUER_NAME = 'Er. Satyajit Mohanty (M/s. S MOHANTY ASSOCIATES)';
+
+// ─── Section 4: PREPARED BY ─────────────────────────────────────────────────
+
+function PreparedBySection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const preparedByNameAndAddressVal =
+    fields.poonawallaPreparedByNameAndAddress ??
+    fields.preparedByNameAndAddress ??
+    DEFAULT_AGENCY_PREPARED_BY;
+
+  const phoneVal = fields.poonawallaPhone ?? fields.phone ?? DEFAULT_AGENCY_PHONE;
+  const mobileVal = fields.poonawallaMobile ?? fields.mobile ?? DEFAULT_AGENCY_MOBILE;
+  const valuerNameVal =
+    fields.poonawallaValuerName ?? fields.valuerName ?? DEFAULT_AGENCY_VALUER_NAME;
+
+  const defaultValuationReportSeq =
+    fields.refNo || fields.caseRefNo || fields.projectCode || 'VR/POONAWALLA/2026/01';
+  const valuationReportVal =
+    fields.poonawallaValuationReportNo ??
+    fields.valuationReportNo ??
+    defaultValuationReportSeq;
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Valuer Details (Use Light Orange '#fff3e0') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-orange-200 shadow-sm"
+        style={{ backgroundColor: '#fff3e0' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-orange-200 pb-3">
+          <div className="flex items-center gap-2">
+            <UserCheck className="w-5 h-5 text-orange-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Valuer Details
+            </h3>
+          </div>
+          <span className="text-xs text-orange-800 font-medium bg-orange-100 px-2.5 py-1 rounded-md border border-orange-300">
+            Section 4: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* PREPARED BY (Name and Address): Prefill Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  PREPARED BY (Name and Address)
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaPreparedByNameAndAddressEdit)}
+                  onChange={(checked) =>
+                    handleChange('poonawallaPreparedByNameAndAddressEdit', checked)
+                  }
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+            span={2}
+          >
+            {fields.poonawallaPreparedByNameAndAddressEdit ? (
+              <AutoResizeTextarea
+                rows={2}
+                className="bg-white border-orange-400 font-medium text-gray-900"
+                value={fields.poonawallaPreparedByNameAndAddress ?? preparedByNameAndAddressVal}
+                onChange={(e) => {
+                  handleChange('poonawallaPreparedByNameAndAddress', e.target.value);
+                  handleChange('preparedByNameAndAddress', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Name and Address..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Prefill from agency profile"
+              >
+                <AutoResizeTextarea
+                  rows={2}
+                  readOnly
+                  disabled
+                  className="bg-orange-50/70 border-orange-200 font-medium text-gray-800 cursor-not-allowed"
+                  value={preparedByNameAndAddressVal}
+                  onChange={() => {}}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* PHONE: Prefill Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  PHONE
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaPhoneEdit)}
+                  onChange={(checked) => handleChange('poonawallaPhoneEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaPhoneEdit ? (
+              <input
+                type="text"
+                className={`${inputCls} bg-white border-orange-400 font-medium text-gray-900`}
+                value={fields.poonawallaPhone ?? phoneVal}
+                onChange={(e) => {
+                  handleChange('poonawallaPhone', e.target.value);
+                  handleChange('phone', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Phone..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Prefill from agency profile"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-orange-50/70 border-orange-200 font-medium text-gray-800 cursor-not-allowed`}
+                  value={phoneVal}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* MOBILE: Prefill Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  MOBILE
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaMobileEdit)}
+                  onChange={(checked) => handleChange('poonawallaMobileEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaMobileEdit ? (
+              <input
+                type="text"
+                className={`${inputCls} bg-white border-orange-400 font-medium text-gray-900`}
+                value={fields.poonawallaMobile ?? mobileVal}
+                onChange={(e) => {
+                  handleChange('poonawallaMobile', e.target.value);
+                  handleChange('mobile', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Mobile..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Prefill from agency profile"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-orange-50/70 border-orange-200 font-medium text-gray-800 cursor-not-allowed`}
+                  value={mobileVal}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* VALUATION REPORT: Auto-generated / Prefill Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  VALUATION REPORT
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaValuationReportEdit)}
+                  onChange={(checked) =>
+                    handleChange('poonawallaValuationReportEdit', checked)
+                  }
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaValuationReportEdit ? (
+              <input
+                type="text"
+                className={`${inputCls} bg-white border-orange-400 font-medium text-gray-900`}
+                value={fields.poonawallaValuationReportNo ?? valuationReportVal}
+                onChange={(e) => {
+                  handleChange('poonawallaValuationReportNo', e.target.value);
+                  handleChange('valuationReportNo', e.target.value);
+                  handleChange('refNo', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Valuation Report No..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Prefill from system sequence"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-orange-50/70 border-orange-200 font-medium text-gray-800 cursor-not-allowed`}
+                  value={valuationReportVal}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Valuer Name: Prefill Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Valuer Name
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaValuerNameEdit)}
+                  onChange={(checked) => handleChange('poonawallaValuerNameEdit', checked)}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaValuerNameEdit ? (
+              <input
+                type="text"
+                className={`${inputCls} bg-white border-orange-400 font-medium text-gray-900`}
+                value={fields.poonawallaValuerName ?? valuerNameVal}
+                onChange={(e) => {
+                  handleChange('poonawallaValuerName', e.target.value);
+                  handleChange('valuerName', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Valuer Name..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Prefill from agency profile"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-orange-50/70 border-orange-200 font-medium text-gray-800 cursor-not-allowed`}
+                  value={valuerNameVal}
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Deal No: Input Box (Standard size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Deal No
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.poonawallaDealNo ?? fields.dealNo ?? ''}
+              onChange={(e) => {
+                handleChange('poonawallaDealNo', e.target.value);
+                handleChange('dealNo', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter Deal No..."
+            />
+          </Field>
+
+          {/* Vertical Branch Name: Dropdown (Options: Fullerton, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Vertical Branch Name
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaVerticalBranchName || 'Fullerton'}
+              customValue={fields.poonawallaVerticalBranchNameCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaVerticalBranchName', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaVerticalBranchNameCustom || ''
+                    : val;
+                handleChange('verticalBranchName', finalVal);
+                handleChange('branchName', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaVerticalBranchNameCustom', val);
+                handleChange('verticalBranchName', val);
+                handleChange('branchName', val);
+              }}
+              options={[{ value: 'Fullerton', label: 'Fullerton' }]}
+              disabled={isReadOnly}
+              placeholder="Select Vertical Branch Name..."
+            />
+          </Field>
+
+          {/* Type of Case: Dropdown (Options: Standard, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Type of Case
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaTypeOfCase || 'Standard'}
+              customValue={fields.poonawallaTypeOfCaseCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaTypeOfCase', val);
+                const finalVal =
+                  val === 'Custom' ? fields.poonawallaTypeOfCaseCustom || '' : val;
+                handleChange('typeOfCase', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaTypeOfCaseCustom', val);
+                handleChange('typeOfCase', val);
+              }}
+              options={[{ value: 'Standard', label: 'Standard' }]}
+              disabled={isReadOnly}
+              placeholder="Select Type of Case..."
+            />
+          </Field>
+
+          {/* Date of Initiate: Date Picker */}
+          <BaseDateInput
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Date of Initiate
+              </span>
+            }
+            value={fields.poonawallaDateOfInitiate ?? fields.dateOfInitiate ?? ''}
+            onChange={(val) => {
+              handleChange('poonawallaDateOfInitiate', val);
+              handleChange('dateOfInitiate', val);
+            }}
+            disabled={isReadOnly}
+            placeholder="DD/MM/YYYY"
+          />
+
+          {/* Date of visit: Date Picker */}
+          <BaseDateInput
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Date of visit
+              </span>
+            }
+            value={
+              fields.poonawallaDateOfVisit ??
+              fields.dateOfVisit ??
+              fields.inspectionDate ??
+              ''
+            }
+            onChange={(val) => {
+              handleChange('poonawallaDateOfVisit', val);
+              handleChange('dateOfVisit', val);
+              handleChange('inspectionDate', val);
+            }}
+            disabled={isReadOnly}
+            placeholder="DD/MM/YYYY"
+          />
+
+          {/* Date of Report: Date Picker */}
+          <BaseDateInput
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Date of Report
+              </span>
+            }
+            value={
+              fields.poonawallaDateOfReport ??
+              fields.dateOfReport ??
+              fields.reportDate ??
+              ''
+            }
+            onChange={(val) => {
+              handleChange('poonawallaDateOfReport', val);
+              handleChange('dateOfReport', val);
+              handleChange('reportDate', val);
+            }}
+            disabled={isReadOnly}
+            placeholder="DD/MM/YYYY"
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -511,13 +934,14 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     'section-1', // Replaced by Section 1: VALUATION OF IMMOVABLE PROPERTY
     'section-2', // Replaced by Section 2: VALUE OF THE PROPERTY
     'section-3', // Replaced by Section 3: PURPOSE OF VALUATION
+    'section-4', // Replaced by Section 4: PREPARED BY
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
     { id: 'poonawalla-section-1', title: 'VALUATION OF IMMOVABLE PROPERTY' },
     { id: 'poonawalla-section-2', title: 'VALUE OF THE PROPERTY' },
     { id: 'poonawalla-section-3', title: 'PURPOSE OF VALUATION' },
-    { id: 'section-4', title: 'Subject Property' },
+    { id: 'poonawalla-section-4', title: 'PREPARED BY' },
     { id: 'section-5', title: 'Structural Details' },
     { id: 'section-6', title: 'Plan Approvals' },
     { id: 'section-7', title: 'Area Valuation' },
@@ -570,11 +994,30 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'poonawalla-section-4',
+      title: 'PREPARED BY',
+      number: 4,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <PreparedBySection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     poonawallaPurposeOfValuation: 'To assess the fair market value of the collateral security',
     purpose: 'To assess the fair market value of the collateral security',
     purposeOfValuation: 'To assess the fair market value of the collateral security',
+    poonawallaPreparedByNameAndAddress: DEFAULT_AGENCY_PREPARED_BY,
+    poonawallaPhone: DEFAULT_AGENCY_PHONE,
+    poonawallaMobile: DEFAULT_AGENCY_MOBILE,
+    poonawallaValuerName: DEFAULT_AGENCY_VALUER_NAME,
+    poonawallaVerticalBranchName: 'Fullerton',
+    poonawallaTypeOfCase: 'Standard',
   },
 };
 
