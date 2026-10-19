@@ -4858,6 +4858,268 @@ function ReferenceDetailSection({
   );
 }
 
+// ─── Section 10: Exceptions (Not to be filled) (For JSFB internal use only) ──
+
+function ExceptionsInternalSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const residualAge = fields.janaResidualAgeEdit
+    ? (fields.janaResidualAgeManual || '')
+    : fields.janaAgeOfPropertyNA
+    ? 'NA'
+    : fields.janaAgeOfProperty !== undefined && fields.janaAgeOfProperty !== ''
+    ? String(Math.max(0, 60 - (parseInt(fields.janaAgeOfProperty, 10) || 0)))
+    : '60';
+
+  const exceptionItems = [
+    {
+      num: '10.1',
+      label: 'Seismic Zone',
+      hover: '>>Prefill from section 2, "Seismic Zone"<<',
+      editKey: 'janaExSeismicZoneEdit',
+      manualKey: 'janaExSeismicZoneManual',
+      prefill: fields.janaSeismicZone || 'Zone III',
+    },
+    {
+      num: '10.2',
+      label: 'Layout Plan Provided (Y/N)',
+      hover: '>>Prefill from section 3, "Layout Plan Provided (Y/N)"<<',
+      editKey: 'janaExLayoutPlanProvidedEdit',
+      manualKey: 'janaExLayoutPlanProvidedManual',
+      prefill: fields.janaLayoutPlanProvided || 'No',
+    },
+    {
+      num: '10.3',
+      label: 'Construction Permission (Y/N)',
+      hover: '>>Prefill from section 3, "Construction Permission (Y/N)"<<',
+      editKey: 'janaExConstructionPermissionEdit',
+      manualKey: 'janaExConstructionPermissionManual',
+      prefill: fields.janaConstructionPermissionProvided || 'Yes',
+    },
+    {
+      num: '10.4',
+      label: 'Boundaries Matching',
+      hover: '>>Prefill from section 4, "Boundaries Matching"<<',
+      editKey: 'janaExBoundariesMatchingEdit',
+      manualKey: 'janaExBoundariesMatchingManual',
+      prefill: fields.janaBoundariesMatching || 'Yes',
+    },
+    {
+      num: '10.5',
+      label: 'Plot demarcated at site',
+      hover: '>>Prefill from section 4, "Plot demarcated at site - (Permanent/ temporary)"<<',
+      editKey: 'janaExPlotDemarcatedEdit',
+      manualKey: 'janaExPlotDemarcatedManual',
+      prefill:
+        fields.janaPlotDemarcated === 'Custom'
+          ? (fields.janaPlotDemarcatedCustom || 'Custom')
+          : (fields.janaPlotDemarcated || 'Permanent'),
+    },
+    {
+      num: '10.6',
+      label: 'Class of Locality (Posh/ High/ Middle/ Low/ Slum)',
+      hover: '>>Prefill from section 4, "Class of Locality (Posh/ High/ Middle/ Low/ Slum)"<<',
+      editKey: 'janaExClassOfLocalityEdit',
+      manualKey: 'janaExClassOfLocalityManual',
+      prefill:
+        fields.janaClassOfLocality === 'Custom'
+          ? (fields.janaClassOfLocalityCustom || 'Custom')
+          : (fields.janaClassOfLocality || 'Middle'),
+    },
+    {
+      num: '10.7',
+      label: 'Is community dominated area (Yes/ No)',
+      hover: '>>Prefill from section 4, "Is community dominated area (Yes/ No)"<<',
+      editKey: 'janaExCommunityDominatedEdit',
+      manualKey: 'janaExCommunityDominatedManual',
+      prefill: fields.janaCommunityDominated || 'No',
+    },
+    {
+      num: '10.8',
+      label: 'Width of public road (ft)',
+      hover: '>>Prefill from section 4, "Width of public road (ft)"<<',
+      editKey: 'janaExRoadWidthEdit',
+      manualKey: 'janaExRoadWidthManual',
+      prefill: fields.janaRoadWidthNA ? 'NA' : (fields.janaRoadWidth || ''),
+    },
+    {
+      num: '10.9',
+      label: 'Is property easily located and identified (Yes/ No)',
+      hover: '>>Prefill from section 4, "Is property easily located and identified (Yes/ No)"<<',
+      editKey: 'janaExEasilyLocatedEdit',
+      manualKey: 'janaExEasilyLocatedManual',
+      prefill: fields.janaEasilyLocated || 'Yes',
+    },
+    {
+      num: "10.10'",
+      label: 'Distance from City Center (Km)',
+      hover: '>>Prefill from section 4, "Distance from City Center (Km)"<<',
+      editKey: 'janaExDistanceFromCityCenterEdit',
+      manualKey: 'janaExDistanceFromCityCenterManual',
+      prefill: fields.janaDistanceFromCityCenterNA ? 'NA' : (fields.janaDistanceFromCityCenter || ''),
+    },
+    {
+      num: '10.11',
+      label: 'Property Location (MC/ GP/ Panchayat under Development Authority)',
+      hover: '>>Prefill from section 4, "Property Location (MC/ GP/ Panchayat under Development Authority)"<<',
+      editKey: 'janaExPropertyLocationEdit',
+      manualKey: 'janaExPropertyLocationManual',
+      prefill:
+        fields.janaPropertyLocation === 'Custom'
+          ? (fields.janaPropertyLocationCustom || 'Custom')
+          : (fields.janaPropertyLocation || 'Municipal Corporation (MC)'),
+    },
+    {
+      num: '10.12',
+      label: 'Maintenance level (Good/ Average/ Poor)',
+      hover: '>>Prefill from section 4, "Maintenance level (Good/ Average/ Poor)"<<',
+      editKey: 'janaExMaintenanceLevelEdit',
+      manualKey: 'janaExMaintenanceLevelManual',
+      prefill: fields.janaMaintenanceLevel || 'Good',
+    },
+    {
+      num: '10.13',
+      label: 'Residual Age of property (Years)',
+      hover: '>>Prefill from section 4, "Residual Age of property (Years)"<<',
+      editKey: 'janaExResidualAgeEdit',
+      manualKey: 'janaExResidualAgeManual',
+      prefill: residualAge,
+    },
+    {
+      num: '10.14',
+      label: 'Risk of Demolition/ Sealing',
+      hover: '>>Prefill from section 6, "Risk of Demolition/ Sealing"<<',
+      editKey: 'janaExDemolitionRiskEdit',
+      manualKey: 'janaExDemolitionRiskManual',
+      prefill: fields.janaDemolitionRisk || 'No',
+    },
+    {
+      num: '10.15',
+      label: 'Is there encroachment of land (Y/N)',
+      hover: '>>Prefill from section 6, "Is there encroachment of land (Y/N)"<<',
+      editKey: 'janaExLandEncroachmentEdit',
+      manualKey: 'janaExLandEncroachmentManual',
+      prefill: fields.janaLandEncroachment || 'No',
+    },
+    {
+      num: '10.16',
+      label: 'Is there HT line near to the property?',
+      hover: '>>Prefill from section 6, "Is there HT line near to the property?"<<',
+      editKey: 'janaExHtLineNearEdit',
+      manualKey: 'janaExHtLineNearManual',
+      prefill: fields.janaHtLineNear || 'No',
+    },
+    {
+      num: '10.17',
+      label: 'Is property in buffer zone/no construction zone as per local guidelines',
+      hover: '>>Prefill from section 6, "Is property in buffer zone/ no construction zone as per local guidelines"<<',
+      editKey: 'janaExBufferZoneEdit',
+      manualKey: 'janaExBufferZoneManual',
+      prefill: fields.janaBufferZone || 'No',
+    },
+    {
+      num: '10.18',
+      label: 'Is there any litigation notice on the property from any FI',
+      hover: '>>Prefill from section 6, "Is there any litigation notice on the property from any FI"<<',
+      editKey: 'janaExLitigationNoticeEdit',
+      manualKey: 'janaExLitigationNoticeManual',
+      prefill: fields.janaLitigationNotice || 'No',
+    },
+    {
+      num: '10.19',
+      label: 'Is property near to graveyard/ crematorium or burning ghats',
+      hover: '>>Prefill from section 6, "Is property near to graveyard/ crematorium or burning ghats"<<',
+      editKey: 'janaExGraveyardNearEdit',
+      manualKey: 'janaExGraveyardNearManual',
+      prefill: fields.janaGraveyardNear || 'No',
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Exceptions (Internal QA) (Light Slate Grey '#f1f5f9') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-slate-300 shadow-sm"
+        style={{ backgroundColor: '#f1f5f9' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-300 pb-3">
+          <div className="flex items-center gap-2">
+            <Lock className="w-5 h-5 text-slate-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Exceptions (Internal QA)
+            </h3>
+          </div>
+          <span className="text-xs text-slate-700 font-semibold bg-slate-200 px-2.5 py-1 rounded-md border border-slate-300">
+            Section 10: Container 1
+          </span>
+        </div>
+
+        {/* Note banner */}
+        <div className="p-3 bg-white/85 rounded-lg border border-slate-300 text-xs text-slate-700 font-medium flex items-center gap-2">
+          <Lock className="w-4 h-4 text-slate-500 shrink-0" />
+          <span>
+            <strong>Note:</strong> All fields in this container are prefilled from respective sections above with Edit Toggle (Default Off) and feature Lock UI (For JSFB internal use only).
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {exceptionItems.map((item) => {
+            const isEdit = Boolean(fields[item.editKey]);
+            const displayVal = isEdit
+              ? (fields[item.manualKey] ?? item.prefill)
+              : item.prefill;
+
+            return (
+              <Field
+                key={item.num}
+                label={
+                  <div className="flex items-center justify-between gap-2 w-full">
+                    <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                      {item.num} {item.label}
+                    </span>
+                    <EditSwitch
+                      checked={isEdit}
+                      onChange={(checked) => handleChange(item.editKey, checked)}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                }
+              >
+                {isEdit ? (
+                  <input
+                    type="text"
+                    className={`${inputCls} bg-white font-medium border-slate-400`}
+                    value={displayVal}
+                    onChange={(e) => handleChange(item.manualKey, e.target.value)}
+                    disabled={isReadOnly}
+                    placeholder={`Enter ${item.label}...`}
+                  />
+                ) : (
+                  <LockedFieldWrapper isLocked={true} tooltipMessage={item.hover}>
+                    <input
+                      type="text"
+                      readOnly
+                      disabled
+                      className={`${inputCls} bg-slate-100/90 border-slate-300 font-semibold text-slate-800 cursor-not-allowed`}
+                      value={displayVal || ''}
+                    />
+                  </LockedFieldWrapper>
+                )}
+              </Field>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Jana Small Finance Bank BankConfig ──────────────────────────────────────
 
 export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
@@ -4878,7 +5140,7 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     'section-8', // Replaced by Section 8: STAGE OF CONSTRUCTION
     'section-8a',
     'section-9', // Replaced by Section 9: Reference Detail
-    'section-10',
+    'section-10', // Replaced by Section 10: Exceptions (Not to be filled)
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -4891,6 +5153,7 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     { id: 'jana-section-7', title: 'VALUATION' },
     { id: 'jana-section-8', title: 'STAGE OF CONSTRUCTION' },
     { id: 'jana-section-9', title: 'Reference Detail' },
+    { id: 'jana-section-10', title: 'Exceptions (Internal QA)' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
     { id: 'section-11', title: 'Photographs' },
@@ -5008,6 +5271,19 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
       defaultOpen: true,
       render: (fields: any, handleChange: any, isReadOnly: boolean) => (
         <ReferenceDetailSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
+    {
+      id: 'jana-section-10',
+      title: 'Exceptions (Not to be filled) (For JSFB internal use only)',
+      number: 10,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ExceptionsInternalSection
           fields={fields}
           handleChange={handleChange}
           isReadOnly={isReadOnly}
