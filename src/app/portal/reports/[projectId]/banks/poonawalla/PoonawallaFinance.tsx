@@ -12,6 +12,8 @@ import {
   UserCheck,
   Users,
   FileCheck,
+  Compass,
+  Home,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -1723,6 +1725,350 @@ function SanctionPlanAndDocumentsSection({
   );
 }
 
+// ─── Section 6: Boundaries as Per Documents & Site: ─────────────────────────
+
+const BOUNDARY_DIRECTIONS: Array<{
+  key: 'East' | 'West' | 'North' | 'South';
+  label: string;
+}> = [
+  { key: 'East', label: 'EAST' },
+  { key: 'West', label: 'WEST' },
+  { key: 'North', label: 'NORTH' },
+  { key: 'South', label: 'SOUTH' },
+];
+
+const OCCUPANCY_OPTIONS = ['Vacant', 'Occupied', 'Tenant', 'Custom'];
+
+const RELATION_OPTIONS = [
+  { value: 'Self', label: 'Self' },
+  { value: 'Spouse', label: 'Spouse' },
+  { value: 'Son', label: 'Son' },
+  { value: 'Daughter', label: 'Daughter' },
+  { value: 'Father', label: 'Father' },
+  { value: 'Mother', label: 'Mother' },
+  { value: 'Brother', label: 'Brother' },
+  { value: 'Sister', label: 'Sister' },
+  { value: 'Tenant', label: 'Tenant' },
+];
+
+function BoundariesAndOccupancySection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const updateBoundary = (
+    direction: 'East' | 'West' | 'North' | 'South',
+    type: 'SaleDeed' | 'Site',
+    val: string
+  ) => {
+    if (type === 'SaleDeed') {
+      handleChange(`poonawallaBoundary${direction}SaleDeed`, val);
+      handleChange(`boundary${direction}SaleDeed`, val);
+      handleChange(`boundary${direction}Doc`, val);
+      handleChange(`boundary${direction}Deed`, val);
+      handleChange(`${direction.toLowerCase()}AsPerDeed`, val);
+    } else {
+      handleChange(`poonawallaBoundary${direction}Site`, val);
+      handleChange(`boundary${direction}Site`, val);
+      handleChange(`${direction.toLowerCase()}AtSite`, val);
+      handleChange(`${direction.toLowerCase()}Actual`, val);
+    }
+  };
+
+  const getBoundaryVal = (
+    direction: 'East' | 'West' | 'North' | 'South',
+    type: 'SaleDeed' | 'Site'
+  ): string => {
+    if (type === 'SaleDeed') {
+      return (
+        fields[`poonawallaBoundary${direction}SaleDeed`] ??
+        fields[`boundary${direction}SaleDeed`] ??
+        fields[`boundary${direction}Doc`] ??
+        fields[`boundary${direction}Deed`] ??
+        fields[`${direction.toLowerCase()}AsPerDeed`] ??
+        ''
+      );
+    }
+    return (
+      fields[`poonawallaBoundary${direction}Site`] ??
+      fields[`boundary${direction}Site`] ??
+      fields[`${direction.toLowerCase()}AtSite`] ??
+      fields[`${direction.toLowerCase()}Actual`] ??
+      ''
+    );
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Boundaries Table (Use Light Cyan '#e0f7fa') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-cyan-200 shadow-sm"
+        style={{ backgroundColor: '#e0f7fa' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-cyan-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Compass className="w-5 h-5 text-cyan-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Boundaries Table
+            </h3>
+          </div>
+          <span className="text-xs text-cyan-900 font-medium bg-cyan-100 px-2.5 py-1 rounded-md border border-cyan-300">
+            Section 6: Container 1
+          </span>
+        </div>
+
+        <div className="overflow-x-auto rounded-lg border border-cyan-200 shadow-xs bg-white">
+          <table className="w-full text-sm text-left border-collapse">
+            <thead>
+              <tr className="border-b border-cyan-200 bg-cyan-100/60 text-cyan-950 font-bold text-xs uppercase tracking-wider">
+                <th className="p-3 w-32 md:w-40 border-r border-cyan-200">
+                  Direction
+                </th>
+                <th className="p-3 border-r border-cyan-200">
+                  As per Sale deed
+                </th>
+                <th className="p-3">
+                  At site
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-cyan-100">
+              {BOUNDARY_DIRECTIONS.map(({ key, label }) => (
+                <tr key={key} className="hover:bg-cyan-50/40 transition-colors">
+                  <td className="p-3 font-bold text-gray-800 text-xs md:text-sm bg-cyan-50/50 border-r border-cyan-200">
+                    <span className="inline-block px-2.5 py-1 rounded bg-cyan-100 text-cyan-900 font-bold tracking-wide">
+                      {label}
+                    </span>
+                  </td>
+                  <td className="p-2.5 border-r border-cyan-200">
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={getBoundaryVal(key, 'SaleDeed')}
+                      onChange={(e) => updateBoundary(key, 'SaleDeed', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder={`Enter ${label} boundary as per Sale deed...`}
+                    />
+                  </td>
+                  <td className="p-2.5">
+                    <input
+                      type="text"
+                      className={inputCls}
+                      value={getBoundaryVal(key, 'Site')}
+                      onChange={(e) => updateBoundary(key, 'Site', e.target.value)}
+                      disabled={isReadOnly}
+                      placeholder={`Enter ${label} boundary at site...`}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ─── Container: Occupancy & Status (Use Light Red '#ffebee') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-red-200 shadow-sm"
+        style={{ backgroundColor: '#ffebee' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-red-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Home className="w-5 h-5 text-red-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Occupancy & Status
+            </h3>
+          </div>
+          <span className="text-xs text-red-800 font-medium bg-red-100 px-2.5 py-1 rounded-md border border-red-300">
+            Section 6: Container 2
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Boundaries Matching: Dropdown (Options: Matching, Partly matching, Not matching, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Boundaries Matching
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaBoundariesMatching || 'Matching'}
+              customValue={fields.poonawallaBoundariesMatchingCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaBoundariesMatching', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaBoundariesMatchingCustom || ''
+                    : val;
+                handleChange('boundariesMatching', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaBoundariesMatchingCustom', val);
+                handleChange('boundariesMatching', val);
+              }}
+              options={[
+                { value: 'Matching', label: 'Matching' },
+                { value: 'Partly matching', label: 'Partly matching' },
+                { value: 'Not matching', label: 'Not matching' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Boundaries Matching..."
+            />
+          </Field>
+
+          {/* Occupant Vacant/Occupied/Tenant: Radio Button / Dropdown (Options: Vacant, Occupied, Tenant, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Occupant Vacant/Occupied/Tenant
+              </span>
+            }
+          >
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex flex-wrap items-center gap-4 pt-1">
+                {OCCUPANCY_OPTIONS.map((opt) => {
+                  const currentStatus = fields.poonawallaOccupancyStatus || 'Occupied';
+                  const isSelected = currentStatus.toLowerCase() === opt.toLowerCase();
+                  return (
+                    <label
+                      key={opt}
+                      className={`flex items-center gap-2 cursor-pointer text-xs md:text-sm font-medium select-none ${
+                        isReadOnly
+                          ? 'opacity-60 cursor-not-allowed'
+                          : 'text-gray-800 hover:text-gray-950'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="poonawallaOccupancyStatus"
+                        value={opt}
+                        checked={isSelected}
+                        onChange={(e) => {
+                          handleChange('poonawallaOccupancyStatus', e.target.value);
+                          const finalVal =
+                            e.target.value === 'Custom'
+                              ? fields.poonawallaOccupancyStatusCustom || ''
+                              : e.target.value;
+                          handleChange('occupancyStatus', finalVal);
+                          handleChange('occupantStatus', finalVal);
+                          handleChange('propertyOccupancy', finalVal);
+                        }}
+                        disabled={isReadOnly}
+                        className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300"
+                      />
+                      <span>{opt}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {(fields.poonawallaOccupancyStatus === 'Custom' ||
+                fields.poonawallaOccupancyStatus === 'custom') && (
+                <input
+                  type="text"
+                  className={`${inputCls} bg-amber-50/50 border-amber-300 text-gray-900 placeholder:text-gray-400 mt-1`}
+                  value={fields.poonawallaOccupancyStatusCustom || ''}
+                  onChange={(e) => {
+                    handleChange('poonawallaOccupancyStatusCustom', e.target.value);
+                    handleChange('occupancyStatus', e.target.value);
+                    handleChange('occupantStatus', e.target.value);
+                    handleChange('propertyOccupancy', e.target.value);
+                  }}
+                  disabled={isReadOnly}
+                  placeholder="Enter custom occupancy status..."
+                />
+              )}
+            </div>
+          </Field>
+
+          {/* Name of Occupant: Input Box (Standard size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Name of Occupant
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={
+                fields.poonawallaOccupantName ??
+                fields.occupantName ??
+                fields.nameOfOccupant ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaOccupantName', e.target.value);
+                handleChange('occupantName', e.target.value);
+                handleChange('nameOfOccupant', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter Name of Occupant..."
+            />
+          </Field>
+
+          {/* Occupied from: Date Picker / Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Occupied from
+              </span>
+            }
+          >
+            <BaseDateInput
+              value={fields.poonawallaOccupiedFrom ?? fields.occupiedFrom ?? ''}
+              onChange={(val) => {
+                handleChange('poonawallaOccupiedFrom', val);
+                handleChange('occupiedFrom', val);
+                handleChange('occupancyFrom', val);
+              }}
+              disabled={isReadOnly}
+              placeholder="DD/MM/YYYY"
+            />
+          </Field>
+
+          {/* Relation with applicant: Input Box / Dropdown */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Relation with applicant
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaRelationWithApplicant || 'Self'}
+              customValue={fields.poonawallaRelationWithApplicantCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaRelationWithApplicant', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaRelationWithApplicantCustom || ''
+                    : val;
+                handleChange('relationWithApplicant', finalVal);
+                handleChange('relationshipWithApplicant', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaRelationWithApplicantCustom', val);
+                handleChange('relationWithApplicant', val);
+                handleChange('relationshipWithApplicant', val);
+              }}
+              options={RELATION_OPTIONS}
+              disabled={isReadOnly}
+              placeholder="Select Relation with applicant..."
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -1735,6 +2081,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     'section-3', // Replaced by Section 3: PURPOSE OF VALUATION
     'section-4', // Replaced by Section 4: PREPARED BY
     'section-5', // Replaced by Section 5: SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS:
+    'section-6', // Replaced by Section 6: Boundaries as Per Documents & Site:
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -1743,7 +2090,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     { id: 'poonawalla-section-3', title: 'PURPOSE OF VALUATION' },
     { id: 'poonawalla-section-4', title: 'PREPARED BY' },
     { id: 'poonawalla-section-5', title: 'SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS' },
-    { id: 'section-6', title: 'Plan Approvals' },
+    { id: 'poonawalla-section-6', title: 'Boundaries as Per Documents & Site' },
     { id: 'section-7', title: 'Area Valuation' },
     { id: 'section-8', title: 'Land Valuation' },
     { id: 'section-9', title: 'Valuation Abstract' },
@@ -1820,6 +2167,19 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'poonawalla-section-6',
+      title: 'Boundaries as Per Documents & Site:',
+      number: 6,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <BoundariesAndOccupancySection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     poonawallaPurposeOfValuation: 'To assess the fair market value of the collateral security',
@@ -1839,6 +2199,11 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     poonawallaOwnershipType: 'Freehold',
     poonawallaConstructionCompliance: 'Approved Plan',
     poonawallaPropertyInDemolitionList: 'No',
+    poonawallaBoundariesMatching: 'Matching',
+    boundariesMatching: 'Matching',
+    poonawallaOccupancyStatus: 'Occupied',
+    occupancyStatus: 'Occupied',
+    poonawallaRelationWithApplicant: 'Self',
   },
 };
 
