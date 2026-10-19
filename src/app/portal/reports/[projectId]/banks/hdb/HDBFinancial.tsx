@@ -299,7 +299,7 @@ export function DocumentUploadField({
             fileName ? (
               <div className="flex items-center gap-2 bg-purple-50 border border-purple-300 px-2.5 py-1 rounded-lg text-xs font-medium text-purple-900 shadow-2xs">
                 <FileText className="w-3.5 h-3.5 text-purple-600 shrink-0" />
-                <span className="truncate max-w-[150px] sm:max-w-[200px]" title={fileName}>
+                <span className="truncate max-w-37.5 sm:max-w-50" title={fileName}>
                   {fileName}
                 </span>
                 {!disabled && (

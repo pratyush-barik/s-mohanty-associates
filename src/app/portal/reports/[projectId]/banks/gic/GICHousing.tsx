@@ -1945,16 +1945,16 @@ function ValuationDetailsSection({
           <div className="space-y-4">
             {/* Table */}
             <div className="overflow-x-auto rounded-lg border border-cyan-300 bg-white shadow-sm">
-              <table className="w-full text-xs text-left border-collapse min-w-[800px]">
+              <table className="w-full text-xs text-left border-collapse min-w-200">
                 <thead>
                   <tr className="bg-cyan-100/70 border-b border-cyan-200 text-gray-800 font-semibold uppercase tracking-wider">
                     <th className="py-2.5 px-3 w-10 text-center">#</th>
-                    <th className="py-2.5 px-3 min-w-[130px]">DESCRIPTION</th>
-                    <th className="py-2.5 px-3 min-w-[100px] text-right">AREA (SQFT)</th>
-                    <th className="py-2.5 px-3 min-w-[110px] text-right">UNIT RATE (RS.)</th>
-                    <th className="py-2.5 px-3 min-w-[185px] text-right">ESTIMATED MARKET VALUE (RS.)</th>
-                    <th className="py-2.5 px-3 min-w-[110px] text-right">UNIT RATE (RS.) [Guideline]</th>
-                    <th className="py-2.5 px-3 min-w-[185px] text-right">GUIDELINE VALUE (RS.)</th>
+                    <th className="py-2.5 px-3 min-w-32.5">DESCRIPTION</th>
+                    <th className="py-2.5 px-3 min-w-25 text-right">AREA (SQFT)</th>
+                    <th className="py-2.5 px-3 min-w-27.5 text-right">UNIT RATE (RS.)</th>
+                    <th className="py-2.5 px-3 min-w-46.25 text-right">ESTIMATED MARKET VALUE (RS.)</th>
+                    <th className="py-2.5 px-3 min-w-27.5 text-right">UNIT RATE (RS.) [Guideline]</th>
+                    <th className="py-2.5 px-3 min-w-46.25 text-right">GUIDELINE VALUE (RS.)</th>
                     {!isReadOnly && <th className="py-2.5 px-2 w-10 text-center"></th>}
                   </tr>
                 </thead>
@@ -2758,15 +2758,15 @@ function ProgressOfWorkSection({
 
         {/* Table: Work Completion Status */}
         <div className="overflow-x-auto rounded-lg border border-pink-300 bg-white shadow-sm">
-          <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+          <table className="w-full text-xs text-left border-collapse min-w-175">
             <thead>
               <tr className="bg-pink-100/70 border-b border-pink-200 text-gray-800 font-semibold uppercase tracking-wider">
-                <th className="py-2.5 px-3 min-w-[120px]">SL NO</th>
-                <th className="py-2.5 px-3 min-w-[240px]">DESCRIPTION OF WORK</th>
-                <th className="py-2.5 px-3 min-w-[170px] text-right">
+                <th className="py-2.5 px-3 min-w-30">SL NO</th>
+                <th className="py-2.5 px-3 min-w-60">DESCRIPTION OF WORK</th>
+                <th className="py-2.5 px-3 min-w-42.5 text-right">
                   AMOUNT INCURRED AS PER APPLICANT’S ESTIMATE (RS.)
                 </th>
-                <th className="py-2.5 px-3 min-w-[200px]">VALUER’S OPINION</th>
+                <th className="py-2.5 px-3 min-w-50">VALUER’S OPINION</th>
                 {!isReadOnly && <th className="py-2.5 px-2 w-10 text-center"></th>}
               </tr>
             </thead>

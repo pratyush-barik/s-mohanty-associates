@@ -2045,7 +2045,7 @@ export default function StateBankOfIndiaLandAndBuilding({
               </div>
 
               <div className="bg-white/80 p-3 rounded-xl border border-purple-200 overflow-x-auto">
-                <table className="w-full text-xs text-left border-collapse min-w-[600px]">
+                <table className="w-full text-xs text-left border-collapse min-w-150">
                   <thead>
                     <tr className="border-b border-purple-200 text-purple-900 bg-purple-50/70">
                       <th className="p-2.5 font-bold">Sl.</th>
@@ -2165,7 +2165,7 @@ export default function StateBankOfIndiaLandAndBuilding({
               </div>
 
               <div className="bg-white/80 p-3 rounded-xl border border-purple-200 overflow-x-auto">
-                <table className="w-full text-xs text-left border-collapse min-w-[700px]">
+                <table className="w-full text-xs text-left border-collapse min-w-175">
                   <thead>
                     <tr className="border-b border-purple-200 text-purple-900 bg-purple-50/70">
                       <th className="p-2.5 font-bold">Item / Particulars</th>
@@ -2533,7 +2533,7 @@ export default function StateBankOfIndiaLandAndBuilding({
                   26 Statutory Declarations & Undertakings
                 </span>
               </div>
-              <div className="grid md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto p-2 border border-rose-200/70 rounded-xl bg-white/70">
+              <div className="grid md:grid-cols-2 gap-3 max-h-125 overflow-y-auto p-2 border border-rose-200/70 rounded-xl bg-white/70">
                 {DECLARATION_STATEMENTS_A_TO_Z.map(item => (
                   <label
                     key={item.id}
@@ -2609,7 +2609,7 @@ export default function StateBankOfIndiaLandAndBuilding({
                   30 Statutory Standards & Ethics
                 </span>
               </div>
-              <div className="grid md:grid-cols-2 gap-3 max-h-[500px] overflow-y-auto p-2 border border-indigo-200/70 rounded-xl bg-white/70">
+              <div className="grid md:grid-cols-2 gap-3 max-h-125 overflow-y-auto p-2 border border-indigo-200/70 rounded-xl bg-white/70">
                 {CODE_OF_CONDUCT_POINTS.map(item => (
                   <label
                     key={item.num}
