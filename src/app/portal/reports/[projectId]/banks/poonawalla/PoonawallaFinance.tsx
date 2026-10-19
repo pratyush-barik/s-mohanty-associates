@@ -20,6 +20,8 @@ import {
   Plus,
   Trash2,
   Layers,
+  Coins,
+  Shield,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -3954,6 +3956,930 @@ function ConstructedAreaRatesSection({
   );
 }
 
+// ─── Section 10: (B)Value of Extra Amenities ────────────────────────────────
+
+function ValueExtraAmenitiesSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const parseNum = (v: any): number => {
+    if (typeof v === 'number') return isNaN(v) ? 0 : v;
+    if (typeof v === 'string') return parseFloat(v.replace(/,/g, '') || '0') || 0;
+    return 0;
+  };
+
+  // ── Container 1 calculations ──
+  const isCarParkingIncluded =
+    !fields.poonawallaCarParkingNA &&
+    (fields.poonawallaCarParkingIncluded ?? (parseNum(fields.poonawallaCarParkingAmount) > 0));
+  const carParkingAmt = isCarParkingIncluded ? parseNum(fields.poonawallaCarParkingAmount) : 0;
+
+  const isPowerBackupIncluded =
+    !fields.poonawallaPowerBackupNA &&
+    (fields.poonawallaPowerBackupIncluded ?? (parseNum(fields.poonawallaPowerBackupAmount) > 0));
+  const powerBackupAmt = isPowerBackupIncluded ? parseNum(fields.poonawallaPowerBackupAmount) : 0;
+
+  const isClubMembershipIncluded =
+    !fields.poonawallaClubMembershipNA &&
+    (fields.poonawallaClubMembershipIncluded ?? (parseNum(fields.poonawallaClubMembershipAmount) > 0));
+  const clubMembershipAmt = isClubMembershipIncluded ? parseNum(fields.poonawallaClubMembershipAmount) : 0;
+
+  const isOtherAmenitiesIncluded =
+    !fields.poonawallaOtherAmenitiesNA &&
+    (fields.poonawallaOtherAmenitiesIncluded ?? (parseNum(fields.poonawallaOtherAmenitiesAmount) > 0));
+  const otherAmenitiesAmt = isOtherAmenitiesIncluded ? parseNum(fields.poonawallaOtherAmenitiesAmount) : 0;
+
+  const autoAmenitiesCharges =
+    carParkingAmt + powerBackupAmt + clubMembershipAmt + otherAmenitiesAmt;
+
+  const effectiveAmenitiesCharges = fields.poonawallaAmenitiesChargesEdit
+    ? parseNum(fields.poonawallaAmenitiesChargesManual)
+    : autoAmenitiesCharges;
+
+  useEffect(() => {
+    if (!fields.poonawallaAmenitiesChargesEdit) {
+      if (fields.poonawallaAmenitiesCharges !== autoAmenitiesCharges) {
+        handleChange('poonawallaAmenitiesCharges', autoAmenitiesCharges);
+        handleChange('amenitiesCharges', autoAmenitiesCharges);
+        handleChange('totalAmenitiesCharges', autoAmenitiesCharges);
+        handleChange('amenitiesValue', autoAmenitiesCharges);
+      }
+    }
+  }, [autoAmenitiesCharges, fields.poonawallaAmenitiesChargesEdit]);
+
+  // ── Container 2 calculations ──
+  const totalBuildingValue =
+    parseNum(fields.poonawallaTotalBuildingValue) ||
+    parseNum(fields.totalBuildingValue) ||
+    parseNum(fields.buildingValue) ||
+    0;
+
+  const autoMarketValue =
+    totalBuildingValue > 0 || effectiveAmenitiesCharges > 0
+      ? totalBuildingValue + effectiveAmenitiesCharges
+      : parseNum(fields.marketValue) || parseNum(fields.presentMarketValue) || 0;
+
+  const effectiveMarketValue = fields.poonawallaMarketValueEdit
+    ? parseNum(fields.poonawallaMarketValueManual)
+    : autoMarketValue;
+
+  const autoForcedSaleValue = Math.round(effectiveMarketValue * 0.8);
+  const effectiveForcedSaleValue = fields.poonawallaDistressValueEdit
+    ? parseNum(fields.poonawallaDistressValueManual)
+    : autoForcedSaleValue;
+
+  useEffect(() => {
+    if (!fields.poonawallaMarketValueEdit) {
+      if (fields.poonawallaMarketValue !== effectiveMarketValue) {
+        handleChange('poonawallaMarketValue', effectiveMarketValue);
+        handleChange('marketValue', effectiveMarketValue);
+        handleChange('presentMarketValue', effectiveMarketValue);
+      }
+    }
+  }, [effectiveMarketValue, fields.poonawallaMarketValueEdit]);
+
+  useEffect(() => {
+    if (!fields.poonawallaDistressValueEdit) {
+      if (fields.poonawallaDistressValue !== effectiveForcedSaleValue) {
+        handleChange('poonawallaDistressValue', effectiveForcedSaleValue);
+        handleChange('distressValue', effectiveForcedSaleValue);
+        handleChange('forcedSaleValue', effectiveForcedSaleValue);
+        handleChange('poonawallaForcedSaleValue', effectiveForcedSaleValue);
+      }
+    }
+  }, [effectiveForcedSaleValue, fields.poonawallaDistressValueEdit]);
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Additional Value Components (Use Mint Green '#e6f9f0') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-emerald-300 shadow-sm"
+        style={{ backgroundColor: '#e6f9f0' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Coins className="w-5 h-5 text-emerald-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Additional Value Components
+            </h3>
+          </div>
+          <span className="text-xs text-emerald-900 font-medium bg-emerald-100 px-2.5 py-1 rounded-md border border-emerald-300">
+            Section 10: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Car Parking: Checkbox + Input Box (Amount) + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Car Parking
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaCarParkingNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaCarParkingNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaCarParkingIncluded', false);
+                      handleChange('poonawallaCarParkingAmount', 'NA');
+                    } else {
+                      handleChange('poonawallaCarParkingAmount', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaCarParkingNA ? (
+              <input
+                type="text"
+                readOnly
+                disabled
+                value="NA"
+                className={`${inputCls} bg-gray-100 text-gray-500 font-semibold cursor-not-allowed`}
+              />
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <label className="flex items-center gap-1.5 cursor-pointer shrink-0 select-none bg-white px-2.5 py-2 rounded-lg border border-emerald-300 shadow-xs hover:bg-emerald-50/60 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(isCarParkingIncluded)}
+                    onChange={(e) => {
+                      handleChange('poonawallaCarParkingIncluded', e.target.checked);
+                    }}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span className="text-xs font-semibold text-emerald-950">
+                    Include
+                  </span>
+                </label>
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs md:text-sm">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    step="any"
+                    className={`${inputCls} pl-7 bg-white border-emerald-300 focus:border-emerald-500 font-medium`}
+                    value={fields.poonawallaCarParkingAmount ?? ''}
+                    onChange={(e) => {
+                      handleChange('poonawallaCarParkingAmount', e.target.value);
+                      if (e.target.value && !fields.poonawallaCarParkingIncluded) {
+                        handleChange('poonawallaCarParkingIncluded', true);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="Enter Amount..."
+                  />
+                </div>
+              </div>
+            )}
+          </Field>
+
+          {/* Power Backup: Checkbox + Input Box (Amount) + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Power Backup
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaPowerBackupNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaPowerBackupNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaPowerBackupIncluded', false);
+                      handleChange('poonawallaPowerBackupAmount', 'NA');
+                    } else {
+                      handleChange('poonawallaPowerBackupAmount', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaPowerBackupNA ? (
+              <input
+                type="text"
+                readOnly
+                disabled
+                value="NA"
+                className={`${inputCls} bg-gray-100 text-gray-500 font-semibold cursor-not-allowed`}
+              />
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <label className="flex items-center gap-1.5 cursor-pointer shrink-0 select-none bg-white px-2.5 py-2 rounded-lg border border-emerald-300 shadow-xs hover:bg-emerald-50/60 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(isPowerBackupIncluded)}
+                    onChange={(e) => {
+                      handleChange('poonawallaPowerBackupIncluded', e.target.checked);
+                    }}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span className="text-xs font-semibold text-emerald-950">
+                    Include
+                  </span>
+                </label>
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs md:text-sm">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    step="any"
+                    className={`${inputCls} pl-7 bg-white border-emerald-300 focus:border-emerald-500 font-medium`}
+                    value={fields.poonawallaPowerBackupAmount ?? ''}
+                    onChange={(e) => {
+                      handleChange('poonawallaPowerBackupAmount', e.target.value);
+                      if (e.target.value && !fields.poonawallaPowerBackupIncluded) {
+                        handleChange('poonawallaPowerBackupIncluded', true);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="Enter Amount..."
+                  />
+                </div>
+              </div>
+            )}
+          </Field>
+
+          {/* Club Membership: Checkbox + Input Box (Amount) + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Club Membership
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaClubMembershipNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaClubMembershipNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaClubMembershipIncluded', false);
+                      handleChange('poonawallaClubMembershipAmount', 'NA');
+                    } else {
+                      handleChange('poonawallaClubMembershipAmount', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaClubMembershipNA ? (
+              <input
+                type="text"
+                readOnly
+                disabled
+                value="NA"
+                className={`${inputCls} bg-gray-100 text-gray-500 font-semibold cursor-not-allowed`}
+              />
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <label className="flex items-center gap-1.5 cursor-pointer shrink-0 select-none bg-white px-2.5 py-2 rounded-lg border border-emerald-300 shadow-xs hover:bg-emerald-50/60 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(isClubMembershipIncluded)}
+                    onChange={(e) => {
+                      handleChange('poonawallaClubMembershipIncluded', e.target.checked);
+                    }}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span className="text-xs font-semibold text-emerald-950">
+                    Include
+                  </span>
+                </label>
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs md:text-sm">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    step="any"
+                    className={`${inputCls} pl-7 bg-white border-emerald-300 focus:border-emerald-500 font-medium`}
+                    value={fields.poonawallaClubMembershipAmount ?? ''}
+                    onChange={(e) => {
+                      handleChange('poonawallaClubMembershipAmount', e.target.value);
+                      if (e.target.value && !fields.poonawallaClubMembershipIncluded) {
+                        handleChange('poonawallaClubMembershipIncluded', true);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="Enter Amount..."
+                  />
+                </div>
+              </div>
+            )}
+          </Field>
+
+          {/* Other: Checkbox + Input Box (Amount) + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Other
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaOtherAmenitiesNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaOtherAmenitiesNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaOtherAmenitiesIncluded', false);
+                      handleChange('poonawallaOtherAmenitiesAmount', 'NA');
+                    } else {
+                      handleChange('poonawallaOtherAmenitiesAmount', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaOtherAmenitiesNA ? (
+              <input
+                type="text"
+                readOnly
+                disabled
+                value="NA"
+                className={`${inputCls} bg-gray-100 text-gray-500 font-semibold cursor-not-allowed`}
+              />
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <label className="flex items-center gap-1.5 cursor-pointer shrink-0 select-none bg-white px-2.5 py-2 rounded-lg border border-emerald-300 shadow-xs hover:bg-emerald-50/60 transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={Boolean(isOtherAmenitiesIncluded)}
+                    onChange={(e) => {
+                      handleChange('poonawallaOtherAmenitiesIncluded', e.target.checked);
+                    }}
+                    disabled={isReadOnly}
+                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <span className="text-xs font-semibold text-emerald-950">
+                    Include
+                  </span>
+                </label>
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs md:text-sm">
+                    ₹
+                  </span>
+                  <input
+                    type="number"
+                    step="any"
+                    className={`${inputCls} pl-7 bg-white border-emerald-300 focus:border-emerald-500 font-medium`}
+                    value={fields.poonawallaOtherAmenitiesAmount ?? ''}
+                    onChange={(e) => {
+                      handleChange('poonawallaOtherAmenitiesAmount', e.target.value);
+                      if (e.target.value && !fields.poonawallaOtherAmenitiesIncluded) {
+                        handleChange('poonawallaOtherAmenitiesIncluded', true);
+                      }
+                    }}
+                    disabled={isReadOnly}
+                    placeholder="Enter Amount..."
+                  />
+                </div>
+              </div>
+            )}
+          </Field>
+
+          {/* Total Amenities charges (in Rs.): Auto-calculated Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Total Amenities charges (in Rs.)
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaAmenitiesChargesEdit)}
+                  onChange={(checked) =>
+                    handleChange('poonawallaAmenitiesChargesEdit', checked)
+                  }
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+            span={2}
+          >
+            {fields.poonawallaAmenitiesChargesEdit ? (
+              <input
+                type="number"
+                step="any"
+                className={`${inputCls} bg-white border-emerald-400 font-bold text-gray-900 text-base md:text-lg`}
+                value={
+                  fields.poonawallaAmenitiesChargesManual ??
+                  (autoAmenitiesCharges > 0 ? autoAmenitiesCharges : '')
+                }
+                onChange={(e) => {
+                  handleChange('poonawallaAmenitiesChargesManual', e.target.value);
+                  handleChange('poonawallaAmenitiesCharges', e.target.value);
+                  handleChange('amenitiesCharges', e.target.value);
+                  handleChange('totalAmenitiesCharges', e.target.value);
+                  handleChange('amenitiesValue', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Total Amenities charges..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Auto calculating from Car Parking + Power Backup + Club Membership + Other"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-emerald-50/70 border-emerald-300 font-bold text-emerald-950 text-base md:text-lg cursor-not-allowed`}
+                  value={
+                    effectiveAmenitiesCharges > 0
+                      ? `₹${effectiveAmenitiesCharges.toLocaleString('en-IN')}`
+                      : '₹0'
+                  }
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+        </div>
+      </div>
+
+      {/* ─── Container: Final Values & Structural Specs (Use Light Lime '#f9fbe7') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-lime-300 shadow-sm"
+        style={{ backgroundColor: '#f9fbe7' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-lime-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-lime-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Final Values & Structural Specs
+            </h3>
+          </div>
+          <span className="text-xs text-lime-900 font-medium bg-lime-100 px-2.5 py-1 rounded-md border border-lime-300">
+            Section 10: Container 2
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Market Value of Property as on date of Valuation (in Rs.) (i+ii): Auto-calculated Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Market Value of Property as on date of Valuation (in Rs.) (i+ii)
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaMarketValueEdit)}
+                  onChange={(checked) =>
+                    handleChange('poonawallaMarketValueEdit', checked)
+                  }
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaMarketValueEdit ? (
+              <input
+                type="number"
+                step="any"
+                className={`${inputCls} bg-white border-lime-500 font-bold text-gray-900 text-base md:text-lg`}
+                value={
+                  fields.poonawallaMarketValueManual ??
+                  (autoMarketValue > 0 ? autoMarketValue : '')
+                }
+                onChange={(e) => {
+                  handleChange('poonawallaMarketValueManual', e.target.value);
+                  handleChange('poonawallaMarketValue', e.target.value);
+                  handleChange('marketValue', e.target.value);
+                  handleChange('presentMarketValue', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Market Value of Property..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Auto calculating from Total Building Value + Total Amenities charges"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-lime-50/70 border-lime-300 font-bold text-lime-950 text-base md:text-lg cursor-not-allowed`}
+                  value={
+                    effectiveMarketValue > 0
+                      ? `₹${effectiveMarketValue.toLocaleString('en-IN')}`
+                      : '₹0'
+                  }
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Forced Sale Value(80%): Auto-calculated Field with Lock UI, Edit Switch */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Forced Sale Value(80%)
+                </span>
+                <EditSwitch
+                  checked={Boolean(fields.poonawallaDistressValueEdit)}
+                  onChange={(checked) =>
+                    handleChange('poonawallaDistressValueEdit', checked)
+                  }
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaDistressValueEdit ? (
+              <input
+                type="number"
+                step="any"
+                className={`${inputCls} bg-white border-lime-500 font-bold text-gray-900 text-base md:text-lg`}
+                value={
+                  fields.poonawallaDistressValueManual ??
+                  (autoForcedSaleValue > 0 ? autoForcedSaleValue : '')
+                }
+                onChange={(e) => {
+                  handleChange('poonawallaDistressValueManual', e.target.value);
+                  handleChange('poonawallaDistressValue', e.target.value);
+                  handleChange('distressValue', e.target.value);
+                  handleChange('forcedSaleValue', e.target.value);
+                  handleChange('poonawallaForcedSaleValue', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Forced Sale Value..."
+              />
+            ) : (
+              <LockedFieldWrapper
+                isLocked={true}
+                tooltipMessage="Auto calculating from Market Value * 0.80"
+              >
+                <input
+                  type="text"
+                  readOnly
+                  disabled
+                  className={`${inputCls} bg-lime-50/70 border-lime-300 font-bold text-lime-950 text-base md:text-lg cursor-not-allowed`}
+                  value={
+                    effectiveForcedSaleValue > 0
+                      ? `₹${effectiveForcedSaleValue.toLocaleString('en-IN')}`
+                      : '₹0'
+                  }
+                />
+              </LockedFieldWrapper>
+            )}
+          </Field>
+
+          {/* Circle Rate (in Rs.): Input Box (Numeric) + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Circle Rate (in Rs.)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaCircleRateNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaCircleRateNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaCircleRate', 'NA');
+                    } else {
+                      handleChange('poonawallaCircleRate', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaCircleRateNA ? (
+              <input
+                type="text"
+                readOnly
+                disabled
+                value="NA"
+                className={`${inputCls} bg-gray-100 text-gray-500 font-semibold cursor-not-allowed`}
+              />
+            ) : (
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs md:text-sm">
+                  ₹
+                </span>
+                <input
+                  type="number"
+                  step="any"
+                  className={`${inputCls} pl-7`}
+                  value={fields.poonawallaCircleRate ?? fields.circleRate ?? ''}
+                  onChange={(e) => {
+                    handleChange('poonawallaCircleRate', e.target.value);
+                    handleChange('circleRate', e.target.value);
+                  }}
+                  disabled={isReadOnly}
+                  placeholder="Enter Circle Rate..."
+                />
+              </div>
+            )}
+          </Field>
+
+          {/* Approx. Rentals in case of 100% complete property (in Rs.): Input Box (Numeric) + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Approx. Rentals in case of 100% complete property (in Rs.)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaApproxRentalsNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaApproxRentalsNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaApproxRentals', 'NA');
+                    } else {
+                      handleChange('poonawallaApproxRentals', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaApproxRentalsNA ? (
+              <input
+                type="text"
+                readOnly
+                disabled
+                value="NA"
+                className={`${inputCls} bg-gray-100 text-gray-500 font-semibold cursor-not-allowed`}
+              />
+            ) : (
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-bold text-xs md:text-sm">
+                  ₹
+                </span>
+                <input
+                  type="number"
+                  step="any"
+                  className={`${inputCls} pl-7`}
+                  value={
+                    fields.poonawallaApproxRentals ??
+                    fields.approxRentals ??
+                    ''
+                  }
+                  onChange={(e) => {
+                    handleChange('poonawallaApproxRentals', e.target.value);
+                    handleChange('approxRentals', e.target.value);
+                  }}
+                  disabled={isReadOnly}
+                  placeholder="Enter Approx Rentals..."
+                />
+              </div>
+            )}
+          </Field>
+
+          {/* Seismic zone (I/II/III/IV/V): Dropdown (Options: I, II, III, IV, V, Custom) + Conditional Standard Input Box (when Custom is selected) + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Seismic zone (I/II/III/IV/V)
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaSeismicZoneNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaSeismicZoneNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaSeismicZone', 'NA');
+                    } else {
+                      handleChange('poonawallaSeismicZone', 'III');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaSeismicZoneNA ? (
+              <input
+                type="text"
+                readOnly
+                disabled
+                value="NA"
+                className={`${inputCls} bg-gray-100 text-gray-500 font-semibold cursor-not-allowed`}
+              />
+            ) : (
+              <CustomSelect
+                value={fields.poonawallaSeismicZone || 'III'}
+                customValue={fields.poonawallaSeismicZoneCustom || ''}
+                onChange={(val) => {
+                  handleChange('poonawallaSeismicZone', val);
+                  const finalVal =
+                    val === 'Custom'
+                      ? fields.poonawallaSeismicZoneCustom || ''
+                      : val;
+                  handleChange('seismicZone', finalVal);
+                }}
+                onCustomChange={(val) => {
+                  handleChange('poonawallaSeismicZoneCustom', val);
+                  handleChange('seismicZone', val);
+                }}
+                options={[
+                  { value: 'I', label: 'I' },
+                  { value: 'II', label: 'II' },
+                  { value: 'III', label: 'III' },
+                  { value: 'IV', label: 'IV' },
+                  { value: 'V', label: 'V' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select Seismic zone..."
+              />
+            )}
+          </Field>
+
+          {/* Structure type (RCC/Load Bearing/MIS): Dropdown (Options: RCC, Load Bearing, MIS, Custom) + Conditional Standard Input Box (when Custom is selected) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Structure type (RCC/Load Bearing/MIS)
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaStructureTypeSpecs || 'RCC'}
+              customValue={fields.poonawallaStructureTypeSpecsCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaStructureTypeSpecs', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaStructureTypeSpecsCustom || ''
+                    : val;
+                handleChange('structureTypeSpecs', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaStructureTypeSpecsCustom', val);
+                handleChange('structureTypeSpecs', val);
+              }}
+              options={[
+                { value: 'RCC', label: 'RCC' },
+                { value: 'Load Bearing', label: 'Load Bearing' },
+                { value: 'MIS', label: 'MIS' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Structure type..."
+            />
+          </Field>
+
+          {/* Footing type (Independent type/Raft footing/Pile footing): Dropdown (Options: Independent Footing, Raft footing, Pile footing, Custom) + Conditional Standard Input Box (when Custom is selected) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Footing type (Independent type/Raft footing/Pile footing)
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaFootingType || 'Independent Footing'}
+              customValue={fields.poonawallaFootingTypeCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaFootingType', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaFootingTypeCustom || ''
+                    : val;
+                handleChange('footingType', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaFootingTypeCustom', val);
+                handleChange('footingType', val);
+              }}
+              options={[
+                { value: 'Independent Footing', label: 'Independent Footing' },
+                { value: 'Raft footing', label: 'Raft footing' },
+                { value: 'Pile footing', label: 'Pile footing' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Footing type..."
+            />
+          </Field>
+
+          {/* Roof type (RCC slab/AC roofing/T-Iron Stone Slab/Tin shed/Wooden grinder): Dropdown (Options: RCC slab, AC roofing, Tin shed, Custom) + Conditional Standard Input Box (when Custom is selected) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Roof type (RCC slab/AC roofing/T-Iron Stone Slab/Tin shed/Wooden grinder)
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaRoofType || 'RCC slab'}
+              customValue={fields.poonawallaRoofTypeCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaRoofType', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaRoofTypeCustom || ''
+                    : val;
+                handleChange('roofType', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaRoofTypeCustom', val);
+                handleChange('roofType', val);
+              }}
+              options={[
+                { value: 'RCC slab', label: 'RCC slab' },
+                { value: 'AC roofing', label: 'AC roofing' },
+                { value: 'Tin shed', label: 'Tin shed' },
+                { value: 'T-Iron Stone Slab', label: 'T-Iron Stone Slab' },
+                { value: 'Wooden grinder', label: 'Wooden grinder' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Roof type..."
+            />
+          </Field>
+
+          {/* Type of masonary (Brick/Stone / Concrete): Dropdown (Options: Brick, Stone, Concrete, Custom) + Conditional Standard Input Box (when Custom is selected) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Type of masonary (Brick/Stone / Concrete)
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaMasonryType || 'Brick'}
+              customValue={fields.poonawallaMasonryTypeCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaMasonryType', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaMasonryTypeCustom || ''
+                    : val;
+                handleChange('masonryType', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaMasonryTypeCustom', val);
+                handleChange('masonryType', val);
+              }}
+              options={[
+                { value: 'Brick', label: 'Brick' },
+                { value: 'Stone', label: 'Stone' },
+                { value: 'Concrete', label: 'Concrete' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Type of masonary..."
+            />
+          </Field>
+
+          {/* Type of soil (BC/Granullar/ Hard rock): Dropdown (Options: Red soil, BC, Granular, Hard rock, Custom) + Conditional Standard Input Box (when Custom is selected) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Type of soil (BC/Granullar/ Hard rock)
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaSoilType || 'Red soil'}
+              customValue={fields.poonawallaSoilTypeCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaSoilType', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaSoilTypeCustom || ''
+                    : val;
+                handleChange('soilType', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaSoilTypeCustom', val);
+                handleChange('soilType', val);
+              }}
+              options={[
+                { value: 'Red soil', label: 'Red soil' },
+                { value: 'BC', label: 'BC' },
+                { value: 'Granular', label: 'Granular' },
+                { value: 'Hard rock', label: 'Hard rock' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Type of soil..."
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -3970,6 +4896,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     'section-7', // Replaced by Section 7: Building details
     'section-8', // Replaced by Section 8: Floor Wise Area (In Sqft.)
     'section-9', // Replaced by Section 9: (A)Description of Constructed Area and Rates
+    'section-10', // Replaced by Section 10: (B)Value of Extra Amenities
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -3982,7 +4909,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     { id: 'poonawalla-section-7', title: 'Building details' },
     { id: 'poonawalla-section-8', title: 'Floor Wise Area (In Sqft.)' },
     { id: 'poonawalla-section-9', title: 'Description of Constructed Area and Rates' },
-    { id: 'section-10', title: 'Remarks' },
+    { id: 'poonawalla-section-10', title: 'Value of Extra Amenities' },
     { id: 'section-11', title: 'Certificate' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
@@ -4107,6 +5034,19 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'poonawalla-section-10',
+      title: '(B)Value of Extra Amenities',
+      number: 10,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ValueExtraAmenitiesSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     poonawallaPurposeOfValuation: 'To assess the fair market value of the collateral security',
@@ -4144,6 +5084,12 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     poonawallaStageOfConstruction: 'Completed',
     poonawallaStagePercent: '100',
     poonawallaRecommendedPercent: '100',
+    poonawallaSeismicZone: 'III',
+    poonawallaStructureTypeSpecs: 'RCC',
+    poonawallaFootingType: 'Independent Footing',
+    poonawallaRoofType: 'RCC slab',
+    poonawallaMasonryType: 'Brick',
+    poonawallaSoilType: 'Red soil',
   },
 };
 
