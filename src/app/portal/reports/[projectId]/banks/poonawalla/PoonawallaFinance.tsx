@@ -11,6 +11,7 @@ import {
   Target,
   UserCheck,
   Users,
+  FileCheck,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -218,6 +219,31 @@ export function RadioGroup({
         );
       })}
     </div>
+  );
+}
+
+export function NaCheckbox({
+  checked,
+  onChange,
+  disabled = false,
+}: {
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <label className="flex items-center gap-1.5 cursor-pointer shrink-0 select-none">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        disabled={disabled}
+        className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+      />
+      <span className="text-[11px] font-bold uppercase tracking-wider text-gray-500">
+        NA
+      </span>
+    </label>
   );
 }
 
@@ -1265,6 +1291,438 @@ function PreparedBySection({
   );
 }
 
+// ─── Document Checklist Constants for Section 5 ─────────────────────────────
+
+const PROPERTY_DOCUMENTS_LIST = [
+  'Sale Deed',
+  'Gift deed',
+  'ROR',
+  'Approved plan',
+  'Mutation / Patta',
+  'Holding Tax Receipt',
+  'Electricity Bill',
+  'Other Document',
+];
+
+// ─── Section 5: SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS: ───────────
+
+function SanctionPlanAndDocumentsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const checkedDocs: string[] = Array.isArray(fields.poonawallaPropertyDocsVerified)
+    ? fields.poonawallaPropertyDocsVerified
+    : typeof fields.poonawallaPropertyDocsVerified === 'string'
+    ? fields.poonawallaPropertyDocsVerified
+        .split(',')
+        .map((s: string) => s.trim())
+        .filter(Boolean)
+    : [];
+
+  const handleDocToggle = (docName: string) => {
+    let next: string[];
+    if (checkedDocs.includes(docName)) {
+      next = checkedDocs.filter((d) => d !== docName);
+    } else {
+      next = [...checkedDocs, docName];
+    }
+    handleChange('poonawallaPropertyDocsVerified', next);
+    handleChange('documentsVerified', next.join(', '));
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Plan & Document Verification (Use Light Teal '#e0f2f1') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-teal-200 shadow-sm"
+        style={{ backgroundColor: '#e0f2f1' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-teal-200 pb-3">
+          <div className="flex items-center gap-2">
+            <FileCheck className="w-5 h-5 text-teal-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Plan & Document Verification
+            </h3>
+          </div>
+          <span className="text-xs text-teal-800 font-medium bg-teal-100 px-2.5 py-1 rounded-md border border-teal-300">
+            Section 5: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Sanctioned plans verified with approval no: Checkbox + Input Box (Standard size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Sanctioned plans verified with approval no
+              </span>
+            }
+          >
+            <div className="flex items-center gap-2.5">
+              <label className="flex items-center gap-1.5 cursor-pointer shrink-0 select-none bg-white px-2.5 py-2 rounded-lg border border-teal-300 shadow-xs hover:bg-teal-50/50 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={Boolean(fields.poonawallaSanctionPlanVerified)}
+                  onChange={(e) =>
+                    handleChange('poonawallaSanctionPlanVerified', e.target.checked)
+                  }
+                  disabled={isReadOnly}
+                  className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                />
+                <span className="text-xs font-semibold text-teal-900">Verified</span>
+              </label>
+              <input
+                type="text"
+                className={inputCls}
+                value={
+                  fields.poonawallaSanctionPlanApprovalNo ??
+                  fields.sanctionPlanApprovalNo ??
+                  ''
+                }
+                onChange={(e) => {
+                  handleChange('poonawallaSanctionPlanApprovalNo', e.target.value);
+                  handleChange('sanctionPlanApprovalNo', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter approval no..."
+              />
+            </div>
+          </Field>
+
+          {/* Plan no.: Input Box (Standard size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Plan no.
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.poonawallaPlanNo ?? fields.planNo ?? ''}
+              onChange={(e) => {
+                handleChange('poonawallaPlanNo', e.target.value);
+                handleChange('planNo', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter Plan no..."
+            />
+          </Field>
+
+          {/* Structure: Dropdown (Options: RCC, Load Bearing, Custom) + Conditional Standard Input Box + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Structure
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaStructureNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaStructureNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaStructure', 'NA');
+                    } else {
+                      handleChange('poonawallaStructure', 'RCC');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaStructureNA ? (
+              <input
+                type="text"
+                readOnly
+                disabled
+                className={`${inputCls} bg-gray-100 text-gray-500 font-semibold cursor-not-allowed`}
+                value="NA"
+              />
+            ) : (
+              <CustomSelect
+                value={fields.poonawallaStructure || 'RCC'}
+                customValue={fields.poonawallaStructureCustom || ''}
+                onChange={(val) => {
+                  handleChange('poonawallaStructure', val);
+                  const finalVal =
+                    val === 'Custom' ? fields.poonawallaStructureCustom || '' : val;
+                  handleChange('structureType', finalVal);
+                  handleChange('structure', finalVal);
+                }}
+                onCustomChange={(val) => {
+                  handleChange('poonawallaStructureCustom', val);
+                  handleChange('structureType', val);
+                  handleChange('structure', val);
+                }}
+                options={[
+                  { value: 'RCC', label: 'RCC' },
+                  { value: 'Load Bearing', label: 'Load Bearing' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select Structure..."
+              />
+            )}
+          </Field>
+
+          {/* Authority: Dropdown (Options: CDA, GCIT, Custom) + Conditional Standard Input Box + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Authority
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaAuthorityNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaAuthorityNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaAuthority', 'NA');
+                    } else {
+                      handleChange('poonawallaAuthority', 'CDA');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            {fields.poonawallaAuthorityNA ? (
+              <input
+                type="text"
+                readOnly
+                disabled
+                className={`${inputCls} bg-gray-100 text-gray-500 font-semibold cursor-not-allowed`}
+                value="NA"
+              />
+            ) : (
+              <CustomSelect
+                value={fields.poonawallaAuthority || 'CDA'}
+                customValue={fields.poonawallaAuthorityCustom || ''}
+                onChange={(val) => {
+                  handleChange('poonawallaAuthority', val);
+                  const finalVal =
+                    val === 'Custom' ? fields.poonawallaAuthorityCustom || '' : val;
+                  handleChange('approvalAuthority', finalVal);
+                  handleChange('sanctionAuthority', finalVal);
+                }}
+                onCustomChange={(val) => {
+                  handleChange('poonawallaAuthorityCustom', val);
+                  handleChange('approvalAuthority', val);
+                  handleChange('sanctionAuthority', val);
+                }}
+                options={[
+                  { value: 'CDA', label: 'CDA' },
+                  { value: 'GCIT', label: 'GCIT' },
+                ]}
+                disabled={isReadOnly}
+                placeholder="Select Authority..."
+              />
+            )}
+          </Field>
+
+          {/* Area: Input Box (Standard size) + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Area
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaAreaNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaAreaNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaArea', 'NA');
+                    } else {
+                      handleChange('poonawallaArea', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.poonawallaAreaNA
+                  ? 'bg-gray-100 text-gray-500 font-semibold cursor-not-allowed'
+                  : ''
+              }`}
+              value={fields.poonawallaAreaNA ? 'NA' : fields.poonawallaArea ?? ''}
+              onChange={(e) => handleChange('poonawallaArea', e.target.value)}
+              disabled={isReadOnly || Boolean(fields.poonawallaAreaNA)}
+              placeholder={fields.poonawallaAreaNA ? 'NA' : 'Enter Area (e.g. 1500 Sq.ft)...'}
+            />
+          </Field>
+
+          {/* Ownership type: Dropdown (Options: Freehold, Leasehold, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Ownership type
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaOwnershipType || 'Freehold'}
+              customValue={fields.poonawallaOwnershipTypeCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaOwnershipType', val);
+                const finalVal =
+                  val === 'Custom' ? fields.poonawallaOwnershipTypeCustom || '' : val;
+                handleChange('ownershipType', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaOwnershipTypeCustom', val);
+                handleChange('ownershipType', val);
+              }}
+              options={[
+                { value: 'Freehold', label: 'Freehold' },
+                { value: 'Leasehold', label: 'Leasehold' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Ownership type..."
+            />
+          </Field>
+
+          {/* Construction as per approved Building plan/Bye Laws: Dropdown (Options: Bye Laws, Approved Plan, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Construction as per approved Building plan/Bye Laws
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaConstructionCompliance || 'Approved Plan'}
+              customValue={fields.poonawallaConstructionComplianceCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaConstructionCompliance', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaConstructionComplianceCustom || ''
+                    : val;
+                handleChange('constructionCompliance', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaConstructionComplianceCustom', val);
+                handleChange('constructionCompliance', val);
+              }}
+              options={[
+                { value: 'Approved Plan', label: 'Approved Plan' },
+                { value: 'Bye Laws', label: 'Bye Laws' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Compliance..."
+            />
+          </Field>
+
+          {/* Permissible usage allows as per master plan: Input Box (Standard size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Permissible usage allows as per master plan
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={fields.poonawallaPermissibleUsage ?? fields.permissibleUsage ?? ''}
+              onChange={(e) => {
+                handleChange('poonawallaPermissibleUsage', e.target.value);
+                handleChange('permissibleUsage', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. Residential / Commercial / Master Plan not Published"
+            />
+          </Field>
+
+          {/* Property Documents verified: Checkbox Group (Sale Deed, Gift deed, ROR, Approved plan, etc.) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Property Documents verified
+              </span>
+            }
+            span={2}
+          >
+            <div className="p-4 bg-white rounded-lg border border-teal-200 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+              {PROPERTY_DOCUMENTS_LIST.map((doc) => {
+                const isChecked = checkedDocs.includes(doc);
+                return (
+                  <label
+                    key={doc}
+                    className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors text-xs select-none ${
+                      isChecked
+                        ? 'bg-teal-50 border border-teal-300 text-teal-950 font-semibold'
+                        : 'hover:bg-gray-50 border border-transparent text-gray-700'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => handleDocToggle(doc)}
+                      disabled={isReadOnly}
+                      className="h-3.5 w-3.5 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                    />
+                    <span>{doc}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </Field>
+
+          {/* Is the property in demolition list, if yes Details: Radio Button (Yes/No) + Conditional Input Box with Variable Size */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Is the property in demolition list, if yes Details
+              </span>
+            }
+            span={2}
+          >
+            <div className="space-y-3">
+              <RadioGroup
+                name="poonawallaPropertyInDemolitionList"
+                value={fields.poonawallaPropertyInDemolitionList || 'No'}
+                onChange={(val) => {
+                  handleChange('poonawallaPropertyInDemolitionList', val);
+                  handleChange('demolitionList', val);
+                }}
+                options={['Yes', 'No']}
+                disabled={isReadOnly}
+              />
+              {(fields.poonawallaPropertyInDemolitionList || '').toLowerCase() === 'yes' && (
+                <div className="pt-1">
+                  <AutoResizeTextarea
+                    rows={2}
+                    placeholder="Enter details of demolition list / notices / authority action..."
+                    value={fields.poonawallaDemolitionDetails || ''}
+                    onChange={(e) =>
+                      handleChange('poonawallaDemolitionDetails', e.target.value)
+                    }
+                    disabled={isReadOnly}
+                    className="bg-teal-50/50 border-teal-300"
+                  />
+                </div>
+              )}
+            </div>
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -1276,6 +1734,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     'section-2', // Replaced by Section 2: VALUE OF THE PROPERTY
     'section-3', // Replaced by Section 3: PURPOSE OF VALUATION
     'section-4', // Replaced by Section 4: PREPARED BY
+    'section-5', // Replaced by Section 5: SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS:
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -1283,7 +1742,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     { id: 'poonawalla-section-2', title: 'VALUE OF THE PROPERTY' },
     { id: 'poonawalla-section-3', title: 'PURPOSE OF VALUATION' },
     { id: 'poonawalla-section-4', title: 'PREPARED BY' },
-    { id: 'section-5', title: 'Structural Details' },
+    { id: 'poonawalla-section-5', title: 'SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS' },
     { id: 'section-6', title: 'Plan Approvals' },
     { id: 'section-7', title: 'Area Valuation' },
     { id: 'section-8', title: 'Land Valuation' },
@@ -1348,6 +1807,19 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'poonawalla-section-5',
+      title: 'SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS:',
+      number: 5,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <SanctionPlanAndDocumentsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     poonawallaPurposeOfValuation: 'To assess the fair market value of the collateral security',
@@ -1362,6 +1834,11 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     poonawallaPropertyType: 'G+2 storied commercial building',
     poonawallaCurrentUsage: 'Commercial',
     poonawallaDoneValuationBefore: 'No',
+    poonawallaStructure: 'RCC',
+    poonawallaAuthority: 'CDA',
+    poonawallaOwnershipType: 'Freehold',
+    poonawallaConstructionCompliance: 'Approved Plan',
+    poonawallaPropertyInDemolitionList: 'No',
   },
 };
 
