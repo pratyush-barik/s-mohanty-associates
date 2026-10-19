@@ -4684,6 +4684,180 @@ function StageOfConstructionSection({
   );
 }
 
+// ─── Section 9: Reference Detail ─────────────────────────────────────────────
+
+function ReferenceDetailSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const referenceTypeOptions = [
+    { value: 'Broker', label: 'Broker' },
+    { value: 'Builder', label: 'Builder' },
+    { value: 'Colonizer', label: 'Colonizer' },
+    { value: 'Neighbor', label: 'Neighbor' },
+    { value: 'Shop Owner', label: 'Shop Owner' },
+    { value: 'Valuer', label: 'Valuer' },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Reference Detail (Light Green Yellow '#f7fee7') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-lime-300 shadow-sm"
+        style={{ backgroundColor: '#f7fee7' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-lime-200 pb-3">
+          <div className="flex items-center gap-2">
+            <UserCheck className="w-5 h-5 text-lime-800" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Reference Detail
+            </h3>
+          </div>
+          <span className="text-xs text-lime-800 font-medium bg-lime-100 px-2.5 py-1 rounded-md border border-lime-300">
+            Section 9: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5">
+          {/* 9.1 Reference Type */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                9.1 Reference Type
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.janaRefType || 'Neighbor'}
+              customValue={fields.janaRefTypeCustom || ''}
+              onChange={(val) => handleChange('janaRefType', val)}
+              onCustomChange={(val) => handleChange('janaRefTypeCustom', val)}
+              options={referenceTypeOptions}
+              disabled={isReadOnly}
+              placeholder="Select reference type..."
+            />
+          </Field>
+
+          {/* 9.2 Reference Contact Number */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  9.2 Reference Contact Number
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaRefContactNumberNA)}
+                  onChange={(checked) => {
+                    handleChange('janaRefContactNumberNA', checked);
+                    if (checked) {
+                      handleChange('janaRefContactNumber', 'NA');
+                    } else {
+                      handleChange('janaRefContactNumber', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaRefContactNumberNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={fields.janaRefContactNumber ?? ''}
+              onChange={(e) => handleChange('janaRefContactNumber', e.target.value)}
+              disabled={isReadOnly || Boolean(fields.janaRefContactNumberNA)}
+              placeholder="e.g. +91 9876543210"
+            />
+          </Field>
+
+          {/* 9.3 Reference Name */}
+          <Field
+            label={
+              <div className="flex items-center justify-between w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  9.3 Reference Name
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.janaRefNameNA)}
+                  onChange={(checked) => {
+                    handleChange('janaRefNameNA', checked);
+                    if (checked) {
+                      handleChange('janaRefName', 'NA');
+                    } else {
+                      handleChange('janaRefName', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.janaRefNameNA
+                  ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                  : ''
+              }`}
+              value={fields.janaRefName ?? ''}
+              onChange={(e) => handleChange('janaRefName', e.target.value)}
+              disabled={isReadOnly || Boolean(fields.janaRefNameNA)}
+              placeholder="Enter reference person name..."
+            />
+          </Field>
+
+          {/* 9.4 Remarks, if any */}
+          <div className="col-span-1 md:col-span-2 lg:col-span-3">
+            <Field
+              label={
+                <div className="flex items-center justify-between w-full">
+                  <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                    9.4 Remarks, if any
+                  </span>
+                  <NaCheckbox
+                    checked={Boolean(fields.janaRefRemarksNA)}
+                    onChange={(checked) => {
+                      handleChange('janaRefRemarksNA', checked);
+                      if (checked) {
+                        handleChange('janaRefRemarks', 'NA');
+                      } else {
+                        handleChange('janaRefRemarks', '');
+                      }
+                    }}
+                    disabled={isReadOnly}
+                  />
+                </div>
+              }
+            >
+              <AutoResizeTextarea
+                rows={2}
+                className={
+                  fields.janaRefRemarksNA
+                    ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic'
+                    : ''
+                }
+                value={fields.janaRefRemarks ?? ''}
+                onChange={(e) => handleChange('janaRefRemarks', e.target.value)}
+                disabled={isReadOnly || Boolean(fields.janaRefRemarksNA)}
+                placeholder="Enter any reference remarks, market feedback, or observations..."
+              />
+            </Field>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Jana Small Finance Bank BankConfig ──────────────────────────────────────
 
 export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
@@ -4703,7 +4877,7 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     'section-7c',
     'section-8', // Replaced by Section 8: STAGE OF CONSTRUCTION
     'section-8a',
-    'section-9',
+    'section-9', // Replaced by Section 9: Reference Detail
     'section-10',
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
@@ -4716,6 +4890,7 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     { id: 'jana-section-6', title: 'Violations Observed if any' },
     { id: 'jana-section-7', title: 'VALUATION' },
     { id: 'jana-section-8', title: 'STAGE OF CONSTRUCTION' },
+    { id: 'jana-section-9', title: 'Reference Detail' },
     { id: 'section-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
     { id: 'section-11', title: 'Photographs' },
@@ -4826,6 +5001,19 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'jana-section-9',
+      title: 'Reference Detail',
+      number: 9,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <ReferenceDetailSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     purpose: 'Affordable Housing / MSME Loan',
@@ -4883,6 +5071,10 @@ export const JANA_SMALL_FINANCE_BANK_CONFIG: BankConfig = {
     janaStageCompletedPercent_1: '75',
     janaStageRecommendedPercent_1: '70',
     janaStageRowsCount: 2,
+    janaRefType: 'Neighbor',
+    janaRefContactNumberNA: false,
+    janaRefNameNA: false,
+    janaRefRemarksNA: false,
   },
 };
 
