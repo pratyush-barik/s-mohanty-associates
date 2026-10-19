@@ -14,6 +14,8 @@ import {
   FileCheck,
   Compass,
   Home,
+  Building2,
+  MapPin,
 } from 'lucide-react';
 
 // ─── Reusable Helper Components ─────────────────────────────────────────────
@@ -2069,6 +2071,1024 @@ function BoundariesAndOccupancySection({
   );
 }
 
+// ─── Section 7: Building details ───────────────────────────────────────────
+
+const FLOOR_VALUED_PRESETS = [
+  'Basement',
+  'Ground Floor',
+  '1st Floor',
+  '2nd Floor',
+  '3rd Floor',
+  'Entire Building',
+];
+
+const BASIC_AMENITIES_LIST = ['Water', 'Sewer', 'Electrical', 'Road'];
+
+function BuildingDetailsSection({
+  fields,
+  handleChange,
+  isReadOnly,
+}: {
+  fields: any;
+  handleChange: (name: string, value: any) => void;
+  isReadOnly: boolean;
+}) {
+  const currentFloors: string[] = (
+    fields.poonawallaFloorValued ??
+    fields.floorValued ??
+    ''
+  )
+    .split(',')
+    .map((s: string) => s.trim())
+    .filter(Boolean);
+
+  const handleFloorToggle = (floor: string) => {
+    let next: string[];
+    if (currentFloors.includes(floor)) {
+      next = currentFloors.filter((f) => f !== floor);
+    } else {
+      next = [...currentFloors, floor];
+    }
+    const val = next.join(', ');
+    handleChange('poonawallaFloorValued', val);
+    handleChange('floorValued', val);
+  };
+
+  const currentAmenities: string[] = Array.isArray(fields.poonawallaBasicAmenities)
+    ? fields.poonawallaBasicAmenities
+    : typeof fields.poonawallaBasicAmenities === 'string'
+    ? fields.poonawallaBasicAmenities
+        .split(',')
+        .map((s: string) => s.trim())
+        .filter(Boolean)
+    : ['Water', 'Sewer', 'Electrical', 'Road'];
+
+  const handleAmenityToggle = (amenity: string) => {
+    let next: string[];
+    if (currentAmenities.includes(amenity)) {
+      next = currentAmenities.filter((a) => a !== amenity);
+    } else {
+      next = [...currentAmenities, amenity];
+    }
+    handleChange('poonawallaBasicAmenities', next);
+    handleChange('basicAmenities', next.join(', '));
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* ─── Container: Structural Details (Use Light Pink '#fce4ec') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-pink-200 shadow-sm"
+        style={{ backgroundColor: '#fce4ec' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-pink-200 pb-3">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-pink-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Structural Details
+            </h3>
+          </div>
+          <span className="text-xs text-pink-900 font-medium bg-pink-100 px-2.5 py-1 rounded-md border border-pink-300">
+            Section 7: Container 1
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Property Demarcation: Input Box / Dropdown */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Property Demarcation
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaPropertyDemarcation || 'Demarcated'}
+              customValue={fields.poonawallaPropertyDemarcationCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaPropertyDemarcation', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaPropertyDemarcationCustom || ''
+                    : val;
+                handleChange('propertyDemarcation', finalVal);
+                handleChange('demarcated', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaPropertyDemarcationCustom', val);
+                handleChange('propertyDemarcation', val);
+                handleChange('demarcated', val);
+              }}
+              options={[
+                { value: 'Demarcated', label: 'Demarcated' },
+                { value: 'Not Demarcated', label: 'Not Demarcated' },
+                { value: 'Partly Demarcated', label: 'Partly Demarcated' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Demarcation..."
+            />
+          </Field>
+
+          {/* Property Identified through: Input Box (Standard size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Property Identified through
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={
+                fields.poonawallaPropertyIdentifiedThrough ??
+                fields.propertyIdentifiedThrough ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaPropertyIdentifiedThrough', e.target.value);
+                handleChange('propertyIdentifiedThrough', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. Boundary match / Inquiries / Site inspection..."
+            />
+          </Field>
+
+          {/* Type of structure: Dropdown (Options: RCC, Load Bearing, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Type of structure
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaTypeOfStructure || 'RCC'}
+              customValue={fields.poonawallaTypeOfStructureCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaTypeOfStructure', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaTypeOfStructureCustom || ''
+                    : val;
+                handleChange('typeOfStructure', finalVal);
+                handleChange('structureType', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaTypeOfStructureCustom', val);
+                handleChange('typeOfStructure', val);
+                handleChange('structureType', val);
+              }}
+              options={[
+                { value: 'RCC', label: 'RCC' },
+                { value: 'Load Bearing', label: 'Load Bearing' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Type of structure..."
+            />
+          </Field>
+
+          {/* Plot Area: Input Box with Unit */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Plot Area
+              </span>
+            }
+          >
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.poonawallaPlotArea ?? fields.plotArea ?? ''}
+                onChange={(e) => {
+                  handleChange('poonawallaPlotArea', e.target.value);
+                  handleChange('plotArea', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Plot Area..."
+              />
+              <select
+                className="w-24 md:w-28 h-10 px-2 py-1 bg-white border border-pink-300 rounded-lg text-xs md:text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-500 shrink-0"
+                value={fields.poonawallaPlotAreaUnit || 'Sq.ft'}
+                onChange={(e) => {
+                  handleChange('poonawallaPlotAreaUnit', e.target.value);
+                  handleChange('plotAreaUnit', e.target.value);
+                }}
+                disabled={isReadOnly}
+              >
+                <option value="Sq.ft">Sq.ft</option>
+                <option value="Sq.mt">Sq.mt</option>
+                <option value="Sq.yd">Sq.yd</option>
+                <option value="Decimal">Decimal</option>
+                <option value="Acre">Acre</option>
+              </select>
+            </div>
+          </Field>
+
+          {/* No. of Floors: Input Box (Numeric) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                No. of Floors
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={
+                fields.poonawallaNoOfFloors ??
+                fields.noOfFloors ??
+                fields.numberOfFloors ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaNoOfFloors', e.target.value);
+                handleChange('noOfFloors', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. G+2 / 3"
+            />
+          </Field>
+
+          {/* Floor Valued: Checkbox Group / Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Floor Valued
+              </span>
+            }
+            span={2}
+          >
+            <div className="space-y-2.5">
+              <div className="p-3 bg-white rounded-lg border border-pink-200 flex flex-wrap gap-2">
+                {FLOOR_VALUED_PRESETS.map((floor) => {
+                  const isChecked = currentFloors.includes(floor);
+                  return (
+                    <label
+                      key={floor}
+                      className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded cursor-pointer transition-colors text-xs select-none ${
+                        isChecked
+                          ? 'bg-pink-100 border border-pink-300 text-pink-900 font-bold'
+                          : 'hover:bg-gray-50 border border-gray-200 text-gray-700 font-medium'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => handleFloorToggle(floor)}
+                        disabled={isReadOnly}
+                        className="h-3.5 w-3.5 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+                      />
+                      <span>{floor}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.poonawallaFloorValued ?? fields.floorValued ?? ''}
+                onChange={(e) => {
+                  handleChange('poonawallaFloorValued', e.target.value);
+                  handleChange('floorValued', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Selected floor(s) or enter custom..."
+              />
+            </div>
+          </Field>
+
+          {/* No of unit per floor: Input Box (Numeric) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                No of unit per floor
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={
+                fields.poonawallaUnitsPerFloor ??
+                fields.unitsPerFloor ??
+                fields.noOfUnitsPerFloor ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaUnitsPerFloor', e.target.value);
+                handleChange('unitsPerFloor', e.target.value);
+                handleChange('noOfUnitsPerFloor', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. 1 / 2 / 4"
+            />
+          </Field>
+
+          {/* No. of lifts: Input Box (Numeric) + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  No. of lifts
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaNoOfLiftsNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaNoOfLiftsNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaNoOfLifts', 'NA');
+                      handleChange('noOfLifts', 'NA');
+                    } else {
+                      handleChange('poonawallaNoOfLifts', '');
+                      handleChange('noOfLifts', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.poonawallaNoOfLiftsNA
+                  ? 'bg-gray-100 text-gray-500 font-semibold cursor-not-allowed'
+                  : ''
+              }`}
+              value={
+                fields.poonawallaNoOfLiftsNA
+                  ? 'NA'
+                  : fields.poonawallaNoOfLifts ?? fields.noOfLifts ?? ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaNoOfLifts', e.target.value);
+                handleChange('noOfLifts', e.target.value);
+              }}
+              disabled={isReadOnly || Boolean(fields.poonawallaNoOfLiftsNA)}
+              placeholder={fields.poonawallaNoOfLiftsNA ? 'NA' : 'e.g. 1 / 2'}
+            />
+          </Field>
+
+          {/* Unit details No. of rooms: Input Box / Multi-field container */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Unit details No. of rooms
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={
+                fields.poonawallaUnitDetailsRooms ??
+                fields.unitDetailsRooms ??
+                fields.noOfRooms ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaUnitDetailsRooms', e.target.value);
+                handleChange('unitDetailsRooms', e.target.value);
+                handleChange('noOfRooms', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. 1 Hall, 1 Kitchen, 2 Bedrooms, 2 Bathrooms"
+            />
+          </Field>
+
+          {/* Super Built up area (Permissible Area): Input Box with Unit */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Super Built up area (Permissible Area)
+              </span>
+            }
+          >
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                className={inputCls}
+                value={
+                  fields.poonawallaSuperBuiltUpArea ??
+                  fields.superBuiltUpArea ??
+                  fields.permissibleArea ??
+                  ''
+                }
+                onChange={(e) => {
+                  handleChange('poonawallaSuperBuiltUpArea', e.target.value);
+                  handleChange('superBuiltUpArea', e.target.value);
+                  handleChange('permissibleArea', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Super Built up area..."
+              />
+              <select
+                className="w-24 md:w-28 h-10 px-2 py-1 bg-white border border-pink-300 rounded-lg text-xs md:text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-500 shrink-0"
+                value={fields.poonawallaSuperBuiltUpAreaUnit || 'Sq.ft'}
+                onChange={(e) => {
+                  handleChange('poonawallaSuperBuiltUpAreaUnit', e.target.value);
+                  handleChange('superBuiltUpAreaUnit', e.target.value);
+                }}
+                disabled={isReadOnly}
+              >
+                <option value="Sq.ft">Sq.ft</option>
+                <option value="Sq.mt">Sq.mt</option>
+                <option value="Sq.yd">Sq.yd</option>
+              </select>
+            </div>
+          </Field>
+
+          {/* Carpet area (Of Actual Area): Input Box with Unit */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Carpet area (Of Actual Area)
+              </span>
+            }
+          >
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                className={inputCls}
+                value={
+                  fields.poonawallaCarpetArea ??
+                  fields.carpetArea ??
+                  fields.actualArea ??
+                  ''
+                }
+                onChange={(e) => {
+                  handleChange('poonawallaCarpetArea', e.target.value);
+                  handleChange('carpetArea', e.target.value);
+                  handleChange('actualArea', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="Enter Carpet area..."
+              />
+              <select
+                className="w-24 md:w-28 h-10 px-2 py-1 bg-white border border-pink-300 rounded-lg text-xs md:text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-pink-500 shrink-0"
+                value={fields.poonawallaCarpetAreaUnit || 'Sq.ft'}
+                onChange={(e) => {
+                  handleChange('poonawallaCarpetAreaUnit', e.target.value);
+                  handleChange('carpetAreaUnit', e.target.value);
+                }}
+                disabled={isReadOnly}
+              >
+                <option value="Sq.ft">Sq.ft</option>
+                <option value="Sq.mt">Sq.mt</option>
+                <option value="Sq.yd">Sq.yd</option>
+              </select>
+            </div>
+          </Field>
+
+          {/* Remarks on view from property: Input Box with Variable Size (Textarea) + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Remarks on view from property
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaRemarksOnViewNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaRemarksOnViewNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaRemarksOnView', 'NA');
+                      handleChange('remarksOnView', 'NA');
+                    } else {
+                      handleChange('poonawallaRemarksOnView', '');
+                      handleChange('remarksOnView', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+            span={2}
+          >
+            {fields.poonawallaRemarksOnViewNA ? (
+              <input
+                type="text"
+                readOnly
+                disabled
+                className={`${inputCls} bg-gray-100 text-gray-500 font-semibold cursor-not-allowed`}
+                value="NA"
+              />
+            ) : (
+              <AutoResizeTextarea
+                rows={2}
+                value={fields.poonawallaRemarksOnView ?? fields.remarksOnView ?? ''}
+                onChange={(e) => {
+                  handleChange('poonawallaRemarksOnView', e.target.value);
+                  handleChange('remarksOnView', e.target.value);
+                }}
+                disabled={isReadOnly}
+                placeholder="e.g. Road facing / Garden view / Good surrounding view..."
+              />
+            )}
+          </Field>
+
+          {/* Quality of construction: Dropdown (Options: Average, Good, Poor, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Quality of construction
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaQualityOfConstruction || 'Good'}
+              customValue={fields.poonawallaQualityOfConstructionCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaQualityOfConstruction', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaQualityOfConstructionCustom || ''
+                    : val;
+                handleChange('qualityOfConstruction', finalVal);
+                handleChange('constructionQuality', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaQualityOfConstructionCustom', val);
+                handleChange('qualityOfConstruction', val);
+                handleChange('constructionQuality', val);
+              }}
+              options={[
+                { value: 'Good', label: 'Good' },
+                { value: 'Average', label: 'Average' },
+                { value: 'Poor', label: 'Poor' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Quality of construction..."
+            />
+          </Field>
+
+          {/* Interiors/Exteriors: Dropdown (Options: Average, Good, Poor, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Interiors/Exteriors
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaInteriorsExteriors || 'Good'}
+              customValue={fields.poonawallaInteriorsExteriorsCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaInteriorsExteriors', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaInteriorsExteriorsCustom || ''
+                    : val;
+                handleChange('interiorsExteriors', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaInteriorsExteriorsCustom', val);
+                handleChange('interiorsExteriors', val);
+              }}
+              options={[
+                { value: 'Good', label: 'Good' },
+                { value: 'Average', label: 'Average' },
+                { value: 'Poor', label: 'Poor' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Interiors/Exteriors..."
+            />
+          </Field>
+
+          {/* Age of the property: Input Box (Numeric / Years) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Age of the property
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={
+                fields.poonawallaAgeOfProperty ??
+                fields.ageOfProperty ??
+                fields.propertyAge ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaAgeOfProperty', e.target.value);
+                handleChange('ageOfProperty', e.target.value);
+                handleChange('propertyAge', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. 5 Years"
+            />
+          </Field>
+        </div>
+      </div>
+
+      {/* ─── Container: Locality Attributes (Use Light Gray '#f3f4f6') ─── */}
+      <div
+        className="rounded-xl p-5 md:p-6 space-y-5 border border-gray-300 shadow-sm"
+        style={{ backgroundColor: '#f3f4f6' }}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-300 pb-3">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-gray-700" />
+            <h3 className="font-bold text-gray-800 text-sm md:text-base uppercase tracking-wide">
+              Locality Attributes
+            </h3>
+          </div>
+          <span className="text-xs text-gray-700 font-medium bg-gray-200 px-2.5 py-1 rounded-md border border-gray-400">
+            Section 7: Container 2
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Location Type (Comm., Res, Ind, Mix): Dropdown + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Location Type (Comm., Res, Ind, Mix)
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaLocationType || 'Commercial'}
+              customValue={fields.poonawallaLocationTypeCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaLocationType', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaLocationTypeCustom || ''
+                    : val;
+                handleChange('locationType', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaLocationTypeCustom', val);
+                handleChange('locationType', val);
+              }}
+              options={[
+                { value: 'Commercial', label: 'Commercial' },
+                { value: 'Residential', label: 'Residential' },
+                { value: 'Industrial', label: 'Industrial' },
+                { value: 'Mixed', label: 'Mixed' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Location Type..."
+            />
+          </Field>
+
+          {/* Class of Locality: Dropdown (Options: High class, Middle class, Low class, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Class of Locality
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaClassOfLocality || 'Middle class'}
+              customValue={fields.poonawallaClassOfLocalityCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaClassOfLocality', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaClassOfLocalityCustom || ''
+                    : val;
+                handleChange('classOfLocality', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaClassOfLocalityCustom', val);
+                handleChange('classOfLocality', val);
+              }}
+              options={[
+                { value: 'High class', label: 'High class' },
+                { value: 'Middle class', label: 'Middle class' },
+                { value: 'Low class', label: 'Low class' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Class of Locality..."
+            />
+          </Field>
+
+          {/* Site is (Dev, Under Dev): Radio Button / Dropdown (Options: Developed, Under Developed, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Site is (Dev, Under Dev)
+              </span>
+            }
+          >
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex flex-wrap items-center gap-4 pt-1">
+                {['Developed', 'Under Developed', 'Custom'].map((opt) => {
+                  const currentStatus =
+                    fields.poonawallaSiteDevelopmentStatus || 'Developed';
+                  const isSelected =
+                    currentStatus.toLowerCase() === opt.toLowerCase();
+                  return (
+                    <label
+                      key={opt}
+                      className={`flex items-center gap-2 cursor-pointer text-xs md:text-sm font-medium select-none ${
+                        isReadOnly
+                          ? 'opacity-60 cursor-not-allowed'
+                          : 'text-gray-800 hover:text-gray-950'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="poonawallaSiteDevelopmentStatus"
+                        value={opt}
+                        checked={isSelected}
+                        onChange={(e) => {
+                          handleChange('poonawallaSiteDevelopmentStatus', e.target.value);
+                          const finalVal =
+                            e.target.value === 'Custom'
+                              ? fields.poonawallaSiteDevelopmentStatusCustom || ''
+                              : e.target.value;
+                          handleChange('siteDevelopmentStatus', finalVal);
+                          handleChange('developmentStatus', finalVal);
+                        }}
+                        disabled={isReadOnly}
+                        className="h-4 w-4 text-gray-700 focus:ring-gray-500 border-gray-300"
+                      />
+                      <span>{opt}</span>
+                    </label>
+                  );
+                })}
+              </div>
+              {(fields.poonawallaSiteDevelopmentStatus === 'Custom' ||
+                fields.poonawallaSiteDevelopmentStatus === 'custom') && (
+                <input
+                  type="text"
+                  className={`${inputCls} bg-amber-50/50 border-amber-300 text-gray-900 placeholder:text-gray-400 mt-1`}
+                  value={fields.poonawallaSiteDevelopmentStatusCustom || ''}
+                  onChange={(e) => {
+                    handleChange('poonawallaSiteDevelopmentStatusCustom', e.target.value);
+                    handleChange('siteDevelopmentStatus', e.target.value);
+                    handleChange('developmentStatus', e.target.value);
+                  }}
+                  disabled={isReadOnly}
+                  placeholder="Enter custom development status..."
+                />
+              )}
+            </div>
+          </Field>
+
+          {/* Proximity to civic amenities/public transport: Input Box with Variable Size */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Proximity to civic amenities/public transport
+              </span>
+            }
+            span={2}
+          >
+            <AutoResizeTextarea
+              rows={2}
+              value={
+                fields.poonawallaProximityToAmenities ??
+                fields.proximityToAmenities ??
+                fields.civicAmenities ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaProximityToAmenities', e.target.value);
+                handleChange('proximityToAmenities', e.target.value);
+                handleChange('civicAmenities', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. Bus stop 200m, Hospital 1km, School 500m, Railway Station 3km..."
+            />
+          </Field>
+
+          {/* Close Vicinity/Landmark: Input Box (Standard size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Close Vicinity/Landmark
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={
+                fields.poonawallaCloseVicinityLandmark ??
+                fields.closeVicinityLandmark ??
+                fields.landmark ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaCloseVicinityLandmark', e.target.value);
+                handleChange('closeVicinityLandmark', e.target.value);
+                handleChange('landmark', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="Enter Close Vicinity/Landmark..."
+            />
+          </Field>
+
+          {/* Property within municipal Limits: Radio Button (Yes/No) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Property within municipal Limits
+              </span>
+            }
+          >
+            <RadioGroup
+              name="poonawallaPropertyWithinMunicipalLimits"
+              value={fields.poonawallaPropertyWithinMunicipalLimits || 'Yes'}
+              onChange={(val) => {
+                handleChange('poonawallaPropertyWithinMunicipalLimits', val);
+                handleChange('propertyWithinMunicipalLimits', val);
+                handleChange('withinMunicipalLimits', val);
+              }}
+              options={['Yes', 'No']}
+              disabled={isReadOnly}
+            />
+          </Field>
+
+          {/* Name of Municipal Corporation: Input Box (Standard size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Name of Municipal Corporation
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={
+                fields.poonawallaMunicipalCorporationName ??
+                fields.municipalCorporationName ??
+                fields.municipalAuthority ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaMunicipalCorporationName', e.target.value);
+                handleChange('municipalCorporationName', e.target.value);
+                handleChange('municipalAuthority', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. Bhubaneswar Municipal Corporation (BMC)"
+            />
+          </Field>
+
+          {/* Site Access: Input Box (Standard size) */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Site Access
+              </span>
+            }
+          >
+            <input
+              type="text"
+              className={inputCls}
+              value={
+                fields.poonawallaSiteAccess ??
+                fields.siteAccess ??
+                fields.approachRoad ??
+                ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaSiteAccess', e.target.value);
+                handleChange('siteAccess', e.target.value);
+                handleChange('approachRoad', e.target.value);
+              }}
+              disabled={isReadOnly}
+              placeholder="e.g. 30 ft wide bitumen road"
+            />
+          </Field>
+
+          {/* Availability of basic amenities (Water, Sewer, Electrical, Road): Checkbox Group / Radio Button */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Availability of basic amenities (Water, Sewer, Electrical, Road)
+              </span>
+            }
+            span={2}
+          >
+            <div className="p-3 bg-white rounded-lg border border-gray-300 flex flex-wrap gap-2.5">
+              {BASIC_AMENITIES_LIST.map((amenity) => {
+                const isChecked = currentAmenities.includes(amenity);
+                return (
+                  <label
+                    key={amenity}
+                    className={`flex items-center gap-2 p-2 rounded cursor-pointer transition-colors text-xs select-none ${
+                      isChecked
+                        ? 'bg-gray-100 border border-gray-400 text-gray-900 font-bold'
+                        : 'hover:bg-gray-50 border border-gray-200 text-gray-600 font-medium'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => handleAmenityToggle(amenity)}
+                      disabled={isReadOnly}
+                      className="h-3.5 w-3.5 rounded border-gray-300 text-gray-700 focus:ring-gray-500"
+                    />
+                    <span>{amenity}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </Field>
+
+          {/* Marketability: Dropdown (Options: Good, Average, Poor, Custom) + Conditional Standard Input Box */}
+          <Field
+            label={
+              <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                Marketability
+              </span>
+            }
+          >
+            <CustomSelect
+              value={fields.poonawallaMarketability || 'Good'}
+              customValue={fields.poonawallaMarketabilityCustom || ''}
+              onChange={(val) => {
+                handleChange('poonawallaMarketability', val);
+                const finalVal =
+                  val === 'Custom'
+                    ? fields.poonawallaMarketabilityCustom || ''
+                    : val;
+                handleChange('marketability', finalVal);
+              }}
+              onCustomChange={(val) => {
+                handleChange('poonawallaMarketabilityCustom', val);
+                handleChange('marketability', val);
+              }}
+              options={[
+                { value: 'Good', label: 'Good' },
+                { value: 'Average', label: 'Average' },
+                { value: 'Poor', label: 'Poor' },
+              ]}
+              disabled={isReadOnly}
+              placeholder="Select Marketability..."
+            />
+          </Field>
+
+          {/* Electricity Meter No.: Input Box (Standard size) + [ ] NA Checkbox */}
+          <Field
+            label={
+              <div className="flex items-center justify-between gap-2 w-full">
+                <span className="font-semibold text-gray-700 text-xs md:text-sm">
+                  Electricity Meter No.
+                </span>
+                <NaCheckbox
+                  checked={Boolean(fields.poonawallaElectricityMeterNoNA)}
+                  onChange={(checked) => {
+                    handleChange('poonawallaElectricityMeterNoNA', checked);
+                    if (checked) {
+                      handleChange('poonawallaElectricityMeterNo', 'NA');
+                      handleChange('electricityMeterNo', 'NA');
+                    } else {
+                      handleChange('poonawallaElectricityMeterNo', '');
+                      handleChange('electricityMeterNo', '');
+                    }
+                  }}
+                  disabled={isReadOnly}
+                />
+              </div>
+            }
+          >
+            <input
+              type="text"
+              className={`${inputCls} ${
+                fields.poonawallaElectricityMeterNoNA
+                  ? 'bg-gray-100 text-gray-500 font-semibold cursor-not-allowed'
+                  : ''
+              }`}
+              value={
+                fields.poonawallaElectricityMeterNoNA
+                  ? 'NA'
+                  : fields.poonawallaElectricityMeterNo ??
+                    fields.electricityMeterNo ??
+                    ''
+              }
+              onChange={(e) => {
+                handleChange('poonawallaElectricityMeterNo', e.target.value);
+                handleChange('electricityMeterNo', e.target.value);
+              }}
+              disabled={isReadOnly || Boolean(fields.poonawallaElectricityMeterNoNA)}
+              placeholder={
+                fields.poonawallaElectricityMeterNoNA
+                  ? 'NA'
+                  : 'Enter Electricity Meter No...'
+              }
+            />
+          </Field>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Poonawalla Finance BankConfig ──────────────────────────────────────────
 
 export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
@@ -2082,6 +3102,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     'section-4', // Replaced by Section 4: PREPARED BY
     'section-5', // Replaced by Section 5: SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS:
     'section-6', // Replaced by Section 6: Boundaries as Per Documents & Site:
+    'section-7', // Replaced by Section 7: Building details
   ],
   hiddenFields: ['to', 'dateOfValuation', 'refNo', 'bankName', 'branchName'],
   navSections: [
@@ -2091,7 +3112,7 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     { id: 'poonawalla-section-4', title: 'PREPARED BY' },
     { id: 'poonawalla-section-5', title: 'SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS' },
     { id: 'poonawalla-section-6', title: 'Boundaries as Per Documents & Site' },
-    { id: 'section-7', title: 'Area Valuation' },
+    { id: 'poonawalla-section-7', title: 'Building details' },
     { id: 'section-8', title: 'Land Valuation' },
     { id: 'section-9', title: 'Valuation Abstract' },
     { id: 'section-10', title: 'Remarks' },
@@ -2180,6 +3201,19 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
         />
       ),
     },
+    {
+      id: 'poonawalla-section-7',
+      title: 'Building details',
+      number: 7,
+      defaultOpen: true,
+      render: (fields: any, handleChange: any, isReadOnly: boolean) => (
+        <BuildingDetailsSection
+          fields={fields}
+          handleChange={handleChange}
+          isReadOnly={isReadOnly}
+        />
+      ),
+    },
   ],
   defaultValues: {
     poonawallaPurposeOfValuation: 'To assess the fair market value of the collateral security',
@@ -2204,6 +3238,16 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     poonawallaOccupancyStatus: 'Occupied',
     occupancyStatus: 'Occupied',
     poonawallaRelationWithApplicant: 'Self',
+    poonawallaPropertyDemarcation: 'Demarcated',
+    poonawallaTypeOfStructure: 'RCC',
+    poonawallaQualityOfConstruction: 'Good',
+    poonawallaInteriorsExteriors: 'Good',
+    poonawallaLocationType: 'Commercial',
+    poonawallaClassOfLocality: 'Middle class',
+    poonawallaSiteDevelopmentStatus: 'Developed',
+    poonawallaPropertyWithinMunicipalLimits: 'Yes',
+    poonawallaMarketability: 'Good',
+    poonawallaBasicAmenities: ['Water', 'Sewer', 'Electrical', 'Road'],
   },
 };
 
