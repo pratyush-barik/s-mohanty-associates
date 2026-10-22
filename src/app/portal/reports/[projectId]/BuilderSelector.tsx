@@ -113,8 +113,17 @@ const BANK_BUILDER_MAP: Record<string, any> = {
 
   // DCB
   'DCB BANK::Desktop valuation format': dynamic(() => import('./banks/dcb/DCBDesktop')),
+  'DCB BANK::Desktop': dynamic(() => import('./banks/dcb/DCBDesktop')),
+  'DCB BANK::POST DISBURSAL VALUATION REPORT': dynamic(() => import('./banks/dcb/DCBDesktop')),
+  'DCB BANK LIMITED::Desktop valuation format': dynamic(() => import('./banks/dcb/DCBDesktop')),
+  'DCB BANK LIMITED::Desktop': dynamic(() => import('./banks/dcb/DCBDesktop')),
+  'DCB::Desktop valuation format': dynamic(() => import('./banks/dcb/DCBDesktop')),
+  'DCB::Desktop': dynamic(() => import('./banks/dcb/DCBDesktop')),
   'DCB BANK::HL-LAP-SME': dynamic(() => import('./banks/dcb/DCBHLLAPSME')),
   'DCB BANK': dynamic(() => import('./banks/dcb/DCBHLLAPSME')),
+  'DCB BANK LIMITED': dynamic(() => import('./banks/dcb/DCBHLLAPSME')),
+  'DCB BANK LIMITED::HL-LAP-SME': dynamic(() => import('./banks/dcb/DCBHLLAPSME')),
+  'DCB': dynamic(() => import('./banks/dcb/DCBHLLAPSME')),
 
   // GIC, Griham, HDB, HDFC
   'GIC HOUSING FINANCE': dynamic(() => import('./banks/gic/GICHousing')),

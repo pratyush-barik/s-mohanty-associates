@@ -4,6 +4,7 @@ import React, { useRef, useEffect } from 'react';
 import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuilder';
 import { BankConfig } from '@/lib/bank-fields';
 import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
+import { PDFPoonawallaFinanceRenderer } from '@/lib/banks/pdf-poonawalla-finance-renderer';
 import {
   Building,
   Lock,
@@ -5547,6 +5548,8 @@ export const POONAWALLA_FINANCE_CONFIG: BankConfig = {
     poonawallaMasonryType: 'Brick',
     poonawallaSoilType: 'Red soil',
   },
+  getPDFRenderer: (fields: any, projectCode?: string) =>
+    new PDFPoonawallaFinanceRenderer({ ...fields, projectCode }),
 };
 
 export default function PoonawallaFinance(props: BankReportBuilderProps) {

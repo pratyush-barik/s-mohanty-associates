@@ -9,9 +9,9 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 ### 📊 Overall Status Summary
 
 | :--- | :---: | :--- |
-| **✅ Completed** | **16 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete (Includes Protium Finance) |
-| **🔨 In Progress** | **51 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, and Poonawalla Finance) |
-| **⏳ Not Started** | **10 formats** | Directory reserved / pending base component creation |
+| **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
+| **🔨 In Progress** | **54 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes DCB Bank Desktop & HL-LAP-SME, SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, Poonawalla Finance, and Protium Finance) |
+| **⏳ Not Started** | **8 formats** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
@@ -46,8 +46,8 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **17** | **CHOLAMANDALAM INVESTMENT COMPANY LTD** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **18** | **CLIX CAPITAL LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **19** | **DCB BANK** | | | |
-| 19.1 | DCB BANK | `Desktop valuation format` | ⏳ Not Created | ⏳ Not Started |
-| 19.2 | DCB BANK | `HL-LAP-SME` | ⏳ Not Created | ⏳ Not Started |
+| 19.1 | DCB BANK | `Desktop valuation format` | ✅ Created Base | 🔨 In Progress |
+| 19.2 | DCB BANK | `HL-LAP-SME` | ✅ Created Base | 🔨 In Progress |
 | **20** | **GIC HOUSING FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **21** | **GRIHAM HOUSING FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **22** | **HDB FINANCIAL SERVICES** | `Standard` | ✅ Created Base | 🔨 In Progress |
@@ -83,7 +83,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **38** | **NEO GROWTH** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **39** | **PNB HOUSING FINANCE LTD** | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
 | **40** | **POONAWALLA FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **41** | **PROTEUM FINANCE** | `Standard` | ✅ Created Base | ✅ Completed |
+| **41** | **PROTEUM FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **42** | **PUNJAB & SIND BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **43** | **PUNJAB NATIONAL BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
 | **44** | **PURPLE FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
@@ -131,7 +131,6 @@ Templates with complete interactive report draft builder UI and full PDF rendere
 | **11.1** | BANDHAN BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanHLLAP.tsx` | `src/lib/banks/pdf-bandhan-hllap-renderer.ts` | ✅ Completed |
 | **11.2** | BANDHAN BANK | `SME` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanSME.tsx` | `src/lib/banks/pdf-bandhan-sme-renderer.ts` | ✅ Completed |
 | **12** | BANK OF BARODA-BOB | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-baroda/BankOfBaroda.tsx` | `src/lib/banks/pdf-bank-of-baroda-renderer.ts` | ✅ Completed |
-| **41** | PROTIUM FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/protium/ProtiumFinance.tsx` | `src/lib/banks/pdf-protium-finance-renderer.ts` | ✅ Completed |
 
 ### 2. Base Structure Completed (`✅ Created Base` — Builder In Progress)
 Templates with base structure & draft UI files created, currently undergoing field customization or section buildout:
@@ -144,6 +143,8 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **15** | CANARA BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/canara/CanaraBank.tsx` | `src/lib/banks/pdf-canara-bank-renderer.ts` | 🔨 In Progress |
 | **16** | CANFIN HOMES LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/canfin/CanFinHomes.tsx` | `src/lib/banks/pdf-canfin-homes-renderer.ts` | 🔨 In Progress |
 | **18** | CLIX CAPITAL LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/clix/ClixCapital.tsx` | `src/lib/banks/pdf-clix-capital-renderer.ts` | 🔨 In Progress |
+| **19.1** | DCB BANK | `Desktop valuation format` | `src/app/portal/reports/[projectId]/banks/dcb/DCBDesktop.tsx` | `src/lib/banks/pdf-dcb-desktop-renderer.ts` | 🔨 In Progress |
+| **19.2** | DCB BANK | `HL-LAP-SME` | `src/app/portal/reports/[projectId]/banks/dcb/DCBHLLAPSME.tsx` | `src/lib/banks/pdf-dcb-hl-lap-sme-renderer.ts` | 🔨 In Progress |
 | **20** | GIC HOUSING FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/gic/GICHousing.tsx` | `src/lib/banks/pdf-gic-housing-render.ts` | 🔨 In Progress |
 | **21** | GRIHAM HOUSING FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/griham/GrihamHousing.tsx` | `src/lib/banks/pdf-griham-housing-renderer.ts` | 🔨 In Progress |
 | **22** | HDB FINANCIAL SERVICES | `Standard` | `src/app/portal/reports/[projectId]/banks/hdb/HDBFinancial.tsx` | `src/lib/banks/pdf-hdb-financial-render.ts` | 🔨 In Progress |
@@ -170,6 +171,7 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **38** | NEO GROWTH | `Standard` | `src/app/portal/reports/[projectId]/banks/neo/NeoGrowth.tsx` | `src/lib/banks/pdf-neo-growth-renderer.ts` | 🔨 In Progress |
 | **39** | PNB HOUSING FINANCE LTD | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/pnb-housing/PNBHousingHLLAP.tsx` | `src/lib/banks/pdf-pnb-housing-renderer.ts` | 🔨 In Progress |
 | **40** | POONAWALLA FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/poonawalla/PoonawallaFinance.tsx` | `src/lib/banks/pdf-poonawalla-finance-renderer.ts` | 🔨 In Progress |
+| **41** | PROTEUM FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/protium/ProtiumFinance.tsx` | `src/lib/banks/pdf-protium-finance-renderer.ts` | 🔨 In Progress |
 | **44** | PURPLE FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/purple/PurpleFinance.tsx` | `src/lib/banks/pdf-purple-finance-renderer.ts` | 🔨 In Progress |
 | **45** | SAMMUNATI FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/sammunati/SammunatiFinance.tsx` | `src/lib/banks/pdf-sammunati-finance-renderer.ts` | 🔨 In Progress |
 | **46** | SHRIRAM FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/shriram/ShriramFinance.tsx` | `src/lib/banks/pdf-shriram-finance-renderer.ts` | 🔨 In Progress |
@@ -208,6 +210,9 @@ Templates with base structure & draft UI files created, currently undergoing fie
   - **Dedicated PDF Renderer**: `src/lib/banks/pdf-jana-small-finance-bank-renderer.ts` — **🔨 In Progress** (Dedicated renderer in progress).
 - **Poonawalla Finance (`Standard`)**:
   - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/poonawalla/PoonawallaFinance.tsx` — **🔨 In Progress** (Sections 1 through 13 custom draft UI implemented with dedicated container palettes: Section 1 VALUATION OF IMMOVABLE PROPERTY [`#e3f2fd`], Section 2 VALUE OF THE PROPERTY [`#e8f5e9`], Section 3 PURPOSE OF VALUATION [`#fffde7`], Section 4 PREPARED BY [`#fff3e0`], Section 5 SANCTION PLAN APPROVAL & OTHER DOCUMENTS DETAILS [`#e0f2f1`], Section 6 Boundaries as Per Documents & Site [`#e0f7fa` & `#ffebee`], Section 7 Building details [`#fce4ec` & `#f3e5f5`], Section 8 Floor Wise Area [`#e8eaf6` & `#fff8e1`], Section 9 Description of Constructed Area and Rates [`#ffe0b2` & `#ede7f6`], Section 10 Value of Extra Amenities [`#e6f9f0` & `#f9fbe7`], Section 11 FLOORWISE DETAILS OF USAGE OF PROPERTY [`#e1f5fe`], Section 12 REMARKS [`#fff9c4`], Section 13 Declaration [`#fce4e4`]).
-  - **Dedicated PDF Renderer**: `src/lib/banks/pdf-poonawalla-finance-renderer.ts` — **🔨 In Progress** (In progress status).
+  - **Dedicated PDF Renderer**: `src/lib/banks/pdf-poonawalla-finance-renderer.ts` — **🔨 In Progress** (Undergoing section/field verification).
+- **Protium Finance (Proteum) (`Standard`)**:
+  - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/protium/ProtiumFinance.tsx` — **🔨 In Progress** (Undergoing section/field verification).
+  - **Dedicated PDF Renderer**: `src/lib/banks/pdf-protium-finance-renderer.ts` — **🔨 In Progress** (Undergoing section/field verification).
 
 

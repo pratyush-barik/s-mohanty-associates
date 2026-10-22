@@ -35,6 +35,8 @@ export const PROTIUM_FINANCE_CONFIG: BankConfig = {
   defaultValues: {
     purpose: 'Mortgage / Financial Valuation / LAP',
   },
+  getPDFRenderer: (fields: any, projectCode?: string) =>
+    new PDFProtiumFinanceRenderer({ ...fields, projectCode }),
 };
 
 export interface ProtiumFinanceProps extends BankReportBuilderProps {
