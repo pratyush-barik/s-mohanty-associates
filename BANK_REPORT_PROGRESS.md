@@ -9,8 +9,8 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 ### 📊 Overall Status Summary
 
 | :--- | :---: | :--- |
-| **✅ Completed** | **17 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
-| **🔨 In Progress** | **54 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes DCB Bank Desktop & HL-LAP-SME, SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, Poonawalla Finance, and Protium Finance) |
+| **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
+| **🔨 In Progress** | **56 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes DCB Bank Desktop & HL-LAP-SME, SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, Poonawalla Finance, and Protium Finance) |
 | **⏳ Not Started** | **6 formats** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
@@ -33,7 +33,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | 7.3 | AXIS BANK | `SBB` | ✅ Created Base | ✅ Completed |
 | 7.4 | AXIS BANK | `SME` | ✅ Created Base | ✅ Completed |
 | **8** | **AXIS FINANCE LTD** | `Standard` | ✅ Created Base | ✅ Completed |
-| **9** | **AYE FINANCE LTD** | `Standard` | ✅ Created Base | ✅ Completed |
+| **9** | **AYE FINANCE LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **10** | **BAJAJ HOUSING FINANCE LTD** | `HL-LAP` | ✅ Created Base | ✅ Completed |
 | **11** | **BANDHAN BANK** | | | |
 | 11.1 | BANDHAN BANK | `HL-LAP` | ✅ Created Base | ✅ Completed |
@@ -43,7 +43,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **14** | **BANK OF MAHARASHTRA-BOM** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **15** | **CANARA BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **16** | **CANFIN HOMES LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **17** | **CHOLAMANDALAM INVESTMENT COMPANY LTD** | `Standard` | ✅ Created Base | ✅ Completed |
+| **17** | **CHOLAMANDALAM INVESTMENT COMPANY LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **18** | **CLIX CAPITAL LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **19** | **DCB BANK** | | | |
 | 19.1 | DCB BANK | `Desktop valuation format` | ✅ Created Base | 🔨 In Progress |
@@ -127,12 +127,10 @@ Templates with complete interactive report draft builder UI and full PDF rendere
 | **7.3** | AXIS BANK | `SBB` | `src/app/portal/reports/[projectId]/banks/axis/AxisSBB.tsx` | `src/lib/banks/pdf-axis-sbb-renderer.ts` | ✅ Completed |
 | **7.4** | AXIS BANK | `SME` | `src/app/portal/reports/[projectId]/banks/axis/AxisSME.tsx` | `src/lib/banks/pdf-axis-sme-renderer.ts` | ✅ Completed |
 | **8** | AXIS FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/axis-finance/AxisFinance.tsx` | `src/lib/banks/pdf-axis-finance-renderer.ts` | ✅ Completed |
-| **9** | AYE FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/aye/AyeFinance.tsx` | `src/lib/banks/pdf-aye-finance-renderer.ts` | ✅ Completed |
 | **10** | BAJAJ HOUSING FINANCE LTD | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/bajaj-housing/BajajHousingHLLAP.tsx` | `src/lib/banks/pdf-bajaj-housing-renderer.ts` | ✅ Completed |
 | **11.1** | BANDHAN BANK | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanHLLAP.tsx` | `src/lib/banks/pdf-bandhan-hllap-renderer.ts` | ✅ Completed |
 | **11.2** | BANDHAN BANK | `SME` | `src/app/portal/reports/[projectId]/banks/bandhan/BandhanSME.tsx` | `src/lib/banks/pdf-bandhan-sme-renderer.ts` | ✅ Completed |
 | **12** | BANK OF BARODA-BOB | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-baroda/BankOfBaroda.tsx` | `src/lib/banks/pdf-bank-of-baroda-renderer.ts` | ✅ Completed |
-| **17** | CHOLAMANDALAM INVESTMENT COMPANY LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/chola/CholaInvestment.tsx` | `src/lib/banks/pdf-chola-investment-renderer.ts` | ✅ Completed |
 
 ### 2. Base Structure Completed (`✅ Created Base` — Builder In Progress)
 Templates with base structure & draft UI files created, currently undergoing field customization or section buildout:
@@ -140,10 +138,12 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | # | Bank / Organization | Format / Key | Report Draft UI Component | PDF Renderer File | Status |
 |---|---|---|---|---|---|
 | **6** | AU SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/au-sfb/AUSmallFinanceBank.tsx` | `src/lib/banks/pdf-au-small-finance-bank-renderer.ts` | 🔨 In Progress |
+| **9** | AYE FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/aye/AyeFinance.tsx` | `src/lib/banks/pdf-aye-finance-renderer.ts` | 🔨 In Progress |
 | **13** | BANK OF INDIA-BOI | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-india/BankOfIndia.tsx` | `src/lib/banks/pdf-bank-of-india-renderer.ts` | 🔨 In Progress |
 | **14** | BANK OF MAHARASHTRA-BOM | `Standard` | `src/app/portal/reports/[projectId]/banks/bank-of-maharashtra/BankOfMaharashtra.tsx` | `src/lib/banks/pdf-bank-of-maharashtra-renderer.ts` | 🔨 In Progress |
 | **15** | CANARA BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/canara/CanaraBank.tsx` | `src/lib/banks/pdf-canara-bank-renderer.ts` | 🔨 In Progress |
 | **16** | CANFIN HOMES LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/canfin/CanFinHomes.tsx` | `src/lib/banks/pdf-canfin-homes-renderer.ts` | 🔨 In Progress |
+| **17** | CHOLAMANDALAM INVESTMENT COMPANY LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/chola/CholaInvestment.tsx` | `src/lib/banks/pdf-chola-investment-renderer.ts` | 🔨 In Progress |
 | **18** | CLIX CAPITAL LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/clix/ClixCapital.tsx` | `src/lib/banks/pdf-clix-capital-renderer.ts` | 🔨 In Progress |
 | **19.1** | DCB BANK | `Desktop valuation format` | `src/app/portal/reports/[projectId]/banks/dcb/DCBDesktop.tsx` | `src/lib/banks/pdf-dcb-desktop-renderer.ts` | 🔨 In Progress |
 | **19.2** | DCB BANK | `HL-LAP-SME` | `src/app/portal/reports/[projectId]/banks/dcb/DCBHLLAPSME.tsx` | `src/lib/banks/pdf-dcb-hl-lap-sme-renderer.ts` | 🔨 In Progress |
