@@ -88,6 +88,10 @@ const BANK_BUILDER_MAP: Record<string, any> = {
 
   // Aye
   'AYE FINANCE LTD': dynamic(() => import('./banks/aye/AyeFinance')),
+  'AYE FINANCE': dynamic(() => import('./banks/aye/AyeFinance')),
+  'AYE FINANCE PVT. LTD.': dynamic(() => import('./banks/aye/AyeFinance')),
+  'AYE FINANCE PVT LTD': dynamic(() => import('./banks/aye/AyeFinance')),
+  'AYE': dynamic(() => import('./banks/aye/AyeFinance')),
   'AVE FINANCE LTD': dynamic(() => import('./banks/aye/AyeFinance')), // Backward compatibility alias
 
   // Bajaj & Bandhan
@@ -109,6 +113,11 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'CANARA BANK': dynamic(() => import('./banks/canara/CanaraBank')),
   'CANFIN HOMES LTD': dynamic(() => import('./banks/canfin/CanFinHomes')),
   'CHOLAMANDALAM INVESTMENT COMPANY LTD': dynamic(() => import('./banks/chola/CholaInvestment')),
+  'CHOLAMANDALAM INVESTMENT FINANCE CO PVT LTD': dynamic(() => import('./banks/chola/CholaInvestment')),
+  'CHOLAMANDALAM INVESTMENT AND FINANCE COMPANY LTD': dynamic(() => import('./banks/chola/CholaInvestment')),
+  'CHOLAMANDALAM': dynamic(() => import('./banks/chola/CholaInvestment')),
+  'CHOLA': dynamic(() => import('./banks/chola/CholaInvestment')),
+  'CHOLA INVESTMENT': dynamic(() => import('./banks/chola/CholaInvestment')),
   'CLIX CAPITAL LTD': dynamic(() => import('./banks/clix/ClixCapital')),
 
   // DCB
