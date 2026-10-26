@@ -111,3 +111,47 @@
   1. **PDF Renderers**: `PDFBankRenderer.drawWrappedTextAt(...)` defaults `align: 'justify'` on all multi-line text blocks, remarks, declarations, methodology statements, and notes.
   2. **Rendered UI Blocks**: All rendered declaration items, Model Code of Conduct clauses, valuation certificate statements, and remarks display blocks must use `text-justify leading-relaxed` (e.g., via `renderedDeclarationPointCls`, `renderedParagraphCls`, `renderedBoxedContentCls`).
 - **Interactive Textareas**: Raw `<textarea>` input elements retain standard left-aligned typing to avoid caret jumping during text entry.
+
+### 10. Universal Enclosure Order Invariant (Documents → Maps → Photographs → Annexures)
+- **Absolute Universal Sequence Across ALL Builders**:
+  Every report builder (General Reports, all 60+ Bank Reports including Standalone SBI Flat and SBI Land & Building, IBBI, and Income Tax) MUST strictly follow this exact enclosure sequence:
+  $$\mathbf{Documents} \longrightarrow \mathbf{Maps} \longrightarrow \mathbf{Photographs} \longrightarrow \mathbf{Annexures}$$
+- **NO STANDALONE BANK EXCEPTIONS**: There are no standalone banks or custom template exceptions. All bank builders and renderers must follow this exact format for documents, maps, and photographs.
+- **Form UI & Navbar Order**:
+  1. Documents Section (`BaseDocumentsSection`) — attached title deeds, tax receipts, RTCs, etc.
+  2. Maps Section (`BaseMapsSection`) — Google Satellite Map, Mouza Map, Sketch Map, Cadastral Map.
+  3. Photographs Section (`BasePhotographsSection`) — site photos with 2-column layout and bucket picker.
+  4. Annexures Section (`BaseAnnexureSection`) — Excel/spreadsheet attachments.
+  Both the form `<Section>` sequence and `navSections` must match this order identically.
+- **PDF Renderer Execution Order**:
+  The PDF renderer enclosure drawing method (`drawEnclosures()`) must invoke attachment functions in the exact order:
+  1. `this.drawDocumentsAttachment()` / Documents
+  2. `this.drawMapsAttachment()` / Maps
+  3. `this.drawPhotographsAttachment()` / Photographs (starting on a fresh page with bold header banner)
+  4. `this.drawAnnexuresAttachment()` / Annexures (Excel data tables)
+
+### 11. Google Satellite Map Card Layout Invariant
+- **Strict Separation of Header and Map Embed**:
+  In `MapImageCategoryCard` and any custom Google Satellite Map card, `{headerExtra}` MUST NEVER be placed inside the flex header container row alongside the `+ Add` button.
+- **Card Structure Contract**:
+  1. **Header Row** (`<div className="px-3 py-2 flex items-center justify-between">`):
+     - Left: Category icon, category title (e.g. `1. Google Satellite Map`), and uploaded count badge.
+     - Right: `+ Add` upload button (`<input type="file" ... />`).
+  2. **Divider Line**: `border-b border-slate-100`.
+  3. **Full-Width Header Extra Container**:
+     - `{headerExtra && <div className="w-full border-b border-slate-100 bg-slate-50/50 p-2.5 space-y-2">{headerExtra}</div>}`
+     - Spans 100% full-width across the card.
+     - Houses live coordinates pill, origin address badge, manual coordinate overrides, and the interactive Google Satellite iframe embed (`w-full h-44 rounded-lg border`).
+  4. **Image Upload Grid**:
+     - Rendered beneath `{headerExtra}` with full drag-and-drop reordering, zoom preview, and deletion actions.
+
+### 12. Valuation Headings & Standard Field Naming
+- **Clean Valuation Titles**:
+  Valuation summary cards and PDF table headers must use standard clean titles:
+  - `VALUATION - APARTMENT/FLAT`
+  - `VALUATION - LAND`
+  - `VALUATION - BUILDING`
+  - Never append suffixes like `(After Depreciation)` or ad-hoc parenthetical notes.
+- **Apartment Valuation Basis**:
+  Apartment valuation cards must include a dedicated input field for `Recommended Rate and basis for recommendation` defaulting safely to `'NA'`.
+

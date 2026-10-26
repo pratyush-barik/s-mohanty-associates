@@ -54,71 +54,88 @@ SECTION 2: NEGATIVE CONTROLS (ANTI-PATTERNS & STRICT CONSTRAINTS — WHAT NOT TO
    - DO NOT alter bank-mandated PDF column widths or table geometry.
    - For Axis Bank: strictly maintain the statutory 3-column format (`Sl. No` [24pt] | `Label` [210pt] | `Value` [253pt], total printable width ~487-490pt).
 
-8. [NO_UNCHECKED_TYPESCRIPT]:
-   - DO NOT commit or deliver code without validating `npx tsc --noEmit`. Zero TypeScript errors is the mandatory baseline.
-
-================================================================================
-SECTION 3: POSITIVE CONTROLS (PRESCRIBED PATTERNS & ARCHITECTURAL RULES — WHAT TO DO)
-================================================================================
-
-[POSITIVE_PATTERNS]
-1. [SOFT_CONTAINERING_SYSTEM]:
-   Group form fields into thematic pastel containers with subtle 1px borders and uppercase tracking headers:
-   - Blue (`border-blue-200 bg-blue-50/50 text-blue-800`): Initiation, Loan details, Address, Coordinates, Approvals, Undertaking.
-   - Emerald (`border-emerald-200 bg-emerald-50/50 text-emerald-800`): Classification, Identification, Occupancy, Replacement Cost.
-   - Purple (`border-purple-200 bg-purple-50/50 text-purple-800`): Boundaries (Site vs Document verification matrix).
-   - Indigo (`border-indigo-200 bg-indigo-50/50 text-indigo-800`): Topography, Locality Class, Infrastructure, Multi-Tier Valuation, Statutory Checklist.
-   - Amber (`border-amber-200 bg-amber-50/50 text-amber-800`): Plot Demarcation, Adopted Rates, Benchmark Valuation.
-   - Cyan (`border-cyan-200 bg-cyan-50/50 text-cyan-800`): Dynamic BUA Floor tables with auto-summed footers.
-   - Lime (`border-lime-200 bg-lime-50/50 text-lime-800`): Land Rates & Calculation Matrices.
-   - Yellow (`border-yellow-200 bg-yellow-50/50 text-yellow-800`): Remarks, Market Opinions & Observations.
-
-2. [STANDARD_PAGE_LAYOUT]:
-   ```tsx
-   <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
-     <div className="flex-1 w-full space-y-6 min-w-0">
-       <ActiveConfigBanner bankName={...} templateName={...} onReset={...} />
-       <BankReportTitleCard bankName={...} subclass={...} title="Valuation Report Builder" earliestVisit={...} projectCode={...} />
-       {/* 1..N Soft Container Sections */}
-       <ReportActionBar
-         onSaveDraft={handleSaveDraft}
-         onSubmit={handleSubmit}
-         onPreviewPDF={handlePreviewPDF}
-         onDownloadPDF={handleDownloadPDF}
-         isSaving={isSaving}
-         lastSaved={lastSaved}
-       />
-     </div>
-     <FloatingNavigator sections={NAV_SECTIONS} activeSection={activeSection} />
-   </div>
-   ```
-
-3. [PDF_BANK_RENDERER_INHERITANCE]:
-   - All custom bank PDF renderers extend `PDFBankRenderer` located at `src/lib/banks/pdf-bank-renderer.ts`.
-   - Reuse base primitives: `drawCell()`, `cellHeight()`, `wrapText()`, `sanitizeText()`, `checkPageBreak()`, and `init()`.
-   - Implement dedicated Annexure engines: Geostamped Photographs Grid (2-column cards), Mouza & Location Maps stacked layout, and dedicated Sketch Map full-page view.
-
-4. [VALUATION_MATHEMATICS]:
-   - Plot Value = `Plot Area` * `Plot Rate`
-   - Total Cost of Construction = `Total Approved BUA` * `Rate per sqft`
-   - Total Cost As On Date = `Total Cost of Construction` * (`% Completed` / 100)
-   - Current Market Value (100%) = `Plot Value` + `Total Cost of Construction`
-   - Current Market Value (As On Date) = `Plot Value` + `Total Cost As On Date`
-   - Distressed Value = 0.80 * (isUnderConstruction ? `Current Market Value (As On Date)` : `Current Market Value (100%)`)
-   - Include manual override toggle for distressed value when required by valuer discretion.
-
-5. [ROUTING_AND_REGISTRATION]:
-   - Register all bank builders in `BuilderSelector.tsx` (`BANK_BUILDER_MAP`) using Next.js `dynamic()` lazy loading.
-   - Keep `GeneralReportBuilder.tsx` as fallback and maintain wizard routing in sync with `BANK_SUB_TEMPLATES`.
-
-================================================================================
-SECTION 4: CURRENT REPOSITORY STATE & RECENT WORK
-================================================================================
-
-[REPOSITORY_CONTEXT]
-- Workspace: `d:\Projects\s-mohanty-associates`
-- Git Branch: `main` (clean working tree, up to date with `origin/main`)
-- Latest Commit: `9beb07e fix(axis): refactor Axis AGRI and HL-LAP UI to standard layout, soft containers, and clean positioning`
+55:    - For Axis Bank: strictly maintain the statutory 3-column format (`Sl. No` [24pt] | `Label` [210pt] | `Value` [253pt], total printable width ~487-490pt).
+56: 
+57: 8. [NO_UNCHECKED_TYPESCRIPT]:
+58:    - DO NOT commit or deliver code without validating `npx tsc --noEmit`. Zero TypeScript errors is the mandatory baseline.
+59: 
+60: 9. [NO_REVERSED_ENCLOSURES]:
+61:    - DO NOT place Photographs before Maps or Documents.
+62:    - Across ALL report builders without exception, the order must strictly be: `Documents -> Maps -> Photographs -> Annexures`. There are no standalone banks or custom template exceptions.
+63: 
+64: 10. [NO_NESTED_HEADER_EXTRA]:
+65:    - DO NOT nest `{headerExtra}` inside the header flex container row alongside the `+ Add` button. It must span 100% full-width directly below the header divider (`border-b border-slate-100`).
+66: 
+67: ================================================================================
+68: SECTION 3: POSITIVE CONTROLS (PRESCRIBED PATTERNS & ARCHITECTURAL RULES — WHAT TO DO)
+69: ================================================================================
+70: 
+71: [POSITIVE_PATTERNS]
+72: 1. [SOFT_CONTAINERING_SYSTEM]:
+73:    Group form fields into thematic pastel containers with subtle 1px borders and uppercase tracking headers:
+74:    - Blue (`border-blue-200 bg-blue-50/50 text-blue-800`): Initiation, Loan details, Address, Coordinates, Approvals, Undertaking.
+75:    - Emerald (`border-emerald-200 bg-emerald-50/50 text-emerald-800`): Classification, Identification, Occupancy, Replacement Cost.
+76:    - Purple (`border-purple-200 bg-purple-50/50 text-purple-800`): Boundaries (Site vs Document verification matrix).
+77:    - Indigo (`border-indigo-200 bg-indigo-50/50 text-indigo-800`): Topography, Locality Class, Infrastructure, Multi-Tier Valuation, Statutory Checklist.
+78:    - Amber (`border-amber-200 bg-amber-50/50 text-amber-800`): Plot Demarcation, Adopted Rates, Benchmark Valuation.
+79:    - Cyan (`border-cyan-200 bg-cyan-50/50 text-cyan-800`): Dynamic BUA Floor tables with auto-summed footers.
+80:    - Lime (`border-lime-200 bg-lime-50/50 text-lime-800`): Land Rates & Calculation Matrices.
+81:    - Yellow (`border-yellow-200 bg-yellow-50/50 text-yellow-800`): Remarks, Market Opinions & Observations.
+82: 
+83: 2. [STANDARD_PAGE_LAYOUT]:
+84:    ```tsx
+85:    <div className="flex flex-col xl:flex-row gap-6 items-start animate-fade-in relative w-full bg-[#f8f9fa] min-h-screen p-4 sm:p-6 text-slate-900">
+86:      <div className="flex-1 w-full space-y-6 min-w-0">
+87:        <ActiveConfigBanner bankName={...} templateName={...} onReset={...} />
+88:        <BankReportTitleCard bankName={...} subclass={...} title="Valuation Report Builder" earliestVisit={...} projectCode={...} />
+89:        {/* 1..N Soft Container Sections */}
+90:        <ReportActionBar
+91:          onSaveDraft={handleSaveDraft}
+92:          onSubmit={handleSubmit}
+93:          onPreviewPDF={handlePreviewPDF}
+94:          onDownloadPDF={handleDownloadPDF}
+95:          isSaving={isSaving}
+96:          lastSaved={lastSaved}
+97:        />
+98:      </div>
+99:      <FloatingNavigator sections={NAV_SECTIONS} activeSection={activeSection} />
+100:    </div>
+101:    ```
+102: 
+103: 3. [PDF_BANK_RENDERER_INHERITANCE]:
+104:    - All custom bank PDF renderers extend `PDFBankRenderer` located at `src/lib/banks/pdf-bank-renderer.ts`.
+105:    - Reuse base primitives: `drawCell()`, `cellHeight()`, `wrapText()`, `sanitizeText()`, `checkPageBreak()`, and `init()`.
+106:    - Implement dedicated Annexure engines: Geostamped Photographs Grid (2-column cards), Mouza & Location Maps stacked layout, and dedicated Sketch Map full-page view.
+107: 
+108: 4. [VALUATION_MATHEMATICS]:
+109:    - Plot Value = `Plot Area` * `Plot Rate`
+110:    - Total Cost of Construction = `Total Approved BUA` * `Rate per sqft`
+111:    - Total Cost As On Date = `Total Cost of Construction` * (`% Completed` / 100)
+112:    - Current Market Value (100%) = `Plot Value` + `Total Cost of Construction`
+113:    - Current Market Value (As On Date) = `Plot Value` + `Total Cost As On Date`
+114:    - Distressed Value = 0.80 * (isUnderConstruction ? `Current Market Value (As On Date)` : `Current Market Value (100%)`)
+115:    - Include manual override toggle for distressed value when required by valuer discretion.
+116: 
+117: 5. [ROUTING_AND_REGISTRATION]:
+118:    - Register all bank builders in `BuilderSelector.tsx` (`BANK_BUILDER_MAP`) using Next.js `dynamic()` lazy loading.
+119:    - Keep `GeneralReportBuilder.tsx` as fallback and maintain wizard routing in sync with `BANK_SUB_TEMPLATES`.
+120: 
+121: 6. [UNIVERSAL_ENCLOSURE_ORDER]:
+122:    - Both Web UI forms (`navSections`) and PDF outputs (`drawEnclosures()`) strictly follow:
+123:      `Documents` (`BaseDocumentsSection`) -> `Maps` (`BaseMapsSection`) -> `Photographs` (`BasePhotographsSection`) -> `Annexures` (`BaseAnnexureSection`).
+124: 
+125: 7. [GOOGLE_SATELLITE_MAP_LAYOUT]:
+126:    - `{headerExtra}` spans 100% full-width directly beneath the header divider (`border-b border-slate-100`).
+127:    - Contains live coordinate pills, origin section badge, manual coordinate inputs, and interactive satellite iframe embed.
+128: 
+129: ================================================================================
+130: SECTION 4: CURRENT REPOSITORY STATE & RECENT WORK
+131: ================================================================================
+132: 
+133: [REPOSITORY_CONTEXT]
+134: - Workspace: `d:\Projects\s-mohanty-associates`
+135: - Git Branch: `main` (clean working tree, up to date with `origin/main`)
+136: - Latest Commit: `03d7c98f fix: standardize satellite map layout and enclosures across report builders`
 - Progress Tracker: `BANK_REPORT_PROGRESS.md`
 - Active Completed Banks:
   - Bank 1: Aditya Birla Capital (`MLAP`, `STSL`) — Complete

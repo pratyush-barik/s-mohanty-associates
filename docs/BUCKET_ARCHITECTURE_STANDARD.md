@@ -118,17 +118,21 @@ The Maps & Spatial Drawings section MUST adhere to the following boundaries:
 
 ## 6. Implementation Across Report Builders
 
-| Builder File | Property Photos (Dual Modality) | Maps & Sketches (Device Only) | Statutory Docs (Device Only) | Annexures (Device Only) |
+> **Universal Enclosure Order Invariant**: Across all builders (General, Bank, and Specialized), the enclosure sequence strictly follows:
+> $$\mathbf{Documents} \longrightarrow \mathbf{Maps} \longrightarrow \mathbf{Photographs} \longrightarrow \mathbf{Annexures}$$
+> There are no standalone banks or exceptions; all templates adhere to this unified sequence in both form UI and PDF outputs.
+
+| Builder File | Documents (Device Only) | Maps & Sketches (Device Only) | Property Photos (Dual Modality) | Annexures (Device Only) |
 |---|:---:|:---:|:---:|:---:|
-| `GeneralReportBuilder.tsx` | Sec 12 (`BasePhotographsSection`) | Sec 13 & 14 | N/A | Sec 16 (`BaseAnnexureSection`) |
-| `IncomeTaxReportBuilder.tsx` | Sec 12 (`BasePhotographsSection`) | Sec 13 & 14 | Sec 15 (Benchmark/CII/BDA) | Sec 5 (`BaseAnnexureSection`) |
-| `IBBIReportBuilder.tsx` | Sec 14 (`BasePhotographsSection`) | Sec 1 & 14 | Sec 15 (Assumptions) | Annexure I & II |
-| `BankReportBuilder.tsx` | Sec 11 (`BasePhotographsSection`) | Sec 12 (`BaseMapsSection`) | Custom bank fields | Sec 13 (`BaseAnnexureSection`) |
-| `ArthanFinance.tsx` | Sec 12 (`BasePhotographsSection`) | Sec 13 (`BaseMapsSection`) | Locked Sec 11 | N/A |
-| `AnnapurnaMicroFinance.tsx` | Sec 9 (`BasePhotographsSection`) | Sec 10 (`BaseMapsSection`) | N/A | N/A |
-| `AdityaBirlaCapitalMLAP.tsx` | Photographs Section | Maps Section | N/A | N/A |
-| `AdityaBirlaCapitalSTSL.tsx` | Photographs Section | Maps Section | N/A | N/A |
-| `AxisAGRI.tsx` | Sec 13 (`BasePhotographsSection`) | Sec 12 (Diagram & Cadastral) | N/A | N/A |
+| `GeneralReportBuilder.tsx` | Sec 12 (`documentsAttachment`) | Sec 13 (`BaseMapsSection`) | Sec 14 (`BasePhotographsSection`) | Sec 15 (`BaseAnnexureSection`) |
+| `IncomeTaxReportBuilder.tsx` | Sec 15 (Benchmark/CII/BDA) | Sec 13 & 14 | Sec 12 (`BasePhotographsSection`) | Sec 5 (`BaseAnnexureSection`) |
+| `IBBIReportBuilder.tsx` | Sec 15 (Assumptions) | Sec 1 & 14 | Sec 14 (`BasePhotographsSection`) | Annexure I & II |
+| `BankReportBuilder.tsx` | Sec 10 (`BaseDocumentsSection`) | Sec 11 (`BaseMapsSection`) | Sec 12 (`BasePhotographsSection`) | Sec 13 (`BaseAnnexureSection`) |
+| `ArthanFinance.tsx` | Locked Sec 11 | Sec 13 (`BaseMapsSection`) | Sec 12 (`BasePhotographsSection`) | N/A |
+| `AnnapurnaMicroFinance.tsx` | Embedded in Sections | Sec 10 (`BaseMapsSection`) | Sec 9 (`BasePhotographsSection`) | N/A |
+| `AdityaBirlaCapitalMLAP.tsx` | Documents Section | Maps Section | Photographs Section | N/A |
+| `AdityaBirlaCapitalSTSL.tsx` | Documents Section | Maps Section | Photographs Section | N/A |
+| `AxisAGRI.tsx` | Documents Section | Sec 12 (Diagram & Cadastral) | Sec 13 (`BasePhotographsSection`) | N/A |
 
 ---
 

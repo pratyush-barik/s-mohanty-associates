@@ -20,6 +20,24 @@ For comprehensive developer directives, schema details, and architecture specifi
 
 ---
 
+## 🏛️ Core Architecture & System Invariants
+
+1. **Universal Enclosure Order Invariant**:
+   - Across ALL report builders (General, all 60+ Banks including Standalone SBI Flat and SBI Land & Building, IBBI, and Income Tax), both Web UI sections and PDF renderer outputs strictly follow:
+     $$\mathbf{Documents} \longrightarrow \mathbf{Maps} \longrightarrow \mathbf{Photographs} \longrightarrow \mathbf{Annexures}$$
+   - *No exceptions or standalone formats*: All templates adhere to this unified sequence.
+2. **Lazy-Loaded Dynamic Routing**:
+   - All report builders are loaded on demand via `dynamic()` imports in `BuilderSelector.tsx` to maintain bundle size within Vercel free tier limits (~18 KB main client chunk).
+3. **Single Source of Truth Styling**:
+   - Universal base UI components (`BaseBankReportComponents.tsx`) and fields (`bank-fields.ts`) govern all bank templates.
+   - Mandatory justified text alignment (`text-justify leading-relaxed` and PDF `align: 'justify'`) on all rendered clauses, certificates, and multi-line remarks.
+4. **Google Satellite Map Card Layout**:
+   - Full-width interactive satellite embed with GPS coordinates, origin address badges, and manual coordinate override directly below the category header divider.
+5. **Zero Mock Client Data**:
+   - Case-specific customer data (names, loan numbers, boundaries, dates) strictly defaults to dynamic prefill or empty strings.
+
+---
+
 ## Getting Started
 
 First, run the development server:

@@ -117,8 +117,25 @@ All bank report builders in `src/app/portal/reports/[projectId]/banks/` and thei
 - Single source of truth: import all inputs, selects, textareas, and section wrappers directly from `BaseBankReportComponents.tsx`. Do not redeclare local classes.
 - Mandatory justified alignment (`text-justify leading-relaxed` and `align: 'justify'`) on all rendered continuous text entities, clauses, certificates, and PDF multi-line blocks. Raw textareas retain standard left-alignment.
 
-### 10. Git Commit Conventions (Per `.agents/rules/commit_convention.md`)
+### 10. Universal Enclosure Order Invariant (Documents → Maps → Photographs → Annexures)
+- **Universal Across All Builders**: Every report builder (General, all 60+ Banks including Standalone SBI Flat and SBI Land & Building, IBBI, Income Tax) MUST strictly follow this exact enclosure order in both Web UI and PDF:
+  $$\mathbf{Documents} \longrightarrow \mathbf{Maps} \longrightarrow \mathbf{Photographs} \longrightarrow \mathbf{Annexures}$$
+- **NO STANDALONE BANK EXCEPTIONS**: There are no standalone banks or custom template exceptions. All banks follow this exact format for docs, maps, and photos.
+- **Form UI Order**: Form `<Section>` and `FloatingNavigator` `navSections` must place Documents before Maps, Maps before Photographs, and Photographs before Annexures.
+- **PDF Execution Order**: `drawEnclosures()` must execute `drawDocumentsAttachment()` first, then `drawMapsAttachment()`, then `drawPhotographsAttachment()` (fresh page with bold uppercase title banner), followed by Annexures.
+
+### 11. Google Satellite Map Card Layout Invariant
+- In `MapImageCategoryCard` and any satellite map card, `{headerExtra}` MUST NEVER be nested inside the header flex container row alongside the `+ Add` button.
+- Header row contains only the category title/icon on the left and the `+ Add` button on the right.
+- `{headerExtra}` must render 100% full-width directly below the header divider (`border-b border-slate-100`).
+
+### 12. Valuation Headings & Standard Field Naming
+- Bank report valuation headings must use standard clean titles: `VALUATION - APARTMENT/FLAT`, `VALUATION - LAND`, `VALUATION - BUILDING`. Never append suffixes like `(After Depreciation)`.
+- Apartment valuation cards must include a field for `Recommended Rate and basis for recommendation` with `'NA'` fallback.
+
+### 13. Git Commit Conventions (Per `.agents/rules/commit_convention.md`)
 - PDF Renderer Changes: `feat (<bank_name>-pdf): <message>`
 - Web UI (Report Draft) Changes: `feat (<bank_name>-report): <message>`
+
 
 

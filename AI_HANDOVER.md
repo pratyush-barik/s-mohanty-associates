@@ -134,12 +134,16 @@ The core business logic is **100% complete**.
    - **Section 7 – Floor-wise Area & Building Valuation:** Dynamic table with Floor name, Area, Rate, Estimated Value, Life, Age, Depreciation %, Net Value. Auto-calculates total building value.
    - **Section 8 – Valuation of Land:** Govt Land Rate, Recommended Rate Basis, Land Area, Rate, Govt Rate, BUA as per Approvals, Total Land Value.
    - **Section 9 – Abstract of Valuation:** Total Building + Land values, Realizable Value (% configurable), Distress Sale Value (% configurable), Marketability, Valuation Result, Replacement Cost, Deviations, Govt/Guideline Value.
-   - **Section 10 – Remarks & Declaration:** Demarcation, Possession, Remarks/Observations, Representative Name.
+   - **Section 10 – Remarks & Declaration:** Demarcation, Possession, Remarks/Observations, Representative Name. (In General Reports: remarks header rendered with clean plain heading without background color, body text justified and non-bold).
    - **Section 11 – Valuation Certificate (Auto-generated):** Auto-fills from Section 1 & 9 data.
-   - **Section 12 – Property Photographs:** Multi-image upload to Supabase temp storage.
-   - **Section 13 – Sketch Map:** Upload sketch map image.
-   - **Section 14 – Location Map:** Live embedded Google Maps iframe (auto-reads from property address in Section 1 or lat/long coordinates). Manual screenshot upload for PDF inclusion (iframes cannot be captured by html2canvas).
-   - **Section 15 – Annexure (August 2026):** Allows uploading Excel/CSV files containing complex tabular data (e.g., multiple addresses). Toggled via a switch in Section 1 next to the Address field. When enabled, address fields are hidden, the PDF/HTML preview replaces the address text with a reference to the Annexure (e.g. "Details are provided in Annexure A"), and the parsed Excel data is dynamically rendered as a data table at the very end of the report document. Uses `xlsx` library for client-side parsing.    **Key Design Decisions in ReportBuilder:**
+   - **Section 12 – Documents Attachment:** Multi-document image upload with custom titles/headings.
+   - **Section 13 – Maps:** Google Satellite Map (full-width live preview with GPS coordinates and screenshot upload for PDF), Mouza Map, Sketch Map, Cadastral Map, and BDA/Authority Map.
+   - **Section 14 – Property Photographs:** Multi-image upload to Supabase storage, rendered as 2-column photo grid with dynamic labels.
+   - **Section 15 – Annexure (Excel/Spreadsheet):** Allows uploading Excel/CSV files containing complex tabular data (e.g., multiple addresses or plot-by-plot breakdowns). When enabled, the report references the Annexure (e.g. "Details are provided in Annexure A"), and the parsed Excel data is dynamically rendered as a data table at the end of the report document. Uses `xlsx` library for client-side parsing.
+   - **Universal Enclosures Sequence Invariant**: Across **ALL** report builders (General Reports, all 60+ Bank Reports including Standalone SBI Land & Building and SBI Flat, and IBBI/IT where applicable), both the Web UI and PDF outputs MUST strictly follow the sequence:
+     $$\mathbf{Documents} \longrightarrow \mathbf{Maps} \longrightarrow \mathbf{Photographs} \longrightarrow \mathbf{Annexures}$$
+     There are no exceptions or standalone bank formats; all banks follow this exact format.
+   **Key Design Decisions in ReportBuilder:**
    - **Form UI:** All option-type fields use compact `<select>` dropdowns and `<input>` fields — NOT bulky 3-column boxes. Fast and space-efficient for data entry.
    - **PDF Output:** Uses a 3-column table pattern (Column 1: Label in blue | Column 2: All options listed | Column 3: Selected value in bold) to match the sample bank valuation report format.
    - **PDF Layout & Alignment:** To counter rendering bugs in `html2canvas` (which ignores CSS `vertical-align` and flexbox on table cells), the code uses a **JavaScript post-processing technique**. Before capture, it measures the rendered row height vs content height of cells marked with `data-vcenter="1"` and dynamically injects precise pixel padding to force vertical centering. The PDF pages are also balanced (e.g. Section 3 moved to Page 3) and page-level flex wrappers were removed to completely eliminate overflow and large gaps.
@@ -482,10 +486,22 @@ Outstanding items in **priority order**:
 - `b54d48c` — fix: place 'use client' at the very top of AdityaBirlaHousingHLLAP.tsx to satisfy Turbopack compiler
 - `maps-coord-override` — feat(maps): default location map to technical address, override with coordinates across all report builders, mention reference source under preview, and provide direct coordinate entry when absent in form
 - `annapurna-pdf-polish` — fix(annapurna): complete Annapurna Micro Finance PDF renderer with aligned vertical borders across Risk of Demolition/Status/Age, 2-line symmetrical 100% headers, integrated declaration and date/place sign-off without orphaned pages, dynamic map flow below photos, and guaranteed title & image grouping in map gallery
+- `8d437dbc` — Standardize report builder cell colors, PDF typography, and map generation
+- `03d7c98f` — fix: standardize satellite map layout and enclosures across report builders
+  - Universal Enclosure Order: Both Web UI and PDF outputs strictly follow `Documents -> Maps -> Photographs -> Annexures` across General Reports, all 60+ Bank Reports (including SBI Flat and SBI Land & Building), IBBI, and Income Tax.
+  - Google Satellite Map Card Layout: `{headerExtra}` extracted out of the header flex container row to render 100% full-width directly below the header divider line (`border-b border-slate-100`).
+  - Standardized bank valuation titles: `VALUATION - APARTMENT/FLAT`, `VALUATION - LAND`, `VALUATION - BUILDING` (removed deprecated `(After Depreciation)` suffix) and added `Recommended Rate and basis for recommendation` input in apartment valuation with `NA` fallback.
+  - Standardized Remarks section in General Reports: plain heading without background color fill, with body text rendered underneath in non-bold justified format.
+  - Enhanced PDF `wrapText` utility to force line breaks on long words exceeding cell `maxWidth` to prevent horizontal text clipping.
 
 ## Current Status
 
 ### Completed
+- **Universal Enclosures Sequence Standard** — All report builders (General, all 60+ Bank Reports including Standalone SBI Flat and SBI Land & Building, IBBI, Income Tax) strictly follow `Documents -> Maps -> Photographs -> Annexures` across both form UI and PDF outputs. Aligned Standalone SBI Flat and SBI Land & Building PDF renderers.
+- **Google Satellite Map Card Layout Standardization** — `{headerExtra}` rendered 100% full-width beneath the header divider across all report builders (`GeneralReportBuilder.tsx`, `BaseBankReportComponents.tsx`, and standalone builders).
+- **Bank Valuation Titles & Apartment Basis Standard** — Standardized valuation headings across builders (`VALUATION - APARTMENT/FLAT`, `VALUATION - LAND`, `VALUATION - BUILDING`) and added apartment recommended rate basis input with `'NA'` fallback.
+- **General Reports Remarks Formatting** — Clean heading without background color fill; body text rendered underneath in non-bold justified format.
+- **Text Wrap Overflow Protection** — PDF `wrapText` utility forces character breaks on words exceeding cell `maxWidth` to eliminate horizontal clipping.
 - **IBBI Report Draft** — UI is fully completed with all sections, fields, and dynamic content.
 - **Aditya Birla Capital Ltd (STSL / MLAP)** — Bank report builder fully completed with custom PDF renderer, standardized map uploads/reordering, unified bucket modals, and runtime loader stability.
 - **Aditya Birla Housing Finance Ltd (HL-LAP)** — Config-driven bank report builder populated with 130+ fields across 11 sections. Now supported by dedicated `PDFAdityaBirlaHousingRenderer` for layout fidelity.
@@ -501,4 +517,31 @@ Outstanding items in **priority order**:
 - **Remaining Bank Report Builders** — 54 other bank stubs need to be populated with their specific fields once samples are provided.
 
 ### Technical Gotchas & Formatting Rules
-- **PDF Sub-table Merging**: When asked to merge/combine sub-tables vertically (e.g. rendering flush against each other with no gaps), remember that `PDFBankRenderer.drawTable` takes a `headers` array. If multiple tables are drawn consecutively with `[]` (empty headers), they will seamlessly connect without top padding because of the `if (headers.length > 0)` check added in `src/lib/pdf-bank-renderer.ts`. Always call `drawTable([], ...)` to append rows to a preceding table seamlessly without header gaps.
+
+#### 1. Universal Enclosure Order Invariant (Documents → Maps → Photographs → Annexures)
+- Across **ALL** report builders (General Reports, all 60+ Bank Reports including Standalone SBI Flat and SBI Land & Building, IBBI, and Income Tax), both Web UI sections and PDF renderer outputs MUST strictly follow:
+  $$\mathbf{Documents} \longrightarrow \mathbf{Maps} \longrightarrow \mathbf{Photographs} \longrightarrow \mathbf{Annexures}$$
+  *Invariant Rule*: **There are no standalone banks or exceptions; all banks and builders must follow this exact format for docs, maps, and photos.**
+- **Web UI Order**: Form `<Section>` and `navSections` must place Documents before Maps, Maps before Photographs, and Photographs before Annexures.
+- **PDF Renderer Order**: `drawEnclosures()` must execute `drawDocumentsAttachment()` first, then `drawMapsAttachment()`, then `drawPhotographsAttachment()` (which begins on a fresh page with a bold uppercase section header), followed by Annexures.
+
+#### 2. Google Satellite Map Card Layout Invariant
+- In `MapImageCategoryCard` and any satellite map card, `{headerExtra}` (which renders the live coordinate pill, origin address badge, manual coordinate inputs, and interactive map embed) MUST NEVER be placed inside the flex header container row alongside the `+ Add` button.
+- Header row `<div className="px-3 py-2 flex items-center justify-between">` must only contain:
+  - Left: Icon, Category title, and count pill
+  - Right: `+ Add` upload button
+- `{headerExtra}` must render directly below the header divider (`border-b border-slate-100`) as a full-width container (`w-full border-b border-slate-100 bg-slate-50/50 p-2.5`).
+
+#### 3. General Reports Remarks Formatting
+- In `pdf-general-renderer.ts`, the Remarks section is drawn with a clean section title only (no colored background box or fill).
+- The remarks body text is drawn directly underneath with justified text alignment, normal line height, and regular (non-bold) weight (`bold: false`).
+
+#### 4. Bank Valuation Headings & Apartment Recommendation Basis
+- Bank report valuation headings must use standard clean titles: `VALUATION - APARTMENT/FLAT`, `VALUATION - LAND`, `VALUATION - BUILDING`. Do NOT append `(After Depreciation)` or custom suffixes.
+- Apartment valuation cards must include a dedicated field for `Recommended Rate and basis for recommendation` with fallback `'NA'`.
+
+#### 5. Text Wrap Overflow Protection
+- The PDF rendering utility `wrapText` includes forced character breaks for any continuous word or symbol string that exceeds `maxWidth`, preventing horizontal text clipping or overflow outside table borders.
+
+#### 6. PDF Sub-table Merging
+- When asked to merge/combine sub-tables vertically (e.g. rendering flush against each other with no gaps), remember that `PDFBankRenderer.drawTable` takes a `headers` array. If multiple tables are drawn consecutively with `[]` (empty headers), they will seamlessly connect without top padding because of the `if (headers.length > 0)` check added in `src/lib/pdf-bank-renderer.ts`. Always call `drawTable([], ...)` to append rows to a preceding table seamlessly without header gaps.
