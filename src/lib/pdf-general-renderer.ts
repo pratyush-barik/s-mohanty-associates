@@ -1039,6 +1039,12 @@ export class PDFGeneralRenderer {
    * Draw the 8-column or 9-column floor valuation table.
    * Advances cursor.
    */
+  /**
+   * Draw the Floor Valuation Table (8 or 9 columns).
+   * Headers are rendered with LBL_BG fill at 50% opacity, centered with text wrapping.
+   * Data rows dynamically compute row height based on wrapped lines to prevent overflow.
+   * Advances cursor.
+   */
   drawFloorTable(
     headers: string[],
     rows: { name: string; basis?: string; area: string; rate: string; estimated: string; life: string; age: string; dep: string; netValue: string }[],
@@ -1047,17 +1053,19 @@ export class PDFGeneralRenderer {
   ): void {
     const is9Col = headers.length === 9;
     const numCols = is9Col ? 9 : 8;
+    const tableFontSize = FONT_SIZE_TABLE_COMPACT;
+
     const colWidths = is9Col
       ? [
-          Math.round(CONTENT_W * 0.11), // Floor
-          Math.round(CONTENT_W * 0.14), // Basis of Valuation
-          Math.round(CONTENT_W * 0.10), // Area
-          Math.round(CONTENT_W * 0.14), // Rate
+          Math.round(CONTENT_W * 0.10), // Floor
+          Math.round(CONTENT_W * 0.16), // Basis of Valuation
+          Math.round(CONTENT_W * 0.11), // Area
+          Math.round(CONTENT_W * 0.13), // Rate
           Math.round(CONTENT_W * 0.14), // Estimated
           Math.round(CONTENT_W * 0.07), // Life
           Math.round(CONTENT_W * 0.07), // Age
           Math.round(CONTENT_W * 0.08), // Dep%
-          0, // Net Value (remainder)
+          0,                            // Net Value (remainder)
         ]
       : [
           Math.round(CONTENT_W * 0.12), // Floor
@@ -1067,41 +1075,28 @@ export class PDFGeneralRenderer {
           Math.round(CONTENT_W * 0.08), // Life
           Math.round(CONTENT_W * 0.08), // Age
           Math.round(CONTENT_W * 0.09), // Dep%
-          0, // Net Value (remainder)
+          0,                            // Net Value (remainder)
         ];
     colWidths[numCols - 1] = CONTENT_W - colWidths.slice(0, numCols - 1).reduce((a, b) => a + b, 0);
 
-    const rowH = FONT_SIZE_SMALL * LINE_HEIGHT + CELL_PAD_Y * 2;
-    const headerRowH = FONT_SIZE_SMALL * LINE_HEIGHT * 2 + CELL_PAD_Y * 2;
-    const totalH = headerRowH + rowH * (rows.length + 1); // header + data rows + total row
+    // Calculate header height using text wrapping to prevent word clipping
+    const headerLines = headers.map((h, c) => this.wrapText(h || '', colWidths[c] - CELL_PAD_X * 2, tableFontSize, true));
+    const maxHdrLines = Math.max(2, ...headerLines.map(l => l.length));
+    const headerRowH = maxHdrLines * tableFontSize * LINE_HEIGHT + CELL_PAD_Y * 2 + 2;
 
-    this.checkPageBreak(totalH);
+    this.checkPageBreak(headerRowH + 50);
 
-    // Header row (LBL_BG bg @ 50% opacity, black text)
+    // Header row (LBL_BG bg @ 50% opacity, black text, wrapped in cells)
     let cx = MARGIN_L;
     for (let c = 0; c < numCols; c++) {
-      this.drawRect(cx, this.cursorY, colWidths[c], headerRowH, LBL_BG, '#000000', BORDER_W, BG_OPACITY);
-
-      const headerText = headers[c];
-      const match = headerText.match(/^(.*?)\s+(\(.*\))$/);
-      
-      if (match) {
-        const topText = match[1];
-        const bottomText = match[2];
-        const topY = this.cursorY + CELL_PAD_Y + 1;
-        this.drawTextAt(topText, cx + CELL_PAD_X, topY, {
-          bold: true, fontSize: FONT_SIZE_SMALL, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
-        });
-        this.drawTextAt(bottomText, cx + CELL_PAD_X, topY + FONT_SIZE_SMALL * LINE_HEIGHT, {
-          bold: true, fontSize: FONT_SIZE_SMALL - 1.5, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
-        });
-      } else {
-        const textH = FONT_SIZE_SMALL * LINE_HEIGHT;
-        const topY = this.cursorY + (headerRowH - textH) / 2;
-        this.drawTextAt(headerText, cx + CELL_PAD_X, topY, {
-          bold: true, fontSize: FONT_SIZE_SMALL, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
-        });
-      }
+      this.drawCell(cx, this.cursorY, colWidths[c], headerRowH, headers[c], {
+        bold: true,
+        fontSize: tableFontSize,
+        align: 'center',
+        vAlign: 'middle',
+        fillColor: LBL_BG,
+        bgOpacity: BG_OPACITY,
+      });
       cx += colWidths[c];
     }
     this.cursorY += headerRowH;
@@ -1116,10 +1111,20 @@ export class PDFGeneralRenderer {
       const vals = is9Col
         ? [row.name, row.basis || 'Built-up Area', row.area, row.rate, row.estimated, row.life, row.age, row.dep, row.netValue]
         : [row.name, row.area, row.rate, row.estimated, row.life, row.age, row.dep, row.netValue];
+
+      // Calculate dynamic row height to allow multi-line wrapped text
+      const cellLines = vals.map((v, c) => this.wrapText(v || '', colWidths[c] - CELL_PAD_X * 2, tableFontSize));
+      const maxLines = Math.max(1, ...cellLines.map(l => l.length));
+      const rowH = maxLines * tableFontSize * LINE_HEIGHT + CELL_PAD_Y * 2 + 2;
+
+      this.checkPageBreak(rowH);
+
       cx = MARGIN_L;
       for (let c = 0; c < numCols; c++) {
         this.drawCell(cx, this.cursorY, colWidths[c], rowH, vals[c], {
-          fontSize: FONT_SIZE_SMALL, align: aligns[c],
+          fontSize: tableFontSize,
+          align: aligns[c],
+          vAlign: 'middle',
         });
         cx += colWidths[c];
       }
@@ -1127,14 +1132,16 @@ export class PDFGeneralRenderer {
     }
 
     // Total row
+    const totalRowH = tableFontSize * LINE_HEIGHT + CELL_PAD_Y * 2 + 2;
+    this.checkPageBreak(totalRowH);
     const totalLabelW = colWidths.slice(0, numCols - 1).reduce((a, b) => a + b, 0);
-    this.drawCell(MARGIN_L, this.cursorY, totalLabelW, rowH, totalLabel, {
-      bold: true, fontSize: FONT_SIZE_SMALL, fillColor: LBL_BG, bgOpacity: 0.5,
+    this.drawCell(MARGIN_L, this.cursorY, totalLabelW, totalRowH, totalLabel, {
+      bold: true, fontSize: tableFontSize, fillColor: LBL_BG, bgOpacity: 0.5, vAlign: 'middle',
     });
-    this.drawCell(MARGIN_L + totalLabelW, this.cursorY, colWidths[numCols - 1], rowH, totalValue, {
-      bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'right',
+    this.drawCell(MARGIN_L + totalLabelW, this.cursorY, colWidths[numCols - 1], totalRowH, totalValue, {
+      bold: true, fontSize: tableFontSize, fillColor: LBL_BG, bgOpacity: 0.5, align: 'right', vAlign: 'middle',
     });
-    this.cursorY += rowH;
+    this.cursorY += totalRowH;
   }
 
   // ─── High-Level Content Methods ────────────────────────────────

@@ -1447,7 +1447,8 @@ export default function BankReportBuilder({
 
       // ── Land Valuation ──
       if (!isApartmentFlat && !isSectionHidden('section-7b')) {
-        r.drawSectionHeader('VALUATION \u2014 Land');
+        r.drawCenteredTitle('VALUATION - LAND');
+        r.advanceCursor(4);
         r.drawSimpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`);
         r.drawSimpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`);
         r.drawSimpleRow('Recommended Rate & Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`);
@@ -1460,7 +1461,7 @@ export default function BankReportBuilder({
 
       // ── Building / Apartment Valuation Table ──
       if (!isSectionHidden('section-7')) {
-        r.drawCenteredTitle(isApartmentFlat ? 'VALUATION OF APARTMENT/FLAT (After Depreciation)' : 'VALUATION OF BUILDING (After Depreciation)');
+        r.drawCenteredTitle(isApartmentFlat ? 'VALUATION - APARTMENT/FLAT' : 'VALUATION - BUILDING');
         r.advanceCursor(4);
         const unit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
         r.drawFloorTable(

@@ -438,6 +438,7 @@ interface ReportFields {
   govtLandRate: string;
   recommendedRateBasis: string;
   buaAsPerApprovals: string;
+  aptRecommendedRateAndBasis?: string;
 
   // Valuation extras
   marketability: string;
@@ -463,7 +464,7 @@ interface ReportFields {
   possession: string;
   remarks: string;
   representativeName: string;
-  representativeFatherName: string;
+  representativeFatherName?: string;
 
   // Photos & Maps & Documents
   propertyImages: string[];
@@ -625,6 +626,7 @@ const DEFAULT_FIELDS: ReportFields = {
   valuationResult: 'Positive',
   replacementCost: '',
   deviations: '',
+  aptRecommendedRateAndBasis: 'NA',
 
   realizablePct: '90',
   distressPct: '80',
@@ -1567,23 +1569,22 @@ function MapImageCategoryCard({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {headerExtra}
-          {!isReadOnly && onUpload && (
-            <label className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-accent-500 text-accent-500 text-xs font-bold cursor-pointer hover:bg-amber-50 transition-all shadow-2xs">
-              {uploading ? '⏳ Uploading...' : `+ Add ${btnLabel}`}
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                className="hidden"
-                onChange={onUpload}
-                disabled={uploading}
-              />
-            </label>
-          )}
-        </div>
+        {!isReadOnly && onUpload && (
+          <label className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl border border-accent-500 text-accent-500 text-xs font-bold cursor-pointer hover:bg-amber-50 transition-all shadow-2xs">
+            {uploading ? '⏳ Uploading...' : `+ Add ${btnLabel}`}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={onUpload}
+              disabled={uploading}
+            />
+          </label>
+        )}
       </div>
+
+      {headerExtra}
 
       {images.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -2061,9 +2062,9 @@ const FloatingNavigator = ({ isApartmentFlat, annexureEnabled }: { isApartmentFl
     { id: 'section-remarks', title: 'Remarks' },
     { id: 'section-declaration', title: 'Declaration' },
     { id: 'section-certificate', title: 'Valuation Certificate' },
-    { id: 'section-photographs', title: 'Property Photographs' },
     { id: 'sec-documents', title: 'Documents' },
     { id: 'section-maps', title: 'Maps' },
+    { id: 'section-photographs', title: 'Property Photographs' },
     { id: 'section-annexures', title: 'Annexures' },
   ];
 
@@ -2220,6 +2221,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     representativeName: initialFields?.representativeName || firstFieldAgentVisit.engineerName || DEFAULT_FIELDS.representativeName || '',
     representativeFatherName: initialFields?.representativeFatherName || DEFAULT_FIELDS.representativeFatherName || '',
     valuationLayout: finalValuationLayout,
+    aptRecommendedRateAndBasis: initialFields?.aptRecommendedRateAndBasis !== undefined ? initialFields.aptRecommendedRateAndBasis : 'NA',
   };
   if (!Array.isArray(merged.floors) || merged.floors.length === 0) {
     merged.floors = DEFAULT_FIELDS.floors;
@@ -3216,7 +3218,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.advanceCursor(8);
 
       // ── 1. Flat & Apartment Valuation Table (Always rendered first in PDF) ──
-      r.drawCenteredTitle('VALUATION OF APARTMENT/FLAT (After Depreciation)');
+      r.drawCenteredTitle('VALUATION - APARTMENT/FLAT');
       r.advanceCursor(4);
       const aptUnit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
       const aptHeaders = ['Floor', 'Basis of Valuation', `Area (${aptUnit})`, `Rate (Rs./${aptUnit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'];
@@ -3258,10 +3260,12 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           'NA',
         );
       }
+      r.drawSimpleRow('Recommended Rate and basis for recommendation', isApartmentFlat ? (fields.aptRecommendedRateAndBasis || 'NA') : 'NA');
       r.advanceCursor(8);
 
       // ── 2. Land Valuation (Rendered second in PDF) ──
-      r.drawSectionHeader('VALUATION \u2014 Land');
+      r.drawCenteredTitle('VALUATION - LAND');
+      r.advanceCursor(4);
       if (!isApartmentFlat) {
         // Active mode: render actual land values
         r.drawSimpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`);
@@ -3282,7 +3286,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.advanceCursor(8);
 
       // ── 3. Building Valuation Table ──
-      r.drawCenteredTitle('VALUATION OF BUILDING (After Depreciation)');
+      r.drawCenteredTitle('VALUATION - BUILDING');
       r.advanceCursor(4);
       const bldgUnit = fields.floorAreaUnit || fields.landAreaUnit || 'Sqft';
       const bldgHeaders = ['Floor', `Area (${bldgUnit})`, `Rate (Rs./${bldgUnit})`, 'Estimated (Rs.)', 'Life (Yr)', 'Age (Yr)', 'Dep%', 'Net Value (Rs.)'];
@@ -3358,11 +3362,31 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       }
       r.advanceCursor(8);
 
-      // ── Remarks ──
-      r.drawSectionHeader('REMARKS, DEMARCATION & POSSESSION');
+      // ── Demarcation & Possession ──
+      r.drawSectionHeader('DEMARCATION & POSSESSION');
       r.drawSimpleRow('Demarcation', fields.demarcation);
       r.drawSimpleRow('Possession', fields.possession);
-      r.drawSimpleRow('Remarks / Observations', fields.remarks);
+      r.advanceCursor(8);
+
+      // ── Remarks ──
+      const remarksText = (fields.remarks || '').trim();
+      r.checkPageBreak(50);
+      r.drawTextBlock('Remarks if any:-', { bold: true });
+      r.advanceCursor(4);
+      if (remarksText) {
+        for (const line of remarksText.split('\n')) {
+          const trimmed = line.trim();
+          if (!trimmed) {
+            r.advanceCursor(4);
+            continue;
+          }
+          r.checkPageBreak(25);
+          r.drawTextBlock(trimmed, { bold: false, align: 'justify' });
+          r.advanceCursor(3);
+        }
+      } else {
+        r.drawTextBlock('Nil', { bold: false });
+      }
       r.advanceCursor(8);
 
       // ── Declaration ──
@@ -3371,7 +3395,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.advanceCursor(2);
       r.drawTextBlock('I hereby declare that:');
       r.advanceCursor(2);
-      r.drawTextBlock(`\u2022 I have deputed my representative ${effectiveRepName ? 'Mr. ' + effectiveRepName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''} to inspect the property on ${fmtDate(fields.dateOfInspection)}.`);
+      r.drawTextBlock(`\u2022 I have deputed my representative ${effectiveRepName ? 'Mr. ' + effectiveRepName : '______'} to inspect the property on ${fmtDate(fields.dateOfInspection)}.`);
       r.drawTextBlock('\u2022 I have no direct or indirect interest in the property valued.');
       r.drawTextBlock('\u2022 The information furnished is true and correct to the best of my knowledge and belief.');
       r.advanceCursor(10);
@@ -3405,26 +3429,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         { text: 'Registered Valuer \u2014 IBBI/RV/02/2019/10594', italic: true },
         { text: 'S Mohanty Associates, Bhubaneswar', italic: true },
       ]);
-
-      // ── Property Photographs ──
-      if (propImageBytes.length > 0) {
-        r.newPage();
-        r.drawCenteredTitle('PROPERTY PHOTOGRAPHS');
-        r.advanceCursor(8);
-
-        for (let i = 0; i < propImageBytes.length; i += 2) {
-          const caption1 = fields.propertyImageNames?.[i] !== undefined
-            ? fields.propertyImageNames[i]
-            : 'Site Picture';
-          const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
-          const caption2 = (i + 1 < propImageBytes.length)
-            ? (fields.propertyImageNames?.[i + 1] !== undefined ? fields.propertyImageNames[i + 1] : 'Site Picture')
-            : '';
-
-          await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
-          r.advanceCursor(4);
-        }
-      }
 
       // ── Documents Gallery ──
       const validDocBytes = docImageResults
@@ -3462,6 +3466,26 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       const validBda = bdaMapResults.filter((b): b is Uint8Array => Boolean(b && b.length > 0));
       if (validBda.length > 0) {
         await r.drawMapGallery(validBda, 'BDA MAP', 240, false);
+      }
+
+      // ── Property Photographs (Starts on fresh page) ──
+      if (propImageBytes.length > 0) {
+        r.newPage();
+        r.drawCenteredTitle('PROPERTY PHOTOGRAPHS');
+        r.advanceCursor(8);
+
+        for (let i = 0; i < propImageBytes.length; i += 2) {
+          const caption1 = fields.propertyImageNames?.[i] !== undefined
+            ? fields.propertyImageNames[i]
+            : 'Site Picture';
+          const img2 = i + 1 < propImageBytes.length ? propImageBytes[i + 1] : null;
+          const caption2 = (i + 1 < propImageBytes.length)
+            ? (fields.propertyImageNames?.[i + 1] !== undefined ? fields.propertyImageNames[i + 1] : 'Site Picture')
+            : '';
+
+          await r.drawImagePair(propImageBytes[i], caption1, img2, caption2);
+          r.advanceCursor(4);
+        }
       }
       // ── Annexure Sections ──
       if (fields.annexures && fields.annexures.length > 0) {
@@ -3945,7 +3969,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         </tr>`;
 
     allBlocks.push(`
-      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">VALUATION OF APARTMENT/FLAT (After Depreciation)</p>
+      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">VALUATION - APARTMENT/FLAT</p>
       <table style="width:100%;border-collapse:collapse;margin-bottom:10px;font-family:${ff};font-size:12pt;">
         <tr style="background:#000;">
           <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;">Floor</th>
@@ -3966,28 +3990,33 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       </table>
     `);
 
+    allBlocks.push(wrapTable(`
+      ${simpleRow('Recommended Rate and basis for recommendation', isApartmentFlat ? (fields.aptRecommendedRateAndBasis || 'NA') : 'NA')}
+    `));
+
     // ── BLOCK: 2. Land Valuation (Rendered second in PDF) ──
-    if (!isApartmentFlat) {
-      allBlocks.push(wrapTable(`
-        ${sectionHeader('VALUATION \u2014 Land')}
+    const landTableRows = !isApartmentFlat
+      ? `
         ${simpleRow('Land Area', `${fields.landArea || '0'} ${fields.landAreaUnit}`)}
         ${simpleRow('Current Govt. Approved Rates for Land', `Rs.${fields.govtLandRate || fields.guidelineValue || 'N/A'}/- Per ${fields.landAreaUnit}`)}
         ${simpleRow('Recommended Rate &amp; Basis', `Rs.${fields.landRatePerUnit || 'N/A'}/- Per ${fields.landAreaUnit} ${fields.recommendedRateBasis ? '(' + fields.recommendedRateBasis + ')' : ''}`)}
         ${simpleRow('Land Value', `${fields.landArea || '0'} ${fields.landAreaUnit} \u00D7 Rs.${fields.landRatePerUnit || '0'}/- = Rs.${formatIndianCurrency(landValue)}/-`)}
         ${simpleRow('Actual BUA of Premises', `${formatIndianCurrency(totalPlinthArea)} ${fields.floorAreaUnit || 'Sqft'}`)}
         ${fields.buaAsPerApprovals ? simpleRow('BUA as per Approvals', fields.buaAsPerApprovals) : ''}
-      `));
-    } else {
-      allBlocks.push(wrapTable(`
-        ${sectionHeader('VALUATION \u2014 Land')}
+      `
+      : `
         ${simpleRow('Land Area', 'NA')}
         ${simpleRow('Current Govt. Approved Rates for Land', 'NA')}
         ${simpleRow('Recommended Rate &amp; Basis', 'NA')}
         ${simpleRow('Land Value', 'NA')}
         ${simpleRow('Actual BUA of Premises', 'NA')}
         ${simpleRow('BUA as per Approvals', 'NA')}
-      `));
-    }
+      `;
+
+    allBlocks.push(`
+      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">VALUATION - LAND</p>
+      ${wrapTable(landTableRows)}
+    `);
 
     // ── BLOCK: 3. Building Valuation ──
     const bldgRowsHTML = !isApartmentFlat
@@ -4016,7 +4045,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         </tr>`;
 
     allBlocks.push(`
-      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">VALUATION OF BUILDING (After Depreciation)</p>
+      <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin:8px 0 6px;">VALUATION - BUILDING</p>
       <table style="width:100%;border-collapse:collapse;margin-bottom:10px;font-family:${ff};font-size:12pt;">
         <tr style="background:#000;">
           <th style="border:${cellBorder};padding:4px 6px;color:#FFF;font-weight:bold;text-align:center;">Floor</th>
@@ -4049,20 +4078,35 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       ${fields.guidelineValue ? simpleRow('Govt./Guideline Value', `Rs.${formatIndianCurrency(fields.guidelineValue)}/-`) : ''}
     `));
 
-    // ── BLOCK: Remarks, Demarcation & Possession ──
+    // ── BLOCK: Demarcation & Possession ──
     allBlocks.push(wrapTable(`
-      ${sectionHeader('REMARKS, DEMARCATION & POSSESSION')}
+      ${sectionHeader('DEMARCATION & POSSESSION')}
       ${simpleRow('Demarcation', fields.demarcation)}
       ${simpleRow('Possession', fields.possession)}
-      ${simpleRow('Remarks / Observations', fields.remarks)}
     `));
+
+    // ── BLOCK: Remarks ──
+    const remarksText = (fields.remarks || '').trim();
+    const remarkParagraphs = remarksText
+      ? remarksText.split('\n').filter(l => l.trim()).map(l =>
+          `<p style="margin:6px 0;text-align:justify;line-height:1.4em;font-weight:normal;">${l.trim()}</p>`
+        ).join('')
+      : '<p style="margin:6px 0;font-weight:normal;">Nil</p>';
+    allBlocks.push(`
+      <div style="font-family:${ff};font-size:12pt;margin-top:12px;margin-bottom:10px;">
+        <p style="font-weight:bold;margin-bottom:6px;">Remarks if any:-</p>
+        <div style="font-weight:normal;text-align:justify;">
+          ${remarkParagraphs}
+        </div>
+      </div>
+    `);
 
     // ── BLOCK: Declaration ──
     const effectiveRepName = fields.representativeName || firstFieldAgentVisit.engineerName || '';
     allBlocks.push(`<div style="margin-top:10px;font-family:${ff};font-size:12pt;line-height:0.5em;">
       <p style="font-weight:bold;font-size:14pt;margin-bottom:4px;">Declaration:</p>
       <p style="margin-bottom:3px;">I hereby declare that:</p>
-      <p style="margin-bottom:3px;">\u2022 I have deputed my representative <b>${effectiveRepName ? 'Mr. ' + effectiveRepName : '______'}${fields.representativeFatherName ? ', S/o: ' + fields.representativeFatherName : ''}</b> to inspect the property on <b>${fmtDate(fields.dateOfInspection) || '______'}</b>.</p>
+      <p style="margin-bottom:3px;">\u2022 I have deputed my representative <b>${effectiveRepName ? 'Mr. ' + effectiveRepName : '______'}</b> to inspect the property on <b>${fmtDate(fields.dateOfInspection) || '______'}</b>.</p>
       <p style="margin-bottom:3px;">\u2022 I have no direct or indirect interest in the property valued.</p>
       <p style="margin-bottom:3px;">\u2022 The information furnished is true and correct to the best of my knowledge and belief.</p>
     </div>`);
@@ -4087,6 +4131,50 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         <p style="margin:2px 0;font-style:italic;font-size:12pt;">S Mohanty Associates, Bhubaneswar</p>
       </div>
     `);
+
+    // ── BLOCKS: Documents ──
+    if (Array.isArray(fields.documentImages) && fields.documentImages.length > 0) {
+      fields.documentImages.forEach((docUrl, idx) => {
+        if (!docUrl) return;
+        const docName = fields.documentImageNames?.[idx] || `Document ${idx + 1}`;
+        allBlocks.push(`<div style="font-family:${ff};color:#000;">
+          <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">${docName.toUpperCase()}</p>
+          <div style="text-align:center;border:1px solid #000;padding:6px;">
+            <img src="${docUrl}" style="max-width:100%;max-height:680px;" crossOrigin="anonymous" />
+          </div>
+        </div>`);
+      });
+    }
+
+    // ── BLOCK: Location Map ──
+    if (fields.locationMapImage || (fields.locationMapImages && fields.locationMapImages.length > 0)) {
+      const locImgs = fields.locationMapImages && fields.locationMapImages.length > 0 ? fields.locationMapImages : (fields.locationMapImage ? [fields.locationMapImage] : []);
+      locImgs.forEach((imgUrl) => {
+        if (!imgUrl) return;
+        allBlocks.push(`<div style="font-family:${ff};color:#000;">
+          <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">GOOGLE SATELLITE MAP</p>
+          <div style="text-align:center;border:1px solid #000;padding:6px;">
+            <img src="${imgUrl}" style="max-width:100%;max-height:630px;" crossOrigin="anonymous" />
+          </div>
+          ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-family:${ff};font-size:12pt;margin-top:6px;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
+          <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:2px;">Source: Site Visit dated ${fmtDate(fields.dateOfInspection) || 'N/A'}</p>
+        </div>`);
+      });
+    }
+
+    // ── BLOCK: Sketch Map ──
+    if (fields.sketchMapImages && fields.sketchMapImages.length > 0) {
+      fields.sketchMapImages.forEach((imgUrl, idx) => {
+        if (!imgUrl) return;
+        allBlocks.push(`<div style="font-family:${ff};color:#000;">
+          <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">SKETCH MAP${fields.sketchMapImages.length > 1 ? ` ${idx + 1}` : ''}</p>
+          <div style="text-align:center;border:1px solid #000;padding:6px;">
+            <img src="${imgUrl}" style="max-width:100%;max-height:680px;" crossOrigin="anonymous" />
+          </div>
+          <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:4px;">Source: Site Visit dated ${fmtDate(fields.dateOfInspection) || 'N/A'}</p>
+        </div>`);
+      });
+    }
 
     // ── BLOCKS: Property Photographs (6 per page) ──
     if (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0) {
@@ -4131,32 +4219,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           <table style="width:100%;border-collapse:collapse;">${gridHTML}</table>
         </div>`);
       }
-    }
-
-    // ── BLOCK: Sketch Map ──
-    // ── BLOCK: Sketch Map ──
-    if (fields.sketchMapImages && fields.sketchMapImages.length > 0) {
-      fields.sketchMapImages.forEach((imgUrl, idx) => {
-        allBlocks.push(`<div style="font-family:${ff};color:#000;">
-          <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">SKETCH MAP${fields.sketchMapImages.length > 1 ? ` ${idx + 1}` : ''}</p>
-          <div style="text-align:center;border:1px solid #000;padding:6px;">
-            <img src="${imgUrl}" style="max-width:100%;max-height:680px;" crossOrigin="anonymous" />
-          </div>
-          <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:4px;">Source: Site Visit dated ${fmtDate(fields.dateOfInspection) || 'N/A'}</p>
-        </div>`);
-      });
-    }
-
-    // ── BLOCK: Location Map ──
-    if (fields.locationMapImage) {
-      allBlocks.push(`<div style="font-family:${ff};color:#000;">
-        <p style="font-family:${ff};font-size:14pt;font-weight:bold;text-align:center;margin-bottom:12px;">LOCATION MAP</p>
-        <div style="text-align:center;border:1px solid #000;padding:6px;">
-          <img src="${fields.locationMapImage}" style="max-width:100%;max-height:630px;" crossOrigin="anonymous" />
-        </div>
-        ${fields.latitude || fields.longitude ? `<p style="text-align:center;font-family:${ff};font-size:12pt;margin-top:6px;font-weight:bold;">Lat: ${fields.latitude || 'N/A'}, Long: ${fields.longitude || 'N/A'}</p>` : ''}
-        <p style="font-family:${ff};font-size:12pt;font-style:italic;text-align:center;margin-top:2px;">Source: Site Visit dated ${fmtDate(fields.dateOfInspection) || 'N/A'}</p>
-      </div>`);
     }
 
     // ── BLOCKS: Annexure Sections ──
@@ -5199,6 +5261,19 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             <span className="text-lg">+</span> Add Floor
           </button>
         )}
+        {isApartmentFlat && (
+          <div className="mt-4 pt-3 border-t border-[#e9ecef]">
+            <Field label="Recommended Rate and basis for recommendation">
+              <input
+                className={inputCls}
+                value={fields.aptRecommendedRateAndBasis !== undefined ? fields.aptRecommendedRateAndBasis : 'NA'}
+                onChange={e => handleChange('aptRecommendedRateAndBasis', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="Recommended Rate and basis for recommendation (default NA)"
+              />
+            </Field>
+          </div>
+        )}
       </Section>
 
       {/* ── Section 8: Valuation of Land (hidden for Apartment/Flat) ── */}
@@ -5529,26 +5604,15 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       {/* ── Section 11: Declaration ── */}
       <Section title="Declaration" number={isApartmentFlat ? 10 : 11} id="section-declaration" defaultOpen={false}>
         <div className="space-y-4">
-          <div className="grid md:grid-cols-2 gap-4">
-            <Field label="Name of Representative who Inspected">
-              <input
-                className={inputCls}
-                value={fields.representativeName}
-                onChange={e => handleChange('representativeName', e.target.value)}
-                disabled={isReadOnly}
-                placeholder={firstFieldAgentVisit.engineerName ? `e.g. ${firstFieldAgentVisit.engineerName}` : 'e.g. Dinesh Das'}
-              />
-            </Field>
-            <Field label="Representative's Father's Name">
-              <input
-                className={inputCls}
-                value={fields.representativeFatherName}
-                onChange={e => handleChange('representativeFatherName', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="Father's name of representative"
-              />
-            </Field>
-          </div>
+          <Field label="Name of Representative who Inspected">
+            <input
+              className={inputCls}
+              value={fields.representativeName}
+              onChange={e => handleChange('representativeName', e.target.value)}
+              disabled={isReadOnly}
+              placeholder={firstFieldAgentVisit.engineerName ? `e.g. ${firstFieldAgentVisit.engineerName}` : 'e.g. Dinesh Das'}
+            />
+          </Field>
 
           {/* Declaration Box */}
           <div className="p-4 bg-[#f8fafc] rounded-xl border border-[#cbd5e1] text-xs leading-relaxed text-[#334155]">
@@ -5557,8 +5621,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             <ul className="space-y-1.5 list-disc pl-5 text-justify">
               <li>
                 I have deputed my representative{' '}
-                <strong>{(fields.representativeName || firstFieldAgentVisit.engineerName) ? `Mr. ${fields.representativeName || firstFieldAgentVisit.engineerName}` : '______'}</strong>
-                {fields.representativeFatherName ? `, S/o: ${fields.representativeFatherName}` : ''} to inspect the property on{' '}
+                <strong>{(fields.representativeName || firstFieldAgentVisit.engineerName) ? `Mr. ${fields.representativeName || firstFieldAgentVisit.engineerName}` : '______'}</strong> to inspect the property on{' '}
                 <strong>{fmtDate(fields.dateOfInspection)}</strong>.
               </li>
               <li>
@@ -5597,34 +5660,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         </div>
       </Section>
 
-      {(!isReadOnly || (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0)) && (
-        <BasePhotographsSection
-          propertyImages={fields.propertyImages || []}
-          propertyImageNames={fields.propertyImageNames || []}
-          isReadOnly={isReadOnly}
-          uploading={uploading}
-          bucketCount={bucketImages?.length || 0}
-          onImageNameChange={(idx: number, name: string) => {
-            const updatedNames = [...(fields.propertyImageNames || [])];
-            while (updatedNames.length <= idx) {
-              updatedNames.push('');
-            }
-            updatedNames[idx] = name;
-            handleChange('propertyImageNames', updatedNames);
-          }}
-          onRemoveImage={removeImage}
-          onReorderImages={(newImages: string[], newNames: string[]) => {
-            handleChange('propertyImages', newImages);
-            handleChange('propertyImageNames', newNames);
-          }}
-          onUploadImages={(e: React.ChangeEvent<HTMLInputElement>) => handleFileUpload(e, 'propertyImages')}
-          onOpenBucketPicker={openBucketPicker}
-          sectionNumber={isApartmentFlat ? 12 : 13}
-          sectionId="section-photographs"
-          title="Property Photographs"
-        />
-      )}
-
       {(!isReadOnly || (Array.isArray(fields.documentImages) && fields.documentImages.length > 0)) && (
         <DocumentsSection
           documentImages={fields.documentImages || []}
@@ -5635,7 +5670,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           onRemoveDocument={handleDocumentRemove}
           onDocumentNameChange={handleDocumentNameChange}
           onReorderDocuments={handleDocumentReorder}
-          sectionNumber={isApartmentFlat ? 13 : 14}
+          sectionNumber={isApartmentFlat ? 12 : 13}
           sectionId="sec-documents"
           title="Documents"
           defaultOpen={false}
@@ -5678,10 +5713,38 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
           onBdaMapUpload={handleBdaMapUpload}
           onBdaMapRemove={handleBdaMapRemove}
           onReorderBdaMap={handleBdaMapReorder}
-          sectionNumber={isApartmentFlat ? 14 : 15}
+          sectionNumber={isApartmentFlat ? 13 : 14}
           sectionId="section-maps"
           title="Maps"
           defaultOpen={false}
+        />
+      )}
+
+      {(!isReadOnly || (Array.isArray(fields.propertyImages) && fields.propertyImages.length > 0)) && (
+        <BasePhotographsSection
+          propertyImages={fields.propertyImages || []}
+          propertyImageNames={fields.propertyImageNames || []}
+          isReadOnly={isReadOnly}
+          uploading={uploading}
+          bucketCount={bucketImages?.length || 0}
+          onImageNameChange={(idx: number, name: string) => {
+            const updatedNames = [...(fields.propertyImageNames || [])];
+            while (updatedNames.length <= idx) {
+              updatedNames.push('');
+            }
+            updatedNames[idx] = name;
+            handleChange('propertyImageNames', updatedNames);
+          }}
+          onRemoveImage={removeImage}
+          onReorderImages={(newImages: string[], newNames: string[]) => {
+            handleChange('propertyImages', newImages);
+            handleChange('propertyImageNames', newNames);
+          }}
+          onUploadImages={(e: React.ChangeEvent<HTMLInputElement>) => handleFileUpload(e, 'propertyImages')}
+          onOpenBucketPicker={openBucketPicker}
+          sectionNumber={isApartmentFlat ? 14 : 15}
+          sectionId="section-photographs"
+          title="Property Photographs"
         />
       )}
 

@@ -963,35 +963,28 @@ export class PDFSBILandAndBuildingRenderer extends PDFBankRenderer {
   }
 
   // ──────────────────────────────────────────────────────────────────────────
-  // 6. Inherited Enclosures: Photographs, Maps, Documents
+  // 6. Inherited Enclosures: Documents, Maps, Photographs
   // ──────────────────────────────────────────────────────────────────────────
   private async drawEnclosures(): Promise<void> {
     const d = this.reportFields;
 
-    if (d.propertyImages && d.propertyImages.length > 0) {
-      this.addPage();
-      this.cursorY = 20;
-      this.drawCenteredTitle('PROPERTY PHOTOGRAPHS', FONT_SIZE_HEADER);
-      this.cursorY += 16;
-
-      const imgs = d.propertyImages;
-      const names = d.propertyImageNames || [];
-      const imgW = (CONTENT_W - 20) / 2;
-      const imgH = 160;
-
-      for (let i = 0; i < imgs.length; i += 2) {
-        this.checkPageBreak(imgH + 30);
-        await this.drawImageSafely(imgs[i], MARGIN_L, this.cursorY, imgW, imgH);
-        this.drawTextAt(names[i] || `Photo ${i + 1}`, MARGIN_L, this.cursorY + imgH + 10, { fontSize: FONT_SIZE_CAPTION });
-
-        if (i + 1 < imgs.length) {
-          await this.drawImageSafely(imgs[i + 1], MARGIN_L + imgW + 20, this.cursorY, imgW, imgH);
-          this.drawTextAt(names[i + 1] || `Photo ${i + 2}`, MARGIN_L + imgW + 20, this.cursorY + imgH + 10, { fontSize: FONT_SIZE_CAPTION });
+    // 1. Documents Attachment
+    if (d.documentImages && d.documentImages.length > 0) {
+      for (let i = 0; i < d.documentImages.length; i++) {
+        const url = d.documentImages[i];
+        const label = (d.documentImageNames && d.documentImageNames[i]) || 'DOCUMENT ATTACHMENT';
+        if (url) {
+          this.addPage();
+          this.cursorY = 20;
+          this.drawCenteredTitle(label, FONT_SIZE_HEADER);
+          this.cursorY += 16;
+          await this.drawImageSafely(url, MARGIN_L, this.cursorY, CONTENT_W, 600);
+          this.cursorY += 610;
         }
-        this.cursorY += imgH + 25;
       }
     }
 
+    // 2. Maps Gallery
     const mapList = [
       { title: 'LAYOUT / LOCATION MAP', imgs: d.locationMapImages },
       { title: 'MOUZA MAP', imgs: d.mouzaMapImages },
@@ -1014,18 +1007,28 @@ export class PDFSBILandAndBuildingRenderer extends PDFBankRenderer {
       }
     }
 
-    if (d.documentImages && d.documentImages.length > 0) {
-      for (let i = 0; i < d.documentImages.length; i++) {
-        const url = d.documentImages[i];
-        const label = (d.documentImageNames && d.documentImageNames[i]) || 'DOCUMENT ATTACHMENT';
-        if (url) {
-          this.addPage();
-          this.cursorY = 20;
-          this.drawCenteredTitle(label, FONT_SIZE_HEADER);
-          this.cursorY += 16;
-          await this.drawImageSafely(url, MARGIN_L, this.cursorY, CONTENT_W, 600);
-          this.cursorY += 610;
+    // 3. Property Photographs (Fresh Page)
+    if (d.propertyImages && d.propertyImages.length > 0) {
+      this.addPage();
+      this.cursorY = 20;
+      this.drawCenteredTitle('PROPERTY PHOTOGRAPHS', FONT_SIZE_HEADER);
+      this.cursorY += 16;
+
+      const imgs = d.propertyImages;
+      const names = d.propertyImageNames || [];
+      const imgW = (CONTENT_W - 20) / 2;
+      const imgH = 160;
+
+      for (let i = 0; i < imgs.length; i += 2) {
+        this.checkPageBreak(imgH + 30);
+        await this.drawImageSafely(imgs[i], MARGIN_L, this.cursorY, imgW, imgH);
+        this.drawTextAt(names[i] || `Photo ${i + 1}`, MARGIN_L, this.cursorY + imgH + 10, { fontSize: FONT_SIZE_CAPTION });
+
+        if (i + 1 < imgs.length) {
+          await this.drawImageSafely(imgs[i + 1], MARGIN_L + imgW + 20, this.cursorY, imgW, imgH);
+          this.drawTextAt(names[i + 1] || `Photo ${i + 2}`, MARGIN_L + imgW + 20, this.cursorY + imgH + 10, { fontSize: FONT_SIZE_CAPTION });
         }
+        this.cursorY += imgH + 25;
       }
     }
   }

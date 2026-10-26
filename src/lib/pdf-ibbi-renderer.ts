@@ -1084,37 +1084,24 @@ export class PDFIBBIRenderer {
     ];
     colWidths[7] = CONTENT_W - colWidths.slice(0, 7).reduce((a, b) => a + b, 0);
 
-    const rowH = FONT_SIZE_TABLE_IBBI_COMPACT * LINE_HEIGHT + CELL_PAD_Y * 2;
-    const headerRowH = FONT_SIZE_TABLE_IBBI_COMPACT * LINE_HEIGHT * 2 + CELL_PAD_Y * 2;
-    const totalH = headerRowH + rowH * (rows.length + 1); // header + data rows + total row
+    // Calculate header height using text wrapping to prevent word clipping
+    const headerLines = headers.map((h, c) => this.wrapText(h || '', colWidths[c] - CELL_PAD_X * 2, FONT_SIZE_TABLE_IBBI_COMPACT, true));
+    const maxHdrLines = Math.max(2, ...headerLines.map(l => l.length));
+    const headerRowH = maxHdrLines * FONT_SIZE_TABLE_IBBI_COMPACT * LINE_HEIGHT + CELL_PAD_Y * 2 + 2;
 
-    this.checkPageBreak(totalH);
+    this.checkPageBreak(headerRowH + 50);
 
-    // Header row (LBL_BG bg @ 50% opacity, black text)
+    // Header row (LBL_BG bg @ 50% opacity, black text, wrapped in cells)
     let cx = MARGIN_L;
     for (let c = 0; c < numCols; c++) {
-      this.drawRect(cx, this.cursorY, colWidths[c], headerRowH, LBL_BG, '#000000', BORDER_W, BG_OPACITY);
-
-      const headerText = headers[c];
-      const match = headerText.match(/^(.*?)\s+(\(.*\))$/);
-      
-      if (match) {
-        const topText = match[1];
-        const bottomText = match[2];
-        const topY = this.cursorY + CELL_PAD_Y + 1;
-        this.drawTextAt(topText, cx + CELL_PAD_X, topY, {
-          bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
-        });
-        this.drawTextAt(bottomText, cx + CELL_PAD_X, topY + FONT_SIZE_TABLE_IBBI_COMPACT * LINE_HEIGHT, {
-          bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
-        });
-      } else {
-        const textH = FONT_SIZE_TABLE_IBBI_COMPACT * LINE_HEIGHT;
-        const topY = this.cursorY + (headerRowH - textH) / 2;
-        this.drawTextAt(headerText, cx + CELL_PAD_X, topY, {
-          bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
-        });
-      }
+      this.drawCell(cx, this.cursorY, colWidths[c], headerRowH, headers[c], {
+        bold: true,
+        fontSize: FONT_SIZE_TABLE_IBBI_COMPACT,
+        align: 'center',
+        vAlign: 'middle',
+        fillColor: LBL_BG,
+        bgOpacity: BG_OPACITY,
+      });
       cx += colWidths[c];
     }
     this.cursorY += headerRowH;
@@ -1124,25 +1111,37 @@ export class PDFIBBIRenderer {
     for (let r = 0; r < rows.length; r++) {
       const row = rows[r];
       const vals = [row.name, row.area, row.rate, row.estimated, row.life, row.age, row.dep, row.netValue];
+
+      // Calculate dynamic row height to allow multi-line wrapped text
+      const cellLines = vals.map((v, c) => this.wrapText(v || '', colWidths[c] - CELL_PAD_X * 2, FONT_SIZE_TABLE_IBBI_COMPACT));
+      const maxLines = Math.max(1, ...cellLines.map(l => l.length));
+      const dynamicRowH = maxLines * FONT_SIZE_TABLE_IBBI_COMPACT * LINE_HEIGHT + CELL_PAD_Y * 2 + 2;
+
+      this.checkPageBreak(dynamicRowH);
+
       cx = MARGIN_L;
       for (let c = 0; c < numCols; c++) {
-        this.drawCell(cx, this.cursorY, colWidths[c], rowH, vals[c], {
-          fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, align: aligns[c],
+        this.drawCell(cx, this.cursorY, colWidths[c], dynamicRowH, vals[c], {
+          fontSize: FONT_SIZE_TABLE_IBBI_COMPACT,
+          align: aligns[c],
+          vAlign: 'middle',
         });
         cx += colWidths[c];
       }
-      this.cursorY += rowH;
+      this.cursorY += dynamicRowH;
     }
 
     // Total row
+    const totalRowH = FONT_SIZE_TABLE_IBBI_COMPACT * LINE_HEIGHT + CELL_PAD_Y * 2 + 2;
+    this.checkPageBreak(totalRowH);
     const totalLabelW = colWidths.slice(0, 7).reduce((a, b) => a + b, 0);
-    this.drawCell(MARGIN_L, this.cursorY, totalLabelW, rowH, totalLabel, {
-      bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, fillColor: LBL_BG, bgOpacity: 0.5,
+    this.drawCell(MARGIN_L, this.cursorY, totalLabelW, totalRowH, totalLabel, {
+      bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, fillColor: LBL_BG, bgOpacity: 0.5, vAlign: 'middle',
     });
-    this.drawCell(MARGIN_L + totalLabelW, this.cursorY, colWidths[7], rowH, totalValue, {
-      bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, fillColor: OPT_BG, bgOpacity: 0.5, align: 'right',
+    this.drawCell(MARGIN_L + totalLabelW, this.cursorY, colWidths[7], totalRowH, totalValue, {
+      bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, fillColor: OPT_BG, bgOpacity: 0.5, align: 'right', vAlign: 'middle',
     });
-    this.cursorY += rowH;
+    this.cursorY += totalRowH;
   }
 
   // ─── High-Level Content Methods ────────────────────────────────
