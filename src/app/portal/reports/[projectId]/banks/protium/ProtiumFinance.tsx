@@ -1976,6 +1976,8 @@ export default function ProtiumFinance({
           locationMapImages={fields.locationMaps || []}
           latitude={fields.latitude || ''}
           longitude={fields.longitude || ''}
+          fields={fields}
+          hasExternalCoordinatesField={true}
           isReadOnly={isReadOnly}
           onLocationMapRemove={idx => {
             handleChange('locationMaps', (fields.locationMaps || []).filter((_: any, i: number) => i !== idx));

@@ -2755,8 +2755,11 @@ export default function StateBankOfIndiaLandAndBuilding({
         bdaMapImages={fields.bdaMapImages || []}
         latitude={fields.latitude}
         longitude={fields.longitude}
+        onLatitudeChange={(val) => handleChange('latitude', val)}
+        onLongitudeChange={(val) => handleChange('longitude', val)}
         technicalAddress={fields.propertyAddress || ''}
         propertyAddress={fields.propertyAddress || ''}
+        fields={fields}
         isReadOnly={isReadOnly}
         uploading={false}
         sectionId="section-maps"

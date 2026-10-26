@@ -11,8 +11,13 @@ function hexToRgb(hex: string) {
 
 const LBL_BG = '#DBE6F0';
 
-export const FONT_SIZE_TABLE_IT = 12;
-export const FONT_SIZE_TABLE_IT_COMPACT = 10;
+export const FONT_SIZE_HEADER = 14;
+export const FONT_SIZE = 12;
+export const FONT_SIZE_CAPTION = 10;
+export const FONT_SIZE_TABLE = 12;
+export const FONT_SIZE_TABLE_COMPACT = 10;
+export const FONT_SIZE_TABLE_IT = FONT_SIZE_TABLE;
+export const FONT_SIZE_TABLE_IT_COMPACT = FONT_SIZE_TABLE_COMPACT;
 
 const parseNum = (val: string | number): number => {
   if (typeof val === 'number') return val;
@@ -438,7 +443,7 @@ export async function generateIncomeTaxPDF(
     segments: { text: string; bold?: boolean; italic?: boolean }[],
     opts?: { fontSize?: number; align?: 'left' | 'center' | 'right' | 'justify'; x?: number; maxW?: number }
   ) => {
-    const fs = opts?.fontSize || 11;
+    const fs = opts?.fontSize || FONT_SIZE;
     const lh = fs * LINE_H;
     const x = opts?.x ?? ML;
     const maxW = opts?.maxW ?? CW;
@@ -754,7 +759,7 @@ export async function generateIncomeTaxPDF(
   const PARA_GAP = 6;
 
   const drawQRow = (qNo: string, question: string, answer: string, opts?: { qBold?: boolean; headerRow?: boolean }) => {
-    const fs = 11;
+    const fs = FONT_SIZE;
     const lh = fs * LINE_H;
     const h1 = cellHeight(qNo, qColW[0], { bold: true, fontSize: fs });
     const h2 = cellHeight(question, qColW[1], { fontSize: fs });
@@ -821,17 +826,17 @@ export async function generateIncomeTaxPDF(
   };
 
   const drawQHeader = (title: string) => {
-    const fs = 12;
+    const fs = FONT_SIZE_HEADER;
     const rowH = fs * LINE_H + 6;
     ensureSpace(rowH + 50); // Require space for header + at least one row
     // Spanning full table width with merged header
-    drawCell(ML, cy, CW, rowH, title, { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
+    drawCell(ML, cy, CW, rowH, title.toUpperCase(), { bold: true, fontSize: fs, align: 'center', fillColor: LBL_BG, bgOpacity: 0.5 });
     cy += rowH;
   };
 
   const drawQRowMulti = (qNo: string, items: { q: string, a: string }[], opts?: { drawSubBorders?: boolean }) => {
     const drawSubBorders = opts?.drawSubBorders ?? false;
-    const fs = 11;
+    const fs = FONT_SIZE;
     const lh = fs * LINE_H;
     const h1 = cellHeight(qNo, qColW[0], { bold: true, fontSize: fs });
     let totalH = 0;
@@ -899,10 +904,10 @@ export async function generateIncomeTaxPDF(
   // Top right ref & date
   if (fields.refNo || fields.reportDate) {
     if (fields.refNo) {
-      drawText(`REF NO–${fields.refNo.trim()}`, { bold: true, fontSize: 11, align: 'right' });
+      drawText(`REF NO–${fields.refNo.trim()}`, { bold: true, fontSize: FONT_SIZE, align: 'right' });
     }
     if (fields.reportDate) {
-      drawText(`DATE–${formatReportDate(fields.reportDate)}`, { bold: true, fontSize: 11, align: 'right' });
+      drawText(`DATE–${formatReportDate(fields.reportDate)}`, { bold: true, fontSize: FONT_SIZE, align: 'right' });
     }
     advanceCursor(10);
   }
@@ -943,19 +948,19 @@ export async function generateIncomeTaxPDF(
     if (!desc.startsWith('BEARING ') && !desc.startsWith('LAND BEARING ') && !desc.startsWith('PROPERTY BEARING ')) {
       desc = 'BEARING ' + desc;
     }
-    drawText(desc, { fontSize: 11, align: 'left' });
+    drawText(desc, { fontSize: FONT_SIZE, align: 'left' });
     advanceCursor(8);
   }
 
   // Valuer credentials
-  drawText('NAME OF THE VALUER:- ER. SATYAJIT MOHANTY', { bold: true, fontSize: 11 });
+  drawText('NAME OF THE VALUER:- ER. SATYAJIT MOHANTY', { bold: true, fontSize: FONT_SIZE });
   advanceCursor(2);
-  drawText('REGISTRATION NO.:- 107/2016-17 of Category-I', { bold: true, fontSize: 11 });
+  drawText('REGISTRATION NO.:- 107/2016-17 of Category-I', { bold: true, fontSize: FONT_SIZE });
   advanceCursor(12);
 
   // Section header: PART–I–QUESTIONNAIRE (Centered & Underlined)
   const secStr = 'PART–I–QUESTIONNAIRE';
-  const secFs = 13;
+  const secFs = FONT_SIZE_HEADER;
   const secW = fontBI.widthOfTextAtSize(secStr, secFs);
   const secX = ML + (CW - secW) / 2;
   ensureSpace(secFs * LINE_H + 12 + 60); // Ensure header + next lines fit
@@ -1583,7 +1588,7 @@ export async function generateIncomeTaxPDF(
   // BLOCK 8 — VALUATION CERTIFICATE
   // ═══════════════════════════════════════════════════════
   ensureSpace(140);
-  drawText('VALUATION CERTIFICATE', { bold: true, align: 'center', underline: true, fontSize: 13 });
+  drawText('VALUATION CERTIFICATE', { bold: true, align: 'center', underline: true, fontSize: FONT_SIZE_HEADER });
   advanceCursor(10);
 
   const valDateText = fields.valuationDate ? `AS ON ${fields.valuationDate}` : 'AS ON ________';
@@ -1598,7 +1603,7 @@ export async function generateIncomeTaxPDF(
       text: `IS RS.${formatIndianCurrency(computedTotalProperty)}/- (${amountWords})`,
       bold: true,
     },
-  ], { fontSize: 11 });
+  ], { fontSize: FONT_SIZE });
   advanceCursor(14);
 
   // ═══════════════════════════════════════════════════════
@@ -1857,7 +1862,7 @@ export async function generateIncomeTaxPDF(
           align: 'center',
           vAlign: 'middle',
           fillColor: LBL_BG,
-          bgOpacity: 0.45,
+          bgOpacity: 0.5,
         });
         cx += cw;
       }

@@ -26,6 +26,8 @@ import {
   FONT_SIZE_TITLE,
   FONT_SIZE_SMALL,
   FONT_SIZE_CAPTION,
+  FONT_SIZE_TABLE,
+  FONT_SIZE_TABLE_COMPACT,
   LINE_HEIGHT,
   BORDER_W,
   CELL_PAD_X,
@@ -38,8 +40,8 @@ import {
   DrawTextOptions,
 } from './pdf-general-renderer';
 
-export const FONT_SIZE_TABLE_BANK = 12;
-export const FONT_SIZE_TABLE_BANK_COMPACT = 10;
+export const FONT_SIZE_TABLE_BANK = FONT_SIZE_TABLE;
+export const FONT_SIZE_TABLE_BANK_COMPACT = FONT_SIZE_TABLE_COMPACT;
 
 export const DEFAULT_LETTERHEAD_PATH = PDFGeneralRenderer.DEFAULT_LETTERHEAD_PATH;
 export const fetchDefaultLetterhead = PDFGeneralRenderer.fetchDefaultLetterhead;
@@ -177,6 +179,8 @@ export {
   FONT_SIZE_TITLE,
   FONT_SIZE_SMALL,
   FONT_SIZE_CAPTION,
+  FONT_SIZE_TABLE,
+  FONT_SIZE_TABLE_COMPACT,
   LINE_HEIGHT,
   BORDER_W,
   CELL_PAD_X,

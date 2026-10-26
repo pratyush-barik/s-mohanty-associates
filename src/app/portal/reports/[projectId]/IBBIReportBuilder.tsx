@@ -4490,12 +4490,12 @@ Our valuation is based on information obtained from the client and on data gathe
                 const hasQuery = hasCoordinates || activeAddr.trim().length > 0;
 
                 const queryParam = hasCoordinates
-                  ? `loc:${latStr},${lngStr}`
-                  : activeAddr;
+                  ? `${latStr},${lngStr}`
+                  : activeAddr.replace(/[\r\n]+/g, ' ').trim();
 
                 const encodedQuery = encodeURIComponent(queryParam);
                 const googleMapsUrl = hasCoordinates
-                  ? `https://www.google.com/maps?q=loc:${latStr},${lngStr}&z=17&t=k`
+                  ? `https://www.google.com/maps?q=${latStr},${lngStr}&z=17&t=k`
                   : `https://www.google.com/maps/search/${encodeURIComponent(activeAddr)}`;
 
                 return (

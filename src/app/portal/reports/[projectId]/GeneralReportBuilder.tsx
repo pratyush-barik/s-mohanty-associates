@@ -384,6 +384,7 @@ interface ReportFields {
   isPropertyRented: string;
   rentedOccupants: string;
   propertyTaxation: string;
+  boundaryDocType?: string;
   boundaryNorth: string;
   boundarySouth: string;
   boundaryEast: string;
@@ -569,6 +570,7 @@ const DEFAULT_FIELDS: ReportFields = {
   isPropertyRented: '',
   rentedOccupants: '',
   propertyTaxation: 'Average',
+  boundaryDocType: '',
   boundaryNorth: '',
   boundarySouth: '',
   boundaryEast: '',
@@ -1704,6 +1706,8 @@ function MapsSection({
   onBdaMapUpload,
   onBdaMapRemove,
   onReorderBdaMap,
+  hasExternalCoordinatesField = false,
+  coordinatesSectionName = 'Report Details',
   sectionNumber = 10,
   sectionId = 'section-maps',
   title = 'Maps',
@@ -1720,6 +1724,8 @@ function MapsSection({
   bdaMapImages?: string[];
   isReadOnly?: boolean;
   uploading?: boolean | string;
+  hasExternalCoordinatesField?: boolean;
+  coordinatesSectionName?: string;
   onLatitudeChange?: (val: string) => void;
   onLongitudeChange?: (val: string) => void;
   onLocationMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -1753,22 +1759,32 @@ function MapsSection({
     setLocalLng(longitude || '');
   }, [longitude]);
 
-  const activeLat = onLatitudeChange ? (latitude || '') : localLat;
-  const activeLng = onLongitudeChange ? (longitude || '') : localLng;
+  const isExternal = Boolean(hasExternalCoordinatesField);
+  const activeLat = isExternal ? (latitude || '') : (onLatitudeChange ? (latitude || '') : localLat);
+  const activeLng = isExternal ? (longitude || '') : (onLongitudeChange ? (longitude || '') : localLng);
 
   const handleLatChange = (val: string) => {
+    if (isExternal) return;
     setLocalLat(val);
     onLatitudeChange?.(val);
   };
 
   const handleLngChange = (val: string) => {
+    if (isExternal) return;
     setLocalLng(val);
     onLongitudeChange?.(val);
   };
 
   const cleanLat = (activeLat || '').trim();
   const cleanLng = (activeLng || '').trim();
-  const hasCoordinates = Boolean(cleanLat && cleanLng && !isNaN(Number(cleanLat)) && !isNaN(Number(cleanLng)));
+  const latNum = parseFloat(cleanLat);
+  const lngNum = parseFloat(cleanLng);
+  const hasCoordinates = Boolean(
+    cleanLat && cleanLng &&
+    !isNaN(latNum) && !isNaN(lngNum) &&
+    latNum >= -90 && latNum <= 90 &&
+    lngNum >= -180 && lngNum <= 180
+  );
   
   const cleanTechnicalAddress = (technicalAddress || '').trim();
   const cleanPropertyAddress = (propertyAddress || '').trim();
@@ -1793,6 +1809,13 @@ function MapsSection({
   const isBdaUploading = typeof uploading === 'string'
     ? (uploading === 'bda' || uploading === 'bdaMapImages')
     : Boolean(uploading);
+
+  const queryParam = hasCoordinates
+    ? `${cleanLat},${cleanLng}`
+    : effectiveAddress.replace(/[\r\n]+/g, ' ').trim();
+
+  const encodedQuery = encodeURIComponent(queryParam);
+  const hasQuery = Boolean(hasCoordinates || effectiveAddress.length > 0);
 
   const googleMapsUrl = hasCoordinates
     ? `https://www.google.com/maps?q=${cleanLat},${cleanLng}&z=17&t=k`
@@ -1821,39 +1844,138 @@ function MapsSection({
           onReorder={onReorderLocationMap}
           emptyMessage="No Google Satellite Map uploaded yet. Click '+ Add Google Satellite Map' to upload one or more maps."
           headerExtra={
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-bold text-slate-500 uppercase">Lat:</span>
-                <input
-                  type="text"
-                  placeholder="20.2961"
-                  value={activeLat}
-                  onChange={(e) => handleLatChange(e.target.value)}
-                  disabled={isReadOnly}
-                  className="w-20 px-2 py-0.5 rounded border border-[#dee2e6] bg-white text-xs font-semibold text-slate-800 disabled:bg-slate-100 disabled:text-slate-500 outline-none focus:ring-1 focus:ring-accent-500"
-                />
+            <div className="space-y-3 pt-1 w-full">
+              {/* Controls bar: either Linked Badge (Rule 2) or Direct Inputs (Rule 3) */}
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                {isExternal ? (
+                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs text-slate-700">
+                    <span className="font-semibold text-slate-600">🧭 Linked from {coordinatesSectionName}:</span>
+                    <span className="font-mono font-bold text-slate-900">
+                      {hasCoordinates ? `${cleanLat}, ${cleanLng}` : 'Not set in report details (Using Address)'}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase">Lat:</span>
+                      <input
+                        type="text"
+                        placeholder="20.2961"
+                        value={activeLat}
+                        onChange={(e) => handleLatChange(e.target.value)}
+                        disabled={isReadOnly}
+                        className="w-24 px-2 py-1 rounded-lg border border-[#dee2e6] bg-white text-xs font-mono font-semibold text-slate-800 disabled:bg-slate-100 disabled:text-slate-500 outline-none focus:ring-1 focus:ring-accent-500"
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase">Lng:</span>
+                      <input
+                        type="text"
+                        placeholder="85.8245"
+                        value={activeLng}
+                        onChange={(e) => handleLngChange(e.target.value)}
+                        disabled={isReadOnly}
+                        className="w-24 px-2 py-1 rounded-lg border border-[#dee2e6] bg-white text-xs font-mono font-semibold text-slate-800 disabled:bg-slate-100 disabled:text-slate-500 outline-none focus:ring-1 focus:ring-accent-500"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {(hasCoordinates || effectiveAddress.length > 0) && (
+                  <a
+                    href={googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 hover:bg-blue-100 transition-colors ml-auto"
+                  >
+                    <span>📍 Open in Google Maps ↗</span>
+                  </a>
+                )}
               </div>
-              <div className="flex items-center gap-1">
-                <span className="text-[10px] font-bold text-slate-500 uppercase">Lng:</span>
-                <input
-                  type="text"
-                  placeholder="85.8245"
-                  value={activeLng}
-                  onChange={(e) => handleLngChange(e.target.value)}
-                  disabled={isReadOnly}
-                  className="w-20 px-2 py-0.5 rounded border border-[#dee2e6] bg-white text-xs font-semibold text-slate-800 disabled:bg-slate-100 disabled:text-slate-500 outline-none focus:ring-1 focus:ring-accent-500"
-                />
-              </div>
-              {(hasCoordinates || effectiveAddress.length > 0) && (
-                <a
-                  href={googleMapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-lg bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 hover:bg-blue-100 transition-colors"
-                >
-                  <span>📍 Open Satellite</span>
-                </a>
+
+              {/* Live Google Satellite Map Embed (Rule 1 & Rule 3) */}
+              {hasQuery ? (
+                <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-xs w-full">
+                  <div className="bg-[#d5e8f5] px-3.5 py-1.5 flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
+                      📍 Live Satellite Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : `— ${cleanTechnicalAddress ? 'Technical Address' : 'Property Address'}`}
+                    </span>
+                    <a
+                      href={googleMapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-semibold text-accent-600 hover:underline"
+                    >
+                      Open in Google Maps &#x2197;
+                    </a>
+                  </div>
+                  <iframe
+                    src={`https://maps.google.com/maps?q=${encodedQuery}&t=k&z=17&output=embed`}
+                    width="100%"
+                    height="260"
+                    style={{ border: 0 }}
+                    allowFullScreen
+                    loading="lazy"
+                    referrerPolicy="no-referrer-when-downgrade"
+                    title="Property Satellite Location Map"
+                  />
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500 w-full">
+                  Enter property address or coordinates in report details to view live satellite map preview.
+                </div>
               )}
+
+              {/* Map Reference Source Banner */}
+              {hasCoordinates ? (
+                <div className="rounded-lg p-2.5 bg-emerald-50 border border-emerald-200 text-xs text-slate-800 space-y-1 w-full">
+                  <div className="flex items-center justify-between flex-wrap gap-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-emerald-950">📍 Map Referenced From:</span>
+                      <span className="font-semibold text-emerald-800 font-mono bg-emerald-100/80 px-1.5 py-0.5 rounded">
+                        GPS Coordinates ({cleanLat}, {cleanLng})
+                      </span>
+                      <span className="text-[11px] font-medium text-emerald-700">
+                        {isExternal
+                          ? `(Linked from ${coordinatesSectionName})`
+                          : '(Direct coordinate entry above)'}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wide">
+                      Coordinates Active
+                    </span>
+                  </div>
+                  {effectiveAddress && (
+                    <div className="text-[11px] text-slate-600 pl-4 truncate" title={effectiveAddress}>
+                      <span className="font-medium text-slate-700">
+                        {cleanTechnicalAddress ? 'Technical Address:' : 'Property Address:'}
+                      </span> {effectiveAddress}
+                    </div>
+                  )}
+                </div>
+              ) : effectiveAddress ? (
+                <div className="rounded-lg p-2.5 bg-blue-50 border border-blue-200 text-xs text-slate-800 space-y-1 w-full">
+                  <div className="flex items-center justify-between flex-wrap gap-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-blue-950">📍 Map Referenced From:</span>
+                      <span className="font-semibold text-blue-800 bg-blue-100/80 px-1.5 py-0.5 rounded">
+                        {cleanTechnicalAddress ? 'Technical Address' : 'Property Address'}
+                      </span>
+                      <span className="text-[11px] text-blue-700 font-medium">
+                        {cleanTechnicalAddress ? '(Technical Specifics)' : '(Default Address)'}
+                      </span>
+                    </div>
+                    <span className="text-[10px] font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded border border-blue-200">
+                      {isExternal
+                        ? `Coordinates empty in ${coordinatesSectionName}; map referencing address`
+                        : 'Enter coordinates above to override for higher accuracy'}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-700 pl-4 font-normal truncate" title={effectiveAddress}>
+                    <span className="font-semibold text-blue-900">Address text:</span> {effectiveAddress}
+                  </div>
+                </div>
+              ) : null}
             </div>
           }
         />
@@ -2070,6 +2192,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     ...(typeof initialFields === 'object' && initialFields !== null ? initialFields : {}),
     refNo: initialFields?.refNo || projectCode || DEFAULT_FIELDS.refNo,
     to: initialFields?.to || DEFAULT_FIELDS.to,
+    boundaryDocType: initialFields?.boundaryDocType !== undefined ? initialFields.boundaryDocType : DEFAULT_FIELDS.boundaryDocType,
     city: initialFields?.city || DEFAULT_FIELDS.city,
     pincode: initialFields?.pincode || DEFAULT_FIELDS.pincode,
     serviceType: finalServiceType,
@@ -3048,7 +3171,10 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       r.drawSimpleRow('Is Property Rented', fields.isPropertyRented);
       r.drawSimpleRow('If Rented, List of Occupants', fields.rentedOccupants);
       r.drawOptionRow('Property Taxation / Maintenance', ['Low', 'Average', 'High', 'Very High'], fields.propertyTaxation);
-      r.drawSimpleRow('Boundary (As per Sketch Map)', `N: ${fields.boundaryNorth || '-'}  |  E: ${fields.boundaryEast || '-'}  |  S: ${fields.boundarySouth || '-'}  |  W: ${fields.boundaryWest || '-'}`);
+      const rawDoc = fields.boundaryDocType !== undefined ? fields.boundaryDocType : 'Sketch Map';
+      const cleanDoc = (rawDoc || '').trim().replace(/^as per\s+/i, '');
+      const boundaryDocLabel = cleanDoc ? `Boundary (As per ${cleanDoc})` : 'Boundary';
+      r.drawSimpleRow(boundaryDocLabel, `N: ${fields.boundaryNorth || '-'}  |  E: ${fields.boundaryEast || '-'}  |  S: ${fields.boundarySouth || '-'}  |  W: ${fields.boundaryWest || '-'}`);
       r.drawSimpleRow('Boundary (At Site)', `N: ${fields.buildingBoundaryNorth || '-'}  |  E: ${fields.buildingBoundaryEast || '-'}  |  S: ${fields.buildingBoundarySouth || '-'}  |  W: ${fields.buildingBoundaryWest || '-'}`);
       r.advanceCursor(8);
 
@@ -3503,8 +3629,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
     const ts = `width:100%;border-collapse:collapse;font-family:${ff};`;
     const cellBorder = '1px solid #000';
     const cellPad = '4px 6px 4px 6px';
-    const lblBg = 'rgba(219, 230, 240, 0.45)';
-    const optLblBg = 'rgba(221, 233, 246, 0.45)';
+    const lblBg = 'rgba(219, 230, 240, 0.5)';
+    const optLblBg = 'rgba(219, 230, 240, 0.5)';
 
     // ── Row helpers ──
     // Simple inline row: full-width "Label: - Value"
@@ -3596,7 +3722,8 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
 
     // Section header row
     const sectionHeader = (title: string) => {
-      return `<tr><td colspan="3" style="border:${cellBorder};padding:4px 8px 4px 8px;font-family:${ff};font-size:14pt;font-weight:bold;background:${lblBg};vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${title}</td></tr>`;
+      const upperTitle = (title || '').toUpperCase();
+      return `<tr><td colspan="3" style="border:${cellBorder};padding:4px 8px 4px 8px;font-family:${ff};font-size:14pt;font-weight:bold;text-transform:uppercase;background:${lblBg};vertical-align:middle;line-height:0.5em;word-break:break-word;word-wrap:break-word;overflow:visible;">${upperTitle}</td></tr>`;
     };
 
     // Wrap rows in a table
@@ -3740,7 +3867,12 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
       ${simpleRow('Is Property Rented', fields.isPropertyRented)}
       ${simpleRow('If Rented, List of Occupants', fields.rentedOccupants)}
       ${optionRow('Property Taxation / Maintenance', ['Low', 'Average', 'High', 'Very High'], fields.propertyTaxation)}
-      ${simpleRow('Boundary (As per Sketch Map)', `N: ${fields.boundaryNorth || '-'} &nbsp;|&nbsp; E: ${fields.boundaryEast || '-'} &nbsp;|&nbsp; S: ${fields.boundarySouth || '-'} &nbsp;|&nbsp; W: ${fields.boundaryWest || '-'}`)}
+      ${(() => {
+        const rawDoc = fields.boundaryDocType !== undefined ? fields.boundaryDocType : 'Sketch Map';
+        const cleanDoc = (rawDoc || '').trim().replace(/^as per\s+/i, '');
+        const boundaryDocLabel = cleanDoc ? `Boundary (As per ${cleanDoc})` : 'Boundary';
+        return simpleRow(boundaryDocLabel, `N: ${fields.boundaryNorth || '-'} &nbsp;|&nbsp; E: ${fields.boundaryEast || '-'} &nbsp;|&nbsp; S: ${fields.boundarySouth || '-'} &nbsp;|&nbsp; W: ${fields.boundaryWest || '-'}`);
+      })()}
       ${simpleRow('Boundary (At Site)', `N: ${fields.buildingBoundaryNorth || '-'} &nbsp;|&nbsp; E: ${fields.buildingBoundaryEast || '-'} &nbsp;|&nbsp; S: ${fields.buildingBoundarySouth || '-'} &nbsp;|&nbsp; W: ${fields.buildingBoundaryWest || '-'}`)}
     `));
 
@@ -4148,12 +4280,6 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             />
             <Field label="Ref No. (Locked)">
               <input className={inputCls} value={fields.refNo} disabled={true} readOnly={true} placeholder="Project ID" />
-            </Field>
-            <Field label="Name of Bank / Institution">
-              <input className={inputCls} value={fields.bankName} onChange={e => handleChange('bankName', e.target.value)} disabled={isReadOnly} placeholder="e.g. State Bank of India" />
-            </Field>
-            <Field label="Branch Name">
-              <input className={inputCls} value={fields.branchName} onChange={e => handleChange('branchName', e.target.value)} disabled={isReadOnly} placeholder="e.g. Commercial Branch, Cuttack" />
             </Field>
           </div>
 
@@ -4751,7 +4877,31 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
             </select>
           </Field>
           <div className="p-4 bg-[#f0faf4] rounded-xl border border-[#dcfce7]">
-            <p className="text-xs font-semibold text-[#166534] uppercase tracking-wider mb-3">Boundary Details: As per Sketch Map</p>
+            <div className="flex flex-wrap items-center gap-2 mb-3">
+              <label htmlFor="boundaryDocType" className="text-xs font-semibold text-[#166534] uppercase tracking-wider">
+                Boundary Details: As per
+              </label>
+              <input
+                id="boundaryDocType"
+                list="boundary-doc-types"
+                type="text"
+                className="text-xs font-semibold text-[#0f2038] bg-white border border-[#86efac] focus:border-[#166534] focus:ring-1 focus:ring-[#166534] rounded-lg px-2.5 py-1 outline-none min-w-[180px] sm:w-64 shadow-2xs placeholder:text-gray-400 placeholder:font-normal"
+                value={fields.boundaryDocType || ''}
+                onChange={e => handleChange('boundaryDocType', e.target.value)}
+                disabled={isReadOnly}
+                placeholder="e.g. Sketch Map, Sale Deed, Deed"
+              />
+              <datalist id="boundary-doc-types">
+                <option value="Sketch Map" />
+                <option value="Sale Deed" />
+                <option value="Title Deed" />
+                <option value="Deed" />
+                <option value="Approved Plan" />
+                <option value="ROR" />
+                <option value="Patta" />
+                <option value="Possession Certificate" />
+              </datalist>
+            </div>
             <div className="grid md:grid-cols-2 gap-4">
               <Field label="North"><input className={inputCls} value={fields.boundaryNorth} onChange={e => handleChange('boundaryNorth', e.target.value)} disabled={isReadOnly} /></Field>
               <Field label="East"><input className={inputCls} value={fields.boundaryEast} onChange={e => handleChange('boundaryEast', e.target.value)} disabled={isReadOnly} /></Field>

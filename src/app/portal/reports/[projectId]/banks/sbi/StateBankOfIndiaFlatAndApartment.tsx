@@ -3304,8 +3304,11 @@ export default function StateBankOfIndiaFlatAndApartment({
         bdaMapImages={fields.bdaMapImages || []}
         latitude={fields.latitude}
         longitude={fields.longitude}
+        hasExternalCoordinatesField={true}
+        coordinatesSectionName="Location Details"
         technicalAddress={fields.postalAddress || ''}
         propertyAddress={fields.propertyDescription || ''}
+        fields={fields}
         isReadOnly={isReadOnly}
         uploading={false}
         sectionId="section-maps"

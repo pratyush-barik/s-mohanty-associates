@@ -1455,7 +1455,8 @@ export function BaseMapsSection({
   isReadOnly = false,
   uploading = false,
   hasExternalCoordinatesField = false,
-  coordinatesSectionName = '',
+  coordinatesSectionName = 'Property Details',
+  fields,
   onLatitudeChange,
   onLongitudeChange,
   onLocationMapUpload,
@@ -1498,6 +1499,7 @@ export function BaseMapsSection({
   uploading?: boolean | string;
   hasExternalCoordinatesField?: boolean;
   coordinatesSectionName?: string;
+  fields?: Record<string, any>;
   onLatitudeChange?: (val: string) => void;
   onLongitudeChange?: (val: string) => void;
   onLocationMapUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
@@ -1523,41 +1525,84 @@ export function BaseMapsSection({
   cadastralMapLabelOverride?: string;
   defaultOpen?: boolean;
 }) {
-  const [localLat, setLocalLat] = useState(latitude || '');
-  const [localLng, setLocalLng] = useState(longitude || '');
+  // Auto-extract coordinates from fields if latitude/longitude was not directly passed
+  const extractedLat = latitude || fields?.latitude || fields?.geoTagLatitude || (() => {
+    if (fields?.latLong && typeof fields.latLong === 'string') {
+      const m = fields.latLong.match(/LAT[:\s-]*([0-9.-]+)/i);
+      return m ? m[1] : '';
+    }
+    return '';
+  })();
+
+  const extractedLng = longitude || fields?.longitude || fields?.geoTagLongitude || (() => {
+    if (fields?.latLong && typeof fields.latLong === 'string') {
+      const m = fields.latLong.match(/LONG[:\s-]*([0-9.-]+)/i);
+      return m ? m[1] : '';
+    }
+    return '';
+  })();
+
+  const [localLat, setLocalLat] = useState(extractedLat || '');
+  const [localLng, setLocalLng] = useState(extractedLng || '');
 
   useEffect(() => {
-    setLocalLat(latitude || '');
-  }, [latitude]);
+    setLocalLat(extractedLat || '');
+  }, [extractedLat]);
 
   useEffect(() => {
-    setLocalLng(longitude || '');
-  }, [longitude]);
+    setLocalLng(extractedLng || '');
+  }, [extractedLng]);
 
-  // Lock coordinates if external coordinates exist or if change handlers are omitted
-  const isLocked = hasExternalCoordinatesField || (!onLatitudeChange && !onLongitudeChange);
-  const activeLat = isLocked ? (latitude || '') : (onLatitudeChange ? (latitude || '') : localLat);
-  const activeLng = isLocked ? (longitude || '') : (onLongitudeChange ? (longitude || '') : localLng);
+  // Rule 2: Coordinates are external if explicitly declared, OR if external coordinate fields exist in fields
+  const hasExternalInFields = Boolean(
+    fields && (
+      fields.geoTagLatitude !== undefined ||
+      fields.latLong !== undefined ||
+      (fields.latitude !== undefined && !onLatitudeChange)
+    )
+  );
+  const isExternal = Boolean(hasExternalCoordinatesField || hasExternalInFields);
+  const activeLat = isExternal ? (extractedLat || '') : (onLatitudeChange ? (extractedLat || '') : localLat);
+  const activeLng = isExternal ? (extractedLng || '') : (onLongitudeChange ? (extractedLng || '') : localLng);
 
   const handleLatChange = (val: string) => {
-    if (isLocked) return;
+    if (isExternal) return;
     setLocalLat(val);
     onLatitudeChange?.(val);
   };
 
   const handleLngChange = (val: string) => {
-    if (isLocked) return;
+    if (isExternal) return;
     setLocalLng(val);
     onLongitudeChange?.(val);
   };
 
   const cleanLat = (activeLat || '').trim();
   const cleanLng = (activeLng || '').trim();
-  const hasCoordinates = Boolean(cleanLat && cleanLng && !isNaN(Number(cleanLat)) && !isNaN(Number(cleanLng)));
+  const latNum = parseFloat(cleanLat);
+  const lngNum = parseFloat(cleanLng);
+  const hasCoordinates = Boolean(
+    cleanLat && cleanLng &&
+    !isNaN(latNum) && !isNaN(lngNum) &&
+    latNum >= -90 && latNum <= 90 &&
+    lngNum >= -180 && lngNum <= 180
+  );
   
   const cleanTechnicalAddress = (technicalAddress || '').trim();
   const cleanPropertyAddress = (propertyAddress || '').trim();
-  const effectiveAddress = cleanTechnicalAddress || cleanPropertyAddress;
+  const rawFieldsAddress = fields ? (
+    fields.propertyAddressSite ||
+    fields.propertyAddressAsVisit ||
+    fields.propertyAddress ||
+    fields.postalAddress ||
+    fields.siteAddress ||
+    fields.propertyAddressLegal ||
+    fields.addressAsPerDocument ||
+    fields.ownerAddress ||
+    fields.locality ||
+    ''
+  ) : '';
+  const effectiveAddress = (cleanTechnicalAddress || cleanPropertyAddress || String(rawFieldsAddress).trim()).replace(/[\r\n]+/g, ' ').trim();
 
   // Specific uploading booleans per map category
   const isLocationUploading = typeof uploading === 'string'
@@ -1580,13 +1625,13 @@ export function BaseMapsSection({
     ? (uploading === 'bda' || uploading === 'bdaMapImages')
     : Boolean(uploading);
 
-  // Coordinates override technical address for more accurate pinpointing
+  // Rule 1: GPS Coordinates take priority; if empty, fallback to property address
   const queryParam = hasCoordinates
     ? `${cleanLat},${cleanLng}`
     : effectiveAddress;
 
   const encodedQuery = encodeURIComponent(queryParam);
-  const hasQuery = hasCoordinates || effectiveAddress.length > 0;
+  const hasQuery = Boolean(hasCoordinates || effectiveAddress.length > 0);
   const googleMapsUrl = hasCoordinates
     ? `https://www.google.com/maps?q=${cleanLat},${cleanLng}&z=17&t=k`
     : `https://www.google.com/maps/search/${encodeURIComponent(effectiveAddress)}`;
@@ -1613,24 +1658,24 @@ export function BaseMapsSection({
         onReorder={onReorderLocationMap}
         emptyMessage="No Google Satellite Map uploaded yet. Click '+ Add Google Satellite Map' to upload one or more maps."
         headerExtra={
-          <div className="space-y-2 pt-1">
+          <div className="space-y-3 pt-1 w-full">
             <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
               Live Satellite & Coordinate Preview
             </div>
 
             {hasQuery ? (
-              <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-xs">
+              <div className="rounded-xl overflow-hidden border border-[#c8d6e5] shadow-xs w-full">
                 <div className="bg-[#d5e8f5] px-3.5 py-1.5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-[#1a3a5c] uppercase tracking-wider flex items-center gap-1.5">
-                      📍 Live Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : `— ${cleanTechnicalAddress ? 'Technical Address' : 'Property Address'}`}
+                      📍 Live Satellite Pin {hasCoordinates ? `(${cleanLat}, ${cleanLng})` : `— ${cleanTechnicalAddress ? 'Technical Address' : 'Property Address'}`}
                     </span>
                   </div>
                   <a
                     href={googleMapsUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs font-semibold text-accent-500 hover:underline"
+                    className="text-xs font-semibold text-accent-600 hover:underline"
                   >
                     Open in Google Maps &#x2197;
                   </a>
@@ -1647,14 +1692,14 @@ export function BaseMapsSection({
                 />
               </div>
             ) : (
-              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-center text-xs text-slate-500 w-full">
                 Enter property address or coordinates in report details to view live satellite map preview.
               </div>
             )}
 
             {/* Map Reference Source Notice */}
             {hasCoordinates ? (
-              <div className="rounded-lg p-2.5 bg-emerald-50 border border-emerald-200 text-xs text-slate-800 space-y-1">
+              <div className="rounded-lg p-2.5 bg-emerald-50 border border-emerald-200 text-xs text-slate-800 space-y-1 w-full">
                 <div className="flex items-center justify-between flex-wrap gap-1.5">
                   <div className="flex items-center gap-1.5">
                     <span className="font-bold text-emerald-950">📍 Map Referenced From:</span>
@@ -1662,8 +1707,8 @@ export function BaseMapsSection({
                       GPS Coordinates ({cleanLat}, {cleanLng})
                     </span>
                     <span className="text-[11px] font-medium text-emerald-700">
-                      {isLocked
-                        ? `(Referenced from ${coordinatesSectionName || 'report coordinates'})`
+                      {isExternal
+                        ? `(Linked from ${coordinatesSectionName || 'report details'})`
                         : '(Manual coordinate entry below)'}
                     </span>
                   </div>
@@ -1680,7 +1725,7 @@ export function BaseMapsSection({
                 )}
               </div>
             ) : effectiveAddress ? (
-              <div className="rounded-lg p-2.5 bg-blue-50 border border-blue-200 text-xs text-slate-800 space-y-1">
+              <div className="rounded-lg p-2.5 bg-blue-50 border border-blue-200 text-xs text-slate-800 space-y-1 w-full">
                 <div className="flex items-center justify-between flex-wrap gap-1.5">
                   <div className="flex items-center gap-1.5">
                     <span className="font-bold text-blue-950">📍 Map Referenced From:</span>
@@ -1692,7 +1737,7 @@ export function BaseMapsSection({
                     </span>
                   </div>
                   <span className="text-[10px] font-medium text-slate-600 bg-white/80 px-2 py-0.5 rounded border border-blue-200">
-                    {isLocked
+                    {isExternal
                       ? `Coordinates empty in ${coordinatesSectionName || 'report details'}; map preview referencing address`
                       : 'Enter coordinates below to override for higher accuracy'}
                   </span>
@@ -1702,67 +1747,72 @@ export function BaseMapsSection({
                 </div>
               </div>
             ) : (
-              <div className="rounded-lg p-2.5 bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+              <div className="rounded-lg p-2.5 bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center gap-2 w-full">
                 <span>⚠️</span>
                 <span>
                   No property address or coordinates found.{' '}
-                  {isLocked
+                  {isExternal
                     ? `Please enter property address or coordinates in ${coordinatesSectionName || 'Location Details'}.`
                     : 'Enter property address in report details or input coordinates below.'}
                 </span>
               </div>
             )}
 
-            {/* Direct GPS Coordinates entry / Reference Box */}
-            <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 space-y-2 mt-4">
+            {/* Direct GPS Coordinates entry (Rule 3) OR Linked Notice (Rule 2) */}
+            <div className="rounded-xl border border-slate-200 bg-slate-50/90 p-3 space-y-2 mt-4 w-full">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-[#0f2038] flex items-center gap-1.5">
-                  🧭 {isLocked ? 'Report Coordinates' : 'Direct GPS Coordinates Entry'}
+                  🧭 {isExternal ? 'Report Coordinates' : 'Direct GPS Coordinates Entry'}
                 </span>
                 <span className="text-[11px] text-slate-500 font-medium">
-                  {isLocked
-                    ? `🔒 Coordinates referenced from ${coordinatesSectionName || 'report details'}`
+                  {isExternal
+                    ? `🔒 Coordinates linked from ${coordinatesSectionName || 'report details'}`
                     : 'Input latitude & longitude to set map pin'}
                 </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                    {isLocked ? 'Latitude (Locked)' : 'Latitude (DD)'}
-                  </label>
-                  <input
-                    type="text"
-                    className={`w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg outline-none font-mono ${
-                      isLocked
-                        ? 'bg-slate-100 text-slate-700 cursor-not-allowed select-all'
-                        : 'bg-white text-slate-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038]'
-                    }`}
-                    placeholder={isLocked ? 'Not entered in report details' : ''}
-                    value={activeLat || ''}
-                    onChange={e => handleLatChange(e.target.value)}
-                    readOnly={isLocked}
-                    disabled={isReadOnly || isLocked}
-                  />
+
+              {isExternal ? (
+                /* Rule 2: Do not give input box for lat/long in map if coordinates exist in report builder */
+                <div className="flex items-center gap-2 p-2.5 rounded-lg bg-white border border-slate-200 text-xs text-slate-700">
+                  <span className="font-semibold text-slate-600">Linked Coordinates:</span>
+                  <span className="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded border border-slate-200">
+                    {hasCoordinates ? `${cleanLat}, ${cleanLng}` : 'Not entered in report details (Using Address)'}
+                  </span>
+                  <span className="text-[11px] text-slate-500 ml-auto">
+                    (Editable in {coordinatesSectionName || 'Location Details'})
+                  </span>
                 </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-slate-600 mb-1">
-                    {isLocked ? 'Longitude (Locked)' : 'Longitude (DD)'}
-                  </label>
-                  <input
-                    type="text"
-                    className={`w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg outline-none font-mono ${
-                      isLocked
-                        ? 'bg-slate-100 text-slate-700 cursor-not-allowed select-all'
-                        : 'bg-white text-slate-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038]'
-                    }`}
-                    placeholder={isLocked ? 'Not entered in report details' : ''}
-                    value={activeLng || ''}
-                    onChange={e => handleLngChange(e.target.value)}
-                    readOnly={isLocked}
-                    disabled={isReadOnly || isLocked}
-                  />
+              ) : (
+                /* Rule 3: Allow input in map section if no coordinates input elsewhere */
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      Latitude (DD)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg outline-none font-mono bg-white text-slate-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038]"
+                      placeholder="e.g. 20.2961"
+                      value={activeLat || ''}
+                      onChange={e => handleLatChange(e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 mb-1">
+                      Longitude (DD)
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg outline-none font-mono bg-white text-slate-800 focus:ring-1 focus:ring-[#0f2038] focus:border-[#0f2038]"
+                      placeholder="e.g. 85.8245"
+                      value={activeLng || ''}
+                      onChange={e => handleLngChange(e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {normLocationImages.length > 0 && (

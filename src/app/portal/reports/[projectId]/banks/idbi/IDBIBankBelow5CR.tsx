@@ -1314,6 +1314,8 @@ export default function IDBIBankBelow5CR({
         bdaMapImages={fields.bdaMapImages || []}
         latitude={fields.latitude}
         longitude={fields.longitude}
+        fields={fields}
+        hasExternalCoordinatesField={true}
         technicalAddress={fields.propertyAddress || ''}
         propertyAddress={fields.propertyAddress || ''}
         isReadOnly={isReadOnly}

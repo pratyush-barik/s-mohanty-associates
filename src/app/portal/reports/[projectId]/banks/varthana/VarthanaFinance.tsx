@@ -1106,6 +1106,10 @@ export default function VarthanaFinance({
             sketchMapImages={fields.sketchMapImages || []}
             cadastralMapImages={fields.cadastralMapImages || []}
             bdaMapImages={fields.bdaMapImages || []}
+            latitude={fields.latitude}
+            longitude={fields.longitude}
+            fields={fields}
+            hasExternalCoordinatesField={true}
             isReadOnly={isReadOnly}
             uploading={uploading}
             onLocationMapUpload={(e) => handleMapUpload('locationMapImages', e)}

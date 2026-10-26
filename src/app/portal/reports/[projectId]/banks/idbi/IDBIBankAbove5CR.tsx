@@ -978,6 +978,8 @@ export default function IDBIBankAbove5CR({
         bdaMapImages={fields.bdaMapImages || []}
         latitude={fields.latitude}
         longitude={fields.longitude}
+        fields={fields}
+        hasExternalCoordinatesField={true}
         technicalAddress={fields.postalAddress || ''}
         propertyAddress={fields.propertyDescription || ''}
         isReadOnly={isReadOnly}

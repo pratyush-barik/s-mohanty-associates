@@ -1430,6 +1430,8 @@ export default function DCBHLLAPSME({
               locationMapImages={fields.locationMapImages || []}
               latitude={fields.latitude || ''}
               longitude={fields.longitude || ''}
+              fields={fields}
+              hasExternalCoordinatesField={true}
               onLocationMapRemove={(idx) => {
                 handleChange('locationMapImages', (fields.locationMapImages || []).filter((_: any, i: number) => i !== idx));
               }}

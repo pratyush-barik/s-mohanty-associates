@@ -1088,6 +1088,8 @@ export default function IndusIndBBG({
               bdaMapImages={fields.bdaMapImages || []}
               latitude={fields.latitude}
               longitude={fields.longitude}
+              fields={fields}
+              hasExternalCoordinatesField={true}
               technicalAddress={fields.indusBBGAddressSite || ''}
               propertyAddress={fields.indusBBGAddressLegal || ''}
               isReadOnly={isReadOnly}

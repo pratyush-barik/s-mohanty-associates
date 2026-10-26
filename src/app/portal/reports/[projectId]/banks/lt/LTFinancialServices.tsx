@@ -814,12 +814,15 @@ export default function LTFinancialServices({
           <BaseMapsSection
             title="Maps" sectionNumber={11}
             sectionId="lt-sec-maps"
-            
             locationMapImages={formData.locationMapImages || []}
             mouzaMapImages={formData.mouzaMapImages || []}
             sketchMapImages={formData.sketchMapImages || []}
             cadastralMapImages={formData.cadastralMapImages || []}
             bdaMapImages={formData.bdaMapImages || []}
+            latitude={formData.latitude}
+            longitude={formData.longitude}
+            fields={formData}
+            hasExternalCoordinatesField={true}
             isReadOnly={isReadOnly}
             uploading={uploading}
             onLocationMapUpload={(e) => handleMapUpload('locationMapImages', e)}

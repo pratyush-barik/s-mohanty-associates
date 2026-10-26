@@ -221,7 +221,7 @@ export interface SBIBelow5CRFields {
   [key: string]: any;
 }
 
-const SECTION_BANNER_BG = '#C26B2B'; // Standard warm reddish-brown matching the reference sample
+const SECTION_BANNER_BG = LBL_BG;
 
 export class PDFSBILandAndBuildingRenderer extends PDFBankRenderer {
   private reportFields: SBIBelow5CRFields;
@@ -1039,8 +1039,8 @@ export class PDFSBILandAndBuildingRenderer extends PDFBankRenderer {
     const wNum = 20;
     const wTitle = CONTENT_W - wNum;
 
-    this.drawCell(MARGIN_L, this.cursorY, wNum, rowH, secNum, { bold: true, align: 'center', fillColor: SECTION_BANNER_BG, textColor: '#FFFFFF' });
-    this.drawCell(MARGIN_L + wNum, this.cursorY, wTitle, rowH, title, { bold: true, fillColor: SECTION_BANNER_BG, textColor: '#FFFFFF' });
+    this.drawCell(MARGIN_L, this.cursorY, wNum, rowH, secNum, { bold: true, align: 'center', fillColor: LBL_BG });
+    this.drawCell(MARGIN_L + wNum, this.cursorY, wTitle, rowH, title, { bold: true, fillColor: LBL_BG });
     this.cursorY += rowH;
   }
 

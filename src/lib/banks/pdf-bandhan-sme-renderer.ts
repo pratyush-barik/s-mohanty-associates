@@ -27,6 +27,7 @@ import {
   FONT_SIZE_TITLE,
   FONT_SIZE_SMALL,
   FONT_SIZE_CAPTION,
+  FONT_SIZE_TABLE_BANK_COMPACT,
   LINE_HEIGHT,
   BORDER_W,
   CELL_PAD_X,
@@ -1865,7 +1866,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       `DISTRESS VALUE (${distPctDisplay})`,
     ];
 
-    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: true, fontSize: 9.5 }));
+    const headerHeights = headers.map((h, i) => this.cellHeight(h, colW[i], { bold: true, fontSize: FONT_SIZE_TABLE_BANK_COMPACT }));
     const headerH = Math.max(24, ...headerHeights);
     this.checkPageBreak(headerH);
 
@@ -1873,7 +1874,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
     for (let i = 0; i < headers.length; i++) {
       this.drawCell(curX, this.cursorY, colW[i], headerH, headers[i], {
         bold: true,
-        fontSize: 9.5,
+        fontSize: FONT_SIZE_TABLE_BANK_COMPACT,
         align: 'center',
         vAlign: 'middle',
         fillColor: LBL_BG,
@@ -1896,7 +1897,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
 
     for (const ar of abstractRows) {
       const values = [ar.name, ar.govt || 'Rs. 0.00', ar.mkt || 'Rs. 0.00', ar.real || 'Rs. 0.00', ar.dist || 'Rs. 0.00'];
-      const rHeights = values.map((v, i) => this.cellHeight(v, colW[i], { bold: ar.isTotal, fontSize: 9.5 }));
+      const rHeights = values.map((v, i) => this.cellHeight(v, colW[i], { bold: ar.isTotal, fontSize: FONT_SIZE_TABLE_BANK_COMPACT }));
       const rH = Math.max(20, ...rHeights);
       this.checkPageBreak(rH);
 
@@ -1904,7 +1905,7 @@ export class PDFBandhanSMERenderer extends PDFBankRenderer {
       for (let i = 0; i < values.length; i++) {
         this.drawCell(rx, this.cursorY, colW[i], rH, values[i], {
           bold: ar.isTotal,
-          fontSize: 9.5,
+          fontSize: FONT_SIZE_TABLE_BANK_COMPACT,
           align: i === 0 ? 'left' : 'center',
           vAlign: 'middle',
           fillColor: ar.isTotal ? LBL_BG : undefined,

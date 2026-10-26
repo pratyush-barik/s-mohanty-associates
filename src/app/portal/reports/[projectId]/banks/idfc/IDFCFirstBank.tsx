@@ -1469,6 +1469,8 @@ export default function IDFCFirstBank({
             bdaMapImages={formData.bdaMapImages || []}
             latitude={formData.latitude}
             longitude={formData.longitude}
+            fields={formData}
+            hasExternalCoordinatesField={true}
             isReadOnly={isReadOnly}
             uploading={uploading}
             onLocationMapUpload={(e) => handleMapUpload('locationMapImages', e)}

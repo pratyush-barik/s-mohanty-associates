@@ -2904,11 +2904,21 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
 
         {/* ── Section Maps & Sketches (Multi-Photo Supported) ── */}
         {!isSectionHidden('section-12') && !isSectionHidden('maps') && (() => {
+          const allExtraSections = [
+            ...(config?.extraSectionsStart || []),
+            ...(config?.extraSections || []),
+            ...(config?.extraSectionsEnd || []),
+          ];
           const hasCoordsInConfig = Boolean(
-            config?.extraFields &&
-            Object.values(config.extraFields).some((fieldList) =>
-              Array.isArray(fieldList) && fieldList.some((f: any) => f.key === 'latitude' || f.key === 'longitude')
-            )
+            (config?.extraFields &&
+              Object.values(config.extraFields).some((fieldList) =>
+                Array.isArray(fieldList) && fieldList.some((f: any) => f.key === 'latitude' || f.key === 'longitude' || f.key === 'gpsCoordinates')
+              )) ||
+            (allExtraSections.length > 0 &&
+              allExtraSections.some((sec: any) => {
+                const s = typeof sec.render === 'function' ? sec.render.toString() : '';
+                return s.includes('latitude') || s.includes('longitude') || s.includes('gpsCoordinates') || s.includes('ubiLatitude');
+              }))
           );
           const technicalAddress = fields.propertyAddressSite || fields.propertyAddressAsVisit || fields.propertyAddress || getFullAddress() || fields.ownerAddress || '';
           return (
@@ -2921,8 +2931,11 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
               bdaMapImages={fields.bdaMapImages || []}
               latitude={fields.latitude}
               longitude={fields.longitude}
+              onLatitudeChange={(val) => handleChange('latitude', val)}
+              onLongitudeChange={(val) => handleChange('longitude', val)}
               technicalAddress={technicalAddress}
               propertyAddress={getFullAddress() || fields.ownerAddress || ''}
+              fields={fields}
               hasExternalCoordinatesField={hasCoordsInConfig}
               coordinatesSectionName="Property Details"
               isReadOnly={isReadOnly}

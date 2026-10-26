@@ -2036,6 +2036,10 @@ export default function CholaInvestment({
           locationMapImages={fields.locationMaps || []}
           latitude={fields.latitude || ''}
           longitude={fields.longitude || ''}
+          onLatitudeChange={(val) => handleChange('latitude', val)}
+          onLongitudeChange={(val) => handleChange('longitude', val)}
+          propertyAddress={fields.postalAddress || fields.addressAsPerDocument || ''}
+          fields={fields}
           isReadOnly={isReadOnly}
           onLocationMapRemove={(idx?: number) => {
             if (idx !== undefined) {

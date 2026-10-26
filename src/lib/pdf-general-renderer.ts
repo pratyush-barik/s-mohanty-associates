@@ -76,18 +76,23 @@ export const COL_W = [
 // Styling
 export const CELL_PAD_X = 4;
 export const CELL_PAD_Y = 3;
-export const FONT_SIZE = 12;
-export const FONT_SIZE_HEADER = 14;
-export const FONT_SIZE_TITLE = 14;
-export const FONT_SIZE_SMALL = 12;
-export const FONT_SIZE_CAPTION = 10;
-export const FONT_SIZE_TABLE_GENERAL = 12;
-export const FONT_SIZE_TABLE_GENERAL_COMPACT = 10;
+// ─── Standardized Typography Scale (MS Word 14 / 12 / 10 Scale) ─────
+export const FONT_SIZE_HEADER = 14;          // Section headers: bold size 14 uppercase
+export const FONT_SIZE_TITLE = 14;           // Main report / bank title banner
+export const FONT_SIZE = 12;                 // General text: size 12 (bold/unbold)
+export const FONT_SIZE_CAPTION = 10;         // Captions: size 10 italics
+export const FONT_SIZE_TABLE = 12;           // General table cells: size 12
+export const FONT_SIZE_TABLE_COMPACT = 10;   // Compact table cells: size 10 (4+ cols)
+
+// Backward Compatibility Aliases (Prevents Orphaned Variables / Broken Imports)
+export const FONT_SIZE_SMALL = FONT_SIZE;
+export const FONT_SIZE_TABLE_GENERAL = FONT_SIZE_TABLE;
+export const FONT_SIZE_TABLE_GENERAL_COMPACT = FONT_SIZE_TABLE_COMPACT;
 export const LINE_HEIGHT = 1.25; // multiplier on font size
 export const BORDER_W = 0.5;
 export const LBL_BG = '#DBE6F0';
-export const OPT_BG = '#DDE9F6';
-export const VAL_BG = '#DBE6F0';
+export const OPT_BG = LBL_BG;
+export const VAL_BG = LBL_BG;
 export const BG_OPACITY = 0.5;
 
 export interface TextSegment {
@@ -705,10 +710,11 @@ export class PDFGeneralRenderer {
    * Advances cursor.
    */
   drawSectionHeader(title: string): void {
-    const h = this.cellHeight(title, CONTENT_W, { bold: true, fontSize: FONT_SIZE_HEADER });
+    const text = (title || '').toUpperCase();
+    const h = this.cellHeight(text, CONTENT_W, { bold: true, fontSize: FONT_SIZE_HEADER });
     // Require an extra 150pt of space to prevent orphaned headings or single rows
     this.checkPageBreak(h + 150);
-    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, h, title, {
+    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, h, text, {
       bold: true, fontSize: FONT_SIZE_HEADER, fillColor: LBL_BG,
     });
     this.cursorY += h;
@@ -1071,10 +1077,10 @@ export class PDFGeneralRenderer {
 
     this.checkPageBreak(totalH);
 
-    // Header row (black bg, white text)
+    // Header row (LBL_BG bg @ 50% opacity, black text)
     let cx = MARGIN_L;
     for (let c = 0; c < numCols; c++) {
-      this.drawRect(cx, this.cursorY, colWidths[c], headerRowH, '#000000', '#000000', BORDER_W);
+      this.drawRect(cx, this.cursorY, colWidths[c], headerRowH, LBL_BG, '#000000', BORDER_W, BG_OPACITY);
 
       const headerText = headers[c];
       const match = headerText.match(/^(.*?)\s+(\(.*\))$/);
@@ -1084,16 +1090,16 @@ export class PDFGeneralRenderer {
         const bottomText = match[2];
         const topY = this.cursorY + CELL_PAD_Y + 1;
         this.drawTextAt(topText, cx + CELL_PAD_X, topY, {
-          bold: true, fontSize: FONT_SIZE_SMALL, textColor: '#FFFFFF', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
+          bold: true, fontSize: FONT_SIZE_SMALL, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
         });
         this.drawTextAt(bottomText, cx + CELL_PAD_X, topY + FONT_SIZE_SMALL * LINE_HEIGHT, {
-          bold: true, fontSize: FONT_SIZE_SMALL - 1.5, textColor: '#FFFFFF', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
+          bold: true, fontSize: FONT_SIZE_SMALL - 1.5, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
         });
       } else {
         const textH = FONT_SIZE_SMALL * LINE_HEIGHT;
         const topY = this.cursorY + (headerRowH - textH) / 2;
         this.drawTextAt(headerText, cx + CELL_PAD_X, topY, {
-          bold: true, fontSize: FONT_SIZE_SMALL, textColor: '#FFFFFF', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
+          bold: true, fontSize: FONT_SIZE_SMALL, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
         });
       }
       cx += colWidths[c];
@@ -1110,11 +1116,10 @@ export class PDFGeneralRenderer {
       const vals = is9Col
         ? [row.name, row.basis || 'Built-up Area', row.area, row.rate, row.estimated, row.life, row.age, row.dep, row.netValue]
         : [row.name, row.area, row.rate, row.estimated, row.life, row.age, row.dep, row.netValue];
-      const bgColor = r % 2 === 0 ? '#FFFFFF' : '#F5F5F5';
       cx = MARGIN_L;
       for (let c = 0; c < numCols; c++) {
         this.drawCell(cx, this.cursorY, colWidths[c], rowH, vals[c], {
-          fontSize: FONT_SIZE_SMALL, align: aligns[c], fillColor: bgColor, bgOpacity: 0.5,
+          fontSize: FONT_SIZE_SMALL, align: aligns[c],
         });
         cx += colWidths[c];
       }
@@ -1696,12 +1701,12 @@ export class PDFGeneralRenderer {
     let x = MARGIN_L;
     if (headerIsFull) {
       this.drawCell(x, this.cursorY, CONTENT_W, headerH, headers[0], {
-        bold: true, fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.45,
+        bold: true, fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: BG_OPACITY,
       });
     } else {
       for (let c = 0; c < numCols; c++) {
         this.drawCell(x, this.cursorY, finalWidths[c], headerH, headers[c], {
-          bold: true, fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.45,
+          bold: true, fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: BG_OPACITY,
         });
         x += finalWidths[c];
       }
@@ -1727,10 +1732,10 @@ export class PDFGeneralRenderer {
 
       x = MARGIN_L;
       if (rowIsFull) {
-        this.drawCell(x, this.cursorY, CONTENT_W, rowH, row[0], { fontSize, vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.45 });
+        this.drawCell(x, this.cursorY, CONTENT_W, rowH, row[0], { fontSize, vAlign: 'middle', fillColor: LBL_BG, bgOpacity: BG_OPACITY });
       } else {
         for (let c = 0; c < numCols; c++) {
-          this.drawCell(x, this.cursorY, finalWidths[c], rowH, row[c] || '', { fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: 0.45 });
+          this.drawCell(x, this.cursorY, finalWidths[c], rowH, row[c] || '', { fontSize, align: 'center', vAlign: 'middle', fillColor: LBL_BG, bgOpacity: BG_OPACITY });
           x += finalWidths[c];
         }
       }

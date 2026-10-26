@@ -1743,6 +1743,8 @@ export default function SuryodaySmallFinanceBank({
               sketchMapImages={form.sketchMapImages || []}
               cadastralMapImages={form.cadastralMapImages || []}
               bdaMapImages={form.bdaMapImages || []}
+              fields={form}
+              hasExternalCoordinatesField={true}
               isReadOnly={isReadOnly}
               uploading={uploading}
               onLocationMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('locationMapImages', e)}

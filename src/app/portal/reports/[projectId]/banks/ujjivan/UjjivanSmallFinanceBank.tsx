@@ -1941,6 +1941,10 @@ export default function UjjivanSmallFinanceBank({
             sketchMapImages={fields.sketchMapImages || []}
             cadastralMapImages={fields.cadastralMapImages || []}
             bdaMapImages={fields.bdaMapImages || []}
+            latitude={fields.geoTagLatitude}
+            longitude={fields.geoTagLongitude}
+            fields={fields}
+            hasExternalCoordinatesField={true}
             isReadOnly={isReadOnly}
             uploading={uploading}
             onLocationMapUpload={(e: React.ChangeEvent<HTMLInputElement>) => handleMapUpload('locationMapImages', e)}

@@ -2054,6 +2054,10 @@ export default function AyeFinance({
           locationMapImages={fields.locationMaps || []}
           latitude={fields.latitude || ''}
           longitude={fields.longitude || ''}
+          onLatitudeChange={(val) => handleChange('latitude', val)}
+          onLongitudeChange={(val) => handleChange('longitude', val)}
+          propertyAddress={fields.propertyAddressSite || fields.propertyAddressLegal || fields.propertyAddressFiring || ''}
+          fields={fields}
           isReadOnly={isReadOnly}
           onLocationMapRemove={(idx?: number) => {
             if (idx !== undefined) {

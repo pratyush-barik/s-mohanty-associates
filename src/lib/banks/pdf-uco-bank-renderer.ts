@@ -31,6 +31,7 @@ import {
   FONT_SIZE_SMALL,
   FONT_SIZE_TABLE_BANK,
   FONT_SIZE_TABLE_BANK_COMPACT,
+  LBL_BG,
   hexToRgb,
   LINE_HEIGHT,
   formatReportDate
@@ -1060,7 +1061,7 @@ export class PDFUCOBankRenderer extends PDFBankRenderer {
         if (ri > 0 && ci === 0 && ri < mergedData.length - 1) align = 'left';
         if (ri === mergedData.length - 1 && ci === 0) align = 'right';
         let bold = isHeader || ri === mergedData.length - 1;
-        let fillColor = isHeader ? '#e6f0ff' : undefined;
+        let fillColor = isHeader ? LBL_BG : undefined;
         return { align, bold, fillColor, bgOpacity: 0.5 };
       };
 
@@ -1069,7 +1070,7 @@ export class PDFUCOBankRenderer extends PDFBankRenderer {
         merges,
         [0.18, 0.10, 0.08, 0.07, 0.10, 0.16, 0.16, 0.15],
         styleOpts,
-        { fontSize: 9 }
+        { fontSize: FONT_SIZE_TABLE_BANK_COMPACT }
       );
     }
     }

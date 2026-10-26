@@ -33,16 +33,19 @@ const COL_W = [
 // Styling
 const CELL_PAD_X = 4;
 const CELL_PAD_Y = 3;
-const FONT_SIZE = 12;
-const FONT_SIZE_HEADER = 14;
-const FONT_SIZE_SMALL = 12;
-const FONT_SIZE_CAPTION = 10;
-export const FONT_SIZE_TABLE_IBBI = 12;
-export const FONT_SIZE_TABLE_IBBI_COMPACT = 10;
+export const FONT_SIZE = 12;
+export const FONT_SIZE_HEADER = 14;
+export const FONT_SIZE_CAPTION = 10;
+export const FONT_SIZE_TABLE = 12;
+export const FONT_SIZE_TABLE_COMPACT = 10;
+export const FONT_SIZE_SMALL = 12;
+export const FONT_SIZE_TABLE_IBBI = FONT_SIZE_TABLE;
+export const FONT_SIZE_TABLE_IBBI_COMPACT = FONT_SIZE_TABLE_COMPACT;
 const LINE_HEIGHT = 1.25; // multiplier on font size
 const BORDER_W = 0.75;
-const LBL_BG = '#DBE6F0';
-const OPT_BG = '#DDE9F6';
+export const LBL_BG = '#DBE6F0';
+export const OPT_BG = LBL_BG;
+export const BG_OPACITY = 0.5;
 
 export interface TextSegment {
   text: string;
@@ -515,7 +518,7 @@ export class PDFIBBIRenderer {
 
     // Fill
     if (opts?.fillColor) {
-      this.drawRect(x, topY, w, h, opts.fillColor, undefined, undefined, opts.bgOpacity);
+      this.drawRect(x, topY, w, h, opts.fillColor, undefined, undefined, opts?.bgOpacity ?? BG_OPACITY);
     }
 
     // Border
@@ -585,10 +588,11 @@ export class PDFIBBIRenderer {
    * Advances cursor.
    */
   drawSectionHeader(title: string): void {
-    const h = this.cellHeight(title, CONTENT_W, { bold: true, fontSize: FONT_SIZE_HEADER });
+    const uppercaseTitle = (title || '').toUpperCase();
+    const h = this.cellHeight(uppercaseTitle, CONTENT_W, { bold: true, fontSize: FONT_SIZE_HEADER });
     // Require an extra 150pt of space to prevent orphaned headings or single rows
     this.checkPageBreak(h + 150);
-    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, h, title, {
+    this.drawCell(MARGIN_L, this.cursorY, CONTENT_W, h, uppercaseTitle, {
       bold: true, fontSize: FONT_SIZE_HEADER, fillColor: LBL_BG,
     });
     this.cursorY += h;
@@ -1080,16 +1084,16 @@ export class PDFIBBIRenderer {
     ];
     colWidths[7] = CONTENT_W - colWidths.slice(0, 7).reduce((a, b) => a + b, 0);
 
-    const rowH = FONT_SIZE_SMALL * LINE_HEIGHT + CELL_PAD_Y * 2;
-    const headerRowH = FONT_SIZE_SMALL * LINE_HEIGHT * 2 + CELL_PAD_Y * 2;
+    const rowH = FONT_SIZE_TABLE_IBBI_COMPACT * LINE_HEIGHT + CELL_PAD_Y * 2;
+    const headerRowH = FONT_SIZE_TABLE_IBBI_COMPACT * LINE_HEIGHT * 2 + CELL_PAD_Y * 2;
     const totalH = headerRowH + rowH * (rows.length + 1); // header + data rows + total row
 
     this.checkPageBreak(totalH);
 
-    // Header row (black bg, white text)
+    // Header row (LBL_BG bg @ 50% opacity, black text)
     let cx = MARGIN_L;
     for (let c = 0; c < numCols; c++) {
-      this.drawRect(cx, this.cursorY, colWidths[c], headerRowH, '#000000', '#000000', BORDER_W);
+      this.drawRect(cx, this.cursorY, colWidths[c], headerRowH, LBL_BG, '#000000', BORDER_W, BG_OPACITY);
 
       const headerText = headers[c];
       const match = headerText.match(/^(.*?)\s+(\(.*\))$/);
@@ -1099,16 +1103,16 @@ export class PDFIBBIRenderer {
         const bottomText = match[2];
         const topY = this.cursorY + CELL_PAD_Y + 1;
         this.drawTextAt(topText, cx + CELL_PAD_X, topY, {
-          bold: true, fontSize: FONT_SIZE_SMALL, textColor: '#FFFFFF', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
+          bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
         });
-        this.drawTextAt(bottomText, cx + CELL_PAD_X, topY + FONT_SIZE_SMALL * LINE_HEIGHT, {
-          bold: true, fontSize: FONT_SIZE_SMALL - 1.5, textColor: '#FFFFFF', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
+        this.drawTextAt(bottomText, cx + CELL_PAD_X, topY + FONT_SIZE_TABLE_IBBI_COMPACT * LINE_HEIGHT, {
+          bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
         });
       } else {
-        const textH = FONT_SIZE_SMALL * LINE_HEIGHT;
+        const textH = FONT_SIZE_TABLE_IBBI_COMPACT * LINE_HEIGHT;
         const topY = this.cursorY + (headerRowH - textH) / 2;
         this.drawTextAt(headerText, cx + CELL_PAD_X, topY, {
-          bold: true, fontSize: FONT_SIZE_SMALL, textColor: '#FFFFFF', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
+          bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, textColor: '#000000', align: 'left', maxWidth: colWidths[c] - CELL_PAD_X * 2
         });
       }
       cx += colWidths[c];
@@ -1120,11 +1124,10 @@ export class PDFIBBIRenderer {
     for (let r = 0; r < rows.length; r++) {
       const row = rows[r];
       const vals = [row.name, row.area, row.rate, row.estimated, row.life, row.age, row.dep, row.netValue];
-      const bgColor = r % 2 === 0 ? '#FFFFFF' : '#F5F5F5';
       cx = MARGIN_L;
       for (let c = 0; c < numCols; c++) {
         this.drawCell(cx, this.cursorY, colWidths[c], rowH, vals[c], {
-          fontSize: FONT_SIZE_SMALL, align: aligns[c], fillColor: bgColor, bgOpacity: 0.5,
+          fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, align: aligns[c],
         });
         cx += colWidths[c];
       }
@@ -1134,10 +1137,10 @@ export class PDFIBBIRenderer {
     // Total row
     const totalLabelW = colWidths.slice(0, 7).reduce((a, b) => a + b, 0);
     this.drawCell(MARGIN_L, this.cursorY, totalLabelW, rowH, totalLabel, {
-      bold: true, fontSize: FONT_SIZE_SMALL, fillColor: LBL_BG, bgOpacity: 0.5,
+      bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, fillColor: LBL_BG, bgOpacity: 0.5,
     });
     this.drawCell(MARGIN_L + totalLabelW, this.cursorY, colWidths[7], rowH, totalValue, {
-      bold: true, fontSize: FONT_SIZE_SMALL, fillColor: OPT_BG, bgOpacity: 0.5, align: 'right',
+      bold: true, fontSize: FONT_SIZE_TABLE_IBBI_COMPACT, fillColor: OPT_BG, bgOpacity: 0.5, align: 'right',
     });
     this.cursorY += rowH;
   }
