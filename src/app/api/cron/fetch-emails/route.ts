@@ -4,6 +4,7 @@ import { simpleParser } from 'mailparser';
 import { prisma } from '@/lib/prisma';
 import { supabaseAdmin, STORAGE_BUCKETS, getPublicUrl } from '@/lib/supabase';
 import { decodeHtmlEntities } from '@/lib/html-entities';
+import { generateUniqueEnquiryTicketNumber } from '@/app/actions/enquiry';
 import path from 'path';
 
 export const dynamic = 'force-dynamic';
@@ -28,7 +29,7 @@ async function uploadAttachment(buffer: Buffer, filename: string, mimeType: stri
   return { filePath, publicUrl: getPublicUrl(STORAGE_BUCKETS.ENQUIRY_FILES, filePath) };
 }
 
-async function processInbox(host: string, port: number, user: string, pass: string, source: 'EMAIL' | 'PORTAL_SIGNUP', isGmail: boolean) {
+async function processInbox(host: string, port: number, user: string, pass: string) {
   const client = new ImapFlow({
     host,
     port,
@@ -55,127 +56,65 @@ async function processInbox(host: string, port: number, user: string, pass: stri
         const fromName = decodeHtmlEntities(parsedEmail.from?.value[0]?.name || 'Unknown User');
         const bodyText = decodeHtmlEntities(parsedEmail.text || '');
 
-        const ticketMatch = subject.match(/\[Ticket\s+#(SMA-[A-Z0-9\-]+)\]/i);
+        // Extract ticket number if this is a reply (e.g. [Ticket #SMA-2026-123456] or [SMA-2026-123456])
+        const ticketMatch = subject.match(/\[(?:Ticket\s+#)?(SMA-[A-Z0-9\-]+)\]/i);
         const ticketNumber = ticketMatch ? ticketMatch[1] : null;
 
-        let isProjectMatch = false;
-        let isEnquiryMatch = false;
-        let matchedRecordId: string | null = null;
-        let projectMessageId: string | null = null;
+        let enquiryId: string | null = null;
 
-        // ─── 1. Check if Reply to Existing Case ───
+        // ─── 1. Check if Reply to Existing Enquiry ───
         if (ticketNumber) {
-          // Try to find an active Project first
-          const project = await prisma.project.findUnique({
-            where: { projectCode: ticketNumber }
+          const existingEnquiry = await prisma.enquiry.findUnique({
+            where: { ticketNumber }
           });
 
-          if (project) {
-            isProjectMatch = true;
-            matchedRecordId = project.id;
-            
-            // Log reply as ProjectMessage
-            const projectMsg = await prisma.projectMessage.create({
+          if (existingEnquiry) {
+            enquiryId = existingEnquiry.id;
+
+            await prisma.enquiryMessage.create({
               data: {
-                projectId: project.id,
-                content: bodyText.trim(),
-              }
-            });
-            projectMessageId = projectMsg.id;
-
-          } else {
-            // Try Enquiry
-            const enquiry = await prisma.enquiry.findUnique({
-              where: { ticketNumber }
-            });
-
-            if (enquiry) {
-              isEnquiryMatch = true;
-              matchedRecordId = enquiry.id;
-
-              await prisma.enquiryMessage.create({
-                data: {
-                  enquiryId: enquiry.id,
-                  sender: 'CLIENT',
-                  body: bodyText.trim(),
-                },
-              });
-
-              await prisma.enquiry.update({
-                where: { id: enquiry.id },
-                data: { status: 'NEW' },
-              });
-            }
-          }
-        } 
-        
-        // ─── 2. If NO Match, Create New Case ───
-        if (!isProjectMatch && !isEnquiryMatch) {
-          if (isGmail) {
-            // Direct Service Request creation for Gmail
-            const sr = await prisma.serviceRequest.create({
-              data: {
-                guestName: fromName,
-                guestEmail: fromEmail,
-                propertyType: 'Specified in Email',
-                purpose: 'Valuation Request',
-                propertyAddress: 'Address pending (from email)',
-                propertyDetails: bodyText.trim(),
-                contactName: fromName,
-                contactPhone: '',
-                contactEmail: fromEmail,
-                status: 'APPROVED' // Ready for assignment
-              }
-            });
-
-            const count = await prisma.project.count();
-            const projectCode = `SMA-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
-            
-            const project = await prisma.project.create({
-              data: {
-                projectCode,
-                serviceRequestId: sr.id,
-                source: 'GMAIL',
-                status: 'PENDING_REVIEW', // Needs manager assignment
-                isEmailOnly: true
-              }
-            });
-            
-            isProjectMatch = true;
-            matchedRecordId = project.id;
-
-          } else {
-            // Standard Enquiry creation for Titan/info
-            const count = await prisma.enquiry.count();
-            const newTicketNumber = `SMA-${100 + count + 1}`;
-            const isOrganisation = bodyText.toLowerCase().includes('organisation:');
-
-            const enquiry = await prisma.enquiry.create({
-              data: {
-                 ticketNumber: newTicketNumber,
-                 source,
-                senderType: isOrganisation ? 'ORGANISATION' : 'INDIVIDUAL',
-                name: fromName,
-                email: fromEmail,
-                subject: subject,
-                message: bodyText.trim(),
-                status: 'NEW',
-                enquiries: {
-                  create: {
-                    sender: 'CLIENT',
-                    body: bodyText.trim(),
-                  },
-                },
+                enquiryId: existingEnquiry.id,
+                sender: 'CLIENT',
+                body: bodyText.trim(),
               },
             });
-            
-            isEnquiryMatch = true;
-            matchedRecordId = enquiry.id;
+
+            await prisma.enquiry.update({
+              where: { id: existingEnquiry.id },
+              data: { status: 'NEW' },
+            });
           }
         }
 
-        // ─── 3. Process Attachments ───
-        if (matchedRecordId && parsedEmail.attachments && parsedEmail.attachments.length > 0) {
+        // ─── 2. If NO Match, Create New Enquiry ───
+        if (!enquiryId) {
+          const newTicketNumber = await generateUniqueEnquiryTicketNumber();
+          const isOrganisation = bodyText.toLowerCase().includes('organisation:');
+
+          const newEnquiry = await prisma.enquiry.create({
+            data: {
+              ticketNumber: newTicketNumber,
+              source: 'EMAIL',
+              senderType: isOrganisation ? 'ORGANISATION' : 'INDIVIDUAL',
+              name: fromName,
+              email: fromEmail,
+              subject: subject || 'Email Enquiry',
+              message: bodyText.trim(),
+              status: 'NEW',
+              enquiries: {
+                create: {
+                  sender: 'CLIENT',
+                  body: bodyText.trim(),
+                },
+              },
+            },
+          });
+
+          enquiryId = newEnquiry.id;
+        }
+
+        // ─── 3. Process Attachments for Enquiry ───
+        if (enquiryId && parsedEmail.attachments && parsedEmail.attachments.length > 0) {
           for (const attachment of parsedEmail.attachments) {
             if (!attachment.content) continue;
 
@@ -192,10 +131,7 @@ async function processInbox(host: string, port: number, user: string, pass: stri
                 url: upload.publicUrl,
                 type: mimeType,
                 size: buffer.length,
-                // Link attachment based on match type
-                ...(isProjectMatch && projectMessageId ? { messageId: projectMessageId } : {}),
-                ...(isProjectMatch && !projectMessageId ? { projectId: matchedRecordId } : {}),
-                ...(isEnquiryMatch ? { enquiryId: matchedRecordId } : {}),
+                enquiryId,
               },
             });
           }
@@ -233,21 +169,11 @@ export async function GET(request: Request) {
   const titanUser = process.env.IMAP_USER;
   const titanPass = process.env.IMAP_PASS;
 
-  const gmailHost = process.env.GMAIL_IMAP_HOST;
-  const gmailPort = parseInt(process.env.GMAIL_IMAP_PORT || '993', 10);
-  const gmailUser = process.env.GMAIL_IMAP_USER;
-  const gmailPass = process.env.GMAIL_IMAP_PASS;
-
   let totalProcessed = 0;
 
-  // Process Titan Inbox (Queries -> Enquiries)
+  // Process Titan Inbox (Queries / Inquiries -> Enquiries)
   if (titanHost && titanUser && titanPass) {
-    totalProcessed += await processInbox(titanHost, titanPort, titanUser, titanPass, 'EMAIL', false);
-  }
-
-  // Process Gmail Inbox (Requests -> ServiceRequests)
-  if (gmailHost && gmailUser && gmailPass) {
-    totalProcessed += await processInbox(gmailHost, gmailPort, gmailUser, gmailPass, 'EMAIL', true);
+    totalProcessed += await processInbox(titanHost, titanPort, titanUser, titanPass);
   }
 
   return NextResponse.json({ success: true, processedCount: totalProcessed });

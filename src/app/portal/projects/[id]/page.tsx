@@ -16,15 +16,13 @@ function formatStatus(status: string, clientReworkRequested?: boolean) {
 }
 
 function formatSource(source: string) {
-  if (source === 'GMAIL') return 'Gmail';
-  if (source === 'EXTERNAL') return 'External';
-  return 'Website';
+  if (source === 'WEBSITE') return 'Website';
+  return 'External';
 }
 
 function sourceColor(source: string) {
-  if (source === 'GMAIL') return 'bg-blue-100 text-blue-700 border-blue-200';
-  if (source === 'EXTERNAL') return 'bg-amber-100 text-amber-700 border-amber-200';
-  return 'bg-purple-100 text-purple-700 border-purple-200';
+  if (source === 'WEBSITE') return 'bg-purple-100 text-purple-700 border-purple-200';
+  return 'bg-slate-100 text-slate-700 border-slate-200';
 }
 
 export default async function ProjectDetailsPage({ params }: { params: Promise<{ id: string }> }) {

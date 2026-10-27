@@ -544,39 +544,54 @@ export async function finalizeReport(projectId: string, pdfUrl: string) {
     const { appendTrainingData } = await import('@/lib/training-data');
     appendTrainingData(projectId, project.projectCode, report.data, new Date());
 
-    if (project.isEmailOnly) {
-      if (project?.serviceRequest?.guestEmail) {
+    const isExternalCase = project.source === 'EXTERNAL' || project.source === 'GMAIL' || project.isEmailOnly;
+
+    if (isExternalCase) {
+      const recipientEmail = (project.serviceRequest?.guestEmail || project.serviceRequest?.contactEmail || '').trim();
+      const recipientName = project.serviceRequest?.guestName || project.serviceRequest?.contactName || 'Valued Client';
+
+      if (recipientEmail) {
         const { sendMail } = await import('@/lib/mail');
         await sendMail({
           from: process.env.GMAIL_SMTP_FROM || 'smohantyassociates@gmail.com',
-          to: project.serviceRequest.guestEmail,
+          to: recipientEmail,
           subject: `Your Valuation Report is Ready [${project.projectCode}]`,
+          attachments: [
+            {
+              filename: `${project.projectCode}_Valuation_Report.pdf`,
+              path: pdfUrl,
+            },
+          ],
           html: `
-            <div style="font-family: sans-serif; color: #333;">
-              <h2>Report Completed</h2>
-              <p>Dear ${project.serviceRequest.guestName || 'Client'},</p>
+            <div style="font-family: sans-serif; color: #333; line-height: 1.6;">
+              <h2>Valuation Report Finalized</h2>
+              <p>Dear ${recipientName},</p>
               <p>Your property valuation report for <strong>${project.projectCode}</strong> has been successfully finalized.</p>
-              <p>You can download the official PDF copy of your report from the secure link below:</p>
-              <p><a href="${pdfUrl}" style="display:inline-block;padding:10px 20px;background:#b8860b;color:#fff;text-decoration:none;border-radius:5px;">Download Report PDF</a></p>
+              <p>Please find the official finalized PDF report attached directly to this email for your records and compliance filings.</p>
               <p>Thank you for choosing S Mohanty Associates.</p>
+              <p style="margin-top: 24px; color: #666; font-size: 13px;">Best regards,<br><strong>S Mohanty & Associates</strong><br>Government Registered & IBBI Valuers</p>
             </div>
           `
         });
       }
     } else {
-      if (project?.serviceRequest?.contactEmail) {
+      const recipientEmail = (project.serviceRequest?.contactEmail || '').trim();
+      const recipientName = project.serviceRequest?.contactName || 'Valued Client';
+
+      if (recipientEmail) {
         const { sendMail } = await import('@/lib/mail');
         await sendMail({
           from: 'report@smohantyassociates.com',
-          to: project.serviceRequest.contactEmail,
+          to: recipientEmail,
           subject: `Your Valuation Report is Ready [${project.projectCode}]`,
           html: `
-            <div style="font-family: sans-serif; color: #333;">
+            <div style="font-family: sans-serif; color: #333; line-height: 1.6;">
               <h2>Report Completed</h2>
-              <p>Dear ${project.serviceRequest.contactName},</p>
+              <p>Dear ${recipientName},</p>
               <p>Your property valuation report for <strong>${project.projectCode}</strong> has been successfully finalized.</p>
-              <p>Please log in to your client dashboard to download the official PDF copy of your report.</p>
+              <p>Please log in to your client dashboard to view and download the official PDF copy of your report.</p>
               <p>Thank you for choosing S Mohanty Associates.</p>
+              <p style="margin-top: 24px; color: #666; font-size: 13px;">Best regards,<br><strong>S Mohanty & Associates</strong></p>
             </div>
           `
         });
@@ -649,7 +664,7 @@ export async function acceptServiceRequest(
       }
     }
 
-    const source = request.clientId ? 'WEBSITE' : 'GMAIL';
+    const source = request.clientId ? 'WEBSITE' : 'EXTERNAL';
 
     const project = await prisma.project.create({
       data: {
@@ -658,6 +673,7 @@ export async function acceptServiceRequest(
         status: projectStatus as any,
         assignedManagerId,
         source,
+        isEmailOnly: !request.clientId,
       },
     });
 
@@ -937,7 +953,7 @@ export async function createManualCase(formData: FormData) {
   const clientType = formData.get('clientType') as string;
   const clientName = formData.get('clientName') as string;
   const organisationName = formData.get('organisationName') as string;
-  const guestEmail = formData.get('guestEmail') as string;
+  const guestEmail = (formData.get('guestEmail') as string || '').trim();
   const guestPhone = (formData.get('guestPhone') as string) || null;
   const propertyType = formData.get('propertyType') as string;
   const purpose = formData.get('purpose') as string;
@@ -967,8 +983,12 @@ export async function createManualCase(formData: FormData) {
       }
     });
 
-    const count = await prisma.project.count();
-    const projectCode = `SMA-${new Date().getFullYear()}-${String(count + 1).padStart(3, '0')}`;
+    const year = new Date().getFullYear();
+    const projectCount = await prisma.project.count({
+      where: { projectCode: { startsWith: `SMA-${year}-` } }
+    });
+    const nextNum = String(projectCount + 1).padStart(3, '0');
+    const projectCode = `SMA-${year}-${nextNum}`;
 
     const project = await prisma.project.create({
       data: {

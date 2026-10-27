@@ -67,8 +67,8 @@ const NAV_SECTIONS: NavItem[] = [
   { id: 'section-6', title: 'Documents Submitted' },
   { id: 'section-7', title: 'Remarks & Observations' },
   { id: 'section-8', title: 'Declaration' },
-  { id: 'sec-maps', title: 'Location Maps' },
   { id: 'sec-documents', title: 'Property Documents' },
+  { id: 'sec-maps', title: 'Location Maps' },
   { id: 'sec-photos', title: 'Site Photographs' },
 ];
 
@@ -2046,31 +2046,11 @@ export default function AyeFinance({
           </div>
         </Section>
 
-        {/* SECTION IX: LOCATION MAPS */}
-        <BaseMapsSection
-          title="Location Maps"
-          sectionId="sec-maps"
-          sectionNumber={9}
-          locationMapImages={fields.locationMaps || []}
-          latitude={fields.latitude || ''}
-          longitude={fields.longitude || ''}
-          onLatitudeChange={(val) => handleChange('latitude', val)}
-          onLongitudeChange={(val) => handleChange('longitude', val)}
-          propertyAddress={fields.propertyAddressSite || fields.propertyAddressLegal || fields.propertyAddressFiring || ''}
-          fields={fields}
-          isReadOnly={isReadOnly}
-          onLocationMapRemove={(idx?: number) => {
-            if (idx !== undefined) {
-              handleChange('locationMaps', (fields.locationMaps || []).filter((_: any, i: number) => i !== idx));
-            }
-          }}
-        />
-
-        {/* SECTION X: PROPERTY DOCUMENTS GALLERY */}
+        {/* SECTION IX: PROPERTY DOCUMENTS GALLERY */}
         <BaseDocumentsSection
           title="Property Documents"
           sectionId="sec-documents"
-          sectionNumber={10}
+          sectionNumber={9}
           documentImages={fields.propertyDocuments || []}
           documentImageNames={fields.propertyDocumentNames || []}
           isReadOnly={isReadOnly}
@@ -2087,6 +2067,26 @@ export default function AyeFinance({
           onReorderDocuments={(newDocs: string[], newNames: string[]) => {
             handleChange('propertyDocuments', newDocs);
             handleChange('propertyDocumentNames', newNames);
+          }}
+        />
+
+        {/* SECTION X: LOCATION MAPS */}
+        <BaseMapsSection
+          title="Location Maps"
+          sectionId="sec-maps"
+          sectionNumber={10}
+          locationMapImages={fields.locationMaps || []}
+          latitude={fields.latitude || ''}
+          longitude={fields.longitude || ''}
+          onLatitudeChange={(val) => handleChange('latitude', val)}
+          onLongitudeChange={(val) => handleChange('longitude', val)}
+          propertyAddress={fields.propertyAddressSite || fields.propertyAddressLegal || fields.propertyAddressFiring || ''}
+          fields={fields}
+          isReadOnly={isReadOnly}
+          onLocationMapRemove={(idx?: number) => {
+            if (idx !== undefined) {
+              handleChange('locationMaps', (fields.locationMaps || []).filter((_: any, i: number) => i !== idx));
+            }
           }}
         />
 

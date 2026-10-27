@@ -92,7 +92,7 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
   };
 
   const handleSend = async () => {
-    if ((!newMessage.trim() && selectedFiles.length === 0) || sending) return;
+    if (isExternal || (!newMessage.trim() && selectedFiles.length === 0) || sending) return;
     setSending(true);
     setError(null);
 
@@ -166,6 +166,7 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
   // Owner must NOT message projects managed by another manager
   const isOwnerAllowed = isOwner && (!project?.assignedManagerId || isAssignedManager);
   const canSend = !isTerminated && (isAssignedManager || isOwnerAllowed);
+  const isExternal = project?.source === 'EXTERNAL' || project?.source === 'GMAIL' || Boolean(project?.isEmailOnly);
 
   return (
     <div className="card p-6 flex flex-col h-[600px]">
@@ -173,9 +174,17 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
         Communication
       </h2>
 
-      {project?.source === 'GMAIL' || project?.source === 'EXTERNAL' ? (
-        <div className="p-3 rounded-xl bg-blue-50 text-blue-700 border border-blue-200 text-xs mb-4">
-          📧 This project is email-based. Replies will be sent via email to the client in addition to being saved here.
+      {isExternal ? (
+        <div className="p-3.5 rounded-xl bg-gradient-to-r from-slate-50 via-rose-50/25 to-slate-50 border border-slate-200 text-xs mb-4 flex items-start sm:items-center gap-3 shadow-xs">
+          <div className="w-6 h-6 rounded-lg bg-amber-100 text-amber-800 flex items-center justify-center shrink-0 text-xs font-bold border border-amber-200">
+            🔒
+          </div>
+          <p className="text-slate-600 leading-relaxed m-0 text-xs">
+            <span>no account exist , recepient does not hold an inbox account please contact via primary mode of communication eg — </span>
+            <span className="inline-flex items-center font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-md text-[11px] tracking-wide ml-1 shadow-2xs">
+              call, sms, whatsapp or mail
+            </span>
+          </p>
         </div>
       ) : null}
 
@@ -279,8 +288,39 @@ export default function ProjectChat({ projectId, messages: initialMessages, curr
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Area — only shown when user can send */}
-      {canSend ? (
+      {/* Input Area */}
+      {isExternal ? (
+        <div className="flex flex-col pt-4 border-t border-[#e9ecef]">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              disabled
+              className="shrink-0 p-2.5 text-[#adb5bd] rounded-xl cursor-not-allowed opacity-50"
+              title="Disabled for external projects"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+              </svg>
+            </button>
+            <input
+              type="text"
+              disabled
+              placeholder="Communication disabled for external projects — contact via primary channels"
+              className="flex-1 px-4 py-2.5 rounded-xl border border-[#dee2e6] bg-[#f8f9fa] text-sm text-[#868e96] cursor-not-allowed transition-all"
+            />
+            <button
+              type="button"
+              disabled
+              className="btn btn-primary px-4 py-2.5 text-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              title="Disabled for external projects"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      ) : canSend ? (
         <div className="flex flex-col pt-4 border-t border-[#e9ecef]">
           {error && (
             <div className="mb-3 p-3 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">

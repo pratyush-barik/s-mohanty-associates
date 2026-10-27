@@ -35,6 +35,13 @@ For comprehensive developer directives, schema details, and architecture specifi
    - Full-width interactive satellite embed with GPS coordinates, origin address badges, and manual coordinate override directly below the category header divider.
 5. **Zero Mock Client Data**:
    - Case-specific customer data (names, loan numbers, boundaries, dates) strictly defaults to dynamic prefill or empty strings.
+6. **Strict 1-to-1 Field Ownership & Zero Alias Fallbacks**:
+   - Bank UI components directly prefill fields without hidden alias chains in the PDF engine (`resolveField`).
+7. **Evidentiary Photo Retention**:
+   - `finalizeReport` never purges property photographs; images are retained for compliance and rework cycles.
+8. **Direct PDF Delivery & Bank Firewall Compliance**:
+   - External bank reports are delivered directly attached as PDF files from `smohantyassociates@gmail.com` with zero download link buttons, bypassing Indian bank corporate firewalls. Website clients receive portal dashboard notifications.
+
 
 ---
 

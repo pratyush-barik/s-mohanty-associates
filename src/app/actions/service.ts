@@ -4,7 +4,6 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { ServiceRequestSchema, type ServiceRequestFormState } from '@/lib/definitions';
 import { revalidatePath } from 'next/cache';
-import { sendMail } from '@/lib/mail';
 import { supabaseAdmin } from '@/lib/supabase';
 import { STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { decodeHtmlEntities } from '@/lib/html-entities';
@@ -49,25 +48,6 @@ export async function submitServiceRequest(
       contactEmail: decodeHtmlEntities(data.contactEmail),
       additionalNotes: data.additionalNotes ? decodeHtmlEntities(data.additionalNotes) : null,
       status: 'SUBMITTED',
-    },
-  });
-
-  // Create a linked Enquiry record with PORTAL_SIGNUP source for internal tracking
-  const count = await prisma.enquiry.count();
-  const ticketNumber = `SMA-${100 + count + 1}`;
-
-  await prisma.enquiry.create({
-    data: {
-      ticketNumber,
-      source: 'PORTAL_SIGNUP',
-      serviceRequestId: serviceRequest.id,
-      name: data.contactName,
-      email: data.contactEmail,
-      phone: data.contactPhone || null,
-      subject: `${data.propertyType} — ${data.purpose}`,
-      message: data.propertyDetails,
-      senderType: 'INDIVIDUAL',
-      status: 'NEW',
     },
   });
 
@@ -237,41 +217,6 @@ export async function sendProjectMessage(
         },
         data: { messageId: message.id },
       });
-    }
-
-    const replyTextLower = content.trim().toLowerCase();
-
-    // Send email reply for Gmail or External source projects
-    const shouldEmail = project.source === 'GMAIL' || project.source === 'EXTERNAL';
-
-    if (shouldEmail) {
-      const contactEmail = project.serviceRequest?.contactEmail || project.serviceRequest?.guestEmail;
-      if (contactEmail) {
-        const projectCode = project.projectCode;
-        let attachmentLinks = '';
-        if (attachmentDocIds.length > 0) {
-          const docs = await prisma.document.findMany({
-            where: { id: { in: attachmentDocIds }, projectId },
-            select: { url: true },
-          });
-          attachmentLinks = docs.map(d => d.url).filter(Boolean).join('\n');
-        }
-
-        await sendMail({
-          from: 'smohantyassociate@gmail.com',
-          to: contactEmail,
-          subject: `Re: [${projectCode}] ${content.substring(0, 50)}${content.length > 50 ? '...' : ''}`,
-          html: `
-            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
-              <p>${content.replace(/\n/g, '<br/>')}</p>
-              ${attachmentLinks ? `<p><strong>Attachments:</strong><br/>${attachmentLinks}</p>` : ''}
-              <hr style="border: none; border-top: 1px solid #e9ecef; margin: 20px 0;" />
-              <p style="font-size: 12px; color: #6c757d;">Project Code: <strong>${projectCode}</strong></p>
-              <p style="font-size: 12px; color: #6c757d;">This is an automated reply from S Mohanty Associates.</p>
-            </div>
-          `,
-        });
-      }
     }
 
     revalidatePath('/portal/projects', 'layout');

@@ -7,6 +7,29 @@ import { sendMail } from '@/lib/mail';
 import { headers } from 'next/headers';
 import { checkEnquiryRateLimit } from '@/lib/rate-limit';
 import { decodeHtmlEntities } from '@/lib/html-entities';
+import crypto from 'crypto';
+
+/**
+ * Generate a unique, non-colliding enquiry ticket number in the format:
+ * SMA-YYYY-XXXXXX (where XXXXXX is a random 6-digit number).
+ * Distinct from sequential project codes (SMA-YYYY-NNN).
+ */
+export async function generateUniqueEnquiryTicketNumber(): Promise<string> {
+  const year = new Date().getFullYear();
+  for (let attempt = 0; attempt < 25; attempt++) {
+    const randomDigits = crypto.randomInt(100000, 1000000); // 100000 to 999999
+    const candidate = `SMA-${year}-${randomDigits}`;
+    const existing = await prisma.enquiry.findUnique({
+      where: { ticketNumber: candidate },
+      select: { id: true },
+    });
+    if (!existing) {
+      return candidate;
+    }
+  }
+  // Fallback with timestamp suffix to guarantee uniqueness if loop ever exhausts
+  return `SMA-${year}-${Date.now().toString().slice(-6)}`;
+}
 
 /**
  * Submit a public enquiry from the Contact Us form.
@@ -44,8 +67,7 @@ export async function submitEnquiry(formData: FormData) {
   }
 
   try {
-    const count = await prisma.enquiry.count();
-    const ticketNumber = `SMA-${100 + count + 1}`;
+    const ticketNumber = await generateUniqueEnquiryTicketNumber();
 
     const enquiry = await prisma.enquiry.create({
       data: {

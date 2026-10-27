@@ -1361,14 +1361,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
           .upload(pdfPath, pdfBlob, { contentType: 'application/pdf' });
         if (!uploadErr) {
           const { data: urlData } = supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).getPublicUrl(pdfPath);
-          try {
-            const { data: files } = await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).list(`temp-photos/${projectId}`);
-            if (files && files.length > 0) {
-              const paths = files.map(f => `temp-photos/${projectId}/${f.name}`);
-              await supabaseBrowser.storage.from(STORAGE_BUCKETS.VALUATION_DOCUMENTS).remove(paths);
-            }
-          } catch (err) { console.error('Failed to cleanup temp photos:', err); }
-          const finalFields = { ...fields, propertyImages: [] };
+          const finalFields = { ...fields };
           await saveReportDraft(projectId, finalFields);
           const { finalizeReport } = await import('@/app/actions/project');
           const res = await finalizeReport(projectId, urlData.publicUrl);

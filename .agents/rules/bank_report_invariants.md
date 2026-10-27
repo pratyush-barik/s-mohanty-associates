@@ -155,3 +155,33 @@
 - **Apartment Valuation Basis**:
   Apartment valuation cards must include a dedicated input field for `Recommended Rate and basis for recommendation` defaulting safely to `'NA'`.
 
+### 14. 1-to-1 Independent Report Identity Architecture
+- Every bank and financial institution valuation report MUST be treated as an **independent entity**.
+- Each bank format has its own dedicated UI component (`src/app/portal/reports/[projectId]/banks/<bank-dir>/<BankFile>.tsx`) and dedicated PDF renderer (`src/lib/banks/pdf-<bank-id>-renderer.ts`).
+- Never conflate multiple distinct institutions into a single shared generic template.
+- Bank routing in `BuilderSelector.tsx` must be strictly 1-to-1 with no cross-bank fallbacks.
+
+### 15. Post-Finalization Evidentiary Image Retention
+- Finalizing a report (`finalizeReport()`) MUST NEVER wipe `propertyImages: []` from the database `Report.data` JSON blob, nor delete temporary image files from storage immediately.
+- Evidentiary photos and uploaded maps must remain linked in the database so that if a manager or client initiates a rework cycle, the report reopens with all photographs and annotations intact.
+- Permanent deletion of temporary storage files is permitted ONLY after the project transitions to `ARCHIVED` status via automated lifecycle cleanup.
+
+### 16. Strict 1-to-1 Field Ownership & Direct Prefill Derivation (No Hidden Aliases)
+- The dedicated Bank UI component is the **single source of truth** for translating intake and prefill data (`projectCode`, `prefill.contactName`, `prefill.propertyAddress`, `prefill.ownerName`) into bank-specific domain fields.
+- Dedicated PDF renderers MUST strictly read the bank's defined schema (`this.f[key] ?? fallback`) without hidden alias fallback chains.
+- No silent field bridging or magic aliases in the PDF layer—the UI maps prefill directly, and the PDF renderer trusts the matching UI model completely.
+
+### 17. Client Communication & Delivery Architecture
+- The system maintains clear channel separation between public inquiries, service requests, and project communication:
+  1. `Enquiry`: Public query tickets with collision-proof ticket format `SMA-YYYY-XXXXXX` (Year + 6 random digits) distinct from sequential project codes (`SMA-YYYY-NNN`). Never create shadow or duplicate enquiries on portal service signups.
+  2. `ServiceRequest`: Formal appraisal orders submitted via registered client dashboard or manual case entry.
+  3. `ProjectMessage`: Internal staff <-> client chat for registered portal account holders.
+- **External Case Chat Isolation**:
+  - For projects with `source: EXTERNAL` or `isEmailOnly: true`, in-portal chat input is disabled (`<input disabled />` and `<button disabled />`) with the exact notice:
+    `"no account exist , recepient does not hold an inbox account please contact via primary mode of communication eg - call,sms,whatsapp or mail"`.
+  - Never auto-dispatch chat messages as outgoing emails to external contacts or bank managers.
+  - Do not render guessed contact cards in the chat box to prevent bank officer vs borrower ambiguity.
+- **Final Report Delivery & Firewall Compliance**:
+  - **External / Bank Cases**: Final report email is dispatched from `smohantyassociates@gmail.com` with the official finalized PDF attached directly as a file (`attachments: [{ filename, path: pdfUrl }]`). Do NOT provide external download links or buttons, as Indian bank corporate firewalls (@sbi.co.in, @pnb.co.in) block external download URLs.
+  - **Website Account Holders**: Notification email is sent from `report@smohantyassociates.com` directing the client to log in to `/dashboard` to view and download their report. No PDF attached.
+  - Finalizing a report automatically closes any linked `Enquiry` ticket (`status: CLOSED`). Reopening for rework restores the ticket to active status.

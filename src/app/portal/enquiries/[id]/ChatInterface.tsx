@@ -85,8 +85,8 @@ export default function ChatInterface({
     }
   };
 
-  const sourceLabel = source === 'EMAIL' ? '📧 Email' : source === 'PORTAL_SIGNUP' ? '🌐 Portal Signup' : '🌐 Website';
-  const sourceColor = source === 'EMAIL' ? 'bg-blue-100 text-blue-700 border-blue-200' : source === 'PORTAL_SIGNUP' ? 'bg-green-100 text-green-700 border-green-200' : 'bg-purple-100 text-purple-700 border-purple-200';
+  const sourceLabel = source === 'EMAIL' ? '📧 Email' : '🌐 Website';
+  const sourceColor = source === 'EMAIL' ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-purple-100 text-purple-700 border-purple-200';
 
   return (
     <div className="card overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 160px)' }}>

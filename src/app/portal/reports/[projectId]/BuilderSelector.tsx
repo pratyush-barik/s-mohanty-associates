@@ -441,17 +441,28 @@ export default function BuilderSelector({
       return BANK_BUILDER_MAP[matchFullKey];
     }
 
-    // 3. Dedicated SBI / IDBI sub-template routing
+    // 3. Dedicated SBI & IDBI sub-template routing
     const isSbi = cleanOrg.includes('STATE BANK OF INDIA') || cleanOrg === 'SBI';
-    const isIdbi = cleanOrg.includes('IDBI');
-    if (isSbi || isIdbi) {
+    if (isSbi) {
       const cleanSub = (sub || cleanOrg).toUpperCase().replace(/\s+/g, " ");
-      if (cleanSub.includes('BELOW') || cleanSub.includes('LAND')) {
+      if (cleanSub.includes('LAND') || cleanSub.includes('BUILDING')) {
         return BANK_BUILDER_MAP['STATE BANK OF INDIA-SBI::Land & Building'];
       }
-      if (cleanSub.includes('ABOVE') || cleanSub.includes('FLAT') || cleanSub.includes('APARTMENT')) {
+      if (cleanSub.includes('FLAT') || cleanSub.includes('APARTMENT')) {
         return BANK_BUILDER_MAP['STATE BANK OF INDIA-SBI::Flat & Apartment'];
       }
+    }
+
+    const isIdbi = cleanOrg.includes('IDBI');
+    if (isIdbi) {
+      const cleanSub = (sub || cleanOrg).toUpperCase().replace(/\s+/g, " ");
+      if (cleanSub.includes('BELOW') || cleanSub.includes('LAND')) {
+        return BANK_BUILDER_MAP['IDBI BANK::BELOW 5CR'];
+      }
+      if (cleanSub.includes('ABOVE') || cleanSub.includes('FLAT') || cleanSub.includes('APARTMENT')) {
+        return BANK_BUILDER_MAP['IDBI BANK::ABOVE 5CR'];
+      }
+      return BANK_BUILDER_MAP['IDBI BANK'];
     }
 
     // 4. Direct format match (e.g. if key is just 'Land & Building' or 'Flat & Apartment')

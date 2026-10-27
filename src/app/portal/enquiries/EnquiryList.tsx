@@ -27,7 +27,6 @@ const statusColors: Record<string, string> = {
 const sourceStyles: Record<string, { bg: string; text: string; icon: string }> = {
   WEBSITE: { bg: 'bg-purple-50', text: 'text-purple-700', icon: '🌐' },
   EMAIL: { bg: 'bg-blue-50', text: 'text-blue-700', icon: '📧' },
-  PORTAL_SIGNUP: { bg: 'bg-green-50', text: 'text-green-700', icon: '🔐' },
 };
 
 const subjectLabels: Record<string, string> = {
@@ -83,7 +82,7 @@ export default function EnquiryList({ enquiries }: { enquiries: Enquiry[] }) {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${sourceStyle.bg} ${sourceStyle.text}`}>
-                      {sourceStyle.icon} {enquiry.source === 'EMAIL' ? 'Gmail' : enquiry.source === 'PORTAL_SIGNUP' ? 'Portal' : 'Website'}
+                      {sourceStyle.icon} {enquiry.source === 'EMAIL' ? 'Email' : 'Website'}
                     </span>
                   </td>
                   <td className="px-6 py-4">

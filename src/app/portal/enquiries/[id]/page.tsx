@@ -69,13 +69,11 @@ export default async function EnquiryDetailPage({ params }: { params: Promise<{ 
     'other': 'Other Inquiry',
   };
 
-  const sourceLabel = enquiry.source === 'EMAIL' ? '📧 Email Direct' : enquiry.source === 'PORTAL_SIGNUP' ? '🌐 Portal Signup' : '🌐 Website Contact';
+  const sourceLabel = enquiry.source === 'EMAIL' ? '📧 Email Direct' : '🌐 Website Contact';
 
   const sourceBadgeColor = enquiry.source === 'EMAIL'
     ? 'bg-blue-100 text-blue-700 border-blue-200'
-    : enquiry.source === 'PORTAL_SIGNUP'
-      ? 'bg-green-100 text-green-700 border-green-200'
-      : 'bg-purple-100 text-purple-700 border-purple-200';
+    : 'bg-purple-100 text-purple-700 border-purple-200';
 
   return (
     <div className="space-y-6">

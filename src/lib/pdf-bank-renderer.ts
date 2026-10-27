@@ -193,8 +193,29 @@ export {
   PDFGeneralRenderer,
 };
 
+/**
+ * Standard field resolver for bank renderers.
+ * Performs direct field lookup without alias chains, honoring strict 1-to-1
+ * derivation where the dedicated Bank UI is the sole translator of prefill data.
+ */
+export function resolveField(fields: any, key: string, defaultVal: any = ''): any {
+  if (!fields) return defaultVal;
+  const val = fields[key];
+  if (val !== undefined && val !== null && String(val).trim().length > 0) {
+    return val;
+  }
+  return defaultVal;
+}
+
 export class PDFBankRenderer extends PDFGeneralRenderer {
   public lastRowHadHiddenBottom: boolean = false;
+
+  /**
+   * Helper method on renderer instances for clean, direct field retrieval.
+   */
+  public resolveField(fields: any, key: string, defaultVal: any = ''): any {
+    return resolveField(fields, key, defaultVal);
+  }
 
   /**
    * Universal continuous text drawer with justified alignment for multi-line paragraphs,
