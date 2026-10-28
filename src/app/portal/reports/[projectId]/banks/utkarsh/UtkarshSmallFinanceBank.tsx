@@ -81,11 +81,10 @@ export default function UtkarshSmallFinanceBank({
 
   // Initialize fields
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // Application Details
-    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.reportDate) d.reportDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
     if (!d.loanType) d.loanType = 'LAP';
     if (!d.applicantName) d.applicantName = p.applicantName || '';

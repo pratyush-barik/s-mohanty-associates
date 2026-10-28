@@ -75,7 +75,7 @@ export default function PNBHousingHLLAP({
 
   // Initialize fields
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // Meta Header
@@ -83,7 +83,6 @@ export default function PNBHousingHLLAP({
     if (!d.typeOfCase) d.typeOfCase = '';
     if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty';
     if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '';
-    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.reportDate) d.reportDate = formatReportDate(new Date().toISOString());
     if (!d.contactPerson) {
       d.contactPerson = p.applicantName || p.contactName

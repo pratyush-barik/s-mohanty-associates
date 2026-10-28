@@ -82,13 +82,12 @@ export default function VistaarFinance({
 
   // Initialize fields
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // Header & Meta — only structural/agency defaults; property data comes from prefill or user input
     if (!d.valuationAgency) d.valuationAgency = 'M/S S MOHANTY ASSOCIATES';
     if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
-    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.caseType) d.caseType = 'LAP';
     if (!d.inspectionDate) d.inspectionDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
     if (!d.nearestLandmark) d.nearestLandmark = p.nearestLandmark || '';

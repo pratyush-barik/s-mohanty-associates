@@ -84,13 +84,12 @@ export default function SMFGIndiaFullerton({
 
   // Initial Fields with smart prefill fallback
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // Cover & Meta Header
     if (!d.propertyOwner) d.propertyOwner = p.contactName ? `${p.contactName}` : '';
     if (!d.purposeOfValuation) d.purposeOfValuation = 'TO ASSESS THE FAIR MARKET VALUE OF THE COLLATERAL SECURITY';
-    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.dealNo) d.dealNo = '';
     if (!d.vertical) d.vertical = 'NA';
     if (!d.branchName) d.branchName = '';

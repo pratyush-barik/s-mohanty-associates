@@ -83,7 +83,7 @@ export default function UnitySmallFinanceBank({
 
   // Initialize fields
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // Header & Meta Table
@@ -91,7 +91,6 @@ export default function UnitySmallFinanceBank({
     if (!d.typeOfCase) d.typeOfCase = 'LAP';
     if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty';
     if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '';
-    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.reportDate) d.reportDate = formatReportDate(new Date().toISOString());
     const cPhone = p.contactPhone || '';
     const cName = p.contactName || '';

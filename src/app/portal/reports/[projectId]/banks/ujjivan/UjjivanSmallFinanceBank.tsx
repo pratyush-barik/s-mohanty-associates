@@ -86,7 +86,7 @@ export default function UjjivanSmallFinanceBank({
 
   // Initializing state with reference-accurate defaults and prefill
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // SECTION 1: General Details
@@ -94,8 +94,6 @@ export default function UjjivanSmallFinanceBank({
     if (!d.purposeOfValuation) d.purposeOfValuation = 'To Ascertain fair market value of the property as on date';
     if (!d.nameOfValuer) d.nameOfValuer = 'M/s. S. Mohanty Associates';
     if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
-    if (!d.refNo) d.refNo = d.clientId || projectCode || '';
-    if (!d.clientId) d.clientId = d.refNo;
     if (!d.caseType) d.caseType = 'HEL';
     if (!d.contactPersonAndNumber) d.contactPersonAndNumber = p.contactName ? `${p.contactName}${p.contactPhone ? `, Mob-${p.contactPhone}` : ''}` : '';
     if (!d.inspectionDate) d.inspectionDate = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());

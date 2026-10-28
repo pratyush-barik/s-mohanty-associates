@@ -80,7 +80,7 @@ export default function ShriramFinance({
 
   // Initial Fields with smart prefill fallback
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // Header & Meta Details
@@ -88,7 +88,6 @@ export default function ShriramFinance({
     if (!d.typeOfCase) d.typeOfCase = 'NPA';
     if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty';
     if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
-    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.dateOfReport) d.dateOfReport = formatReportDate(new Date());
     if (!d.contactPersonInspection) {
       d.contactPersonInspection = p.contactName

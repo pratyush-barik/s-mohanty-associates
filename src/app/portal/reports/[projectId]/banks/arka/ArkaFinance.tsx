@@ -62,7 +62,7 @@ export default function ArkaFinance({
     preparedByPinCode: '751018',
     preparedByPhone: '06742381145',
     preparedByMobile: '9937023855/9437074855',
-    refNo: '',
+    refNo: initialFields?.refNo || projectCode || projectId || '',
     dateOfReport: '',
     // Section 2: Client & Application
     nameOfCustomer: '',
@@ -270,13 +270,7 @@ export default function ArkaFinance({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Auto-fill refNo from projectCode or projectId
-  useEffect(() => {
-    if (!fields.refNo && (projectCode || projectId)) {
-      setFields((p: any) => ({ ...p, refNo: projectCode || projectId }));
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectCode, projectId]);
+  
 
   // Mathematical Dependencies & Auto-Calculation Logic
   useEffect(() => {

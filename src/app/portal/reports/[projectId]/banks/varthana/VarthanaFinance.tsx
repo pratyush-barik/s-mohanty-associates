@@ -80,11 +80,10 @@ export default function VarthanaFinance({
 
   // Initialize fields
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // Header & Application Details
-    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
     if (!d.valuerName) d.valuerName = 'M/s. S MOHANTY ASSOCIATES';
     if (!d.schoolName) d.schoolName = p.applicantName || '';

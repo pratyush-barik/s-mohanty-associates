@@ -83,13 +83,11 @@ export default function TataHousingFinance({
 
   // Initializing state with reference-accurate defaults and prefill
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // SECTION 1: General Details
     if (!d.caseType) d.caseType = 'Valuation Report - Self Construction/HEL/HIL';
-    if (!d.refNo) d.refNo = d.webTopNo || projectCode || '';
-    if (!d.webTopNo) d.webTopNo = d.refNo;
     if (!d.reportDate) d.reportDate = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
     if (!d.customerName) d.customerName = p.applicantName || p.contactName || '';
     if (!d.coOwners) d.coOwners = 'NA';

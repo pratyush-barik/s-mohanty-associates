@@ -80,11 +80,10 @@ export default function PurpleFinance({
 
   // Initial Fields with smart prefill fallback
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // Header & Meta Details
-    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
 
     // 1. Customer Details

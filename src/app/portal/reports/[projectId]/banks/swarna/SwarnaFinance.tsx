@@ -84,11 +84,10 @@ export default function SwarnaFinance({
 
   // Initializing state with reference-accurate defaults and prefill
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // SECTION 1: General Details (A, B, C)
-    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.refDate) d.refDate = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
     if (!d.subjectText) {
       d.subjectText = '';
