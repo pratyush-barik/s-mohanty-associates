@@ -88,8 +88,7 @@ export default function VistaarFinance({
     // Header & Meta — only structural/agency defaults; property data comes from prefill or user input
     if (!d.valuationAgency) d.valuationAgency = 'M/S S MOHANTY ASSOCIATES';
     if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
-    if (!d.refNo) d.refNo = d.proposalNo || projectCode || '';
-    if (!d.proposalNo) d.proposalNo = d.refNo;
+    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.caseType) d.caseType = 'LAP';
     if (!d.inspectionDate) d.inspectionDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
     if (!d.nearestLandmark) d.nearestLandmark = p.nearestLandmark || '';
@@ -446,7 +445,7 @@ export default function VistaarFinance({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Vistaar_Finance_Report_${(fields.refNo || fields.proposalNo || projectCode || 'valuation').replace(/[/\\]/g, '_')}.pdf`;
+      a.download = `Vistaar_Finance_Report_${(fields.refNo || projectCode || 'valuation').replace(/[/\\]/g, '_')}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -465,7 +464,7 @@ export default function VistaarFinance({
         bankName="VISTAAR FINANCIAL SERVICES"
         subTemplate="Micro / SME Loan Format"
         description="Technical Valuation Report with Boundaries, Setbacks, BUA & Cost Analysis."
-        projectCode={fields.proposalNo || projectCode}
+        projectCode={fields.refNo || projectCode}
         earliestVisit={earliestVisit}
         onResetWizard={onResetWizard}
         onSyncInspectionDate={
@@ -511,7 +510,7 @@ export default function VistaarFinance({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.refNo || fields.proposalNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
+                  value={fields.refNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
               <Field label="Case Type">

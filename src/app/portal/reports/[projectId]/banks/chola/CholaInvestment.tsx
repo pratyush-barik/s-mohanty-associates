@@ -285,7 +285,7 @@ export default function CholaInvestment({
 
     return {
       // Top Reference & Header
-      refNo: raw.refNo || raw.referenceNo || projectCode || '',
+      refNo: raw.refNo || projectCode || '',
       reportDate: repDate,
       reportTitle:
         raw.reportTitle ||
@@ -869,7 +869,7 @@ export default function CholaInvestment({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.refNo || fields.referenceNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
+                  value={fields.refNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
               <Field label="Report Date">

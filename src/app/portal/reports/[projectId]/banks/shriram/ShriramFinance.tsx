@@ -88,8 +88,7 @@ export default function ShriramFinance({
     if (!d.typeOfCase) d.typeOfCase = 'NPA';
     if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty';
     if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
-    if (!d.refNo) d.refNo = d.caseRefNo || projectCode || '';
-    if (!d.caseRefNo) d.caseRefNo = d.refNo;
+    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.dateOfReport) d.dateOfReport = formatReportDate(new Date());
     if (!d.contactPersonInspection) {
       d.contactPersonInspection = p.contactName
@@ -331,7 +330,7 @@ export default function ShriramFinance({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Shriram_Finance_Valuation_${(fields.refNo || fields.caseRefNo || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
+      a.download = `Shriram_Finance_Valuation_${(fields.refNo || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -532,7 +531,7 @@ export default function ShriramFinance({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.refNo || fields.caseRefNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
+                  value={fields.refNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
 

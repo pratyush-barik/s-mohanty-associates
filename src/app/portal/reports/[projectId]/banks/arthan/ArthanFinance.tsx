@@ -102,8 +102,7 @@ export default function ArthanFinance({
       dateOfValuation: formatReportDate(raw.dateOfValuation || raw.dateOfReportSubmission || new Date()),
 
       // Section 1 — Technical Initiation Request Form Data
-      proposalNo: raw.refNo || raw.proposalNo || projectCode || projectId || '',
-    refNo: raw.refNo || raw.proposalNo || projectCode || projectId || '',
+      refNo: raw.refNo || projectCode || projectId || '',
       caseType: raw.caseType || 'SBL',
       dateOfInspection: formatReportDate(raw.dateOfInspection || firstFieldAgentVisit?.date || prefill?.fieldVisitDate || prefill?.inspectionDate || ''),
       nearestLandmark: raw.nearestLandmark || '',
@@ -858,7 +857,7 @@ export default function ArthanFinance({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Arthan_Valuation_${(fields.refNo || fields.proposalNo || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
+      a.download = `Arthan_Valuation_${(fields.refNo || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -958,7 +957,7 @@ export default function ArthanFinance({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.refNo || fields.proposalNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
+                value={fields.refNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
               />
             </Field>
             <Field label="Date of Valuation:">
@@ -2261,7 +2260,7 @@ export default function ArthanFinance({
                     <input
                       type="text"
                       className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
-                      value={fields.proposalNo || 'NA'}
+                      value={fields.refNo || 'NA'}
                       disabled
                       readOnly
                       placeholder="NA"
@@ -2423,7 +2422,7 @@ export default function ArthanFinance({
                     <input
                       type="text"
                       className={`${inputCls} bg-slate-100 text-black font-semibold pr-8 cursor-not-allowed`}
-                      value={fields.proposalNo || 'NA'}
+                      value={fields.refNo || 'NA'}
                       disabled
                       readOnly
                       placeholder="NA"

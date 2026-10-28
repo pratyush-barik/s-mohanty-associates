@@ -59,7 +59,7 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
     this.drawVistaarSectionHeader('Technical Initiation Request Form Data');
 
     this.drawKeyValueRow([
-      { label: 'Proposal No', value: this.getF('refNo', this.getF('proposalNo', this.projectCode || '')), labelWidth: 160, valueWidth: halfW - 160 },
+      { label: 'Proposal No', value: this.getF('refNo', this.projectCode || ''), labelWidth: 160, valueWidth: halfW - 160 },
       { label: 'Case Type', value: this.getF('caseType', ''), labelWidth: 120, valueWidth: halfW - 120 },
     ]);
     this.drawKeyValueRow([
@@ -440,7 +440,7 @@ export class PDFVistaarFinanceRenderer extends PDFBankRenderer {
         },
         {
           label: 'Proposal No.',
-          value: this.getF('refNo', this.getF('proposalNo', this.projectCode || '')),
+          value: this.getF('refNo', this.projectCode || ''),
           labelWidth: 120,
           valueWidth: halfW - 120,
           labelBold: true,

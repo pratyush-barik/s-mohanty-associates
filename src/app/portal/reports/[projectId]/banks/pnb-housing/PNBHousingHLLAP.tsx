@@ -83,8 +83,7 @@ export default function PNBHousingHLLAP({
     if (!d.typeOfCase) d.typeOfCase = '';
     if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty';
     if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '';
-    if (!d.refNo) d.refNo = d.caseRefNo || projectCode || '';
-    if (!d.caseRefNo) d.caseRefNo = d.refNo;
+    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.reportDate) d.reportDate = formatReportDate(new Date().toISOString());
     if (!d.contactPerson) {
       d.contactPerson = p.applicantName || p.contactName
@@ -516,7 +515,7 @@ export default function PNBHousingHLLAP({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.refNo || fields.caseRefNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
+                  value={fields.refNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
               <Field label="Date of Report">

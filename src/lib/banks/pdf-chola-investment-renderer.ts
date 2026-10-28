@@ -208,7 +208,7 @@ export class PDFCholaInvestmentRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════
     // TOP REFERENCE & REPORT TITLE
     // ══════════════════════════════════════════════════════════════
-    const refNo = this.getF('refNo', this.getF('referenceNo', this.f.projectCode || ''));
+    const refNo = this.getF('refNo', this.f.projectCode || '');
     const repDate = this.getF('reportDate', '12/05/2026');
 
     this.drawKeyValueRow([

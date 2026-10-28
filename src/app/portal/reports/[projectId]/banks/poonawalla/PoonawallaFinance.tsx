@@ -619,7 +619,7 @@ function PreparedBySection({
     fields.poonawallaValuerName ?? fields.valuerName ?? DEFAULT_AGENCY_VALUER_NAME;
 
   const defaultValuationReportSeq =
-    fields.refNo || fields.caseRefNo || fields.projectCode || '';
+    fields.refNo || fields.projectCode || '';
   const valuationReportVal =
     fields.poonawallaValuationReportNo ??
     fields.valuationReportNo ??

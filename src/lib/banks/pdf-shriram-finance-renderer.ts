@@ -78,7 +78,7 @@ export class PDFShriramFinanceRenderer extends PDFBankRenderer {
       { label: 'Date of Visit', value: this.getF('dateOfVisit', ''), labelWidth: 90, valueWidth: colHalf - 90, labelBold: true },
     ]);
     this.drawKeyValueRow([
-      { label: 'Case Ref. No', value: this.getF('refNo', this.getF('caseRefNo', this.projectCode || 'NA')), labelWidth: 90, valueWidth: colHalf - 90, labelBold: true },
+      { label: 'Case Ref. No', value: this.getF('refNo', this.projectCode || 'NA'), labelWidth: 90, valueWidth: colHalf - 90, labelBold: true },
       { label: 'Date of Report', value: this.getF('dateOfReport', ''), labelWidth: 90, valueWidth: colHalf - 90, labelBold: true },
     ]);
     this.drawKeyValueRow([
