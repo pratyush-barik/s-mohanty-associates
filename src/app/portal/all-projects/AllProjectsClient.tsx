@@ -216,7 +216,7 @@ export default function AllProjectsClient({ projects }: { projects: ProjectType[
                         </td>
                         <td className={`px-5 pt-4 ${terminationReason ? 'pb-1' : 'pb-4'}`}>
                           <Link
-                            href={`/portal/projects/${project.projectCode}`}
+                            href={`/portal/projects/${encodeURIComponent(project.projectCode)}`}
                             className="text-[#b8860b] hover:underline font-medium text-xs"
                           >
                             View

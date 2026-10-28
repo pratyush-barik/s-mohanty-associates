@@ -88,7 +88,8 @@ export default function TataHousingFinance({
 
     // SECTION 1: General Details
     if (!d.caseType) d.caseType = 'Valuation Report - Self Construction/HEL/HIL';
-    if (!d.webTopNo) d.webTopNo = projectCode || '';
+    if (!d.refNo) d.refNo = d.webTopNo || projectCode || '';
+    if (!d.webTopNo) d.webTopNo = d.refNo;
     if (!d.reportDate) d.reportDate = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
     if (!d.customerName) d.customerName = p.applicantName || p.contactName || '';
     if (!d.coOwners) d.coOwners = 'NA';
@@ -492,10 +493,8 @@ export default function TataHousingFinance({
               <Field label="WebTop Application No.">
                 <input
                   type="text"
-                  disabled={isReadOnly}
                   className={inputCls}
-                  value={fields.webTopNo || ''}
-                  onChange={e => handleFieldChange('webTopNo', e.target.value)}
+                  value={fields.refNo || fields.webTopNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
 

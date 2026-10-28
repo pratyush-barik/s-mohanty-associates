@@ -87,7 +87,8 @@ export default function IndusIndBBG({
       organisationSubTemplate: 'BBG',
 
       // Header
-      indusBBGRefNo: raw.indusBBGRefNo || raw.refNo || projectCode || '',
+      refNo: raw.refNo || raw.indusBBGRefNo || projectCode || '',
+    indusBBGRefNo: raw.refNo || raw.indusBBGRefNo || projectCode || '',
       indusBBGReportDate: raw.indusBBGReportDate || raw.valuationDate || '',
 
       // Section A: General Details
@@ -537,8 +538,7 @@ export default function IndusIndBBG({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.indusBBGRefNo}
-                    onChange={(e) => updateField('indusBBGRefNo', e.target.value)}
+                    value={fields.refNo || fields.indusBBGRefNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                   />
                 </Field>
                 <Field label="Date of Report (DATED)">

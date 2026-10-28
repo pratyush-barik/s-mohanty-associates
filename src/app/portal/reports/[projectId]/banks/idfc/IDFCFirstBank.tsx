@@ -91,13 +91,14 @@ export default function IDFCFirstBank({
 
     return {
       // Header & Case Ref
-      report_ref_no: d.report_ref_no || `SMA/IDFC/HL/${new Date().getFullYear()}/${projectCode || '01'}`,
+      refNo: d.refNo || d.report_ref_no || projectCode || '',
+        report_ref_no: d.refNo || d.report_ref_no || projectCode || '',
       report_date: d.report_date || formatReportDate(new Date().toISOString()),
       branch_name: d.branch_name || prefill?.branchName || '',
       case_type: d.case_type || 'HL',
       valuer_name: d.valuer_name || 'ER. SATYAJIT MOHANTY',
       inspection_date: d.inspection_date || earliestVisit?.date || prefill?.fieldVisitDate || '',
-      case_ref_no: d.case_ref_no || projectCode || '',
+      case_ref_no: d.refNo || d.case_ref_no || projectCode || '',
       contact_person: d.contact_person || prefill?.contactName || '',
       contact_phone: d.contact_phone || prefill?.contactPhone || '',
 
@@ -518,8 +519,7 @@ export default function IDFCFirstBank({
               <input
                 type="text"
                 className={inputCls}
-                value={formData.report_ref_no}
-                onChange={(e) => handleChange('report_ref_no', e.target.value)}
+                value={formData.refNo || formData.report_ref_no || projectCode || ''} disabled={true} readOnly={true}
               />
             </Field>
             <Field label="Report Date">
@@ -569,8 +569,7 @@ export default function IDFCFirstBank({
               <input
                 type="text"
                 className={inputCls}
-                value={formData.case_ref_no}
-                onChange={(e) => handleChange('case_ref_no', e.target.value)}
+                value={formData.refNo || formData.case_ref_no || projectCode || ''} disabled={true} readOnly={true}
               />
             </Field>
             <Field label="Contact Person">

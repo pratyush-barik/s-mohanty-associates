@@ -91,7 +91,7 @@ export class PDFUjjivanRenderer extends PDFBankRenderer {
       { label: 'Date', value: this.getF('valuationDate', ''), labelWidth: 80, valueWidth: halfW - 80 },
     ]);
     this.drawKeyValueRow([
-      { label: '2. Client Id', value: this.getF('clientId', ''), labelWidth: 130, valueWidth: halfW - 130 },
+      { label: '2. Client Id', value: this.getF('refNo', this.getF('clientId', this.projectCode || '')), labelWidth: 130, valueWidth: halfW - 130 },
       { label: 'Case Type', value: this.getF('caseType', 'HEL'), labelWidth: 80, valueWidth: halfW - 80 },
     ]);
     this.drawKeyValueRow([

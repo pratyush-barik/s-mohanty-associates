@@ -31,7 +31,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - `sendProjectMessage(projectId, content, attachmentDocIds[])` — in-portal chat message for registered clients. External projects lock chat input.
 - `uploadProjectMessageAttachment(projectId, formData)` — uploads file to Supabase Storage (`enquiry-files` bucket), creates `Document` record linked to project
 - `acceptServiceRequest(requestId, overrideManagerId?)` — sets `Project.source` to `WEBSITE` if ServiceRequest has `clientId`, else `EXTERNAL`
-- `createManualCase(formData)` — creates external bank/guest case with `Project.source = 'EXTERNAL'`, sequential year-scoped projectCode (`SMA-YYYY-NNN`), and stores external email in `guestEmail`
+- `createManualCase(formData)` — creates external bank/guest case with `Project.source = 'EXTERNAL'`, sequential month-scoped projectCode (`SMA-YYYY/MM-NNNN`), and stores external email in `guestEmail`
 - `finalizeReport(projectId, pdfUrl)` — attaches finalized PDF report directly to email from `smohantyassociates@gmail.com` for external cases, and sends portal link notification from `report@smohantyassociates.com` for website clients. Evidentiary photos (`propertyImages: []`) are permanently retained in database.
 
 ### File Structure

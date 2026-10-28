@@ -624,10 +624,7 @@ export function ValuationImmovablePropertySection({
             <input
               type="text"
               className={`${inputCls} ${isRefNA ? 'bg-gray-100 cursor-not-allowed text-gray-500 italic' : ''}`}
-              value={effectiveRef}
-              onChange={(e) => handleChange('isfcRefNo', e.target.value)}
-              disabled={isReadOnly || isRefNA}
-              placeholder="e.g. SMA/ISFC/2026/001"
+              value={fields.refNo || fields.isfcRefNo || effectiveRef || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
             />
           </Field>
 

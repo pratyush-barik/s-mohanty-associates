@@ -196,7 +196,7 @@ model ServiceRequest {
 
 model Project {
   id               String        @id @default(cuid())
-  projectCode      String        @unique // SMA-YYYY-NNN
+  projectCode      String        @unique // SMA-YYYY/MM-NNNN
   serviceRequestId String        @unique
   source           ProjectSource @default(WEBSITE)
   status           ProjectStatus @default(PENDING_REVIEW)

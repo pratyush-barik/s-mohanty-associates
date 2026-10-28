@@ -313,6 +313,50 @@ export async function saveReportDraft(projectId: string, fields: any) {
     return { error: 'Failed to save report draft.' };
   }
 }
+/**
+ * Auto-generate or retrieve the annual statutory reference for Income Tax:
+ * SMA/V-01/IT/BBSR-NNNN/YY
+ * Resets back to 0001 on January 1st every year.
+ */
+export async function getOrGenerateTaxRef(projectId: string): Promise<{ refNo?: string; error?: string }> {
+  const session = await auth();
+  if (!session?.user?.id) return { error: 'Unauthorized' };
+
+  try {
+    const project = await prisma.project.findUnique({
+      where: { id: projectId },
+      include: { report: true }
+    });
+
+    if (!project) return { error: 'Project not found.' };
+
+    const reportData = (project.report?.data as any) || {};
+    if (reportData.refNo && typeof reportData.refNo === 'string' && reportData.refNo.startsWith('SMA/V-01/IT/BBSR-')) {
+      return { refNo: reportData.refNo };
+    }
+
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const prefix = 'SMA/V-01/IT/BBSR-';
+    const suffix = `/${yy}`;
+
+    // Count existing reports for this year
+    const reports = await prisma.$queryRaw<{ count: bigint }[]>`
+      SELECT COUNT(*) as count 
+      FROM "reports" 
+      WHERE ("data"->>'refNo') LIKE ${`${prefix}%${suffix}`}
+    `;
+    const count = Number(reports[0]?.count || 0);
+    const nextNum = String(count + 1).padStart(4, '0');
+    const refNo = `${prefix}${nextNum}${suffix}`;
+
+    return { refNo };
+  } catch (error) {
+    console.error('Failed to generate Income Tax ref:', error);
+    return { error: 'Failed to generate reference.' };
+  }
+}
+
 
 /**
  * Submit report for manager verification
@@ -640,13 +684,17 @@ export async function acceptServiceRequest(
       data: { status: 'APPROVED' },
     });
 
-    // Generate sequential projectCode (SMA-YYYY-NNN)
-    const year = new Date().getFullYear();
+    // Generate sequential projectCode (SMA-YYYY/MM-NNNN) - Monthly reset
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const prefix = `SMA-${year}/${month}-`;
+
     const projectCount = await prisma.project.count({
-      where: { projectCode: { startsWith: `SMA-${year}-` } }
+      where: { projectCode: { startsWith: prefix } }
     });
-    const nextNum = String(projectCount + 1).padStart(3, '0');
-    const projectCode = `SMA-${year}-${nextNum}`;
+    const nextNum = String(projectCount + 1).padStart(4, '0');
+    const projectCode = `${prefix}${nextNum}`;
 
     // Determine Manager Assignment rules
     let assignedManagerId: string | null = null;
@@ -983,12 +1031,17 @@ export async function createManualCase(formData: FormData) {
       }
     });
 
-    const year = new Date().getFullYear();
+    // Generate sequential projectCode (SMA-YYYY/MM-NNNN) - Monthly reset
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const prefix = `SMA-${year}/${month}-`;
+
     const projectCount = await prisma.project.count({
-      where: { projectCode: { startsWith: `SMA-${year}-` } }
+      where: { projectCode: { startsWith: prefix } }
     });
-    const nextNum = String(projectCount + 1).padStart(3, '0');
-    const projectCode = `SMA-${year}-${nextNum}`;
+    const nextNum = String(projectCount + 1).padStart(4, '0');
+    const projectCode = `${prefix}${nextNum}`;
 
     const project = await prisma.project.create({
       data: {
@@ -1344,7 +1397,7 @@ export async function terminateProject(
     }
 
     revalidatePath(`/portal/projects`);
-    revalidatePath(`/portal/projects/${project.projectCode}`);
+    revalidatePath(`/portal/projects/${encodeURIComponent(project.projectCode)}`);
     return { success: true };
   } catch (error) {
     console.error('Failed to terminate project:', error);

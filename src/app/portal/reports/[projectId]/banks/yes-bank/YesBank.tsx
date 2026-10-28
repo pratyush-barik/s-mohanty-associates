@@ -85,7 +85,8 @@ export default function YesBank({
     if (!d.visitingEnggName) d.visitingEnggName = earliestVisit?.engineerName || p.firstFieldAgentName || p.fieldEmployees?.[0]?.name || 'M/s. S Mohanty Associates';
     if (!d.timeOfVisit) d.timeOfVisit = '';
     if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '';
-    if (!d.caseRefNo) d.caseRefNo = projectCode || '';
+    if (!d.refNo) d.refNo = d.caseRefNo || projectCode || '';
+    if (!d.caseRefNo) d.caseRefNo = d.refNo;
     if (!d.reportDate) d.reportDate = formatReportDate(new Date().toISOString());
     if (!d.contactPerson) {
       d.contactPerson = p.applicantName || p.contactName
@@ -446,7 +447,7 @@ export default function YesBank({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `YES_Bank_Valuation_${projectCode || 'Report'}.pdf`;
+      a.download = `YES_Bank_Valuation_${(fields.refNo || fields.caseRefNo || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -545,9 +546,7 @@ export default function YesBank({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.caseRefNo || ''}
-                  onChange={e => handleFieldChange('caseRefNo', e.target.value)}
-                  disabled={isReadOnly}
+                  value={fields.refNo || fields.caseRefNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
               <Field label="Date of Report">

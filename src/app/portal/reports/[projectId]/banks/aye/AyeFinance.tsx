@@ -123,7 +123,7 @@ export default function AyeFinance({
 
     return {
       // Top Reference & Header
-      refNo: raw.refNo || (projectCode ? `SMA/AYE/${projectCode}` : ''),
+      refNo: raw.refNo || projectCode || '',
       dateOfSiteVisit: visitDate,
       dateOfReport: repDate,
       purposeOfValuation: raw.purposeOfValuation || 'To Assess Fair Market Value for collateral security',
@@ -626,10 +626,10 @@ export default function AyeFinance({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.refNo || ''}
-                onChange={(e) => handleChange('refNo', e.target.value)}
-                disabled={isReadOnly}
-                placeholder="e.g. AYE/03-26/05"
+                value={fields.refNo || projectCode || ''}
+                placeholder="SMA-YYYY/MM-NNNN"
+                disabled={true}
+                readOnly={true}
               />
             </Field>
             <Field label="Date of Site Visit">

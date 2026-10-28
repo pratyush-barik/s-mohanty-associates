@@ -84,7 +84,7 @@ export default function PurpleFinance({
     const p = (prefill || {}) as any;
 
     // Header & Meta Details
-    if (!d.refNo) d.refNo = projectCode ? `PRPL-${projectCode}` : '';
+    if (!d.refNo) d.refNo = projectCode || '';
     if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
 
     // 1. Customer Details
@@ -448,9 +448,10 @@ export default function PurpleFinance({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.refNo || ''}
-                onChange={e => handleChange('refNo', e.target.value)}
-                disabled={isReadOnly}
+                value={fields.refNo || projectCode || ''}
+                placeholder="SMA-YYYY/MM-NNNN"
+                disabled={true}
+                readOnly={true}
               />
             </Field>
 

@@ -285,7 +285,7 @@ export default function CholaInvestment({
 
     return {
       // Top Reference & Header
-      referenceNo: raw.referenceNo || (projectCode ? `SMA/CHOLA/${projectCode}` : ''),
+      refNo: raw.refNo || raw.referenceNo || projectCode || '',
       reportDate: repDate,
       reportTitle:
         raw.reportTitle ||
@@ -664,7 +664,7 @@ export default function CholaInvestment({
     if (confirm('Load sample Bajendra Sahu report data for Cholamandalam Investment?')) {
       setFields((prev) => ({
         ...prev,
-        referenceNo: 'SMA/CHOLA/05-26/07',
+        refNo: '',
         reportDate: '12/05/2026',
         customerName: 'BAJENDRA SAHU',
         applicationNo: '61931532',
@@ -869,10 +869,7 @@ export default function CholaInvestment({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.referenceNo || ''}
-                  onChange={(e) => handleChange('referenceNo', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="e.g. SMA/CHOLA/05-26/07"
+                  value={fields.refNo || fields.referenceNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
               <Field label="Report Date">

@@ -166,7 +166,7 @@ export default function StateBankOfIndiaFlatAndApartment({
       districtState: saved.districtState !== undefined ? saved.districtState : 'DIST: PURI, ODISHA',
 
       // Metadata
-      refNo: saved.refNo || saved.reportRefNo || (projectCode ? `SMA/${projectCode}` : ''),
+      refNo: saved.refNo || saved.reportRefNo || projectCode || '',
       reportDate: saved.reportDate || pf.reportDate || (earliestVisit ? formatReportDate(earliestVisit.date) : ''),
       borrowerName: saved.borrowerName || pf.customerName || pf.applicantName || '',
 

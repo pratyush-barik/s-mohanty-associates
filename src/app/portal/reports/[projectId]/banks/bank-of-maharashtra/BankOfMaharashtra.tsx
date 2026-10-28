@@ -615,7 +615,7 @@ export const BANK_OF_MAHARASHTRA_CONFIG: BankConfig = {
     bomAsOnDate: '2026-02-20', bomAsOnDateEditOn: false,
     bomAddressee: 'TO, THE BRANCH MANAGER,', bomAddresseeEditOn: false,
     bomReportTitle: 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)', bomReportTitleEditOn: false,
-    bomRefNo: 'BOM/02/2026/02', bomRefNoEditOn: false,
+    bomRefNo: '', bomRefNoEditOn: false,
     bomEnableDateOfValuationEdit: false,
     bomFullLegalPropertyDescription: '',
     bomEnableLegalDescEdit: false,

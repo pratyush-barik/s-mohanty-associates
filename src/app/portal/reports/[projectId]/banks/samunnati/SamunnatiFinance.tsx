@@ -86,7 +86,7 @@ export default function SamunnatiFinance({
 
     return {
       // Header / Meta
-      refNo: projectCode ? `SAM/${projectCode}` : '',
+      refNo: projectCode || '',
       valuationDate: visitDate,
       customerName: p.applicantName || prefill.ownerName || '',
       requestReceivedFrom: 'Sammunati Financial Intermediation & Services Pvt Ltd',
@@ -434,11 +434,11 @@ export default function SamunnatiFinance({
             <Field label="Reference Number *">
               <input
                 type="text"
-                value={fields.refNo || ''}
-                onChange={(e) => updateField('refNo', e.target.value)}
-                disabled={isReadOnly}
+                value={fields.refNo || projectCode || ''}
+                placeholder="SMA-YYYY/MM-NNNN"
+                disabled={true}
+                readOnly={true}
                 className={inputCls}
-                placeholder="SAM/07-26/01"
               />
             </Field>
 

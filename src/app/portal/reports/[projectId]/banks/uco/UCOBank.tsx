@@ -615,7 +615,7 @@ export const UCO_BANK_CONFIG: BankConfig = {
     ucoAsOnDate: '2026-02-20', ucoAsOnDateEditOn: false,
     ucoAddressee: 'TO, THE BRANCH MANAGER,', ucoAddresseeEditOn: false,
     ucoReportTitle: 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)', ucoReportTitleEditOn: false,
-    ucoRefNo: 'UCO/02/2026/02', ucoRefNoEditOn: false,
+    ucoRefNo: '', ucoRefNoEditOn: false,
     ucoEnableDateOfValuationEdit: false,
     ucoFullLegalPropertyDescription: '',
     ucoEnableLegalDescEdit: false,

@@ -262,10 +262,10 @@ export default function DCBDesktop({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.refNo || ''}
-                    onChange={(e) => handleChange('refNo', e.target.value)}
-                    disabled={isReadOnly}
-                    placeholder="DCB/07-26/031"
+                    value={fields.refNo || projectCode || ''}
+                    placeholder="SMA-YYYY/MM-NNNN"
+                    disabled={true}
+                    readOnly={true}
                   />
                 </Field>
 

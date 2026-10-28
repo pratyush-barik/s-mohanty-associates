@@ -45,7 +45,7 @@ export class PDFUtkarshSFBRenderer extends PDFBankRenderer {
     const valW = CONTENT_W - lblW;
 
     this.drawKeyValueRow([
-      { label: 'File Ref NO. / LAN No.', value: this.getF('fileRefNo', this.projectCode || ''), labelWidth: lblW, valueWidth: valW, labelBold: true },
+      { label: 'File Ref NO. / LAN No.', value: this.getF('refNo', this.getF('fileRefNo', this.projectCode || '')), labelWidth: lblW, valueWidth: valW, labelBold: true },
     ]);
     this.drawKeyValueRow([
       { label: 'Date of Report', value: this.getF('reportDate', ''), labelWidth: lblW, valueWidth: valW },

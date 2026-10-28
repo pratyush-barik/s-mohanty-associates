@@ -59,7 +59,7 @@ export class PDFUnitySFBRenderer extends PDFBankRenderer {
       { label: 'Date of Visit', value: this.getF('dateOfVisit', ''), labelWidth: 100, valueWidth: halfW - 100 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Case Ref. No', value: this.getF('caseRefNo', this.projectCode || ''), labelWidth: 100, valueWidth: halfW - 100 },
+      { label: 'Case Ref. No', value: this.getF('refNo', this.getF('caseRefNo', this.projectCode || '')), labelWidth: 100, valueWidth: halfW - 100 },
       { label: 'Date of Report', value: this.getF('reportDate', new Date().toLocaleDateString('en-GB')), labelWidth: 100, valueWidth: halfW - 100 },
     ]);
     this.drawKeyValueRow([

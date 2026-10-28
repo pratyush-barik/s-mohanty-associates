@@ -85,7 +85,8 @@ export default function UtkarshSmallFinanceBank({
     const p = (prefill || {}) as any;
 
     // Application Details
-    if (!d.fileRefNo) d.fileRefNo = projectCode || '';
+    if (!d.refNo) d.refNo = d.fileRefNo || projectCode || '';
+    if (!d.fileRefNo) d.fileRefNo = d.refNo;
     if (!d.reportDate) d.reportDate = earliestVisit ? formatReportDate(earliestVisit.date) : '';
     if (!d.loanType) d.loanType = 'LAP';
     if (!d.applicantName) d.applicantName = p.applicantName || '';
@@ -444,7 +445,7 @@ export default function UtkarshSmallFinanceBank({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Utkarsh_SFB_Valuation_${fields.fileRefNo || projectCode || 'Report'}.pdf`;
+      a.download = `Utkarsh_SFB_Valuation_${(fields.refNo || fields.fileRefNo || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -489,9 +490,7 @@ export default function UtkarshSmallFinanceBank({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.fileRefNo || ''}
-                  onChange={(e) => updateField('fileRefNo', e.target.value)}
-                  disabled={isReadOnly}
+                  value={fields.refNo || fields.fileRefNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
               <Field label="Date of Report">

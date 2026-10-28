@@ -74,7 +74,7 @@ export class PDFIDFCFirstBankRenderer extends PDFBankRenderer {
     this.advanceCursor(6);
 
     // Reference & Date Bar
-    const refNo = this.getF('report_ref_no', 'SMA/IDFC/HL/07-26/01');
+    const refNo = this.getF('refNo', this.getF('report_ref_no', this.projectCode || ''));
     const reportDate = this.getF('report_date', new Date().toLocaleDateString('en-GB'));
     const halfW = CONTENT_W / 2;
 
@@ -105,7 +105,7 @@ export class PDFIDFCFirstBankRenderer extends PDFBankRenderer {
       { label: 'Date of Visit:', value: this.getF('inspection_date', ''), labelWidth: 85, valueWidth: halfW - 85 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Case Ref. No.:', value: this.getF('case_ref_no', ''), labelWidth: 85, valueWidth: halfW - 85 },
+      { label: 'Case Ref. No.:', value: this.getF('refNo', this.getF('case_ref_no', this.projectCode || '')), labelWidth: 85, valueWidth: halfW - 85 },
       { label: 'Contact Person:', value: `${this.getF('contact_person', '')} ${this.getF('contact_phone', '') ? '(' + this.getF('contact_phone', '') + ')' : ''}`, labelWidth: 85, valueWidth: halfW - 85 },
     ]);
 

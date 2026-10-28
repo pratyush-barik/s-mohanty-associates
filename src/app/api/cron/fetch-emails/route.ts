@@ -57,7 +57,7 @@ async function processInbox(host: string, port: number, user: string, pass: stri
         const bodyText = decodeHtmlEntities(parsedEmail.text || '');
 
         // Extract ticket number if this is a reply (e.g. [Ticket #SMA-2026-123456] or [SMA-2026-123456])
-        const ticketMatch = subject.match(/\[(?:Ticket\s+#)?(SMA-[A-Z0-9\-]+)\]/i);
+        const ticketMatch = subject.match(/\[(?:Ticket\s+#)?(SMA-[A-Z0-9\-\/]+)\]/i);
         const ticketNumber = ticketMatch ? ticketMatch[1] : null;
 
         let enquiryId: string | null = null;

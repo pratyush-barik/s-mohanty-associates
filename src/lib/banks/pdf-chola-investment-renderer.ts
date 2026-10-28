@@ -35,6 +35,7 @@ export interface CholaChecklistItem {
 
 export interface CholaInvestmentFields {
   // Header / Reference
+  refNo?: string;
   referenceNo?: string;
   reportDate?: string;
   reportTitle?: string;
@@ -207,7 +208,7 @@ export class PDFCholaInvestmentRenderer extends PDFBankRenderer {
     // ══════════════════════════════════════════════════════════════
     // TOP REFERENCE & REPORT TITLE
     // ══════════════════════════════════════════════════════════════
-    const refNo = this.getF('referenceNo', 'SMA/CHOLA/05-26/07');
+    const refNo = this.getF('refNo', this.getF('referenceNo', this.f.projectCode || ''));
     const repDate = this.getF('reportDate', '12/05/2026');
 
     this.drawKeyValueRow([

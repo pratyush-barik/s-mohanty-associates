@@ -619,7 +619,7 @@ function PreparedBySection({
     fields.poonawallaValuerName ?? fields.valuerName ?? DEFAULT_AGENCY_VALUER_NAME;
 
   const defaultValuationReportSeq =
-    fields.refNo || fields.caseRefNo || fields.projectCode || 'VR/POONAWALLA/2026/01';
+    fields.refNo || fields.caseRefNo || fields.projectCode || '';
   const valuationReportVal =
     fields.poonawallaValuationReportNo ??
     fields.valuationReportNo ??
@@ -811,13 +811,9 @@ function PreparedBySection({
                 type="text"
                 className={`${inputCls} bg-white border-orange-400 font-medium text-gray-900`}
                 value={fields.poonawallaValuationReportNo ?? valuationReportVal}
-                onChange={(e) => {
-                  handleChange('poonawallaValuationReportNo', e.target.value);
-                  handleChange('valuationReportNo', e.target.value);
-                  handleChange('refNo', e.target.value);
-                }}
-                disabled={isReadOnly}
-                placeholder="Enter Valuation Report No..."
+                disabled={true}
+                readOnly={true}
+                placeholder="SMA-YYYY/MM-NNNN"
               />
             ) : (
               <LockedFieldWrapper

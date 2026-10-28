@@ -51,3 +51,9 @@
 - External projects (`EXTERNAL`) lock in-portal chat input (`<input disabled />` and `<button disabled />`) with the notice banner highlighting primary contact channels (`call, sms, whatsapp or mail` in red). Chat messages never auto-dispatch outbound emails.
 - Final report emails for external bank cases attach the PDF directly as a file from `smohantyassociates@gmail.com` with no download link button (preventing corporate firewall blocks). Website account holders receive dashboard view notifications from `report@smohantyassociates.com`.
 
+
+
+## Reference Number Invariants
+- Project Code format: `SMA-YYYY/MM-NNNN` (monthly reset, locked across all builders).
+- All bank templates strictly use canonical `refNo` (no bank prefixes, no dummy constants).
+- Income Tax statutory ref: `SMA/V-01/IT/BBSR-NNNN/YY` (annual reset on Jan 1st, locked).

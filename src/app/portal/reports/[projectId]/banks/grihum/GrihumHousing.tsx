@@ -268,10 +268,7 @@ function ObjectiveSection({
             <input
               type="text"
               className={inputCls}
-              value={fields.grihamProposalNo ?? (projectCode ?? '')}
-              onChange={(e) => handleChange('grihamProposalNo', e.target.value)}
-              disabled={isReadOnly}
-              placeholder="Enter proposal / file number"
+              value={fields.refNo || fields.grihamProposalNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
             />
           </Field>
 

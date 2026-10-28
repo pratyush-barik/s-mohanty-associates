@@ -615,7 +615,7 @@ export const CANARA_BANK_CONFIG: BankConfig = {
     canaraAsOnDate: '2026-02-20', canaraAsOnDateEditOn: false,
     canaraAddressee: 'TO, THE BRANCH MANAGER,', canaraAddresseeEditOn: false,
     canaraReportTitle: 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)', canaraReportTitleEditOn: false,
-    canaraRefNo: 'CNRB/02/2026/02', canaraRefNoEditOn: false,
+    canaraRefNo: '', canaraRefNoEditOn: false,
     canaraEnableDateOfValuationEdit: false,
     canaraFullLegalPropertyDescription: '',
     canaraEnableLegalDescEdit: false,

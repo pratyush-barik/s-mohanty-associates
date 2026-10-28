@@ -413,9 +413,11 @@ export default function IDBIBankBelow5CR({
           <Field label="Ref. No.">
             <input
               type="text"
-              value={fields.refNo}
-              onChange={e => updateField('refNo', e.target.value)}
+              value={fields.refNo || projectCode || ''}
+              placeholder="SMA-YYYY/MM-NNNN"
               className={inputCls}
+              disabled={true}
+              readOnly={true}
             />
           </Field>
           <Field label="Report Date (DD.MM.YYYY)">

@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage } from '@/app/actions/project';
+import { saveReportDraft, submitReportForVerification, getBucketImages, deleteBucketImage, getOrGenerateTaxRef } from '@/app/actions/project';
 import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { generateIncomeTaxPDF } from '@/lib/pdf-it-renderer';
@@ -10,6 +10,7 @@ import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { BasePhotographsSection, BaseDateInput, formatReportDate, getEarliestFieldVisit, EarliestFieldVisitBadge } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
+import { sanitizeFilenameCode } from '@/lib/utils';
 
 // ─── Types ─────────────────────────────────────────────────────────
 interface ValuationFloorRow {
@@ -948,6 +949,17 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
 
   const [localBucketImages, setLocalBucketImages] = useState<any[]>(bucketImages);
 
+  // Auto-generate Income Tax statutory refNo (SMA/V-01/IT/BBSR-NNNN/YY) if not already set
+  useEffect(() => {
+    if (!fields.refNo || !fields.refNo.startsWith('SMA/V-01/IT/BBSR-')) {
+      getOrGenerateTaxRef(projectId).then(res => {
+        if (res?.refNo) {
+          setFields(prev => ({ ...prev, refNo: res.refNo! }));
+        }
+      });
+    }
+  }, [projectId]);
+
   const handleDeleteBucketImage = async (img: any) => {
     if (!confirm('Delete this photo from the bucket?')) return;
     try {
@@ -1472,7 +1484,7 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `IT-ValuationReport-${fields.ownerName ? fields.ownerName.replace(/\s+/g, '_') : projectCode}.pdf`;
+        a.download = `IT-ValuationReport-${sanitizeFilenameCode(fields.refNo || projectCode)}.pdf`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
       }
       setMessage(null);
@@ -1556,8 +1568,8 @@ export default function IncomeTaxReportBuilder({ projectId, projectCode, initial
                 {PROPERTY_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
               </select>
             </Field>
-            <Field label="REF NO">
-              <input className={inputCls} value={fields.refNo} onChange={e => handleChange('refNo', e.target.value)} disabled={isReadOnly} placeholder="SMA/V-01/IT/BBSR-XX/YY" />
+            <Field label="Valuation Report Ref No. (Locked)">
+              <input className={inputCls} value={fields.refNo || ''} disabled={true} readOnly={true} placeholder="SMA/V-01/IT/BBSR-0001/26" />
             </Field>
             <BaseDateInput
               label="Date of Valuation Report"

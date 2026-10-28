@@ -94,7 +94,8 @@ export default function UjjivanSmallFinanceBank({
     if (!d.purposeOfValuation) d.purposeOfValuation = 'To Ascertain fair market value of the property as on date';
     if (!d.nameOfValuer) d.nameOfValuer = 'M/s. S. Mohanty Associates';
     if (!d.valuationDate) d.valuationDate = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
-    if (!d.clientId) d.clientId = projectCode || '';
+    if (!d.refNo) d.refNo = d.clientId || projectCode || '';
+    if (!d.clientId) d.clientId = d.refNo;
     if (!d.caseType) d.caseType = 'HEL';
     if (!d.contactPersonAndNumber) d.contactPersonAndNumber = p.contactName ? `${p.contactName}${p.contactPhone ? `, Mob-${p.contactPhone}` : ''}` : '';
     if (!d.inspectionDate) d.inspectionDate = earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date());
@@ -583,10 +584,8 @@ export default function UjjivanSmallFinanceBank({
               <Field label="Client ID">
                 <input
                   type="text"
-                  disabled={isReadOnly}
                   className={inputCls}
-                  value={fields.clientId || ''}
-                  onChange={e => handleFieldChange('clientId', e.target.value)}
+                  value={fields.refNo || fields.clientId || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
 

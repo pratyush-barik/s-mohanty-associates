@@ -733,7 +733,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
       id: 'section-header',
       title: 'Header Details',
       number: 1,
-      render: (fields: any, handleChange: any, isReadOnly: boolean) => {
+      render: (fields: any, handleChange: any, isReadOnly: boolean, projectCode?: string) => {
         const tdLabelCls = "p-2 border border-slate-300 text-sm font-medium text-slate-800 bg-[#f8fafc] whitespace-nowrap w-[20%]";
         const tdInputCls = "p-2 border border-slate-300 bg-white w-[30%]";
         const tdLabelSmallCls = "p-2 border-r border-slate-300 text-sm font-medium text-slate-800 bg-[#f8fafc] whitespace-nowrap w-[15%]";
@@ -764,7 +764,7 @@ export const ADITYA_BIRLA_HOUSING_HLLAP_CONFIG: BankConfig = {
                   </tr>
                   <tr>
                     <td className={tdLabelCls}>Valuer Ref No</td>
-                    <td className={tdInputCls}><input className={inputCls} value={fields.valuerRefNo || ''} onChange={e => handleChange('valuerRefNo', e.target.value)} disabled={isReadOnly} /></td>
+                    <td className={tdInputCls}><input className={inputCls} value={fields.refNo || fields.valuerRefNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN" /></td>
                     <td className={tdLabelCls}>Date of Visit</td>
                     <td className={tdInputCls}><BaseDateInput value={fields.dateOfVisit || ''} onChange={val => handleChange('dateOfVisit', val)} disabled={isReadOnly} /></td>
                   </tr>

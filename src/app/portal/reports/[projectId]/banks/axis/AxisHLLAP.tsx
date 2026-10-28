@@ -841,10 +841,10 @@ export default function AxisHLLAP({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.refNo || ''}
-                  onChange={e => handleChange('refNo', e.target.value)}
-                  placeholder="e.g. Axis/SMA-2026-001"
-                  disabled={isReadOnly}
+                  value={fields.refNo || projectCode || ''}
+                  placeholder="SMA-YYYY/MM-NNNN"
+                  disabled={true}
+                  readOnly={true}
                 />
               </Field>
               <Field label="Report Date:">

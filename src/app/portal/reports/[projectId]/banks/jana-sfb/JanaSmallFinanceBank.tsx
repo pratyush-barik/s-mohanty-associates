@@ -447,12 +447,9 @@ function CustomerDetailsSection({
                   ? 'NA'
                   : (fields.janaReferenceNumber ?? fields.refNo ?? '')
               }
-              onChange={(e) => {
-                handleChange('janaReferenceNumber', e.target.value);
-                handleChange('refNo', e.target.value);
-              }}
-              disabled={isReadOnly || fields.janaReferenceNumberNA}
-              placeholder={fields.janaReferenceNumberNA ? 'NA' : 'Enter Reference Number'}
+              disabled={true}
+              readOnly={true}
+              placeholder="SMA-YYYY/MM-NNNN"
             />
           </Field>
 

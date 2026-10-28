@@ -24,6 +24,7 @@ import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import { BasePhotographsSection, BaseDateInput, formatReportDate, getEarliestFieldVisit, EarliestFieldVisitBadge } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
+import { sanitizeFilenameCode } from '@/lib/utils';
 // @ts-ignore
 import * as XLSX from 'xlsx';
 
@@ -3101,7 +3102,7 @@ Our valuation is based on information obtained from the client and on data gathe
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${fields.applicantName ? fields.applicantName.replace(/\s+/g, '_') : 'IBBI'}_Valuation_Report_${projectId}.pdf`;
+        a.download = `${fields.applicantName ? fields.applicantName.replace(/\s+/g, '_') : 'IBBI'}_Valuation_Report_${sanitizeFilenameCode(fields.refNo || projectCode || projectId)}.pdf`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
       }
       setMessage(null);
@@ -3292,8 +3293,8 @@ Our valuation is based on information obtained from the client and on data gathe
               <Field label="Introduction of Valuation Certificate" span={2}>
                 <textarea required rows={3} value={fields.valuationCertificateIntro || ''} onChange={e => handleChange('valuationCertificateIntro', e.target.value)} className={inputCls + ' resize-none'} placeholder="Enter the introduction paragraph for the Valuation Certificate here..." disabled={isReadOnly} />
               </Field>
-              <Field label="Reference No">
-                <input type="text" value={fields.refNo || ''} onChange={e => handleChange('refNo', e.target.value)} className={inputCls} disabled={isReadOnly} />
+              <Field label="Valuation Report Ref No. (Locked)">
+                <input type="text" value={fields.refNo || projectCode || ''} className={inputCls} disabled={true} readOnly={true} />
               </Field>
               <Field label="Appointed By">
                 <input type="text" value={fields.appointedBy || ''} onChange={e => handleChange('appointedBy', e.target.value)} className={inputCls} placeholder="e.g. CA Sonu Jain" disabled={isReadOnly} />

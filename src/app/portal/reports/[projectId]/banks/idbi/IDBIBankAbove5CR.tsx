@@ -497,9 +497,10 @@ export default function IDBIBankAbove5CR({
           <Field label="Reference Number">
             <input
               className={inputCls}
-              value={fields.refNo}
-              onChange={(e) => handleChange('refNo', e.target.value)}
-              disabled={isReadOnly}
+              value={fields.refNo || projectCode || ''}
+              placeholder="SMA-YYYY/MM-NNNN"
+              disabled={true}
+              readOnly={true}
             />
           </Field>
           <Field label="Valuation Report Date">

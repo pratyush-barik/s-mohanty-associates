@@ -173,7 +173,7 @@
 
 ### 17. Client Communication & Delivery Architecture
 - The system maintains clear channel separation between public inquiries, service requests, and project communication:
-  1. `Enquiry`: Public query tickets with collision-proof ticket format `SMA-YYYY-XXXXXX` (Year + 6 random digits) distinct from sequential project codes (`SMA-YYYY-NNN`). Never create shadow or duplicate enquiries on portal service signups.
+  1. `Enquiry`: Public query tickets with collision-proof ticket format `SMA-YYYY-XXXXXX` (Year + 6 random digits) distinct from sequential month-scoped project codes (`SMA-YYYY/MM-NNNN`). Never create shadow or duplicate enquiries on portal service signups.
   2. `ServiceRequest`: Formal appraisal orders submitted via registered client dashboard or manual case entry.
   3. `ProjectMessage`: Internal staff <-> client chat for registered portal account holders.
 - **External Case Chat Isolation**:
@@ -185,3 +185,11 @@
   - **External / Bank Cases**: Final report email is dispatched from `smohantyassociates@gmail.com` with the official finalized PDF attached directly as a file (`attachments: [{ filename, path: pdfUrl }]`). Do NOT provide external download links or buttons, as Indian bank corporate firewalls (@sbi.co.in, @pnb.co.in) block external download URLs.
   - **Website Account Holders**: Notification email is sent from `report@smohantyassociates.com` directing the client to log in to `/dashboard` to view and download their report. No PDF attached.
   - Finalizing a report automatically closes any linked `Enquiry` ticket (`status: CLOSED`). Reopening for rework restores the ticket to active status.
+
+
+### Reference Number Standardization & Engine Lockdown Invariants
+1. **Universal Project Code Format**: Strictly `SMA-YYYY/MM-NNNN` (e.g. `SMA-2026/10-0001`). Resets to `0001` on the 1st of every month.
+2. **Canonical State Key Across All Banks**: Every bank builder strictly uses the single canonical key `refNo`. Redundant bank aliases (`caseRefNo`, `proposalNo`, `referenceNo`, `fileRefNo`) are forbidden.
+3. **Firm Reference Immutability**: The reference input is permanently locked (`disabled={true} readOnly={true}`) across all builders. Valuers cannot edit the firm reference number.
+4. **No Bank Prefixes or Dummy Fixtures**: Never concatenate bank prefixes (`SMA/`, `SMA/AYE/`, `SMA/CHOLA/`, `PRPL-`, `SAM/`) or hardcode dummy references (`BOB/02/...`). Pure firm project code is used everywhere.
+5. **Income Tax Reference**: Income Tax valuation reports strictly use the statutory format `SMA/V-01/IT/BBSR-NNNN/YY` in `refNo`, resetting to `0001` on January 1st every year, and locked in the UI.

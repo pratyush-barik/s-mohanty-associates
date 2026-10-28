@@ -91,7 +91,7 @@ export class PDFIndusIndBBGRenderer extends PDFBankRenderer {
     const halfW = CONTENT_W / 2;
     this.drawKeyValueRow([
       {
-        label: `Ref. No. : ${this.getF('indusBBGRefNo', this.projectCode || '')}`,
+        label: `Ref. No. : ${this.getF('refNo', this.getF('indusBBGRefNo', this.projectCode || ''))}`,
         value: '',
         labelWidth: halfW,
         valueWidth: 0,

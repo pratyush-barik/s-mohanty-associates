@@ -10,6 +10,7 @@ import { PDFGeneralRenderer, formatReportDate } from '@/lib/pdf-general-renderer
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
+import { sanitizeFilenameCode } from '@/lib/utils';
 // @ts-ignore
 import * as XLSX from 'xlsx';
 
@@ -3561,7 +3562,7 @@ export default function GeneralReportBuilder({ projectId, projectCode, initialFi
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${fields.ownerName ? fields.ownerName.replace(/\s+/g, '_') : 'Valuation'}_Report_${projectId}.pdf`;
+        a.download = `${fields.ownerName ? fields.ownerName.replace(/\s+/g, '_') : 'Valuation'}_Report_${sanitizeFilenameCode(fields.refNo || projectCode || projectId)}.pdf`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
       }
       setMessage(null);

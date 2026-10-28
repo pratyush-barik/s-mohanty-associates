@@ -102,7 +102,8 @@ export default function ArthanFinance({
       dateOfValuation: formatReportDate(raw.dateOfValuation || raw.dateOfReportSubmission || new Date()),
 
       // Section 1 — Technical Initiation Request Form Data
-      proposalNo: raw.proposalNo || projectCode || projectId || '',
+      proposalNo: raw.refNo || raw.proposalNo || projectCode || projectId || '',
+    refNo: raw.refNo || raw.proposalNo || projectCode || projectId || '',
       caseType: raw.caseType || 'SBL',
       dateOfInspection: formatReportDate(raw.dateOfInspection || firstFieldAgentVisit?.date || prefill?.fieldVisitDate || prefill?.inspectionDate || ''),
       nearestLandmark: raw.nearestLandmark || '',
@@ -857,7 +858,7 @@ export default function ArthanFinance({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Arthan_Valuation_${projectCode || 'Report'}.pdf`;
+      a.download = `Arthan_Valuation_${(fields.refNo || fields.proposalNo || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -957,10 +958,7 @@ export default function ArthanFinance({
               <input
                 type="text"
                 className={inputCls}
-                value={fields.proposalNo || ''}
-                onChange={e => handleChange('proposalNo', e.target.value)}
-                placeholder="e.g. AFPL/SMA-001"
-                disabled={isReadOnly}
+                value={fields.refNo || fields.proposalNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
               />
             </Field>
             <Field label="Date of Valuation:">

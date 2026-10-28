@@ -701,33 +701,14 @@ export const AXIS_SBB_CONFIG: BankConfig = {
             <h3 className="font-bold text-gray-700 mb-4">CASE DETAILS & REPORT METADATA</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="col-span-1 w-full flex flex-col">
-                <div className="flex justify-between items-center mb-1">
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide">Report Reference No</label>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-[10px] uppercase font-bold text-gray-400">Edit {isReportRefEditOn ? 'On' : 'Off'}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (!isReportRefEditOn && !fields.axisSbbReportRefNo) {
-                           handleChange('axisSbbReportRefNo', defaultReportRefNo);
-                        }
-                        handleChange('axisSbbEnableReportRefNoEdit', !isReportRefEditOn);
-                      }}
-                      disabled={isReadOnly}
-                      className={`w-8 h-4 rounded-full relative transition-colors ${isReportRefEditOn ? 'bg-green-500' : 'bg-gray-300'}`}
-                    >
-                      <span className={`absolute top-0.5 left-0.5 w-3 h-3 rounded-full bg-white transition-transform ${isReportRefEditOn ? 'translate-x-4' : ''}`} />
-                    </button>
-                  </div>
-                </div>
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1">Report Reference No (Locked)</label>
                 <input
                   className={inputCls}
                   required
-                  value={reportRefNoValue}
-                  onChange={e => handleChange('axisSbbReportRefNo', e.target.value.toUpperCase())}
-                  readOnly={!isReportRefEditOn}
-                  disabled={isReadOnly || !isReportRefEditOn}
-                  placeholder="E.g., SMA/1/07-26/09"
+                  value={fields.refNo || fields.axisSbbReportRefNo || defaultReportRefNo}
+                  readOnly={true}
+                  disabled={true}
+                  placeholder="SMA-YYYY/MM-NNNN"
                 />
               </div>
               <Field label="Report Initiated By Area">

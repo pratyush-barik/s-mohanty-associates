@@ -164,7 +164,7 @@ export default function StateBankOfIndiaLandAndBuilding({
       toAuthority: saved.toAuthority !== undefined ? saved.toAuthority : 'THE CHIEF MANAGER / BRANCH HEAD,',
       bankName: saved.bankName !== undefined ? saved.bankName : (pf.bankName || 'STATE BANK OF INDIA,'),
       branchAddress: saved.branchAddress !== undefined ? saved.branchAddress : '',
-      refNo: saved.refNo !== undefined ? saved.refNo : (projectCode ? `SMA/${projectCode}` : ''),
+      refNo: saved.refNo !== undefined ? saved.refNo : (projectCode || ''),
       coverDate: saved.coverDate !== undefined ? saved.coverDate : (saved.reportDate || pf.reportDate || ''),
       reportDate: saved.reportDate !== undefined ? saved.reportDate : (pf.reportDate || (earliestVisit ? formatReportDate(earliestVisit.date) : '')),
       valuationPropertyDesc: saved.valuationPropertyDesc !== undefined ? saved.valuationPropertyDesc : (saved.propertyAddress || pf.propertyAddress || ''),
@@ -924,10 +924,10 @@ export default function StateBankOfIndiaLandAndBuilding({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.refNo || ''}
-                  onChange={e => handleChange('refNo', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="e.g. SMA/IDBI/07-2026/09"
+                  value={fields.refNo || projectCode || ''}
+                  placeholder="SMA-YYYY/MM-NNNN"
+                  disabled={true}
+                  readOnly={true}
                 />
               </Field>
 

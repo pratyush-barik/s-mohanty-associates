@@ -955,7 +955,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
     // Row: Proposal No | Case Type
     this.drawRow([
       { text: 'Proposal No', width: s1L, isLabel: true },
-      { text: fields.proposalNo || '', width: s1V },
+      { text: (fields.refNo || fields.proposalNo) || '', width: s1V },
       { text: 'Case Type', width: s1L2, isLabel: true },
       { text: fields.caseType || '', width: s1V2 },
     ], 20, 4);
@@ -1618,7 +1618,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
         { text: 'Name of the\nCustomer/Applicant', width: mpW1, isLabel: true, bold: false },
         { text: fields.customerName || '', width: mpV },
         { text: 'Proposal No.', width: mpW2, isLabel: true, bold: false },
-        { text: fields.proposalNo || '', width: mpV2 },
+        { text: (fields.refNo || fields.proposalNo) || '', width: mpV2 },
       ], 24, 4);
 
       curY = this.pdfY(this.cursorY);
@@ -1691,7 +1691,7 @@ export class PDFArthanFinanceRenderer extends PDFBankRenderer {
         { text: 'Name of the\nCustomer/Applicant', width: phW1, isLabel: true, bold: false },
         { text: fields.customerName || '', width: phV },
         { text: 'Proposal No.', width: phW2, isLabel: true, bold: false },
-        { text: fields.proposalNo || '', width: phV2 },
+        { text: (fields.refNo || fields.proposalNo) || '', width: phV2 },
       ], 24, 4);
 
       // Address row

@@ -615,7 +615,7 @@ export const BANK_OF_INDIA_CONFIG: BankConfig = {
     boiAsOnDate: '2026-02-20', boiAsOnDateEditOn: false,
     boiAddressee: 'TO, THE BRANCH MANAGER,', boiAddresseeEditOn: false,
     boiReportTitle: 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)', boiReportTitleEditOn: false,
-    boiRefNo: 'BOI/02/2026/02', boiRefNoEditOn: false,
+    boiRefNo: '', boiRefNoEditOn: false,
     boiEnableDateOfValuationEdit: false,
     boiFullLegalPropertyDescription: '',
     boiEnableLegalDescEdit: false,

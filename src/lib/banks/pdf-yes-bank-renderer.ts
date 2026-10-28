@@ -64,7 +64,7 @@ export class PDFYesBankRenderer extends PDFBankRenderer {
       { label: 'Time of visit', value: this.getF('timeOfVisit', ''), labelWidth: 100, valueWidth: halfW - 100 },
     ]);
     this.drawKeyValueRow([
-      { label: 'Case Ref. No', value: this.getF('caseRefNo', this.projectCode || ''), labelWidth: 100, valueWidth: halfW - 100 },
+      { label: 'Case Ref. No', value: this.getF('refNo', this.getF('caseRefNo', this.projectCode || '')), labelWidth: 100, valueWidth: halfW - 100 },
       { label: 'Date of report', value: this.getF('reportDate', ''), labelWidth: 100, valueWidth: halfW - 100 },
     ]);
     this.drawKeyValueRow([

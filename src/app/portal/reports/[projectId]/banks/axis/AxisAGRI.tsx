@@ -1213,10 +1213,10 @@ export default function AxisAGRI({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.refNo || ''}
-                  onChange={e => handleChange('refNo', e.target.value)}
-                  disabled={isReadOnly}
-                  placeholder="e.g. Axis/SMA-2026-001"
+                  value={fields.refNo || projectCode || ''}
+                  placeholder="SMA-YYYY/MM-NNNN"
+                  disabled={true}
+                  readOnly={true}
                 />
               </Field>
 

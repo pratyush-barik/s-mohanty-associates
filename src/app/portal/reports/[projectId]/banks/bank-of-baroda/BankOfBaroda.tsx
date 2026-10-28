@@ -615,7 +615,7 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
     bobAsOnDate: '2026-02-20', bobAsOnDateEditOn: false,
     bobAddressee: 'TO, THE BRANCH MANAGER,', bobAddresseeEditOn: false,
     bobReportTitle: 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)', bobReportTitleEditOn: false,
-    bobRefNo: 'BOB/02/2026/02', bobRefNoEditOn: false,
+    bobRefNo: '', bobRefNoEditOn: false,
     bobEnableDateOfValuationEdit: false,
     bobFullLegalPropertyDescription: '',
     bobEnableLegalDescEdit: false,

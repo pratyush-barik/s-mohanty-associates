@@ -460,10 +460,11 @@ export default function SwarnaFinance({
               <Field label="Reference Number">
                 <input
                   type="text"
-                  disabled={isReadOnly}
+                  disabled={true}
+                  readOnly={true}
                   className={inputCls}
-                  value={fields.refNo || ''}
-                  onChange={e => handleFieldChange('refNo', e.target.value)}
+                  value={fields.refNo || projectCode || ''}
+                  placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
 

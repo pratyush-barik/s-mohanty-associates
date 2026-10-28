@@ -615,7 +615,7 @@ export const UNION_BANK_CONFIG: BankConfig = {
     ubiAsOnDate: '2026-02-20', ubiAsOnDateEditOn: false,
     ubiAddressee: 'TO, THE BRANCH MANAGER,', ubiAddresseeEditOn: false,
     ubiReportTitle: 'VALUATION REPORT (IN RESPECT OF LAND / SITE AND BUILDING)', ubiReportTitleEditOn: false,
-    ubiRefNo: 'UBI/02/2026/02', ubiRefNoEditOn: false,
+    ubiRefNo: '', ubiRefNoEditOn: false,
     ubiEnableDateOfValuationEdit: false,
     ubiFullLegalPropertyDescription: '',
     ubiEnableLegalDescEdit: false,

@@ -397,10 +397,7 @@ function CoverPageDetailsContainer({
               className={`${inputCls} ${
                 isRefNoNA ? 'bg-gray-100 cursor-not-allowed text-gray-500' : 'bg-white'
               }`}
-              value={effectiveRefNo}
-              onChange={(e) => handleChange('gicRefNo', e.target.value)}
-              disabled={isReadOnly || isRefNoNA}
-              placeholder="e.g. GIC/VAL/2026/01"
+              value={effectiveRefNo} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
             />
           </Field>
 

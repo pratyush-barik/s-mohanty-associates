@@ -312,10 +312,7 @@ export function ValuationReportSection({
             <input
               type="text"
               className={inputCls}
-              placeholder="e.g. SMA/2026/001"
-              value={fields.ikfRefNo ?? (projectCode || fields.refNo || '')}
-              onChange={(e) => handleChange('ikfRefNo', e.target.value)}
-              disabled={isReadOnly}
+              value={fields.refNo || fields.ikfRefNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
             />
           </Field>
 

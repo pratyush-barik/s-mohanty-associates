@@ -91,7 +91,8 @@ export default function UnitySmallFinanceBank({
     if (!d.typeOfCase) d.typeOfCase = 'LAP';
     if (!d.valuerName) d.valuerName = 'Er. Satyajit Mohanty';
     if (!d.dateOfVisit) d.dateOfVisit = earliestVisit ? formatReportDate(earliestVisit.date) : '';
-    if (!d.caseRefNo) d.caseRefNo = projectCode || '';
+    if (!d.refNo) d.refNo = d.caseRefNo || projectCode || '';
+    if (!d.caseRefNo) d.caseRefNo = d.refNo;
     if (!d.reportDate) d.reportDate = formatReportDate(new Date().toISOString());
     const cPhone = p.contactPhone || '';
     const cName = p.contactName || '';
@@ -458,7 +459,7 @@ export default function UnitySmallFinanceBank({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Unity_SFB_Valuation_${fields.caseRefNo || projectCode || 'Report'}.pdf`;
+      a.download = `Unity_SFB_Valuation_${(fields.refNo || fields.caseRefNo || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -512,7 +513,7 @@ export default function UnitySmallFinanceBank({
                 <input type="text" className={inputCls} value={fields.dateOfVisit || ''} onChange={(e) => updateField('dateOfVisit', e.target.value)} disabled={isReadOnly} />
               </Field>
               <Field label="Case Ref. No">
-                <input type="text" className={inputCls} value={fields.caseRefNo || ''} onChange={(e) => updateField('caseRefNo', e.target.value)} disabled={isReadOnly} />
+                <input type="text" className={inputCls} value={fields.refNo || fields.caseRefNo || projectCode || ''} disabled={true} readOnly={true} />
               </Field>
               <Field label="Date of Report">
                 <input type="text" className={inputCls} value={fields.reportDate || ''} onChange={(e) => updateField('reportDate', e.target.value)} disabled={isReadOnly} />

@@ -105,7 +105,8 @@ export default function KarurVysyaBank({
   const [form, setForm] = useState<any>(() => {
     const f = rawInitialFields || {};
     return {
-      reportNumber: f.reportNumber || f.refNo || projectCode || '',
+      refNo: f.refNo || f.reportNumber || projectCode || '',
+    reportNumber: f.refNo || f.reportNumber || projectCode || '',
       dateOfReport: f.dateOfReport || f.reportDate || '',
 
       // 1. GENERAL
@@ -414,7 +415,7 @@ export default function KarurVysyaBank({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `KVB_Valuation_${form.reportNumber || projectCode}.pdf`;
+      a.download = `KVB_Valuation_${(form.refNo || form.reportNumber || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
       document.body.appendChild(a);
       a.click();
       URL.revokeObjectURL(url);
@@ -474,9 +475,7 @@ export default function KarurVysyaBank({
                   <input
                     type="text"
                     className={inputCls}
-                    value={form.reportNumber}
-                    onChange={e => updateField('reportNumber', e.target.value)}
-                    disabled={isReadOnly}
+                    value={form.refNo || form.reportNumber || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                   />
                 </Field>
                 <Field label="Date of Report">
