@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
@@ -754,7 +756,7 @@ export default function BandhanSME({
       reworkNotes: raw.reworkNotes || '',
 
       // Header
-      refNo: raw.refNo !== undefined ? raw.refNo : defaultRefNo,
+      refNo: raw.refNo || defaultRefNo || '',
       reportDate: formatReportDate(raw.reportDate || new Date()),
 
       // Section I: Basic Information (A - M)
@@ -1884,7 +1886,7 @@ export default function BandhanSME({
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = blobUrl;
-      a.download = `Bandhan_Bank_SME_${projectCode || projectId}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Bandhan_Bank_SME_${projectCode || projectId}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

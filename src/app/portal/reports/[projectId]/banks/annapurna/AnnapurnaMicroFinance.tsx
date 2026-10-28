@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
@@ -769,7 +771,7 @@ export default function AnnapurnaMicroFinance({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Annapurna_Valuation_${projectCode || 'Report'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Annapurna_Valuation_${projectCode || 'Report'}.pdf`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

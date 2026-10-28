@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -69,7 +71,7 @@ export default function IDBIBankBelow5CR({
       toAuthority: saved.toAuthority !== undefined ? saved.toAuthority : 'THE CHIEF MANAGER / BRANCH HEAD,',
       bankName: saved.bankName !== undefined ? saved.bankName : (pf.bankName || 'IDBI BANK'),
       branchAddress: saved.branchAddress !== undefined ? saved.branchAddress : (pf.branchAddress || ''),
-      refNo: saved.refNo !== undefined ? saved.refNo : (projectCode || projectId || ''),
+      refNo: saved.refNo || projectCode || '',
       reportDate: saved.reportDate !== undefined ? saved.reportDate : (pf.reportDate || formatReportDate(new Date().toISOString())),
       borrowerName: saved.borrowerName !== undefined ? saved.borrowerName : (pf.contactName || pf.applicantName || ''),
 
@@ -353,7 +355,7 @@ export default function IDBIBankBelow5CR({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `IDBI_BELOW_5CR_${projectCode || projectId}.pdf`;
+    link.download = `${sanitizeFilenameCode(`IDBI_BELOW_5CR_${projectCode || projectId}`)}.pdf`;
     link.click();
     URL.revokeObjectURL(url);
   };

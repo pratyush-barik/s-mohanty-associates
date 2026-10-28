@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -182,7 +184,7 @@ export default function SamunnatiFinance({
   }, [earliestVisit, prefill, projectCode]);
 
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    return { ...defaultValues, ...(rawInitialFields || {}) };
+    return { ...defaultValues, ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
   });
 
   const updateField = useCallback((name: string, value: any) => {
@@ -286,7 +288,7 @@ export default function SamunnatiFinance({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Valuation_Report_Samunnati_${projectCode || fields.customerName || 'Draft'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Valuation_Report_Samunnati_${projectCode || fields.customerName || 'Draft'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

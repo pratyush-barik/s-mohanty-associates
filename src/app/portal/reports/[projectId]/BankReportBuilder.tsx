@@ -7,6 +7,7 @@ import { SERVICES_LIST } from './constants';
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { rupeesInWords, formatIndianCurrency } from '@/lib/numberToWords';
 import { PDFBankRenderer, fetchBytes, formatReportDate } from '@/lib/pdf-bank-renderer';
+import { sanitizeFilenameCode } from '@/lib/utils';
 import AiAssistPanel from '@/components/AiAssistPanel';
 import type { Suggestion } from '@/lib/ai/predictor';
 import type { BaseReportFields, BankConfig, FloorRow, AnnexureItem, ExtraFieldConfig } from '@/lib/bank-fields';
@@ -1757,7 +1758,7 @@ export default function BankReportBuilder({
       } else {
         const link = document.createElement('a');
         link.href = url;
-        link.download = `Valuation-Report-${fields.refNo || projectId}.pdf`;
+        link.download = `${sanitizeFilenameCode(`Valuation-Report-${fields.refNo || projectId}`)}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -1785,7 +1786,7 @@ export default function BankReportBuilder({
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${fields.bankName || 'Bank'}_Valuation_Report_${projectId}.pdf`;
+      link.download = `${sanitizeFilenameCode(`${fields.bankName || 'Bank'}_Valuation_Report_${fields.refNo || projectId}`)}.pdf`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -2268,7 +2269,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                   )}
                   {!isFieldHidden('refNo') && (
                     <Field label="Ref No. (Locked)">
-                      <input className={inputCls} value={fields.refNo} disabled={true} readOnly={true} placeholder="Project ID" />
+                      <input className={inputCls} value={fields.refNo} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN" />
                     </Field>
                   )}
                   {!isFieldHidden('bankName') && (

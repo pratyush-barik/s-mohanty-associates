@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
@@ -390,7 +392,7 @@ export default function IndusIndBBG({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `IndusInd_BBG_${projectCode || projectId}.pdf`;
+      a.download = `${sanitizeFilenameCode(`IndusInd_BBG_${projectCode || projectId}`)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e: any) {
@@ -538,7 +540,7 @@ export default function IndusIndBBG({
                   <input
                     type="text"
                     className={inputCls}
-                    value={fields.refNo || fields.indusBBGRefNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
+                    value={fields.refNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                   />
                 </Field>
                 <Field label="Date of Report (DATED)">

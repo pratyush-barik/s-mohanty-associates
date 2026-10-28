@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRef, useEffect } from 'react';
@@ -531,7 +533,7 @@ export default function ArkaFinance({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Arka_Valuation_${fields.refNo || 'Report'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Arka_Valuation_${fields.refNo || 'Report'}.pdf`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

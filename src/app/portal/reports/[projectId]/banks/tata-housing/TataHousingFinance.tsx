@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -310,7 +312,7 @@ export default function TataHousingFinance({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Tata_Housing_Finance_Report_${projectCode || 'Draft'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Tata_Housing_Finance_Report_${projectCode || 'Draft'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -492,7 +494,7 @@ export default function TataHousingFinance({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.refNo || fields.webTopNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
+                  value={fields.refNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
 

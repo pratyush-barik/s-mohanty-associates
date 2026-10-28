@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -72,6 +74,7 @@ export default function LICPVR5({
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const raw = rawInitialFields || {};
     return {
+      refNo: raw.refNo || projectCode || '',
       fileNo: raw.fileNo || (prefill as any)?.loanAccountNo || (prefill as any)?.projectCode || '',
       nameOfValuer: raw.nameOfValuer || 'Er. Satyajit Mohanty',
       codeNo: raw.codeNo || 'BH-AOV0078',
@@ -309,7 +312,7 @@ export default function LICPVR5({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `LIC_PVR5_${projectCode || 'Report'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`LIC_PVR5_${projectCode || 'Report'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
@@ -91,14 +93,13 @@ export default function IDFCFirstBank({
 
     return {
       // Header & Case Ref
-      refNo: d.refNo || d.report_ref_no || projectCode || '',
-        report_ref_no: d.refNo || d.report_ref_no || projectCode || '',
+      refNo: d.refNo || projectCode || '',
       report_date: d.report_date || formatReportDate(new Date().toISOString()),
       branch_name: d.branch_name || prefill?.branchName || '',
       case_type: d.case_type || 'HL',
       valuer_name: d.valuer_name || 'ER. SATYAJIT MOHANTY',
       inspection_date: d.inspection_date || earliestVisit?.date || prefill?.fieldVisitDate || '',
-      case_ref_no: d.refNo || d.case_ref_no || projectCode || '',
+      case_ref_no: d.case_ref_no || '',
       contact_person: d.contact_person || prefill?.contactName || '',
       contact_phone: d.contact_phone || prefill?.contactPhone || '',
 
@@ -478,7 +479,7 @@ export default function IDFCFirstBank({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `IDFC_First_Bank_${projectCode || 'Report'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`IDFC_First_Bank_${projectCode || 'Report'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -519,7 +520,7 @@ export default function IDFCFirstBank({
               <input
                 type="text"
                 className={inputCls}
-                value={formData.refNo || formData.report_ref_no || projectCode || ''} disabled={true} readOnly={true}
+                value={formData.refNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
               />
             </Field>
             <Field label="Report Date">
@@ -569,7 +570,7 @@ export default function IDFCFirstBank({
               <input
                 type="text"
                 className={inputCls}
-                value={formData.refNo || formData.case_ref_no || projectCode || ''} disabled={true} readOnly={true}
+                value={formData.refNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
               />
             </Field>
             <Field label="Contact Person">

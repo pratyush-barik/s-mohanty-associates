@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification, deleteBucketImage } from '@/app/actions/project';
@@ -112,6 +114,7 @@ export default function AdityaBirlaCapitalMLAP({
     organisationTemplate: initialFields?.organisationTemplate || 'ADITYA BIRLA CAPITAL',
     organisationSubTemplate: initialFields?.organisationSubTemplate || 'MLAP',
     bankName: initialFields?.bankName || 'ADITYA BIRLA CAPITAL',
+    refNo: initialFields?.refNo || projectCode || '',
 
     // Basic Details
     clientName: initialFields?.clientName || initialFields?.ownerName || prefill?.contactName || '',
@@ -928,7 +931,7 @@ export default function AdityaBirlaCapitalMLAP({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Aditya_Birla_MLAP_Valuation_${projectCode || 'Report'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Aditya_Birla_MLAP_Valuation_${projectCode || 'Report'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -1027,7 +1030,17 @@ export default function AdityaBirlaCapitalMLAP({
                   className="mt-1"
                 />
               </div>
-              <Field label="Application No. (Case Ref No)">
+              <Field label="Reference Number:">
+                <input
+                  type="text"
+                  className={inputCls}
+                  value={fields.refNo || projectCode || ''}
+                  placeholder="SMA-YYYY/MM-NNNN"
+                  disabled={true}
+                  readOnly={true}
+                />
+              </Field>
+              <Field label="Application No.">
                 <input type="text" value={fields.loanApplicationNo || ''} onChange={e => handleChange('loanApplicationNo', e.target.value)} disabled={isReadOnly} className={inputCls} />
               </Field>
               <BaseDateInput

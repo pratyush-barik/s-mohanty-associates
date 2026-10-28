@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -110,7 +112,8 @@ export default function SuryodaySmallFinanceBank({
     const f = rawInitialFields || {};
     const p = (prefill || {}) as any;
     return {
-      applicationNo: f.applicationNo || projectCode || '',
+      refNo: f.refNo || projectCode || '',
+      applicationNo: f.applicationNo || '',
       dateOfInspection: f.dateOfInspection || p.fieldVisitDate || formatReportDate(new Date()),
       dateOfReport: f.dateOfReport || formatReportDate(new Date()),
 
@@ -478,7 +481,7 @@ export default function SuryodaySmallFinanceBank({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Suryoday_Valuation_${form.applicationNo || projectCode}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Suryoday_Valuation_${form.refNo || projectCode || 'Report'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       URL.revokeObjectURL(url);

@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -75,7 +77,7 @@ export default function DCBDesktop({
     const pf = (prefill || {}) as any;
 
     return {
-      refNo: saved.refNo || pf.projectCode || projectCode || '',
+      refNo: saved.refNo || projectCode || '',
       reportDate: saved.reportDate || formatReportDate(new Date()),
       valuationDate: saved.valuationDate || (earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date())),
       customerName: saved.customerName || pf.customerName || pf.borrowerName || '',

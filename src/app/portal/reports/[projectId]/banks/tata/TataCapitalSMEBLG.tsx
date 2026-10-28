@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -85,7 +87,7 @@ export default function TataCapitalSMEBLG({
 
   // Initializing state with rich defaults and prefill
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    const d = { ...(rawInitialFields || {}) };
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
     const p = (prefill || {}) as any;
 
     // PART A: General Details
@@ -440,7 +442,7 @@ export default function TataCapitalSMEBLG({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Tata_Capital_SME_BLG_Valuation_${projectCode || 'Report'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Tata_Capital_SME_BLG_Valuation_${projectCode || 'Report'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -443,7 +445,7 @@ export default function UtkarshSmallFinanceBank({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Utkarsh_SFB_Valuation_${(fields.refNo || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Utkarsh_SFB_Valuation_${(fields.refNo || projectCode || 'Report')}.pdf`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

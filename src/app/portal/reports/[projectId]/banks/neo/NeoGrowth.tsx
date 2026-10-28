@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -435,7 +437,7 @@ export default function NeoGrowth({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `NeoGrowth_Valuation_${projectCode || 'Report'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`NeoGrowth_Valuation_${projectCode || 'Report'}.pdf`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -87,7 +89,8 @@ export default function AUSmallFinanceBank({
 
     return {
       // Header / Meta
-      applicationNo: projectCode || '',
+      refNo: projectCode || '',
+      applicationNo: '',
       dateOfTechnicalVisit: visitDate,
       customerName: p.ownerName || p.applicantName || '',
       contactNo: p.contactPhone || '',
@@ -200,7 +203,7 @@ export default function AUSmallFinanceBank({
   }, [earliestVisit, prefill]);
 
   const [fields, setFields] = useState<Record<string, any>>(() => {
-    return { ...defaultValues, ...(rawInitialFields || {}) };
+    return { ...defaultValues, ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
   });
 
   const updateField = useCallback((name: string, value: any) => {
@@ -312,7 +315,7 @@ export default function AUSmallFinanceBank({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Valuation_Report_AU_SFB_${projectCode || fields.customerName || 'Draft'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Valuation_Report_AU_SFB_${projectCode || fields.customerName || 'Draft'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

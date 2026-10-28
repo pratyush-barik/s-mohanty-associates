@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
@@ -780,7 +782,7 @@ export default function AxisHLLAP({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Axis_HL_LAP_${fields.customerName || 'Report'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Axis_HL_LAP_${fields.customerName || 'Report'}.pdf`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

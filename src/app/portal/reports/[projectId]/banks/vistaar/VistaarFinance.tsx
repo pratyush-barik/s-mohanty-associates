@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -444,7 +446,7 @@ export default function VistaarFinance({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Vistaar_Finance_Report_${(fields.refNo || projectCode || 'valuation').replace(/[/\\]/g, '_')}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Vistaar_Finance_Report_${(fields.refNo || projectCode || 'valuation')}.pdf`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

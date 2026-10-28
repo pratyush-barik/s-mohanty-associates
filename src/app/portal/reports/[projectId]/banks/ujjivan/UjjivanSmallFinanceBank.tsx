@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -371,7 +373,7 @@ export default function UjjivanSmallFinanceBank({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Ujjivan_SFB_Report_${projectCode || 'Draft'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Ujjivan_SFB_Report_${projectCode || 'Draft'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -583,7 +585,7 @@ export default function UjjivanSmallFinanceBank({
                 <input
                   type="text"
                   className={inputCls}
-                  value={fields.refNo || fields.clientId || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
+                  value={fields.refNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                 />
               </Field>
 

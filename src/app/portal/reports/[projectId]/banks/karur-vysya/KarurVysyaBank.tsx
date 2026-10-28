@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -415,7 +417,7 @@ export default function KarurVysyaBank({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `KVB_Valuation_${(form.refNo || form.reportNumber || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
+      a.download = `${sanitizeFilenameCode(`KVB_Valuation_${form.refNo || projectCode || 'Report'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       URL.revokeObjectURL(url);
@@ -475,7 +477,7 @@ export default function KarurVysyaBank({
                   <input
                     type="text"
                     className={inputCls}
-                    value={form.refNo || form.reportNumber || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
+                    value={form.refNo || projectCode || ''} disabled={true} readOnly={true} placeholder="SMA-YYYY/MM-NNNN"
                   />
                 </Field>
                 <Field label="Date of Report">

@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Lock } from 'lucide-react';
@@ -277,6 +279,7 @@ export default function AdityaBirlaCapitalSTSL({
     organisationTemplate: initialFields?.organisationTemplate || 'ADITYA BIRLA CAPITAL',
     organisationSubTemplate: initialFields?.organisationSubTemplate || 'STSL',
     bankName: initialFields?.bankName || 'ADITYA BIRLA CAPITAL',
+    refNo: initialFields?.refNo || projectCode || '',
 
     // Basic Details
     valuerName: initialFields?.valuerName || 'Er. Satyajit Mohanty',
@@ -1333,7 +1336,7 @@ export default function AdityaBirlaCapitalSTSL({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Aditya_Birla_STSL_Valuation_${projectCode || 'Report'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Aditya_Birla_STSL_Valuation_${projectCode || 'Report'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -1433,6 +1436,16 @@ export default function AdityaBirlaCapitalSTSL({
                 className="mt-1"
               />
             </div>
+            <Field label="Reference Number:">
+              <input
+                type="text"
+                className={inputCls}
+                value={fields.refNo || projectCode || ''}
+                placeholder="SMA-YYYY/MM-NNNN"
+                disabled={true}
+                readOnly={true}
+              />
+            </Field>
             <Field label="Case Reference Number">
               <input type="text" value={fields.caseReferenceNumber || ''} onChange={e => handleChange('caseReferenceNumber', e.target.value)} disabled={isReadOnly} className={inputCls} />
             </Field>

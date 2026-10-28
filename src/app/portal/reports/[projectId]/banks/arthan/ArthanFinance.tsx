@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
@@ -857,7 +859,7 @@ export default function ArthanFinance({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Arthan_Valuation_${(fields.refNo || projectCode || 'Report').replace(/[/\\]/g, '_')}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Arthan_Valuation_${(fields.refNo || projectCode || 'Report')}.pdf`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

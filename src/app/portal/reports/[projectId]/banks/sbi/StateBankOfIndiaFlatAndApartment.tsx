@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
@@ -166,7 +168,7 @@ export default function StateBankOfIndiaFlatAndApartment({
       districtState: saved.districtState !== undefined ? saved.districtState : 'DIST: PURI, ODISHA',
 
       // Metadata
-      refNo: saved.refNo || saved.reportRefNo || projectCode || '',
+      refNo: saved.refNo || projectCode || '',
       reportDate: saved.reportDate || pf.reportDate || (earliestVisit ? formatReportDate(earliestVisit.date) : ''),
       borrowerName: saved.borrowerName || pf.customerName || pf.applicantName || '',
 
@@ -571,7 +573,7 @@ export default function StateBankOfIndiaFlatAndApartment({
     };
   }, [rawInitialFields, initialData, projectCode, projectId, prefill]);
 
-  const [fields, setFields] = useState<any>(initialFields);
+  const [fields, setFields] = useState<any>(() => initialData);
 
   const handleChange = (key: string, value: any) => {
     setFields((prev: any) => ({ ...prev, [key]: value }));
@@ -704,7 +706,7 @@ export default function StateBankOfIndiaFlatAndApartment({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `SBI_Flat_And_Apartment_${projectCode || projectId}.pdf`;
+      a.download = `${sanitizeFilenameCode(`SBI_Flat_And_Apartment_${projectCode || projectId}`)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {

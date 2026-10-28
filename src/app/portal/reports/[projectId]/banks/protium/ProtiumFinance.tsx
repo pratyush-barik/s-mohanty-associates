@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -67,6 +69,7 @@ export default function ProtiumFinance({
     const repDate = raw.reportDate || formatReportDate(new Date());
 
     return {
+      refNo: raw.refNo || projectCode || '',
       // Header metadata
       leadIdLan: raw.leadIdLan || raw.leadId || raw.applicationNo || projectCode || '',
       reportDate: repDate,

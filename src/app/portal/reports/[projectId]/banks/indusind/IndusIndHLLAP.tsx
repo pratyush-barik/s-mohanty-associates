@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
@@ -86,6 +88,7 @@ export default function IndusIndHLLAP({
       bankName: 'INDUSIND BANK',
       organisationTemplate: 'INDUSIND BANK',
       organisationSubTemplate: 'HL-LAP',
+      refNo: raw.refNo || projectCode || '',
 
       // 1 General
       indusValuationRequestedBy: raw.indusValuationRequestedBy || 'Indusind Bank Ltd.',
@@ -395,7 +398,7 @@ export default function IndusIndHLLAP({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `IndusInd_HL_LAP_${projectCode || projectId}.pdf`;
+      a.download = `${sanitizeFilenameCode(`IndusInd_HL_LAP_${projectCode || projectId}`)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e: any) {

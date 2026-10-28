@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -77,6 +79,7 @@ export default function LTFinancialServices({
   const [formData, setFormData] = useState<Record<string, any>>(() => {
     const raw = rawInitialFields || {};
     return {
+      refNo: raw.refNo || projectCode || '',
       // Section I
       customerName: raw.customerName || (prefill as any)?.applicantName || (prefill as any)?.contactName || '',
       lanNo: raw.lanNo || (prefill as any)?.loanAccountNo || (prefill as any)?.projectCode || '',
@@ -413,7 +416,7 @@ export default function LTFinancialServices({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `LT_Finance_${projectCode || 'Report'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`LT_Finance_${projectCode || 'Report'}`)}.pdf`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

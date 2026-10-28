@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -128,7 +130,7 @@ export default function DCBHLLAPSME({
     return {
       ...DCB_HL_LAP_SME_CONFIG.defaultValues,
       ...saved,
-      refNo: saved.refNo || pf.projectCode || projectCode || '',
+      refNo: saved.refNo || projectCode || '',
       caseNo: saved.caseNo || pf.caseNo || '',
       reportDate: saved.reportDate || formatReportDate(new Date()),
       inspectionDate: saved.inspectionDate || (earliestVisit ? formatReportDate(earliestVisit.date) : formatReportDate(new Date())),
@@ -289,7 +291,7 @@ export default function DCBHLLAPSME({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `Valuation_Report_DCB_Bank_${fields.caseNo || projectCode || 'Report'}.pdf`;
+      a.download = `${sanitizeFilenameCode(`Valuation_Report_DCB_Bank_${fields.refNo || projectCode || 'Report'}`)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {

@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -206,7 +208,7 @@ export default function LICPVR2({
     };
   }, [rawInitialFields, initialData, projectCode, projectId, prefill]);
 
-  const [fields, setFields] = useState<any>(initialFields);
+  const [fields, setFields] = useState<any>(() => initialData);
 
   const handleChange = (key: string, value: any) => {
     setFields((prev: any) => ({ ...prev, [key]: value }));
@@ -279,7 +281,7 @@ export default function LICPVR2({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `LIC_PVR2_FlatUnderConstruction_${projectCode || projectId}.pdf`;
+      a.download = `${sanitizeFilenameCode(`LIC_PVR2_FlatUnderConstruction_${projectCode || projectId}`)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {

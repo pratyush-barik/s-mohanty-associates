@@ -1,5 +1,7 @@
 'use client';
 
+import { sanitizeFilenameCode } from '@/lib/utils';
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
@@ -76,7 +78,7 @@ export default function IDBIBankAbove5CR({
       districtState: saved.districtState !== undefined ? saved.districtState : '',
 
       // Metadata
-      refNo: saved.refNo || saved.reportRefNo || projectCode || '',
+      refNo: saved.refNo || projectCode || '',
       reportDate: saved.reportDate || pf.reportDate || formatReportDate(new Date().toISOString()),
       borrowerName: saved.borrowerName || pf.customerName || pf.applicantName || '',
 
@@ -434,7 +436,7 @@ export default function IDBIBankAbove5CR({
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `IDBI_Above_5CR_${fields.propertyValuationType}_${projectCode || projectId}.pdf`;
+      a.download = `${sanitizeFilenameCode(`IDBI_Above_5CR_${fields.propertyValuationType}_${projectCode || projectId}`)}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
