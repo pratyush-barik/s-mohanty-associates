@@ -51,9 +51,29 @@
 - External projects (`EXTERNAL`) lock in-portal chat input (`<input disabled />` and `<button disabled />`) with the notice banner highlighting primary contact channels (`call, sms, whatsapp or mail` in red). Chat messages never auto-dispatch outbound emails.
 - Final report emails for external bank cases attach the PDF directly as a file from `smohantyassociates@gmail.com` with no download link button (preventing corporate firewall blocks). Website account holders receive dashboard view notifications from `report@smohantyassociates.com`.
 
-
-
-## Reference Number Invariants
-- Project Code format: `SMA-YYYY/MM-NNNN` (monthly reset, locked across all builders).
-- All bank templates strictly use canonical `refNo` (no bank prefixes, no dummy constants).
-- Income Tax statutory ref: `SMA/V-01/IT/BBSR-NNNN/YY` (annual reset on Jan 1st, locked).
+### 11. Universal Reference Standardization & Engine Lockdown Invariants
+- **Universal Project Code Format (`SMA-YYYY/MM-NNNN`)**:
+  - Month-scoped format: `SMA-YYYY/MM-NNNN` (e.g. `SMA-2026/10-0001`).
+  - Resets to `0001` on the 1st of every month automatically.
+- **Canonical `refNo` Key Exclusively**:
+  - All report builders (General, IBBI, Income Tax, and all 78 bank report builders) strictly store and access the firm reference number under the single canonical key **`refNo`**.
+  - Redundant legacy keys (`caseRefNo`, `proposalNo`, `referenceNo`, `fileRefNo`) are purged.
+  - `loanApplicationNo` / `lanNo` is exclusively reserved for the borrower's loan file number entered by valuers.
+- **Permanent Firm Reference Lockdown**:
+  - The firm reference input is permanently locked across all builders: `disabled={true} readOnly={true}` with standard placeholder `"SMA-YYYY/MM-NNNN"`. Valuers cannot edit the firm reference number.
+- **Zero Bank Prefixes & Dummy Fixtures**:
+  - No bank prefixes (`SMA/`, `SMA/AYE/`, `SMA/CHOLA/`, `PRPL-`, `SAM/`) or dummy fixture constants (`BOB/02/...`, `BOI/02/...`, etc.).
+- **Normalized Single-Pass State Initialization**:
+  - State initialization in custom builders strictly uses the single-pass object spread pattern:
+    ```ts
+    const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
+    ```
+  - Imperative mutations (`if (!d.refNo) d.refNo = ...`) and secondary `useEffect` render cycles for `refNo` are prohibited.
+- **Statutory Income Tax Auto-Generation (`SMA/V-01/IT/BBSR-NNNN/YY`)**:
+  - Auto-generated via `getOrGenerateTaxRef(projectId)` on builder mount.
+  - Hardcoded CCIT jurisdiction circle `BBSR`.
+  - Resets annually to `0001` on January 1st.
+  - Stored in canonical `refNo` and rendered in the top-right PDF header as `REF NO–SMA/V-01/IT/BBSR-NNNN/YY`.
+- **URL & Download Filename Safety**:
+  - Project code forward slashes `/` are URL-encoded (`encodeURIComponent`) in routing.
+  - PDF downloads across all builders are sanitized with `sanitizeFilenameCode(...)` (`/` $\rightarrow$ `_`).

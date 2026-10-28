@@ -139,5 +139,15 @@ All bank report builders in `src/app/portal/reports/[projectId]/banks/` and thei
 - PDF Renderer Changes: `feat (<bank_name>-pdf): <message>`
 - Web UI (Report Draft) Changes: `feat (<bank_name>-report): <message>`
 
+### 14. Universal Reference Standardization & Engine Lockdown Invariants
+1. **Universal Project Code Format (`SMA-YYYY/MM-NNNN`)**: Strictly month-scoped sequential format (`SMA-YYYY/MM-NNNN`). Resets to `0001` on the 1st of every month automatically.
+2. **Canonical State Key `refNo` Exclusively**: Every report builder strictly stores and accesses the firm reference number under the single canonical key `refNo`. Redundant keys (`caseRefNo`, `proposalNo`, `referenceNo`, `fileRefNo`) are purged.
+3. **Firm Reference Immutability**: All firm reference inputs are permanently locked (`disabled={true} readOnly={true}`) with standard placeholder `"SMA-YYYY/MM-NNNN"`. Valuers cannot edit the firm reference number.
+4. **Zero Bank Prefixes & Dummy Constants**: Never concatenate bank prefixes (`SMA/`, `SMA/AYE/`, `SMA/CHOLA/`, `PRPL-`, `SAM/`) or hardcode dummy references (`BOB/02/...`). Pure firm project code is used everywhere.
+5. **Income Tax Reference Auto-Generation**: Income Tax valuation reports auto-generate the statutory format `SMA/V-01/IT/BBSR-NNNN/YY` in `refNo`, resetting to `0001` on January 1st every year, hardcoded to jurisdiction circle `BBSR`, and locked in the UI.
+6. **Normalized Single-Pass State Initialization**: State initialization in custom builders strictly follows the single-pass spread pattern `const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };`. Imperative mutations (`if (!d.refNo) d.refNo = ...`) and secondary `useEffect` render cycles for `refNo` are prohibited.
+7. **URL & PDF Download Filename Safety**: Project codes in routing are URL-encoded (`encodeURIComponent`). All PDF download filenames are sanitized via `sanitizeFilenameCode(...)` (`/` $\rightarrow$ `_`).
+
+
 
 

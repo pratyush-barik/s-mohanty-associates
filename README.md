@@ -41,7 +41,19 @@ For comprehensive developer directives, schema details, and architecture specifi
    - `finalizeReport` never purges property photographs; images are retained for compliance and rework cycles.
 8. **Direct PDF Delivery & Bank Firewall Compliance**:
    - External bank reports are delivered directly attached as PDF files from `smohantyassociates@gmail.com` with zero download link buttons, bypassing Indian bank corporate firewalls. Website clients receive portal dashboard notifications.
-
+9. **Universal Reference Standardization & Engine Lockdown**:
+   - **Project Code Format**: Strictly `SMA-YYYY/MM-NNNN` (monthly sequential counter resetting to `0001` on the 1st of every month).
+   - **Canonical State Key `refNo`**: Single uniform state key across all builders (General, IBBI, Income Tax, and all 78 bank report builders). Redundant keys (`caseRefNo`, `proposalNo`, `referenceNo`, `fileRefNo`) are purged.
+   - **Global Input Lockdown**: The firm reference number field is permanently locked (`disabled={true} readOnly={true}`) with standard placeholder `"SMA-YYYY/MM-NNNN"`.
+   - **Zero Bank Prefixes**: No firm prefixes (`SMA/`, `SMA/AYE/`, `SMA/CHOLA/`, `PRPL-`, `SAM/`) or dummy fixture constants (`BOB/02/...`).
+   - **Statutory Income Tax Reference**: Auto-generates `SMA/V-01/IT/BBSR-NNNN/YY` on mount, hardcoded to CCIT jurisdiction circle `BBSR`, resetting annually on January 1st.
+   - **Download Filename Safety**: All PDF download filenames sanitized via `sanitizeFilenameCode(...)` (`/` $\rightarrow$ `_`).
+10. **Normalized Single-Pass State Initialization**:
+   - All 78 bank report builders follow the declarative single-pass object spread:
+     ```ts
+     const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };
+     ```
+   - Imperative state mutations (`if (!d.refNo) d.refNo = ...`) and secondary `useEffect` render cycles are prohibited.
 
 ---
 
@@ -58,9 +70,9 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 ## Verification & Build
 
 ```bash
-# Typecheck
+# Typecheck (Must pass with 0 errors)
 npx tsc --noEmit
 
-# Production Build
+# Production Build (All 33 routes static/dynamic compiled)
 npm run build
 ```

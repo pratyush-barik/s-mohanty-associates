@@ -545,3 +545,17 @@ Outstanding items in **priority order**:
 
 #### 6. PDF Sub-table Merging
 - When asked to merge/combine sub-tables vertically (e.g. rendering flush against each other with no gaps), remember that `PDFBankRenderer.drawTable` takes a `headers` array. If multiple tables are drawn consecutively with `[]` (empty headers), they will seamlessly connect without top padding because of the `if (headers.length > 0)` check added in `src/lib/pdf-bank-renderer.ts`. Always call `drawTable([], ...)` to append rows to a preceding table seamlessly without header gaps.
+
+#### 7. Universal Project Code & Reference Number Standardization (`SMA-YYYY/MM-NNNN`)
+- `projectCode` format is strictly `SMA-YYYY/MM-NNNN` (monthly sequential counter, resets to `0001` on the 1st of every month).
+- All report builders strictly use canonical `refNo`. Redundant keys (`caseRefNo`, `proposalNo`, `referenceNo`, `fileRefNo`) are purged.
+- All firm reference inputs are permanently locked (`disabled={true} readOnly={true}`) with standard placeholder `"SMA-YYYY/MM-NNNN"`.
+- Bank prefixes (`SMA/`, `SMA/AYE/`, `SMA/CHOLA/`, `PRPL-`, `SAM/`) and dummy constants are purged.
+- Income Tax auto-generates statutory ref `SMA/V-01/IT/BBSR-NNNN/YY` on mount, resetting annually on Jan 1st, hardcoded to CCIT jurisdiction circle `BBSR`.
+- All PDF download filenames are sanitized via `sanitizeFilenameCode(...)` (`/` $\rightarrow$ `_`).
+
+#### 8. Normalized Single-Pass State Initialization Across All 78 Bank Builders
+- All 78 bank builder templates use the declarative single-pass spread pattern `const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };`.
+- SBI Flat & Apartment, SBI Land & Building, LIC NPA, and LIC PVR1-2 use `useState<any>(() => initialData)`.
+- Imperative mutations (`if (!d.refNo) d.refNo = ...`) and secondary `useEffect` render cycles for `refNo` are prohibited.
+

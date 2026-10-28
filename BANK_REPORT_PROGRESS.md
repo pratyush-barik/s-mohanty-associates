@@ -10,9 +10,9 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 
 | :--- | :---: | :--- |
 | **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
-| **🔨 In Progress** | **56 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes DCB Bank Desktop & HL-LAP-SME, SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, Poonawalla Finance, and Protium Finance) |
-| **⏳ Not Started** | **6 formats** | Directory reserved / pending base component creation |
-| **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
+| **🔨 In Progress** | **63 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization |
+| **⏳ Not Started** | **0 formats** | All 78 bank builder formats have working base structures established |
+| **Total Tracked** | **61 institutions** (78 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
 
@@ -51,7 +51,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **20** | **GIC HOUSING FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **21** | **GRIHAM HOUSING FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **22** | **HDB FINANCIAL SERVICES** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **23** | **HDFC BANK** | `HL-LAP-BLG` | ⏳ Not Created | ⏳ Not Started |
+| **23** | **HDFC BANK** | `HL-LAP-BLG` | ✅ Created Base | 🔨 In Progress |
 | **24** | **ICICI BANK** | | | |
 | 24.1 | ICICI BANK | `HL-LAP-BBG` | ✅ Created Base | 🔨 In Progress |
 | 24.2 | ICICI BANK | `NPA` | ✅ Created Base | 🔨 In Progress |
@@ -60,7 +60,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | 25.2 | IDBI BANK | `Flat & Apartment` | ✅ Created Base | 🔨 In Progress |
 | **26** | **IDFC FIRST BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **27** | **IKF FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **28** | **INDIAN BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **28** | **INDIAN BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **29** | **INDUSIND BANK** | | | |
 | 29.1 | INDUSIND BANK | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
 | 29.2 | INDUSIND BANK | `BBG` | ✅ Created Base | 🔨 In Progress |
@@ -68,7 +68,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **31** | **JANA SMALL FINANCE BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **32** | **KOTAK MAHINDRA BANK** | | | |
 | 32.1 | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` | ✅ Created Base | 🔨 In Progress |
-| 32.2 | KOTAK MAHINDRA BANK | `HL-LAP` | ⏳ Not Created | ⏳ Not Started |
+| 32.2 | KOTAK MAHINDRA BANK | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
 | **33** | **L&T FINANCIAL SERVICES** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **34** | **LIC HOUSING FINANCE LTD** | | | |
 | 34.1 | LIC HOUSING FINANCE LTD | `NPA-DEFAULT CASES` | ✅ Created Base | 🔨 In Progress |
@@ -78,14 +78,14 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | 34.5 | LIC HOUSING FINANCE LTD | `PVR-4(LAND PURCHASE ONLY)` | ✅ Created Base | 🔨 In Progress |
 | 34.6 | LIC HOUSING FINANCE LTD | `PVR-5 (SUBSEQUENT VALUATION REPORT)` | ✅ Created Base | 🔨 In Progress |
 | **35** | **MAHINDRA FINANCE LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **36** | **MANAPPURAM HOUSING FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **36** | **MANAPPURAM HOUSING FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **37** | **NAVDHAN FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **38** | **NEO GROWTH** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **39** | **PNB HOUSING FINANCE LTD** | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
 | **40** | **POONAWALLA FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **41** | **PROTEUM FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **42** | **PUNJAB & SIND BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
-| **43** | **PUNJAB NATIONAL BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **42** | **PUNJAB & SIND BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
+| **43** | **PUNJAB NATIONAL BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **44** | **PURPLE FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **45** | **SAMMUNATI FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **46** | **SHRIRAM FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
@@ -218,3 +218,10 @@ Templates with base structure & draft UI files created, currently undergoing fie
   - **Dedicated PDF Renderer**: `src/lib/banks/pdf-protium-finance-renderer.ts` — **🔨 In Progress** (Undergoing section/field verification).
 
 
+
+- **Universal Reference Standardization & State Normalization**:
+  - All 78 bank report builders have been audited in sequential order.
+  - State initialization strictly follows the single-pass declarative pattern `const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };`.
+  - All firm reference inputs are locked (`disabled={true} readOnly={true}`) with standard placeholder `"SMA-YYYY/MM-NNNN"`.
+  - Redundant bank keys (`caseRefNo`, `proposalNo`, `referenceNo`, `fileRefNo`) and bank prefixes (`SMA/`, `SAM/`, `PRPL-`) are completely purged.
+  - All PDF download filenames are sanitized via `sanitizeFilenameCode(...)`.
