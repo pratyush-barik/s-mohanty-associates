@@ -179,6 +179,8 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'KOTAK MAHINDRA BANK::BUSINESS BANKING GROUP': dynamic(() => import('./banks/kotak/KotakBBG')),
   'KOTAK MAHINDRA BANK::HL-LAP': dynamic(() => import('./banks/kotak/KotakHLLAP')),
   'KOTAK MAHINDRA BANK': dynamic(() => import('./banks/kotak/KotakHLLAP')),
+  'KOTAK': dynamic(() => import('./banks/kotak/KotakHLLAP')),
+  'KOTAK BANK': dynamic(() => import('./banks/kotak/KotakHLLAP')),
   'L&T FINANCIAL SERVICES': dynamic(() => import('./banks/lt/LTFinancialServices')),
 
   // LIC

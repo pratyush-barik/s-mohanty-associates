@@ -68,7 +68,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **31** | **JANA SMALL FINANCE BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **32** | **KOTAK MAHINDRA BANK** | | | |
 | 32.1 | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` | ✅ Created Base | 🔨 In Progress |
-| 32.2 | KOTAK MAHINDRA BANK | `HL-LAP` | ⏳ Not Created | ⏳ Not Started |
+| 32.2 | KOTAK MAHINDRA BANK | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
 | **33** | **L&T FINANCIAL SERVICES** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **34** | **LIC HOUSING FINANCE LTD** | | | |
 | 34.1 | LIC HOUSING FINANCE LTD | `NPA-DEFAULT CASES` | ✅ Created Base | 🔨 In Progress |
@@ -161,6 +161,7 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **30** | ISFC | `Standard` | `src/app/portal/reports/[projectId]/banks/isfc/ISFC.tsx` | `src/lib/banks/pdf-isfc-render.ts` | 🔨 In Progress |
 | **31** | JANA SMALL FINANCE BANK | `Standard` | `src/app/portal/reports/[projectId]/banks/jana-sfb/JanaSmallFinanceBank.tsx` | `src/lib/banks/pdf-jana-small-finance-bank-renderer.ts` | 🔨 In Progress |
 | **32.1** | KOTAK MAHINDRA BANK | `BUSINESS BANKING GROUP` (`kotak-bbg`) | `src/app/portal/reports/[projectId]/banks/kotak/KotakBBG.tsx` | `src/lib/banks/pdf-kotak-bbg-renderer.ts` | 🔨 In Progress |
+| **32.2** | KOTAK MAHINDRA BANK | `HL-LAP` (5 Sub-Builders: Flat, Industrial, L&B, Resi-Comm, Vacant Land) | `src/app/portal/reports/[projectId]/banks/kotak/KotakHLLAP.tsx` | `src/lib/banks/pdf-kotak-hllap-*-renderer.ts` | 🔨 In Progress |
 | **33** | L&T FINANCIAL SERVICES | `Standard` | `src/app/portal/reports/[projectId]/banks/lt/LTFinancialServices.tsx` | `src/lib/banks/pdf-lt-financial-services-renderer.ts` | 🔨 In Progress |
 | **34.1** | LIC HOUSING FINANCE LTD | `NPA-DEFAULT CASES` | `src/app/portal/reports/[projectId]/banks/lic/LICNPA.tsx` | `src/lib/banks/pdf-lic-npa-renderer.ts` | 🔨 In Progress |
 | **34.2** | LIC HOUSING FINANCE LTD | `PVR-1(SELF CONSTRUCTION-L & B)` | `src/app/portal/reports/[projectId]/banks/lic/LICPVR1.tsx` | `src/lib/banks/pdf-lic-pvr1-renderer.ts` | 🔨 In Progress |
