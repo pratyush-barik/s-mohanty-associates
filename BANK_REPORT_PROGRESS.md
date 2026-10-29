@@ -10,8 +10,8 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 
 | :--- | :---: | :--- |
 | **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
-| **🔨 In Progress** | **56 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes DCB Bank Desktop & HL-LAP-SME, SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, Poonawalla Finance, and Protium Finance) |
-| **⏳ Not Started** | **6 formats** | Directory reserved / pending base component creation |
+| **🔨 In Progress** | **57 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes DCB Bank Desktop & HL-LAP-SME, SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, Poonawalla Finance, Protium Finance, and Manappuram Home Finance) |
+| **⏳ Not Started** | **5 formats** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
@@ -78,7 +78,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | 34.5 | LIC HOUSING FINANCE LTD | `PVR-4(LAND PURCHASE ONLY)` | ✅ Created Base | 🔨 In Progress |
 | 34.6 | LIC HOUSING FINANCE LTD | `PVR-5 (SUBSEQUENT VALUATION REPORT)` | ✅ Created Base | 🔨 In Progress |
 | **35** | **MAHINDRA FINANCE LTD** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **36** | **MANAPPURAM HOUSING FINANCE** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **36** | **MANAPPURAM HOUSING FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **37** | **NAVDHAN FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **38** | **NEO GROWTH** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **39** | **PNB HOUSING FINANCE LTD** | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
@@ -169,6 +169,7 @@ Templates with base structure & draft UI files created, currently undergoing fie
 | **34.5** | LIC HOUSING FINANCE LTD | `PVR-4(LAND PURCHASE ONLY)` | `src/app/portal/reports/[projectId]/banks/lic/LICPVR4.tsx` | `src/lib/banks/pdf-lic-pvr4-renderer.ts` | 🔨 In Progress |
 | **34.6** | LIC HOUSING FINANCE LTD | `PVR-5 (SUBSEQUENT VALUATION REPORT)` | `src/app/portal/reports/[projectId]/banks/lic/LICPVR5.tsx` | `src/lib/banks/pdf-lic-pvr5-renderer.ts` | 🔨 In Progress |
 | **35** | MAHINDRA FINANCE LTD | `Standard` | `src/app/portal/reports/[projectId]/banks/mahindra/MahindraFinance.tsx` | `src/lib/banks/pdf-mahindra-finance-renderer.ts` | 🔨 In Progress |
+| **36** | MANAPPURAM HOUSING FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/manappuram/ManappuramHousing.tsx` | `src/lib/banks/pdf-manappuram-finance-renderer.ts` | 🔨 In Progress |
 | **37** | NAVDHAN FINANCE | `Standard` | `src/app/portal/reports/[projectId]/banks/navdhan/NavdhanFinance.tsx` | `src/lib/banks/pdf-navdhan-finance-renderer.ts` | 🔨 In Progress |
 | **38** | NEO GROWTH | `Standard` | `src/app/portal/reports/[projectId]/banks/neo/NeoGrowth.tsx` | `src/lib/banks/pdf-neo-growth-renderer.ts` | 🔨 In Progress |
 | **39** | PNB HOUSING FINANCE LTD | `HL-LAP` | `src/app/portal/reports/[projectId]/banks/pnb-housing/PNBHousingHLLAP.tsx` | `src/lib/banks/pdf-pnb-housing-renderer.ts` | 🔨 In Progress |
@@ -216,6 +217,9 @@ Templates with base structure & draft UI files created, currently undergoing fie
 - **Protium Finance (Proteum) (`Standard`)**:
   - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/protium/ProtiumFinance.tsx` — **🔨 In Progress** (Undergoing section/field verification).
   - **Dedicated PDF Renderer**: `src/lib/banks/pdf-protium-finance-renderer.ts` — **🔨 In Progress** (Undergoing section/field verification).
+- **Manappuram Home Finance Ltd (`Standard`)**:
+  - **Report Draft UI**: `src/app/portal/reports/[projectId]/banks/manappuram/ManappuramHousing.tsx` — **🔨 In Progress** (Sections 1 through 11 custom draft UI with two-column layout, Parts A..F valuation breakdown, NDMA parameters, and attachment suites).
+  - **Dedicated PDF Renderer**: `src/lib/banks/pdf-manappuram-finance-renderer.ts` — **🔨 In Progress** (Dedicated renderer with two-column details, tabular Parts A..F, NDMA table, Checklist, Remarks & Notes).
 
 
 
