@@ -195,11 +195,6 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   // Mahindra, Manappuram, Navdhan, Neo, PNB Housing, Poonawalla, Proteum, Punjab & Sind, PNB, Purple
   'MAHINDRA FINANCE LTD': dynamic(() => import('./banks/mahindra/MahindraFinance')),
   'MANAPPURAM HOUSING FINANCE': dynamic(() => import('./banks/manappuram/ManappuramHousing')),
-  'MANAPPURAM HOME FINANCE': dynamic(() => import('./banks/manappuram/ManappuramHousing')),
-  'MANAPPURAM HOME FINANCE LTD': dynamic(() => import('./banks/manappuram/ManappuramHousing')),
-  'MANAPPURAM HOME FINANCE LIMITED': dynamic(() => import('./banks/manappuram/ManappuramHousing')),
-  'MANAPPURAM': dynamic(() => import('./banks/manappuram/ManappuramHousing')),
-  'MAHOFIN': dynamic(() => import('./banks/manappuram/ManappuramHousing')),
   'NAVDHAN FINANCE': dynamic(() => import('./banks/navdhan/NavdhanFinance')),
   'NEO GROWTH': dynamic(() => import('./banks/neo/NeoGrowth')),
   'PNB HOUSING FINANCE LTD::HL-LAP': dynamic(() => import('./banks/pnb-housing/PNBHousingHLLAP')),
