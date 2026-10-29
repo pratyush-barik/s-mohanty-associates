@@ -529,6 +529,63 @@ export default function ManappuramHousing({
     }));
   };
 
+  // Helper to build robust payload with manual override preservation & 100% dynamic formula fallback
+  const buildPayload = useCallback((): ManappuramFinanceFields => {
+    const effectiveLandVal = fields.estimatedValueOfLand?.trim()
+      ? fields.estimatedValueOfLand
+      : autoCalculations.landVal > 0
+      ? `Rs.${formatIndianCurrency(autoCalculations.landVal)}/-`
+      : '';
+
+    const effectiveBldgCost = fields.totalBuildingValuationCost?.trim()
+      ? fields.totalBuildingValuationCost
+      : autoCalculations.totalBldgNet > 0
+      ? `Rs.${formatIndianCurrency(autoCalculations.totalBldgNet)}/-`
+      : '';
+
+    const effectivePartA = fields.partATotal?.trim()
+      ? fields.partATotal
+      : autoCalculations.landVal > 0
+      ? `Rs.${formatIndianCurrency(autoCalculations.landVal)}/-`
+      : '';
+
+    const effectivePartB = fields.partBTotal?.trim()
+      ? fields.partBTotal
+      : autoCalculations.totalBldgNet > 0
+      ? `Rs.${formatIndianCurrency(autoCalculations.totalBldgNet)}/-`
+      : '';
+
+    const effectiveTotalFMV = fields.totalMarketValue?.trim()
+      ? fields.totalMarketValue
+      : autoCalculations.totalFMV > 0
+      ? `Rs. ${formatIndianCurrency(autoCalculations.totalFMV)}/-`
+      : '';
+
+    const effectiveRealizable = fields.realizableValue?.trim()
+      ? fields.realizableValue
+      : autoCalculations.realizable > 0
+      ? `Rs.${formatIndianCurrency(autoCalculations.realizable)}/-`
+      : '';
+
+    const effectiveDistress = fields.distressValue?.trim()
+      ? fields.distressValue
+      : autoCalculations.distress > 0
+      ? `Rs.${formatIndianCurrency(autoCalculations.distress)}/-`
+      : '';
+
+    return {
+      ...fields,
+      projectCode,
+      estimatedValueOfLand: effectiveLandVal,
+      totalBuildingValuationCost: effectiveBldgCost,
+      partATotal: effectivePartA,
+      partBTotal: effectivePartB,
+      totalMarketValue: effectiveTotalFMV,
+      realizableValue: effectiveRealizable,
+      distressValue: effectiveDistress,
+    };
+  }, [fields, projectCode, autoCalculations]);
+
   // Save Draft
   const handleSaveDraft = async () => {
     setIsSaving(true);
@@ -536,39 +593,7 @@ export default function ManappuramHousing({
     setSaveSuccess(false);
 
     try {
-      const payload: ManappuramFinanceFields = {
-        ...fields,
-        projectCode,
-        estimatedValueOfLand:
-          autoCalculations.landVal > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.landVal)}/-`
-            : fields.estimatedValueOfLand,
-        totalBuildingValuationCost:
-          autoCalculations.totalBldgNet > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.totalBldgNet)}/-`
-            : fields.totalBuildingValuationCost,
-        partATotal:
-          autoCalculations.landVal > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.landVal)}/-`
-            : fields.partATotal,
-        partBTotal:
-          autoCalculations.totalBldgNet > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.totalBldgNet)}/-`
-            : fields.partBTotal,
-        totalMarketValue:
-          autoCalculations.totalFMV > 0
-            ? `Rs. ${formatIndianCurrency(autoCalculations.totalFMV)}/-`
-            : fields.totalMarketValue,
-        realizableValue:
-          autoCalculations.realizable > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.realizable)}/-`
-            : fields.realizableValue,
-        distressValue:
-          autoCalculations.distress > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.distress)}/-`
-            : fields.distressValue,
-      };
-
+      const payload = buildPayload();
       const res = await saveReportDraft(projectId, payload);
       if (res.success) {
         setSaveSuccess(true);
@@ -587,38 +612,7 @@ export default function ManappuramHousing({
   const handlePreviewPDF = async () => {
     try {
       setPreviewing(true);
-      const payload: ManappuramFinanceFields = {
-        ...fields,
-        projectCode,
-        estimatedValueOfLand:
-          autoCalculations.landVal > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.landVal)}/-`
-            : fields.estimatedValueOfLand,
-        totalBuildingValuationCost:
-          autoCalculations.totalBldgNet > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.totalBldgNet)}/-`
-            : fields.totalBuildingValuationCost,
-        partATotal:
-          autoCalculations.landVal > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.landVal)}/-`
-            : fields.partATotal,
-        partBTotal:
-          autoCalculations.totalBldgNet > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.totalBldgNet)}/-`
-            : fields.partBTotal,
-        totalMarketValue:
-          autoCalculations.totalFMV > 0
-            ? `Rs. ${formatIndianCurrency(autoCalculations.totalFMV)}/-`
-            : fields.totalMarketValue,
-        realizableValue:
-          autoCalculations.realizable > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.realizable)}/-`
-            : fields.realizableValue,
-        distressValue:
-          autoCalculations.distress > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.distress)}/-`
-            : fields.distressValue,
-      };
+      const payload = buildPayload();
       const renderer = new PDFManappuramFinanceRenderer(payload);
       const pdfBytes = await renderer.render();
       const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
@@ -635,38 +629,7 @@ export default function ManappuramHousing({
   const handleDownloadPDF = async () => {
     try {
       setPreviewing(true);
-      const payload: ManappuramFinanceFields = {
-        ...fields,
-        projectCode,
-        estimatedValueOfLand:
-          autoCalculations.landVal > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.landVal)}/-`
-            : fields.estimatedValueOfLand,
-        totalBuildingValuationCost:
-          autoCalculations.totalBldgNet > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.totalBldgNet)}/-`
-            : fields.totalBuildingValuationCost,
-        partATotal:
-          autoCalculations.landVal > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.landVal)}/-`
-            : fields.partATotal,
-        partBTotal:
-          autoCalculations.totalBldgNet > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.totalBldgNet)}/-`
-            : fields.partBTotal,
-        totalMarketValue:
-          autoCalculations.totalFMV > 0
-            ? `Rs. ${formatIndianCurrency(autoCalculations.totalFMV)}/-`
-            : fields.totalMarketValue,
-        realizableValue:
-          autoCalculations.realizable > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.realizable)}/-`
-            : fields.realizableValue,
-        distressValue:
-          autoCalculations.distress > 0
-            ? `Rs.${formatIndianCurrency(autoCalculations.distress)}/-`
-            : fields.distressValue,
-      };
+      const payload = buildPayload();
       const renderer = new PDFManappuramFinanceRenderer(payload);
       const safeCode = sanitizeFilenameCode(projectCode || fields.applicationNo || 'Report');
       await renderer.generateAndDownload(`Valuation_Report_Manappuram_${safeCode}.pdf`);
@@ -1318,12 +1281,21 @@ export default function ManappuramHousing({
                   className={inputCls}
                 />
               </Field>
-              <Field label="6. Estimated Value of Land (Auto-Calculated)">
-                <div className="px-3 py-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-sm">
-                  {autoCalculations.landVal > 0
-                    ? `Rs. ${formatIndianCurrency(autoCalculations.landVal)}/-`
-                    : fields.estimatedValueOfLand || 'Rs. 0/-'}
-                </div>
+              <Field label="6. Estimated Value of Land">
+                <input
+                  type="text"
+                  value={fields.estimatedValueOfLand || ''}
+                  onChange={(e) => handleChange('estimatedValueOfLand', e.target.value)}
+                  placeholder={
+                    autoCalculations.landVal > 0
+                      ? `Rs.${formatIndianCurrency(autoCalculations.landVal)}/-`
+                      : 'e.g. Rs.7,84,080/-'
+                  }
+                  className={inputCls}
+                />
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  Auto: {autoCalculations.landVal > 0 ? `Rs.${formatIndianCurrency(autoCalculations.landVal)}/-` : 'Rs.0/-'} (Blank = 100% Formula Fallback)
+                </p>
               </Field>
             </div>
           </Section>
@@ -1510,13 +1482,23 @@ export default function ManappuramHousing({
               </div>
 
               <div className="mt-3 flex justify-end">
-                <div className="text-right">
-                  <div className="text-xs text-slate-500 uppercase tracking-wider font-semibold">Total Building Value</div>
-                  <div className="text-base font-bold text-emerald-700">
-                    {autoCalculations.totalBldgNet > 0
-                      ? `Rs. ${formatIndianCurrency(autoCalculations.totalBldgNet)}/-`
-                      : fields.totalBuildingValuationCost || 'Rs. 0/-'}
-                  </div>
+                <div className="w-full sm:w-72">
+                  <Field label="Total Building Valuation Cost">
+                    <input
+                      type="text"
+                      value={fields.totalBuildingValuationCost || ''}
+                      onChange={(e) => handleChange('totalBuildingValuationCost', e.target.value)}
+                      placeholder={
+                        autoCalculations.totalBldgNet > 0
+                          ? `Rs.${formatIndianCurrency(autoCalculations.totalBldgNet)}/-`
+                          : 'Rs.0/-'
+                      }
+                      className={`${inputCls} text-right font-bold text-emerald-800`}
+                    />
+                    <p className="text-[10px] text-slate-500 text-right mt-0.5">
+                      Auto: {autoCalculations.totalBldgNet > 0 ? `Rs.${formatIndianCurrency(autoCalculations.totalBldgNet)}/-` : 'Rs.0/-'} (Blank = Sum Fallback)
+                    </p>
+                  </Field>
                 </div>
               </div>
             </div>
@@ -1566,37 +1548,101 @@ export default function ManappuramHousing({
 
           {/* Section 8: Total Abstract & Values Summary */}
           <Section number={8} title="Total Abstract & Values Summary" id="sec-abstract">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-                <div className="text-xs font-bold text-slate-500 uppercase">Abstract Summary</div>
-                <div className="flex justify-between text-sm py-1 border-b">
-                  <span>Part A (Land Value):</span>
-                  <span className="font-bold">Rs. {formatIndianCurrency(autoCalculations.landVal)}/-</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Reference Auto Calculations (Live 100% Formula) */}
+              <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">Formula Calculations (Reference)</span>
+                  <span className="text-[10px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded font-mono font-bold">100% Base</span>
                 </div>
-                <div className="flex justify-between text-sm py-1 border-b">
-                  <span>Part B (Building Value):</span>
-                  <span className="font-bold">Rs. {formatIndianCurrency(autoCalculations.totalBldgNet)}/-</span>
+                <div className="flex justify-between text-xs py-1 border-b border-slate-100">
+                  <span className="text-slate-600">Part A (Plot Size x Rate):</span>
+                  <span className="font-bold text-slate-800">Rs. {formatIndianCurrency(autoCalculations.landVal)}/-</span>
                 </div>
-                <div className="flex justify-between text-base font-bold text-emerald-800 pt-1">
-                  <span>Total Market Value:</span>
+                <div className="flex justify-between text-xs py-1 border-b border-slate-100">
+                  <span className="text-slate-600">Part B (Floor BUA x Rate - Dep):</span>
+                  <span className="font-bold text-slate-800">Rs. {formatIndianCurrency(autoCalculations.totalBldgNet)}/-</span>
+                </div>
+                <div className="flex justify-between text-sm font-bold text-emerald-800 pt-1 border-b border-slate-100 pb-1">
+                  <span>100% Total Market Value:</span>
                   <span>Rs. {formatIndianCurrency(autoCalculations.totalFMV)}/-</span>
                 </div>
-                <div className="text-xs text-slate-500 italic mt-1">{autoCalculations.words}</div>
+                <div className="flex justify-between text-xs py-1 border-b border-slate-100 text-blue-900">
+                  <span>90% Realizable Value:</span>
+                  <span className="font-bold">Rs. {formatIndianCurrency(autoCalculations.realizable)}/-</span>
+                </div>
+                <div className="flex justify-between text-xs py-1 text-amber-900">
+                  <span>80% Distress Value:</span>
+                  <span className="font-bold">Rs. {formatIndianCurrency(autoCalculations.distress)}/-</span>
+                </div>
+                <div className="text-[11px] text-slate-500 italic pt-1">{autoCalculations.words}</div>
               </div>
 
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl space-y-2">
-                <div className="text-xs font-bold text-emerald-800 uppercase">Valuation Callouts</div>
-                <div className="flex justify-between text-sm py-1 border-b border-emerald-200">
-                  <span className="text-emerald-900">Realizable Value (90%):</span>
-                  <span className="font-bold text-emerald-900">Rs. {formatIndianCurrency(autoCalculations.realizable)}/-</span>
+              {/* Editable Fields for Valuer Override */}
+              <div className="p-4 bg-white border border-blue-200 rounded-xl space-y-3 shadow-sm">
+                <div className="flex items-center justify-between border-b pb-2">
+                  <span className="text-xs font-bold text-blue-700 uppercase tracking-wider">Valuer Final Abstract (Editable)</span>
+                  <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-200">Blank = Formula Fallback</span>
                 </div>
-                <div className="flex justify-between text-sm py-1 border-b border-emerald-200">
-                  <span className="text-emerald-900">Distress Value (80%):</span>
-                  <span className="font-bold text-emerald-900">Rs. {formatIndianCurrency(autoCalculations.distress)}/-</span>
-                </div>
-                <div className="flex justify-between text-sm py-1 pt-1">
-                  <span className="text-emerald-900">Govt Guideline Value:</span>
-                  <span className="font-semibold">{fields.govtGuidelineValue || 'Not Showing'}</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <Field label="Part A (Land Value)">
+                    <input
+                      type="text"
+                      value={fields.partATotal || ''}
+                      onChange={(e) => handleChange('partATotal', e.target.value)}
+                      placeholder={autoCalculations.landVal > 0 ? `Rs.${formatIndianCurrency(autoCalculations.landVal)}/-` : 'Rs.0/-'}
+                      className={inputCls}
+                    />
+                  </Field>
+                  <Field label="Part B (Building Value)">
+                    <input
+                      type="text"
+                      value={fields.partBTotal || ''}
+                      onChange={(e) => handleChange('partBTotal', e.target.value)}
+                      placeholder={autoCalculations.totalBldgNet > 0 ? `Rs.${formatIndianCurrency(autoCalculations.totalBldgNet)}/-` : 'Rs.0/-'}
+                      className={inputCls}
+                    />
+                  </Field>
+                  <div className="sm:col-span-2">
+                    <Field label="Total Market Value (100%)">
+                      <input
+                        type="text"
+                        value={fields.totalMarketValue || ''}
+                        onChange={(e) => handleChange('totalMarketValue', e.target.value)}
+                        placeholder={autoCalculations.totalFMV > 0 ? `Rs. ${formatIndianCurrency(autoCalculations.totalFMV)}/-` : 'Rs.0/-'}
+                        className={`${inputCls} font-bold text-emerald-900 bg-emerald-50/40`}
+                      />
+                    </Field>
+                  </div>
+                  <Field label="Realizable Value (90%)">
+                    <input
+                      type="text"
+                      value={fields.realizableValue || ''}
+                      onChange={(e) => handleChange('realizableValue', e.target.value)}
+                      placeholder={autoCalculations.realizable > 0 ? `Rs.${formatIndianCurrency(autoCalculations.realizable)}/-` : 'Rs.0/-'}
+                      className={`${inputCls} font-bold text-blue-900 bg-blue-50/40`}
+                    />
+                  </Field>
+                  <Field label="Distress Value (80%)">
+                    <input
+                      type="text"
+                      value={fields.distressValue || ''}
+                      onChange={(e) => handleChange('distressValue', e.target.value)}
+                      placeholder={autoCalculations.distress > 0 ? `Rs.${formatIndianCurrency(autoCalculations.distress)}/-` : 'Rs.0/-'}
+                      className={`${inputCls} font-bold text-amber-900 bg-amber-50/40`}
+                    />
+                  </Field>
+                  <div className="sm:col-span-2">
+                    <Field label="Govt Guideline Value">
+                      <input
+                        type="text"
+                        value={fields.govtGuidelineValue || ''}
+                        onChange={(e) => handleChange('govtGuidelineValue', e.target.value)}
+                        placeholder="Not Showing"
+                        className={inputCls}
+                      />
+                    </Field>
+                  </div>
                 </div>
               </div>
             </div>
