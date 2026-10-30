@@ -9,9 +9,9 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 ### 📊 Overall Status Summary
 
 | :--- | :---: | :--- |
-| **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
+| **✅ Completed** | **16 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
 | **🔨 In Progress** | **57 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes DCB Bank Desktop & HL-LAP-SME, SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, Poonawalla Finance, Protium Finance, and Manappuram Home Finance) |
-| **⏳ Not Started** | **4 formats** | Directory reserved / pending base component creation |
+| **⏳ Not Started** | **3 formats** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
@@ -51,7 +51,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **20** | **GIC HOUSING FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **21** | **GRIHAM HOUSING FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **22** | **HDB FINANCIAL SERVICES** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **23** | **HDFC BANK** | `HL-LAP-BLG` | ⏳ Not Created | ⏳ Not Started |
+| **23** | **HDFC BANK** | HL-LAP-BLG | ✅ Created Base | ✅ Completed |
 | **24** | **ICICI BANK** | | | |
 | 24.1 | ICICI BANK | `HL-LAP-BBG` | ✅ Created Base | 🔨 In Progress |
 | 24.2 | ICICI BANK | `NPA` | ✅ Created Base | 🔨 In Progress |
