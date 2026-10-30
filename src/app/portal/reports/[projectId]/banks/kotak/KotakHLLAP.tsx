@@ -118,8 +118,8 @@ export default function KotakHLLAP(props: BankReportBuilderProps) {
   // If no category is selected yet, show full-page selection cards
   if (!category) {
     return (
-      <div className="min-h-[500px] flex items-center justify-center p-4 sm:p-8">
-        <div className="max-w-5xl w-full bg-white rounded-2xl border border-slate-200 shadow-xs p-6 sm:p-8 space-y-6">
+      <div className="w-full bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 rounded-2xl border border-slate-200 text-slate-900">
+        <div className="w-full bg-white rounded-2xl border border-slate-200 shadow-xs p-6 sm:p-8 lg:p-10 space-y-6">
           <div className="text-center space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
               Kotak Mahindra Bank • HL-LAP

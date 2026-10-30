@@ -185,8 +185,8 @@ export default function ReportSetupWizard({
     <div className="w-full bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 rounded-2xl border border-slate-200 text-slate-900">
       <div
         className={`${
-          selectingOrg ? 'max-w-6xl' : 'max-w-3xl'
-        } w-full mx-auto text-center space-y-6 sm:space-y-8 transition-all duration-300`}
+          selectingOrg ? 'w-full' : 'max-w-4xl mx-auto'
+        } text-center space-y-6 sm:space-y-8 transition-all duration-300`}
       >
         {/* Header Title & Code */}
         <div>
