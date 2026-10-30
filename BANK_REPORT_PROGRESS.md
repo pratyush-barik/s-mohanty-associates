@@ -11,7 +11,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | :--- | :---: | :--- |
 | **✅ Completed** | **15 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
 | **🔨 In Progress** | **57 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes DCB Bank Desktop & HL-LAP-SME, SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, Poonawalla Finance, Protium Finance, and Manappuram Home Finance) |
-| **⏳ Not Started** | **5 formats** | Directory reserved / pending base component creation |
+| **⏳ Not Started** | **4 formats** | Directory reserved / pending base component creation |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---

@@ -183,7 +183,11 @@ export default function ReportSetupWizard({
 
   return (
     <div className="w-full bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 rounded-2xl border border-slate-200 text-slate-900">
-      <div className="w-full text-center space-y-6 transition-all duration-300">
+      <div
+        className={`${
+          selectingOrg ? 'max-w-6xl' : 'max-w-3xl'
+        } w-full mx-auto text-center space-y-6 sm:space-y-8 transition-all duration-300`}
+      >
         {/* Header Title & Code */}
         <div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0f2038] tracking-tight">
@@ -215,7 +219,7 @@ export default function ReportSetupWizard({
 
         {/* Step 1: Choose client type (Individual vs Organisation) */}
         {!selectingOrg && (
-          <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-6 text-left">
+          <div className="max-w-3xl mx-auto grid md:grid-cols-2 gap-6 text-left">
             {/* Individual Card */}
             <button
               type="button"
@@ -276,7 +280,7 @@ export default function ReportSetupWizard({
         {selectingOrg && (
           <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-2xl shadow-xs border border-slate-200 space-y-6 text-left w-full">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="text-lg sm:text-xl font-bold text-[#0f2038]">
+              <h3 className="text-lg font-bold text-[#0f2038]">
                 {showHLLAPCategories
                   ? `Select Property Category for ${selectedBank} (HL-LAP)`
                   : showSubList
@@ -297,10 +301,13 @@ export default function ReportSetupWizard({
             {/* Kotak HL-LAP Dedicated Sub-Categories */}
             {showHLLAPCategories && selectedBank ? (
               <div className="space-y-4">
-                <p className="text-xs text-slate-500">
-                  Select the required property category for Kotak Mahindra Bank HL-LAP:
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3.5 max-h-[460px] overflow-y-auto p-3.5 border border-slate-200 rounded-xl bg-slate-50/50">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-slate-500">
+                    Select the required property category for Kotak Mahindra Bank HL-LAP:
+                  </p>
+                  <span className="text-[11px] font-semibold text-slate-400">5 property formats</span>
+                </div>
+                <div className="flex flex-wrap gap-3.5 justify-center items-stretch max-h-[460px] overflow-y-auto p-4 border border-slate-200 rounded-xl bg-slate-50/50">
                   {KOTAK_HLLAP_SUB_CATEGORIES.map((cat) => {
                     const Icon = cat.icon;
                     return (
@@ -308,13 +315,13 @@ export default function ReportSetupWizard({
                         key={cat.id}
                         type="button"
                         onClick={() => handleSelectHLLAPCategory(cat)}
-                        className="p-4 rounded-xl border border-slate-200 bg-white hover:border-[#b8860b] hover:bg-amber-50/30 hover:shadow-xs text-left transition-all duration-150 flex flex-col justify-between cursor-pointer group shadow-xs w-full"
+                        className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.33%-0.6rem)] xl:w-[210px] p-4 rounded-xl border-2 border-slate-200 bg-white hover:border-[#b8860b] hover:bg-amber-50/30 hover:shadow-md text-left transition-all duration-150 flex flex-col justify-between cursor-pointer group shadow-xs"
                       >
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="p-1.5 rounded-lg bg-amber-50 text-[#b8860b] border border-amber-200 group-hover:bg-[#b8860b] group-hover:text-white transition-colors">
+                        <div className="flex items-center gap-2 mb-2.5">
+                          <span className="p-2 rounded-lg bg-amber-50 text-[#b8860b] border border-amber-200 group-hover:bg-[#b8860b] group-hover:text-white transition-colors">
                             <Icon className="w-4 h-4" />
                           </span>
-                          <span className="text-xs sm:text-sm font-bold text-[#0f2038] group-hover:text-[#b8860b] transition-colors">
+                          <span className="text-xs sm:text-sm font-bold text-[#0f2038] group-hover:text-[#b8860b] transition-colors leading-tight">
                             {cat.label}
                           </span>
                         </div>
@@ -328,18 +335,23 @@ export default function ReportSetupWizard({
               </div>
             ) : showSubList && selectedBank ? (
               <div className="space-y-4">
-                <p className="text-xs text-slate-500">
-                  Select the required subclass or format variation:
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3.5 max-h-[460px] overflow-y-auto p-3.5 border border-slate-200 rounded-xl bg-slate-50/50">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-slate-500">
+                    Select the required subclass or format variation:
+                  </p>
+                  <span className="text-[11px] font-semibold text-slate-400">
+                    {BANK_SUB_TEMPLATES[selectedBank]?.length || 0} format{(BANK_SUB_TEMPLATES[selectedBank]?.length || 0) > 1 ? 's' : ''} available
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-4 items-center justify-center p-6 sm:p-8 border border-slate-200 rounded-xl bg-slate-50/50 min-h-[160px] max-h-[460px] overflow-y-auto">
                   {BANK_SUB_TEMPLATES[selectedBank]?.map((subOpt) => (
                     <button
                       key={subOpt}
                       type="button"
                       onClick={() => handleSelectSubTemplate(subOpt)}
-                      className="p-4 min-h-[80px] rounded-xl border border-slate-200 bg-white hover:border-[#b8860b] hover:bg-amber-50/30 hover:shadow-xs text-center transition-all duration-150 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-xs break-words leading-tight cursor-pointer w-full"
+                      className="w-full sm:w-auto min-w-[220px] max-w-[320px] p-5 min-h-[90px] rounded-xl border-2 border-slate-200 bg-white hover:border-[#b8860b] hover:bg-amber-50/40 hover:shadow-md text-center transition-all duration-150 flex items-center justify-center text-sm font-bold text-[#0f2038] shadow-xs break-words leading-tight cursor-pointer group"
                     >
-                      <span className="w-full line-clamp-3">{subOpt}</span>
+                      <span className="w-full line-clamp-3 group-hover:text-[#b8860b] transition-colors">{subOpt}</span>
                     </button>
                   ))}
                 </div>
@@ -354,10 +366,10 @@ export default function ReportSetupWizard({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search bank or institution name..."
-                    className="w-full px-3.5 py-2 pl-9 text-xs sm:text-sm rounded-lg border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#b8860b] focus:ring-1 focus:ring-[#b8860b] transition-colors"
+                    className="w-full px-3.5 py-2.5 pl-10 text-xs sm:text-sm rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:outline-none focus:border-[#b8860b] focus:ring-1 focus:ring-[#b8860b] transition-colors"
                   />
                   <svg
-                    className="w-4 h-4 text-slate-400 absolute left-3 top-2.5"
+                    className="w-4 h-4 text-slate-400 absolute left-3.5 top-3"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -373,27 +385,27 @@ export default function ReportSetupWizard({
                     <button
                       type="button"
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-3 top-2.5 text-xs text-slate-400 hover:text-slate-600"
+                      className="absolute right-3.5 top-3 text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
                     >
                       ✕
                     </button>
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 max-h-[560px] overflow-y-auto p-3.5 border border-slate-200 rounded-xl bg-slate-50/50">
+                <div className="flex flex-wrap gap-3 max-h-[460px] overflow-y-auto p-4 border border-slate-200 rounded-xl bg-slate-50/50 justify-center">
                   {filteredBanks.length > 0 ? (
                     filteredBanks.map((bank) => (
                       <button
                         key={bank}
                         type="button"
                         onClick={() => handleSelectOrganisation(bank)}
-                        className="p-3.5 min-h-[76px] rounded-xl border border-slate-200 bg-white hover:border-[#b8860b] hover:bg-amber-50/30 hover:shadow-xs text-center transition-all duration-150 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-xs break-words leading-tight cursor-pointer w-full"
+                        className="w-full sm:w-auto flex-1 min-w-[200px] max-w-[280px] p-4 min-h-[84px] rounded-xl border border-slate-200 bg-white hover:border-[#b8860b] hover:bg-amber-50/30 hover:shadow-md text-center transition-all duration-150 flex items-center justify-center text-xs sm:text-sm font-semibold text-[#0f2038] shadow-xs break-words leading-tight cursor-pointer group"
                       >
-                        <span className="w-full line-clamp-3">{bank}</span>
+                        <span className="w-full line-clamp-3 group-hover:text-[#b8860b] transition-colors">{bank}</span>
                       </button>
                     ))
                   ) : (
-                    <div className="col-span-full p-8 text-center text-xs text-slate-400 w-full">
+                    <div className="p-8 text-center text-xs text-slate-400 w-full">
                       No matching institutions found for &ldquo;{searchQuery}&rdquo;.
                     </div>
                   )}
@@ -401,20 +413,25 @@ export default function ReportSetupWizard({
               </div>
             ) : (
               /* Category Selector Grid */
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-                {INSTITUTE_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => handleCategoryClick(cat.id)}
-                    className="p-5 min-h-[120px] rounded-xl border border-slate-200 bg-white hover:border-[#b8860b] hover:bg-amber-50/30 hover:shadow-xs text-center transition-all duration-150 flex flex-col items-center justify-center gap-2 shadow-xs cursor-pointer w-full"
-                  >
-                    <span className="text-3xl">{cat.icon}</span>
-                    <span className="text-xs sm:text-sm font-bold text-[#0f2038] leading-tight break-words max-w-full">
-                      {cat.label}
-                    </span>
-                  </button>
-                ))}
+              <div className="space-y-4">
+                <p className="text-xs text-slate-500">
+                  Choose the institution category or valuation standard:
+                </p>
+                <div className="flex flex-wrap gap-4 justify-center items-stretch">
+                  {INSTITUTE_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      onClick={() => handleCategoryClick(cat.id)}
+                      className="w-full sm:w-[calc(50%-0.5rem)] md:w-auto flex-1 min-w-[160px] max-w-[210px] p-5 min-h-[120px] rounded-xl border-2 border-slate-200 bg-white hover:border-[#b8860b] hover:bg-amber-50/30 hover:shadow-md text-center transition-all duration-150 flex flex-col items-center justify-center gap-2.5 shadow-xs cursor-pointer group"
+                    >
+                      <span className="text-3xl group-hover:scale-110 transition-transform">{cat.icon}</span>
+                      <span className="text-xs sm:text-sm font-bold text-[#0f2038] group-hover:text-[#b8860b] leading-tight break-words max-w-full transition-colors">
+                        {cat.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
           </div>
