@@ -6,6 +6,15 @@ import {
   BANK_SUB_TEMPLATES,
   InstituteCategory,
 } from './constants';
+import { Building2, Factory, Home, Sparkles, Trees } from 'lucide-react';
+
+export const KOTAK_HLLAP_SUB_CATEGORIES = [
+  { id: 'FLAT', label: 'Flat / Apartment', subTemplate: 'HL-LAP - Flat / Apartment', desc: 'Multi-storey residential flats and apartments', icon: Building2 },
+  { id: 'IND', label: 'Industrial Property', subTemplate: 'HL-LAP - Industrial Property', desc: 'Industrial sheds, plots, factories, and warehouses', icon: Factory },
+  { id: 'L&B', label: 'Land & Building', subTemplate: 'HL-LAP - Land & Building', desc: 'Independent houses, villas, and residential plots with construction', icon: Home },
+  { id: 'RES-COM', label: 'Residential cum Commercial', subTemplate: 'HL-LAP - Residential cum Commercial', desc: 'Mixed-use residential + commercial properties', icon: Sparkles },
+  { id: 'VL', label: 'Vacant Land', subTemplate: 'HL-LAP - Vacant Land', desc: 'Vacant plots / land only without construction', icon: Trees },
+];
 
 export interface ReportSetupWizardProps {
   projectId: string;
@@ -27,6 +36,7 @@ export interface ReportSetupWizardProps {
     institutionCategory?: string;
     bankName?: string;
     to?: string;
+    kotakHllapCategory?: string;
   }) => void;
 }
 
@@ -41,6 +51,8 @@ export default function ReportSetupWizard({
   const [showBankList, setShowBankList] = useState(false);
   const [selectedBank, setSelectedBank] = useState<string | null>(null);
   const [showSubList, setShowSubList] = useState(false);
+  const [selectedSubTemplate, setSelectedSubTemplate] = useState<string | null>(null);
+  const [showHLLAPCategories, setShowHLLAPCategories] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const activeCategoryObj: InstituteCategory | undefined = useMemo(() => {
@@ -116,6 +128,15 @@ export default function ReportSetupWizard({
   };
 
   const handleSelectSubTemplate = (subOpt: string) => {
+    // If Kotak HL-LAP is selected, advance to dedicated property category selection
+    const isKotak = (selectedBank || '').toUpperCase().includes('KOTAK');
+    if (isKotak && subOpt === 'HL-LAP') {
+      setSelectedSubTemplate('HL-LAP');
+      setShowSubList(false);
+      setShowHLLAPCategories(true);
+      return;
+    }
+
     const fullBankName = `${selectedBank} - ${subOpt}`;
     const categoryLabel = activeCategoryObj?.label || selectedCategory || '';
     onComplete({
@@ -128,8 +149,26 @@ export default function ReportSetupWizard({
     });
   };
 
+  const handleSelectHLLAPCategory = (cat: typeof KOTAK_HLLAP_SUB_CATEGORIES[0]) => {
+    const fullBankName = `${selectedBank} - ${cat.subTemplate}`;
+    const categoryLabel = activeCategoryObj?.label || selectedCategory || '';
+    onComplete({
+      clientType: 'organisation',
+      organisationTemplate: selectedBank || '',
+      organisationSubTemplate: cat.subTemplate,
+      bankName: selectedBank || '',
+      to: fullBankName,
+      institutionCategory: categoryLabel,
+      kotakHllapCategory: cat.id,
+    });
+  };
+
   const handleWizardBack = () => {
-    if (showSubList) {
+    if (showHLLAPCategories) {
+      setShowHLLAPCategories(false);
+      setShowSubList(true);
+      setSelectedSubTemplate(null);
+    } else if (showSubList) {
       setShowSubList(false);
       setShowBankList(true);
       setSelectedBank(null);
@@ -242,7 +281,9 @@ export default function ReportSetupWizard({
           <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-xs border border-slate-200 space-y-6 text-left">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <h3 className="text-lg font-bold text-[#0f2038]">
-                {showSubList
+                {showHLLAPCategories
+                  ? `Select Property Category for ${selectedBank} (HL-LAP)`
+                  : showSubList
                   ? `Select Format for ${selectedBank}`
                   : showBankList
                   ? `Select from ${activeCategoryObj?.label || 'Institutions'}`
@@ -257,8 +298,39 @@ export default function ReportSetupWizard({
               </button>
             </div>
 
-            {/* Sub-template format list (e.g., AGRI, HL-LAP, SBB, SME) */}
-            {showSubList && selectedBank ? (
+            {/* Kotak HL-LAP Dedicated Sub-Categories */}
+            {showHLLAPCategories && selectedBank ? (
+              <div className="space-y-4">
+                <p className="text-xs text-slate-500">
+                  Select the required property category for Kotak Mahindra Bank HL-LAP:
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-h-[380px] overflow-y-auto p-3 border border-slate-200 rounded-xl bg-slate-50/50">
+                  {KOTAK_HLLAP_SUB_CATEGORIES.map((cat) => {
+                    const Icon = cat.icon;
+                    return (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => handleSelectHLLAPCategory(cat)}
+                        className="p-4 rounded-xl border border-slate-200 bg-white hover:border-[#b8860b] hover:bg-amber-50/30 hover:shadow-xs text-left transition-all duration-150 flex flex-col justify-between cursor-pointer group shadow-xs"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="p-1.5 rounded-lg bg-amber-50 text-[#b8860b] border border-amber-200 group-hover:bg-[#b8860b] group-hover:text-white transition-colors">
+                            <Icon className="w-4 h-4" />
+                          </span>
+                          <span className="text-xs sm:text-sm font-bold text-[#0f2038] group-hover:text-[#b8860b] transition-colors">
+                            {cat.label}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 leading-tight">
+                          {cat.desc}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : showSubList && selectedBank ? (
               <div className="space-y-4">
                 <p className="text-xs text-slate-500">
                   Select the required subclass or format variation:

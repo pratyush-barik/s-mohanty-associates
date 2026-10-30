@@ -1406,6 +1406,105 @@ export function KotakFinalValuesSection({
 }
 
 /**
+ * Enclosures Section: Documents -> Maps -> Photographs (Inside main content column)
+ */
+export function KotakEnclosuresSections({
+  fields,
+  handleChange,
+  bucketImages = [],
+  isReadOnly = false,
+  setIsPhotoModalOpen,
+  sectionNumbers = { docs: 8, maps: 9, photos: 10 },
+}: {
+  fields: KotakHLLAPFields;
+  handleChange: (key: keyof KotakHLLAPFields, val: any) => void;
+  bucketImages?: any[];
+  isReadOnly?: boolean;
+  setIsPhotoModalOpen: (open: boolean) => void;
+  sectionNumbers?: { docs: number; maps: number; photos: number };
+}) {
+  return (
+    <>
+      {/* Enclosure 1: Documents */}
+      <div id="sec-docs-gallery">
+        <BaseDocumentsSection
+          title="Property Documents"
+          sectionId="sec-docs-gallery"
+          sectionNumber={sectionNumbers.docs}
+          documentImages={fields.propertyDocuments || []}
+          documentImageNames={fields.propertyDocumentNames || []}
+          isReadOnly={isReadOnly}
+          onRemoveDocument={(idx: number) => {
+            handleChange('propertyDocuments', (fields.propertyDocuments || []).filter((_: any, i: number) => i !== idx));
+            handleChange('propertyDocumentNames', (fields.propertyDocumentNames || []).filter((_: any, i: number) => i !== idx));
+          }}
+          onDocumentNameChange={(idx: number, name: string) => {
+            const arr = [...(fields.propertyDocumentNames || [])];
+            while (arr.length <= idx) arr.push('');
+            arr[idx] = name;
+            handleChange('propertyDocumentNames', arr);
+          }}
+          onReorderDocuments={(newDocs: string[], newNames: string[]) => {
+            handleChange('propertyDocuments', newDocs);
+            handleChange('propertyDocumentNames', newNames);
+          }}
+        />
+      </div>
+
+      {/* Enclosure 2: Maps */}
+      <div id="sec-maps">
+        <BaseMapsSection
+          title="Location Maps"
+          sectionId="sec-maps"
+          sectionNumber={sectionNumbers.maps}
+          locationMapImages={fields.locationMaps || []}
+          latitude={fields.latitude || ''}
+          longitude={fields.longitude || ''}
+          onLatitudeChange={(val) => handleChange('latitude', val)}
+          onLongitudeChange={(val) => handleChange('longitude', val)}
+          propertyAddress={fields.postalAddress || ''}
+          fields={fields}
+          isReadOnly={isReadOnly}
+          onLocationMapRemove={(idx?: number) => {
+            if (idx !== undefined) {
+              handleChange('locationMaps', (fields.locationMaps || []).filter((_: any, i: number) => i !== idx));
+            }
+          }}
+        />
+      </div>
+
+      {/* Enclosure 3: Photographs */}
+      <div id="sec-photos">
+        <BasePhotographsSection
+          title="Property Site Photographs"
+          sectionId="sec-photos"
+          sectionNumber={sectionNumbers.photos}
+          propertyImages={fields.propertyPhotos || []}
+          propertyImageNames={fields.propertyPhotoNames || []}
+          isReadOnly={isReadOnly}
+          bucketCount={bucketImages?.length || 0}
+          onOpenBucketPicker={() => setIsPhotoModalOpen(true)}
+          onRemoveImage={(idx: number) => {
+            handleChange('propertyPhotos', (fields.propertyPhotos || []).filter((_: any, i: number) => i !== idx));
+            handleChange('propertyPhotoNames', (fields.propertyPhotoNames || []).filter((_: any, i: number) => i !== idx));
+          }}
+          onImageNameChange={(idx: number, name: string) => {
+            const arr = [...(fields.propertyPhotoNames || [])];
+            while (arr.length <= idx) arr.push('');
+            arr[idx] = name;
+            handleChange('propertyPhotoNames', arr);
+          }}
+          onReorderImages={(newImgs: string[], newNames: string[]) => {
+            handleChange('propertyPhotos', newImgs);
+            handleChange('propertyPhotoNames', newNames);
+          }}
+        />
+      </div>
+    </>
+  );
+}
+
+/**
  * Universal Enclosures & Floating Action Bar Component
  */
 export function KotakUniversalEnclosuresAndActions({

@@ -13,6 +13,8 @@ import {
   FloatingNavigator,
   NavItem,
   getEarliestFieldVisit,
+  ReportActionBar,
+  BasePhotoBucketModal,
 } from '../BaseBankReportComponents';
 import {
   KotakHLLAPFields,
@@ -22,14 +24,13 @@ import {
   formatNum,
 } from './KotakHLLAPTypes';
 import {
-  KotakCategoryTabBar,
   KotakGeneralSection,
   KotakPropertySection,
   KotakSurroundingsSection,
   KotakDocumentsSection,
   KotakAmenitiesSubTableUI,
   KotakFinalValuesSection,
-  KotakUniversalEnclosuresAndActions,
+  KotakEnclosuresSections,
 } from './KotakHLLAPSections';
 import { PDFKotakHLLAPVacantLandRenderer } from '@/lib/banks/pdf-kotak-hllap-vacant-land-renderer';
 import { Calculator } from 'lucide-react';
@@ -157,7 +158,7 @@ export default function KotakHLLAPVacantLand({
   };
 
   return (
-    <div className="space-y-6 pb-24 max-w-7xl mx-auto px-4">
+    <div className="space-y-6 pb-28 w-full max-w-7xl mx-auto px-4 sm:px-6">
       {/* Header with Wizard Reset */}
       <BankReportHeader
         bankName="KOTAK MAHINDRA BANK"
@@ -170,45 +171,41 @@ export default function KotakHLLAPVacantLand({
         onResetWizard={onResetWizard}
       />
 
-      {/* Category Tab Bar Switcher */}
-      <KotakCategoryTabBar
-        currentCategory="VL"
-        onCategoryChange={onCategoryChange}
-        isReadOnly={isReadOnly}
-      />
+      <div className="flex gap-6">
+        {/* Floating Sidebar Navigator */}
+        <FloatingNavigator sections={NAV_SECTIONS} />
 
-      {/* Floating Navigator */}
-      <FloatingNavigator sections={NAV_SECTIONS} />
+        {/* Main Content Form */}
+        <div className="flex-1 space-y-6 min-w-0">
+          {/* Section 1: General (isVacantLand = true) */}
+          <div id="sec-general">
+            <KotakGeneralSection
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              isVacantLand={true}
+            />
+          </div>
 
-      {/* Section 1: General (isVacantLand = true) */}
-      <div id="sec-general">
-        <KotakGeneralSection
-          fields={fields}
-          handleChange={handleChange}
-          isReadOnly={isReadOnly}
-          isVacantLand={true}
-        />
-      </div>
+          {/* Section 2: Property (isVacantLand = true) */}
+          <div id="sec-property">
+            <KotakPropertySection
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              isVacantLand={true}
+            />
+          </div>
 
-      {/* Section 2: Property (isVacantLand = true) */}
-      <div id="sec-property">
-        <KotakPropertySection
-          fields={fields}
-          handleChange={handleChange}
-          isReadOnly={isReadOnly}
-          isVacantLand={true}
-        />
-      </div>
+          {/* Section 3: Surroundings */}
+          <div id="sec-surroundings">
+            <KotakSurroundingsSection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+          </div>
 
-      {/* Section 3: Surroundings */}
-      <div id="sec-surroundings">
-        <KotakSurroundingsSection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
-      </div>
+          {/* NOTE: Section 4 Survey of Construction is 100% OMITTED for Vacant Land! */}
 
-      {/* NOTE: Section 4 Survey of Construction is 100% OMITTED for Vacant Land! */}
-
-      {/* Section 4: Documents Verified (Numbered 4 in Vacant Land) */}
-      <div id="sec-documents">
+          {/* Section 4: Documents Verified (Numbered 4 in Vacant Land) */}
+          <div id="sec-documents">
         <KotakDocumentsSection
           fields={fields}
           handleChange={handleChange}
@@ -417,23 +414,53 @@ export default function KotakHLLAPVacantLand({
         />
       </div>
 
-      {/* Universal Enclosures: Documents -> Maps -> Photographs & Action Bar */}
-      <KotakUniversalEnclosuresAndActions
+      {/* Universal Enclosures */}
+      <KotakEnclosuresSections
         fields={fields}
         handleChange={handleChange}
         bucketImages={bucketImages}
         isReadOnly={isReadOnly}
-        userRole={userRole}
-        isPhotoModalOpen={isPhotoModalOpen}
         setIsPhotoModalOpen={setIsPhotoModalOpen}
+        sectionNumbers={{ docs: 7, maps: 8, photos: 9 }}
+      />
+        </div>
+      </div>
+
+      {/* Floating Action Bar */}
+      <ReportActionBar
+        isReadOnly={isReadOnly}
+        userRole={userRole}
+        autoSaveStatus={isSaving ? 'saving' : saveSuccess ? 'saved' : saveError ? 'error' : 'idle'}
+        message={
+          saveSuccess
+            ? { text: 'Report draft saved successfully', type: 'success' }
+            : saveError
+            ? { text: saveError, type: 'error' }
+            : null
+        }
+        loading={isSaving}
         onSaveDraft={handleSaveDraft}
         onPreviewPDF={handlePreviewPDF}
         onDownloadPDF={handleDownloadPDF}
-        isSaving={isSaving}
-        saveSuccess={saveSuccess}
-        saveError={saveError}
-        sectionNumbers={{ docs: 7, maps: 8, photos: 9 }}
       />
+
+      {/* Photo Bucket Modal */}
+      {isPhotoModalOpen && (
+        <BasePhotoBucketModal
+          isOpen={isPhotoModalOpen}
+          bucketImages={bucketImages}
+          mode="propertyImages"
+          onClose={() => setIsPhotoModalOpen(false)}
+          onConfirm={(selectedUrls: string[]) => {
+            handleChange('propertyPhotos', [...(fields.propertyPhotos || []), ...selectedUrls]);
+            handleChange('propertyPhotoNames', [
+              ...(fields.propertyPhotoNames || []),
+              ...selectedUrls.map((_, i) => `Photograph ${(fields.propertyPhotos?.length || 0) + i + 1}`),
+            ]);
+            setIsPhotoModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

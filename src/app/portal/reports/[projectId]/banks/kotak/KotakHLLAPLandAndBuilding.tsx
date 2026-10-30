@@ -13,6 +13,8 @@ import {
   FloatingNavigator,
   NavItem,
   getEarliestFieldVisit,
+  ReportActionBar,
+  BasePhotoBucketModal,
 } from '../BaseBankReportComponents';
 import {
   KotakHLLAPFields,
@@ -23,7 +25,6 @@ import {
   formatNum,
 } from './KotakHLLAPTypes';
 import {
-  KotakCategoryTabBar,
   KotakGeneralSection,
   KotakPropertySection,
   KotakSurroundingsSection,
@@ -31,7 +32,7 @@ import {
   KotakDocumentsSection,
   KotakAmenitiesSubTableUI,
   KotakFinalValuesSection,
-  KotakUniversalEnclosuresAndActions,
+  KotakEnclosuresSections,
 } from './KotakHLLAPSections';
 import { PDFKotakHLLAPLandBuildingRenderer } from '@/lib/banks/pdf-kotak-hllap-land-building-renderer';
 import { Calculator, Plus, Trash2 } from 'lucide-react';
@@ -193,7 +194,7 @@ export default function KotakHLLAPLandAndBuilding({
   };
 
   return (
-    <div className="space-y-6 pb-24 max-w-7xl mx-auto px-4">
+    <div className="space-y-6 pb-28 w-full max-w-7xl mx-auto px-4 sm:px-6">
       {/* Header with Wizard Reset */}
       <BankReportHeader
         bankName="KOTAK MAHINDRA BANK"
@@ -206,43 +207,39 @@ export default function KotakHLLAPLandAndBuilding({
         onResetWizard={onResetWizard}
       />
 
-      {/* Category Tab Bar Switcher */}
-      <KotakCategoryTabBar
-        currentCategory="L&B"
-        onCategoryChange={onCategoryChange}
-        isReadOnly={isReadOnly}
-      />
+      <div className="flex gap-6">
+        {/* Floating Sidebar Navigator */}
+        <FloatingNavigator sections={NAV_SECTIONS} />
 
-      {/* Floating Navigator */}
-      <FloatingNavigator sections={NAV_SECTIONS} />
+        {/* Main Content Form */}
+        <div className="flex-1 space-y-6 min-w-0">
+          {/* Section 1: General */}
+          <div id="sec-general">
+            <KotakGeneralSection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+          </div>
 
-      {/* Section 1: General */}
-      <div id="sec-general">
-        <KotakGeneralSection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
-      </div>
+          {/* Section 2: Property */}
+          <div id="sec-property">
+            <KotakPropertySection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+          </div>
 
-      {/* Section 2: Property */}
-      <div id="sec-property">
-        <KotakPropertySection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
-      </div>
+          {/* Section 3: Surroundings */}
+          <div id="sec-surroundings">
+            <KotakSurroundingsSection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+          </div>
 
-      {/* Section 3: Surroundings */}
-      <div id="sec-surroundings">
-        <KotakSurroundingsSection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
-      </div>
+          {/* Section 4: Construction */}
+          <div id="sec-construction">
+            <KotakConstructionSection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+          </div>
 
-      {/* Section 4: Construction */}
-      <div id="sec-construction">
-        <KotakConstructionSection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
-      </div>
+          {/* Section 5: Documents */}
+          <div id="sec-documents">
+            <KotakDocumentsSection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
+          </div>
 
-      {/* Section 5: Documents */}
-      <div id="sec-documents">
-        <KotakDocumentsSection fields={fields} handleChange={handleChange} isReadOnly={isReadOnly} />
-      </div>
-
-      {/* Section 6: Valuation Report (Land & Building Method) */}
-      <div id="sec-valuation">
+          {/* Section 6: Valuation Report (Land & Building Method) */}
+          <div id="sec-valuation">
         <Section title="6. VALUATION REPORT (LAND AND BUILDING METHOD)" defaultOpen>
           <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
             <span className="text-xs font-bold uppercase tracking-wider text-amber-700">
@@ -600,23 +597,53 @@ export default function KotakHLLAPLandAndBuilding({
         />
       </div>
 
-      {/* Universal Enclosures: Documents -> Maps -> Photographs & Action Bar */}
-      <KotakUniversalEnclosuresAndActions
+      {/* Universal Enclosures */}
+      <KotakEnclosuresSections
         fields={fields}
         handleChange={handleChange}
         bucketImages={bucketImages}
         isReadOnly={isReadOnly}
-        userRole={userRole}
-        isPhotoModalOpen={isPhotoModalOpen}
         setIsPhotoModalOpen={setIsPhotoModalOpen}
+        sectionNumbers={{ docs: 8, maps: 9, photos: 10 }}
+      />
+        </div>
+      </div>
+
+      {/* Floating Action Bar */}
+      <ReportActionBar
+        isReadOnly={isReadOnly}
+        userRole={userRole}
+        autoSaveStatus={isSaving ? 'saving' : saveSuccess ? 'saved' : saveError ? 'error' : 'idle'}
+        message={
+          saveSuccess
+            ? { text: 'Report draft saved successfully', type: 'success' }
+            : saveError
+            ? { text: saveError, type: 'error' }
+            : null
+        }
+        loading={isSaving}
         onSaveDraft={handleSaveDraft}
         onPreviewPDF={handlePreviewPDF}
         onDownloadPDF={handleDownloadPDF}
-        isSaving={isSaving}
-        saveSuccess={saveSuccess}
-        saveError={saveError}
-        sectionNumbers={{ docs: 8, maps: 9, photos: 10 }}
       />
+
+      {/* Photo Bucket Modal */}
+      {isPhotoModalOpen && (
+        <BasePhotoBucketModal
+          isOpen={isPhotoModalOpen}
+          bucketImages={bucketImages}
+          mode="propertyImages"
+          onClose={() => setIsPhotoModalOpen(false)}
+          onConfirm={(selectedUrls: string[]) => {
+            handleChange('propertyPhotos', [...(fields.propertyPhotos || []), ...selectedUrls]);
+            handleChange('propertyPhotoNames', [
+              ...(fields.propertyPhotoNames || []),
+              ...selectedUrls.map((_, i) => `Photograph ${(fields.propertyPhotos?.length || 0) + i + 1}`),
+            ]);
+            setIsPhotoModalOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

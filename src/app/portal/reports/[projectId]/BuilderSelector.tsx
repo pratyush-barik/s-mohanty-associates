@@ -178,6 +178,11 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   // Kotak & L&T
   'KOTAK MAHINDRA BANK::BUSINESS BANKING GROUP': dynamic(() => import('./banks/kotak/KotakBBG')),
   'KOTAK MAHINDRA BANK::HL-LAP': dynamic(() => import('./banks/kotak/KotakHLLAP')),
+  'KOTAK MAHINDRA BANK::HL-LAP - Flat / Apartment': dynamic(() => import('./banks/kotak/KotakHLLAPFlat')),
+  'KOTAK MAHINDRA BANK::HL-LAP - Industrial Property': dynamic(() => import('./banks/kotak/KotakHLLAPIndustrial')),
+  'KOTAK MAHINDRA BANK::HL-LAP - Land & Building': dynamic(() => import('./banks/kotak/KotakHLLAPLandAndBuilding')),
+  'KOTAK MAHINDRA BANK::HL-LAP - Residential cum Commercial': dynamic(() => import('./banks/kotak/KotakHLLAPResiCumComm')),
+  'KOTAK MAHINDRA BANK::HL-LAP - Vacant Land': dynamic(() => import('./banks/kotak/KotakHLLAPVacantLand')),
   'KOTAK MAHINDRA BANK': dynamic(() => import('./banks/kotak/KotakHLLAP')),
   'KOTAK': dynamic(() => import('./banks/kotak/KotakHLLAP')),
   'KOTAK BANK': dynamic(() => import('./banks/kotak/KotakHLLAP')),
@@ -443,7 +448,33 @@ export default function BuilderSelector({
       return BANK_BUILDER_MAP[matchFullKey];
     }
 
-    // 3. Dedicated SBI & IDBI sub-template routing
+    // 3. Dedicated Kotak, SBI & IDBI sub-template routing
+    const isKotak = cleanOrg.includes('KOTAK');
+    if (isKotak) {
+      const cleanSub = (sub || cleanOrg).toUpperCase().replace(/\s+/g, " ");
+      const cat = ((activeFields?.kotakHllapCategory as string) || '').toUpperCase();
+
+      if (cleanSub.includes('BUSINESS BANKING') || cleanSub.includes('BBG')) {
+        return BANK_BUILDER_MAP['KOTAK MAHINDRA BANK::BUSINESS BANKING GROUP'];
+      }
+      if (cleanSub.includes('IND') || cleanSub.includes('INDUSTRIAL') || cat === 'IND') {
+        return BANK_BUILDER_MAP['KOTAK MAHINDRA BANK::HL-LAP - Industrial Property'];
+      }
+      if (cleanSub.includes('LAND') || cleanSub.includes('L&B') || cat === 'L&B') {
+        return BANK_BUILDER_MAP['KOTAK MAHINDRA BANK::HL-LAP - Land & Building'];
+      }
+      if (cleanSub.includes('RESI') || cleanSub.includes('COMM') || cat === 'RES-COM') {
+        return BANK_BUILDER_MAP['KOTAK MAHINDRA BANK::HL-LAP - Residential cum Commercial'];
+      }
+      if (cleanSub.includes('VACANT') || cat === 'VL') {
+        return BANK_BUILDER_MAP['KOTAK MAHINDRA BANK::HL-LAP - Vacant Land'];
+      }
+      if (cleanSub.includes('FLAT') || cleanSub.includes('APARTMENT') || cat === 'FLAT') {
+        return BANK_BUILDER_MAP['KOTAK MAHINDRA BANK::HL-LAP - Flat / Apartment'];
+      }
+      return BANK_BUILDER_MAP['KOTAK MAHINDRA BANK::HL-LAP'];
+    }
+
     const isSbi = cleanOrg.includes('STATE BANK OF INDIA') || cleanOrg === 'SBI';
     if (isSbi) {
       const cleanSub = (sub || cleanOrg).toUpperCase().replace(/\s+/g, " ");
