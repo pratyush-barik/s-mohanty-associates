@@ -118,21 +118,21 @@ export default function KotakHLLAP(props: BankReportBuilderProps) {
   // If no category is selected yet, show full-page selection cards
   if (!category) {
     return (
-      <div className="min-h-[500px] flex items-center justify-center p-4 sm:p-8">
-        <div className="max-w-4xl w-full bg-white rounded-2xl border border-slate-200 shadow-xs p-6 sm:p-8 space-y-6">
+      <div className="w-full bg-[#f8f9fa] p-4 sm:p-6 lg:p-8 rounded-2xl border border-slate-200 text-slate-900">
+        <div className="w-full bg-white rounded-2xl border border-slate-200 shadow-xs p-6 sm:p-8 lg:p-10 space-y-6">
           <div className="text-center space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
               Kotak Mahindra Bank • HL-LAP
             </span>
-            <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Select HL-LAP Property Category
             </h2>
-            <p className="text-sm text-slate-500 max-w-xl mx-auto">
+            <p className="text-sm text-slate-500 max-w-2xl mx-auto">
               Choose the specific valuation format based on the property type. This configures the dedicated valuation methodology, measurements, and PDF renderer.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 pt-2">
             {KOTAK_HLLAP_CATEGORIES.map((cat) => {
               const Icon = cat.icon;
               return (
