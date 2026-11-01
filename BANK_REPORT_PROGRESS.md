@@ -10,8 +10,8 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 
 | :--- | :---: | :--- |
 | **✅ Completed** | **16 templates** | Full interactive report draft builder UI + dedicated PDF renderer complete |
-| **🔨 In Progress** | **57 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes DCB Bank Desktop & HL-LAP-SME, SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, Poonawalla Finance, Protium Finance, and Manappuram Home Finance) |
-| **⏳ Not Started** | **3 formats** | Directory reserved / pending base component creation |
+| **🔨 In Progress** | **60 templates** | Base structure created with draft UI components & PDF renderers undergoing section/field customization (Includes Indian Bank, Punjab & Sind Bank, Punjab National Bank, DCB Bank Desktop & HL-LAP-SME, SBI Flat & Apartment, SBI Land & Building, HDB Financial, IKF Finance, ISFC, Jana Small Finance Bank, Poonawalla Finance, Protium Finance, and Manappuram Home Finance) |
+| **⏳ Not Started** | **0 formats** | All formats have base components created |
 | **Total Tracked** | **61 institutions** (77 formats) | Full coverage of Indian Banks & NBFCs |
 
 ---
@@ -60,7 +60,7 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | 25.2 | IDBI BANK | `Flat & Apartment` | ✅ Created Base | 🔨 In Progress |
 | **26** | **IDFC FIRST BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **27** | **IKF FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **28** | **INDIAN BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **28** | **INDIAN BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **29** | **INDUSIND BANK** | | | |
 | 29.1 | INDUSIND BANK | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
 | 29.2 | INDUSIND BANK | `BBG` | ✅ Created Base | 🔨 In Progress |
@@ -84,8 +84,8 @@ This document tracks all 60 Bank and Financial Institution report templates and 
 | **39** | **PNB HOUSING FINANCE LTD** | `HL-LAP` | ✅ Created Base | 🔨 In Progress |
 | **40** | **POONAWALLA FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **41** | **PROTEUM FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
-| **42** | **PUNJAB & SIND BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
-| **43** | **PUNJAB NATIONAL BANK** | `Standard` | ⏳ Not Created | ⏳ Not Started |
+| **42** | **PUNJAB & SIND BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
+| **43** | **PUNJAB NATIONAL BANK** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **44** | **PURPLE FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **45** | **SAMMUNATI FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |
 | **46** | **SHRIRAM FINANCE** | `Standard` | ✅ Created Base | 🔨 In Progress |

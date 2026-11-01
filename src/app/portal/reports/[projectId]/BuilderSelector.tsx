@@ -161,6 +161,7 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'IDFC FIRST BANK': dynamic(() => import('./banks/idfc/IDFCFirstBank')),
   'IKF FINANCE': dynamic(() => import('./banks/ikf/IKFFinance')),
   'INDIAN BANK': dynamic(() => import('./banks/indian-bank/IndianBank')),
+  'INDIAN BANK-IB': dynamic(() => import('./banks/indian-bank/IndianBank')),
   'INDUSIND BANK::HL-LAP': dynamic(() => import('./banks/indusind/IndusIndHLLAP')),
   'INDUSIND BANK::BBG': dynamic(() => import('./banks/indusind/IndusIndBBG')),
   'INDUSIND BANK': dynamic(() => import('./banks/indusind/IndusIndHLLAP')),
@@ -216,7 +217,13 @@ const BANK_BUILDER_MAP: Record<string, any> = {
   'PROTEUM FINANCE': dynamic(() => import('./banks/protium/ProtiumFinance')),
   'PROTIUM FINANCE LIMITED': dynamic(() => import('./banks/protium/ProtiumFinance')),
   'PUNJAB & SIND BANK': dynamic(() => import('./banks/punjab-sind/PunjabSindBank')),
+  'PUNJAB AND SIND BANK': dynamic(() => import('./banks/punjab-sind/PunjabSindBank')),
+  'PUNJAB & SIND BANK-PSB': dynamic(() => import('./banks/punjab-sind/PunjabSindBank')),
+  'PUNJAB AND SIND BANK-PSB': dynamic(() => import('./banks/punjab-sind/PunjabSindBank')),
+  'PSB': dynamic(() => import('./banks/punjab-sind/PunjabSindBank')),
   'PUNJAB NATIONAL BANK': dynamic(() => import('./banks/punjab-national/PunjabNationalBank')),
+  'PUNJAB NATIONAL BANK-PNB': dynamic(() => import('./banks/punjab-national/PunjabNationalBank')),
+  'PNB': dynamic(() => import('./banks/punjab-national/PunjabNationalBank')),
   'PURPLE FINANCE': dynamic(() => import('./banks/purple/PurpleFinance')),
 
 
