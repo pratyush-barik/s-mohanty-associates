@@ -16,6 +16,7 @@
 
 import { rgb } from 'pdf-lib';
 import { rupeesInWords } from '@/lib/numberToWords';
+import { DEFAULT_VALUER_SIGNATURE, DEFAULT_VALUER_STAMP } from '@/lib/valuer-defaults';
 import {
   PDFBankRenderer,
   PAGE_W,
@@ -34,17 +35,76 @@ import {
   LBL_BG,
   hexToRgb,
   LINE_HEIGHT,
-  formatReportDate
+  formatReportDate,
+  fetchBytes
 } from '../pdf-bank-renderer';
 
 export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   private fields: any;
   private drawnCover = false;
   private isBobDrawing = false;
+  private valuerSigImg: any = null;
+  private valuerStampImg: any = null;
 
   constructor(fields?: any) {
     super();
     this.fields = fields || {};
+  }
+
+  override async init(letterheadBytes?: Uint8Array | null): Promise<void> {
+    await super.init(letterheadBytes);
+
+    if (this.fields.bobIncludeSignatureStamp !== false) {
+      try {
+        const sigSrc = this.fields.bobSignatureImage || DEFAULT_VALUER_SIGNATURE;
+        const sigBytes = await fetchBytes(sigSrc);
+        if (sigBytes) {
+          this.valuerSigImg = await this.embedImgSafe(sigBytes);
+        }
+      } catch (e) {
+        console.warn('Failed to embed BOB valuer signature:', e);
+      }
+
+      try {
+        const stampSrc = this.fields.bobStampImage || DEFAULT_VALUER_STAMP;
+        const stampBytes = await fetchBytes(stampSrc);
+        if (stampBytes) {
+          this.valuerStampImg = await this.embedImgSafe(stampBytes);
+        }
+      } catch (e) {
+        console.warn('Failed to embed BOB valuer stamp:', e);
+      }
+    }
+  }
+
+  /**
+   * Helper: Draw valuer signature (just above the "Signature" text)
+   * and official stamp (just below "(Name and Official seal...)").
+   */
+  private drawValuerSignatureAndStamp(
+    sigBlockX: number,
+    sigBlockW: number,
+    sigTextTopY: number,
+    stampTopY: number,
+    sigW = 100,
+    sigH = 29,
+    stampW = 60,
+    stampH = 60
+  ): void {
+    if (this.valuerSigImg) {
+      const sigX = sigBlockX + (sigBlockW - sigW) / 2;
+      // In top-down coords, signature sits right above the text whose top is at sigTextTopY.
+      // In bottom-up PDF coords, the bottom of the signature image is at pdfY(sigTextTopY) + 2:
+      const pY = this.pdfY(sigTextTopY) + 2;
+      this.page.drawImage(this.valuerSigImg, { x: sigX, y: pY, width: sigW, height: sigH });
+    }
+
+    if (this.valuerStampImg) {
+      const stampX = sigBlockX + (sigBlockW - stampW) / 2;
+      // Stamp sits below the text, whose bottom starts around stampTopY:
+      const pY = this.pdfY(stampTopY) - stampH;
+      this.page.drawImage(this.valuerStampImg, { x: stampX, y: pY, width: stampW, height: stampH });
+    }
   }
 
   // ── Helper: field value ──
@@ -1335,17 +1395,37 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const endorsement = this.fields.bobBankEndorsementEditOn ? this.fv('bobBankEndorsement', '') : defaultEndorsement;
     
     const h3 = this.measureTextHeight(endorsement, CONTENT_W, FONT_SIZE);
-    this.checkPageBreak(120 + h3);
+    this.checkPageBreak(170 + h3);
     
     const sigBlockW = 220;
     const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
-    this.drawTextAt(`Place: ${place}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
-    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
-    this.cursorY += 12;
-    this.drawTextAt(`Date: ${date}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
-    this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
+
+    const sigW = 100;
+    const sigH = 29;
+    const stampW = 60;
+    const stampH = 60;
+
+    if (this.valuerSigImg) {
+      this.cursorY += 24;
+    }
+
+    const sigTextTopY = this.cursorY;
+    this.drawTextAt(`Place: ${place}`, MARGIN_L, sigTextTopY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`Signature`, sigBlockX, sigTextTopY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
     
-    this.cursorY += 40;
+    this.cursorY += 12;
+    const nameTextTopY = this.cursorY;
+    this.drawTextAt(`Date: ${date}`, MARGIN_L, nameTextTopY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, nameTextTopY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
+    
+    // Draw signature (above "Signature" text) and stamp (below "(Name and Official seal...)")
+    this.drawValuerSignatureAndStamp(sigBlockX, sigBlockW, sigTextTopY, nameTextTopY + 4, sigW, sigH, stampW, stampH);
+
+    if (this.valuerStampImg) {
+      this.cursorY += stampH + 10;
+    } else {
+      this.cursorY += 40;
+    }
 
     let parsedManagerDate = '';
     const endDate = this.fv('bobEndorsementDate');
@@ -1507,21 +1587,38 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     // Sign-off
     this.cursorY += 10;
-    this.checkPageBreak(60);
+    this.checkPageBreak(130);
     const affirmDate = formatReportDate(this.fv('bobAsOnDate'));
     const affirmPlace = this.fields.bobAffirmationPlace ?? (this.fv('bobAffirmationPlace') || 'Bhubaneswar');
     
     const sigBlockW = 200;
     const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
 
-    this.drawTextAt(`Date: ${affirmDate}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
-    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+    const sigW = 95;
+    const sigH = 27;
+    const stampW = 55;
+    const stampH = 55;
+
+    if (this.valuerSigImg) {
+      this.cursorY += 22;
+    }
+
+    const affirmSigTextTopY = this.cursorY;
+    this.drawTextAt(`Date: ${affirmDate}`, MARGIN_L, affirmSigTextTopY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Signature`, sigBlockX, affirmSigTextTopY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
     
     this.cursorY += 12;
-    this.drawTextAt(`Place: ${affirmPlace}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
-    this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
-    
-    this.cursorY += 40;
+    const affirmNameTopY = this.cursorY;
+    this.drawTextAt(`Place: ${affirmPlace}`, MARGIN_L, affirmNameTopY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, affirmNameTopY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+
+    this.drawValuerSignatureAndStamp(sigBlockX, sigBlockW, affirmSigTextTopY, affirmNameTopY + 4, sigW, sigH, stampW, stampH);
+
+    if (this.valuerStampImg) {
+      this.cursorY += stampH + 10;
+    } else {
+      this.cursorY += 40;
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1618,9 +1715,9 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       }
     }
 
-    // Custom sign-off block matching @image5
+    // Custom sign-off block matching @image1, @image2
     this.cursorY += 20;
-    this.checkPageBreak(60);
+    this.checkPageBreak(130);
 
     const fDate = (dStr: string) => {
       if (!dStr) return '';
@@ -1635,13 +1732,30 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     const sigBlockW = 200;
     const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
 
-    this.drawTextAt(`Date: ${cDate}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    const sigW = 95;
+    const sigH = 27;
+    const stampW = 55;
+    const stampH = 55;
+
+    if (this.valuerSigImg) {
+      this.cursorY += 22;
+    }
+
+    const cocDateTopY = this.cursorY;
+    this.drawTextAt(`Date: ${cDate}`, MARGIN_L, cocDateTopY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Signature`, sigBlockX, cocDateTopY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
     
     this.cursorY += 12;
-    this.drawTextAt(`Place: ${cPlace}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
-    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+    const cocPlaceTopY = this.cursorY;
+    this.drawTextAt(`Place: ${cPlace}`, MARGIN_L, cocPlaceTopY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    this.drawTextAt(`Signature of the Approved Valuer and Seal`, sigBlockX, cocPlaceTopY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
 
-    this.cursorY += 12;
-    this.drawTextAt(`Signature of the Approved Valuer and Seal`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+    this.drawValuerSignatureAndStamp(sigBlockX, sigBlockW, cocDateTopY, cocPlaceTopY + 4, sigW, sigH, stampW, stampH);
+
+    if (this.valuerStampImg) {
+      this.cursorY += stampH + 10;
+    } else {
+      this.cursorY += 40;
+    }
   }
 }

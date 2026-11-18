@@ -107,6 +107,10 @@ ML_integration
 temp-parser/
 temp-parser
 
+# temp folder (signature/stamp source images)
+/temp/
+/temp
+
 # Python Virtual Environments
 .venv_rembg/
 

@@ -416,6 +416,164 @@ function PrefillField({ label, value, hoverText, isReadOnly }: {
   );
 }
 
+/** Valuer Signature & Official Stamp Control with preview, upload, and reset */
+function ValuerSignatureStampControl({
+  fields,
+  handleChange,
+  isReadOnly,
+  title = "Valuer Signature & Official Stamp"
+}: {
+  fields: any;
+  handleChange: any;
+  isReadOnly: boolean;
+  title?: string;
+}) {
+  const includeSigStamp = fields.bobIncludeSignatureStamp !== false;
+  const currentSig = fields.bobSignatureImage || (fields.bobSignatureImageCleared ? '' : '/assets/valuer/valuer-signature.png');
+  const currentStamp = fields.bobStampImage || (fields.bobStampImageCleared ? '' : '/assets/valuer/valuer-stamp.png');
+
+  return (
+    <div className="rounded-xl border border-teal-200 bg-white/90 p-4 space-y-3 shadow-sm mt-2">
+      <div className="flex items-center justify-between border-b border-teal-100 pb-2 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-base">🖊</span>
+          <span className="font-bold text-gray-800 text-sm">{title}</span>
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={includeSigStamp}
+            onChange={e => handleChange('bobIncludeSignatureStamp', e.target.checked)}
+            disabled={isReadOnly}
+            className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+          />
+          <span className="text-xs font-semibold text-teal-800">Include in PDF Render</span>
+        </label>
+      </div>
+
+      {includeSigStamp && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          {/* Signature Box */}
+          <div className="rounded-lg border border-gray-200 bg-gray-50/70 p-3 space-y-2 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                  Signature (above "Signature" text)
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${fields.bobSignatureImage ? 'bg-amber-100 text-amber-800' : 'bg-teal-100 text-teal-800'}`}>
+                  {fields.bobSignatureImage ? 'Custom' : 'Default Refined'}
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-500">Transparent PNG, placed directly above the valuer's signature line in PDF.</p>
+            </div>
+
+            <div className="flex items-center justify-center p-2 bg-white rounded border border-gray-200 min-h-16">
+              {currentSig ? (
+                <img src={currentSig} alt="Valuer Signature" className="max-h-14 max-w-full object-contain" />
+              ) : (
+                <span className="text-xs text-gray-400 italic">No signature selected</span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                className={`${inputCls} text-xs py-1 px-2 flex-1`}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      handleChange('bobSignatureImage', reader.result);
+                      handleChange('bobSignatureImageCleared', false);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                  e.target.value = '';
+                }}
+                disabled={isReadOnly}
+              />
+              {fields.bobSignatureImage && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleChange('bobSignatureImage', '');
+                    handleChange('bobSignatureImageCleared', false);
+                  }}
+                  disabled={isReadOnly}
+                  className="px-2 py-1 text-[11px] font-medium bg-gray-200 hover:bg-gray-300 text-gray-700 rounded transition-colors whitespace-nowrap"
+                  title="Revert to default signature"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Stamp / Seal Box */}
+          <div className="rounded-lg border border-gray-200 bg-gray-50/70 p-3 space-y-2 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                  Official Seal / Stamp (below Name &amp; Seal)
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${fields.bobStampImage ? 'bg-amber-100 text-amber-800' : 'bg-teal-100 text-teal-800'}`}>
+                  {fields.bobStampImage ? 'Custom' : 'Default Refined'}
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-500">Transparent PNG, placed directly below the valuer's designation line in PDF.</p>
+            </div>
+
+            <div className="flex items-center justify-center p-2 bg-white rounded border border-gray-200 min-h-16">
+              {currentStamp ? (
+                <img src={currentStamp} alt="Official Stamp" className="max-h-16 max-w-full object-contain" />
+              ) : (
+                <span className="text-xs text-gray-400 italic">No stamp selected</span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                className={`${inputCls} text-xs py-1 px-2 flex-1`}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      handleChange('bobStampImage', reader.result);
+                      handleChange('bobStampImageCleared', false);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                  e.target.value = '';
+                }}
+                disabled={isReadOnly}
+              />
+              {fields.bobStampImage && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleChange('bobStampImage', '');
+                    handleChange('bobStampImageCleared', false);
+                  }}
+                  disabled={isReadOnly}
+                  className="px-2 py-1 text-[11px] font-medium bg-gray-200 hover:bg-gray-300 text-gray-700 rounded transition-colors whitespace-nowrap"
+                  title="Revert to default seal/stamp"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Segmented toggle for Manual Grid Input vs Upload file */
 function DirectFileUploadToggle({ modeKey, fields, handleChange, isReadOnly }: {
   modeKey: string; fields: any; handleChange: any; isReadOnly: boolean;
@@ -2856,14 +3014,12 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                 <PrefillField label="DATE:" value={fields.bobAsOnDate ? fields.bobAsOnDate.split('-').reverse().join('-') : ''} hoverText='>>Auto-populates from Cover Page Date<<' />
               </div>
 
-              <Field label="SIGNATURE (NAME AND OFFICIAL SEAL OF THE APPROVED VALUER)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bobSignoffSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.bobSignoffSignature && <img src={fields.bobSignoffSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <ValuerSignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+              />
 
               <div>
                 <div className="flex items-center justify-between mb-2 mt-4">
@@ -3019,14 +3175,12 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.bobAffirmationPlace ?? 'Bhubaneswar'} onChange={e => handleChange('bobAffirmationPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature (Name and Official seal of the Approved Valuer)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bobAffirmationSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.bobAffirmationSignature && <img src={fields.bobAffirmationSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <ValuerSignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal (Affirmations)"
+              />
             </div>
           </div>
         );
@@ -3237,14 +3391,13 @@ export const BANK_OF_BARODA_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.bobCodeOfConductPlace ?? 'Bhubaneswar'} onChange={e => handleChange('bobCodeOfConductPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature of the Approved Valuer and Seal">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bobCodeOfConductSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.bobCodeOfConductSignature && <img src={fields.bobCodeOfConductSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+
+              <ValuerSignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal (Code of Conduct)"
+              />
             </div>
           </div>
         );
