@@ -45,6 +45,8 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   private isBobDrawing = false;
   private valuerSigImg: any = null;
   private valuerStampImg: any = null;
+  private managerSigImg: any = null;
+  private managerStampImg: any = null;
 
   constructor(fields?: any) {
     super();
@@ -73,6 +75,28 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
         }
       } catch (e) {
         console.warn('Failed to embed BOB valuer stamp:', e);
+      }
+    }
+
+    if (this.fields.bobIncludeManagerSignatureStamp !== false) {
+      try {
+        const mgrSigSrc = this.fields.bobManagerSignatureImage || this.fields.bobBankManagerSignature || this.fields.bobSignatureImage || DEFAULT_VALUER_SIGNATURE;
+        const mgrSigBytes = await fetchBytes(mgrSigSrc);
+        if (mgrSigBytes) {
+          this.managerSigImg = await this.embedImgSafe(mgrSigBytes);
+        }
+      } catch (e) {
+        console.warn('Failed to embed BOB manager signature:', e);
+      }
+
+      try {
+        const mgrStampSrc = this.fields.bobManagerStampImage || this.fields.bobStampImage || DEFAULT_VALUER_STAMP;
+        const mgrStampBytes = await fetchBytes(mgrStampSrc);
+        if (mgrStampBytes) {
+          this.managerStampImg = await this.embedImgSafe(mgrStampBytes);
+        }
+      } catch (e) {
+        console.warn('Failed to embed BOB manager stamp:', e);
       }
     }
   }
@@ -1434,15 +1458,40 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
       parsedManagerDate = m ? `${m[3]}-${m[2]}-${m[1]}` : endDate;
     }
 
+    this.checkPageBreak(h3 + 140);
     this.drawWrappedTextAt(endorsement, MARGIN_L, this.cursorY, CONTENT_W, { fontSize: FONT_SIZE });
     this.cursorY += h3 + 30;
-    this.drawTextAt(`Date: ${parsedManagerDate}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
-    this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
-    this.cursorY += 12;
-    this.drawTextAt(`(Name of the Branch Manager with Official seal)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
+
+    if (this.managerSigImg) {
+      this.cursorY += 24;
+    }
+
+    const mgrSigTopY = this.cursorY;
+    this.drawTextAt(`Date: ${parsedManagerDate}`, MARGIN_L, mgrSigTopY, { bold: true, fontSize: FONT_SIZE });
+    this.drawTextAt(`Signature`, sigBlockX, mgrSigTopY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
     
-    // Add padding before Section 8
-    this.cursorY += 40;
+    this.cursorY += 12;
+    const mgrNameTopY = this.cursorY;
+    this.drawTextAt(`(Name of the Branch Manager with Official seal)`, sigBlockX, mgrNameTopY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
+
+    // Draw manager signature (above "Signature" text) and stamp (below "(Name of the Branch Manager...)")
+    if (this.managerSigImg) {
+      const sX = sigBlockX + (sigBlockW - sigW) / 2;
+      const pY = this.pdfY(mgrSigTopY) + 2;
+      this.page.drawImage(this.managerSigImg, { x: sX, y: pY, width: sigW, height: sigH });
+    }
+
+    if (this.managerStampImg) {
+      const stX = sigBlockX + (sigBlockW - stampW) / 2;
+      const pY = this.pdfY(mgrNameTopY + 4) - stampH;
+      this.page.drawImage(this.managerStampImg, { x: stX, y: pY, width: stampW, height: stampH });
+    }
+
+    if (this.managerStampImg) {
+      this.cursorY += stampH + 10;
+    } else {
+      this.cursorY += 40;
+    }
   }
 
   // ═══════════════════════════════════════════════════════════════════════
