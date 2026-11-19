@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   Section,
@@ -643,6 +643,15 @@ export default function LICPVR3({
             <Field label="Valuation Methodology Adopted">
               <input type="text" className={inputCls} value={formData.methodologyAdopted} onChange={(e) => handleChange('methodologyAdopted', e.target.value)} />
             </Field>
+          </div>
+        
+          <div className="pt-3">
+            <SignatureStampControl
+              fields={formData}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
           </div>
         </div>
 

@@ -958,6 +958,7 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
     // =========================================================================
     // PAGE 1: HEADER, TECHNICAL INITIATION, DETAILS OF PROPERTY, TOPOGRAPHY
     // =========================================================================
+    await this.embedSignatureStampImages(fields);
     this.cursorY = 0;
 
     // Ref No & Date
@@ -2014,6 +2015,10 @@ export class PDFAxisAgriRenderer extends PDFBankRenderer {
       '(Name and Seal of the Agency)',
       `Date: ${formatReportDate(fields.dateOfReportSubmission || fields.reportDate, '06.08.2026')}`,
     ];
+    const sigBlockW = 160;
+    const sigBlockX = MARGIN_L + W - sigBlockW - 10;
+    this.drawSignatureAndStamp(sigBlockX, sigBlockW, this.cursorY, this.cursorY + 20, 100, 29, 60, 60, false);
+
     let sigCurY = sigY - 10;
     for (const sl of sigLines) {
       const slTw = this.fontBold.widthOfTextAtSize(sl, FONT_SIZE);

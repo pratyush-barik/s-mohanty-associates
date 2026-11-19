@@ -32,6 +32,7 @@ import {
   StructureDerivationBadge,
   DEFAULT_DOCUMENT_LABEL,
   DEFAULT_PHOTO_LABEL,
+  SignatureStampControl,
 } from './banks/BaseBankReportComponents';
 import { decodeHtmlEntities, decodeHtmlEntitiesDeep } from '@/lib/html-entities';
 import * as XLSX from 'xlsx';
@@ -1251,6 +1252,7 @@ export default function BankReportBuilder({
       // Instantiate renderer: use config custom renderer or default base renderer (automatically defaults letterhead)
       const r = config?.getPDFRenderer ? config.getPDFRenderer(fields, projectCode) : new PDFBankRenderer();
       await r.init();
+      await r.embedSignatureStampImages(fields);
 
       let titleText = 'VALUATION REPORT';
 
@@ -2809,7 +2811,7 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
                 <span className="text-sm font-bold font-mono text-accent-500">Rs. {formatIndianCurrency(landValue)}</span>
               </div>
             </div>
-            {renderExtraFields('section-8')}
+            {renderExtraFields('section-7b')}
           </Section>
         )}
 
@@ -2870,6 +2872,18 @@ const isSectionHidden = (sectionId: string) => config?.hiddenSections?.includes(
               )}
             </div>
             {renderExtraFields('section-8')}
+
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+              sigKey="signatureImage"
+              sigClearedKey="signatureImageCleared"
+              stampKey="stampImage"
+              stampClearedKey="stampImageCleared"
+              includeKey="includeSignatureStamp"
+            />
           </Section>
         )}
 

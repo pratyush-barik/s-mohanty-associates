@@ -217,6 +217,12 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
   protected managerSigImg: any = null;
   protected managerStampImg: any = null;
 
+  override async init(letterheadBytes?: Uint8Array | null): Promise<void> {
+    await super.init(letterheadBytes);
+    const f = (this as any).fields || (this as any).reportFields || {};
+    await this.embedSignatureStampImages(f);
+  }
+
   /**
    * Embed valuer & manager signature+stamp images from report fields.
    * Call this in each sub-renderer's init() after super.init().
@@ -233,6 +239,7 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
       managerIncludeKey?: string;
     }
   ): Promise<void> {
+    const f = fields || {};
     const o = opts || {};
     const valuerSigKey = o.valuerSigKey || 'valuerSignatureImage';
     const valuerStampKey = o.valuerStampKey || 'valuerStampImage';
@@ -241,32 +248,62 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
     const managerStampKey = o.managerStampKey || 'managerStampImage';
     const managerIncludeKey = o.managerIncludeKey || 'includeManagerSignatureStamp';
 
-    if (fields[valuerIncludeKey] !== false) {
+    if (f[valuerIncludeKey] !== false && f.includeSignatureStamp !== false) {
       try {
-        const sigSrc = fields[valuerSigKey] || DEFAULT_VALUER_SIGNATURE;
+        const sigSrc = f[valuerSigKey]
+          || f.signatureImage
+          || f.valuerSignatureImage
+          || f.signoffSignature
+          || DEFAULT_VALUER_SIGNATURE;
         const sigBytes = await fetchBytes(sigSrc);
         if (sigBytes) this.valuerSigImg = await this.embedImgSafe(sigBytes);
       } catch (e) { console.warn('Failed to embed valuer signature:', e); }
 
       try {
-        const stampSrc = fields[valuerStampKey] || DEFAULT_VALUER_STAMP;
+        const stampSrc = f[valuerStampKey]
+          || f.stampImage
+          || f.valuerStampImage
+          || f.officialSeal
+          || DEFAULT_VALUER_STAMP;
         const stampBytes = await fetchBytes(stampSrc);
         if (stampBytes) this.valuerStampImg = await this.embedImgSafe(stampBytes);
       } catch (e) { console.warn('Failed to embed valuer stamp:', e); }
     }
 
-    if (fields[managerIncludeKey] !== false) {
+    if (f[managerIncludeKey] !== false && f.includeManagerSignatureStamp !== false) {
       try {
-        const mgrSigSrc = fields[managerSigKey] || fields[valuerSigKey] || DEFAULT_VALUER_SIGNATURE;
+        const mgrSigSrc = f[managerSigKey]
+          || f.managerSignatureImage
+          || f.bankManagerSignature
+          || f[valuerSigKey]
+          || f.signatureImage
+          || DEFAULT_VALUER_SIGNATURE;
         const mgrSigBytes = await fetchBytes(mgrSigSrc);
         if (mgrSigBytes) this.managerSigImg = await this.embedImgSafe(mgrSigBytes);
       } catch (e) { console.warn('Failed to embed manager signature:', e); }
 
       try {
-        const mgrStampSrc = fields[managerStampKey] || fields[valuerStampKey] || DEFAULT_VALUER_STAMP;
+        const mgrStampSrc = f[managerStampKey]
+          || f.managerStampImage
+          || f.bankManagerStamp
+          || f[valuerStampKey]
+          || f.stampImage
+          || DEFAULT_VALUER_STAMP;
         const mgrStampBytes = await fetchBytes(mgrStampSrc);
         if (mgrStampBytes) this.managerStampImg = await this.embedImgSafe(mgrStampBytes);
       } catch (e) { console.warn('Failed to embed manager stamp:', e); }
+    }
+  }
+
+  override drawSignatureBlock(lines: { text: string; bold?: boolean; italic?: boolean; fontSize?: number }[]): void {
+    const sigBlockW = 160;
+    const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
+    const sigTopY = this.cursorY + 20;
+
+    super.drawSignatureBlock(lines);
+
+    if (this.valuerSigImg || this.valuerStampImg) {
+      this.drawSignatureAndStamp(sigBlockX, sigBlockW, sigTopY, sigTopY + 28, 100, 29, 60, 60, false);
     }
   }
 
@@ -550,6 +587,31 @@ export class PDFBankRenderer extends PDFGeneralRenderer {
         lineY -= fontSize * LINE_HEIGHT;
       }
       curX += c.valueWidth;
+    }
+
+    // Auto-draw signature & stamp if row contains an authorized signatory block
+    if (this.valuerSigImg || this.valuerStampImg) {
+      for (let i = 0; i < processedCols.length; i++) {
+        const c = processedCols[i];
+        const valMatch = /(authorized\s+signatory|name\s+of\s+valuer\s+&\s+stamp|for\s+seal\s+with\s+signature)/i.test(c.value || '');
+        const lblMatch = /(authorized\s+signatory|name\s+of\s+valuer\s+&\s+stamp)/i.test(c.label || '');
+        if (valMatch || lblMatch) {
+          let blockX = MARGIN_L;
+          for (let j = 0; j < i; j++) {
+            blockX += processedCols[j].labelWidth + processedCols[j].valueWidth;
+          }
+          let blockW = c.valueWidth;
+          if (valMatch) {
+            blockX += c.labelWidth;
+            blockW = c.valueWidth;
+          } else {
+            blockW = c.labelWidth;
+          }
+          if (blockW > 40) {
+            this.drawSignatureAndStamp(blockX, blockW, this.cursorY, this.cursorY + rowH - 6, 95, 27, 55, 55, false);
+          }
+        }
+      }
     }
 
     this.cursorY += rowH;

@@ -8,8 +8,9 @@ import { saveReportDraft, submitReportForVerification, deleteBucketImage } from 
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import * as XLSX from 'xlsx';
 import { formatIndianCurrency } from '@/lib/numberToWords';
+import { MARGIN_L, CONTENT_W } from '@/lib/pdf-bank-renderer';
 import { PDFAdityaBirlaMLAPRenderer, MLAPReportFields } from '@/lib/banks/pdf-aditya-birla-mlap-renderer';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -623,8 +624,9 @@ export default function AdityaBirlaCapitalMLAP({
       return d;
     };
 
-    const r = new PDFAdityaBirlaMLAPRenderer();
+    const r = new PDFAdityaBirlaMLAPRenderer(fields);
     await r.init();
+    await r.embedSignatureStampImages(fields);
 
     const W_LABEL_2COL = 140;
     const W_VAL_2COL = 347.28;
@@ -811,6 +813,16 @@ export default function AdityaBirlaCapitalMLAP({
     // 10. Remarks
     r.drawRemarksBox('Remarks', fields.remarks || 'N/A');
     r.drawKeyValueRow([{ label: 'Name of the Engineer Visited', value: fields.engineerVisitedName || 'N/A', labelWidth: W_LABEL_2COL, valueWidth: W_VAL_2COL }]);
+
+    // Signature & Stamp
+    r.advanceCursor(16);
+    const sigBlockW = 160;
+    const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
+    const sigTopY = (r as any).cursorY;
+    (r as any).drawTextAt('Authorized Signatory', MARGIN_L, sigTopY, { bold: true, align: 'right', maxWidth: CONTENT_W });
+    (r as any).drawTextAt('Name & Seal of Approved Valuer', MARGIN_L, sigTopY + 14, { align: 'right', maxWidth: CONTENT_W });
+    r.drawSignatureAndStamp(sigBlockX, sigBlockW, sigTopY, sigTopY + 20, 100, 29, 60, 60, false);
+    r.advanceCursor(35);
 
     // 11. Documents Section
     const docImages: string[] = fields.documentImages || [];
@@ -1904,7 +1916,14 @@ export default function AdityaBirlaCapitalMLAP({
               />
             </Field>
           </div>
-        </Section>
+        
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
         {/* ═══ SECTION 10: DOCUMENTS ═══ */}
         <BaseDocumentsSection

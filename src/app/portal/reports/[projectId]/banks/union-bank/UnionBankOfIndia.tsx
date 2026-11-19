@@ -4,7 +4,7 @@ import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuild
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFUnionBankOfIndiaRenderer } from '@/lib/banks/pdf-union-bank-of-india-renderer';
 import * as XLSX from 'xlsx';
-import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
+import { Field, inputCls, BaseDateInput, SignatureStampControl } from '../BaseBankReportComponents';
 import { Lock, Info } from 'lucide-react';
 import { rupeesInWords } from '@/lib/numberToWords';
 
@@ -2856,14 +2856,17 @@ export const UNION_BANK_CONFIG: BankConfig = {
                 <PrefillField label="DATE:" value={fields.ubiAsOnDate ? fields.ubiAsOnDate.split('-').reverse().join('-') : ''} hoverText='>>Auto-populates from Cover Page Date<<' />
               </div>
 
-              <Field label="SIGNATURE (NAME AND OFFICIAL SEAL OF THE APPROVED VALUER)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('ubiSignoffSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.ubiSignoffSignature && <img src={fields.ubiSignoffSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="ubiSignatureImage"
+                sigClearedKey="ubiSignatureImageCleared"
+                stampKey="ubiStampImage"
+                stampClearedKey="ubiStampImageCleared"
+                includeKey="ubiIncludeSignatureStamp"
+              />
 
               <div>
                 <div className="flex items-center justify-between mb-2 mt-4">
@@ -2898,14 +2901,19 @@ export const UNION_BANK_CONFIG: BankConfig = {
                   <div />
                 </div>
 
-                <Field label="SIGNATURE (NAME OF THE BRANCH MANAGER WITH OFFICIAL SEAL)">
-                  <input type="file" accept="image/*" className={inputCls}
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) { const reader = new FileReader(); reader.onload = () => handleChange('ubiBankManagerSignature', reader.result); reader.readAsDataURL(file); }
-                    }} disabled={isReadOnly} />
-                  {fields.ubiBankManagerSignature && <img src={fields.ubiBankManagerSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-                </Field>
+                <SignatureStampControl
+                  fields={fields}
+                  handleChange={handleChange}
+                  isReadOnly={isReadOnly}
+                  title="Branch Manager Signature & Official Seal"
+                  sigKey="ubiManagerSignatureImage"
+                  sigClearedKey="ubiManagerSignatureImageCleared"
+                  stampKey="ubiManagerStampImage"
+                  stampClearedKey="ubiManagerStampImageCleared"
+                  includeKey="ubiIncludeManagerSignatureStamp"
+                  sigLabel='Manager Signature (above "Signature" text)'
+                  stampLabel='Manager Seal / Stamp (below Name & Seal)'
+                />
               </div>
             </div>
           </div>
@@ -3019,14 +3027,17 @@ export const UNION_BANK_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.ubiAffirmationPlace ?? 'Bhubaneswar'} onChange={e => handleChange('ubiAffirmationPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature (Name and Official seal of the Approved Valuer)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('ubiAffirmationSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.ubiAffirmationSignature && <img src={fields.ubiAffirmationSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="ubiSignatureImage"
+                sigClearedKey="ubiSignatureImageCleared"
+                stampKey="ubiStampImage"
+                stampClearedKey="ubiStampImageCleared"
+                includeKey="ubiIncludeSignatureStamp"
+              />
             </div>
           </div>
         );
@@ -3237,14 +3248,17 @@ export const UNION_BANK_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.ubiCodeOfConductPlace ?? 'Bhubaneswar'} onChange={e => handleChange('ubiCodeOfConductPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature of the Approved Valuer and Seal">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('ubiCodeOfConductSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.ubiCodeOfConductSignature && <img src={fields.ubiCodeOfConductSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="ubiSignatureImage"
+                sigClearedKey="ubiSignatureImageCleared"
+                stampKey="ubiStampImage"
+                stampClearedKey="ubiStampImageCleared"
+                includeKey="ubiIncludeSignatureStamp"
+              />
             </div>
           </div>
         );

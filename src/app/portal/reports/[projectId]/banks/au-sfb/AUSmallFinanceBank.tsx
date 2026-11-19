@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
-import {
+import { SignatureStampControl,
   BankReportHeader,
   BankReportTitleCard,
   Section,
@@ -1502,7 +1502,14 @@ export default function AUSmallFinanceBank({
               </select>
             </Field>
           </div>
-        </Section>
+        
+            <SignatureStampControl
+              fields={fields}
+              handleChange={updateField}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
         {/* ══════════════════════════════════════════
             SECTION 7: DOCUMENTS

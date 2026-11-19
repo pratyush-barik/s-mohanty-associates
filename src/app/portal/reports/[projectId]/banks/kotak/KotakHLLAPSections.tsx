@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import {
+import { SignatureStampControl,
   Section,
   Field,
   BaseDateInput,
@@ -1401,7 +1401,14 @@ export function KotakFinalValuesSection({
           </div>
         </div>
       </div>
-    </Section>
+    
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
   );
 }
 

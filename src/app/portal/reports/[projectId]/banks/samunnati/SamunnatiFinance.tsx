@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
-import {
+import { SignatureStampControl,
   BankReportHeader,
   Section,
   Field,
@@ -1299,7 +1299,14 @@ export default function SamunnatiFinance({
             <p>5. Title and legal ownership papers must be verified by the lending institution’s legal advocate.</p>
             <p>6. Validity of this report is 45 days from the date of issue.</p>
           </div>
-        </Section>
+        
+            <SignatureStampControl
+              fields={fields}
+              handleChange={updateField}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
         {/* ══════════════════════════════════════════
             SECTION 7: DOCUMENTS

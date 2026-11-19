@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -959,7 +959,14 @@ export default function IDBIBankAbove5CR({
             />
           </Field>
         </div>
-      </Section>
+      
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
       {/* ── Section: Base Documents ── */}
       <BaseDocumentsSection

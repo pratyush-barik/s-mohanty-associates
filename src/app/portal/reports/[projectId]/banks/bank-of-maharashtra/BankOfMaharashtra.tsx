@@ -4,7 +4,7 @@ import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuild
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFBankOfMaharashtraRenderer } from '@/lib/banks/pdf-bank-of-maharashtra-renderer';
 import * as XLSX from 'xlsx';
-import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
+import { Field, inputCls, BaseDateInput, SignatureStampControl } from '../BaseBankReportComponents';
 import { Lock, Info } from 'lucide-react';
 import { rupeesInWords } from '@/lib/numberToWords';
 
@@ -2856,14 +2856,17 @@ export const BANK_OF_MAHARASHTRA_CONFIG: BankConfig = {
                 <PrefillField label="DATE:" value={fields.bomAsOnDate ? fields.bomAsOnDate.split('-').reverse().join('-') : ''} hoverText='>>Auto-populates from Cover Page Date<<' />
               </div>
 
-              <Field label="SIGNATURE (NAME AND OFFICIAL SEAL OF THE APPROVED VALUER)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bomSignoffSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.bomSignoffSignature && <img src={fields.bomSignoffSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="bomSignatureImage"
+                sigClearedKey="bomSignatureImageCleared"
+                stampKey="bomStampImage"
+                stampClearedKey="bomStampImageCleared"
+                includeKey="bomIncludeSignatureStamp"
+              />
 
               <div>
                 <div className="flex items-center justify-between mb-2 mt-4">
@@ -2898,14 +2901,19 @@ export const BANK_OF_MAHARASHTRA_CONFIG: BankConfig = {
                   <div />
                 </div>
 
-                <Field label="SIGNATURE (NAME OF THE BRANCH MANAGER WITH OFFICIAL SEAL)">
-                  <input type="file" accept="image/*" className={inputCls}
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bomBankManagerSignature', reader.result); reader.readAsDataURL(file); }
-                    }} disabled={isReadOnly} />
-                  {fields.bomBankManagerSignature && <img src={fields.bomBankManagerSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-                </Field>
+                <SignatureStampControl
+                  fields={fields}
+                  handleChange={handleChange}
+                  isReadOnly={isReadOnly}
+                  title="Branch Manager Signature & Official Seal"
+                  sigKey="bomManagerSignatureImage"
+                  sigClearedKey="bomManagerSignatureImageCleared"
+                  stampKey="bomManagerStampImage"
+                  stampClearedKey="bomManagerStampImageCleared"
+                  includeKey="bomIncludeManagerSignatureStamp"
+                  sigLabel='Manager Signature (above "Signature" text)'
+                  stampLabel='Manager Seal / Stamp (below Name & Seal)'
+                />
               </div>
             </div>
           </div>
@@ -3019,14 +3027,17 @@ export const BANK_OF_MAHARASHTRA_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.bomAffirmationPlace ?? 'Bhubaneswar'} onChange={e => handleChange('bomAffirmationPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature (Name and Official seal of the Approved Valuer)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bomAffirmationSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.bomAffirmationSignature && <img src={fields.bomAffirmationSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="bomSignatureImage"
+                sigClearedKey="bomSignatureImageCleared"
+                stampKey="bomStampImage"
+                stampClearedKey="bomStampImageCleared"
+                includeKey="bomIncludeSignatureStamp"
+              />
             </div>
           </div>
         );
@@ -3237,14 +3248,17 @@ export const BANK_OF_MAHARASHTRA_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.bomCodeOfConductPlace ?? 'Bhubaneswar'} onChange={e => handleChange('bomCodeOfConductPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature of the Approved Valuer and Seal">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('bomCodeOfConductSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.bomCodeOfConductSignature && <img src={fields.bomCodeOfConductSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="bomSignatureImage"
+                sigClearedKey="bomSignatureImageCleared"
+                stampKey="bomStampImage"
+                stampClearedKey="bomStampImageCleared"
+                includeKey="bomIncludeSignatureStamp"
+              />
             </div>
           </div>
         );

@@ -24,6 +24,18 @@ export class PDFAxisFinanceRenderer extends PDFBankRenderer {
     this.fields = fields || {};
   }
 
+  override async init(letterheadBytes?: Uint8Array | null): Promise<void> {
+    await super.init(letterheadBytes);
+    await this.embedSignatureStampImages(this.fields, {
+      valuerSigKey: 'axisFinanceSignatureImage',
+      valuerStampKey: 'axisFinanceStampImage',
+      valuerIncludeKey: 'axisFinanceIncludeSignatureStamp',
+      managerSigKey: 'axisFinanceManagerSignatureImage',
+      managerStampKey: 'axisFinanceManagerStampImage',
+      managerIncludeKey: 'axisFinanceIncludeManagerSignatureStamp',
+    });
+  }
+
   override drawKeyValueRow(cols: { label: string; value: string; labelWidth?: number; valueWidth?: number; highlight?: boolean; bold?: boolean; labelBold?: boolean; valueBold?: boolean; hideTop?: boolean; hideBottom?: boolean }[]): void {
     const newCols = cols.map(c => ({
       ...c,

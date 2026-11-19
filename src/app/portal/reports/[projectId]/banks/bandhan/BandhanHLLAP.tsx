@@ -5,7 +5,7 @@ import { sanitizeFilenameCode } from '@/lib/utils';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -5313,7 +5313,14 @@ export default function BandhanHLLAP({
                   </div>
                 </div>
               </div>
-            </Section>
+            
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
             {/* 12. Documents */}
             <BaseDocumentsSection

@@ -12,7 +12,7 @@ import {
   AnnapurnaMicroFinanceReportFields,
   AnnapurnaMicroReportFields,
 } from '@/lib/banks/pdf-annapurna-micro-finance-renderer';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -1820,7 +1820,14 @@ export default function AnnapurnaMicroFinance({
               </Field>
             </div>
           </div>
-        </Section>
+        
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
         {/* ════ SECTION 9: DOCUMENTS (MULTI-PHOTO) ════ */}
         <BaseDocumentsSection

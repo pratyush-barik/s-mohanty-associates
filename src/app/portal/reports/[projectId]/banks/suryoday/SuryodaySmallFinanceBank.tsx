@@ -19,7 +19,7 @@ import {
 import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   FloatingNavigator,
@@ -1696,7 +1696,14 @@ export default function SuryodaySmallFinanceBank({
                   disabled={isReadOnly}
                 />
               </Field>
-            </Section>
+            
+            <SignatureStampControl
+              fields={form}
+              handleChange={updateField}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
           </div>
 
           {/* 14. Documents */}

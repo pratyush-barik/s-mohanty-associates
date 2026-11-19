@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -524,7 +524,14 @@ export default function LICPVR2({
             <Field label="Inspection Date (Certificate)"><input className={inputCls} value={fields.certificateDate} onChange={(e) => handleChange('certificateDate', e.target.value)} disabled={isReadOnly} /></Field>
           </div>
         </div>
-      </Section>
+      
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
       {/* ── Section: Inherited Documents ── */}
       <BaseDocumentsSection

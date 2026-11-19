@@ -4,7 +4,7 @@ import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuild
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFUCOBankRenderer } from '@/lib/banks/pdf-uco-bank-renderer';
 import * as XLSX from 'xlsx';
-import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
+import { Field, inputCls, BaseDateInput, SignatureStampControl } from '../BaseBankReportComponents';
 import { Lock, Info } from 'lucide-react';
 import { rupeesInWords } from '@/lib/numberToWords';
 
@@ -2856,14 +2856,17 @@ export const UCO_BANK_CONFIG: BankConfig = {
                 <PrefillField label="DATE:" value={fields.ucoAsOnDate ? fields.ucoAsOnDate.split('-').reverse().join('-') : ''} hoverText='>>Auto-populates from Cover Page Date<<' />
               </div>
 
-              <Field label="SIGNATURE (NAME AND OFFICIAL SEAL OF THE APPROVED VALUER)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('ucoSignoffSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.ucoSignoffSignature && <img src={fields.ucoSignoffSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="ucoSignatureImage"
+                sigClearedKey="ucoSignatureImageCleared"
+                stampKey="ucoStampImage"
+                stampClearedKey="ucoStampImageCleared"
+                includeKey="ucoIncludeSignatureStamp"
+              />
 
               <div>
                 <div className="flex items-center justify-between mb-2 mt-4">
@@ -2898,14 +2901,19 @@ export const UCO_BANK_CONFIG: BankConfig = {
                   <div />
                 </div>
 
-                <Field label="SIGNATURE (NAME OF THE BRANCH MANAGER WITH OFFICIAL SEAL)">
-                  <input type="file" accept="image/*" className={inputCls}
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) { const reader = new FileReader(); reader.onload = () => handleChange('ucoBankManagerSignature', reader.result); reader.readAsDataURL(file); }
-                    }} disabled={isReadOnly} />
-                  {fields.ucoBankManagerSignature && <img src={fields.ucoBankManagerSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-                </Field>
+                <SignatureStampControl
+                  fields={fields}
+                  handleChange={handleChange}
+                  isReadOnly={isReadOnly}
+                  title="Branch Manager Signature & Official Seal"
+                  sigKey="ucoManagerSignatureImage"
+                  sigClearedKey="ucoManagerSignatureImageCleared"
+                  stampKey="ucoManagerStampImage"
+                  stampClearedKey="ucoManagerStampImageCleared"
+                  includeKey="ucoIncludeManagerSignatureStamp"
+                  sigLabel='Manager Signature (above "Signature" text)'
+                  stampLabel='Manager Seal / Stamp (below Name & Seal)'
+                />
               </div>
             </div>
           </div>
@@ -3019,14 +3027,17 @@ export const UCO_BANK_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.ucoAffirmationPlace ?? 'Bhubaneswar'} onChange={e => handleChange('ucoAffirmationPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature (Name and Official seal of the Approved Valuer)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('ucoAffirmationSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.ucoAffirmationSignature && <img src={fields.ucoAffirmationSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="ucoSignatureImage"
+                sigClearedKey="ucoSignatureImageCleared"
+                stampKey="ucoStampImage"
+                stampClearedKey="ucoStampImageCleared"
+                includeKey="ucoIncludeSignatureStamp"
+              />
             </div>
           </div>
         );
@@ -3237,14 +3248,17 @@ export const UCO_BANK_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.ucoCodeOfConductPlace ?? 'Bhubaneswar'} onChange={e => handleChange('ucoCodeOfConductPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature of the Approved Valuer and Seal">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('ucoCodeOfConductSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.ucoCodeOfConductSignature && <img src={fields.ucoCodeOfConductSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="ucoSignatureImage"
+                sigClearedKey="ucoSignatureImageCleared"
+                stampKey="ucoStampImage"
+                stampClearedKey="ucoStampImageCleared"
+                includeKey="ucoIncludeSignatureStamp"
+              />
             </div>
           </div>
         );

@@ -5,7 +5,7 @@ import { sanitizeFilenameCode } from '@/lib/utils';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -1052,6 +1052,13 @@ export default function IndusIndBBG({
                 </Field>
               </div>
             </div>
+          
+            <SignatureStampControl
+              fields={fields}
+              handleChange={updateField}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
           </Section>
 
           {/* Inherited Attachments Sections */}

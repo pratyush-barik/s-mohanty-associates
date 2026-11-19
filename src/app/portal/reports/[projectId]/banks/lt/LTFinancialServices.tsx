@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   Section,
@@ -784,6 +784,15 @@ export default function LTFinancialServices({
             <Field label="6. Property Boundaries Mismatch">
               <input type="text" className={inputCls} value={formData.reqBoundariesMismatch} onChange={(e) => handleChange('reqBoundariesMismatch', e.target.value)} />
             </Field>
+          </div>
+        
+          <div className="pt-3">
+            <SignatureStampControl
+              fields={formData}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
           </div>
         </div>
 

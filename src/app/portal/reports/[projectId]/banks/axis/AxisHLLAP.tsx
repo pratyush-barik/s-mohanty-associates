@@ -5,7 +5,7 @@ import { sanitizeFilenameCode } from '@/lib/utils';
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -2397,7 +2397,14 @@ export default function AxisHLLAP({
               </Field>
             </div>
           </div>
-        </Section>
+        
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
         {/* SECTION 8: Documents */}
         <BaseDocumentsSection

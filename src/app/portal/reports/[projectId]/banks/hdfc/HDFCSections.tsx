@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import {
+import { SignatureStampControl,
   Section,
   Field,
   inputCls,
@@ -1455,6 +1455,13 @@ export function HDFCRemarksDeclarationSection({ fields, handleChange, isReadOnly
           procedural guidelines for <strong>HDFC Bank</strong>.
         </p>
       </div>
-    </Section>
+    
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
   );
 }

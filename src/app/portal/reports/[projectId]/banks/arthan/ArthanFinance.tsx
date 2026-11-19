@@ -23,7 +23,7 @@ import {
   multiplyExactDecimals,
   calculatePercentageValue,
 } from '@/lib/banks/pdf-arthan-finance-renderer';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -2197,7 +2197,14 @@ export default function ArthanFinance({
               </div>
             </Field>
           </div>
-        </Section>
+        
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
         {/* ════ SECTION 12: DOCUMENTS ════ */}
         <BaseDocumentsSection

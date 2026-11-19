@@ -9,9 +9,9 @@ import { saveReportDraft, submitReportForVerification } from '@/app/actions/proj
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import * as XLSX from 'xlsx';
 import { formatIndianCurrency } from '@/lib/numberToWords';
+import { MARGIN_L, CONTENT_W } from '@/lib/pdf-bank-renderer';
 import { PDFAdityaBirlaSTSLRenderer, STSLReportFields } from '@/lib/banks/pdf-aditya-birla-stsl-renderer';
-import { CONTENT_W } from '@/lib/pdf-bank-renderer';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -919,6 +919,7 @@ export default function AdityaBirlaCapitalSTSL({
 
     const r = new PDFAdityaBirlaSTSLRenderer();
     await r.init();
+    await r.embedSignatureStampImages(fields);
 
     const fmtDate = (d: string) => {
       if (!d || !d.trim()) return 'NA';
@@ -1210,6 +1211,16 @@ export default function AdityaBirlaCapitalSTSL({
     // Remarks & Visited Engineer
     r.drawRemarksBox('Remarks', fields.remarks || '');
     r.drawKeyValueRow([{ label: 'Name of the Engineer visited', value: fields.engineerVisitedName || '', labelWidth: 180, valueWidth: CONTENT_W - 180 }]);
+
+    // Signature & Stamp
+    r.advanceCursor(16);
+    const sigBlockW = 160;
+    const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
+    const sigTopY = (r as any).cursorY;
+    (r as any).drawTextAt('Authorized Signatory', MARGIN_L, sigTopY, { bold: true, align: 'right', maxWidth: CONTENT_W });
+    (r as any).drawTextAt('Name & Seal of Approved Valuer', MARGIN_L, sigTopY + 14, { align: 'right', maxWidth: CONTENT_W });
+    r.drawSignatureAndStamp(sigBlockX, sigBlockW, sigTopY, sigTopY + 20, 100, 29, 60, 60, false);
+    r.advanceCursor(35);
 
     // ═══ 1. DOCUMENTS SECTION ═══
     const docImages: string[] = fields.documentImages || [];
@@ -2994,7 +3005,14 @@ export default function AdityaBirlaCapitalSTSL({
               <input type="text" value={fields.engineerVisitedName || ''} onChange={e => handleChange('engineerVisitedName', e.target.value)} disabled={isReadOnly} className={inputCls} placeholder="e.g. Dinesh Das" />
             </Field>
           </div>
-        </Section>
+        
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
         {/* ═══ SECTION 10: DOCUMENTS ═══ */}
         <BaseDocumentsSection

@@ -156,6 +156,25 @@ export class PDFAdityaBirlaMLAPRenderer extends PDFBankRenderer {
   // - drawImageSection(imageBytes, caption, maxH)
   // - drawPhotoGrid(photos)
   // - toBlob()
+
+  private fields: any = {};
+
+  constructor(fields?: any) {
+    super();
+    this.fields = fields || {};
+  }
+
+  override async init(letterheadBytes?: Uint8Array | null): Promise<void> {
+    await super.init(letterheadBytes);
+    await this.embedSignatureStampImages(this.fields, {
+      valuerSigKey: 'adityaBirlaMlapSignatureImage',
+      valuerStampKey: 'adityaBirlaMlapStampImage',
+      valuerIncludeKey: 'adityaBirlaMlapIncludeSignatureStamp',
+      managerSigKey: 'adityaBirlaMlapManagerSignatureImage',
+      managerStampKey: 'adityaBirlaMlapManagerStampImage',
+      managerIncludeKey: 'adityaBirlaMlapIncludeManagerSignatureStamp',
+    });
+  }
 }
 
 export default PDFAdityaBirlaMLAPRenderer;

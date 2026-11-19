@@ -9,7 +9,7 @@ import { saveReportDraft, submitReportForVerification } from '@/app/actions/proj
 import { supabaseBrowser, STORAGE_BUCKETS } from '@/lib/supabase-client';
 import { PDFArkaFinanceRenderer, ArkaReportFields } from '@/lib/banks/pdf-arka-finance-renderer';
 import { fetchBytes } from '@/lib/pdf-bank-renderer';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -1691,7 +1691,14 @@ export default function ArkaFinance({
               </Field>
             </div>
           </div>
-        </Section>
+        
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
         <BaseDocumentsSection
           title="Documents" sectionNumber={8}

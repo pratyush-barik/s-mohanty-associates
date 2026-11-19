@@ -21,6 +21,7 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
+  SignatureStampControl,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { Lock, Plus, Trash2 } from 'lucide-react';
@@ -2847,6 +2848,18 @@ export default function StateBankOfIndiaFlatAndApartment({
               />
             </div>
 
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+              sigKey="sbiFlatSignatureImage"
+              sigClearedKey="sbiFlatSignatureImageCleared"
+              stampKey="sbiFlatStampImage"
+              stampClearedKey="sbiFlatStampImageCleared"
+              includeKey="sbiFlatIncludeSignatureStamp"
+            />
+
             {/* Branch Manager Verification Statement */}
             <PrefillField
               label="Branch Manager Verification Statement"
@@ -2876,6 +2889,20 @@ export default function StateBankOfIndiaFlatAndApartment({
               />
             </Field>
           </div>
+
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Branch Manager Signature & Official Seal"
+              sigKey="sbiFlatManagerSignatureImage"
+              sigClearedKey="sbiFlatManagerSignatureImageCleared"
+              stampKey="sbiFlatManagerStampImage"
+              stampClearedKey="sbiFlatManagerStampImageCleared"
+              includeKey="sbiFlatIncludeManagerSignatureStamp"
+              sigLabel='Manager Signature (above "Signature" text)'
+              stampLabel='Manager Seal / Stamp (below Name & Seal)'
+            />
 
           {/* Container 2: DECLARATION FROM VALUERS (Color: Light Red #ffebee) */}
           <div style={{ backgroundColor: '#ffebee', padding: '20px', borderRadius: '12px' }} className="space-y-6 border border-rose-200">
@@ -2956,6 +2983,18 @@ export default function StateBankOfIndiaFlatAndApartment({
                 fallbackValue={fields.signaturePlace || fields.branchAddress || 'Bhubaneswar'}
               />
             </div>
+
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+              sigKey="sbiFlatSignatureImage"
+              sigClearedKey="sbiFlatSignatureImageCleared"
+              stampKey="sbiFlatStampImage"
+              stampClearedKey="sbiFlatStampImageCleared"
+              includeKey="sbiFlatIncludeSignatureStamp"
+            />
           </div>
         </div>
       </Section>
@@ -3187,6 +3226,18 @@ export default function StateBankOfIndiaFlatAndApartment({
                 fallbackValue={fields.signaturePlace || fields.branchAddress || 'Bhubaneswar'}
               />
             </div>
+
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+              sigKey="sbiFlatSignatureImage"
+              sigClearedKey="sbiFlatSignatureImageCleared"
+              stampKey="sbiFlatStampImage"
+              stampClearedKey="sbiFlatStampImageCleared"
+              includeKey="sbiFlatIncludeSignatureStamp"
+            />
           </div>
 
           {/* Container 3: JUSTIFICATION OF VALUATION REPORT (Color: Light Coral #ffe0b2) */}
@@ -3282,6 +3333,18 @@ export default function StateBankOfIndiaFlatAndApartment({
                 fallbackValue={fields.signaturePlace || fields.branchAddress || 'Bhubaneswar'}
               />
             </div>
+
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+              sigKey="sbiFlatSignatureImage"
+              sigClearedKey="sbiFlatSignatureImageCleared"
+              stampKey="sbiFlatStampImage"
+              stampClearedKey="sbiFlatStampImageCleared"
+              includeKey="sbiFlatIncludeSignatureStamp"
+            />
           </div>
         </div>
       </Section>

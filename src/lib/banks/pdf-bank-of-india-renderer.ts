@@ -47,6 +47,18 @@ export class PDFBankOfIndiaRenderer extends PDFBankRenderer {
     this.fields = fields || {};
   }
 
+  override async init(letterheadBytes?: Uint8Array | null): Promise<void> {
+    await super.init(letterheadBytes);
+    await this.embedSignatureStampImages(this.fields, {
+      valuerSigKey: 'boiSignatureImage',
+      valuerStampKey: 'boiStampImage',
+      valuerIncludeKey: 'boiIncludeSignatureStamp',
+      managerSigKey: 'boiManagerSignatureImage',
+      managerStampKey: 'boiManagerStampImage',
+      managerIncludeKey: 'boiIncludeManagerSignatureStamp',
+    });
+  }
+
   // ── Helper: field value ──
   override drawKeyValueRow(items: any[]): void { if (this.isBoiDrawing) super.drawKeyValueRow(items); }
   override drawTextBlock(text: string, opts?: any): void { if (this.isBoiDrawing) super.drawTextBlock(text, opts); }
@@ -1344,8 +1356,15 @@ export class PDFBankOfIndiaRenderer extends PDFBankRenderer {
     this.cursorY += 12;
     this.drawTextAt(`Date: ${date}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE });
     this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
+
+    // Draw valuer signature and stamp
+    if (this.valuerSigImg) this.cursorY += 24;
+    const _boiSigTextTopY1 = this.cursorY - 12;
+    const _boiNameTopY1 = this.cursorY;
+    this.drawSignatureAndStamp(sigBlockX, sigBlockW, _boiSigTextTopY1, _boiNameTopY1, 100, 29, 60, 60, false);
+    if (this.valuerStampImg) { this.cursorY += 88; } else {
     
-    this.cursorY += 40;
+    this.cursorY += 40; }
 
     let parsedManagerDate = '';
     const endDate = this.fv('boiEndorsementDate');
@@ -1360,9 +1379,15 @@ export class PDFBankOfIndiaRenderer extends PDFBankRenderer {
     this.drawTextAt(`Signature`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
     this.cursorY += 12;
     this.drawTextAt(`(Name of the Branch Manager with Official seal)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
+
+    // Draw manager signature and stamp
+    if (this.managerSigImg) this.cursorY += 24;
+    const _boiMgrSigTextTopY = this.cursorY - 12;
+    const _boiMgrNameTopY = this.cursorY;
+    this.drawSignatureAndStamp(sigBlockX, sigBlockW, _boiMgrSigTextTopY, _boiMgrNameTopY, 100, 29, 60, 60, true);
     
     // Add padding before Section 8
-    this.cursorY += 40;
+    if (this.managerStampImg) { this.cursorY += 88; } else { this.cursorY += 40; }
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1520,8 +1545,15 @@ export class PDFBankOfIndiaRenderer extends PDFBankRenderer {
     this.cursorY += 12;
     this.drawTextAt(`Place: ${affirmPlace}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
+
+    // Draw valuer signature and stamp (Affirmations)
+    if (this.valuerSigImg) this.cursorY += 22;
+    const _boiAffirmSigTextTopY = this.cursorY - 12;
+    const _boiAffirmNameTopY = this.cursorY;
+    this.drawSignatureAndStamp(sigBlockX, sigBlockW, _boiAffirmSigTextTopY, _boiAffirmNameTopY, 95, 27, 55, 55, false);
+    if (this.valuerStampImg) { this.cursorY += 83; } else {
     
-    this.cursorY += 40;
+    this.cursorY += 40; }
   }
 
   // ═══════════════════════════════════════════════════════════════════════

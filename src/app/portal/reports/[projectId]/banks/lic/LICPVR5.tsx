@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   Section,
@@ -483,6 +483,15 @@ export default function LICPVR5({
               <p className="text-xl font-bold text-amber-400 mt-1">₹{formatIndianCurrency(valuationMath.bldg100)}/-</p>
               <p className="text-[11px] text-slate-400 mt-0.5">{valuationMath.words100}</p>
             </div>
+          </div>
+        
+          <div className="pt-3">
+            <SignatureStampControl
+              fields={formData}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
           </div>
         </div>
 

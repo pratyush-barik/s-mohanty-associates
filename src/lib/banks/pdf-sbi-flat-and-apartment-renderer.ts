@@ -453,6 +453,14 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
 
   async render(): Promise<Uint8Array> {
     await this.init();
+    await this.embedSignatureStampImages(this.reportFields, {
+      valuerSigKey: 'sbiFlatSignatureImage',
+      valuerStampKey: 'sbiFlatStampImage',
+      valuerIncludeKey: 'sbiFlatIncludeSignatureStamp',
+      managerSigKey: 'sbiFlatManagerSignatureImage',
+      managerStampKey: 'sbiFlatManagerStampImage',
+      managerIncludeKey: 'sbiFlatIncludeManagerSignatureStamp',
+    });
 
     const isLandAndBldg = this.reportFields.propertyValuationType === 'LAND_AND_BUILDING';
 
@@ -1243,6 +1251,11 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
     this.drawTextAt(`Place: ${d.sbiFlatValuerSignPlace || d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    // Draw valuer signature and stamp
+    if (this.valuerSigImg) this.cursorY += 22;
+    const _sbiFlatVSigTop = this.cursorY - 14;
+    const _sbiFlatVNameTop = this.cursorY;
+    this.drawSignatureAndStamp(MARGIN_L + CONTENT_W - sigW, sigW, _sbiFlatVSigTop, _sbiFlatVNameTop, 95, 27, 55, 55, false);
     this.cursorY += 12;
     this.drawTextAt(`Date: ${d.sbiFlatValuerSignDate || d.signatureDate || d.reportDate || '06.08.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.cursorY += 35;
@@ -1262,6 +1275,11 @@ export class PDFSBIFlatAndApartmentRenderer extends PDFBankRenderer {
     this.drawTextAt(`Date: ${d.sbiFlatBmSignDate || d.bmSignatureDate || '__________'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - bmSigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(bmSig, MARGIN_L + CONTENT_W - bmSigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    // Draw manager signature and stamp
+    if (this.managerSigImg) this.cursorY += 22;
+    const _sbiFlatMSigTop = this.cursorY - 14;
+    const _sbiFlatMNameTop = this.cursorY;
+    this.drawSignatureAndStamp(MARGIN_L + CONTENT_W - bmSigW, bmSigW, _sbiFlatMSigTop, _sbiFlatMNameTop, 95, 27, 55, 55, true);
     this.cursorY += 24;
   }
 

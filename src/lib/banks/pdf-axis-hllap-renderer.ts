@@ -751,6 +751,7 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     letterheadBytes?: Uint8Array | null
   ): Promise<Uint8Array> {
     await this.init(letterheadBytes);
+    await this.embedSignatureStampImages(fields);
 
     // --- Page 1: Header ---
     const refText = fields.refNo ? `Ref No: ${fields.refNo}` : 'Ref No: ';
@@ -1157,6 +1158,10 @@ export class PDFAxisHLLAPRenderer extends PDFBankRenderer {
     this.cursorY += 16;
 
     // Authorized Signatory Block (Right-aligned matching base bank format)
+    const sigBlockW = 160;
+    const sigBlockX = MARGIN_L + CONTENT_W - sigBlockW;
+    this.drawSignatureAndStamp(sigBlockX, sigBlockW, this.cursorY, this.cursorY + 20, 100, 29, 60, 60, false);
+
     const sigLines = [
       { text: 'Authorized Signatory', bold: true, fontSize: FONT_SIZE },
       { text: 'Name & Seal of the Agency', bold: false, fontSize: FONT_SIZE },

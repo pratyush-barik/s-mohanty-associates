@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -601,7 +601,14 @@ export default function LICNPA({
         <div className="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900 font-medium">
           <strong>Mandatory Notice:</strong> "Note:- We have referred previous valuation report copy for land & approved built-up area." is automatically embedded below the primary photograph on Page 2.
         </div>
-      </Section>
+      
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
 
       {/* ── Section 6: Inherited Documents ── */}
       <BaseDocumentsSection

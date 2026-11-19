@@ -5,7 +5,7 @@ import { sanitizeFilenameCode } from '@/lib/utils';
 import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { saveReportDraft, submitReportForVerification } from '@/app/actions/project';
-import {
+import { SignatureStampControl,
   getEarliestFieldVisit,
   BankReportHeader,
   BankReportTitleCard,
@@ -1478,6 +1478,13 @@ export default function IndusIndHLLAP({
                 </Field>
               </div>
             </div>
+          
+            <SignatureStampControl
+              fields={fields}
+              handleChange={updateField}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
           </Section>
 
           {/* SECTION 11: Documents */}

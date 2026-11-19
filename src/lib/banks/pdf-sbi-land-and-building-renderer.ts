@@ -235,6 +235,14 @@ export class PDFSBILandAndBuildingRenderer extends PDFBankRenderer {
 
   async render(): Promise<Uint8Array> {
     await this.init();
+    await this.embedSignatureStampImages(this.reportFields, {
+      valuerSigKey: 'sbiSignatureImage',
+      valuerStampKey: 'sbiStampImage',
+      valuerIncludeKey: 'sbiIncludeSignatureStamp',
+      managerSigKey: 'sbiManagerSignatureImage',
+      managerStampKey: 'sbiManagerStampImage',
+      managerIncludeKey: 'sbiIncludeManagerSignatureStamp',
+    });
 
     // 1. Cover & Main Technical Schedule (Pages 1 & 2: Points 1 to 15)
     this.drawCoverAndTechnicalSchedule();
@@ -718,6 +726,11 @@ export class PDFSBILandAndBuildingRenderer extends PDFBankRenderer {
     this.drawTextAt(`Date: ${d.signatureDate || '24.07.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    // Draw signature and stamp
+    if (this.valuerSigImg) this.cursorY += 22;
+    const _sbiSigTextTopY_opin = this.cursorY - 14;
+    const _sbiNameTopY_opin = this.cursorY;
+    this.drawSignatureAndStamp(MARGIN_L + CONTENT_W - sigW, sigW, _sbiSigTextTopY_opin, _sbiNameTopY_opin, 95, 27, 55, 55, false);
     this.cursorY += 12;
     this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
   }
@@ -803,6 +816,11 @@ export class PDFSBILandAndBuildingRenderer extends PDFBankRenderer {
     this.drawTextAt(`Date: ${d.signatureDate || '24.07.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    // Draw signature and stamp
+    if (this.valuerSigImg) this.cursorY += 22;
+    const _sbiSigTextTopY_opin = this.cursorY - 14;
+    const _sbiNameTopY_opin = this.cursorY;
+    this.drawSignatureAndStamp(MARGIN_L + CONTENT_W - sigW, sigW, _sbiSigTextTopY_opin, _sbiNameTopY_opin, 95, 27, 55, 55, false);
     this.cursorY += 12;
     this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
   }
@@ -907,6 +925,11 @@ export class PDFSBILandAndBuildingRenderer extends PDFBankRenderer {
     this.drawTextAt(`Date: ${d.signatureDate || '24.07.2026'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt('Signature', MARGIN_L + CONTENT_W - sigW, this.cursorY - 14, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(valuerSig, MARGIN_L + CONTENT_W - sigW, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
+    // Draw signature and stamp
+    if (this.valuerSigImg) this.cursorY += 22;
+    const _sbiSigTextTopY_opin = this.cursorY - 14;
+    const _sbiNameTopY_opin = this.cursorY;
+    this.drawSignatureAndStamp(MARGIN_L + CONTENT_W - sigW, sigW, _sbiSigTextTopY_opin, _sbiNameTopY_opin, 95, 27, 55, 55, false);
     this.cursorY += 12;
     this.drawTextAt(`Place: ${d.signaturePlace || 'Bhubaneswar'}`, MARGIN_L, this.cursorY, { bold: true, fontSize: FONT_SIZE_SMALL });
   }

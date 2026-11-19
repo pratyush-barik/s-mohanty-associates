@@ -21,6 +21,7 @@ import {
   FloatingNavigator,
   NavItem,
   formatReportDate,
+  SignatureStampControl,
 } from '../BaseBankReportComponents';
 import { formatIndianCurrency, rupeesInWords } from '@/lib/numberToWords';
 import { Lock } from 'lucide-react';
@@ -2496,6 +2497,18 @@ export default function StateBankOfIndiaLandAndBuilding({
                 fallbackValue={fields.branchAddressDetails || fields.branchAddress || 'Bhubaneswar'}
               />
             </div>
+
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+              sigKey="sbiSignatureImage"
+              sigClearedKey="sbiSignatureImageCleared"
+              stampKey="sbiStampImage"
+              stampClearedKey="sbiStampImageCleared"
+              includeKey="sbiIncludeSignatureStamp"
+            />
           </div>
         </div>
       </Section>
@@ -2577,6 +2590,18 @@ export default function StateBankOfIndiaLandAndBuilding({
                 fallbackValue={fields.branchAddressDetails || fields.branchAddress || 'Bhubaneswar'}
               />
             </div>
+
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+              sigKey="sbiSignatureImage"
+              sigClearedKey="sbiSignatureImageCleared"
+              stampKey="sbiStampImage"
+              stampClearedKey="sbiStampImageCleared"
+              includeKey="sbiIncludeSignatureStamp"
+            />
           </div>
 
           {/* Container 2: MODEL CODE OF CONDUCT FOR VALUERS (Color: Light Indigo #e8eaf6) */}
@@ -2653,6 +2678,18 @@ export default function StateBankOfIndiaLandAndBuilding({
                 fallbackValue={fields.branchAddressDetails || fields.branchAddress || 'Bhubaneswar'}
               />
             </div>
+
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+              sigKey="sbiSignatureImage"
+              sigClearedKey="sbiSignatureImageCleared"
+              stampKey="sbiStampImage"
+              stampClearedKey="sbiStampImageCleared"
+              includeKey="sbiIncludeSignatureStamp"
+            />
           </div>
 
           {/* Container 3: JUSTIFICATION OF VALUATION REPORT (Color: Light Coral #ffe0b2) */}
@@ -2733,6 +2770,18 @@ export default function StateBankOfIndiaLandAndBuilding({
                 fallbackValue={fields.branchAddressDetails || fields.branchAddress || 'Bhubaneswar'}
               />
             </div>
+
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+              sigKey="sbiSignatureImage"
+              sigClearedKey="sbiSignatureImageCleared"
+              stampKey="sbiStampImage"
+              stampClearedKey="sbiStampImageCleared"
+              includeKey="sbiIncludeSignatureStamp"
+            />
           </div>
         </div>
       </Section>

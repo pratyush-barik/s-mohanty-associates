@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { saveReportDraft } from '@/app/actions/project';
 import { BankConfig } from '@/lib/bank-fields';
 import { BankReportBuilderProps } from '../../BankReportBuilder';
-import {
+import { SignatureStampControl,
   BankReportHeader,
   Section,
   Field,
@@ -1393,7 +1393,14 @@ export default function DCBHLLAPSME({
                   </Field>
                 </div>
               </div>
-            </Section>
+            
+            <SignatureStampControl
+              fields={fields}
+              handleChange={handleChange}
+              isReadOnly={isReadOnly}
+              title="Valuer Signature & Official Seal"
+            />
+          </Section>
           </div>
 
           {/* Section 8: Verified Documents */}

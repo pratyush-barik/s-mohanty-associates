@@ -4,7 +4,7 @@ import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuild
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFBankOfIndiaRenderer } from '@/lib/banks/pdf-bank-of-india-renderer';
 import * as XLSX from 'xlsx';
-import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
+import { Field, inputCls, BaseDateInput, SignatureStampControl } from '../BaseBankReportComponents';
 import { Lock, Info } from 'lucide-react';
 import { rupeesInWords } from '@/lib/numberToWords';
 
@@ -2856,14 +2856,17 @@ export const BANK_OF_INDIA_CONFIG: BankConfig = {
                 <PrefillField label="DATE:" value={fields.boiAsOnDate ? fields.boiAsOnDate.split('-').reverse().join('-') : ''} hoverText='>>Auto-populates from Cover Page Date<<' />
               </div>
 
-              <Field label="SIGNATURE (NAME AND OFFICIAL SEAL OF THE APPROVED VALUER)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('boiSignoffSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.boiSignoffSignature && <img src={fields.boiSignoffSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="boiSignatureImage"
+                sigClearedKey="boiSignatureImageCleared"
+                stampKey="boiStampImage"
+                stampClearedKey="boiStampImageCleared"
+                includeKey="boiIncludeSignatureStamp"
+              />
 
               <div>
                 <div className="flex items-center justify-between mb-2 mt-4">
@@ -2898,14 +2901,19 @@ export const BANK_OF_INDIA_CONFIG: BankConfig = {
                   <div />
                 </div>
 
-                <Field label="SIGNATURE (NAME OF THE BRANCH MANAGER WITH OFFICIAL SEAL)">
-                  <input type="file" accept="image/*" className={inputCls}
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) { const reader = new FileReader(); reader.onload = () => handleChange('boiBankManagerSignature', reader.result); reader.readAsDataURL(file); }
-                    }} disabled={isReadOnly} />
-                  {fields.boiBankManagerSignature && <img src={fields.boiBankManagerSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-                </Field>
+                <SignatureStampControl
+                  fields={fields}
+                  handleChange={handleChange}
+                  isReadOnly={isReadOnly}
+                  title="Branch Manager Signature & Official Seal"
+                  sigKey="boiManagerSignatureImage"
+                  sigClearedKey="boiManagerSignatureImageCleared"
+                  stampKey="boiManagerStampImage"
+                  stampClearedKey="boiManagerStampImageCleared"
+                  includeKey="boiIncludeManagerSignatureStamp"
+                  sigLabel='Manager Signature (above "Signature" text)'
+                  stampLabel='Manager Seal / Stamp (below Name & Seal)'
+                />
               </div>
             </div>
           </div>
@@ -3019,14 +3027,17 @@ export const BANK_OF_INDIA_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.boiAffirmationPlace ?? 'Bhubaneswar'} onChange={e => handleChange('boiAffirmationPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature (Name and Official seal of the Approved Valuer)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('boiAffirmationSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.boiAffirmationSignature && <img src={fields.boiAffirmationSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="boiSignatureImage"
+                sigClearedKey="boiSignatureImageCleared"
+                stampKey="boiStampImage"
+                stampClearedKey="boiStampImageCleared"
+                includeKey="boiIncludeSignatureStamp"
+              />
             </div>
           </div>
         );
@@ -3237,14 +3248,17 @@ export const BANK_OF_INDIA_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.boiCodeOfConductPlace ?? 'Bhubaneswar'} onChange={e => handleChange('boiCodeOfConductPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature of the Approved Valuer and Seal">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('boiCodeOfConductSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.boiCodeOfConductSignature && <img src={fields.boiCodeOfConductSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="boiSignatureImage"
+                sigClearedKey="boiSignatureImageCleared"
+                stampKey="boiStampImage"
+                stampClearedKey="boiStampImageCleared"
+                includeKey="boiIncludeSignatureStamp"
+              />
             </div>
           </div>
         );

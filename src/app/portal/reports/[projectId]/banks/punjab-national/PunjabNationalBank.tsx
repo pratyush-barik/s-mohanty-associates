@@ -4,7 +4,7 @@ import BankReportBuilder, { BankReportBuilderProps } from '../../BankReportBuild
 import { BankConfig } from '@/lib/bank-fields';
 import { PDFPunjabNationalBankRenderer } from '@/lib/banks/pdf-punjab-national-bank-renderer';
 import * as XLSX from 'xlsx';
-import { Field, inputCls, BaseDateInput } from '../BaseBankReportComponents';
+import { Field, inputCls, BaseDateInput, SignatureStampControl } from '../BaseBankReportComponents';
 import { Lock, Info } from 'lucide-react';
 import { rupeesInWords } from '@/lib/numberToWords';
 
@@ -2856,14 +2856,17 @@ export const PUNJAB_NATIONAL_BANK_CONFIG: BankConfig = {
                 <PrefillField label="DATE:" value={fields.punjabNationalAsOnDate ? fields.punjabNationalAsOnDate.split('-').reverse().join('-') : ''} hoverText='>>Auto-populates from Cover Page Date<<' />
               </div>
 
-              <Field label="SIGNATURE (NAME AND OFFICIAL SEAL OF THE APPROVED VALUER)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('punjabNationalSignoffSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.punjabNationalSignoffSignature && <img src={fields.punjabNationalSignoffSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="punjabNationalSignatureImage"
+                sigClearedKey="punjabNationalSignatureImageCleared"
+                stampKey="punjabNationalStampImage"
+                stampClearedKey="punjabNationalStampImageCleared"
+                includeKey="punjabNationalIncludeSignatureStamp"
+              />
 
               <div>
                 <div className="flex items-center justify-between mb-2 mt-4">
@@ -2898,14 +2901,19 @@ export const PUNJAB_NATIONAL_BANK_CONFIG: BankConfig = {
                   <div />
                 </div>
 
-                <Field label="SIGNATURE (NAME OF THE BRANCH MANAGER WITH OFFICIAL SEAL)">
-                  <input type="file" accept="image/*" className={inputCls}
-                    onChange={e => {
-                      const file = e.target.files?.[0];
-                      if (file) { const reader = new FileReader(); reader.onload = () => handleChange('punjabNationalBankManagerSignature', reader.result); reader.readAsDataURL(file); }
-                    }} disabled={isReadOnly} />
-                  {fields.punjabNationalBankManagerSignature && <img src={fields.punjabNationalBankManagerSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-                </Field>
+                <SignatureStampControl
+                  fields={fields}
+                  handleChange={handleChange}
+                  isReadOnly={isReadOnly}
+                  title="Branch Manager Signature & Official Seal"
+                  sigKey="punjabNationalManagerSignatureImage"
+                  sigClearedKey="punjabNationalManagerSignatureImageCleared"
+                  stampKey="punjabNationalManagerStampImage"
+                  stampClearedKey="punjabNationalManagerStampImageCleared"
+                  includeKey="punjabNationalIncludeManagerSignatureStamp"
+                  sigLabel='Manager Signature (above "Signature" text)'
+                  stampLabel='Manager Seal / Stamp (below Name & Seal)'
+                />
               </div>
             </div>
           </div>
@@ -3019,14 +3027,17 @@ export const PUNJAB_NATIONAL_BANK_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.punjabNationalAffirmationPlace ?? 'Bhubaneswar'} onChange={e => handleChange('punjabNationalAffirmationPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature (Name and Official seal of the Approved Valuer)">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('punjabNationalAffirmationSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.punjabNationalAffirmationSignature && <img src={fields.punjabNationalAffirmationSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="punjabNationalSignatureImage"
+                sigClearedKey="punjabNationalSignatureImageCleared"
+                stampKey="punjabNationalStampImage"
+                stampClearedKey="punjabNationalStampImageCleared"
+                includeKey="punjabNationalIncludeSignatureStamp"
+              />
             </div>
           </div>
         );
@@ -3237,14 +3248,17 @@ export const PUNJAB_NATIONAL_BANK_CONFIG: BankConfig = {
                   <input className={inputCls} value={fields.punjabNationalCodeOfConductPlace ?? 'Bhubaneswar'} onChange={e => handleChange('punjabNationalCodeOfConductPlace', e.target.value)} disabled={isReadOnly} />
                 </Field>
               </div>
-              <Field label="Signature of the Approved Valuer and Seal">
-                <input type="file" accept="image/*" className={inputCls}
-                  onChange={e => {
-                    const file = e.target.files?.[0];
-                    if (file) { const reader = new FileReader(); reader.onload = () => handleChange('punjabNationalCodeOfConductSignature', reader.result); reader.readAsDataURL(file); }
-                  }} disabled={isReadOnly} />
-                {fields.punjabNationalCodeOfConductSignature && <img src={fields.punjabNationalCodeOfConductSignature} alt="Signature" className="mt-2 max-h-24 border rounded" />}
-              </Field>
+              <SignatureStampControl
+                fields={fields}
+                handleChange={handleChange}
+                isReadOnly={isReadOnly}
+                title="Valuer Signature & Official Seal"
+                sigKey="punjabNationalSignatureImage"
+                sigClearedKey="punjabNationalSignatureImageCleared"
+                stampKey="punjabNationalStampImage"
+                stampClearedKey="punjabNationalStampImageCleared"
+                includeKey="punjabNationalIncludeSignatureStamp"
+              />
             </div>
           </div>
         );
