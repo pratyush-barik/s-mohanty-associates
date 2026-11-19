@@ -510,6 +510,20 @@ Outstanding items in **priority order**:
 - **Dynamic UI Section Numbering** — All bank builders dynamically compute section numbering matching their specific `navSections` sequence.
 - **57 Bank/Sub-template Stubs** — Scalable OOP architecture with BankConfig-driven system, dynamic lazy-loading in BuilderSelector.
 - **Vercel Free Tier Bundle Optimization (September 2026)** — Converted all 4 core report builders (`GeneralReportBuilder`, `IBBIReportBuilder`, `IncomeTaxReportBuilder`, `BankReportBuilder`) from static imports to `dynamic()` lazy imports in `BuilderSelector.tsx`. Reduced main client bundle from ~907 KB to ~18 KB. Each builder is now fetched on-demand as a separate chunk only when the user selects it. Added `<BuilderSkeleton />` loading state. This brought Vercel Functions Storage usage from 76% → ~40-50% of the free tier limit.
+- **Universal Valuer & Manager Signature & Official Stamp Feature (November 2026)** — Added end-to-end transparent valuer signature and official stamp upload/reset/render feature across **all bank report draft UIs and PDF renderers**:
+  - **Shared UI Control (`SignatureStampControl` in `BaseBankReportComponents.tsx`)**: Features real-time visual preview of transparent signature & seal, custom image upload, reset to default button, and "Include in PDF Render" toggle checkbox. Supports dual controls for Valuer and Branch Manager.
+  - **Universal Form UI Integration**:
+    - Reference implementation in **Bank of Baroda** (`BankOfBaroda.tsx`).
+    - Integrated across all 8 BOB clones (**Bank of India**, **Bank of Maharashtra**, **Canara Bank**, **UCO Bank**, **Union Bank of India**, **Punjab National Bank**, **Punjab & Sind Bank**, **Indian Bank**) for Valuer Sign-off, Branch Manager Endorsement, Valuer Affirmations, and Code of Conduct.
+    - Integrated across **State Bank of India** (`StateBankOfIndiaLandAndBuilding.tsx` and `StateBankOfIndiaFlatAndApartment.tsx`) across all valuer and manager sign-off blocks.
+    - Integrated into `BankReportBuilder.tsx` Remarks & Declaration section, automatically powering all 26+ banks utilizing the standard builder (including **Poonawalla Finance**, **Aditya Birla Housing**, **Axis SBB/Finance**, **Bajaj Housing**, **CanFin Homes**, **Clix Capital**, **GIC**, **Grihum**, **HDB**, **ICICI BBG/NPA**, **IKF**, **ISFC**, **Jana SFB**, **Kotak BBG**, etc.).
+    - Integrated into all 50+ custom standalone bank draft UIs (**Aditya Birla MLAP/STSL**, **Annapurna**, **Arka**, **Arthan**, **AU SFB**, **Axis AGRI/SME/HLLAP**, **Aye**, **Bandhan**, **Chola**, **DCB**, **HDFC**, **IDBI**, **IDFC**, **IndusInd**, **Karur Vysya**, **Kotak HLLAP**, **LIC**, **Mahindra**, **Manappuram**, **Navdhan**, **Neo Growth**, **PNB Housing**, **Protium**, **Purple**, **Samunnati**, **Shriram**, **SMFG**, **Suryoday**, **Swarna**, **Tata**, **Ujjivan**, **Unity SFB**, **Utkarsh**, **Varthana**, **Vistaar**, **Yes Bank**, etc.).
+  - **Universal PDF Rendering Architecture (`PDFBankRenderer`)**:
+    - `embedSignatureStampImages(fields, opts)` with auto-fallback to refined transparent valuer signature (`/assets/valuer/valuer-signature.png`) and stamp (`/assets/valuer/valuer-stamp.png`) or base64 fallbacks from `@/lib/valuer-defaults.ts`.
+    - Automatically invoked during `PDFBankRenderer.init()` for all inherited bank renderers.
+    - `drawSignatureAndStamp(...)` places signature centered above "Signature" text and stamp centered 18pt below "(Name and Official seal...)" text, completely eliminating text overlap.
+    - Integrated auto-drawing for `(Authorized Signatory)` rows in `drawKeyValueRow()`, `drawSignatureBlock()`, and custom sign-off blocks across dedicated renderers.
+    - Verified with `npx tsc --noEmit` (0 compilation errors).
 
 ### Pending / Next Steps
 - **IBBI PDF Font Consistency** — The rendering of font sizes is not consistent across the entire IBBI PDF/preview output. Needs a pass to standardize all font sizes.
@@ -558,4 +572,16 @@ Outstanding items in **priority order**:
 - All 78 bank builder templates use the declarative single-pass spread pattern `const d = { ...(rawInitialFields || {}), refNo: rawInitialFields?.refNo || projectCode || '' };`.
 - SBI Flat & Apartment, SBI Land & Building, LIC NPA, and LIC PVR1-2 use `useState<any>(() => initialData)`.
 - Imperative mutations (`if (!d.refNo) d.refNo = ...`) and secondary `useEffect` render cycles for `refNo` are prohibited.
+
+#### 9. Valuer & Manager Signature & Official Seal Formatting Rule
+- Default refined transparent image assets are located at:
+  - `public/assets/valuer/valuer-signature.png` (56KB, transparent signature)
+  - `public/assets/valuer/valuer-stamp.png` (188KB, transparent official seal)
+- Fallback base64 strings: `DEFAULT_VALUER_SIGNATURE` and `DEFAULT_VALUER_STAMP` in `src/lib/valuer-defaults.ts`.
+- In all PDF renderers:
+  - The signature image is drawn strictly above the "Signature" text line (`y = pdfY(sigTextTopY) + 2`).
+  - The official seal / stamp image is drawn centered **18pt below** the `(Name and Official seal...)` text line (`y = pdfY(stampTopY) - stampH - 18`) to ensure zero overlapping with sign-off labels.
+- In report draft UIs:
+  - Import `<SignatureStampControl />` from `BaseBankReportComponents` and render inside the sign-off / declaration section.
+  - Allows the valuer to view the transparent preview, upload a custom signature/seal if desired, revert to default, or toggle PDF inclusion.
 
