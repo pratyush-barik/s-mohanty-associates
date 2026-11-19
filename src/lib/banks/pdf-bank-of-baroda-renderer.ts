@@ -125,8 +125,8 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     if (this.valuerStampImg) {
       const stampX = sigBlockX + (sigBlockW - stampW) / 2;
-      // Stamp sits below the text, whose bottom starts around stampTopY:
-      const pY = this.pdfY(stampTopY) - stampH;
+      // Stamp sits below the text. Add 18pt gap so it clears the full text line height:
+      const pY = this.pdfY(stampTopY + 18) - stampH;
       this.page.drawImage(this.valuerStampImg, { x: stampX, y: pY, width: stampW, height: stampH });
     }
   }
@@ -1443,10 +1443,10 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, nameTextTopY, { bold: true, fontSize: FONT_SIZE, align: 'center', maxWidth: sigBlockW });
     
     // Draw signature (above "Signature" text) and stamp (below "(Name and Official seal...)")
-    this.drawValuerSignatureAndStamp(sigBlockX, sigBlockW, sigTextTopY, nameTextTopY + 4, sigW, sigH, stampW, stampH);
+    this.drawValuerSignatureAndStamp(sigBlockX, sigBlockW, sigTextTopY, nameTextTopY, sigW, sigH, stampW, stampH);
 
     if (this.valuerStampImg) {
-      this.cursorY += stampH + 10;
+      this.cursorY += stampH + 28;
     } else {
       this.cursorY += 40;
     }
@@ -1483,12 +1483,12 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
 
     if (this.managerStampImg) {
       const stX = sigBlockX + (sigBlockW - stampW) / 2;
-      const pY = this.pdfY(mgrNameTopY + 4) - stampH;
+      const pY = this.pdfY(mgrNameTopY + 18) - stampH;
       this.page.drawImage(this.managerStampImg, { x: stX, y: pY, width: stampW, height: stampH });
     }
 
     if (this.managerStampImg) {
-      this.cursorY += stampH + 10;
+      this.cursorY += stampH + 28;
     } else {
       this.cursorY += 40;
     }
@@ -1661,10 +1661,10 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawTextAt(`Place: ${affirmPlace}`, MARGIN_L, affirmNameTopY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(`(Name and Official seal of the Approved Valuer)`, sigBlockX, affirmNameTopY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
 
-    this.drawValuerSignatureAndStamp(sigBlockX, sigBlockW, affirmSigTextTopY, affirmNameTopY + 4, sigW, sigH, stampW, stampH);
+    this.drawValuerSignatureAndStamp(sigBlockX, sigBlockW, affirmSigTextTopY, affirmNameTopY, sigW, sigH, stampW, stampH);
 
     if (this.valuerStampImg) {
-      this.cursorY += stampH + 10;
+      this.cursorY += stampH + 28;
     } else {
       this.cursorY += 40;
     }
@@ -1799,10 +1799,10 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
     this.drawTextAt(`Place: ${cPlace}`, MARGIN_L, cocPlaceTopY, { bold: true, fontSize: FONT_SIZE_SMALL });
     this.drawTextAt(`Signature of the Approved Valuer and Seal`, sigBlockX, cocPlaceTopY, { bold: true, fontSize: FONT_SIZE_SMALL, align: 'center', maxWidth: sigBlockW });
 
-    this.drawValuerSignatureAndStamp(sigBlockX, sigBlockW, cocDateTopY, cocPlaceTopY + 4, sigW, sigH, stampW, stampH);
+    this.drawValuerSignatureAndStamp(sigBlockX, sigBlockW, cocDateTopY, cocPlaceTopY, sigW, sigH, stampW, stampH);
 
     if (this.valuerStampImg) {
-      this.cursorY += stampH + 10;
+      this.cursorY += stampH + 28;
     } else {
       this.cursorY += 40;
     }
