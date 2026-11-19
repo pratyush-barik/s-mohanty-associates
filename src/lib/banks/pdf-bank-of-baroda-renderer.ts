@@ -43,10 +43,6 @@ export class PDFBankOfBarodaRenderer extends PDFBankRenderer {
   private fields: any;
   private drawnCover = false;
   private isBobDrawing = false;
-  private valuerSigImg: any = null;
-  private valuerStampImg: any = null;
-  private managerSigImg: any = null;
-  private managerStampImg: any = null;
 
   constructor(fields?: any) {
     super();

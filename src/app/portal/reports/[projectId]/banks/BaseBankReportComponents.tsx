@@ -2364,6 +2364,180 @@ export function AnnexureRefSelector({
 }
 
 // ─── Standard Annexure Card & Section (100% Identical to General Report) ─────
+/** Reusable Signature & Official Stamp Control with preview, upload, and reset.
+ *  Used across ALL bank report draft UIs for valuer / manager sign-off blocks.
+ */
+export function SignatureStampControl({
+  fields,
+  handleChange,
+  isReadOnly,
+  title = "Valuer Signature & Official Stamp",
+  sigKey = "includeSignatureImage",
+  sigClearedKey = "signatureImageCleared",
+  stampKey = "includeStampImage",
+  stampClearedKey = "stampImageCleared",
+  includeKey = "includeSignatureStamp",
+  sigLabel = 'Signature (above "Signature" text)',
+  stampLabel = 'Official Seal / Stamp (below Name & Seal)'
+}: {
+  fields: any;
+  handleChange: any;
+  isReadOnly: boolean;
+  title?: string;
+  sigKey?: string;
+  sigClearedKey?: string;
+  stampKey?: string;
+  stampClearedKey?: string;
+  includeKey?: string;
+  sigLabel?: string;
+  stampLabel?: string;
+}) {
+  const includeSigStamp = fields[includeKey] !== false;
+  const currentSig = fields[sigKey] || (fields[sigClearedKey] ? '' : '/assets/valuer/valuer-signature.png');
+  const currentStamp = fields[stampKey] || (fields[stampClearedKey] ? '' : '/assets/valuer/valuer-stamp.png');
+
+  return (
+    <div className="rounded-xl border border-teal-200 bg-white/90 p-4 space-y-3 shadow-sm mt-2">
+      <div className="flex items-center justify-between border-b border-teal-100 pb-2 flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-base">🖊</span>
+          <span className="font-bold text-gray-800 text-sm">{title}</span>
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={includeSigStamp}
+            onChange={e => handleChange(includeKey, e.target.checked)}
+            disabled={isReadOnly}
+            className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+          />
+          <span className="text-xs font-semibold text-teal-800">Include in PDF Render</span>
+        </label>
+      </div>
+
+      {includeSigStamp && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+          {/* Signature Box */}
+          <div className="rounded-lg border border-gray-200 bg-gray-50/70 p-3 space-y-2 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                  {sigLabel}
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${fields[sigKey] ? 'bg-amber-100 text-amber-800' : 'bg-teal-100 text-teal-800'}`}>
+                  {fields[sigKey] ? 'Custom' : 'Default Refined'}
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-500">Transparent PNG, placed directly above the signature line in PDF.</p>
+            </div>
+
+            <div className="flex items-center justify-center p-2 bg-white rounded border border-gray-200 min-h-16">
+              {currentSig ? (
+                <img src={currentSig} alt="Signature" className="max-h-14 max-w-full object-contain" />
+              ) : (
+                <span className="text-xs text-gray-400 italic">No signature selected</span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                className={`${inputCls} text-xs py-1 px-2 flex-1`}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      handleChange(sigKey, reader.result);
+                      handleChange(sigClearedKey, false);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                  e.target.value = '';
+                }}
+                disabled={isReadOnly}
+              />
+              {fields[sigKey] && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleChange(sigKey, '');
+                    handleChange(sigClearedKey, false);
+                  }}
+                  disabled={isReadOnly}
+                  className="px-2 py-1 text-[11px] font-medium bg-gray-200 hover:bg-gray-300 text-gray-700 rounded transition-colors whitespace-nowrap"
+                  title="Revert to default signature"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Stamp / Seal Box */}
+          <div className="rounded-lg border border-gray-200 bg-gray-50/70 p-3 space-y-2 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                  {stampLabel}
+                </span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${fields[stampKey] ? 'bg-amber-100 text-amber-800' : 'bg-teal-100 text-teal-800'}`}>
+                  {fields[stampKey] ? 'Custom' : 'Default Refined'}
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-500">Transparent PNG, placed directly below the designation line in PDF.</p>
+            </div>
+
+            <div className="flex items-center justify-center p-2 bg-white rounded border border-gray-200 min-h-16">
+              {currentStamp ? (
+                <img src={currentStamp} alt="Official Stamp" className="max-h-16 max-w-full object-contain" />
+              ) : (
+                <span className="text-xs text-gray-400 italic">No stamp selected</span>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="file"
+                accept="image/*"
+                className={`${inputCls} text-xs py-1 px-2 flex-1`}
+                onChange={e => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      handleChange(stampKey, reader.result);
+                      handleChange(stampClearedKey, false);
+                    };
+                    reader.readAsDataURL(file);
+                  }
+                  e.target.value = '';
+                }}
+                disabled={isReadOnly}
+              />
+              {fields[stampKey] && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleChange(stampKey, '');
+                    handleChange(stampClearedKey, false);
+                  }}
+                  disabled={isReadOnly}
+                  className="px-2 py-1 text-[11px] font-medium bg-gray-200 hover:bg-gray-300 text-gray-700 rounded transition-colors whitespace-nowrap"
+                  title="Revert to default seal/stamp"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function BaseAnnexureSection({
   annexures = [],
   isReadOnly = false,

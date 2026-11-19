@@ -12,6 +12,7 @@
  */
 
 import { rgb } from 'pdf-lib';
+import { DEFAULT_VALUER_SIGNATURE, DEFAULT_VALUER_STAMP } from '@/lib/valuer-defaults';
 import {
   PDFGeneralRenderer,
   PAGE_W,
@@ -209,6 +210,106 @@ export function resolveField(fields: any, key: string, defaultVal: any = ''): an
 
 export class PDFBankRenderer extends PDFGeneralRenderer {
   public lastRowHadHiddenBottom: boolean = false;
+
+  // ── Signature & Stamp images (shared across all bank renderers) ──
+  protected valuerSigImg: any = null;
+  protected valuerStampImg: any = null;
+  protected managerSigImg: any = null;
+  protected managerStampImg: any = null;
+
+  /**
+   * Embed valuer & manager signature+stamp images from report fields.
+   * Call this in each sub-renderer's init() after super.init().
+   * Uses generic field keys; sub-renderers can pass bank-specific keys.
+   */
+  async embedSignatureStampImages(
+    fields: any,
+    opts?: {
+      valuerSigKey?: string;
+      valuerStampKey?: string;
+      valuerIncludeKey?: string;
+      managerSigKey?: string;
+      managerStampKey?: string;
+      managerIncludeKey?: string;
+    }
+  ): Promise<void> {
+    const o = opts || {};
+    const valuerSigKey = o.valuerSigKey || 'valuerSignatureImage';
+    const valuerStampKey = o.valuerStampKey || 'valuerStampImage';
+    const valuerIncludeKey = o.valuerIncludeKey || 'includeSignatureStamp';
+    const managerSigKey = o.managerSigKey || 'managerSignatureImage';
+    const managerStampKey = o.managerStampKey || 'managerStampImage';
+    const managerIncludeKey = o.managerIncludeKey || 'includeManagerSignatureStamp';
+
+    if (fields[valuerIncludeKey] !== false) {
+      try {
+        const sigSrc = fields[valuerSigKey] || DEFAULT_VALUER_SIGNATURE;
+        const sigBytes = await fetchBytes(sigSrc);
+        if (sigBytes) this.valuerSigImg = await this.embedImgSafe(sigBytes);
+      } catch (e) { console.warn('Failed to embed valuer signature:', e); }
+
+      try {
+        const stampSrc = fields[valuerStampKey] || DEFAULT_VALUER_STAMP;
+        const stampBytes = await fetchBytes(stampSrc);
+        if (stampBytes) this.valuerStampImg = await this.embedImgSafe(stampBytes);
+      } catch (e) { console.warn('Failed to embed valuer stamp:', e); }
+    }
+
+    if (fields[managerIncludeKey] !== false) {
+      try {
+        const mgrSigSrc = fields[managerSigKey] || fields[valuerSigKey] || DEFAULT_VALUER_SIGNATURE;
+        const mgrSigBytes = await fetchBytes(mgrSigSrc);
+        if (mgrSigBytes) this.managerSigImg = await this.embedImgSafe(mgrSigBytes);
+      } catch (e) { console.warn('Failed to embed manager signature:', e); }
+
+      try {
+        const mgrStampSrc = fields[managerStampKey] || fields[valuerStampKey] || DEFAULT_VALUER_STAMP;
+        const mgrStampBytes = await fetchBytes(mgrStampSrc);
+        if (mgrStampBytes) this.managerStampImg = await this.embedImgSafe(mgrStampBytes);
+      } catch (e) { console.warn('Failed to embed manager stamp:', e); }
+    }
+  }
+
+  /**
+   * Draw valuer signature (above "Signature" text) and stamp (below the name/seal text).
+   * Reusable across all bank renderers for sign-off blocks.
+   *
+   * @param sigBlockX - Left x of the signature block
+   * @param sigBlockW - Width of the signature block
+   * @param sigTextTopY - Top Y of the "Signature" text (signature drawn above it)
+   * @param stampTopY - Top Y of the name/seal text (stamp drawn 18pt below it)
+   * @param sigW - Signature image width
+   * @param sigH - Signature image height
+   * @param stampW - Stamp image width
+   * @param stampH - Stamp image height
+   * @param useManager - If true, use manager images instead of valuer images
+   */
+  drawSignatureAndStamp(
+    sigBlockX: number,
+    sigBlockW: number,
+    sigTextTopY: number,
+    stampTopY: number,
+    sigW = 100,
+    sigH = 29,
+    stampW = 60,
+    stampH = 60,
+    useManager = false
+  ): void {
+    const sigImg = useManager ? this.managerSigImg : this.valuerSigImg;
+    const stampImg = useManager ? this.managerStampImg : this.valuerStampImg;
+
+    if (sigImg) {
+      const sigX = sigBlockX + (sigBlockW - sigW) / 2;
+      const pY = this.pdfY(sigTextTopY) + 2;
+      this.page.drawImage(sigImg, { x: sigX, y: pY, width: sigW, height: sigH });
+    }
+
+    if (stampImg) {
+      const stampX = sigBlockX + (sigBlockW - stampW) / 2;
+      const pY = this.pdfY(stampTopY + 18) - stampH;
+      this.page.drawImage(stampImg, { x: stampX, y: pY, width: stampW, height: stampH });
+    }
+  }
 
   /**
    * Helper method on renderer instances for clean, direct field retrieval.
